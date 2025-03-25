@@ -1,0 +1,21 @@
+logging:
+  level:
+    root: INFO
+
+# ssl-konfiguraatio
+server:
+  port: 8443
+  ssl:
+    key-store-type: PKCS12
+    key-store: classpath:suorituspalvelu.p12
+    key-store-password: password
+    key-alias: viestinvalitys
+    enabled: true
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:55432/test
+    username: app
+    password: app
+  flyway:
+    baseline-on-migrate: true
