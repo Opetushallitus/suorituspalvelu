@@ -5,9 +5,11 @@ import fi.oph.suorituspalvelu.resource.{ApiConstants, LuoSuoritusFailureResponse
 import fi.oph.suorituspalvelu.validation.SuoritusValidator
 import org.junit.jupiter.api.*
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
-import org.springframework.test.web.servlet.request.{MockHttpServletRequestBuilder, MockMvcRequestBuilders}
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+
+import java.util.Optional
 
 /**
  * Suoritusapin integraatiotestit. Testeissä on pyritty kattamaan kaikkien endpointtien kaikki eri paluuarvoihin
@@ -17,7 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class IntegraatioTest extends BaseIntegraatioTesti {
 
   def getSuoritus(): Suoritus =
-    Suoritus("1.2.3", "Kurssi 1")
+    Suoritus(Optional.of("1.2.3"), Optional.of("Kurssi 1"))
 
   /**
    * Testataan healthcheck-toiminnallisuus
@@ -76,7 +78,7 @@ class IntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testLuoLahetysInvalidRequest(): Unit =
     // tyhjä otsikko ei (esimerkiksi) ole sallittu, muuten validointi testataan yksikkötesteillä
-    val result = mvc.perform(jsonPost(ApiConstants.SUORITUS_PATH, new Suoritus("", "")))
+    val result = mvc.perform(jsonPost(ApiConstants.SUORITUS_PATH, Suoritus(Optional.of(""), Optional.of(""))))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LuoSuoritusFailureResponse(java.util.List.of(SuoritusValidator.VALIDATION_OPPIJANUMERO_TYHJA)),

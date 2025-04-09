@@ -78,7 +78,7 @@ class BaseIntegraatioTesti {
     System.setProperty("web.url.cas", "DUMMY")
     System.setProperty("host.virkailija", "DUMMY")
 
-    val database = Database.forDataSource(getDatasource(), Option.empty)
+    val database = Database.forDataSource(getDatasource(), None)
     kantaOperaatiot = KantaOperaatiot(database)
     true
   }

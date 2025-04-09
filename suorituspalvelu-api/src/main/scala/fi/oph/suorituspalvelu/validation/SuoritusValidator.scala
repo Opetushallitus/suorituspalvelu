@@ -1,7 +1,6 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.resource.Suoritus
-
 import java.util.Optional
 
 /**

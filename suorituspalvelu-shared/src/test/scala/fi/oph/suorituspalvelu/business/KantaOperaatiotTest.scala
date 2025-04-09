@@ -53,7 +53,7 @@ class KantaOperaatiotTest {
 
   @BeforeAll def setup(): Unit =
     postgres.start()
-    database = Database.forDataSource(getHikariDatasource(), Option.empty)
+    database = Database.forDataSource(getHikariDatasource(), None)
     kantaOperaatiot = KantaOperaatiot(database)
 
   @AfterAll def teardown(): Unit =

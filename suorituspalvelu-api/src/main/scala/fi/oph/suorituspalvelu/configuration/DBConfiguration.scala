@@ -9,5 +9,5 @@ class DBConfiguration {
 
   @Bean
   def getDatabase(dataSource: DataSource): JdbcBackend.JdbcDatabaseDef =
-    JdbcBackend.Database.forDataSource(dataSource, Option.empty)
+    JdbcBackend.Database.forDataSource(dataSource, None)
 }
