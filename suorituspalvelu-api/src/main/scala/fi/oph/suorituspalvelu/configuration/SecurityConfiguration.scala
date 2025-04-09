@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration, Profile}
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
-import org.springframework.http.HttpStatus
+import org.springframework.http.{HttpMethod, HttpStatus}
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.cas.ServiceProperties
 import org.springframework.security.cas.authentication.CasAuthenticationProvider
@@ -34,8 +34,11 @@ class SecurityConfiguration {
   @Bean
   def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
     http
-      .securityMatcher("/**")
-      .authorizeHttpRequests(requests => requests.anyRequest.fullyAuthenticated)
+      .authorizeHttpRequests(requests => requests
+        .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH, "/static/**")
+        .permitAll()
+        .anyRequest
+        .fullyAuthenticated)
       .csrf(c => c.disable())
       .exceptionHandling(c => c.authenticationEntryPoint(casAuthenticationEntryPoint))
       .addFilter(authenticationFilter)

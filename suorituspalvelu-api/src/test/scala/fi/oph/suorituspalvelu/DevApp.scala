@@ -5,7 +5,7 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 
 object DevApp {
 
-  private val postgres: PostgreSQLContainer[_] = new PostgreSQLContainer("postgres:15").withCommand("postgres")
+  private val postgres: PostgreSQLContainer[_] = new PostgreSQLContainer("postgres:15")
 
   private def startContainers(): Unit =
     postgres.withUsername("app")

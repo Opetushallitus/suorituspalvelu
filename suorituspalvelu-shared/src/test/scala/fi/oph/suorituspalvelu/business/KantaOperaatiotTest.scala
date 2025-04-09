@@ -10,7 +10,6 @@ import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import slick.jdbc.PostgresProfile.api.*
 
-import java.util.UUID
 import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
@@ -19,6 +18,8 @@ import scala.util.Random
 @TestInstance(Lifecycle.PER_CLASS)
 class KantaOperaatiotTest {
 
+  class OphPostgresContainer(dockerImageName: String) extends PostgreSQLContainer[OphPostgresContainer](dockerImageName) {}
+
   val DATABASE_NAME = "suorituspalvelu"
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(64))
@@ -26,6 +27,10 @@ class KantaOperaatiotTest {
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiotTest])
 
   var postgres: PostgreSQLContainer[_] = new PostgreSQLContainer("postgres:15")
+    postgres.withDatabaseName(DATABASE_NAME)
+    postgres.withUsername("app")
+    postgres.withPassword("app")
+    postgres.withLogConsumer(frame => LOG.info(frame.getUtf8StringWithoutLineEnding))
 
   private def getDatasource() =
     val ds: PGSimpleDataSource = new PGSimpleDataSource()
@@ -47,12 +52,7 @@ class KantaOperaatiotTest {
   var database: Database = null
 
   @BeforeAll def setup(): Unit =
-    postgres.withDatabaseName(DATABASE_NAME)
-    postgres.withUsername("app")
-    postgres.withPassword("app")
-    postgres.withLogConsumer(frame => LOG.info(frame.getUtf8StringWithoutLineEnding))
     postgres.start()
-
     database = Database.forDataSource(getHikariDatasource(), Option.empty)
     kantaOperaatiot = KantaOperaatiot(database)
 

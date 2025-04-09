@@ -34,4 +34,15 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
        """.as[(String, String)]), DB_TIMEOUT)
       .map((tunniste, oppijaNumero) =>
         Suoritus(UUID.fromString(tunniste), oppijaNumero))
+
+  def haeSuoritus(tunniste: UUID): Option[Suoritus] =
+    Await.result(db.run(
+        sql"""
+          SELECT tunniste, oppijanumero
+          FROM suoritukset
+          WHERE tunniste=${tunniste.toString}::UUID
+       """.as[(String, String)]), DB_TIMEOUT)
+      .map((tunniste, oppijaNumero) =>
+        Suoritus(UUID.fromString(tunniste), oppijaNumero)).headOption
+
 }
