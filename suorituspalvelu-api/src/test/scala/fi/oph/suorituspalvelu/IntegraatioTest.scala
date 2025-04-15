@@ -59,9 +59,10 @@ class IntegraatioTest extends BaseIntegraatioTesti {
 
     // varmistetaan että kentät tulevat kantaan oikein
     val tallennettuSuoritus = kantaOperaatiot.haeSuoritus(luoSuoritusResponse.tunniste)
-    val entiteetti = fi.oph.suorituspalvelu.business.Suoritus(
+    val entiteetti = fi.oph.suorituspalvelu.business.SuoritusEntiteetti(
       luoSuoritusResponse.tunniste,
-      suoritus.oppijaNumero.get
+      suoritus.suoritus.get(),
+      Seq.empty
     )
     Assertions.assertEquals(Some(entiteetti), tallennettuSuoritus)
 

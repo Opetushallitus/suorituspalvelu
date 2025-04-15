@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
+import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.{AfterAll, AfterEach, Assertions, BeforeAll, BeforeEach, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -74,16 +75,34 @@ class KantaOperaatiotTest {
   @AfterEach def teardownTest(): Unit =
     Await.result(database.run(
       sqlu"""
+            DROP TABLE spring_session_attributes;
+            DROP TABLE spring_session;
+            DROP TABLE opiskeluoikeudet;
             DROP TABLE suoritukset;
+            DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
+            DROP TYPE lahde;
           """), 5.seconds)
 
-  @Test def testSuoritusRoundtrip(): Unit =
+  @Test def testVersioRoundtrip(): Unit =
     val OPPIJANUMERO = "1.2.3"
 
-    // tallennetaan suoritus
-    val suoritus = this.kantaOperaatiot.tallennaSuoritus(OPPIJANUMERO)
+    // tallennetaan versio
+    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
 
     // suoritus palautuu kun haetaan oppijanumerolla
-    Assertions.assertTrue(this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO).filter(s => s.tunniste.equals(suoritus.tunniste)).nonEmpty)
+    //Assertions.assertTrue(this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO).filter(s => s.tunniste.equals(suoritus.tunniste)).nonEmpty)
+
+  @Test def testSuoritusRoundtrip(): Unit =
+    val OPPIJANUMERO = "2.3.4"
+
+    // tallennetaan versio
+    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
+
+    // tallennetaan suoritus
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
+    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
+
+    // suoritus palautuu kun haetaan oppijanumerolla
+    Assertions.assertEquals(tallennetutSuoritusEntiteetit, haetutSuoritusEntiteetit)
 }
