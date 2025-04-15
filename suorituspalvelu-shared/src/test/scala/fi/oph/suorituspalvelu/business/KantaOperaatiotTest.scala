@@ -88,21 +88,34 @@ class KantaOperaatiotTest {
     val OPPIJANUMERO = "1.2.3"
 
     // tallennetaan versio
-    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
+    val data = "{\"attr\": \"value\"}"
+    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, data, None)
 
-    // suoritus palautuu kun haetaan oppijanumerolla
-    //Assertions.assertTrue(this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO).filter(s => s.tunniste.equals(suoritus.tunniste)).nonEmpty)
+    // data palautuu
+    Assertions.assertEquals(data, this.kantaOperaatiot.haeData(versio))
 
   @Test def testSuoritusRoundtrip(): Unit =
+    val OPPIJANUMERO = "2.3.4"
+
+    // tallennetaan versio ja suoritukset
+    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
+
+    // suoritus palautuu kun haetaan oppijanumerolla
+    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
+    Assertions.assertEquals(tallennetutSuoritusEntiteetit, haetutSuoritusEntiteetit)
+
+  @Test def testVanhatSuorituksetPoistetaan(): Unit =
     val OPPIJANUMERO = "2.3.4"
 
     // tallennetaan versio
     val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
 
-    // tallennetaan suoritus
-    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
-    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
+    // tallennetaan suoritukset kerran ja sitten toisen kerran
+    val vanhentuvatSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("ammattikoulu", Seq(Suoritus("englanti", Seq.empty))))))
 
     // suoritus palautuu kun haetaan oppijanumerolla
+    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
     Assertions.assertEquals(tallennetutSuoritusEntiteetit, haetutSuoritusEntiteetit)
 }
