@@ -35,6 +35,20 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(DBIO.sequence(Seq(discontinueOldVersionAction, insertVersioAction)).transactionally), DB_TIMEOUT)
     VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, tietolahde)
 
+  def haeData(versio: VersioEntiteetti): String =
+    Await.result(db.run(
+        (versio.tietolahde match
+          case VIRTA => sql"""
+              SELECT data_xml
+              FROM versiot
+              WHERE tunniste=${versio.tunniste.toString}::UUID"""
+          case default => sql"""
+              SELECT data_json
+              FROM versiot
+              WHERE tunniste=${versio.tunniste.toString}::UUID"""
+        ).as[String]), DB_TIMEOUT)
+      .head
+
   def puraSuoritukset(versio: VersioEntiteetti, suoritus: Suoritus, parentTunniste: Option[UUID]): (SuoritusEntiteetti, DBIOAction[_, NoStream, Effect]) =
     val tunniste = getUUID()
     val lapset = suoritus.osaSuoritukset.map(osasuoritus => puraSuoritukset(versio, osasuoritus, Some(tunniste)))
@@ -42,13 +56,37 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       case Some(parent) => (SuoritusEntiteetti(tunniste, suoritus.koodiArvo, lapset.map(lapsi => lapsi._1)), DBIO.sequence(Seq(sqlu"""INSERT INTO suoritukset(tunniste, parent_tunniste, koodiarvo) VALUES(${tunniste.toString}::uuid, ${parentTunniste.get.toString}::uuid, ${suoritus.koodiArvo})""") ++ lapset.map(lapsi => lapsi._2)))
       case None => (SuoritusEntiteetti(tunniste, suoritus.koodiArvo, lapset.map(lapsi => lapsi._1)), DBIO.sequence(Seq(sqlu"""INSERT INTO suoritukset(tunniste, versio_tunniste, koodiarvo) VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.koodiArvo})""") ++ lapset.map(lapsi => lapsi._2)))
 
+  def poistaVersionSuoritukset(versio: VersioEntiteetti): DBIOAction[_, NoStream, Effect] =
+    DBIO.sequence(Seq(
+      sqlu"""
+          WITH RECURSIVE
+            parents(tunniste, parent_tunniste, path) AS (
+              SELECT
+                suoritukset.tunniste,
+                suoritukset.parent_tunniste,
+                ARRAY[]::uuid[]
+              FROM suoritukset
+              WHERE versio_tunniste=${versio.tunniste.toString}::uuid
+            UNION
+              SELECT
+                s.tunniste,
+                s.parent_tunniste,
+                path || s.tunniste
+              FROM suoritukset s, parents p
+              WHERE p.tunniste=s.parent_tunniste
+              AND (NOT (s.tunniste = ANY(path))) -- estetään syklit
+          )
+          DELETE FROM suoritukset USING parents WHERE parents.tunniste=suoritukset.tunniste;
+       """))
+
   def tallennaSuoritukset(versio: VersioEntiteetti, juuriSuoritus: Suoritus): SuoritusEntiteetti =
+    val poistaSuoritukset = poistaVersionSuoritukset(versio)
     val (juuriSuoritusEntiteetti, inserts) = puraSuoritukset(versio, juuriSuoritus, None)
-    Await.result(db.run(inserts.transactionally), DB_TIMEOUT)
+    Await.result(db.run(DBIO.sequence(Seq(poistaSuoritukset, inserts)).transactionally), DB_TIMEOUT)
     juuriSuoritusEntiteetti
 
   private def haeSuoritukset(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Seq[SuoritusEntiteetti]] =
-    var parents: Map[String, Seq[SuoritusEntiteetti]] = Map.empty
+    var osaSuoritukset: Map[String, Seq[SuoritusEntiteetti]] = Map.empty
     Await.result(db.run(
         (sql"""
           WITH RECURSIVE
@@ -88,11 +126,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           ORDER BY path DESC;
        """).as[(String, String, String, String, String, String, String, String, String)]), DB_TIMEOUT)
       .map((tunniste, parentTunniste, koodiArvo, versioTunniste, oppijaNumero, alku, loppu, tietoLahde, hakuOid) =>
-        val entiteetti = SuoritusEntiteetti(UUID.fromString(tunniste), koodiArvo, parents.get(tunniste).getOrElse(Seq.empty))
-        parents = parents.updatedWith(parentTunniste)(children => children match
-          case Some(children) => Some(entiteetti +: children)
-          case None => Some(Seq(entiteetti))
+        val suoritusEntiteetti = SuoritusEntiteetti(UUID.fromString(tunniste), koodiArvo, osaSuoritukset.getOrElse(tunniste, Seq.empty))
+
+        osaSuoritukset = osaSuoritukset.updatedWith(parentTunniste)(osaSuoritukset => osaSuoritukset match
+          case Some(osaSuoritukset) => Some(suoritusEntiteetti +: osaSuoritukset)
+          case None => Some(Seq(suoritusEntiteetti))
         )
+
         (Option(versioTunniste), Option(parentTunniste)) match
           // palautetaan vain juurisuoritusentiteetit mapattuna versioihin
           case (Some(versioTunniste), None) => Some(VersioEntiteetti(
@@ -103,7 +143,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               case "infinity" => None
               case default => Some(Instant.parse(loppu)),
             Tietolahde.valueOf(tietoLahde)
-          ) -> Seq(entiteetti))
+          ) -> Seq(suoritusEntiteetti))
           case (Some(_), Some(_)) => throw new RuntimeException()
           case (None, None)       => throw new RuntimeException()
           case (None, Some(_))    => None
