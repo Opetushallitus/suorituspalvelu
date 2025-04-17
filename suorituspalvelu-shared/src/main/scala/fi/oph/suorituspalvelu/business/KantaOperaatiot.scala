@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.business
 
 import fi.oph.suorituspalvelu.business.Tietolahde.VIRTA
-import slick.jdbc.JdbcBackend
+import org.skyscreamer.jsonassert.{JSONCompare, JSONCompareMode}
+import slick.jdbc.{JdbcBackend, SQLActionBuilder}
 import slick.jdbc.PostgresProfile.api.*
 
 import scala.concurrent.Await
@@ -20,20 +21,41 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  def tallennaVersio(oppijaNumero: String, tietolahde: Tietolahde, data: String, hakuOid: Option[String]): VersioEntiteetti =
-    val tunniste = getUUID()
-    val timestamp = Instant.now
-    val discontinueOldVersionAction = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)"""
-    val insertVersioAction = tietolahde match
-      case VIRTA => sqlu"""
-            INSERT INTO versiot(tunniste, oppijanumero, voimassaolo, lahde, data_json, hakuoid)
-            VALUES(${tunniste.toString}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::xml, ${hakuOid})"""
-      case default => sqlu"""
-            INSERT INTO versiot(tunniste, oppijanumero, voimassaolo, lahde, data_json, hakuoid)
-            VALUES(${tunniste.toString}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::jsonb, ${hakuOid})"""
+  def sameAsExistingData(oppijaNumero: String, tietolahde: Tietolahde, data: String): Boolean =
+    tietolahde match
+      case Tietolahde.KOSKI | Tietolahde.YTR =>
+        Await.result(db.run(sql"""
+            SELECT data_json
+            FROM versiot
+            WHERE oppijanumero=${oppijaNumero} AND lahde=${tietolahde.toString}::lahde AND upper(voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT)
+        .headOption
+        .map(existingData => JSONCompare.compareJSON(existingData, data, JSONCompareMode.NON_EXTENSIBLE).passed())
+        .getOrElse(false)
+      case default => false
 
-    Await.result(db.run(DBIO.sequence(Seq(discontinueOldVersionAction, insertVersioAction)).transactionally), DB_TIMEOUT)
-    VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, tietolahde)
+  def tallennaJarjestelmaVersio(oppijaNumero: String, tietolahde: Tietolahde, data: String): Option[VersioEntiteetti] =
+    if(tietolahde==Tietolahde.VIRKAILIJA)
+      throw new RuntimeException("Virkailijan versioita ei voi tallentaa tällä metodilla")
+
+    if(sameAsExistingData(oppijaNumero, tietolahde, data)) // TODO: tämä pitää tehdä samassa transaktiossa kun on lukko oppijaan!
+      None
+    else
+      val tunniste = getUUID()
+      val timestamp = Instant.now
+      val insertOppijaAction = sqlu"INSERT INTO oppijat(oppijanumero) VALUES (${oppijaNumero}) ON CONFLICT DO NOTHING"
+      val lockOppijaAction = sql"""SELECT 1 FROM oppijat WHERE oppijanumero=${oppijaNumero} FOR UPDATE"""
+      val discontinueOldVersionAction = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)"""
+      val insertVersioAction = tietolahde match
+        case VIRTA => sqlu"""
+              INSERT INTO versiot(tunniste, oppijanumero, voimassaolo, lahde, data_json)
+              VALUES(${tunniste.toString}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::xml)"""
+        case default => sqlu"""
+              INSERT INTO versiot(tunniste, oppijanumero, voimassaolo, lahde, data_json)
+              VALUES(${tunniste.toString}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::jsonb)"""
+
+      Await.result(db.run(DBIO.sequence(Seq(insertOppijaAction, lockOppijaAction.as[Int], discontinueOldVersionAction, insertVersioAction)).transactionally), DB_TIMEOUT)
+      Some(VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, tietolahde))
 
   def haeData(versio: VersioEntiteetti): String =
     Await.result(db.run(
@@ -53,8 +75,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val tunniste = getUUID()
     val lapset = suoritus.osaSuoritukset.map(osasuoritus => puraSuoritukset(versio, osasuoritus, Some(tunniste)))
     parentTunniste match
-      case Some(parent) => (SuoritusEntiteetti(tunniste, suoritus.koodiArvo, lapset.map(lapsi => lapsi._1)), DBIO.sequence(Seq(sqlu"""INSERT INTO suoritukset(tunniste, parent_tunniste, koodiarvo) VALUES(${tunniste.toString}::uuid, ${parentTunniste.get.toString}::uuid, ${suoritus.koodiArvo})""") ++ lapset.map(lapsi => lapsi._2)))
-      case None => (SuoritusEntiteetti(tunniste, suoritus.koodiArvo, lapset.map(lapsi => lapsi._1)), DBIO.sequence(Seq(sqlu"""INSERT INTO suoritukset(tunniste, versio_tunniste, koodiarvo) VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.koodiArvo})""") ++ lapset.map(lapsi => lapsi._2)))
+      case Some(parent) => (SuoritusEntiteetti(tunniste, suoritus.tyyppi, lapset.map(lapsi => lapsi._1)), DBIO.sequence(Seq(sqlu"""INSERT INTO suoritukset(tunniste, parent_tunniste, tyyppi) VALUES(${tunniste.toString}::uuid, ${parentTunniste.get.toString}::uuid, ${suoritus.tyyppi})""") ++ lapset.map(lapsi => lapsi._2)))
+      case None => (SuoritusEntiteetti(tunniste, suoritus.tyyppi, lapset.map(lapsi => lapsi._1)), DBIO.sequence(Seq(sqlu"""INSERT INTO suoritukset(tunniste, versio_tunniste, tyyppi) VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.tyyppi})""") ++ lapset.map(lapsi => lapsi._2)))
 
   def poistaVersionSuoritukset(versio: VersioEntiteetti): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
@@ -105,7 +127,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 s.tunniste,
                 s.parent_tunniste,
-                path || s.tunniste
+                p.path || s.tunniste
               FROM suoritukset s, parents p
               WHERE p.tunniste=s.parent_tunniste
               AND (NOT (s.tunniste = ANY(path))) -- estetään syklit
@@ -113,7 +135,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           SELECT
             suoritukset.tunniste,
             suoritukset.parent_tunniste,
-            suoritukset.koodiarvo,
+            suoritukset.tyyppi,
             versiot.tunniste,
             versiot.oppijanumero,
             to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
@@ -124,7 +146,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           JOIN suoritukset ON parents.tunniste=suoritukset.tunniste
           LEFT JOIN versiot ON suoritukset.versio_tunniste=versiot.tunniste
           ORDER BY path DESC;
-       """).as[(String, String, String, String, String, String, String, String, String)]), DB_TIMEOUT)
+        """).as[(String, String, String, String, String, String, String, String, String)]), DB_TIMEOUT)
       .map((tunniste, parentTunniste, koodiArvo, versioTunniste, oppijaNumero, alku, loppu, tietoLahde, hakuOid) =>
         val suoritusEntiteetti = SuoritusEntiteetti(UUID.fromString(tunniste), koodiArvo, osaSuoritukset.getOrElse(tunniste, Seq.empty))
 

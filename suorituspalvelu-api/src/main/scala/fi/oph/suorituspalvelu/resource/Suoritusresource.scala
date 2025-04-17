@@ -76,7 +76,7 @@ class Suoritusresource {
               Right(suoritus))
           .map(suoritus =>
             val kantaOperaatiot = KantaOperaatiot(database)
-            val versio = kantaOperaatiot.tallennaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}", None)
+            val versio = kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}").get
             val tallennettu = kantaOperaatiot.tallennaSuoritukset(versio, fi.oph.suorituspalvelu.business.Suoritus(suoritus.suoritus.get(), Seq.empty))
             LogContext(oppijaNumero = suoritus.oppijaNumero.get())(() =>
               LOG.info("Tallennettu suoritus")

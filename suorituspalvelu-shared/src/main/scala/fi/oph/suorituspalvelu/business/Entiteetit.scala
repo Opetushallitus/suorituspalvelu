@@ -7,7 +7,7 @@ enum Tietolahde:
   case KOSKI, YTR, VIRTA, VIRKAILIJA
 
 // Suorituksella tarkoituksella ei tunnistetta, näin voidaan käyttää entiteettien luomisessa
-case class Suoritus(koodiArvo: String, osaSuoritukset: Seq[Suoritus])
+case class Suoritus(tyyppi: String, osaSuoritukset: Seq[Suoritus])
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
 
