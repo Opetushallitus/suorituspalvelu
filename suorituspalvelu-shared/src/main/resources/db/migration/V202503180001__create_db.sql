@@ -1,16 +1,15 @@
--- noinspection SqlDialectInspectionForFile
-
--- noinspection SqlDialectInspectionForFile
-
--- noinspection SqlNoDataSourceInspectionForFile
-
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 CREATE TYPE lahde AS ENUM ('KOSKI', 'YTR', 'VIRTA', 'VIRKAILIJA');
 
+-- taulu lisätty jotta voidaa lukita yksittäinen oppija
+CREATE TABLE IF NOT EXISTS oppijat (
+    oppijanumero                VARCHAR PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS versiot (
     tunniste                    UUID PRIMARY KEY,
-    oppijanumero                VARCHAR NOT NULL,
+    oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
     voimassaolo                 TSTZRANGE NOT NULL,
     lahde                       lahde NOT NULL,
     hakuoid                     VARCHAR,
@@ -33,23 +32,23 @@ COMMENT ON COLUMN versiot.virkailija_salli_overlap is 'EXCLUDE rajoite käyttä�
 CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     tunniste                UUID PRIMARY KEY,
     versio_tunniste         UUID REFERENCES versiot (tunniste),
-    koodiarvo               VARCHAR NOT NULL,
+    tyyppi                  VARCHAR NOT NULL,
     alkupvm                 DATE,
     loppupvm                DATE,
     tila                    VARCHAR,
-    UNIQUE (versio_tunniste, koodiarvo)
+    UNIQUE (versio_tunniste, tyyppi)
 );
 
 CREATE TABLE IF NOT EXISTS suoritukset (
     tunniste                UUID PRIMARY KEY,
     parent_tunniste         UUID REFERENCES suoritukset (tunniste),
     versio_tunniste         UUID REFERENCES versiot (tunniste),
-    koodiarvo               VARCHAR NOT NULL,
+    tyyppi                  VARCHAR NOT NULL,
     arvosana                VARCHAR,
     tila                    VARCHAR,
     CHECK ((parent_tunniste IS NULL) != (versio_tunniste IS NULL)),
-    UNIQUE(parent_tunniste, koodiarvo),
-    UNIQUE(versio_tunniste, koodiarvo)
+    UNIQUE(parent_tunniste, tyyppi),
+    UNIQUE(versio_tunniste, tyyppi)
 );
 
 -- halutaanko sallia sama suoritus eri kohdissa hierarkiaa

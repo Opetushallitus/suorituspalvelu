@@ -58,9 +58,8 @@ class IntegraatioTest extends BaseIntegraatioTesti {
     val luoSuoritusResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LuoSuoritusSuccessResponse])
 
     // varmistetaan että kentät tulevat kantaan oikein
-    val tallennettuSuoritus = kantaOperaatiot.haeSuoritus(luoSuoritusResponse.tunniste)
-    val entiteetti = fi.oph.suorituspalvelu.business.SuoritusEntiteetti(
-      luoSuoritusResponse.tunniste,
+    val tallennettuSuoritus = kantaOperaatiot.haeSuoritukset(suoritus.oppijaNumero.get()).values.head.head
+    val entiteetti = fi.oph.suorituspalvelu.business.GenericSuoritus(
       suoritus.suoritus.get(),
       Seq.empty
     )

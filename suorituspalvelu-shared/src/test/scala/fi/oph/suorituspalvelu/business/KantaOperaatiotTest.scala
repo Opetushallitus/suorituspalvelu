@@ -81,6 +81,7 @@ class KantaOperaatiotTest {
             DROP TABLE suoritukset;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
+            DROP TABLE oppijat;
             DROP TYPE lahde;
           """), 5.seconds)
 
@@ -89,17 +90,38 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio
     val data = "{\"attr\": \"value\"}"
-    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, data, None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, data).get
 
     // data palautuu
     Assertions.assertEquals(data, this.kantaOperaatiot.haeData(versio))
+
+  @Test def testNewVersionCreated(): Unit =
+    val OPPIJANUMERO = "1.2.3"
+
+    // tallennetaan versio
+    Assertions.assertTrue(this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value1\"}").isDefined)
+    Assertions.assertTrue(this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value2\"}").isDefined)
+
+
+  @Test def testNoDuplicateVersionsCreatedForKoski(): Unit =
+    val OPPIJANUMERO = "1.2.3"
+
+    // tallennetaan versio
+    val originalData = "{\"attr\": \"value\", \"arr\": [1, 2]}"
+    val originalVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, originalData)
+    Assertions.assertTrue(originalVersio.isDefined)
+
+    // yritetään tallentaa uusi versio samalla datalla
+    val duplicateData = "{\"arr\": [2, 1], \"attr\": \"value\"}"
+    val duplicateVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, duplicateData)
+    Assertions.assertTrue(duplicateVersio.isEmpty)
 
   @Test def testSuoritusRoundtrip(): Unit =
     val OPPIJANUMERO = "2.3.4"
 
     // tallennetaan versio ja suoritukset
-    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
-    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, GenericSuoritus("peruskoulu", Seq(GenericSuoritus("äidinkieli", Seq.empty))))))
 
     // suoritus palautuu kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
@@ -109,13 +131,13 @@ class KantaOperaatiotTest {
     val OPPIJANUMERO = "2.3.4"
 
     // tallennetaan versio
-    val versio = this.kantaOperaatiot.tallennaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}", None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
 
     // tallennetaan suoritukset kerran ja sitten toisen kerran
-    val vanhentuvatSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
-    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("ammattikoulu", Seq(Suoritus("englanti", Seq.empty))))))
+    val vanhentuvatSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, GenericSuoritus("peruskoulu", Seq(GenericSuoritus("äidinkieli", Seq.empty))))))
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, GenericSuoritus("ammattikoulu", Seq(GenericSuoritus("englanti", Seq.empty))))))
 
-    // suoritus palautuu kun haetaan oppijanumerolla
+    // uudet suoritukset palautuvat kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
     Assertions.assertEquals(tallennetutSuoritusEntiteetit, haetutSuoritusEntiteetit)
 }

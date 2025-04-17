@@ -76,13 +76,13 @@ class Suoritusresource {
               Right(suoritus))
           .map(suoritus =>
             val kantaOperaatiot = KantaOperaatiot(database)
-            val versio = kantaOperaatiot.tallennaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}", None)
-            val tallennettu = kantaOperaatiot.tallennaSuoritukset(versio, fi.oph.suorituspalvelu.business.Suoritus(suoritus.suoritus.get(), Seq.empty))
+            val versio = kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}").get
+            val tallennettu = kantaOperaatiot.tallennaSuoritukset(versio, fi.oph.suorituspalvelu.business.GenericSuoritus(suoritus.suoritus.get(), Seq.empty))
             LogContext(oppijaNumero = suoritus.oppijaNumero.get())(() =>
               LOG.info("Tallennettu suoritus")
               val user = AuditLog.getUser(request)
               AuditLog.logCreate(user, Map("oppijaNumero" -> suoritus.oppijaNumero.get()), AuditOperation.LuoSuoritus, tallennettu)
-              ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusSuccessResponse(tallennettu.tunniste))))
+              ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusSuccessResponse(tallennettu.tyyppi))))
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuoSuoritusResponse]]
       catch
         case e: Exception =>
