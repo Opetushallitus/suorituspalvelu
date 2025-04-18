@@ -29,6 +29,34 @@ CREATE TABLE IF NOT EXISTS versiot (
 
 COMMENT ON COLUMN versiot.virkailija_salli_overlap is 'EXCLUDE rajoite käyttää tätä saraketta jotta voidaan sallia päällekkäisiä voimassaoloaikoja virkailijoiden syöttämille tiedoille';
 
+CREATE TABLE IF NOT EXISTS perusopetuksen_oppimaarat (
+    tunniste                UUID PRIMARY KEY,
+    versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
+    vahvistuspaivamaara     DATE
+);
+
+CREATE TABLE IF NOT EXISTS perusopetuksen_oppiaineet (
+    oppimaara_tunniste      UUID REFERENCES perusopetuksen_oppimaarat (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    arvosana                VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
+    tunniste                UUID PRIMARY KEY,
+    versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    vahvistuspaivamaara     DATE
+);
+
+CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
+    tutkinto_tunniste       UUID REFERENCES ammatilliset_tutkinnot (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    arvosana                VARCHAR
+);
+
 CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     tunniste                UUID PRIMARY KEY,
     versio_tunniste         UUID REFERENCES versiot (tunniste),

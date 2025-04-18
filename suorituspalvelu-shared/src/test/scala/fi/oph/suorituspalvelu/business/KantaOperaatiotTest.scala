@@ -2,6 +2,8 @@ package fi.oph.suorituspalvelu.business
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
+import fi.oph.suorituspalvelu.parsing.koski.KoskiParser
+import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.{AfterAll, AfterEach, Assertions, BeforeAll, BeforeEach, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -79,6 +81,10 @@ class KantaOperaatiotTest {
             DROP TABLE spring_session;
             DROP TABLE opiskeluoikeudet;
             DROP TABLE suoritukset;
+            DROP TABLE perusopetuksen_oppiaineet;
+            DROP TABLE perusopetuksen_oppimaarat;
+            DROP TABLE ammatillisen_tutkinnon_osat;
+            DROP TABLE ammatilliset_tutkinnot;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -140,4 +146,22 @@ class KantaOperaatiotTest {
     // uudet suoritukset palautuvat kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
     Assertions.assertEquals(tallennetutSuoritusEntiteetit, haetutSuoritusEntiteetit)
+
+  @Test def testActualSuorituksetRoundtrip(): Unit =
+    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json"))
+    val suoritukset = splitData.map((oppijaOid, data) => {
+      val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
+
+      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
+      val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet)
+      suoritukset.foreach(suoritus => this.kantaOperaatiot.tallennaSuoritukset(versio, suoritus))
+
+      val haetutSuoritukset = this.kantaOperaatiot.haeSuorituksetNew(oppijaOid)
+
+      Assertions.assertEquals(Map(versio -> suoritukset), haetutSuoritukset);
+
+      val s = ""
+
+    }).toSeq
+
 }

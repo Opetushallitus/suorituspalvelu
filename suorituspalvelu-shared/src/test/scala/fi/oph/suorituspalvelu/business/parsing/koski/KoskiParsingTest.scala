@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing
 
-import fi.oph.suorituspalvelu.parsing.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
 import org.junit.jupiter.api.{Assertions, Test}
 
 object KoskiParsing {

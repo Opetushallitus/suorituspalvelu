@@ -82,7 +82,7 @@ class Suoritusresource {
               LOG.info("Tallennettu suoritus")
               val user = AuditLog.getUser(request)
               AuditLog.logCreate(user, Map("oppijaNumero" -> suoritus.oppijaNumero.get()), AuditOperation.LuoSuoritus, tallennettu)
-              ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusSuccessResponse(tallennettu.tyyppi))))
+              ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusSuccessResponse(""))))
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuoSuoritusResponse]]
       catch
         case e: Exception =>
