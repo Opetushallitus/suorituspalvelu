@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.parsing
+package fi.oph.suorituspalvelu.parsing.koski
 
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
@@ -8,13 +8,19 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 import java.io.InputStream
 
+trait VersioituTunniste {
+  def koodiarvo: String
+  def koodistoUri: String
+  def koodistoVersio: Int
+}
+
 case class Nimi(fi: String)
 
-case class Arvosana(koodiarvo: String, koodistoUri: String, nimi: Nimi, koodistoVersio: Int)
+case class Arvosana(koodiarvo: String, koodistoUri: String, nimi: Nimi, koodistoVersio: Int) extends VersioituTunniste
 
 case class Arviointi(arvosana: Arvosana, hyväksytty: Boolean)
 
-case class OsaSuoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, arviointi: Set[Arviointi])
+case class OsaSuoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, arviointi: Option[Set[Arviointi]])
 
 case class SuoritusKieli(koodiarvo: String, koodistoUri: String)
 
@@ -22,13 +28,13 @@ case class Yksikko(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, 
 
 case class Laajuus(arvo: Int, yksikkö: Yksikko)
 
-case class KoulutusModuuliTunniste(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi)
+case class KoulutusModuuliTunniste(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
 
 case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Option[Laajuus])
 
 case class SuoritusTyyppi(koodiarvo: String, koodistoUri: String, nimi: Nimi)
 
-case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, suorituskieli: SuoritusKieli, osasuoritukset: Set[OsaSuoritus])
+case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, suorituskieli: SuoritusKieli, vahvistuspäivä: Option[String], osasuoritukset: Set[OsaSuoritus])
 
 case class OpiskeluoikeusJaksoTila(koodiarvo: String, koodistoUri: String)
 

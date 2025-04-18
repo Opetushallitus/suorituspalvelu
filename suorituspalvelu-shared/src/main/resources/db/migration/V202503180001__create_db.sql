@@ -23,11 +23,39 @@ CREATE TABLE IF NOT EXISTS versiot (
     CHECK ((lahde='KOSKI'       AND data_json IS NOT NULL   AND data_xml IS NULL) OR
            (lahde='YTR'         AND data_json IS NOT NULL   AND data_xml IS NULL) OR
            (lahde='VIRTA'       AND data_json IS NULL       AND data_xml IS NOT NULL) OR
-           (lahde='VIRKAILIJA'  AND data_json IS NULL       AND data_xml IS NULL)),
+           (lahde='VIRKAILIJA'  AND data_json IS NOT NULL   AND data_xml IS NULL)),
     CHECK (lahde='VIRKAILIJA' OR hakuoid IS NULL)
 );
 
 COMMENT ON COLUMN versiot.virkailija_salli_overlap is 'EXCLUDE rajoite käyttää tätä saraketta jotta voidaan sallia päällekkäisiä voimassaoloaikoja virkailijoiden syöttämille tiedoille';
+
+CREATE TABLE IF NOT EXISTS perusopetuksen_oppimaarat (
+    tunniste                UUID PRIMARY KEY,
+    versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
+    vahvistuspaivamaara     DATE
+);
+
+CREATE TABLE IF NOT EXISTS perusopetuksen_oppiaineet (
+    oppimaara_tunniste      UUID REFERENCES perusopetuksen_oppimaarat (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    arvosana                VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
+    tunniste                UUID PRIMARY KEY,
+    versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    vahvistuspaivamaara     DATE
+);
+
+CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
+    tutkinto_tunniste       UUID REFERENCES ammatilliset_tutkinnot (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    arvosana                VARCHAR
+);
 
 CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     tunniste                UUID PRIMARY KEY,
@@ -37,18 +65,6 @@ CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     loppupvm                DATE,
     tila                    VARCHAR,
     UNIQUE (versio_tunniste, tyyppi)
-);
-
-CREATE TABLE IF NOT EXISTS suoritukset (
-    tunniste                UUID PRIMARY KEY,
-    parent_tunniste         UUID REFERENCES suoritukset (tunniste),
-    versio_tunniste         UUID REFERENCES versiot (tunniste),
-    tyyppi                  VARCHAR NOT NULL,
-    arvosana                VARCHAR,
-    tila                    VARCHAR,
-    CHECK ((parent_tunniste IS NULL) != (versio_tunniste IS NULL)),
-    UNIQUE(parent_tunniste, tyyppi),
-    UNIQUE(versio_tunniste, tyyppi)
 );
 
 -- halutaanko sallia sama suoritus eri kohdissa hierarkiaa
