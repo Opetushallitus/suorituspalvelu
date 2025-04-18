@@ -121,7 +121,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
-    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, GenericSuoritus("peruskoulu", Seq(GenericSuoritus("äidinkieli", Seq.empty))))))
 
     // suoritus palautuu kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
@@ -134,8 +134,8 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
 
     // tallennetaan suoritukset kerran ja sitten toisen kerran
-    val vanhentuvatSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("peruskoulu", Seq(Suoritus("äidinkieli", Seq.empty))))))
-    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, Suoritus("ammattikoulu", Seq(Suoritus("englanti", Seq.empty))))))
+    val vanhentuvatSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, GenericSuoritus("peruskoulu", Seq(GenericSuoritus("äidinkieli", Seq.empty))))))
+    val tallennetutSuoritusEntiteetit = Map(versio -> Seq(this.kantaOperaatiot.tallennaSuoritukset(versio, GenericSuoritus("ammattikoulu", Seq(GenericSuoritus("englanti", Seq.empty))))))
 
     // uudet suoritukset palautuvat kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
