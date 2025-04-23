@@ -13,6 +13,7 @@ import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import slick.jdbc.PostgresProfile.api.*
 
+import java.time.Instant
 import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
@@ -80,10 +81,14 @@ class KantaOperaatiotTest {
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
             DROP TABLE opiskeluoikeudet;
+            DROP TABLE perusopetuksen_vuosiluokat;
+            DROP TABLE nuorten_perusopetuksen_oppiaineen_oppimaarat;
             DROP TABLE perusopetuksen_oppiaineet;
             DROP TABLE perusopetuksen_oppimaarat;
             DROP TABLE ammatillisen_tutkinnon_osat;
             DROP TABLE ammatilliset_tutkinnot;
+            DROP TABLE tuvat;
+            DROP TABLE telmat;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -149,17 +154,35 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Map(versio -> Set(uudetSuoritukset)), haetutSuoritusEntiteetit)
 
   @Test def testExampleDataSuorituksetRoundtrip(): Unit =
+    Seq("/1_2_246_562_24_40483869857.json", "/1_2_246_562_24_30563266636.json").foreach(fileName => {
+      val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
+      val suoritukset = splitData.map((oppijaOid, data) => {
+        val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
+
+        val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
+        val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
+        this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset)
+
+        val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
+
+        Assertions.assertEquals(Map(versio -> suoritukset), haetutSuoritukset);
+      }).toSeq
+    })
+
+
+  @Test def testExampleDataSuorituksetRoundtripPerformance(): Unit =
     val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json"))
-    val suoritukset = splitData.map((oppijaOid, data) => {
-      val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
+    val suoritukset = splitData.map((oppijaOid, data) => (oppijaOid, KoskiToSuoritusConverter.toSuoritus(KoskiParser.parseKoskiData(data)).toSet)).toSeq.head
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritukset._1, KOSKI, "{\"attr\": \"value\"}").get
+    this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset._2)
 
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
-      this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset)
+    val start = Instant.now()
 
-      val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
+    (1 to 100).foreach(i => {
+      val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(suoritukset._1)
+    })
 
-      Assertions.assertEquals(Map(versio -> suoritukset), haetutSuoritukset);
-    }).toSeq
+    val duration = Instant.now().toEpochMilli - start.toEpochMilli
+    LOG.info("Duration: " + duration + "ms")
 
 }

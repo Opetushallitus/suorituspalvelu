@@ -34,7 +34,7 @@ case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Option[La
 
 case class SuoritusTyyppi(koodiarvo: String, koodistoUri: String, nimi: Nimi)
 
-case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, suorituskieli: SuoritusKieli, vahvistuspäivä: Option[String], osasuoritukset: Set[OsaSuoritus])
+case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, suorituskieli: SuoritusKieli, vahvistuspäivä: Option[String], osasuoritukset: Option[Set[OsaSuoritus]], arviointi: Option[Set[Arviointi]])
 
 case class OpiskeluoikeusJaksoTila(koodiarvo: String, koodistoUri: String)
 
