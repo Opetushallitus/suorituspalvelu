@@ -12,22 +12,14 @@ CREATE TABLE IF NOT EXISTS versiot (
     oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
     voimassaolo                 TSTZRANGE NOT NULL,
     lahde                       lahde NOT NULL,
-    hakuoid                     VARCHAR,
     data_json                   JSONB,
     data_xml                    XML,
-    virkailija_salli_overlap    VARCHAR GENERATED ALWAYS AS (CASE
-                                       WHEN lahde='VIRKAILIJA' THEN tunniste::text
-                                       ELSE oppijanumero
-                                     END) STORED,
-    EXCLUDE USING gist (virkailija_salli_overlap WITH =, oppijanumero WITH =, lahde WITH =, voimassaolo WITH &&),
+    EXCLUDE USING gist (oppijanumero WITH =, lahde WITH =, voimassaolo WITH &&),
     CHECK ((lahde='KOSKI'       AND data_json IS NOT NULL   AND data_xml IS NULL) OR
            (lahde='YTR'         AND data_json IS NOT NULL   AND data_xml IS NULL) OR
            (lahde='VIRTA'       AND data_json IS NULL       AND data_xml IS NOT NULL) OR
-           (lahde='VIRKAILIJA'  AND data_json IS NOT NULL   AND data_xml IS NULL)),
-    CHECK (lahde='VIRKAILIJA' OR hakuoid IS NULL)
+           (lahde='VIRKAILIJA'  AND data_json IS NOT NULL   AND data_xml IS NULL))
 );
-
-COMMENT ON COLUMN versiot.virkailija_salli_overlap is 'EXCLUDE rajoite käyttää tätä saraketta jotta voidaan sallia päällekkäisiä voimassaoloaikoja virkailijoiden syöttämille tiedoille';
 
 CREATE TABLE IF NOT EXISTS tuvat (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
@@ -111,19 +103,3 @@ CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     tila                    VARCHAR,
     UNIQUE (versio_tunniste, tyyppi)
 );
-
--- halutaanko sallia sama suoritus eri kohdissa hierarkiaa
--- haluataanko sallia useampi virkailijan tekemä korjaussetti (esim. eri voimassaoloajat, hakuspesifi ja yleinen jne.)
--- miten mätchätään virkailijan tekemä korjaus allaolevaan suoritukseen? Pelkällä koodiarvolla vai koodiarvolla ja paikalla hierarkiassa?
--- käytetäänkö samaa vai eri tietomallia lähdejärjestelmistä tuleville ja virkailijan syöttämille suorituksille?
-
--- suorituksiin oppilaitos
-
--- toimiiko yksi malli kaikille suorituksille?
-
--- ilmeisesti kannattaisi esittää suoritukset ja opiskeluoikeudet erikseen?
-
--- miten tunnistetaan ja merkataan että hakija ei enää ole aktiivinen
-
-
--- kun päivitetään lähdejärjestelmästä tuleva suoritus, poistetaan ensin järjestelmässä olevat suoritukset/opiskeluoikeudet
