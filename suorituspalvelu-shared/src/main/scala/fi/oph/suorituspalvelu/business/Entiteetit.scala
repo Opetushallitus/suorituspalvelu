@@ -10,9 +10,11 @@ sealed trait Suoritus
 
 case class Arvosana(arvosana: String, koodi: String)
 
-case class AmmatillinenTutkinto(nimi: String, koodi: String, vahvistusPaivamaara: Option[LocalDate], osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus
+case class AmmatillinenTutkinto(nimi: String, koodi: String, koodisto: String, tila: String, tilaKoodisto: String, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: String, suoritustapaKoodisto: String, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus
 
-case class AmmatillisenTutkinnonOsa(nimi: String, koodi: String, arvosana: Option[String])
+case class AmmatillisenTutkinnonOsaAlue(nimi: String, koodi: String, arvosana: Option[String], arvosanaAsteikko: Option[String], laajuus: Int, laajuusAsteikko: String)
+
+case class AmmatillisenTutkinnonOsa(nimi: String, koodi: String, yto: Boolean, arvosana: Option[String], arvosanaAsteikko: Option[String], laajuus: Int, laajuusAsteikko: String, osaAlueet: Set[AmmatillisenTutkinnonOsaAlue])
 
 case class Tuva(koodi: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus
 

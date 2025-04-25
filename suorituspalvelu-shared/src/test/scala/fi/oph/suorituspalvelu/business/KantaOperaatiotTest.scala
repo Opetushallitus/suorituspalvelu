@@ -85,6 +85,7 @@ class KantaOperaatiotTest {
             DROP TABLE nuorten_perusopetuksen_oppiaineen_oppimaarat;
             DROP TABLE perusopetuksen_oppiaineet;
             DROP TABLE perusopetuksen_oppimaarat;
+            DROP TABLE ammatillisen_tutkinnon_osaalueet;
             DROP TABLE ammatillisen_tutkinnon_osat;
             DROP TABLE ammatilliset_tutkinnot;
             DROP TABLE tuvat;

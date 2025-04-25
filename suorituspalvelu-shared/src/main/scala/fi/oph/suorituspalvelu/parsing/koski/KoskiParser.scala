@@ -20,27 +20,29 @@ case class Arvosana(koodiarvo: String, koodistoUri: String, nimi: Nimi, koodisto
 
 case class Arviointi(arvosana: Arvosana, hyväksytty: Boolean)
 
-case class OsaSuoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, arviointi: Option[Set[Arviointi]])
+case class Laajuus(arvo: Int, yksikkö: Yksikko)
+
+case class OsaSuoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, arviointi: Option[Set[Arviointi]], osasuoritukset: Option[Set[OsaSuoritus]])
 
 case class SuoritusKieli(koodiarvo: String, koodistoUri: String)
 
-case class Yksikko(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi)
+case class SuoritusTapa(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
 
-case class Laajuus(arvo: Int, yksikkö: Yksikko)
+case class Yksikko(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
 
 case class KoulutusModuuliTunniste(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
 
-case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Option[Laajuus])
+case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Laajuus)
 
 case class SuoritusTyyppi(koodiarvo: String, koodistoUri: String, nimi: Nimi)
 
-case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, suorituskieli: SuoritusKieli, vahvistuspäivä: Option[String], osasuoritukset: Option[Set[OsaSuoritus]], arviointi: Option[Set[Arviointi]])
+case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: KoulutusModuuli, suorituskieli: SuoritusKieli, vahvistuspäivä: Option[String], osasuoritukset: Option[Set[OsaSuoritus]], arviointi: Option[Set[Arviointi]], keskiarvo: Option[BigDecimal], suoritustapa: Option[SuoritusTapa])
 
-case class OpiskeluoikeusJaksoTila(koodiarvo: String, koodistoUri: String)
+case class OpiskeluoikeusJaksoTila(koodiarvo: String, koodistoUri: String, koodistoVersio: Int) extends VersioituTunniste
 
 case class OpiskeluoikeusJakso(tila: OpiskeluoikeusJaksoTila)
 
-case class OpiskeluoikeusTila(opiskeluoikeusjaksot: Set[OpiskeluoikeusJakso])
+case class OpiskeluoikeusTila(opiskeluoikeusjaksot: List[OpiskeluoikeusJakso])
 
 case class OpiskeluoikeusTyyppi(koodiarvo: String, koodistoUri: String)
 

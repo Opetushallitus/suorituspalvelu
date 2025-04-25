@@ -31,7 +31,7 @@ object KantaOperaatiot {
   }
 
   enum SuoritusTyypit:
-    case AMMATILLINEN_TUTKINTO, AMMATILLISEN_TUTKINNON_OSA, PERUSOPETUKSEN_OPPIMAARA,
+    case AMMATILLINEN_TUTKINTO, AMMATILLISEN_TUTKINNON_OSA, AMMATILLISEN_TUTKINNON_OSAALUE, PERUSOPETUKSEN_OPPIMAARA,
     NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA, PERUSOPETUKSEN_VUOSILUOKKA, PERUSOPETUKSEN_OPPIAINE, TUVA, TELMA
 
 
@@ -113,20 +113,30 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
        """,
       sqlu"""
           DELETE FROM tuvat USING versiot WHERE versiot.tunniste=tuvat.versio_tunniste AND versiot.tunniste=${versio.tunniste.toString}::uuid;
+       """,
+      sqlu"""
+          DELETE FROM telmat USING versiot WHERE versiot.tunniste=telmat.versio_tunniste AND versiot.tunniste=${versio.tunniste.toString}::uuid;
        """
     ))
 
-  def getAmmatillisenTutkinnonOsaInserts(parentId: UUID, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
+  def getAmmatillisenTutkinnonOsaAlueInserts(parentId: UUID, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
-      sqlu"""INSERT INTO ammatillisen_tutkinnon_osat(tutkinto_tunniste, nimi, koodi, arvosana)
-            VALUES(${parentId.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
+      sqlu"""INSERT INTO ammatillisen_tutkinnon_osaalueet(osa_tunniste, nimi, koodi, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
+            VALUES(${parentId.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko}, ${suoritus.laajuus}, ${suoritus.laajuusAsteikko})"""))
+
+  def getAmmatillisenTutkinnonOsaInserts(parentId: UUID, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
+    val tunniste = getUUID()
+    val lapset = suoritus.osaAlueet.map(osaAlue => getAmmatillisenTutkinnonOsaAlueInserts(tunniste, osaAlue))
+    DBIO.sequence(Seq(
+      sqlu"""INSERT INTO ammatillisen_tutkinnon_osat(tunniste, tutkinto_tunniste, nimi, koodi, yto, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
+            VALUES(${tunniste.toString}::uuid, ${parentId.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.yto}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko},${suoritus.laajuus}, ${suoritus.laajuusAsteikko})""") ++ lapset)
 
   def getAmmatillinenTutkintoInserts(versio: VersioEntiteetti, suoritus: AmmatillinenTutkinto): DBIOAction[_, NoStream, Effect] =
     val tunniste = getUUID()
     val lapset = suoritus.osat.map(osa => getAmmatillisenTutkinnonOsaInserts(tunniste, osa))
     DBIO.sequence(Seq(
-      sqlu"""INSERT INTO ammatilliset_tutkinnot(tunniste, versio_tunniste, nimi, koodi, vahvistuspaivamaara)
-            VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date)""") ++ lapset)
+      sqlu"""INSERT INTO ammatilliset_tutkinnot(tunniste, versio_tunniste, nimi, koodi, koodisto, tila, tilakoodisto, suoritustapa, suoritustapakoodisto, keskiarvo, vahvistuspaivamaara)
+            VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.koodisto}, ${suoritus.tila}, ${suoritus.tilaKoodisto}, ${suoritus.suoritustapa}, ${suoritus.suoritustapaKoodisto}, ${suoritus.keskiarvo}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date)""") ++ lapset)
 
   def getPerusopetuksenVuosiluokkaInserts(versio: VersioEntiteetti, suoritus: PerusopetuksenVuosiluokka): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
@@ -176,6 +186,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(DBIO.sequence(Seq(poistaSuoritukset, DBIO.sequence(inserts))).transactionally), DB_TIMEOUT)
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Suoritus]] =
+    var ammatillisenTutkinnonOsaAlueet: Map[String, Seq[AmmatillisenTutkinnonOsaAlue]] = Map.empty
     var ammatillisenTutkinnonOsat: Map[String, Seq[AmmatillisenTutkinnonOsa]] = Map.empty
     var perusopetuksenOppiaineet: Map[String, Seq[PerusopetuksenOppiaine]] = Map.empty
     Await.result(db.run(
@@ -202,7 +213,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${AMMATILLINEN_TUTKINTO.toString} AS tyyppi,
                 ammatilliset_tutkinnot.tunniste AS tunniste,
                 null::uuid AS parent_tunniste,
-                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'vahvistusPaivamaara', vahvistuspaivamaara)::text AS data,
+                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'koodisto', koodisto, 'tila', tila,'tilaKoodisto', tilakoodisto, 'vahvistusPaivamaara', vahvistuspaivamaara, 'keskiarvo', keskiarvo, 'suoritustapa', suoritustapa,'suoritustapaKoodisto', suoritustapakoodisto)::text AS data,
                 w_versiot.versio AS versio
               FROM ammatilliset_tutkinnot
               INNER JOIN w_versiot ON w_versiot.tunniste=ammatilliset_tutkinnot.versio_tunniste),
@@ -210,12 +221,22 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 1 AS priority,
                 ${AMMATILLISEN_TUTKINNON_OSA.toString} AS tyyppi,
-                null::uuid AS tunniste,
+                ammatillisen_tutkinnon_osat.tunniste AS tunniste,
                 tutkinto_tunniste AS parent_tunniste,
-                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana)::text AS data,
+                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'yto', yto, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
                 null::text AS versio
               FROM ammatillisen_tutkinnon_osat
               INNER JOIN w_ammatilliset_tutkinnot ON tutkinto_tunniste=w_ammatilliset_tutkinnot.tunniste),
+            w_ammatillisen_tutkinnon_osaalueet AS (
+              SELECT
+                1 AS priority,
+                ${AMMATILLISEN_TUTKINNON_OSAALUE.toString} AS tyyppi,
+                null::uuid AS tunniste,
+                osa_tunniste AS parent_tunniste,
+                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
+                null::text AS versio
+              FROM ammatillisen_tutkinnon_osaalueet
+              INNER JOIN w_ammatillisen_tutkinnon_osat ON osa_tunniste=w_ammatillisen_tutkinnon_osat.tunniste),
             w_perusopetuksen_oppimaarat AS (
               SELECT
                 2 AS priority,
@@ -276,6 +297,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 w_versiot.versio AS versio
               FROM telmat
               INNER JOIN w_versiot ON w_versiot.tunniste=telmat.versio_tunniste)
+          SELECT * FROM w_ammatillisen_tutkinnon_osaalueet
+          UNION ALL
           SELECT * FROM w_ammatillisen_tutkinnon_osat
           UNION ALL
           SELECT * FROM w_perusopetuksen_oppiaineet
@@ -299,8 +322,15 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           case AMMATILLINEN_TUTKINTO =>
             val tutkinto = MAPPER.readValue(data, classOf[AmmatillinenTutkinto]).copy(osat = ammatillisenTutkinnonOsat.getOrElse(tunniste, Seq.empty).toSet)
             Some(versio.get -> tutkinto)
+          case AMMATILLISEN_TUTKINNON_OSAALUE =>
+            val osa = MAPPER.readValue(data, classOf[AmmatillisenTutkinnonOsaAlue])
+            ammatillisenTutkinnonOsaAlueet = ammatillisenTutkinnonOsaAlueet.updatedWith(parentTunniste)(osat => osat match
+              case Some(osat) => Some(osa +: osat)
+              case None => Some(Seq(osa))
+            )
+            None
           case AMMATILLISEN_TUTKINNON_OSA =>
-            val osa = MAPPER.readValue(data, classOf[AmmatillisenTutkinnonOsa])
+            val osa = MAPPER.readValue(data, classOf[AmmatillisenTutkinnonOsa]).copy(osaAlueet = ammatillisenTutkinnonOsaAlueet.getOrElse(tunniste, Seq.empty).toSet)
             ammatillisenTutkinnonOsat = ammatillisenTutkinnonOsat.updatedWith(parentTunniste)(osat => osat match
               case Some(osat) => Some(osa +: osat)
               case None => Some(Seq(osa))

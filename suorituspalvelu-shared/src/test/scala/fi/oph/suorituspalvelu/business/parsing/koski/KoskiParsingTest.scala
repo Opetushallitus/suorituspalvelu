@@ -10,20 +10,14 @@ object KoskiParsing {
 class KoskiParsingTest {
 
   @Test def testKoskiParsingAndConversion(): Unit =
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json"))
-
-    val suoritukset = splitData.map((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet)
-    }).toSeq
-
-  @Test def testKoskiParsingAndConversion2(): Unit =
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_30563266636.json"))
-
-    val suoritukset = splitData.map((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet)
-      val s = ""
-    }).toSeq
-
+    Seq(
+      "/1_2_246_562_24_40483869857.json",
+      "/1_2_246_562_24_30563266636.json"
+    ).foreach(fileName => {
+      val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
+      splitData.foreach((oppijaOid, data) => {
+        val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
+        val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet)
+      })
+    })
 }

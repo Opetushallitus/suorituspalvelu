@@ -71,14 +71,35 @@ CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
+    koodisto                VARCHAR NOT NULL,
+    tila                    VARCHAR NOT NULL,
+    tilakoodisto            VARCHAR NOT NULL,
+    suoritustapa            VARCHAR NOT NULL,
+    suoritustapakoodisto    VARCHAR NOT NULL,
+    keskiarvo               DECIMAL(3, 1),
     vahvistuspaivamaara     DATE
 );
 
 CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
+    tunniste                UUID PRIMARY KEY,
     tutkinto_tunniste       UUID REFERENCES ammatilliset_tutkinnot (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
-    arvosana                VARCHAR
+    yto                     BOOLEAN NOT NULL,
+    arvosana                VARCHAR,
+    arvosanaasteikko        VARCHAR,
+    laajuus                 VARCHAR NOT NULL,
+    laajuusasteikko         VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
+    osa_tunniste            UUID REFERENCES ammatillisen_tutkinnon_osat (tunniste) ON DELETE CASCADE,
+    nimi                    VARCHAR NOT NULL,
+    koodi                   VARCHAR NOT NULL,
+    arvosana                VARCHAR,
+    arvosanaasteikko        VARCHAR,
+    laajuus                 VARCHAR NOT NULL,
+    laajuusasteikko         VARCHAR NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS opiskeluoikeudet (

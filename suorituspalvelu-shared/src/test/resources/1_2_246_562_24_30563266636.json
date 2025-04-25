@@ -1421,6 +1421,19 @@
               "koodistoUri": "kieli",
               "koodistoVersio": 1
             },
+            "suoritustapa" : {
+              "koodiarvo" : "reformi",
+              "nimi" : {
+                "fi" : "Reformin mukainen näyttö",
+                "sv" : "Reform",
+                "en" : "Reform"
+              },
+              "lyhytNimi" : {
+                "fi" : "Reformi"
+              },
+              "koodistoUri" : "ammatillisentutkinnonsuoritustapa",
+              "koodistoVersio" : 1
+            },
             "osasuoritukset": []
           }
         ]
