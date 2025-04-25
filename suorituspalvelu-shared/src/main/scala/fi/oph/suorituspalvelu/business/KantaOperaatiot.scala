@@ -68,7 +68,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       None
     else
       val tunniste = getUUID()
-      val timestamp = Instant.now
+      val timestamp = Instant.ofEpochMilli(Instant.now().toEpochMilli)
       val insertOppijaAction = sqlu"INSERT INTO oppijat(oppijanumero) VALUES (${oppijaNumero}) ON CONFLICT DO NOTHING"
       val lockOppijaAction = sql"""SELECT 1 FROM oppijat WHERE oppijanumero=${oppijaNumero} FOR UPDATE"""
       val discontinueOldVersionAction = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)"""
