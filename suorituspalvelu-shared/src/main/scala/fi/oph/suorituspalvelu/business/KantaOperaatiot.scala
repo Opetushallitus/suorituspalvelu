@@ -209,7 +209,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             ),
             w_ammatilliset_tutkinnot AS (
               SELECT
-                2 AS priority,
+                1 AS priority,
                 ${AMMATILLINEN_TUTKINTO.toString} AS tyyppi,
                 ammatilliset_tutkinnot.tunniste AS tunniste,
                 null::uuid AS parent_tunniste,
@@ -219,7 +219,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_versiot ON w_versiot.tunniste=ammatilliset_tutkinnot.versio_tunniste),
             w_ammatillisen_tutkinnon_osat AS (
               SELECT
-                1 AS priority,
+                2 AS priority,
                 ${AMMATILLISEN_TUTKINNON_OSA.toString} AS tyyppi,
                 ammatillisen_tutkinnon_osat.tunniste AS tunniste,
                 tutkinto_tunniste AS parent_tunniste,
@@ -229,7 +229,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_ammatilliset_tutkinnot ON tutkinto_tunniste=w_ammatilliset_tutkinnot.tunniste),
             w_ammatillisen_tutkinnon_osaalueet AS (
               SELECT
-                1 AS priority,
+                3 AS priority,
                 ${AMMATILLISEN_TUTKINNON_OSAALUE.toString} AS tyyppi,
                 null::uuid AS tunniste,
                 osa_tunniste AS parent_tunniste,
@@ -239,7 +239,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_ammatillisen_tutkinnon_osat ON osa_tunniste=w_ammatillisen_tutkinnon_osat.tunniste),
             w_perusopetuksen_oppimaarat AS (
               SELECT
-                2 AS priority,
+                4 AS priority,
                 ${PERUSOPETUKSEN_OPPIMAARA.toString} AS tyyppi,
                 perusopetuksen_oppimaarat.tunniste AS tunniste,
                 null::uuid AS parent_tunniste,
@@ -249,7 +249,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_oppimaarat.versio_tunniste),
             w_nuorten_perusopetuksen_oppiaineen_oppimaarat AS (
               SELECT
-                1 AS priority,
+                5 AS priority,
                 ${NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA.toString} AS tyyppi,
                 null::uuid  AS tunniste,
                 null::uuid AS parent_tunniste,
@@ -259,7 +259,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_versiot ON w_versiot.tunniste=nuorten_perusopetuksen_oppiaineen_oppimaarat.versio_tunniste),
             w_perusopetuksen_vuosiluokat AS (
               SELECT
-                1 AS priority,
+                6 AS priority,
                 ${PERUSOPETUKSEN_VUOSILUOKKA.toString} AS tyyppi,
                 null::uuid  AS tunniste,
                 null::uuid AS parent_tunniste,
@@ -269,7 +269,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_vuosiluokat.versio_tunniste),
             w_perusopetuksen_oppiaineet AS (
               SELECT
-                1 AS priority,
+                7 AS priority,
                 ${PERUSOPETUKSEN_OPPIAINE.toString} AS tyyppi,
                 null::uuid AS tunniste,
                 oppimaara_tunniste AS parent_tunniste,
@@ -279,7 +279,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               JOIN w_perusopetuksen_oppimaarat ON oppimaara_tunniste=w_perusopetuksen_oppimaarat.tunniste),
             w_tuvat AS (
               SELECT
-                1 AS priority,
+                8 AS priority,
                 ${TUVA.toString} AS tyyppi,
                 null::uuid AS tunniste,
                 null::uuid AS parent_tunniste,
@@ -289,7 +289,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               INNER JOIN w_versiot ON w_versiot.tunniste=tuvat.versio_tunniste),
             w_telmat AS (
               SELECT
-                1 AS priority,
+                9 AS priority,
                 ${TELMA.toString} AS tyyppi,
                 null::uuid AS tunniste,
                 null::uuid AS parent_tunniste,
@@ -314,7 +314,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           SELECT * FROM w_tuvat
           UNION ALL
           SELECT * FROM w_telmat
-          ORDER BY priority ASC;
+          ORDER BY priority DESC;
         """).as[(Int, String, String, String, String, String)]), DB_TIMEOUT)
       .map((_, tyyppi, tunniste, parentTunniste, data, versioData) =>
         val versio = Option.apply(versioData).map(data => MAPPER.readValue(data, classOf[VersioEntiteetti]))
