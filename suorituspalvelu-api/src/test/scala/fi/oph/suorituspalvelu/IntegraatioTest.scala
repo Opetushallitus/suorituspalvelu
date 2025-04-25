@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
+import fi.oph.suorituspalvelu.business.{PerusopetuksenOppiaine, PerusopetuksenOppimaara}
 import fi.oph.suorituspalvelu.resource.{ApiConstants, LuoSuoritusFailureResponse, LuoSuoritusSuccessResponse, Suoritus}
 import fi.oph.suorituspalvelu.validation.SuoritusValidator
 import org.junit.jupiter.api.*
@@ -58,13 +59,9 @@ class IntegraatioTest extends BaseIntegraatioTesti {
     val luoSuoritusResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LuoSuoritusSuccessResponse])
 
     // varmistetaan että kentät tulevat kantaan oikein
-    val tallennettuSuoritus = kantaOperaatiot.haeSuoritus(luoSuoritusResponse.tunniste)
-    val entiteetti = fi.oph.suorituspalvelu.business.Suoritus(
-      luoSuoritusResponse.tunniste,
-      suoritus.oppijaNumero.get
-    )
-    Assertions.assertEquals(Some(entiteetti), tallennettuSuoritus)
-
+    val tallennettuSuoritus = kantaOperaatiot.haeSuoritukset(suoritus.oppijaNumero.get()).values.head.head
+    val entiteetti = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine(suoritus.suoritus.get, "koodi", "10")))
+    Assertions.assertEquals(entiteetti, tallennettuSuoritus)
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testLuoSuoritusMalformedJson(): Unit =

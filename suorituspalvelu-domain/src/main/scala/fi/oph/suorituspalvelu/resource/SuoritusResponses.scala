@@ -12,7 +12,7 @@ class LuoSuoritusResponse {}
 @Schema(name = "LuoSuoritusSuccessResponse")
 case class LuoSuoritusSuccessResponse(
                                           @(Schema@field)(example = ESIMERKKI_SUORITUSTUNNISTE)
-                                          @BeanProperty tunniste: UUID) extends LuoSuoritusResponse {
+                                          @BeanProperty tunniste: String) extends LuoSuoritusResponse {
 
   /**
    * Tyhjä konstruktori Jacksonia varten

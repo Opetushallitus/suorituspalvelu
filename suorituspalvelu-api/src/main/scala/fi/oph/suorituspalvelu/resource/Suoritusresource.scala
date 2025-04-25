@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.KantaOperaatiot
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, PerusopetuksenOppiaine, PerusopetuksenOppimaara}
+import fi.oph.suorituspalvelu.business.Tietolahde.VIRKAILIJA
 import fi.oph.suorituspalvelu.resource.ApiConstants.{SUORITUKSEN_LUONTI_EPAONNISTUI, SUORITUS_PATH, SUORITUS_RESPONSE_403_DESCRIPTION, VIRHEELLINEN_SUORITUS_JSON_VIRHE}
 import fi.oph.suorituspalvelu.util.{LogContext, SecurityUtil}
 import fi.oph.suorituspalvelu.validation.SuoritusValidator
@@ -74,12 +75,14 @@ class Suoritusresource {
             else
               Right(suoritus))
           .map(suoritus =>
-            val tallennettu = KantaOperaatiot(database).tallennaSuoritus(suoritus.oppijaNumero.get)
-            LogContext(oppijaNumero = tallennettu.tunniste.toString)(() =>
+            val kantaOperaatiot = KantaOperaatiot(database)
+            val versio = kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}").get
+            kantaOperaatiot.tallennaSuoritukset(versio, Set(PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine(suoritus.suoritus.get, "koodi", "10")))))
+            LogContext(oppijaNumero = suoritus.oppijaNumero.get())(() =>
               LOG.info("Tallennettu suoritus")
               val user = AuditLog.getUser(request)
-              AuditLog.logCreate(user, Map("oppijaNUmero" -> tallennettu.oppijaNumero), AuditOperation.LuoSuoritus, tallennettu)
-              ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusSuccessResponse(tallennettu.tunniste))))
+              AuditLog.logCreate(user, Map("oppijaNumero" -> suoritus.oppijaNumero.get()), AuditOperation.LuoSuoritus, suoritus)
+              ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusSuccessResponse(""))))
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuoSuoritusResponse]]
       catch
         case e: Exception =>
