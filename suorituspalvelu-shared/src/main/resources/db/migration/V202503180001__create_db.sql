@@ -26,23 +26,27 @@ CREATE TABLE IF NOT EXISTS tuvat (
     koodi                   VARCHAR NOT NULL,
     vahvistuspaivamaara     DATE
 );
+CREATE INDEX tuvat_versio_tunniste_idx ON tuvat (versio_tunniste);
 
 CREATE TABLE IF NOT EXISTS telmat (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
     koodi                   VARCHAR NOT NULL
 );
+CREATE INDEX telmat_versio_tunniste_idx ON telmat (versio_tunniste);
 
 CREATE TABLE IF NOT EXISTS perusopetuksen_vuosiluokat (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL
 );
+CREATE INDEX perusopetuksen_vuosiluokat_versio_tunniste_idx ON perusopetuksen_vuosiluokat (versio_tunniste);
 
 CREATE TABLE IF NOT EXISTS perusopetuksen_oppimaarat (
     tunniste                UUID PRIMARY KEY,
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
     vahvistuspaivamaara     DATE
 );
+CREATE INDEX perusopetuksen_oppimaarat_versio_tunniste_idx ON perusopetuksen_oppimaarat (versio_tunniste);
 
 CREATE TABLE IF NOT EXISTS perusopetuksen_oppiaineet (
     oppimaara_tunniste      UUID REFERENCES perusopetuksen_oppimaarat (tunniste) ON DELETE CASCADE,
@@ -50,6 +54,7 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_oppiaineet (
     koodi                   VARCHAR NOT NULL,
     arvosana                VARCHAR NOT NULL
 );
+CREATE INDEX perusopetuksen_oppiaineet_oppimaara_tunniste_idx ON perusopetuksen_oppiaineet (oppimaara_tunniste);
 
 CREATE TABLE IF NOT EXISTS nuorten_perusopetuksen_oppiaineen_oppimaarat (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
@@ -57,6 +62,7 @@ CREATE TABLE IF NOT EXISTS nuorten_perusopetuksen_oppiaineen_oppimaarat (
     koodi                   VARCHAR NOT NULL,
     arvosana                VARCHAR NOT NULL
 );
+CREATE INDEX nuorten_perusopetuksen_oppiaineen_oppimaarat_versio_tunniste_idx ON nuorten_perusopetuksen_oppiaineen_oppimaarat (versio_tunniste);
 
 CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
     tunniste                UUID PRIMARY KEY,
@@ -71,6 +77,7 @@ CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
     keskiarvo               DECIMAL(3, 1),
     vahvistuspaivamaara     DATE
 );
+CREATE INDEX ammatilliset_tutkinnot_versio_tunniste_idx ON ammatilliset_tutkinnot (versio_tunniste);
 
 CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
     tunniste                UUID PRIMARY KEY,
@@ -83,6 +90,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
     laajuus                 VARCHAR NOT NULL,
     laajuusasteikko         VARCHAR NOT NULL
 );
+CREATE INDEX ammatillisen_tutkinnon_osat_tutkinto_tunniste_idx ON ammatillisen_tutkinnon_osat (tutkinto_tunniste);
 
 CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
     osa_tunniste            UUID REFERENCES ammatillisen_tutkinnon_osat (tunniste) ON DELETE CASCADE,
@@ -93,6 +101,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
     laajuus                 VARCHAR NOT NULL,
     laajuusasteikko         VARCHAR NOT NULL
 );
+CREATE INDEX ammatillisen_tutkinnon_osaalueet_osa_tunniste_idx ON ammatillisen_tutkinnon_osaalueet (osa_tunniste);
 
 CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     tunniste                UUID PRIMARY KEY,
@@ -103,3 +112,4 @@ CREATE TABLE IF NOT EXISTS opiskeluoikeudet (
     tila                    VARCHAR,
     UNIQUE (versio_tunniste, tyyppi)
 );
+CREATE INDEX opiskeluoikeudet_versio_tunniste_idx ON opiskeluoikeudet (versio_tunniste);
