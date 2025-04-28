@@ -10,6 +10,7 @@ import org.skyscreamer.jsonassert.{JSONCompare, JSONCompareMode}
 import slick.jdbc.{JdbcBackend, SQLActionBuilder}
 import slick.jdbc.PostgresProfile.api.*
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import org.slf4j.LoggerFactory
@@ -119,24 +120,22 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
        """
     ))
 
-  def getAmmatillisenTutkinnonOsaAlueInserts(parentId: UUID, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
+  def getAmmatillisenTutkinnonOsaAlueInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
       sqlu"""INSERT INTO ammatillisen_tutkinnon_osaalueet(osa_tunniste, nimi, koodi, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
-            VALUES(${parentId.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko}, ${suoritus.laajuus}, ${suoritus.laajuusAsteikko})"""))
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko}, ${suoritus.laajuus}, ${suoritus.laajuusAsteikko})"""))
 
-  def getAmmatillisenTutkinnonOsaInserts(parentId: UUID, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
-    val tunniste = getUUID()
-    val lapset = suoritus.osaAlueet.map(osaAlue => getAmmatillisenTutkinnonOsaAlueInserts(tunniste, osaAlue))
-    DBIO.sequence(Seq(
-      sqlu"""INSERT INTO ammatillisen_tutkinnon_osat(tunniste, tutkinto_tunniste, nimi, koodi, yto, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
-            VALUES(${tunniste.toString}::uuid, ${parentId.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.yto}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko},${suoritus.laajuus}, ${suoritus.laajuusAsteikko})""") ++ lapset)
+  def getAmmatillisenTutkinnonOsaInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
+    sql"""INSERT INTO ammatillisen_tutkinnon_osat(tutkinto_tunniste, nimi, koodi, yto, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.yto}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko},${suoritus.laajuus}, ${suoritus.laajuusAsteikko}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
+      DBIO.sequence(osaTunnisteet.map(tunniste => suoritus.osaAlueet.map(osa => getAmmatillisenTutkinnonOsaAlueInserts(tunniste, osa))).flatten)
+    })
 
   def getAmmatillinenTutkintoInserts(versio: VersioEntiteetti, suoritus: AmmatillinenTutkinto): DBIOAction[_, NoStream, Effect] =
-    val tunniste = getUUID()
-    val lapset = suoritus.osat.map(osa => getAmmatillisenTutkinnonOsaInserts(tunniste, osa))
-    DBIO.sequence(Seq(
-      sqlu"""INSERT INTO ammatilliset_tutkinnot(tunniste, versio_tunniste, nimi, koodi, koodisto, tila, tilakoodisto, suoritustapa, suoritustapakoodisto, keskiarvo, vahvistuspaivamaara)
-            VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.koodisto}, ${suoritus.tila}, ${suoritus.tilaKoodisto}, ${suoritus.suoritustapa}, ${suoritus.suoritustapaKoodisto}, ${suoritus.keskiarvo}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date)""") ++ lapset)
+    sql"""INSERT INTO ammatilliset_tutkinnot(versio_tunniste, nimi, koodi, koodisto, tila, tilakoodisto, suoritustapa, suoritustapakoodisto, keskiarvo, vahvistuspaivamaara)
+            VALUES(${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.koodisto}, ${suoritus.tila}, ${suoritus.tilaKoodisto}, ${suoritus.suoritustapa}, ${suoritus.suoritustapaKoodisto}, ${suoritus.keskiarvo}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date) RETURNING tunniste""".as[(Int)].flatMap(tutkintoTunnisteet => {
+      DBIO.sequence(tutkintoTunnisteet.map(tunniste => suoritus.osat.map(osa => getAmmatillisenTutkinnonOsaInserts(tunniste, osa))).flatten)
+    })
 
   def getPerusopetuksenVuosiluokkaInserts(versio: VersioEntiteetti, suoritus: PerusopetuksenVuosiluokka): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
@@ -148,17 +147,16 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       sqlu"""INSERT INTO nuorten_perusopetuksen_oppiaineen_oppimaarat(versio_tunniste, nimi, koodi, arvosana)
             VALUES(${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
 
-  def getPerusopetuksenOppimaaranAineInserts(parentId: UUID, suoritus: PerusopetuksenOppiaine): DBIOAction[_, NoStream, Effect] =
+  def getPerusopetuksenOppimaaranAineInserts(parentId: Int, suoritus: PerusopetuksenOppiaine): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
       sqlu"""INSERT INTO perusopetuksen_oppiaineet(oppimaara_tunniste, nimi, koodi, arvosana)
-            VALUES(${parentId.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
 
   def getPerusopetuksenOppimaaraInserts(versio: VersioEntiteetti, suoritus: PerusopetuksenOppimaara): DBIOAction[_, NoStream, Effect] =
-    val tunniste = getUUID()
-    val lapset = suoritus.aineet.map(osa => getPerusopetuksenOppimaaranAineInserts(tunniste, osa))
-    DBIO.sequence(Seq(
-      sqlu"""INSERT INTO perusopetuksen_oppimaarat(tunniste, versio_tunniste, vahvistuspaivamaara)
-            VALUES(${tunniste.toString}::uuid, ${versio.tunniste.toString}::uuid, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date)""") ++ lapset)
+    sql"""INSERT INTO perusopetuksen_oppimaarat(versio_tunniste, vahvistuspaivamaara)
+            VALUES(${versio.tunniste.toString}::uuid, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date) RETURNING tunniste""".as[(Int)].flatMap(oppimaaraTunnisteet => {
+      DBIO.sequence(oppimaaraTunnisteet.map(tunniste => suoritus.aineet.map(osa => getPerusopetuksenOppimaaranAineInserts(tunniste, osa))).flatten)
+    })
 
   def getTuvaInserts(versio: VersioEntiteetti, suoritus: Tuva): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
@@ -212,7 +210,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 1 AS priority,
                 ${AMMATILLINEN_TUTKINTO.toString} AS tyyppi,
                 ammatilliset_tutkinnot.tunniste AS tunniste,
-                null::uuid AS parent_tunniste,
+                null::int AS parent_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi, 'koodisto', koodisto, 'tila', tila,'tilaKoodisto', tilakoodisto, 'vahvistusPaivamaara', vahvistuspaivamaara, 'keskiarvo', keskiarvo, 'suoritustapa', suoritustapa,'suoritustapaKoodisto', suoritustapakoodisto)::text AS data,
                 w_versiot.versio AS versio
               FROM ammatilliset_tutkinnot
@@ -231,7 +229,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 3 AS priority,
                 ${AMMATILLISEN_TUTKINNON_OSAALUE.toString} AS tyyppi,
-                null::uuid AS tunniste,
+                null::int AS tunniste,
                 osa_tunniste AS parent_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
                 null::text AS versio
@@ -242,7 +240,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 4 AS priority,
                 ${PERUSOPETUKSEN_OPPIMAARA.toString} AS tyyppi,
                 perusopetuksen_oppimaarat.tunniste AS tunniste,
-                null::uuid AS parent_tunniste,
+                null::int AS parent_tunniste,
                 jsonb_build_object('vahvistusPaivamaara', vahvistuspaivamaara)::text AS data,
                 w_versiot.versio AS versio
               FROM perusopetuksen_oppimaarat
@@ -251,8 +249,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 5 AS priority,
                 ${NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA.toString} AS tyyppi,
-                null::uuid  AS tunniste,
-                null::uuid AS parent_tunniste,
+                null::int AS tunniste,
+                null::int AS parent_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana)::text AS data,
                 w_versiot.versio AS versio
               FROM nuorten_perusopetuksen_oppiaineen_oppimaarat
@@ -261,8 +259,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 6 AS priority,
                 ${PERUSOPETUKSEN_VUOSILUOKKA.toString} AS tyyppi,
-                null::uuid  AS tunniste,
-                null::uuid AS parent_tunniste,
+                null::int AS tunniste,
+                null::int AS parent_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi)::text AS data,
                 w_versiot.versio AS versio
               FROM perusopetuksen_vuosiluokat
@@ -271,7 +269,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 7 AS priority,
                 ${PERUSOPETUKSEN_OPPIAINE.toString} AS tyyppi,
-                null::uuid AS tunniste,
+                null::int AS tunniste,
                 oppimaara_tunniste AS parent_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana)::text AS data,
                 null::text AS versio
@@ -281,8 +279,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 8 AS priority,
                 ${TUVA.toString} AS tyyppi,
-                null::uuid AS tunniste,
-                null::uuid AS parent_tunniste,
+                null::int AS tunniste,
+                null::int AS parent_tunniste,
                 jsonb_build_object('koodi', koodi, 'vahvistusPaivamaara', vahvistuspaivamaara)::text AS data,
                 w_versiot.versio AS versio
               FROM tuvat
@@ -291,8 +289,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT
                 9 AS priority,
                 ${TELMA.toString} AS tyyppi,
-                null::uuid AS tunniste,
-                null::uuid AS parent_tunniste,
+                null::int AS tunniste,
+                null::int AS parent_tunniste,
                 jsonb_build_object('koodi', koodi)::text AS data,
                 w_versiot.versio AS versio
               FROM telmat
