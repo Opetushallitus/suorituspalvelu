@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS oppijat (
 
 CREATE TABLE IF NOT EXISTS versiot (
     tunniste                    UUID PRIMARY KEY,
+    use_versio_tunniste         UUID REFERENCES versiot (tunniste),
     oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
     voimassaolo                 TSTZRANGE NOT NULL,
     lahde                       lahde NOT NULL,

@@ -170,6 +170,27 @@ class KantaOperaatiotTest {
       }).toSeq
     })
 
+  @Test def testUseVersion(): Unit =
+    val OPPIJANUMERO = "2.3.4"
+
+    // tallenetaan uusia versioita ilman että tallennetaan suorituksia
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value1\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value2\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value3\"}").get
+
+    // tallennetaan versio ja suoritukset
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value4\"}").get
+    val suoritukset = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    this.kantaOperaatiot.tallennaSuoritukset(versio, Set(suoritukset))
+
+    // tallenetaan uusia versioita ilman että tallennetaan suorituksia
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value5\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value6\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value7\"}").get
+
+    // versio jotka suoritukset purettu palautuu suorituksineen kun haetaan oppijanumerolla
+    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio -> Set(suoritukset)), haetutSuoritusEntiteetit)
 
   @Test def testExampleDataSuorituksetRoundtripPerformance(): Unit =
     val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json"))
