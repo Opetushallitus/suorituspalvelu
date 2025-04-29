@@ -10,7 +10,7 @@ import java.time.LocalDate
 object KoskiToSuoritusConverter {
 
   def asKoodi(tunniste: VersioituTunniste): String =
-    tunniste.koodistoUri + "_" + tunniste.koodiarvo + "#" + tunniste.koodiarvo
+    tunniste.koodistoUri + "_" + tunniste.koodiarvo + "#" + tunniste.koodistoVersio
 
   def asKoodisto(tunniste: VersioituTunniste): String =
     tunniste.koodistoUri + "#" + tunniste.koodistoVersio
@@ -35,7 +35,8 @@ object KoskiToSuoritusConverter {
 
     AmmatillisenTutkinnonOsaAlue(
       osaSuoritus.koulutusmoduuli.tunniste.nimi.fi,
-      asKoodi(osaSuoritus.koulutusmoduuli.tunniste),
+      osaSuoritus.koulutusmoduuli.tunniste.koodiarvo,
+      asKoodisto(osaSuoritus.koulutusmoduuli.tunniste),
       arviointi.map(arviointi => arviointi.arvosana.nimi.fi),
       arviointi.map(arviointi => asKoodisto(arviointi.arvosana)),
       osaSuoritus.koulutusmoduuli.laajuus.arvo,
@@ -55,7 +56,8 @@ object KoskiToSuoritusConverter {
 
     AmmatillisenTutkinnonOsa(
       osaSuoritus.koulutusmoduuli.tunniste.nimi.fi,
-      asKoodi(osaSuoritus.koulutusmoduuli.tunniste),
+      osaSuoritus.koulutusmoduuli.tunniste.koodiarvo,
+      asKoodisto(osaSuoritus.koulutusmoduuli.tunniste),
       isYTO(osaSuoritus),
       arviointi.map(arviointi => arviointi.arvosana.nimi.fi),
       arviointi.map(arviointi => asKoodisto(arviointi.arvosana)),

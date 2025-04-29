@@ -125,12 +125,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def getAmmatillisenTutkinnonOsaAlueInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
-      sqlu"""INSERT INTO ammatillisen_tutkinnon_osaalueet(osa_tunniste, nimi, koodi, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
-            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko}, ${suoritus.laajuus}, ${suoritus.laajuusAsteikko})"""))
+      sqlu"""INSERT INTO ammatillisen_tutkinnon_osaalueet(osa_tunniste, nimi, koodi, koodisto, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.koodisto}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko}, ${suoritus.laajuus}, ${suoritus.laajuusAsteikko})"""))
 
   def getAmmatillisenTutkinnonOsaInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
-    sql"""INSERT INTO ammatillisen_tutkinnon_osat(tutkinto_tunniste, nimi, koodi, yto, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
-            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.yto}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko},${suoritus.laajuus}, ${suoritus.laajuusAsteikko}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
+    sql"""INSERT INTO ammatillisen_tutkinnon_osat(tutkinto_tunniste, nimi, koodi, koodisto, yto, arvosana, arvosanaasteikko, laajuus, laajuusasteikko)
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.koodisto}, ${suoritus.yto}, ${suoritus.arvosana}, ${suoritus.arvosanaAsteikko},${suoritus.laajuus}, ${suoritus.laajuusAsteikko}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
       DBIO.sequence(osaTunnisteet.map(tunniste => suoritus.osaAlueet.map(osa => getAmmatillisenTutkinnonOsaAlueInserts(tunniste, osa))).flatten)
     })
 
@@ -234,7 +234,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${AMMATILLISEN_TUTKINNON_OSA.toString} AS tyyppi,
                 ammatillisen_tutkinnon_osat.tunniste AS tunniste,
                 tutkinto_tunniste AS parent_tunniste,
-                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'yto', yto, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
+                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'koodisto', koodisto, 'yto', yto, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
                 null::text AS versio
               FROM ammatillisen_tutkinnon_osat
               INNER JOIN w_ammatilliset_tutkinnot ON tutkinto_tunniste=w_ammatilliset_tutkinnot.tunniste),
@@ -244,7 +244,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${AMMATILLISEN_TUTKINNON_OSAALUE.toString} AS tyyppi,
                 null::int AS tunniste,
                 osa_tunniste AS parent_tunniste,
-                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
+                jsonb_build_object('nimi', nimi, 'koodi', koodi, 'koodisto', koodisto, 'arvosana', arvosana, 'arvosanaAsteikko', arvosanaasteikko, 'laajuus', laajuus, 'laajuusAsteikko', laajuusasteikko)::text AS data,
                 null::text AS versio
               FROM ammatillisen_tutkinnon_osaalueet
               INNER JOIN w_ammatillisen_tutkinnon_osat ON osa_tunniste=w_ammatillisen_tutkinnon_osat.tunniste),
