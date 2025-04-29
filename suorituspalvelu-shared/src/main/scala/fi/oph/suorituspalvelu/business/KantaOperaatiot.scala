@@ -34,8 +34,6 @@ object KantaOperaatiot {
   enum SuoritusTyypit:
     case AMMATILLINEN_TUTKINTO, AMMATILLISEN_TUTKINNON_OSA, AMMATILLISEN_TUTKINNON_OSAALUE, PERUSOPETUKSEN_OPPIMAARA,
     NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA, PERUSOPETUKSEN_VUOSILUOKKA, PERUSOPETUKSEN_OPPIAINE, TUVA, TELMA
-
-
 }
 
 class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
@@ -46,46 +44,51 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  def sameAsExistingData(oppijaNumero: String, tietolahde: Tietolahde, data: String): Boolean =
+  def sameAsExistingData(oppijaNumero: String, tietolahde: Tietolahde, data: String): DBIOAction[Boolean, NoStream, Effect] =
     tietolahde match
       case Tietolahde.KOSKI | Tietolahde.YTR =>
-        Await.result(db.run(sql"""
+        sql"""
             SELECT data_json
             FROM versiot
             WHERE oppijanumero=${oppijaNumero} AND lahde=${tietolahde.toString}::lahde AND upper(voimassaolo)='infinity'::timestamptz
-        """.as[String]), DB_TIMEOUT)
-        .headOption
-        .map(existingData => JSONCompare.compareJSON(existingData, data, JSONCompareMode.NON_EXTENSIBLE).passed())
-        .getOrElse(false)
-      case default => false
+        """.as[String].map(existingData => {
+            if(existingData.isEmpty)
+              false
+            else
+              JSONCompare.compareJSON(existingData.head, data, JSONCompareMode.NON_EXTENSIBLE).passed()
+          })
+      case default => sql"""SELECT 1""".as[String].map(_ => false) // ei toteutettu
 
   def tallennaJarjestelmaVersio(oppijaNumero: String, tietolahde: Tietolahde, data: String): Option[VersioEntiteetti] =
-/*
-    if(tietolahde==Tietolahde.VIRKAILIJA)
-      throw new RuntimeException("Virkailijan versioita ei voi tallentaa tällä metodilla")
-*/
-
-    if(sameAsExistingData(oppijaNumero, tietolahde, data)) // TODO: tämä pitää tehdä samassa transaktiossa kun on lukko oppijaan!
-      None
-    else
-      val tunniste = getUUID()
-      val timestamp = Instant.ofEpochMilli(Instant.now().toEpochMilli)
-      val insertOppijaAction = sqlu"INSERT INTO oppijat(oppijanumero) VALUES (${oppijaNumero}) ON CONFLICT DO NOTHING"
-      val lockOppijaAction = sql"""SELECT 1 FROM oppijat WHERE oppijanumero=${oppijaNumero} FOR UPDATE"""
-      val discontinueOldVersionAction = sql"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz) WHERE oppijanumero=${oppijaNumero} AND lahde=${tietolahde.toString}::lahde AND upper(voimassaolo)='infinity'::timestamptz RETURNING tunniste::text""".as[String]
-      val insertVersioAction = discontinueOldVersionAction.flatMap(useVersionTunnisteet => {
-        val useVersionTunniste = if(useVersionTunnisteet.isEmpty) null else useVersionTunnisteet.head
-        tietolahde match
-          case VIRTA => sql"""
-              INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)
-              VALUES(${tunniste.toString}::uuid, ${useVersionTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::xml) RETURNING tunniste""".as[String]
-          case default => sql"""
-              INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)
-              VALUES(${tunniste.toString}::uuid, ${useVersionTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::jsonb) RETURNING tunniste""".as[String]
+    val insertOppijaAction = sqlu"INSERT INTO oppijat(oppijanumero) VALUES (${oppijaNumero}) ON CONFLICT DO NOTHING"
+    val lockOppijaAction = sql"""SELECT 1 FROM oppijat WHERE oppijanumero=${oppijaNumero} FOR UPDATE"""
+    val insertVersioIfNewDataAction = DBIO.sequence(Seq(insertOppijaAction, lockOppijaAction.as[Int]))
+      .flatMap(_ => sameAsExistingData(oppijaNumero, tietolahde, data)).flatMap(isSame => {
+        if (isSame)
+          DBIO.sequence(Seq.empty).map(_ => None)
+        else
+          val tunniste = getUUID()
+          val timestamp = Instant.ofEpochMilli(Instant.now().toEpochMilli)
+          val discontinueOldVersionAction =
+            sql"""
+                 UPDATE versiot
+                 SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)
+                 WHERE oppijanumero=${oppijaNumero} AND lahde=${tietolahde.toString}::lahde AND upper(voimassaolo)='infinity'::timestamptz
+                 RETURNING tunniste::text""".as[String]
+          val insertVersioAction = discontinueOldVersionAction
+            .flatMap(useVersioTunnisteet => {
+              val useVersioTunniste = if (useVersioTunnisteet.isEmpty) null else useVersioTunnisteet.head
+              tietolahde match
+                case VIRTA => sqlu"""
+                    INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)
+                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::xml)"""
+                case default => sqlu"""
+                    INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)
+                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::jsonb)"""
+            })
+          insertVersioAction.map(_ => Some(VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, tietolahde)))
       })
-
-      Await.result(db.run(DBIO.sequence(Seq(insertOppijaAction, lockOppijaAction.as[Int], insertVersioAction)).transactionally), DB_TIMEOUT)
-      Some(VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, tietolahde))
+    Await.result(db.run(insertVersioIfNewDataAction.transactionally), DB_TIMEOUT)
 
   def haeData(versio: VersioEntiteetti): String =
     Await.result(db.run(
