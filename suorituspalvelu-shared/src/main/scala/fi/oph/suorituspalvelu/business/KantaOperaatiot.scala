@@ -90,19 +90,18 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       })
     Await.result(db.run(insertVersioIfNewDataAction.transactionally), DB_TIMEOUT)
 
-  def haeData(versio: VersioEntiteetti): String =
+  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, String) =
     Await.result(db.run(
-        (versio.tietolahde match
-          case VIRTA => sql"""
-              SELECT data_xml
-              FROM versiot
-              WHERE tunniste=${versio.tunniste.toString}::UUID"""
-          case default => sql"""
-              SELECT data_json
-              FROM versiot
-              WHERE tunniste=${versio.tunniste.toString}::UUID"""
-        ).as[String]), DB_TIMEOUT)
-      .head
+      sql"""SELECT jsonb_build_object('tunniste', tunniste,
+              'oppijaNumero', oppijanumero,
+              'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+              'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+              'tietolahde', lahde
+            )::text AS versio,
+            CASE WHEN lahde='VIRTA'::lahde THEN data_xml::text ELSE data_json::text END
+            FROM versiot
+            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, String)]), DB_TIMEOUT)
+      .map((json, data) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), data)).head
 
   def poistaVersionSuoritukset(versio: VersioEntiteetti): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(

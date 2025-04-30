@@ -16,7 +16,7 @@ import slick.jdbc.PostgresProfile.api.*
 import java.time.Instant
 import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -107,7 +107,7 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, data).get
 
     // data palautuu
-    Assertions.assertEquals(data, this.kantaOperaatiot.haeData(versio))
+    Assertions.assertEquals(data, this.kantaOperaatiot.haeData(versio)._2)
 
   /**
    * Testataan että json-datan muuttuessa oppijalle tallennetaan uusi versio.
@@ -134,6 +134,32 @@ class KantaOperaatiotTest {
     val duplicateData = "{\"arr\": [2, 1], \"attr\": \"value\"}"
     val duplicateVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, duplicateData)
     Assertions.assertTrue(duplicateVersio.isEmpty)
+
+  /**
+   * Testataan että kun samalla oppijalla tallennetaan versioita rinnakkain syntyy katkeamaton voimassaolohistoria
+   */
+  @Test def testVoimassaoloPerakkain(): Unit =
+    val OPPIJANUMERO = "1.2.3"
+
+    // tallennetaan rinnakkain suuri joukko versioita
+    val tallennusOperaatiot = Range(0, 500).map(i => () => {
+      Thread.sleep((Math.random()*50).asInstanceOf[Int])
+      this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value" + i + "\"}")
+    })
+
+    val versiot = Await.result(Future.sequence(tallennusOperaatiot.map(op => Future {op ()})), 20.seconds)
+      .map(o => Some(this.kantaOperaatiot.haeData(o.get)._1))
+      .sortBy(v => v.get.alku)
+
+    // testataan että versioista muodostuu katkeamaton jatkumo ja viimeisin versio voimassa
+    (Seq(None) ++ versiot).zip(versiot ++ Seq(None)).foreach(pair => {
+      val (earlier, later) = pair
+      (earlier, later) match
+        case (Some(earlier), Some(later)) => Assertions.assertEquals(earlier.loppu.get, later.alku)
+        case (Some(earlier), None) => Assertions.assertTrue(earlier.loppu.isEmpty)
+        case (None, Some(later)) => // ensimmäinen versio
+        case (None, None) => Assertions.fail()
+    })
 
   /**
    * Testataan että minimaalinen suoritus tallentuu ja luetaan oikein.
