@@ -13,7 +13,9 @@ object ApiConstants {
   final val HEALTHCHECK_PATH            = VERSIONED_API_PREFIX + "/healthcheck"
 
   final val SUORITUS_PATH               = VERSIONED_API_PREFIX + "/suoritus"
+  final val DATASYNC_PATH               = VERSIONED_API_PREFIX + "/datasync"
 
+  
   /**
    * Swagger-kuvauksiin liittyvät vakiot
    */
