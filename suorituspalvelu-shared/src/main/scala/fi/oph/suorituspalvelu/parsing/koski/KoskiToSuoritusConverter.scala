@@ -9,6 +9,15 @@ import java.time.LocalDate
  */
 object KoskiToSuoritusConverter {
 
+  val allowMissingFields = new ThreadLocal[Boolean]
+
+  def dummy[A](): A =
+    if(allowMissingFields.get())
+      null.asInstanceOf[A]
+    else
+      throw new RuntimeException("Dummies not allowed")
+
+
   def asKoodi(tunniste: VersioituTunniste): String =
     tunniste.koodistoUri + "_" + tunniste.koodiarvo + "#" + tunniste.koodistoVersio
 
@@ -16,11 +25,11 @@ object KoskiToSuoritusConverter {
     tunniste.koodistoUri + "#" + tunniste.koodistoVersio
 
   def isYTO(osaSuoritus: OsaSuoritus): Boolean =
-    osaSuoritus.koulutusmoduuli.tunniste.koodiarvo match
+    osaSuoritus.koulutusmoduuli.map(k => k.tunniste.koodiarvo match
       case "106727" => true // viestintä- ja vuorovaikutusosaaminen
       case "106728" => true // matemaattis-luonnontieteellinen osaaminen
       case "106729" => true // yhteiskunta- ja työelämäosaaminen
-      case default => false
+      case default => false).getOrElse(false)
 
   def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsaAlue =
     val arviointi = {
@@ -34,13 +43,13 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsaAlue(
-      osaSuoritus.koulutusmoduuli.tunniste.nimi.fi,
-      osaSuoritus.koulutusmoduuli.tunniste.koodiarvo,
-      asKoodisto(osaSuoritus.koulutusmoduuli.tunniste),
+      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.koodiarvo).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => asKoodisto(k.tunniste)).getOrElse(dummy()),
       arviointi.map(arviointi => arviointi.arvosana.nimi.fi),
       arviointi.map(arviointi => asKoodisto(arviointi.arvosana)),
-      osaSuoritus.koulutusmoduuli.laajuus.arvo,
-      asKoodi(osaSuoritus.koulutusmoduuli.laajuus.yksikkö)
+      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.arvo).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodi(y)).getOrElse(dummy())).getOrElse(dummy())
     )
 
   def toAmmatillisenTutkinnonOsa(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsa =
@@ -55,39 +64,39 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsa(
-      osaSuoritus.koulutusmoduuli.tunniste.nimi.fi,
-      osaSuoritus.koulutusmoduuli.tunniste.koodiarvo,
-      asKoodisto(osaSuoritus.koulutusmoduuli.tunniste),
+      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.koodiarvo).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => asKoodisto(k.tunniste)).getOrElse(dummy()),
       isYTO(osaSuoritus),
       arviointi.map(arviointi => arviointi.arvosana.nimi.fi),
       arviointi.map(arviointi => asKoodisto(arviointi.arvosana)),
-      osaSuoritus.koulutusmoduuli.laajuus.arvo,
-      asKoodi(osaSuoritus.koulutusmoduuli.laajuus.yksikkö),
+      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.arvo).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodi(y)).getOrElse(dummy())).getOrElse(dummy()),
       osaSuoritus.osasuoritukset.map(osaSuoritukset => osaSuoritukset.map(osaSuoritus => toAmmattillisenTutkinnonOsaAlue(osaSuoritus))).getOrElse(Set.empty)
     )
 
   def toAmmatillinenTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): AmmatillinenTutkinto =
     val tila = {
-      opiskeluoikeus.tila.opiskeluoikeusjaksot.map(jakso => jakso.tila).last
+      opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
     }
 
     AmmatillinenTutkinto(
-      suoritus.koulutusmoduuli.tunniste.nimi.fi,
-      suoritus.koulutusmoduuli.tunniste.koodiarvo,
-      asKoodisto(suoritus.koulutusmoduuli.tunniste),
-      tila.koodiarvo,
-      asKoodisto(tila),
+      suoritus.koulutusmoduuli.map(km => km.tunniste.nimi.fi).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.map(km => km.tunniste.koodiarvo).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.map(km => asKoodisto(km.tunniste)).getOrElse(dummy()),
+      tila.map(tila => tila.koodiarvo).getOrElse(dummy()),
+      tila.map(tila => asKoodisto(tila)).getOrElse(dummy()),
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
       suoritus.keskiarvo,
-      suoritus.suoritustapa.map(suoritusTapa => suoritusTapa.koodiarvo).get,
-      suoritus.suoritustapa.map(suoritusTapa => asKoodisto(suoritusTapa)).get,
+      suoritus.suoritustapa.map(suoritusTapa => suoritusTapa.koodiarvo).getOrElse(dummy()),
+      suoritus.suoritustapa.map(suoritusTapa => asKoodisto(suoritusTapa)).getOrElse(dummy()),
       suoritus.osasuoritukset.map(os => os.map(os => toAmmatillisenTutkinnonOsa(os))).getOrElse(Set.empty)
     )
 
   def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine =
     PerusopetuksenOppiaine(
-      osaSuoritus.koulutusmoduuli.tunniste.nimi.fi,
-      asKoodi(osaSuoritus.koulutusmoduuli.tunniste),
+      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => asKoodi(k.tunniste)).getOrElse(dummy()),
       {
         val arvosanat = osaSuoritus.arviointi
           .map(arviointi => arviointi
@@ -102,8 +111,8 @@ object KoskiToSuoritusConverter {
 
   def toNuortenPerusopetuksenOppiaineenOppimaara(suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
     NuortenPerusopetuksenOppiaineenOppimaara(
-      suoritus.koulutusmoduuli.tunniste.nimi.fi,
-      asKoodi(suoritus.koulutusmoduuli.tunniste),
+      suoritus.koulutusmoduuli.map(km => km.tunniste.nimi.fi).get,
+      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
       {
         val arvosanat = suoritus.arviointi
           .map(arviointi => arviointi
@@ -130,31 +139,36 @@ object KoskiToSuoritusConverter {
 
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
     PerusopetuksenVuosiluokka(
-      suoritus.koulutusmoduuli.tunniste.nimi.fi,
-      asKoodi(suoritus.koulutusmoduuli.tunniste)
+      suoritus.koulutusmoduuli.map(km => km.tunniste.nimi.fi).get,
+      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get
     )
 
   def toTelma(suoritus: Suoritus): Telma =
     Telma(
-      asKoodi(suoritus.koulutusmoduuli.tunniste)
+      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get
     )
 
   def toTuva(suoritus: Suoritus): Tuva =
     Tuva(
-      asKoodi(suoritus.koulutusmoduuli.tunniste),
+      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p))
     )
 
-  def toSuoritus(opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
-    opiskeluoikeudet.map(opiskeluoikeus => opiskeluoikeus.suoritukset.map(suoritus =>
-      suoritus match
-        case suoritus if suoritus.tyyppi.koodiarvo=="ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
-        case suoritus if suoritus.tyyppi.koodiarvo=="aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(suoritus))
-        case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(suoritus))
-        case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
-        case suoritus if suoritus.tyyppi.koodiarvo=="nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
-        case suoritus if suoritus.tyyppi.koodiarvo=="telma" => Some(toTelma(suoritus))
-        case suoritus if suoritus.tyyppi.koodiarvo=="tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
-        case default => None
-    ).flatten).flatten
+  def toSuoritus(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
+    try
+      allowMissingFields.set(allowMissingFieldsForTests)
+      opiskeluoikeudet.map(opiskeluoikeus => opiskeluoikeus.suoritukset.map(suoritus =>
+        suoritus match
+          case suoritus if suoritus.tyyppi.koodiarvo=="ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo=="aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo=="nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo=="telma" => Some(toTelma(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo=="tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
+          case default => None
+      ).flatten).flatten
+    finally
+      allowMissingFields.set(false)
+
 }
