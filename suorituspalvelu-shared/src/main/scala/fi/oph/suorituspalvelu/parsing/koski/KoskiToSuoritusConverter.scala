@@ -152,18 +152,16 @@ object KoskiToSuoritusConverter {
   def toSuoritus(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
-      opiskeluoikeudet.map(opiskeluoikeus => opiskeluoikeus.suoritukset.map(suoritus =>
+      opiskeluoikeudet.flatMap(opiskeluoikeus => opiskeluoikeus.suoritukset.flatMap(suoritus =>
         suoritus match
-          case suoritus if suoritus.tyyppi.koodiarvo=="ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="telma" => Some(toTelma(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
-          case default => None
-      ).flatten).flatten
+          case suoritus if suoritus.tyyppi.koodiarvo == "ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "telma" => Some(toTelma(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
+          case default => None))
     finally
       allowMissingFields.set(false)
-
 }

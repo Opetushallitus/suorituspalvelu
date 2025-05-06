@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.parsing.koski.KoskiParser
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
 import slick.jdbc.JdbcBackend
 
 import java.io.ByteArrayInputStream
@@ -59,7 +59,7 @@ class KoskiIntegration {
       }
     })
   }
-
+  
   def handleFiles(fileUrls: Seq[String]): Future[Seq[Option[VersioEntiteetti]]] = {
     LOG.info(s"Käsitellään ${fileUrls.size} Koski-tiedostoa.")
     val handled = new AtomicInteger(0)
@@ -75,7 +75,15 @@ class KoskiIntegration {
         LOG.info(s"Saatiin tulokset tiedostolle $fileUrl: käsitellään yhteensä ${splitted.size} henkilön Koski-tiedot.")
         val kantaResults = splitted.map(henkilonTiedot => {
           LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} Koski-tiedot")
-          kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
+          val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
+          versio.foreach(v => {
+            LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
+            val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(henkilonTiedot._2)
+            val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
+            LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} suoritukset. Versio $v, suoritukset $suoritukset")
+            kantaOperaatiot.tallennaSuoritukset(v, suoritukset)
+          })
+          versio
         })
         LOG.info(s"Valmista! $kantaResults")
         Future.successful(kantaResults)
