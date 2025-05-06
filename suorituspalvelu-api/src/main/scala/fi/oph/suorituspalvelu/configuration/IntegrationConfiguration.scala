@@ -5,7 +5,6 @@ import fi.oph.suorituspalvelu.integration.client.KoskiClient
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
 
-//import org.asynchttpclient.Dsl.asyncHttpClient
 import java.time.Duration
 
 @Configuration

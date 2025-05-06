@@ -31,17 +31,11 @@ class KoskiIntegration {
 
   def syncKoski(personOids: Set[String]): Seq[Option[VersioEntiteetti]] = {
     LOG.info(s"Synkataan Koski-data $personOids")
-    val query = KoskiMassaluovutusQueryParams(
-      "sure-oppijat",
-      "application/json",
-      Some(personOids),
-      muuttuneetJälkeen = None
-    )
+    val query = KoskiMassaluovutusQueryParams.forOids(personOids)
 
     val syncResultF = client.createMassaluovutusQuery(query).flatMap(res => {
       pollUntilReady(res.resultsUrl.get).flatMap(finishedQuery => {
         LOG.info(s"Query is now finished, handling files.")
-        var fileCounter = 0
         handleFiles(finishedQuery.files)
       })
     })
@@ -52,13 +46,13 @@ class KoskiIntegration {
   def pollUntilReady(pollUrl: String): Future[KoskiMassaluovutusQueryResponse] = {
     client.pollQuery(pollUrl).flatMap((pollResult: KoskiMassaluovutusQueryResponse) => {
       pollResult match {
-        case response if response.isFailed() =>
-          LOG.error(s"Koski failure: $response")
-          Future.failed(new RuntimeException("Koski failure!"))
         case response if response.isComplete() =>
           LOG.info(s"Valmista! $response")
           Future.successful(response)
-        case default =>
+        case response if response.isFailed() =>
+          LOG.error(s"Koski failure: $response")
+          Future.failed(new RuntimeException("Koski failure!"))
+        case response =>
           LOG.info(s"Ei vielä valmista, odotellaan hetki ja pollataan uudestaan $pollResult")
           Thread.sleep(1000) //Todo, fiksumpi odottelumekanismi
           pollUntilReady(pollUrl)
