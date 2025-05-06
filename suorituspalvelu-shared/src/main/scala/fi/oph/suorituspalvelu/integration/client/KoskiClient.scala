@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import java.time.Duration
 
-class KoskiClient(username: String, password: String) {
+class KoskiClient(username: String, password: String, environmentBaseUrl: String) {
 
   private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build);
 
@@ -43,9 +43,7 @@ class KoskiClient(username: String, password: String) {
   }
 
   def postWithBasicAuth(url: String, payload: Object): Future[String] = {
-    //LOG.info(s"params: $payload")
     val payloadString = mapper.writeValueAsString(payload)
-    //LOG.info(s"Payload string: $payloadString")
     val realm = new Realm.Builder(username, password)
       .setUsePreemptiveAuth(false)
       .setScheme(Realm.AuthScheme.NTLM)
@@ -61,15 +59,13 @@ class KoskiClient(username: String, password: String) {
     executeRequest(request)
   }
 
-  //koski.sure.massaluovutus.create-query=/koski/api/massaluovutus
   def createMassaluovutusQuery(params: KoskiMassaluovutusQueryParams): Future[KoskiMassaluovutusQueryResponse] = {
-    postWithBasicAuth("https://virkailija.testiopintopolku.fi/koski/api/massaluovutus", params).map(result =>
+    postWithBasicAuth(environmentBaseUrl+"/koski/api/massaluovutus", params).map(result =>
       val parsed: KoskiMassaluovutusQueryResponse = mapper.readValue[KoskiMassaluovutusQueryResponse](result, classOf[KoskiMassaluovutusQueryResponse])
       LOG.info(s"Saatiin vastaus massaluovutusrajapinnalta: $result")
       parsed)}
 
   private def encodeBasicAuth(username: String, password: String) = {
-    LOG.info(s"Basic auth, username $username, password *********")
     "Basic " + Base64.getEncoder.encodeToString((username + ":" + password).getBytes)
   }
 

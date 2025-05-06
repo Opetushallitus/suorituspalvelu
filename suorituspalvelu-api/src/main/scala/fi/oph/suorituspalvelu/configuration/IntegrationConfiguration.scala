@@ -15,7 +15,9 @@ class IntegrationConfiguration {
     new KoskiIntegration
 
   @Bean
-  def getKoskiClient(@Value("${integrations.koski.username}") user: String, @Value("${integrations.koski.password}") password: String): KoskiClient =
-    new KoskiClient(user, password)
+  def getKoskiClient(@Value("${integrations.koski.username}") user: String,
+                     @Value("${integrations.koski.password}") password: String,
+                     @Value("${integrations.koski.base-url}") envBaseUrl: String): KoskiClient =
+    new KoskiClient(user, password, envBaseUrl)
 
 }

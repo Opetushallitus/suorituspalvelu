@@ -24,3 +24,4 @@ integrations:
   koski:
     username: addme_user
     password: addme_pw
+    base-url: https://virkailija.testiopintopolku.fi
