@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Arvosana, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Arvosana, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Telma, Tuva}
 
 import java.time.LocalDate
 
@@ -17,6 +17,8 @@ object KoskiToSuoritusConverter {
     else
       throw new RuntimeException("Dummies not allowed")
 
+  def asKoodiObject(tunniste: VersioituTunniste): Koodi =
+    Koodi(tunniste.koodiarvo, tunniste.koodistoUri, tunniste.koodistoVersio)
 
   def asKoodi(tunniste: VersioituTunniste): String =
     tunniste.koodistoUri + "_" + tunniste.koodiarvo + "#" + tunniste.koodistoVersio
@@ -24,12 +26,12 @@ object KoskiToSuoritusConverter {
   def asKoodisto(tunniste: VersioituTunniste): String =
     tunniste.koodistoUri + "#" + tunniste.koodistoVersio
 
-  def isYTO(osaSuoritus: OsaSuoritus): Boolean =
-    osaSuoritus.koulutusmoduuli.map(k => k.tunniste.koodiarvo match
+  def isYTO(koodiarvo: String): Boolean =
+    koodiarvo match
       case "106727" => true // viestintä- ja vuorovaikutusosaaminen
       case "106728" => true // matemaattis-luonnontieteellinen osaaminen
       case "106729" => true // yhteiskunta- ja työelämäosaaminen
-      case default => false).getOrElse(false)
+      case default => false
 
   def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsaAlue =
     val arviointi = {
@@ -44,12 +46,10 @@ object KoskiToSuoritusConverter {
 
     AmmatillisenTutkinnonOsaAlue(
       osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.koodiarvo).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => asKoodisto(k.tunniste)).getOrElse(dummy()),
-      arviointi.map(arviointi => arviointi.arvosana.nimi.fi),
-      arviointi.map(arviointi => asKoodisto(arviointi.arvosana)),
+      osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
+      arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
       osaSuoritus.koulutusmoduuli.map(k => k.laajuus.arvo).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodi(y)).getOrElse(dummy())).getOrElse(dummy())
+      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodiObject(y)).getOrElse(dummy())).getOrElse(dummy())
     )
 
   def toAmmatillisenTutkinnonOsa(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsa =
@@ -65,13 +65,11 @@ object KoskiToSuoritusConverter {
 
     AmmatillisenTutkinnonOsa(
       osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.koodiarvo).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => asKoodisto(k.tunniste)).getOrElse(dummy()),
-      isYTO(osaSuoritus),
-      arviointi.map(arviointi => arviointi.arvosana.nimi.fi),
-      arviointi.map(arviointi => asKoodisto(arviointi.arvosana)),
+      osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => isYTO(k.tunniste.koodiarvo)).getOrElse(false),
+      arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
       osaSuoritus.koulutusmoduuli.map(k => k.laajuus.arvo).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodi(y)).getOrElse(dummy())).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodiObject(y)).getOrElse(dummy())).getOrElse(dummy()),
       osaSuoritus.osasuoritukset.map(osaSuoritukset => osaSuoritukset.map(osaSuoritus => toAmmattillisenTutkinnonOsaAlue(osaSuoritus))).getOrElse(Set.empty)
     )
 
@@ -82,14 +80,11 @@ object KoskiToSuoritusConverter {
 
     AmmatillinenTutkinto(
       suoritus.koulutusmoduuli.map(km => km.tunniste.nimi.fi).getOrElse(dummy()),
-      suoritus.koulutusmoduuli.map(km => km.tunniste.koodiarvo).getOrElse(dummy()),
-      suoritus.koulutusmoduuli.map(km => asKoodisto(km.tunniste)).getOrElse(dummy()),
-      tila.map(tila => tila.koodiarvo).getOrElse(dummy()),
-      tila.map(tila => asKoodisto(tila)).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).getOrElse(dummy()),
+      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
       suoritus.keskiarvo,
-      suoritus.suoritustapa.map(suoritusTapa => suoritusTapa.koodiarvo).getOrElse(dummy()),
-      suoritus.suoritustapa.map(suoritusTapa => asKoodisto(suoritusTapa)).getOrElse(dummy()),
+      suoritus.suoritustapa.map(suoritusTapa => asKoodiObject(suoritusTapa)).getOrElse(dummy()),
       suoritus.osasuoritukset.map(os => os.map(os => toAmmatillisenTutkinnonOsa(os))).getOrElse(Set.empty)
     )
 
