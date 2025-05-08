@@ -33,7 +33,7 @@ case class Yksikko(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, 
 
 case class KoulutusModuuliTunniste(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
 
-case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Laajuus)
+case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Option[Laajuus])
 
 case class SuoritusTyyppi(koodiarvo: String, koodistoUri: String, nimi: Nimi)
 

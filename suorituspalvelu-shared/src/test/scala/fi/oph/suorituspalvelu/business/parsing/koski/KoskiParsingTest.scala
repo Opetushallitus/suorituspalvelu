@@ -187,8 +187,8 @@ class KoskiParsingTest {
     Assertions.assertEquals("Viestintä- ja vuorovaikutusosaaminen", osaSuoritus.nimi)
     Assertions.assertEquals(true, osaSuoritus.yto) // koodi 106727 kuuluu yleisiin tutkinnon osiin
     Assertions.assertEquals(Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", 1)), osaSuoritus.arvosana)
-    Assertions.assertEquals(20, osaSuoritus.laajuus)
-    Assertions.assertEquals(Koodi("6", "opintojenlaajuusyksikko", 1), osaSuoritus.laajuusKoodi)
+    Assertions.assertEquals(Some(20), osaSuoritus.laajuus)
+    Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", 1)), osaSuoritus.laajuusKoodi)
 
   @Test def testAmmatillisenTutkinnonOsaAlueet(): Unit =
     val tutkinto = getFirstAmmatillinenTutkintoFromJson("""
@@ -252,7 +252,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", 1), osaAlue.koodi)
     Assertions.assertEquals("Viestintä ja vuorovaikutus äidinkielellä", osaAlue.nimi)
     Assertions.assertEquals(Some(Koodi("1", "arviointiasteikkoammatillinen15", 1)), osaAlue.arvosana)
-    Assertions.assertEquals(4, osaAlue.laajuus)
-    Assertions.assertEquals(Koodi("6", "opintojenlaajuusyksikko", 1), osaAlue.laajuusKoodi)
+    Assertions.assertEquals(Some(4), osaAlue.laajuus)
+    Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", 1)), osaAlue.laajuusKoodi)
 
 }
