@@ -33,7 +33,7 @@ object KoskiToSuoritusConverter {
       case "106729" => true // yhteiskunta- ja työelämäosaaminen
       case default => false
 
-  def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsaAlue =
+  def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsaAlue = {
     val arviointi = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
@@ -45,14 +45,15 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsaAlue(
-      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
-      arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
-      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.arvo).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodiObject(y)).getOrElse(dummy())).getOrElse(dummy())
+      nimi = osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      koodi = osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
+      arvosana = arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
+      laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(_.arvo)),
+      laajuusKoodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(_.yksikkö).map(y => asKoodiObject(y.get)))
     )
+  }
 
-  def toAmmatillisenTutkinnonOsa(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsa =
+  def toAmmatillisenTutkinnonOsa(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsa = {
     val arviointi = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
@@ -64,14 +65,15 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsa(
-      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => isYTO(k.tunniste.koodiarvo)).getOrElse(false),
-      arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
-      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.arvo).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => k.laajuus.yksikkö.map(y => asKoodiObject(y)).getOrElse(dummy())).getOrElse(dummy()),
-      osaSuoritus.osasuoritukset.map(osaSuoritukset => osaSuoritukset.map(osaSuoritus => toAmmattillisenTutkinnonOsaAlue(osaSuoritus))).getOrElse(Set.empty)
+      nimi = osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      koodi = osaSuoritus.koulutusmoduuli.map((k: KoulutusModuuli) => asKoodiObject(k.tunniste)).getOrElse(dummy()),
+      yto = osaSuoritus.koulutusmoduuli.exists(k => isYTO(k.tunniste.koodiarvo)),
+      arvosana = arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
+      laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(_.arvo)),
+      laajuusKoodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.flatMap(_.yksikkö).map(y => asKoodiObject(y))),
+      osaAlueet = osaSuoritus.osasuoritukset.map(osaSuoritukset => osaSuoritukset.map(osaSuoritus => toAmmattillisenTutkinnonOsaAlue(osaSuoritus))).getOrElse(Set.empty)
     )
+  }
 
   def toAmmatillinenTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): AmmatillinenTutkinto =
     val tila = {
@@ -152,18 +154,16 @@ object KoskiToSuoritusConverter {
   def toSuoritus(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
-      opiskeluoikeudet.map(opiskeluoikeus => opiskeluoikeus.suoritukset.map(suoritus =>
+      opiskeluoikeudet.flatMap(opiskeluoikeus => opiskeluoikeus.suoritukset.flatMap(suoritus =>
         suoritus match
-          case suoritus if suoritus.tyyppi.koodiarvo=="ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="telma" => Some(toTelma(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo=="tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
-          case default => None
-      ).flatten).flatten
+          case suoritus if suoritus.tyyppi.koodiarvo == "ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "telma" => Some(toTelma(suoritus))
+          case suoritus if suoritus.tyyppi.koodiarvo == "tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
+          case default => None))
     finally
       allowMissingFields.set(false)
-
 }

@@ -65,6 +65,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val insertVersioIfNewDataAction = DBIO.sequence(Seq(insertOppijaAction, lockOppijaAction.as[Int]))
       .flatMap(_ => sameAsExistingData(oppijaNumero, tietolahde, data)).flatMap(isSame => {
         if (isSame)
+          LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
           DBIO.sequence(Seq.empty).map(_ => None)
         else
           val tunniste = getUUID()
@@ -128,11 +129,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getAmmatillisenTutkinnonOsaAlueInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
       sqlu"""INSERT INTO ammatillisen_tutkinnon_osaalueet(osa_tunniste, nimi, koodi, koodisto, koodistoversio, arvosana, arvosanaasteikko, arvosanaversio, laajuus, laajuuskoodi, laajuuskoodisto, laajuusversio)
-            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.map(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.arvo}, ${suoritus.laajuusKoodi.koodisto}, ${suoritus.laajuusKoodi.versio})"""))
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.map(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.map(_.arvo)}, ${suoritus.laajuusKoodi.map(_.koodisto)}, ${suoritus.laajuusKoodi.map(_.versio)})"""))
 
   def getAmmatillisenTutkinnonOsaInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
     sql"""INSERT INTO ammatillisen_tutkinnon_osat(tutkinto_tunniste, nimi, koodi, koodisto, koodistoversio, yto, arvosana, arvosanaasteikko, arvosanaversio, laajuus, laajuuskoodi, laajuuskoodisto, laajuusversio)
-            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.yto}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.map(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.arvo}, ${suoritus.laajuusKoodi.koodisto}, ${suoritus.laajuusKoodi.versio}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.yto}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.map(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.map(_.arvo)}, ${suoritus.laajuusKoodi.map(_.koodisto)}, ${suoritus.laajuusKoodi.map(_.versio)}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
       DBIO.sequence(osaTunnisteet.map(tunniste => suoritus.osaAlueet.map(osa => getAmmatillisenTutkinnonOsaAlueInserts(tunniste, osa))).flatten)
     })
 
@@ -187,7 +188,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         case s: Telma => getTelmaInserts(versio, s)
     })
 
-    Await.result(db.run(DBIO.sequence(Seq(otaVersioKayttoon, poistaSuoritukset, DBIO.sequence(inserts))).transactionally), DB_TIMEOUT)
+    Await.result(db.run(DBIO.sequence(Seq(poistaSuoritukset, DBIO.sequence(inserts), otaVersioKayttoon)).transactionally), DB_TIMEOUT)
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Suoritus]] =
     var ammatillisenTutkinnonOsaAlueet: Map[String, Seq[AmmatillisenTutkinnonOsaAlue]] = Map.empty

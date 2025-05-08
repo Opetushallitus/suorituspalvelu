@@ -14,9 +14,9 @@ case class Arvosana(arvosana: String, koodi: String)
 
 case class AmmatillinenTutkinto(nimi: String, tyyppi: Koodi, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus
 
-case class AmmatillisenTutkinnonOsaAlue(nimi: String, koodi: Koodi, arvosana: Option[Koodi], laajuus: Int, laajuusKoodi: Koodi)
+case class AmmatillisenTutkinnonOsaAlue(nimi: String, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi])
 
-case class AmmatillisenTutkinnonOsa(nimi: String, koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Int, laajuusKoodi: Koodi, osaAlueet: Set[AmmatillisenTutkinnonOsaAlue])
+case class AmmatillisenTutkinnonOsa(nimi: String, koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue])
 
 case class Tuva(koodi: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus
 

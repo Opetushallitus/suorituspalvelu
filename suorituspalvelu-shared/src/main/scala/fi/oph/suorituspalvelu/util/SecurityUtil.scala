@@ -5,6 +5,8 @@ object SecurityUtil {
   def onOikeus(): Boolean =
     true
 
+  def onRekisterinpitaja(): Boolean = true
+  
   def getIdentiteetti(): String =
     ""
 }

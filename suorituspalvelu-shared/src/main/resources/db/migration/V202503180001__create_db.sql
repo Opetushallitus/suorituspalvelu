@@ -88,15 +88,15 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
     tutkinto_tunniste       INT REFERENCES ammatilliset_tutkinnot (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
-    koodisto                VARCHAR NOT NULL,
+    koodisto                VARCHAR, --Fixme ehkä, NOT NULL-constraint poistettu ainakin väliaikaisesti. Ilmeisesti joissain tutkinnon osissa voi olla koulutusmoduuli->tunniste->koodistoUri -kenttä tyhjänä, esimerkiksi QA-Koskessa ja massaluovutusrajapinnan skeemassa.
     koodistoversio          INT NOT NULL,
     yto                     BOOLEAN NOT NULL,
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
     arvosanaversio          INT,
-    laajuus                 VARCHAR NOT NULL,
-    laajuuskoodi            VARCHAR NOT NULL,
-    laajuuskoodisto         VARCHAR NOT NULL,
+    laajuus                 VARCHAR,
+    laajuuskoodi            VARCHAR,
+    laajuuskoodisto         VARCHAR,
     laajuusversio           INT
 );
 CREATE INDEX ammatillisen_tutkinnon_osat_tutkinto_tunniste_idx ON ammatillisen_tutkinnon_osat (tutkinto_tunniste);
@@ -105,14 +105,14 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
     osa_tunniste            INT REFERENCES ammatillisen_tutkinnon_osat (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
-    koodisto                VARCHAR NOT NULL,
+    koodisto                VARCHAR, --Fixme ehkä, NOT NULL-constraint poistettu ainakin väliaikaisesti. Ilmeisesti joissain tutkinnon osissa voi olla koulutusmoduuli->tunniste->koodistoUri -kenttä tyhjänä, esimerkiksi QA-Koskessa ja massaluovutusrajapinnan skeemassa.
     koodistoversio          INT NOT NULL,
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
     arvosanaversio          INT,
-    laajuus                 VARCHAR NOT NULL,
-    laajuuskoodi            VARCHAR NOT NULL,
-    laajuuskoodisto         VARCHAR NOT NULL,
+    laajuus                 VARCHAR,
+    laajuuskoodi            VARCHAR,
+    laajuuskoodisto         VARCHAR,
     laajuusversio           INT
 );
 CREATE INDEX ammatillisen_tutkinnon_osaalueet_osa_tunniste_idx ON ammatillisen_tutkinnon_osaalueet (osa_tunniste);

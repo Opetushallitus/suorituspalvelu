@@ -19,3 +19,9 @@ spring:
     password: app
   flyway:
     baseline-on-migrate: true
+
+integrations:
+  koski:
+    username: addme_user
+    password: addme_pw
+    base-url: https://virkailija.testiopintopolku.fi
