@@ -1421,7 +1421,21 @@
               "koodistoUri": "kieli",
               "koodistoVersio": 1
             },
-            "osasuoritukset": []
+            "osasuoritukset": [],
+            "suoritustapa": {
+              "koodiarvo": "reformi",
+              "nimi": {
+                "fi": "Reformin mukainen näyttö",
+                "sv": "Kunnandet visas i yrkesprov (reformen)",
+                "en": "Reform"
+              },
+              "lyhytNimi": {
+                "fi": "Reformi",
+                "sv": "Kunnandet visas i yrkesprov (reformen)"
+              },
+              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
+              "koodistoVersio": 1
+            }
           }
         ]
       }

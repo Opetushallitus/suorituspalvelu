@@ -8,11 +8,15 @@ enum Tietolahde:
 
 sealed trait Suoritus
 
+case class Koodi(arvo: String, koodisto: String, versio: Int)
+
 case class Arvosana(arvosana: String, koodi: String)
 
-case class AmmatillinenTutkinto(nimi: String, koodi: String, vahvistusPaivamaara: Option[LocalDate], osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus
+case class AmmatillinenTutkinto(nimi: String, tyyppi: Koodi, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus
 
-case class AmmatillisenTutkinnonOsa(nimi: String, koodi: String, arvosana: Option[String])
+case class AmmatillisenTutkinnonOsaAlue(nimi: String, koodi: Koodi, arvosana: Option[Koodi], laajuus: Int, laajuusKoodi: Koodi)
+
+case class AmmatillisenTutkinnonOsa(nimi: String, koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Int, laajuusKoodi: Koodi, osaAlueet: Set[AmmatillisenTutkinnonOsaAlue])
 
 case class Tuva(koodi: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus
 

@@ -292,7 +292,21 @@
               "koodistoUri": "kieli",
               "koodistoVersio": 1
             },
-            "osasuoritukset": []
+            "osasuoritukset": [],
+            "suoritustapa": {
+              "koodiarvo": "reformi",
+              "nimi": {
+                "fi": "Reformin mukainen näyttö",
+                "sv": "Kunnandet visas i yrkesprov (reformen)",
+                "en": "Reform"
+              },
+              "lyhytNimi": {
+                "fi": "Reformi",
+                "sv": "Kunnandet visas i yrkesprov (reformen)"
+              },
+              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
+              "koodistoVersio": 1
+            }
           }
         ]
       },
@@ -534,7 +548,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -593,7 +608,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -652,7 +668,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -711,7 +728,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -770,7 +788,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -829,7 +848,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -889,7 +909,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -948,7 +969,8 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
-                ]
+                ],
+                "osasuoritukset": []
               },
               {
                 "tyyppi": {
@@ -1010,6 +1032,618 @@
                     },
                     "päivä": "2023-03-15",
                     "hyväksytty": true
+                  }
+                ],
+                "osasuoritukset": [
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVAI22",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                          "sv": "Kommunikation och interaktion på modersmålet",
+                          "en": "Communication and interaction in mother tongue"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                          "sv": "Kommunikation och interaktion på modersmålet",
+                          "en": "Communication and interaction in mother tongue"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "FI",
+                        "nimi": {
+                          "fi": "suomi",
+                          "sv": "finska",
+                          "en": "Finnish"
+                        },
+                        "lyhytNimi": {
+                          "fi": "suomi",
+                          "sv": "finska",
+                          "en": "Finnish"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 4.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVAI22",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                          "sv": "Kommunikation och interaktion på modersmålet",
+                          "en": "Communication and interaction in mother tongue"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                          "sv": "Kommunikation och interaktion på modersmålet",
+                          "en": "Communication and interaction in mother tongue"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "FI",
+                        "nimi": {
+                          "fi": "suomi",
+                          "sv": "finska",
+                          "en": "Finnish"
+                        },
+                        "lyhytNimi": {
+                          "fi": "suomi",
+                          "sv": "finska",
+                          "en": "Finnish"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": false,
+                      "laajuus": {
+                        "arvo": 3.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVTK",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus toisella kotimaisella kielellä",
+                          "sv": "Kommunikation och interaktion på det andra inhemska språket",
+                          "en": "Communication and interaction in the second national language"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Viestintä ja vuorovaikutus toisella kotimaisella kielellä",
+                          "sv": "Kommunikation och interaktion på det andra inhemska språket",
+                          "en": "Communication and interaction in the second national language"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "SV",
+                        "nimi": {
+                          "fi": "ruotsi",
+                          "sv": "svenska",
+                          "en": "Swedish"
+                        },
+                        "lyhytNimi": {
+                          "fi": "ruotsi",
+                          "sv": "svenska",
+                          "en": "Swedish"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 1.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVTK",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus toisella kotimaisella kielellä",
+                          "sv": "Kommunikation och interaktion på det andra inhemska språket",
+                          "en": "Communication and interaction in the second national language"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Viestintä ja vuorovaikutus toisella kotimaisella kielellä",
+                          "sv": "Kommunikation och interaktion på det andra inhemska språket",
+                          "en": "Communication and interaction in the second national language"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "SV",
+                        "nimi": {
+                          "fi": "ruotsi",
+                          "sv": "svenska",
+                          "en": "Swedish"
+                        },
+                        "lyhytNimi": {
+                          "fi": "ruotsi",
+                          "sv": "svenska",
+                          "en": "Swedish"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": false,
+                      "laajuus": {
+                        "arvo": 3.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVVK",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus vieraalla kielellä",
+                          "sv": "Kommunikation och interaktion på ett främmande språk",
+                          "en": "Communication and interaction in a foreign language"
+                        },
+                        "lyhytNimi": {
+                          "fi": "viestintä ja vuorovaikutus vieraalla kielellä",
+                          "sv": "Kommunikation och interaktion på ett främmande språk",
+                          "en": "Communication and interaction in a foreign language"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "EN",
+                        "nimi": {
+                          "fi": "englanti",
+                          "sv": "engelska",
+                          "en": "English"
+                        },
+                        "lyhytNimi": {
+                          "fi": "englanti",
+                          "sv": "engelska",
+                          "en": "English"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 3.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVTD",
+                        "nimi": {
+                          "fi": "Toiminta digitaalisessa ympäristössä",
+                          "sv": "Verksamhet i den digitala miljön",
+                          "en": "Operating in a digital environment"
+                        },
+                        "lyhytNimi": {
+                          "fi": "toiminta digitaalisessa ympäristössä",
+                          "sv": "Verksamhet i den digitala miljön",
+                          "en": "Operating in a digital environment"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 2.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVTL",
+                        "nimi": {
+                          "fi": "Taide ja luova ilmaisu",
+                          "sv": "Konst och kreativt uttryck",
+                          "en": "Art and creative expression"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Taide ja luova ilmaisu",
+                          "sv": "Konst och kreativt uttryck",
+                          "en": "Art and creative expression"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 1.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVVK",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus vieraalla kielellä",
+                          "sv": "Kommunikation och interaktion på ett främmande språk",
+                          "en": "Communication and interaction in a foreign language"
+                        },
+                        "lyhytNimi": {
+                          "fi": "viestintä ja vuorovaikutus vieraalla kielellä",
+                          "sv": "Kommunikation och interaktion på ett främmande språk",
+                          "en": "Communication and interaction in a foreign language"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "EN",
+                        "nimi": {
+                          "fi": "englanti",
+                          "sv": "engelska",
+                          "en": "English"
+                        },
+                        "lyhytNimi": {
+                          "fi": "englanti",
+                          "sv": "engelska",
+                          "en": "English"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": false,
+                      "laajuus": {
+                        "arvo": 3.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
                   }
                 ]
               },
@@ -1074,6 +1708,138 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
+                ],
+                "osasuoritukset": [
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "MLMA",
+                        "nimi": {
+                          "fi": "Matematiikka ja matematiikan soveltaminen",
+                          "sv": "Matematik och tillämpad matematik",
+                          "en": "Mathematics and application of mathematics"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Matematiikka ja matematiikan soveltaminen",
+                          "sv": "Matematik och tillämpad matematik",
+                          "en": "Mathematics and application of mathematics"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 4.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "MLFK",
+                        "nimi": {
+                          "fi": "Fysikaaliset ja kemialliset ilmiöt ja niiden soveltaminen",
+                          "sv": "Fysikaliska och kemiska fenomen och tillämpning av dem",
+                          "en": "Physical and chemical phenomena and their application"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Fysikaaliset ja kemialliset ilmiöt ja niiden soveltaminen",
+                          "sv": "Fysikaliska och kemiska fenomen och tillämpning av dem",
+                          "en": "Physical and chemical phenomena and their application"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 2.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  }
                 ]
               },
               {
@@ -1137,6 +1903,398 @@
                     "päivä": "2023-03-15",
                     "hyväksytty": true
                   }
+                ],
+                "osasuoritukset": [
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "YTYK",
+                        "nimi": {
+                          "fi": "Yhteiskunnassa ja kansalaisena toimiminen",
+                          "sv": "Att verka i samhället och som medborgare",
+                          "en": "Operating as a member of society and a citizen"
+                        },
+                        "lyhytNimi": {
+                          "fi": "yhteiskunnassa ja kansalaisena toimiminen",
+                          "sv": "Att verka i samhället och som medborgare",
+                          "en": "Operating as a member of society and a citizen"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 2.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "YTTT",
+                        "nimi": {
+                          "fi": "Työelämässä toimiminen",
+                          "sv": "Att verka i arbetslivet",
+                          "en": "Operating in the world of work"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Työelämässä toimiminen",
+                          "sv": "Att verka i arbetslivet",
+                          "en": "Operating in the world of work"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 2.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "YTOU",
+                        "nimi": {
+                          "fi": "Opiskelu- ja urasuunnitteluvalmiudet",
+                          "sv": "Färdigheter i studie- och karriärplanering",
+                          "en": "Study and career planning capabilities"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Opiskelu- ja urasuunnitteluvalmiudet",
+                          "sv": "Färdigheter i studie- och karriärplanering",
+                          "en": "Study and career planning capabilities"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 1.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "YTYY",
+                        "nimi": {
+                          "fi": "Yrittäjyys ja yrittäjämäinen toiminta",
+                          "sv": "Företagsamhet och företagarinriktad verksamhet",
+                          "en": "Entrepreneurship and entrepreneurial activities"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Yrittäjyys ja yrittäjämäinen toiminta",
+                          "sv": "Företagsamhet och företagarinriktad verksamhet",
+                          "en": "Entrepreneurship and entrepreneurial activities"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 1.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "YTTH",
+                        "nimi": {
+                          "fi": "Työkyvyn ja hyvinvoinnin ylläpitäminen",
+                          "sv": "Upprätthållande av arbetsförmågan och välbefinnandet",
+                          "en": "Maintaining ability to work and wellbeing at work"
+                        },
+                        "lyhytNimi": {
+                          "fi": "työkyvyn ja hyvinvoinnin ylläpitäminen",
+                          "sv": "Upprätthållande av arbetsförmågan och välbefinnandet",
+                          "en": "Maintaining ability to work and wellbeing at work"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 2.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  },
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "YTKK",
+                        "nimi": {
+                          "fi": "Kestävän kehityksen edistäminen",
+                          "sv": "Främjande av hållbar utveckling",
+                          "en": "Promoting sustainable development"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Kestävän kehityksen edistäminen",
+                          "sv": "Främjande av hållbar utveckling",
+                          "en": "Promoting sustainable development"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": true,
+                      "laajuus": {
+                        "arvo": 1.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "1",
+                          "nimi": {
+                            "fi": "1"
+                          },
+                          "lyhytNimi": {
+                            "fi": "1"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  }
                 ]
               },
               {
@@ -1182,9 +2340,106 @@
                       "koodistoVersio": 1
                     }
                   }
-                }
+                },
+                "osasuoritukset": [
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "ammatillisentutkinnonosanosaalue",
+                      "nimi": {
+                        "fi": "Ammatillisen tutkinnon osan osa-alue",
+                        "sv": "Delområde av en gemensam examendel",
+                        "en": "Section of vocational qualification unit"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "VVAI22",
+                        "nimi": {
+                          "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                          "sv": "Kommunikation och interaktion på modersmålet",
+                          "en": "Communication and interaction in mother tongue"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                          "sv": "Kommunikation och interaktion på modersmålet",
+                          "en": "Communication and interaction in mother tongue"
+                        },
+                        "koodistoUri": "ammatillisenoppiaineet",
+                        "koodistoVersio": 1
+                      },
+                      "kieli": {
+                        "koodiarvo": "FI",
+                        "nimi": {
+                          "fi": "suomi",
+                          "sv": "finska",
+                          "en": "Finnish"
+                        },
+                        "lyhytNimi": {
+                          "fi": "suomi",
+                          "sv": "finska",
+                          "en": "Finnish"
+                        },
+                        "koodistoUri": "kielivalikoima",
+                        "koodistoVersio": 1
+                      },
+                      "pakollinen": false,
+                      "laajuus": {
+                        "arvo": 3.0,
+                        "yksikkö": {
+                          "koodiarvo": "6",
+                          "nimi": {
+                            "fi": "osaamispistettä",
+                            "sv": "kompetenspoäng",
+                            "en": "ECVET competence points"
+                          },
+                          "lyhytNimi": {
+                            "fi": "osp",
+                            "sv": "kp",
+                            "en": "competence points"
+                          },
+                          "koodistoUri": "opintojenlaajuusyksikko",
+                          "koodistoVersio": 1
+                        }
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "2",
+                          "nimi": {
+                            "fi": "2"
+                          },
+                          "lyhytNimi": {
+                            "fi": "2"
+                          },
+                          "koodistoUri": "arviointiasteikkoammatillinen15",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2023-03-15",
+                        "hyväksytty": true
+                      }
+                    ]
+                  }
+                ]
               }
-            ]
+            ],
+            "suoritustapa": {
+              "koodiarvo": "reformi",
+              "nimi": {
+                "fi": "Reformin mukainen näyttö",
+                "sv": "Kunnandet visas i yrkesprov (reformen)",
+                "en": "Reform"
+              },
+              "lyhytNimi": {
+                "fi": "Reformi",
+                "sv": "Kunnandet visas i yrkesprov (reformen)"
+              },
+              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
+              "koodistoVersio": 1
+            },
+            "keskiarvo": 1.0
           }
         ]
       },

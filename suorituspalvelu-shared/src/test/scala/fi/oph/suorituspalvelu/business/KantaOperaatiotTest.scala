@@ -16,7 +16,7 @@ import slick.jdbc.PostgresProfile.api.*
 import java.time.Instant
 import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -85,6 +85,7 @@ class KantaOperaatiotTest {
             DROP TABLE nuorten_perusopetuksen_oppiaineen_oppimaarat;
             DROP TABLE perusopetuksen_oppiaineet;
             DROP TABLE perusopetuksen_oppimaarat;
+            DROP TABLE ammatillisen_tutkinnon_osaalueet;
             DROP TABLE ammatillisen_tutkinnon_osat;
             DROP TABLE ammatilliset_tutkinnot;
             DROP TABLE tuvat;
@@ -95,6 +96,9 @@ class KantaOperaatiotTest {
             DROP TYPE lahde;
           """), 5.seconds)
 
+  /**
+   * Testataan että versio tallentuu ja luetaan oikein.
+   */
   @Test def testVersioRoundtrip(): Unit =
     val OPPIJANUMERO = "1.2.3"
 
@@ -103,17 +107,22 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, data).get
 
     // data palautuu
-    Assertions.assertEquals(data, this.kantaOperaatiot.haeData(versio))
+    Assertions.assertEquals(data, this.kantaOperaatiot.haeData(versio)._2)
 
-  @Test def testNewVersionCreated(): Unit =
+  /**
+   * Testataan että json-datan muuttuessa oppijalle tallennetaan uusi versio.
+   */
+  @Test def testUusiVersioLuodaanKunJsonDataMuuttuu(): Unit =
     val OPPIJANUMERO = "1.2.3"
 
     // tallennetaan versio
     Assertions.assertTrue(this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value1\"}").isDefined)
     Assertions.assertTrue(this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value2\"}").isDefined)
 
-
-  @Test def testNoDuplicateVersionsCreatedForKoski(): Unit =
+  /**
+   * Testataan että jos oppijalle tallennetaan uudestaan viimeisin json-data niin uutta versiota ei luoda.
+   */
+  @Test def testUuttaVersiotaEiLuodaKunJsonDataEiMuutu(): Unit =
     val OPPIJANUMERO = "1.2.3"
 
     // tallennetaan versio
@@ -126,6 +135,35 @@ class KantaOperaatiotTest {
     val duplicateVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, duplicateData)
     Assertions.assertTrue(duplicateVersio.isEmpty)
 
+  /**
+   * Testataan että kun samalla oppijalla tallennetaan versioita rinnakkain syntyy katkeamaton voimassaolohistoria
+   */
+  @Test def testVoimassaoloPerakkain(): Unit =
+    val OPPIJANUMERO = "1.2.3"
+
+    // tallennetaan rinnakkain suuri joukko versioita
+    val tallennusOperaatiot = Range(0, 500).map(i => () => {
+      Thread.sleep((Math.random()*50).asInstanceOf[Int])
+      this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value" + i + "\"}")
+    })
+
+    val versiot = Await.result(Future.sequence(tallennusOperaatiot.map(op => Future {op ()})), 20.seconds)
+      .map(o => Some(this.kantaOperaatiot.haeData(o.get)._1))
+      .sortBy(v => v.get.alku)
+
+    // testataan että versioista muodostuu katkeamaton jatkumo ja viimeisin versio voimassa
+    (Seq(None) ++ versiot).zip(versiot ++ Seq(None)).foreach(pair => {
+      val (earlier, later) = pair
+      (earlier, later) match
+        case (Some(earlier), Some(later)) => Assertions.assertEquals(earlier.loppu.get, later.alku)
+        case (Some(earlier), None) => Assertions.assertTrue(earlier.loppu.isEmpty)
+        case (None, Some(later)) => // ensimmäinen versio
+        case (None, None) => Assertions.fail()
+    })
+
+  /**
+   * Testataan että minimaalinen suoritus tallentuu ja luetaan oikein.
+   */
   @Test def testSuoritusRoundtrip(): Unit =
     val OPPIJANUMERO = "2.3.4"
 
@@ -138,25 +176,47 @@ class KantaOperaatiotTest {
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
     Assertions.assertEquals(Map(versio -> Set(suoritukset)), haetutSuoritusEntiteetit)
 
-  @Test def testVanhatSuorituksetPoistetaan(): Unit =
-    val OPPIJANUMERO = "2.3.4"
+  /**
+   * Testataan että vanhat suoritukset poistetaan kun uudet suoritukset tallennetaan, ts. ei synny suoritusten
+   * unionia.
+   */
+  @Test def testVanhatSuorituksetPoistetaanUusienTieltä(): Unit =
+    val OPPIJANUMERO1 = "2.3.4"
+    val OPPIJANUMERO2 = "3.4.5"
 
-    // tallennetaan versio
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
+    // tallennetaan versio ja suoritukset oppijalle 1
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
+    val suoritukset1 = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    this.kantaOperaatiot.tallennaSuoritukset(versio1, Set(suoritukset1))
 
-    // tallennetaan suoritukset kerran ja sitten toisen kerran
-    this.kantaOperaatiot.tallennaSuoritukset(versio, Set(PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))))
-    val uudetSuoritukset = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
-    this.kantaOperaatiot.tallennaSuoritukset(versio, Set(uudetSuoritukset))
+    // tallennetaan versio oppijalle 2
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO2, KOSKI, "{\"attr\": \"value\"}").get
 
-    // uudet suoritukset palautuvat kun haetaan oppijanumerolla
-    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
-    Assertions.assertEquals(Map(versio -> Set(uudetSuoritukset)), haetutSuoritusEntiteetit)
+    // tallennetaan suoritukset kerran ja sitten toisen kerran oppijalle 2
+    this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))))
+    val uudetSuoritukset2 = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
+    this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(uudetSuoritukset2))
 
-  @Test def testExampleDataSuorituksetRoundtrip(): Unit =
-    Seq("/1_2_246_562_24_40483869857.json", "/1_2_246_562_24_30563266636.json").foreach(fileName => {
+    // oppijan 2 uudet suoritukset palautuvat kun haetaan oppijanumerolla
+    val haetutSuoritusEntiteetit2 = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO2)
+    Assertions.assertEquals(Map(versio2 -> Set(uudetSuoritukset2)), haetutSuoritusEntiteetit2)
+
+    // oppijan 1 suoritukset ennallaan
+    val haetutSuoritusEntiteetit1 = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
+    Assertions.assertEquals(Map(versio1 -> Set(suoritukset1)), haetutSuoritusEntiteetit1)
+
+
+  /**
+   * Testataan että suoritukset tallentuvat ja luetaan oikein oikealla KOSKI-datalla. Tämän testin tulisi kattaa kaikki
+   * erityyppiset KOSKI-suoritukset.
+   */
+  @Test def testAitoKoskiDataSuorituksetRoundtrip(): Unit =
+    Seq(
+      "/1_2_246_562_24_40483869857.json",
+      "/1_2_246_562_24_30563266636.json"
+    ).foreach(fileName => {
       val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
-      val suoritukset = splitData.map((oppijaOid, data) => {
+      val suoritukset = splitData.foreach((oppijaOid, data) => {
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
@@ -166,23 +226,70 @@ class KantaOperaatiotTest {
         val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
 
         Assertions.assertEquals(Map(versio -> suoritukset), haetutSuoritukset);
-      }).toSeq
+      })
     })
 
+  /**
+   * Testataan että suorituksia haettaessa palautetaan viimeisin versio jonka data on parseroitu onnistuneesti.
+   */
+  @Test def testPalautetaanViimeisinParseroituVersio(): Unit =
+    val OPPIJANUMERO = "2.3.4"
 
+    // tallenetaan uusia versioita ilman että tallennetaan suorituksia
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value1\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value2\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value3\"}").get
+
+    // tallennetaan versio ja suoritukset
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value4\"}").get
+    val suoritukset = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    this.kantaOperaatiot.tallennaSuoritukset(versio, Set(suoritukset))
+
+    // tallennetaan uusia versioita ilman että tallennetaan suorituksia
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value5\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value6\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value7\"}").get
+
+    // versio jotka suoritukset purettu palautuu suorituksineen kun haetaan oppijanumerolla
+    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio -> Set(suoritukset)), haetutSuoritusEntiteetit)
+
+  /**
+   * Testataan että suorituksia haettaessa ei palauteta mitään jos ei ole versioita joiden data on parseroitu
+   * onnistuneesti.
+   */
+  @Test def testEiPalautetaVersioitaJosEiParseroituja(): Unit =
+    val OPPIJANUMERO = "2.3.4"
+
+    // tallenetaan uusia versioita ilman että tallennetaan suorituksia
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value1\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value2\"}").get
+    this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value3\"}").get
+
+    // koska ei ole parseroituja versioita ei palaudu mitään
+    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
+    Assertions.assertEquals(Map.empty, haetutSuoritusEntiteetit)
+
+  /**
+   * Testataan (hyvin karkealla tavalla) suoritusten tallennuksen ja haun suorituskykyä.
+   */
   @Test def testExampleDataSuorituksetRoundtripPerformance(): Unit =
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json"))
-    val suoritukset = splitData.map((oppijaOid, data) => (oppijaOid, KoskiToSuoritusConverter.toSuoritus(KoskiParser.parseKoskiData(data)).toSet)).toSeq.head
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritukset._1, KOSKI, "{\"attr\": \"value\"}").get
-    this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset._2)
+    val OPPIJANUMERO = "2.3.4."
+    val iterations = 100
 
-    val start = Instant.now()
-
-    (1 to 100).foreach(i => {
-      val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(suoritukset._1)
+    val startSave = Instant.now()
+    val data = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
+    (1 to iterations).foreach(i => {
+      val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO + i, KOSKI, "{\"attr\": \"value\"}").get
+      this.kantaOperaatiot.tallennaSuoritukset(versio, KoskiToSuoritusConverter.toSuoritus(KoskiParser.parseKoskiData(data)).toSet)
     })
+    val saveDuration = Instant.now().toEpochMilli - startSave.toEpochMilli
+    Assertions.assertTrue(saveDuration< 50 * iterations);
 
-    val duration = Instant.now().toEpochMilli - start.toEpochMilli
-    LOG.info("Duration: " + duration + "ms")
-
+    val readStart = Instant.now()
+    (1 to iterations).foreach(i => {
+      val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO + i)
+    })
+    val readDuration = Instant.now().toEpochMilli - readStart.toEpochMilli
+    Assertions.assertTrue(readDuration < 10 * iterations);
 }
