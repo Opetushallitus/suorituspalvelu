@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
     arvosanaversio          INT,
-    laajuus                 VARCHAR,
+    laajuus                 INT,
     laajuuskoodi            VARCHAR,
     laajuuskoodisto         VARCHAR,
     laajuusversio           INT
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
     arvosanaversio          INT,
-    laajuus                 VARCHAR,
+    laajuus                 INT,
     laajuuskoodi            VARCHAR,
     laajuuskoodisto         VARCHAR,
     laajuusversio           INT
