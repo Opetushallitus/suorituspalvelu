@@ -250,7 +250,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                   'yto', yto,
                   'arvosana', CASE WHEN arvosana IS NOT NULL THEN jsonb_build_object('arvo', arvosana, 'koodisto', arvosanaasteikko, 'versio', arvosanaversio) ELSE null END,
                   'laajuus', laajuus,
-                  'laajuusKoodi', jsonb_build_object('arvo', laajuuskoodi, 'koodisto', laajuuskoodisto, 'versio', laajuusversio)
+                  'laajuusKoodi', CASE WHEN laajuuskoodi IS NOT NULL THEN jsonb_build_object('arvo', laajuuskoodi, 'koodisto', laajuuskoodisto, 'versio', laajuusversio) ELSE NULL END
                 )::text AS data,
                 null::text AS versio
               FROM ammatillisen_tutkinnon_osat
@@ -266,7 +266,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                   'koodi', jsonb_build_object('arvo', koodi, 'koodisto', koodisto, 'versio', koodistoversio),
                   'arvosana', CASE WHEN arvosana IS NOT NULL THEN jsonb_build_object('arvo', arvosana, 'koodisto', arvosanaasteikko, 'versio', arvosanaversio) ELSE null END,
                   'laajuus', laajuus,
-                  'laajuusKoodi', jsonb_build_object('arvo', laajuuskoodi, 'koodisto', laajuuskoodisto, 'versio', laajuusversio)
+                  'laajuusKoodi', CASE WHEN laajuuskoodi IS NOT NULL THEN jsonb_build_object('arvo', laajuuskoodi, 'koodisto', laajuuskoodisto, 'versio', laajuusversio) ELSE NULL END
                 )::text AS data,
                 null::text AS versio
               FROM ammatillisen_tutkinnon_osaalueet
