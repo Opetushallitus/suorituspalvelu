@@ -206,6 +206,25 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Map(versio1 -> Set(suoritukset1)), haetutSuoritusEntiteetit1)
 
 
+  @Test def testAitoKoskiDataSuorituksetOsajoukkoRoundtrip(): Unit = {
+    Seq(
+      "/1_2_246_562_24_40483869857b.json"
+    ).foreach(fileName => {
+      val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
+      val suoritukset = splitData.foreach((oppijaOid, data) => {
+        val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
+
+        val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
+        val suoritukset: Set[Suoritus] = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
+        this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset)
+
+        val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
+
+        Assertions.assertEquals(suoritukset, haetutSuoritukset.head._2);
+      })
+    })
+  }
+
   /**
    * Testataan että suoritukset tallentuvat ja luetaan oikein oikealla KOSKI-datalla. Tämän testin tulisi kattaa kaikki
    * erityyppiset KOSKI-suoritukset.
