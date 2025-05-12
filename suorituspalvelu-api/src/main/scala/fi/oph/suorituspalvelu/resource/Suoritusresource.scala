@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, PerusopetuksenOppiaine, PerusopetuksenOppimaara}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, PerusopetuksenOppiaine, PerusopetuksenOppimaara}
 import fi.oph.suorituspalvelu.business.Tietolahde.VIRKAILIJA
 import fi.oph.suorituspalvelu.resource.ApiConstants.{SUORITUKSEN_LUONTI_EPAONNISTUI, SUORITUS_PATH, SUORITUS_RESPONSE_403_DESCRIPTION, VIRHEELLINEN_SUORITUS_JSON_VIRHE}
 import fi.oph.suorituspalvelu.util.{LogContext, SecurityUtil}
@@ -77,7 +77,7 @@ class Suoritusresource {
           .map(suoritus =>
             val kantaOperaatiot = KantaOperaatiot(database)
             val versio = kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}").get
-            kantaOperaatiot.tallennaSuoritukset(versio, Set(PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine(suoritus.suoritus.get, "koodi", "10")))))
+            kantaOperaatiot.tallennaSuoritukset(versio, Set(PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine(suoritus.suoritus.get, "koodi", "10")))))
             LogContext(oppijaNumero = suoritus.oppijaNumero.get())(() =>
               LOG.info("Tallennettu suoritus")
               val user = AuditLog.getUser(request)

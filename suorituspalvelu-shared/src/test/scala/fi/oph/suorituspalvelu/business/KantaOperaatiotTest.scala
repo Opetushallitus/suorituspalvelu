@@ -169,7 +169,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritukset = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritukset = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
     this.kantaOperaatiot.tallennaSuoritukset(versio, Set(suoritukset))
 
     // suoritus palautuu kun haetaan oppijanumerolla
@@ -186,15 +186,15 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset oppijalle 1
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritukset1 = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritukset1 = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
     this.kantaOperaatiot.tallennaSuoritukset(versio1, Set(suoritukset1))
 
     // tallennetaan versio oppijalle 2
     val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO2, KOSKI, "{\"attr\": \"value\"}").get
 
     // tallennetaan suoritukset kerran ja sitten toisen kerran oppijalle 2
-    this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))))
-    val uudetSuoritukset2 = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
+    this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))))
+    val uudetSuoritukset2 = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
     this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(uudetSuoritukset2))
 
     // oppijan 2 uudet suoritukset palautuvat kun haetaan oppijanumerolla
@@ -261,7 +261,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value4\"}").get
-    val suoritukset = PerusopetuksenOppimaara(None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritukset = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
     this.kantaOperaatiot.tallennaSuoritukset(versio, Set(suoritukset))
 
     // tallennetaan uusia versioita ilman että tallennetaan suorituksia
