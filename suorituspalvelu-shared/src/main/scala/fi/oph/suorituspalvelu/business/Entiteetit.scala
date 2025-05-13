@@ -43,3 +43,37 @@ case class AmmatillinenOpiskeluoikeus(oid: String, oppilaitosOid: String, suorit
 case class GeneerinenOpiskeluoikeus(oid: String, tyyppi: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
+
+case class VirtaTutkinto(
+                          nimiFi: Option[String],
+                          nimiSv: Option[String],
+                          nimiEn: Option[String],
+                          komoTunniste: String,
+                          opintoPisteet: BigDecimal,
+                          suoritusPvm: LocalDate,
+                          myontaja: String,
+                          kieli: String,
+                          koulutusKoodi: String
+                        ) extends Suoritus
+
+case class Opintosuoritus(
+                           nimiFi: Option[String],
+                           nimiSv: Option[String],
+                           nimiEn: Option[String],
+                           komoTunniste: String,
+                           opintoPisteet: BigDecimal,
+                           opintoviikot: Option[BigDecimal],
+                           suoritusPvm: LocalDate,
+                           hyvaksilukuPvm: Option[LocalDate],
+                           myontaja: String,
+                           jarjestavaRooli: Option[String],
+                           jarjestavaKoodi: Option[String],
+                           jarjestavaOsuus: Option[BigDecimal],
+                           arvosana: Option[String],
+                           arvosanaAsteikko: Option[String],
+                           kieli: String,
+                           koulutusala: Int,
+                           koulutusalaKoodisto: String,
+                           opinnaytetyo: Boolean
+                         ) extends Suoritus
+
