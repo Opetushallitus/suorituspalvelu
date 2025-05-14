@@ -23,7 +23,7 @@ class KoskiParsingTest {
       val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
       splitData.foreach((oppijaOid, data) => {
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet)
+        val suoritukset = KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet)
       })
     })
 
@@ -40,7 +40,7 @@ class KoskiParsingTest {
     val splitData = KoskiParser.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
     splitData.map((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet, true)
+      KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet, true)
     }).next().head.asInstanceOf[AmmatillinenTutkinto]
 
   @Test def testAmmatillisenTutkinnonTila(): Unit =

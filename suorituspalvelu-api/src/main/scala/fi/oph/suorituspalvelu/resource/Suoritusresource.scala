@@ -77,7 +77,7 @@ class Suoritusresource {
           .map(suoritus =>
             val kantaOperaatiot = KantaOperaatiot(database)
             val versio = kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaNumero.get, VIRKAILIJA, "{}").get
-            kantaOperaatiot.tallennaSuoritukset(versio, Set(PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine(suoritus.suoritus.get, "koodi", "10")))))
+            kantaOperaatiot.getSuoritusInserts(versio, Set(PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine(suoritus.suoritus.get, "koodi", "10")))))
             LogContext(oppijaNumero = suoritus.oppijaNumero.get())(() =>
               LOG.info("Tallennettu suoritus")
               val user = AuditLog.getUser(request)

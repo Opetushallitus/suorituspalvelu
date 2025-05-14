@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, Ser
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.KantaOperaatiot.{MAPPER, SuoritusTyypit}
+import fi.oph.suorituspalvelu.business.KantaOperaatiot.{MAPPER, KantaEntiteetit}
 import fi.oph.suorituspalvelu.business.Tietolahde.VIRTA
 import org.skyscreamer.jsonassert.{JSONCompare, JSONCompareMode}
 import slick.jdbc.{JdbcBackend, SQLActionBuilder}
@@ -18,7 +18,8 @@ import slick.sql.SqlStreamingAction
 
 import java.time.Instant
 import java.util.UUID
-import KantaOperaatiot.SuoritusTyypit.*
+import KantaOperaatiot.KantaEntiteetit.*
+import fi.oph.suorituspalvelu.parsing.koski.KoskiLisatiedot
 
 object KantaOperaatiot {
   val MAPPER: ObjectMapper = {
@@ -31,9 +32,9 @@ object KantaOperaatiot {
     mapper
   }
 
-  enum SuoritusTyypit:
+  enum KantaEntiteetit:
     case AMMATILLINEN_TUTKINTO, AMMATILLISEN_TUTKINNON_OSA, AMMATILLISEN_TUTKINNON_OSAALUE, PERUSOPETUKSEN_OPPIMAARA,
-    NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA, PERUSOPETUKSEN_VUOSILUOKKA, PERUSOPETUKSEN_OPPIAINE, TUVA, TELMA
+    NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA, PERUSOPETUKSEN_VUOSILUOKKA, PERUSOPETUKSEN_OPPIAINE, TUVA, TELMA, PERUSOPETUKSEN_OPISKELUOIKEUS
 }
 
 class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
@@ -143,26 +144,46 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       DBIO.sequence(tutkintoTunnisteet.map(tunniste => suoritus.osat.map(osa => getAmmatillisenTutkinnonOsaInserts(tunniste, osa))).flatten)
     })
 
-  def getPerusopetuksenVuosiluokkaInserts(versio: VersioEntiteetti, suoritus: PerusopetuksenVuosiluokka): DBIOAction[_, NoStream, Effect] =
+  def getPerusopetuksenVuosiluokkaInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: PerusopetuksenVuosiluokka): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
-      sqlu"""INSERT INTO perusopetuksen_vuosiluokat(versio_tunniste, nimi, koodi)
-            VALUES(${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi})"""))
+      sqlu"""INSERT INTO perusopetuksen_vuosiluokat(versio_tunniste, opiskeluoikeus_tunniste, nimi, koodi)
+            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.nimi}, ${suoritus.koodi})"""))
 
-  def getNuortenPerusopetuksenOppiaineenOppimaaraInserts(versio: VersioEntiteetti, suoritus: NuortenPerusopetuksenOppiaineenOppimaara): DBIOAction[_, NoStream, Effect] =
+  def getNuortenPerusopetuksenOppiaineenOppimaaraInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: NuortenPerusopetuksenOppiaineenOppimaara): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
-      sqlu"""INSERT INTO nuorten_perusopetuksen_oppiaineen_oppimaarat(versio_tunniste, nimi, koodi, arvosana)
-            VALUES(${versio.tunniste.toString}::uuid, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
+      sqlu"""INSERT INTO nuorten_perusopetuksen_oppiaineen_oppimaarat(versio_tunniste, opiskeluoikeus_tunniste, nimi, koodi, arvosana)
+            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
 
   def getPerusopetuksenOppimaaranAineInserts(parentId: Int, suoritus: PerusopetuksenOppiaine): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
       sqlu"""INSERT INTO perusopetuksen_oppiaineet(oppimaara_tunniste, nimi, koodi, arvosana)
             VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
 
-  def getPerusopetuksenOppimaaraInserts(versio: VersioEntiteetti, suoritus: PerusopetuksenOppimaara): DBIOAction[_, NoStream, Effect] =
-    sql"""INSERT INTO perusopetuksen_oppimaarat(versio_tunniste, organisaatio_oid, tila, tilakoodisto, tilaversio, vahvistuspaivamaara)
-            VALUES(${versio.tunniste.toString}::uuid, ${suoritus.organisaatioOid}, ${suoritus.tila.arvo}, ${suoritus.tila.koodisto}, ${suoritus.tila.versio}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date) RETURNING tunniste""".as[(Int)].flatMap(oppimaaraTunnisteet => {
-      DBIO.sequence(oppimaaraTunnisteet.map(tunniste => suoritus.aineet.map(osa => getPerusopetuksenOppimaaranAineInserts(tunniste, osa))).flatten)
+  def getPerusopetuksenOppimaaraInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: PerusopetuksenOppimaara): DBIOAction[_, NoStream, Effect] =
+    sql"""INSERT INTO perusopetuksen_oppimaarat(versio_tunniste, opiskeluoikeus_tunniste, organisaatio_oid, tila, tilakoodisto, tilaversio, vahvistuspaivamaara)
+            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.organisaatioOid}, ${suoritus.tila.arvo}, ${suoritus.tila.koodisto},
+            ${suoritus.tila.versio}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date) RETURNING tunniste""".as[(Int)]
+      .flatMap(oppimaaraTunnisteet => {DBIO.sequence(oppimaaraTunnisteet.map(tunniste => suoritus.aineet.map(osa => getPerusopetuksenOppimaaranAineInserts(tunniste, osa))).flatten)
     })
+
+  def getPerusopetuksenOpiskeluoikeudenSuoritusInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: Suoritus) = {
+    suoritus match {
+      case s: PerusopetuksenOppimaara => getPerusopetuksenOppimaaraInserts(versio, parentOpiskeluoikeusId, s)
+      case s: NuortenPerusopetuksenOppiaineenOppimaara => getNuortenPerusopetuksenOppiaineenOppimaaraInserts(versio, parentOpiskeluoikeusId, s)
+      case s: PerusopetuksenVuosiluokka => getPerusopetuksenVuosiluokkaInserts(versio, parentOpiskeluoikeusId, s)
+      case _ =>
+        LOG.error(s"Tuntematon perusopetuksen suoritustyyppi!")
+        throw new Exception(s"Tuntematon perusopetuksen suoritustyyppi")
+    }
+  }
+
+  def getPerusopetuksenOpiskeluoikeusInserts(versio: VersioEntiteetti, opiskeluoikeus: PerusopetuksenOpiskeluoikeus) = {
+    sql"""INSERT INTO perusopetuksen_opiskeluoikeudet(versio_tunniste, oppilaitos_oid, lisatiedot, tila)
+          VALUES(${versio.tunniste.toString}::uuid, ${opiskeluoikeus.oppilaitosOid}, ${MAPPER.writeValueAsString(opiskeluoikeus.lisatiedot)}::jsonb,
+          ${MAPPER.writeValueAsString(opiskeluoikeus.tila)}::jsonb) RETURNING tunniste""".as[(Int)].flatMap(opiskeluoikeusTunnisteet => {
+      DBIO.sequence(opiskeluoikeusTunnisteet.flatMap(tunniste => opiskeluoikeus.suoritukset.map(aliSuoritus => getPerusopetuksenOpiskeluoikeudenSuoritusInserts(versio, tunniste, aliSuoritus))))
+    })
+  }
 
   def getTuvaInserts(versio: VersioEntiteetti, suoritus: Tuva): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
@@ -174,34 +195,49 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       sqlu"""INSERT INTO telmat(versio_tunniste, koodi)
             VALUES(${versio.tunniste.toString}::uuid, ${suoritus.koodi})"""))
 
-  def tallennaSuoritukset(versio: VersioEntiteetti, suoritukset: Set[Suoritus]): Unit =
+  def getOpiskeluoikeusInserts(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus]): Set[DBIOAction[Vector[Any], NoStream, Effect & Effect]] = {
+    opiskeluoikeudet.map {
+      case o: PerusopetuksenOpiskeluoikeus => getPerusopetuksenOpiskeluoikeusInserts(versio, o)
+      case _ => ??? //Todo, halutaanko kenties tallentaa muunkin tyyppisiä suorituksia tällä metodilla?
+    }
+  }
+
+  def getSuoritusInserts(versio: VersioEntiteetti, suoritukset: Set[Suoritus]): Set[DBIOAction[?, NoStream, Effect]] = {
+    suoritukset.map {
+      case s: AmmatillinenTutkinto => getAmmatillinenTutkintoInserts(versio, s)
+      case s: Tuva => getTuvaInserts(versio, s)
+      case s: Telma => getTelmaInserts(versio, s)
+      case suoritus@s =>
+        LOG.warn(s"Yllättävä suoritustyyppi: $suoritus")
+        ???
+    }
+  }
+
+  def tallennaVersioonLiittyvätEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], suoritukset: Set[Suoritus]) = {
+    LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) ja suoritukset (${suoritukset.size})")
     val poistaSuoritukset = poistaVersionSuoritukset(versio)
     val otaVersioKayttoon = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL WHERE tunniste=${versio.tunniste.toString}::uuid"""
 
-    val inserts = suoritukset.map(suoritus => {
-      suoritus match
-        case s: AmmatillinenTutkinto => getAmmatillinenTutkintoInserts(versio, s)
-        case s: PerusopetuksenOppimaara => getPerusopetuksenOppimaaraInserts(versio, s)
-        case s: NuortenPerusopetuksenOppiaineenOppimaara => getNuortenPerusopetuksenOppiaineenOppimaaraInserts(versio, s)
-        case s: PerusopetuksenVuosiluokka => getPerusopetuksenVuosiluokkaInserts(versio, s)
-        case s: Tuva => getTuvaInserts(versio, s)
-        case s: Telma => getTelmaInserts(versio, s)
-    })
+    val suoritusInserts = getSuoritusInserts(versio, suoritukset)
+    val opiskeluoikeusInserts = getOpiskeluoikeusInserts(versio, opiskeluoikeudet)
 
-    Await.result(db.run(DBIO.sequence(Seq(poistaSuoritukset, DBIO.sequence(inserts), otaVersioKayttoon)).transactionally), DB_TIMEOUT)
+    Await.result(db.run(DBIO.sequence(Seq(poistaSuoritukset, DBIO.sequence(opiskeluoikeusInserts), DBIO.sequence(suoritusInserts), otaVersioKayttoon)).transactionally), DB_TIMEOUT)
+  }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Suoritus]] =
+
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[TallennettavaEntiteetti]] =
     var ammatillisenTutkinnonOsaAlueet: Map[String, Seq[AmmatillisenTutkinnonOsaAlue]] = Map.empty
     var ammatillisenTutkinnonOsat: Map[String, Seq[AmmatillisenTutkinnonOsa]] = Map.empty
     var perusopetuksenOppiaineet: Map[String, Seq[PerusopetuksenOppiaine]] = Map.empty
+    var perusopetuksenSuoritukset: Map[String, Seq[Suoritus]] = Map.empty
     Await.result(db.run(
         (sql"""
           WITH RECURSIVE
             w_versiotunnisteet(tunniste) AS ("""
-            concat
-            versioTunnisteetQuery
-            concat
-            sql"""),
+          concat
+          versioTunnisteetQuery
+          concat
+          sql"""),
             w_versiot_in_use(tunniste, use_versio_tunniste, loppu) AS (
                 SELECT versiot.tunniste, versiot.use_versio_tunniste, upper(versiot.voimassaolo)
                 FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste
@@ -227,6 +263,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${AMMATILLINEN_TUTKINTO.toString} AS tyyppi,
                 ammatilliset_tutkinnot.tunniste AS tunniste,
                 null::int AS parent_tunniste,
+                null::int AS opiskeluoikeus_tunniste,
                 jsonb_build_object(
                   'nimi', nimi,
                   'tyyppi', jsonb_build_object('arvo', tyyppi, 'koodisto', koodisto, 'versio', koodistoversio),
@@ -244,6 +281,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${AMMATILLISEN_TUTKINNON_OSA.toString} AS tyyppi,
                 ammatillisen_tutkinnon_osat.tunniste AS tunniste,
                 tutkinto_tunniste AS parent_tunniste,
+                null::int AS opiskeluoikeus_tunniste,
                 jsonb_build_object(
                   'nimi', nimi,
                   'koodi', jsonb_build_object('arvo', koodi, 'koodisto', koodisto, 'versio', koodistoversio),
@@ -261,6 +299,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${AMMATILLISEN_TUTKINNON_OSAALUE.toString} AS tyyppi,
                 null::int AS tunniste,
                 osa_tunniste AS parent_tunniste,
+                null::int AS opiskeluoikeus_tunniste,
                 jsonb_build_object(
                   'nimi', nimi,
                   'koodi', jsonb_build_object('arvo', koodi, 'koodisto', koodisto, 'versio', koodistoversio),
@@ -271,46 +310,67 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 null::text AS versio
               FROM ammatillisen_tutkinnon_osaalueet
               INNER JOIN w_ammatillisen_tutkinnon_osat ON osa_tunniste=w_ammatillisen_tutkinnon_osat.tunniste),
+            w_perusopetuksen_opiskeluoikeudet AS (
+              SELECT
+                3 AS priority,
+                ${PERUSOPETUKSEN_OPISKELUOIKEUS.toString} as tyyppi,
+                perusopetuksen_opiskeluoikeudet.tunniste AS tunniste,
+                null::int AS parent_tunniste,
+                jsonb_build_object(
+                  'oppilaitos_oid', oppilaitos_oid,
+                  'lisatiedot', lisatiedot::text,
+                  'tila', tila::text
+                )::text AS data,
+                w_versiot.versio AS versio
+                FROM perusopetuksen_opiskeluoikeudet
+                INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_opiskeluoikeudet.versio_tunniste),
             w_perusopetuksen_oppimaarat AS (
               SELECT
                 4 AS priority,
                 ${PERUSOPETUKSEN_OPPIMAARA.toString} AS tyyppi,
                 perusopetuksen_oppimaarat.tunniste AS tunniste,
                 null::int AS parent_tunniste,
+                perusopetuksen_opiskeluoikeudet.tunniste AS opiskeluoikeus_tunniste,
                 jsonb_build_object(
                   'organisaatioOid', organisaatio_oid,
-                  'tila', jsonb_build_object('arvo', tila, 'koodisto', tilakoodisto, 'versio', tilaversio),
+                  'tila', jsonb_build_object('arvo', perusopetuksen_oppimaarat.tila, 'koodisto', tilakoodisto, 'versio', tilaversio),
                   'vahvistusPaivamaara', vahvistuspaivamaara
                 )::text AS data,
                 w_versiot.versio AS versio
               FROM perusopetuksen_oppimaarat
-              INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_oppimaarat.versio_tunniste),
+              INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_oppimaarat.versio_tunniste
+              INNER JOIN perusopetuksen_opiskeluoikeudet ON perusopetuksen_opiskeluoikeudet.tunniste=perusopetuksen_oppimaarat.opiskeluoikeus_tunniste),
             w_nuorten_perusopetuksen_oppiaineen_oppimaarat AS (
               SELECT
                 5 AS priority,
                 ${NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA.toString} AS tyyppi,
                 null::int AS tunniste,
                 null::int AS parent_tunniste,
+                perusopetuksen_opiskeluoikeudet.tunniste AS opiskeluoikeus_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana)::text AS data,
                 w_versiot.versio AS versio
               FROM nuorten_perusopetuksen_oppiaineen_oppimaarat
-              INNER JOIN w_versiot ON w_versiot.tunniste=nuorten_perusopetuksen_oppiaineen_oppimaarat.versio_tunniste),
+              INNER JOIN w_versiot ON w_versiot.tunniste=nuorten_perusopetuksen_oppiaineen_oppimaarat.versio_tunniste
+              INNER JOIN perusopetuksen_opiskeluoikeudet ON perusopetuksen_opiskeluoikeudet.tunniste=nuorten_perusopetuksen_oppiaineen_oppimaarat.opiskeluoikeus_tunniste),
             w_perusopetuksen_vuosiluokat AS (
               SELECT
                 6 AS priority,
                 ${PERUSOPETUKSEN_VUOSILUOKKA.toString} AS tyyppi,
                 null::int AS tunniste,
                 null::int AS parent_tunniste,
+                perusopetuksen_opiskeluoikeudet.tunniste AS opiskeluoikeus_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi)::text AS data,
                 w_versiot.versio AS versio
               FROM perusopetuksen_vuosiluokat
-              INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_vuosiluokat.versio_tunniste),
+              INNER JOIN w_versiot ON w_versiot.tunniste=perusopetuksen_vuosiluokat.versio_tunniste
+              INNER JOIN perusopetuksen_opiskeluoikeudet ON perusopetuksen_opiskeluoikeudet.tunniste=perusopetuksen_vuosiluokat.opiskeluoikeus_tunniste),
             w_perusopetuksen_oppiaineet AS (
               SELECT
                 7 AS priority,
                 ${PERUSOPETUKSEN_OPPIAINE.toString} AS tyyppi,
                 null::int AS tunniste,
                 oppimaara_tunniste AS parent_tunniste,
+                null::int AS opiskeluoikeus_tunniste,
                 jsonb_build_object('nimi', nimi, 'koodi', koodi, 'arvosana', arvosana)::text AS data,
                 null::text AS versio
               FROM perusopetuksen_oppiaineet
@@ -321,6 +381,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${TUVA.toString} AS tyyppi,
                 null::int AS tunniste,
                 null::int AS parent_tunniste,
+                null::int AS opiskeluoikeus_tunniste,
                 jsonb_build_object('koodi', koodi, 'vahvistusPaivamaara', vahvistuspaivamaara)::text AS data,
                 w_versiot.versio AS versio
               FROM tuvat
@@ -331,6 +392,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${TELMA.toString} AS tyyppi,
                 null::int AS tunniste,
                 null::int AS parent_tunniste,
+                null::int AS opiskeluoikeus_tunniste,
                 jsonb_build_object('koodi', koodi)::text AS data,
                 w_versiot.versio AS versio
               FROM telmat
@@ -353,10 +415,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           UNION ALL
           SELECT * FROM w_telmat
           ORDER BY priority DESC;
-        """).as[(Int, String, String, String, String, String)]), DB_TIMEOUT)
-      .map((_, tyyppi, tunniste, parentTunniste, data, versioData) =>
+        """).as[(Int, String, String, String, String, String, String)]), DB_TIMEOUT).flatMap((_, tyyppi, tunniste, parentTunniste, opiskeluoikeusTunniste, data, versioData) =>
         val versio = Option.apply(versioData).map(data => MAPPER.readValue(data, classOf[VersioEntiteetti]))
-        SuoritusTyypit.valueOf(tyyppi) match
+        KantaEntiteetit.valueOf(tyyppi) match
           case AMMATILLINEN_TUTKINTO =>
             val tutkinto = MAPPER.readValue(data, classOf[AmmatillinenTutkinto]).copy(osat = ammatillisenTutkinnonOsat.getOrElse(tunniste, Seq.empty).toSet)
             Some(versio.get -> tutkinto)
@@ -374,15 +435,30 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               case None => Some(Seq(osa))
             )
             None
+          case PERUSOPETUKSEN_OPISKELUOIKEUS =>
+            val opiskeluoikeus = MAPPER.readValue(data, classOf[PerusopetuksenOpiskeluoikeus]).copy(suoritukset = perusopetuksenSuoritukset.getOrElse(tunniste, Seq.empty))
+            Some(versio.get -> opiskeluoikeus)
           case PERUSOPETUKSEN_OPPIMAARA =>
-            val tutkinto = MAPPER.readValue(data, classOf[PerusopetuksenOppimaara]).copy(aineet = perusopetuksenOppiaineet.getOrElse(tunniste, Seq.empty).toSet)
-            Some(versio.get -> tutkinto)
+            val suoritus = MAPPER.readValue(data, classOf[PerusopetuksenOppimaara]).copy(aineet = perusopetuksenOppiaineet.getOrElse(tunniste, Seq.empty).toSet)
+            perusopetuksenSuoritukset = perusopetuksenSuoritukset.updatedWith(opiskeluoikeusTunniste) {
+              case Some(existingSuoritukset) => Some(suoritus +: existingSuoritukset)
+              case None => Some(Seq(suoritus))
+            }
+            Some(versio.get -> suoritus)
           case NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA =>
-            val tutkinto = MAPPER.readValue(data, classOf[NuortenPerusopetuksenOppiaineenOppimaara])
-            Some(versio.get -> tutkinto)
+            val suoritus = MAPPER.readValue(data, classOf[NuortenPerusopetuksenOppiaineenOppimaara])
+            perusopetuksenSuoritukset = perusopetuksenSuoritukset.updatedWith(opiskeluoikeusTunniste) {
+              case Some(existingSuoritukset) => Some(suoritus +: existingSuoritukset)
+              case None => Some(Seq(suoritus))
+            }
+            Some(versio.get -> suoritus)
           case PERUSOPETUKSEN_VUOSILUOKKA =>
-            val tutkinto = MAPPER.readValue(data, classOf[PerusopetuksenVuosiluokka])
-            Some(versio.get -> tutkinto)
+            val suoritus = MAPPER.readValue(data, classOf[PerusopetuksenVuosiluokka])
+            perusopetuksenSuoritukset = perusopetuksenSuoritukset.updatedWith(opiskeluoikeusTunniste) {
+              case Some(existingSuoritukset) => Some(suoritus +: existingSuoritukset)
+              case None => Some(Seq(suoritus))
+            }
+            Some(versio.get -> suoritus)
           case TUVA =>
             val tutkinto = MAPPER.readValue(data, classOf[Tuva])
             Some(versio.get -> tutkinto)
@@ -397,12 +473,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )
             None
           case default =>
-            None
-      )
-      .flatten
+            None)
       .groupBy((versio, _) => versio)
       .map((versio, suoritukset) => (versio, suoritukset.map(t => t._2).toSet))
 
-  def haeSuoritukset(oppijaNumero: String): Map[VersioEntiteetti, Set[Suoritus]] =
+  def haeSuoritukset(oppijaNumero: String): Map[VersioEntiteetti, Set[TallennettavaEntiteetti]] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE oppijanumero=${oppijaNumero} AND upper(voimassaolo)='infinity'::timestamptz""")
 }

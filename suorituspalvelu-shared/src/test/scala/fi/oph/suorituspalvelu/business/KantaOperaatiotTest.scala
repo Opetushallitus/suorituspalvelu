@@ -85,6 +85,7 @@ class KantaOperaatiotTest {
             DROP TABLE nuorten_perusopetuksen_oppiaineen_oppimaarat;
             DROP TABLE perusopetuksen_oppiaineet;
             DROP TABLE perusopetuksen_oppimaarat;
+            DROP TABLE perusopetuksen_opiskeluoikeudet;
             DROP TABLE ammatillisen_tutkinnon_osaalueet;
             DROP TABLE ammatillisen_tutkinnon_osat;
             DROP TABLE ammatilliset_tutkinnot;
@@ -170,7 +171,8 @@ class KantaOperaatiotTest {
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
     val suoritukset = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
-    this.kantaOperaatiot.tallennaSuoritukset(versio, Set(suoritukset))
+    val opiskeluoikeus = PerusopetuksenOpiskeluoikeus("4.5.6", Seq(suoritukset), None, None)
+    this.kantaOperaatiot.tallennaVersioonLiittyvätEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
 
     // suoritus palautuu kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO)
@@ -186,24 +188,26 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset oppijalle 1
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritukset1 = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
-    this.kantaOperaatiot.tallennaSuoritukset(versio1, Set(suoritukset1))
+    val suoritus1 = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus("4.5.6", Seq(suoritus1), None, None)
+    this.kantaOperaatiot.tallennaVersioonLiittyvätEntiteetit(versio1, Set(opiskeluoikeus1), Set.empty)
 
     // tallennetaan versio oppijalle 2
     val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO2, KOSKI, "{\"attr\": \"value\"}").get
 
     // tallennetaan suoritukset kerran ja sitten toisen kerran oppijalle 2
-    this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))))
-    val uudetSuoritukset2 = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
-    this.kantaOperaatiot.tallennaSuoritukset(versio2, Set(uudetSuoritukset2))
+    this.kantaOperaatiot.tallennaVersioonLiittyvätEntiteetit(versio2, Set(opiskeluoikeus1), Set.empty)
+    val suoritus2 = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
+    val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus("4.5.6", Seq(suoritus2), None, None)
+    this.kantaOperaatiot.tallennaVersioonLiittyvätEntiteetit(versio2, Set(opiskeluoikeus2), Set.empty)
 
     // oppijan 2 uudet suoritukset palautuvat kun haetaan oppijanumerolla
     val haetutSuoritusEntiteetit2 = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO2)
-    Assertions.assertEquals(Map(versio2 -> Set(uudetSuoritukset2)), haetutSuoritusEntiteetit2)
+    Assertions.assertEquals(Map(versio2 -> Set(suoritus2)), haetutSuoritusEntiteetit2)
 
     // oppijan 1 suoritukset ennallaan
     val haetutSuoritusEntiteetit1 = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
-    Assertions.assertEquals(Map(versio1 -> Set(suoritukset1)), haetutSuoritusEntiteetit1)
+    Assertions.assertEquals(Map(versio1 -> Set(suoritus1)), haetutSuoritusEntiteetit1)
 
 
   @Test def testAitoKoskiDataSuorituksetOsajoukkoRoundtrip(): Unit = {
@@ -215,8 +219,8 @@ class KantaOperaatiotTest {
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val suoritukset: Set[Suoritus] = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
-        this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset)
+        val suoritukset: Set[Suoritus] = KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet).toSet
+        this.kantaOperaatiot.getSuoritusInserts(versio, suoritukset)
 
         val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
 
@@ -239,8 +243,8 @@ class KantaOperaatiotTest {
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
-        this.kantaOperaatiot.tallennaSuoritukset(versio, suoritukset)
+        val suoritukset = KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet).toSet
+        this.kantaOperaatiot.getSuoritusInserts(versio, suoritukset)
 
         val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
 
@@ -262,7 +266,7 @@ class KantaOperaatiotTest {
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value4\"}").get
     val suoritukset = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", 1), None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
-    this.kantaOperaatiot.tallennaSuoritukset(versio, Set(suoritukset))
+    this.kantaOperaatiot.getSuoritusInserts(versio, Set(suoritukset))
 
     // tallennetaan uusia versioita ilman että tallennetaan suorituksia
     this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value5\"}").get
@@ -300,7 +304,7 @@ class KantaOperaatiotTest {
     val data = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
     (1 to iterations).foreach(i => {
       val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO + i, KOSKI, "{\"attr\": \"value\"}").get
-      this.kantaOperaatiot.tallennaSuoritukset(versio, KoskiToSuoritusConverter.toSuoritus(KoskiParser.parseKoskiData(data)).toSet)
+      this.kantaOperaatiot.getSuoritusInserts(versio, KoskiToSuoritusConverter.toSuoritukset(KoskiParser.parseKoskiData(data)).toSet)
     })
     val saveDuration = Instant.now().toEpochMilli - startSave.toEpochMilli
     Assertions.assertTrue(saveDuration< 50 * iterations);

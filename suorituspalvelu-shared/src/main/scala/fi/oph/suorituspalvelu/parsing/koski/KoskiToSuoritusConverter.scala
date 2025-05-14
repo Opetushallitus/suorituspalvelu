@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Arvosana, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Telma, Tuva}
+import fi.oph.suorituspalvelu.business
+import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Arvosana, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Telma, Tuva}
 
 import java.time.LocalDate
 
@@ -141,7 +142,8 @@ object KoskiToSuoritusConverter {
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
     PerusopetuksenVuosiluokka(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get
+      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
+      suoritus.alkamispäivä.map(p => LocalDate.parse(p))
     )
 
   def toTelma(suoritus: Suoritus): Telma =
@@ -155,19 +157,29 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p))
     )
 
-  def toSuoritus(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
+  def toPerusopetuksenOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus): fi.oph.suorituspalvelu.business.Opiskeluoikeus = {
+    val convertedSuoritukset: Seq[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
+    PerusopetuksenOpiskeluoikeus(
+      opiskeluoikeus.oppilaitos.oid, 
+      convertedSuoritukset, 
+      opiskeluoikeus.lisätiedot, 
+      opiskeluoikeus.tila)
+  }
+
+  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
-      opiskeluoikeudet.flatMap(opiskeluoikeus => opiskeluoikeus.suoritukset.flatMap(suoritus =>
-        suoritus match
-          case suoritus if suoritus.tyyppi.koodiarvo == "ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo == "aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo == "nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo == "telma" => Some(toTelma(suoritus))
-          case suoritus if suoritus.tyyppi.koodiarvo == "tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
-          case default => None))
+      opiskeluoikeudet.flatMap(opiskeluoikeus =>
+        opiskeluoikeus.suoritukset.flatMap(suoritus =>
+          suoritus match
+            case suoritus if suoritus.tyyppi.koodiarvo == "ammatillinentutkinto" => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == "aikuistenperusopetuksenoppimaara" => Some(toAikuistenPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenoppimaara" => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == "perusopetuksenvuosiluokka" => Some(toPerusopetuksenVuosiluokka(suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == "nuortenperusopetuksenoppiaineenoppimaara" => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == "telma" => Some(toTelma(suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == "tuvakoulutuksensuoritus" => Some(toTuva(suoritus))
+            case default => None))
     finally
       allowMissingFields.set(false)
 }

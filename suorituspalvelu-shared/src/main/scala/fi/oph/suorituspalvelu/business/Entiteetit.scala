@@ -1,12 +1,18 @@
 package fi.oph.suorituspalvelu.business
 
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiLisatiedot, OpiskeluoikeusTila}
+
 import java.util.UUID
 import java.time.{Instant, LocalDate}
 
 enum Tietolahde:
   case KOSKI, YTR, VIRTA, VIRKAILIJA
 
-sealed trait Suoritus
+sealed trait TallennettavaEntiteetti
+
+sealed trait Suoritus extends TallennettavaEntiteetti
+
+sealed trait Opiskeluoikeus extends TallennettavaEntiteetti
 
 case class Koodi(arvo: String, koodisto: String, versio: Int)
 
@@ -28,6 +34,8 @@ case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, vahvist
 
 case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String)
 
-case class PerusopetuksenVuosiluokka(nimi: String, koodi: String) extends Suoritus
+case class PerusopetuksenVuosiluokka(nimi: String, koodi: String, alkamisPaiva: Option[LocalDate]) extends Suoritus
+
+case class PerusopetuksenOpiskeluoikeus(oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], lisatiedot: Option[KoskiLisatiedot], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)

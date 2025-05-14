@@ -8,9 +8,10 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, PerusopetuksenOpiskeluoikeus, Suoritus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, Opiskeluoikeus}
 import slick.jdbc.JdbcBackend
 
 import java.io.ByteArrayInputStream
@@ -79,9 +80,12 @@ class KoskiIntegration {
           versio.foreach(v => {
             LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
             val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(henkilonTiedot._2)
-            val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
-            LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} suoritukset. Versio $v, suoritukset $suoritukset")
-            kantaOperaatiot.tallennaSuoritukset(v, suoritukset)
+            val (perusopetukset: Seq[Opiskeluoikeus], muut: Seq[Opiskeluoikeus]) = koskiOpiskeluoikeudet.partition(o => o.tyyppi.koodiarvo == "perusopetus")
+            LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${perusopetukset.size} perusopetuksen ja ${muut.size} muuta opiskeluoikeutta.")
+            val perusopetuksenOpiskeluoikeudet: Set[business.Opiskeluoikeus] = perusopetukset.map(KoskiToSuoritusConverter.toPerusopetuksenOpiskeluoikeus).toSet
+            val suoritukset: Set[business.Suoritus] = KoskiToSuoritusConverter.toSuoritukset(muut).toSet
+
+            kantaOperaatiot.tallennaVersioonLiittyvätEntiteetit(v, perusopetuksenOpiskeluoikeudet, suoritukset)
           })
           versio
         })
