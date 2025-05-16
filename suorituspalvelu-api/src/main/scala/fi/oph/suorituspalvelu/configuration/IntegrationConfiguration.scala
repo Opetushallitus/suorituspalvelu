@@ -4,9 +4,7 @@ import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.KoskiClient
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.{Bean, Configuration, Profile}
-
-import java.time.Duration
+import org.springframework.context.annotation.{Bean, Configuration}
 
 @Configuration
 class IntegrationConfiguration {
@@ -27,5 +25,4 @@ class IntegrationConfiguration {
                      @Value("${integrations.virta.avain}") avain: String,
                      @Value("${integrations.virta.base-url}") environmentBaseUrl: String): VirtaClientImpl =
     new VirtaClientImpl(jarjestelma, tunnus, avain, environmentBaseUrl)
-
 }
