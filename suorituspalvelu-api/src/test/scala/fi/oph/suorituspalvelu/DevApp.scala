@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu
 
 import org.testcontainers.containers.PostgreSQLContainer
+
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
 object DevApp {
@@ -19,6 +20,12 @@ object DevApp {
 
   def main(args: Array[String]): Unit =
     startContainers()
+
+    // virta-integraatio
+    System.setProperty("integrations.virta.jarjestelma", "")
+    System.setProperty("integrations.virta.tunnus", "")
+    System.setProperty("integrations.virta.avain", "salaisuus")
+    System.setProperty("integrations.virta.base-url", "http://virtawstesti.csc.fi:8084")
 
     // cas-configuraatio
     System.setProperty("cas-service.service", "https://localhost:8443")

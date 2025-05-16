@@ -31,3 +31,37 @@ case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String)
 case class PerusopetuksenVuosiluokka(nimi: String, koodi: String) extends Suoritus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
+
+case class VirtaTutkinto(
+                          nimiFi: Option[String],
+                          nimiSv: Option[String],
+                          nimiEn: Option[String],
+                          komoTunniste: String,
+                          opintoPisteet: BigDecimal,
+                          suoritusPvm: LocalDate,
+                          myontaja: String,
+                          kieli: String,
+                          koulutusKoodi: String
+                        ) extends Suoritus
+
+case class Opintosuoritus(
+                           nimiFi: Option[String],
+                           nimiSv: Option[String],
+                           nimiEn: Option[String],
+                           komoTunniste: String,
+                           opintoPisteet: BigDecimal,
+                           opintoviikot: Option[BigDecimal],
+                           suoritusPvm: LocalDate,
+                           hyvaksilukuPvm: Option[LocalDate],
+                           myontaja: String,
+                           jarjestavaRooli: Option[String],
+                           jarjestavaKoodi: Option[String],
+                           jarjestavaOsuus: Option[BigDecimal],
+                           arvosana: Option[String],
+                           arvosanaAsteikko: Option[String],
+                           kieli: String,
+                           koulutusala: Int,
+                           koulutusalaKoodisto: String,
+                           opinnaytetyo: Boolean
+                         ) extends Suoritus
+
