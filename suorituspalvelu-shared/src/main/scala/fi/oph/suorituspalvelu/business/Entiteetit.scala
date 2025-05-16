@@ -36,6 +36,10 @@ case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String)
 
 case class PerusopetuksenVuosiluokka(nimi: String, koodi: String, alkamisPaiva: Option[LocalDate]) extends Suoritus
 
-case class PerusopetuksenOpiskeluoikeus(oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], lisatiedot: Option[KoskiLisatiedot], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
+case class PerusopetuksenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], lisatiedot: Option[KoskiLisatiedot], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
+
+case class AmmatillinenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
+
+case class GeneerinenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)

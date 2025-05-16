@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Arvosana, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Arvosana, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, TallennettavaEntiteetti, Telma, Tuva}
 
 import java.time.LocalDate
 
@@ -157,12 +157,37 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p))
     )
 
+  def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] = {
+    opiskeluoikeudet.map {
+      case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
+        PerusopetuksenOpiskeluoikeus(
+          opiskeluoikeus.oid,
+          opiskeluoikeus.oppilaitos.oid,
+          toSuoritukset(Seq(opiskeluoikeus)),
+          opiskeluoikeus.lisätiedot,
+          opiskeluoikeus.tila)
+      case opiskeluoikeus if opiskeluoikeus.isAmmatillinen =>
+        AmmatillinenOpiskeluoikeus(
+          opiskeluoikeus.oid,
+          opiskeluoikeus.oppilaitos.oid,
+          toSuoritukset(Seq(opiskeluoikeus)),
+          opiskeluoikeus.tila)
+      case opiskeluoikeus =>
+        GeneerinenOpiskeluoikeus(
+          opiskeluoikeus.oid,
+          opiskeluoikeus.oppilaitos.oid,
+          toSuoritukset(Seq(opiskeluoikeus)),
+          opiskeluoikeus.tila)
+    }
+  }
+
   def toPerusopetuksenOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus): fi.oph.suorituspalvelu.business.Opiskeluoikeus = {
     val convertedSuoritukset: Seq[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
     PerusopetuksenOpiskeluoikeus(
-      opiskeluoikeus.oppilaitos.oid, 
-      convertedSuoritukset, 
-      opiskeluoikeus.lisätiedot, 
+      opiskeluoikeus.oppilaitos.oid,
+      opiskeluoikeus.oid,
+      convertedSuoritukset,
+      opiskeluoikeus.lisätiedot,
       opiskeluoikeus.tila)
   }
 

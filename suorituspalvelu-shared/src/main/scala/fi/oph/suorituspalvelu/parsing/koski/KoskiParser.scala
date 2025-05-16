@@ -94,11 +94,15 @@ case class KoskiLisatiedot(erityisenTuenPäätökset: Option[List[KoskiErityisen
                            vuosiluokkiinSitoutumatonOpetus: Option[Boolean],
                            kotiopetusjaksot: Option[List[Kotiopetusjakso]])
 
-case class Opiskeluoikeus(oppilaitos: Oppilaitos,
+case class Opiskeluoikeus(oid: String,
+                          oppilaitos: Oppilaitos,
                           tyyppi: OpiskeluoikeusTyyppi,
                           tila: Option[OpiskeluoikeusTila],
                           suoritukset: Set[Suoritus],
-                          lisätiedot: Option[KoskiLisatiedot])
+                          lisätiedot: Option[KoskiLisatiedot]) {
+  def isPerusopetus: Boolean = tyyppi.koodiarvo == "perusopetus" || tyyppi.koodiarvo == "aikuistenperusopetus"
+  def isAmmatillinen: Boolean = tyyppi.koodiarvo == "ammatillinenkoulutus"
+}
 
 case class SplitattavaKoskiData(oppijaOid: String,
                                 opiskeluoikeudet: Seq[Map[String, Any]])

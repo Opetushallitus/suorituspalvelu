@@ -79,13 +79,9 @@ class KoskiIntegration {
           val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
           versio.foreach(v => {
             LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
-            val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(henkilonTiedot._2)
-            val (perusopetukset: Seq[Opiskeluoikeus], muut: Seq[Opiskeluoikeus]) = koskiOpiskeluoikeudet.partition(o => o.tyyppi.koodiarvo == "perusopetus")
-            LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${perusopetukset.size} perusopetuksen ja ${muut.size} muuta opiskeluoikeutta.")
-            val perusopetuksenOpiskeluoikeudet: Set[business.Opiskeluoikeus] = perusopetukset.map(KoskiToSuoritusConverter.toPerusopetuksenOpiskeluoikeus).toSet
-            val suoritukset: Set[business.Suoritus] = KoskiToSuoritusConverter.toSuoritukset(muut).toSet
-
-            kantaOperaatiot.tallennaVersioonLiittyvätEntiteetit(v, perusopetuksenOpiskeluoikeudet, suoritukset)
+            val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
+            LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${oikeudet.size} opiskeluoikeutta.")
+            kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, Set.empty)
           })
           versio
         })
