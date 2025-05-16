@@ -175,6 +175,7 @@ object KoskiToSuoritusConverter {
       case opiskeluoikeus =>
         GeneerinenOpiskeluoikeus(
           opiskeluoikeus.oid,
+          opiskeluoikeus.tyyppi.koodiarvo,
           opiskeluoikeus.oppilaitos.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.tila)
