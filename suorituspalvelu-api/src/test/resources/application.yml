@@ -26,7 +26,12 @@ integrations:
     password: addme_pw
     base-url: https://virkailija.testiopintopolku.fi
   virta:
-    jarjestelma: supa
+    jarjestelma:
     tunnus:
     avain:
     base-url:
+
+db-scheduler:
+  enabled: true
+  polling-strategy: lock-and-fetch
+  immediate-execution-enabled: true

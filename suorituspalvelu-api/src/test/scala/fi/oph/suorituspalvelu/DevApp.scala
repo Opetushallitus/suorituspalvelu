@@ -22,10 +22,10 @@ object DevApp {
     startContainers()
 
     // virta-integraatio
-    System.setProperty("integrations.virta.jarjestelma", "supa")
+    System.setProperty("integrations.virta.jarjestelma", "")
     System.setProperty("integrations.virta.tunnus", "")
     System.setProperty("integrations.virta.avain", "salaisuus")
-    System.setProperty("integrations.virta.base-url", "")
+    System.setProperty("integrations.virta.base-url", "http://virtawstesti.csc.fi:8084")
 
     // cas-configuraatio
     System.setProperty("cas-service.service", "https://localhost:8443")
