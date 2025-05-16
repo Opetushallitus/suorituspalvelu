@@ -1,21 +1,25 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.util.{LogContext, SecurityUtil}
-import io.swagger.v3.oas.annotations.media.Content as content
-import io.swagger.v3.oas.annotations.tags.Tag
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.{Content, Schema}
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import org.springframework.beans.factory.annotation.Autowired
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_PATH}
-import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.{PostMapping, RequestBody, RequestMapping, RestController}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_PATH, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
+import fi.oph.suorituspalvelu.service.VirtaService
+import fi.oph.suorituspalvelu.util.LogContext
+import fi.oph.suorituspalvelu.validation.Validator
+import fi.oph.suorituspalvelu.validation.Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI
+import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.{Operation, Parameter}
+import io.swagger.v3.oas.annotations.media.{Content, Schema}
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
+import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RestController}
 
-@RequestMapping(path = Array("dataSync"))
+@RequestMapping(path = Array(""))
 @RestController
 @Tag(
   name = "Data sync",
@@ -28,8 +32,10 @@ class DataSyncResource {
 
   @Autowired var koskiIntegration: KoskiIntegration = null
 
+  @Autowired var virtaService: VirtaService = null
+
   @PostMapping(
-    path = Array(""),
+    path = Array(KOSKI_DATASYNC_PATH),
     consumes = Array(MediaType.APPLICATION_JSON_VALUE),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
@@ -45,8 +51,9 @@ class DataSyncResource {
       new ApiResponse(responseCode = "403", description = "addme")
     ))
   def haeKoskiTiedot(@RequestBody personOids: Array[String], request: HttpServletRequest): ResponseEntity[String] = {
-    LogContext(path = DATASYNC_PATH, identiteetti = SecurityUtil.getIdentiteetti())(() =>
-      if (SecurityUtil.onRekisterinpitaja()) {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = KOSKI_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      if (securityOperaatiot.onRekisterinpitaja()) {
         LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
         val result = koskiIntegration.syncKoski(personOids.toSet)
         LOG.info(s"Palautetaan rajapintavastaus, $result")
@@ -55,6 +62,53 @@ class DataSyncResource {
         ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ei oikeuksia")
       }
     )
+  }
+
+  @PostMapping(
+    path = Array(VIRTA_DATASYNC_PATH),
+    consumes = Array(MediaType.ALL_VALUE),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Päivittää yksittäisen oppijan tiedot Virrasta",
+    description = "Huomioita:\n" +
+      "- Huomio 1",
+    parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH)),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def paivitaVirtaTiedot(@PathVariable(VIRTA_DATASYNC_PARAM_NAME) oppijaNumero: String, request: HttpServletRequest): ResponseEntity[VirtaSyncResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = VIRTA_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            // tarkastetaan oikeudet
+            if(securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(List("ei oikeuksia")))))
+          .flatMap(_ =>
+            // validoidaan parametri
+            val virheet = Validator.validateOppijanumero(Some(oppijaNumero))
+            if(virheet.isEmpty)
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(Seq(VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
+          .map(_ =>
+            val user = AuditLog.getUser(request)
+            AuditLog.logCreate(user, Map("oppijaNumero" -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, null)
+            LOG.info(s"Haetaan Virta-tiedot henkilölle ${oppijaNumero}")
+            val jobId = virtaService.syncVirta(oppijaNumero)
+            LOG.info(s"Palautetaan rajapintavastaus, $jobId")
+            ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId)))
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[VirtaSyncResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Oppijan Virta-päivitysjobin luonti epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(VirtaSyncFailureResponse(Seq(DATASYNC_JOBIN_LUONTI_EPAONNISTUI)))
   }
 }
 

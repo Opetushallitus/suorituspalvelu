@@ -18,6 +18,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-xml_3</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.typesafe.slick</groupId>
             <artifactId>slick_3</artifactId>
         </dependency>

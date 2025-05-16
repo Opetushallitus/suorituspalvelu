@@ -7,5 +7,5 @@ trait AuditOperation(val name: String) extends Operation
 object AuditOperation {
   case object Login extends AuditOperation("KIRJAUTUMINEN")
 
-  case object LuoSuoritus extends AuditOperation("SUORITUKSEN LUONTI")
+  case object PaivitaVirtaTiedot extends AuditOperation("VIRTATIETOJEN PÄIVITYS")
 }

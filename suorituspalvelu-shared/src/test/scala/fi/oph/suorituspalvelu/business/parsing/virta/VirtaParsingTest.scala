@@ -25,7 +25,7 @@ class KoskiParsingTest {
     })
 
   @Test def testVirtatutkinnonKentat(): Unit =
-    val suoritus = VirtaToSuoritusConverter.toSuoritukset(VirtaParser.parseVirtaData(new ByteArrayInputStream("""
+    val suoritus = VirtaToSuoritusConverter.toSuoritukset(VirtaParser.parseVirtaData("""
           |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
           |  <SOAP-ENV:Body>
           |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
@@ -52,7 +52,7 @@ class KoskiParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin.getBytes))).head.asInstanceOf[VirtaTutkinto]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaTutkinto]
 
     Assertions.assertEquals("532", suoritus.komoTunniste)
     Assertions.assertEquals(LocalDate.parse("2017-05-31"), suoritus.suoritusPvm)
@@ -65,7 +65,7 @@ class KoskiParsingTest {
 
 
   @Test def testVirtasuorituksenKentat(): Unit =
-    val suoritus = VirtaToSuoritusConverter.toSuoritukset(VirtaParser.parseVirtaData(new ByteArrayInputStream("""
+    val suoritus = VirtaToSuoritusConverter.toSuoritukset(VirtaParser.parseVirtaData("""
           |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
           |  <SOAP-ENV:Body>
           |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
@@ -101,7 +101,7 @@ class KoskiParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin.getBytes))).head.asInstanceOf[Opintosuoritus]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[Opintosuoritus]
 
     Assertions.assertEquals("LOG13A 01SUO", suoritus.komoTunniste)
     Assertions.assertEquals(LocalDate.parse("2015-05-31"), suoritus.suoritusPvm)
