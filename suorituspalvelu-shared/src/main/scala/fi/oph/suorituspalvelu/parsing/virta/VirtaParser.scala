@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.{DeserializationContext, DeserializationFeature, JsonDeserializer, MapperFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.dataformat.xml.annotation.{JacksonXmlProperty, JacksonXmlText, JacksonXmlElementWrapper}
+import com.fasterxml.jackson.dataformat.xml.annotation.{JacksonXmlElementWrapper, JacksonXmlProperty, JacksonXmlText}
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
-import java.io.InputStream
+import java.io.{ByteArrayInputStream, InputStream}
 import java.time.LocalDate
 
 case class Header()
@@ -111,6 +111,9 @@ object VirtaParser {
     mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
     mapper
   }
+
+  def parseVirtaData(suoritukset: String): VirtaSuoritukset =
+    parseVirtaData(new ByteArrayInputStream(suoritukset.getBytes))
 
   def parseVirtaData(suoritukset: InputStream): VirtaSuoritukset =
     MAPPER.readValue(suoritukset, classOf[VirtaSuoritukset])

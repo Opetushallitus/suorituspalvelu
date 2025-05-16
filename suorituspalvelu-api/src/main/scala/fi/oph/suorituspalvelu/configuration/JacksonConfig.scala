@@ -1,0 +1,26 @@
+package fi.oph.suorituspalvelu.configuration
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+
+import java.util
+
+import scala.jdk.CollectionConverters.*
+
+@Configuration
+class JacksonConfig extends WebMvcConfigurer {
+
+    override def extendMessageConverters(converters: util.List[HttpMessageConverter[_]]): Unit =
+        val jacksonConverter = converters.asScala.find(c => c.isInstanceOf[MappingJackson2HttpMessageConverter]).get
+        val index = converters.indexOf(jacksonConverter)
+
+        val mapper = ObjectMapper()
+        mapper.registerModule(new JavaTimeModule())
+        mapper.registerModule(DefaultScalaModule)
+        converters.set(index, MappingJackson2HttpMessageConverter(mapper))
+}
