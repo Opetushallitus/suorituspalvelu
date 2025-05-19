@@ -17,8 +17,8 @@ import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
-
 import fi.oph.suorituspalvelu.business.*
+import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
 
 @TestInstance(Lifecycle.PER_CLASS)
 class KantaOperaatiotTest {
@@ -354,4 +354,15 @@ class KantaOperaatiotTest {
     // oppijan 1 suoritukset ennallaan
     val haetutSuoritusEntiteetit1 = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
     Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus1, opiskeluoikeus2)), haetutSuoritusEntiteetit1)
+
+  @Test def testAmmatillinenOpiskeluoikeus(): Unit =
+    val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
+    val suoritus = TestDataUtil.getAmmatillinenTutkinto()
+    val tilat = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-06-03"), OpiskeluoikeusJaksoTila("opiskelu", "tilakoodisto", 6)), OpiskeluoikeusJakso(LocalDate.parse("2024-11-09"), OpiskeluoikeusJaksoTila("joulunvietto", "tilakoodisto", 6))))
+    val opiskeluoikeus = AmmatillinenOpiskeluoikeus("opiskeluoikeusOid", "oppilaitosOid", Seq(suoritus), Some(tilat))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
+
+    val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
+    Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
 }
