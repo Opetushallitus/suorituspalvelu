@@ -326,7 +326,7 @@ class KantaOperaatiotTest {
     val readDuration = Instant.now().toEpochMilli - readStart.toEpochMilli
     Assertions.assertTrue(readDuration < 10 * iterations);
 
-  @Test def testPerusopetuksenOpiskeluoikeus(): Unit =
+  @Test def testPerusopetuksenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
     val OPPIJANUMERO2 = "1.2.246.562.24.88877766655"
     val OPPILAITOSOID1 = "1.2.246.562.10.00000000123"
@@ -355,12 +355,23 @@ class KantaOperaatiotTest {
     val haetutSuoritusEntiteetit1 = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
     Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus1, opiskeluoikeus2)), haetutSuoritusEntiteetit1)
 
-  @Test def testAmmatillinenOpiskeluoikeus(): Unit =
+  @Test def testAmmatillinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritus = TestDataUtil.getAmmatillinenTutkinto()
+    val suoritus = TestDataUtil.getTestAmmatillinenTutkinto()
     val tilat = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-06-03"), OpiskeluoikeusJaksoTila("opiskelu", "tilakoodisto", 6)), OpiskeluoikeusJakso(LocalDate.parse("2024-11-09"), OpiskeluoikeusJaksoTila("joulunvietto", "tilakoodisto", 6))))
     val opiskeluoikeus = AmmatillinenOpiskeluoikeus("opiskeluoikeusOid", "oppilaitosOid", Seq(suoritus), Some(tilat))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
+
+    val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
+    Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
+
+  @Test def testGeneerinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
+    val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
+    val suoritus = Tuva("koodi", Some(LocalDate.parse("2025-03-20")))
+    val tilat = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2023-05-03"), OpiskeluoikeusJaksoTila("opiskelu", "tilakoodisto", 2)), OpiskeluoikeusJakso(LocalDate.parse("2025-10-09"), OpiskeluoikeusJaksoTila("lasna", "tilakoodisto", 6))))
+    val opiskeluoikeus = GeneerinenOpiskeluoikeus("opiskeluoikeusOid", "oppilaitosOid", "testityyppi", Seq(suoritus), Some(tilat))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
 
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
