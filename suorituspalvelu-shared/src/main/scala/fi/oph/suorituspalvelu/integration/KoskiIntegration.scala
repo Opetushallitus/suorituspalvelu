@@ -8,9 +8,10 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, PerusopetuksenOpiskeluoikeus, Suoritus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, Opiskeluoikeus}
 import slick.jdbc.JdbcBackend
 
 import java.io.ByteArrayInputStream
@@ -78,10 +79,9 @@ class KoskiIntegration {
           val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
           versio.foreach(v => {
             LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
-            val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(henkilonTiedot._2)
-            val suoritukset = KoskiToSuoritusConverter.toSuoritus(koskiOpiskeluoikeudet).toSet
-            LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} suoritukset. Versio $v, suoritukset $suoritukset")
-            kantaOperaatiot.tallennaSuoritukset(v, suoritukset)
+            val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
+            LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${oikeudet.size} opiskeluoikeutta.")
+            kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, Set.empty)
           })
           versio
         })

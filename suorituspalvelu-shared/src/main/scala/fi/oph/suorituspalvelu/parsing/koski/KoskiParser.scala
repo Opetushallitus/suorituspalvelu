@@ -15,41 +15,97 @@ trait VersioituTunniste {
   def koodistoVersio: Int
 }
 
-case class Nimi(fi: String)
+case class Kielistetty(fi: Option[String],
+                       sv: Option[String],
+                       en: Option[String])
 
-case class Arvosana(koodiarvo: String, koodistoUri: String, nimi: Nimi, koodistoVersio: Int) extends VersioituTunniste
+case class Arvosana(koodiarvo: String,
+                    koodistoUri: String,
+                    nimi: Kielistetty,
+                    koodistoVersio: Int) extends VersioituTunniste
 
-case class Arviointi(arvosana: Arvosana, hyväksytty: Boolean)
+case class Arviointi(arvosana: Arvosana,
+                     hyväksytty: Boolean)
 
-case class Laajuus(arvo: Int, yksikkö: Option[Yksikko])
+case class Laajuus(arvo: Int,
+                   yksikkö: Option[Yksikko])
 
-case class OsaSuoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: Option[KoulutusModuuli], arviointi: Option[Set[Arviointi]], osasuoritukset: Option[Set[OsaSuoritus]])
+case class OsaSuoritus(tyyppi: SuoritusTyyppi,
+                       koulutusmoduuli: Option[KoulutusModuuli],
+                       arviointi: Option[Set[Arviointi]],
+                       osasuoritukset: Option[Set[OsaSuoritus]])
 
-case class SuoritusKieli(koodiarvo: String, koodistoUri: String)
+case class SuoritusKieli(koodiarvo: String,
+                         koodistoUri: String)
 
-case class SuoritusTapa(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
+case class SuoritusTapa(koodiarvo: String,
+                        koodistoUri: String,
+                        koodistoVersio: Int,
+                        nimi: Kielistetty) extends VersioituTunniste
 
-case class Yksikko(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
+case class Yksikko(koodiarvo: String,
+                   koodistoUri: String,
+                   koodistoVersio: Int,
+                   nimi: Kielistetty) extends VersioituTunniste
 
-case class KoulutusModuuliTunniste(koodiarvo: String, koodistoUri: String, koodistoVersio: Int, nimi: Nimi) extends VersioituTunniste
+case class KoulutusModuuliTunniste(koodiarvo: String,
+                                   koodistoUri: String,
+                                   koodistoVersio: Int,
+                                   nimi: Kielistetty) extends VersioituTunniste
 
-case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste, laajuus: Option[Laajuus])
+case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste,
+                           laajuus: Option[Laajuus])
 
-case class SuoritusTyyppi(koodiarvo: String, koodistoUri: String, nimi: Nimi)
+case class SuoritusTyyppi(koodiarvo: String,
+                          koodistoUri: String,
+                          nimi: Kielistetty)
 
-case class Suoritus(tyyppi: SuoritusTyyppi, koulutusmoduuli: Option[KoulutusModuuli], suorituskieli: SuoritusKieli, vahvistuspäivä: Option[String], osasuoritukset: Option[Set[OsaSuoritus]], arviointi: Option[Set[Arviointi]], keskiarvo: Option[BigDecimal], suoritustapa: Option[SuoritusTapa])
+case class Suoritus(tyyppi: SuoritusTyyppi,
+                    koulutusmoduuli: Option[KoulutusModuuli],
+                    suorituskieli: SuoritusKieli,
+                    alkamispäivä: Option[String],
+                    vahvistuspäivä: Option[String],
+                    osasuoritukset: Option[Set[OsaSuoritus]],
+                    arviointi: Option[Set[Arviointi]],
+                    keskiarvo: Option[BigDecimal],
+                    suoritustapa: Option[SuoritusTapa])
 
-case class OpiskeluoikeusJaksoTila(koodiarvo: String, koodistoUri: String, koodistoVersio: Int) extends VersioituTunniste
+case class OpiskeluoikeusJaksoTila(koodiarvo: String,
+                                   koodistoUri: String,
+                                   koodistoVersio: Int) extends VersioituTunniste
 
-case class OpiskeluoikeusJakso(alku: LocalDate, tila: OpiskeluoikeusJaksoTila)
+case class OpiskeluoikeusJakso(alku: LocalDate,
+                               tila: OpiskeluoikeusJaksoTila)
 
 case class OpiskeluoikeusTila(opiskeluoikeusjaksot: List[OpiskeluoikeusJakso])
 
-case class OpiskeluoikeusTyyppi(koodiarvo: String, koodistoUri: String)
+case class OpiskeluoikeusTyyppi(koodiarvo: String,
+                                koodistoUri: String)
 
-case class Opiskeluoikeus(tyyppi: OpiskeluoikeusTyyppi, tila: Option[OpiskeluoikeusTila], suoritukset: Set[Suoritus])
+case class Oppilaitos(nimi: Kielistetty,
+                      oid: String)
 
-case class SplitattavaKoskiData(oppijaOid: String, opiskeluoikeudet: Seq[Map[String, Any]])
+case class KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain: Option[Boolean])
+
+case class Kotiopetusjakso(alku: String,
+                           loppu: Option[String])
+
+case class KoskiLisatiedot(erityisenTuenPäätökset: Option[List[KoskiErityisenTuenPaatos]],
+                           vuosiluokkiinSitoutumatonOpetus: Option[Boolean],
+                           kotiopetusjaksot: Option[List[Kotiopetusjakso]])
+
+case class Opiskeluoikeus(oid: String,
+                          oppilaitos: Oppilaitos,
+                          tyyppi: OpiskeluoikeusTyyppi,
+                          tila: Option[OpiskeluoikeusTila],
+                          suoritukset: Set[Suoritus],
+                          lisätiedot: Option[KoskiLisatiedot]) {
+  def isPerusopetus: Boolean = tyyppi.koodiarvo == "perusopetus" || tyyppi.koodiarvo == "aikuistenperusopetus"
+  def isAmmatillinen: Boolean = tyyppi.koodiarvo == "ammatillinenkoulutus"
+}
+
+case class SplitattavaKoskiData(oppijaOid: String,
+                                opiskeluoikeudet: Seq[Map[String, Any]])
 
 /**
  * Parseroi Kosken JSON-muotoisen opiskeluoikeus-suoritusdatan KOSKI-spesifiksi objektipuuksi
@@ -67,8 +123,8 @@ object KoskiParser {
     mapper
   }
 
-  def parseKoskiData(suoritukset: String): Seq[Opiskeluoikeus] =
-    MAPPER.readValue(suoritukset, classOf[Array[Opiskeluoikeus]]).toSeq
+  def parseKoskiData(data: String): Seq[Opiskeluoikeus] =
+    MAPPER.readValue(data, classOf[Array[Opiskeluoikeus]]).toSeq
 
   def splitKoskiDataByOppija(input: InputStream): Iterator[(String, String)] =
     val jsonParser = MAPPER.getFactory().createParser(input)
