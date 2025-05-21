@@ -36,15 +36,16 @@ class VirtaRefresh {
   def virtaRefreshTask(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK)
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(6, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(1), 2)))
     .execute((instance, ctx) => {
-    val oppijaNumero = instance.getData
+    val oppijaNumero = instance.getData.split(":").head
+    val hetu = instance.getData.split(":").tail.head
     try
-      val virtaXMLs = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, None), TIMEOUT)
+      val virtaXMLs = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, { if(hetu.isBlank) None else Some(hetu)}), TIMEOUT)
       val parseroidut = virtaXMLs.map(r => VirtaParser.parseVirtaData(new ByteArrayInputStream(r.getBytes)))
       val konvertoidut = parseroidut.map(p => VirtaToSuoritusConverter.toSuoritukset(p).toSet).flatten
 
       // TODO: tallennus tapahtuu tässä
 
-      LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${oppijaNumero}")
+      LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${oppijaNumero}, yhteensä ${konvertoidut.size} suoritusta.")
     catch
       case e: Exception => LOG.error(s"Virhe päivettäessä Virta-tietoja oppijanumerolle ${oppijaNumero}", e)
   })
@@ -55,9 +56,9 @@ class VirtaService {
 
   @Autowired val scheduler: Scheduler = null
 
-  def syncVirta(oppijaNumero: String): UUID =
+  def syncVirta(oppijaNumero: String, hetu: Option[String]): UUID =
     val taskId = UUID.randomUUID();
-    this.scheduler.schedule(VIRTA_REFRESH_TASK.instance(taskId.toString).data(oppijaNumero).scheduledTo(Instant.now()))
+    this.scheduler.schedule(VIRTA_REFRESH_TASK.instance(taskId.toString).data(oppijaNumero + ":" + hetu.getOrElse("")).scheduledTo(Instant.now()))
     taskId
 
 }

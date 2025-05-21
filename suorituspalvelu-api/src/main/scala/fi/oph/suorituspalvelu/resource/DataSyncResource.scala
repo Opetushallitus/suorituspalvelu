@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
-import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RestController}
+import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
 
 @RequestMapping(path = Array(""))
 @RestController
@@ -79,7 +79,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
       new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def paivitaVirtaTiedot(@PathVariable(VIRTA_DATASYNC_PARAM_NAME) oppijaNumero: String, request: HttpServletRequest): ResponseEntity[VirtaSyncResponse] = {
+  def paivitaVirtaTiedot(@PathVariable(VIRTA_DATASYNC_PARAM_NAME) oppijaNumero: String, @RequestParam(name = "hetu", required = false) hetu: String, request: HttpServletRequest): ResponseEntity[VirtaSyncResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
       LogContext(path = VIRTA_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
@@ -101,7 +101,7 @@ class DataSyncResource {
             val user = AuditLog.getUser(request)
             AuditLog.logCreate(user, Map("oppijaNumero" -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, null)
             LOG.info(s"Haetaan Virta-tiedot henkilölle ${oppijaNumero}")
-            val jobId = virtaService.syncVirta(oppijaNumero)
+            val jobId = virtaService.syncVirta(oppijaNumero, Option.apply(hetu))
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
             ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId)))
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[VirtaSyncResponse]])
