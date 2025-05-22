@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - '**.md'
 jobs:
-  build-and-test:
+  test-and-build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,3 +23,48 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn clean package
+
+      - uses: actions/cache@v4
+        id: restore-build
+        with:
+          path: |
+            suorituspalvelu-api/target
+            suorituspalvelu-domain/target
+            suorituspalvelu-paattelyt/target
+            suorituspalvelu-shared/target
+          key: ${{ github.sha }}
+
+
+  deploy-container:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        id: restore-build
+        with:
+          path: |
+            suorituspalvelu-api/target
+            suorituspalvelu-domain/target
+            suorituspalvelu-paattelyt/target
+            suorituspalvelu-shared/target
+          key: ${{ github.sha }}
+
+      - name: Build and deploy Docker container
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          git clone https://github.com/Opetushallitus/ci-tools.git
+          source ci-tools/common/setup-tools.sh
+
+          export ARTIFACT_NAME="suorituspalvelu"
+          mv suorituspalvelu-api/target/suorituspalvelu-api-exec.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
+          cp -vr suorituspalvelu-api/src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
+          export BASE_IMAGE="baseimage-fatjar-openjdk21:master"
+          ./ci-tools/common/pull-image.sh
+          ./ci-tools/github-build/build-fatjar.sh $ARTIFACT_NAME
+          ./ci-tools/github-build/upload-image.sh $ARTIFACT_NAME

@@ -1,0 +1,45 @@
+host:
+  virkailija: {{host_virkailija}}
+  cas: {{host_cas}}
+
+web:
+  url:
+    cas: https://${host.cas}/cas
+
+cas-service:
+  service: https://{{host_virkailija}}/suorituspalvelu
+  sendRenew: false
+  key: suorituspalvelu
+
+logging:
+  level:
+    root: INFO
+
+server:
+  servlet:
+    context-path: /suorituspalvelu
+  forward-headers-strategy: framework
+
+spring:
+  datasource:
+    url: jdbc:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu
+    username: {{postgres_app_user}}
+    password: {{host_postgresql_suorituspalvelu_app_password}}
+  flyway:
+    baseline-on-migrate: true
+
+integrations:
+  koski:
+    username: addme_user
+    password: addme_pw
+    base-url: https://virkailija.testiopintopolku.fi
+  virta:
+    jarjestelma: {{suoritusrekisteri_virta_jarjestelma}}
+    tunnus: {{suoritusrekisteri_virta_tunnus}}
+    avain: {{suoritusrekisteri_virta_avain}}
+    base-url: {{suorituspalvelu_virta_service_url}}
+
+db-scheduler:
+  enabled: true
+  polling-strategy: lock-and-fetch
+  immediate-execution-enabled: true
