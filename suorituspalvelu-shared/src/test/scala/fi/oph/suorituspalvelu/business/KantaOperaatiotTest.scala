@@ -81,6 +81,7 @@ class KantaOperaatiotTest {
       sqlu"""
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
+            DROP TABLE scheduled_tasks;
             DROP TABLE opiskeluoikeudet;
             DROP TABLE perusopetuksen_vuosiluokat;
             DROP TABLE nuorten_perusopetuksen_oppiaineen_oppimaarat;

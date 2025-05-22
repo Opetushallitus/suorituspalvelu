@@ -14,14 +14,24 @@ object ApiConstants {
 
   final val SUORITUS_PATH               = VERSIONED_API_PREFIX + "/suoritus"
   final val DATASYNC_PATH               = VERSIONED_API_PREFIX + "/datasync"
+  final val KOSKI_DATASYNC_PATH         = DATASYNC_PATH + "/koski"
 
-  
+  final val VIRTA_DATASYNC_PARAM_NAME   = "oppijaNumero"
+  final val VIRTA_DATASYNC_PARAM_PLACEHOLDER  = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
+  final val VIRTA_DATASYNC_PATH         = DATASYNC_PATH + "/virta" + "/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
+
   /**
    * Swagger-kuvauksiin liittyvät vakiot
    */
   final val SUORITUS_RESPONSE_403_DESCRIPTION     = "Käyttäjällä ei ole suorituksen luomiseen tarvittavia oikeuksia"
   final val ESIMERKKI_SUORITUSTUNNISTE            = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
   final val EXAMPLE_OPPIJANUMERO_VALIDOINTIVIRHE  = "[ \"oppijanumero: Kenttä on pakollinen\" ]"
+
+  final val DATASYNC_ESIMERKKI_JOB_ID             = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
+  final val DATASYNC_VIRTA_ESIMERKKI_VIRHE        = "oppijaNumero ei ole validi oid"
+  final val DATASYNC_RESPONSE_400_DESCRIPTION     = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val DATASYNC_RESPONSE_403_DESCRIPTION     = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
+  final val DATASYNC_JOBIN_LUONTI_EPAONNISTUI     = "Datan virkistysjobin luonti epäonnistui"
 
   /**
    * Virhetilanteisiin liittyvät vakiot
