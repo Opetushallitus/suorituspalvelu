@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.integration
 
-import fi.oph.suorituspalvelu.integration.client.KoskiClient
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -23,18 +23,41 @@ class KoskiIntegration {
   private val LOG: Logger = LoggerFactory.getLogger(classOf[KoskiIntegration])
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
-  @Autowired val client: KoskiClient = null
-
+  @Autowired val koskiClient: KoskiClient = null
+  
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
 
+  @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
+  
+  
+  
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
+  
+  val KOSKI_BATCH_SIZE = 5000
+  
+  def syncKoskiForHaku(hakuOid: String): Seq[Option[VersioEntiteetti]] = {
+    //todo, ois ehkä tyylikkäämpää jos client palauttaisi futuurin ja käsiteltäisiin täällä eteenpäin
+    val hakemustenHenkilot: Seq[AtaruHakemuksenHenkilotiedot] = hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid)))
+    val personOids = hakemustenHenkilot.flatMap(_.personOid).toSet
+    
+    //Todo, mietitään näille hyvä rinnakkaisuus. Ehkä paria kyselyä kannattaa ajella rinnakkain? 
+    //Toinen vaihtoehto olisi muodostaa kaikki kyselyt Koskeen samanaikaisesti ja harvakseltaan pollailla kaikkia.
+    val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toList
+    val started = new AtomicInteger(0)
+    grouped.flatMap(group => 
+      LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
+      syncKoski(group))
+    
+  }
+  
+  
   def syncKoski(personOids: Set[String]): Seq[Option[VersioEntiteetti]] = {
-    LOG.info(s"Synkataan Koski-data $personOids")
+    LOG.info(s"Synkataan Koski-data ${personOids.size} henkilölle")
     val query = KoskiMassaluovutusQueryParams.forOids(personOids)
 
-    val syncResultF = client.createMassaluovutusQuery(query).flatMap(res => {
+    val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
       pollUntilReady(res.resultsUrl.get).flatMap(finishedQuery => {
         LOG.info(s"Query is now finished, handling files.")
         handleFiles(finishedQuery.files)
@@ -45,17 +68,17 @@ class KoskiIntegration {
 
 
   def pollUntilReady(pollUrl: String): Future[KoskiMassaluovutusQueryResponse] = {
-    client.pollQuery(pollUrl).flatMap((pollResult: KoskiMassaluovutusQueryResponse) => {
+    koskiClient.pollQuery(pollUrl).flatMap((pollResult: KoskiMassaluovutusQueryResponse) => {
       pollResult match {
         case response if response.isComplete() =>
-          LOG.info(s"Valmista! $response")
+          LOG.info(s"Valmista! ${response.getTruncatedLoggable()}")
           Future.successful(response)
         case response if response.isFailed() =>
-          LOG.error(s"Koski failure: $response")
+          LOG.error(s"Koski failure: ${response.getTruncatedLoggable()}")
           Future.failed(new RuntimeException("Koski failure!"))
         case response =>
-          LOG.info(s"Ei vielä valmista, odotellaan hetki ja pollataan uudestaan $pollResult")
-          Thread.sleep(1000) //Todo, fiksumpi odottelumekanismi
+          LOG.info(s"Ei vielä valmista, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")
+          Thread.sleep(2500) //Todo, fiksumpi odottelumekanismi
           pollUntilReady(pollUrl)
       }
     })
@@ -69,7 +92,7 @@ class KoskiIntegration {
 
     val futures = fileUrls.map(fileUrl => {
       LOG.info(s"Käsitellään tiedosto ${handled.incrementAndGet()}/${fileUrls.size}: $fileUrl")
-      client.getWithBasicAuth(fileUrl, followRedirects = true).flatMap(fileResult => {
+      koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).flatMap(fileResult => {
         LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
         val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
         val splitted = KoskiParser.splitKoskiDataByOppija(inputStream).toList

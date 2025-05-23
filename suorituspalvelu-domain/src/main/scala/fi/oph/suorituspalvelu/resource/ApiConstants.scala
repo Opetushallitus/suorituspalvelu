@@ -15,6 +15,7 @@ object ApiConstants {
   final val SUORITUS_PATH               = VERSIONED_API_PREFIX + "/suoritus"
   final val DATASYNC_PATH               = VERSIONED_API_PREFIX + "/datasync"
   final val KOSKI_DATASYNC_PATH         = DATASYNC_PATH + "/koski"
+  final val KOSKI_DATASYNC_HAKU_PATH = KOSKI_DATASYNC_PATH + "/haku"
 
   final val VIRTA_DATASYNC_PARAM_NAME   = "oppijaNumero"
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER  = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"

@@ -19,5 +19,10 @@ case class KoskiMassaluovutusQueryResponse(
   
   def isFailed() = status.equals("failed")
 
-  
+  def getTruncatedLoggable(): KoskiMassaluovutusQueryResponse = {
+    if (query.oppijaOids.exists(_.size > 10))
+      this.copy(query = query.copy(oppijaOids = query.oppijaOids.map(oids => Set(s"Total of ${oids.size} oppijaOids"))))
+    else
+      this
+  }
 }

@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_PATH, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_PATH, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.VirtaService
 import fi.oph.suorituspalvelu.util.LogContext
@@ -50,7 +50,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
       new ApiResponse(responseCode = "403", description = "addme")
     ))
-  def haeKoskiTiedot(@RequestBody personOids: Array[String], request: HttpServletRequest): ResponseEntity[String] = {
+  def paivitaKoskiTiedotHenkiloille(@RequestBody personOids: Array[String], request: HttpServletRequest): ResponseEntity[String] = {
     val securityOperaatiot = new SecurityOperaatiot
     LogContext(path = KOSKI_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
       if (securityOperaatiot.onRekisterinpitaja()) {
@@ -58,6 +58,37 @@ class DataSyncResource {
         val result = koskiIntegration.syncKoski(personOids.toSet)
         LOG.info(s"Palautetaan rajapintavastaus, $result")
         ResponseEntity.status(HttpStatus.OK).body(result.toString())//Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
+      } else {
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ei oikeuksia")
+      }
+    )
+  }
+
+  @PostMapping(
+    path = Array(KOSKI_DATASYNC_HAKU_PATH),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee tiedot Koskesta",
+    description = "Huomioita:\n" +
+      "- Huomio 1",
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
+      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
+      new ApiResponse(responseCode = "403", description = "addme")
+    ))
+  def paivitaKoskiTiedotHenkiloille(@RequestBody hakuOid: String, request: HttpServletRequest): ResponseEntity[String] = {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = KOSKI_DATASYNC_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      if (securityOperaatiot.onRekisterinpitaja()) {
+        LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
+        val result = koskiIntegration.syncKoskiForHaku(hakuOid)
+        val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.isDefined)} versiotietoa."
+        LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
+        ResponseEntity.status(HttpStatus.OK).body(responseStr) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
       } else {
         ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ei oikeuksia")
       }
