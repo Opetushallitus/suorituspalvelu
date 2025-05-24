@@ -23,4 +23,4 @@ case class VirtaSyncSuccessResponse(
 @Schema(name = "VirtaSyncFailureResponse")
 case class VirtaSyncFailureResponse(
                                      @(Schema@field)(example = DATASYNC_VIRTA_ESIMERKKI_VIRHE)
-                                     @BeanProperty virheet: Seq[String]) extends VirtaSyncResponse {}
+                                     @BeanProperty virheet: java.util.List[String]) extends VirtaSyncResponse {}
