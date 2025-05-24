@@ -8,4 +8,9 @@ object AuditOperation {
   case object Login extends AuditOperation("KIRJAUTUMINEN")
 
   case object PaivitaVirtaTiedot extends AuditOperation("VIRTATIETOJEN PÄIVITYS")
+
+  case object HaeYoTaiAmmatillinenTutkintoTiedot extends AuditOperation("HAE YO TAI AMMATILLINEN TUTKINNOT")
+
+  case object HaeKoskiTaiYTRMuuttuneet extends AuditOperation("HAE KOSKI TAI YTR MUUTTUNEET HENKILÖT")
+
 }

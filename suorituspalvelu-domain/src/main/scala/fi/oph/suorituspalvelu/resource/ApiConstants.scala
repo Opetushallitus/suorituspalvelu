@@ -20,6 +20,10 @@ object ApiConstants {
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER  = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
   final val VIRTA_DATASYNC_PATH         = DATASYNC_PATH + "/virta" + "/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
 
+  final val LEGACY_SUORITUKSET_HENKILO_PARAM_NAME = "henkilo"
+  final val LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME = "muokattuJalkeen"
+  final val LEGACY_SUORITUKSET_PATH     = VERSIONED_API_PREFIX + "/suoritukset/legacy"
+
   /**
    * Swagger-kuvauksiin liittyvät vakiot
    */
@@ -31,11 +35,18 @@ object ApiConstants {
   final val DATASYNC_VIRTA_ESIMERKKI_VIRHE        = "oppijaNumero ei ole validi oid"
   final val DATASYNC_RESPONSE_400_DESCRIPTION     = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION     = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
-  final val DATASYNC_JOBIN_LUONTI_EPAONNISTUI     = "Datan virkistysjobin luonti epäonnistui"
 
+  
+  
   /**
    * Virhetilanteisiin liittyvät vakiot
    */
   final val VIRHEELLINEN_SUORITUS_JSON_VIRHE      = "Suorituksen json-deserialisointi epäonnistui"
+  final val JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU   = "Joko henkilö tai muokattuJalkeen parametri pitää olla määritelty"
+
   final val SUORITUKSEN_LUONTI_EPAONNISTUI        = "Suorituksen luonti epäonnistui"
+
+  final val DATASYNC_JOBIN_LUONTI_EPAONNISTUI     = "Datan virkistysjobin luonti epäonnistui"
+  final val YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI = "YO tai ammatillisten tutkintojen haku epäonnistui"
+  
 }
