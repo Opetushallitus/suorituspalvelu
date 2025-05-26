@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
-import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
+import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.{AfterAll, AfterEach, Assertions, BeforeAll, BeforeEach, Test, TestInstance}
@@ -95,6 +95,7 @@ class KantaOperaatiotTest {
             DROP TABLE perusopetuksen_opiskeluoikeudet;
             DROP TABLE ammatilliset_opiskeluoikeudet;
             DROP TABLE geneeriset_opiskeluoikeudet;
+            DROP TABLE yotutkinnot;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -377,4 +378,14 @@ class KantaOperaatiotTest {
 
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
     Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
+
+  @Test def testYTRRoundTrip(): Unit =
+    val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, YTR, "{}").get
+    val opiskeluoikeus = YOOpiskeluoikeus(YOTutkinto())
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
+
+    val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
+    Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
+
 }

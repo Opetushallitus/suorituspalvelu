@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, Tietolahde}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, HEALTHCHECK_PATH, JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME, YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
@@ -85,6 +85,36 @@ class LegacySuorituksetResource {
 
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
 
+  def getSuorituksetForOppija(oppijaNumero: String): Seq[LegacySuoritus] =
+    val kantaOperaatiot = KantaOperaatiot(database)
+    val opiskeluoikeudet = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    val ammatillisetTutkinnot = opiskeluoikeudet
+      .filter((v, o) => v.tietolahde == Tietolahde.KOSKI)
+      .map((v, o) => o)
+      .flatten
+      // tähän sisältyvät ammatilliset perustutkinnot, ammattitutkinnot ja erikoisammattitutkinnot
+      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+      .map(o => o.suoritukset)
+      .flatten
+      .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
+      .map(s => s.asInstanceOf[AmmatillinenTutkinto])
+      .map(t => LegacySuoritus(oppijaNumero, "ammatillinentutkinto", t.tyyppi.arvo, if (t.vahvistusPaivamaara.isDefined) "VALMIS" else "EI VALMIS"))
+      .toSeq
+
+    val yoTutkinnot = opiskeluoikeudet
+      .filter((v, o) => v.tietolahde == Tietolahde.YTR)
+      .map((v, o) => o)
+      .flatten
+      .filter(o => o.isInstanceOf[YOOpiskeluoikeus])
+      .map(o => o.asInstanceOf[YOOpiskeluoikeus])
+      .map(o => o.yoTutkinto)
+      .map(t => LegacySuoritus(oppijaNumero, "yotutkinto", "", "VALMIS"))
+      .toSeq
+
+    Seq(ammatillisetTutkinnot, yoTutkinnot).flatten
+
+
   @GetMapping(path = Array(""),
     produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @Operation(
@@ -134,22 +164,7 @@ class LegacySuorituksetResource {
             if(oppijaNumero.isPresent)
               LOG.info(s"Haetaan ammatilliset ja yo-suoritukset henkilölle ${oppijaNumero}")
               AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_HENKILO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeYoTaiAmmatillinenTutkintoTiedot, null)
-              val opiskeluoikeudet = kantaOperaatiot.haeSuoritukset(oppijaNumero.get)
-              val result = opiskeluoikeudet
-                .filter((v, o) => v.tietolahde==Tietolahde.KOSKI)
-                .map((v, o) => o)
-                .flatten
-                // tähän sisältyvät ammatilliset perustutkinnot, ammattitutkinnot ja erikoisammattitutkinnot
-                .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-                .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-                .map(o => o.suoritukset)
-                .flatten
-                .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
-                .map(s => s.asInstanceOf[AmmatillinenTutkinto])
-                .map(t => LegacySuoritus(oppijaNumero.get, "ammatillinentutkinto", t.tyyppi.arvo, if(t.vahvistusPaivamaara.isDefined) "VALMIS" else "EI VALMIS"))
-
-              // TODO: lisää yo-tutkinnot
-              ResponseEntity.status(HttpStatus.OK).body(result)
+              ResponseEntity.status(HttpStatus.OK).body(getSuorituksetForOppija(oppijaNumero.get).asJava)
             else
               LOG.info(s"Haetaan hakijat joilla muuttuneita suorituksia ${muokattuJalkeen} jälkeen")
               AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME -> muokattuJalkeen.orElse(null)), AuditOperation.HaeKoskiTaiYTRMuuttuneet, null)

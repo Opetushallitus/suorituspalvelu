@@ -35,7 +35,7 @@ object KantaOperaatiot {
   enum KantaEntiteetit:
     case AMMATILLINEN_TUTKINTO, AMMATILLISEN_TUTKINNON_OSA, AMMATILLISEN_TUTKINNON_OSAALUE, PERUSOPETUKSEN_OPPIMAARA,
     NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA, PERUSOPETUKSEN_VUOSILUOKKA, PERUSOPETUKSEN_OPPIAINE, TUVA, TELMA,
-    PERUSOPETUKSEN_OPISKELUOIKEUS, AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS
+    YOTUTKINTO, PERUSOPETUKSEN_OPISKELUOIKEUS, AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS
 }
 
 class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
@@ -132,7 +132,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       sqlu"""
           DELETE FROM ammatilliset_opiskeluoikeudet USING versiot WHERE versiot.tunniste=ammatilliset_opiskeluoikeudet.versio_tunniste AND versiot.tunniste=${versio.tunniste.toString}::uuid;
        """,
-
+      sqlu"""
+          DELETE FROM yotutkinnot USING versiot WHERE versiot.tunniste=yotutkinnot.versio_tunniste AND versiot.tunniste=${versio.tunniste.toString}::uuid;
+       """,
     ))
 
   def getAmmatillisenTutkinnonOsaAlueInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
@@ -229,6 +231,15 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     })
   }
 
+  def getYOSuoritusInserts(versio: VersioEntiteetti, yoTutkinto: YOTutkinto): DBIOAction[_, NoStream, Effect] =
+    DBIO.sequence(Seq(
+      sqlu"""INSERT INTO yotutkinnot(versio_tunniste)
+            VALUES(${versio.tunniste.toString}::uuid)"""))
+
+  def getYOOpiskeluoikeusInserts(versio: VersioEntiteetti, opiskeluoikeus: YOOpiskeluoikeus) = {
+    DBIO.sequence(Vector(getYOSuoritusInserts(versio, opiskeluoikeus.yoTutkinto)))
+  }
+
   def getGenericOpiskeluoikeusInserts(versio: VersioEntiteetti, opiskeluoikeus: GeneerinenOpiskeluoikeus) = {
     sql"""INSERT INTO geneeriset_opiskeluoikeudet(versio_tunniste, oid, tyyppi, oppilaitos_oid, tila)
           VALUES(${versio.tunniste.toString}::uuid, ${opiskeluoikeus.oid}, ${opiskeluoikeus.tyyppi}, ${opiskeluoikeus.oppilaitosOid},
@@ -251,6 +262,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     opiskeluoikeudet.map {
       case po: PerusopetuksenOpiskeluoikeus => getPerusopetuksenOpiskeluoikeusInserts(versio, po)
       case ao: AmmatillinenOpiskeluoikeus => getAmmatillinenOpiskeluoikeusInserts(versio, ao)
+      case yo: YOOpiskeluoikeus => getYOOpiskeluoikeusInserts(versio, yo)
       case o: GeneerinenOpiskeluoikeus => getGenericOpiskeluoikeusInserts(versio, o)
       case unknown =>
         LOG.error(s"Tuntematon opiskeluoikeustyyppi: $unknown")
@@ -493,7 +505,18 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 w_versiot.versio AS versio
               FROM telmat
               INNER JOIN w_versiot ON w_versiot.tunniste=telmat.versio_tunniste
-              INNER JOIN ammatilliset_opiskeluoikeudet ON ammatilliset_opiskeluoikeudet.tunniste=telmat.opiskeluoikeus_tunniste)
+              INNER JOIN ammatilliset_opiskeluoikeudet ON ammatilliset_opiskeluoikeudet.tunniste=telmat.opiskeluoikeus_tunniste),
+            w_yotutkinnot AS (
+              SELECT
+                10 AS priority,
+                ${YOTUTKINTO.toString} AS tyyppi,
+                null::int AS tunniste,
+                null::int AS parent_tunniste,
+                null::int AS parent_opiskeluoikeus_tunniste,
+                jsonb_build_object()::text AS data,
+                w_versiot.versio AS versio
+              FROM yotutkinnot
+              INNER JOIN w_versiot ON w_versiot.tunniste=yotutkinnot.versio_tunniste)
           SELECT * FROM w_ammatillisen_tutkinnon_osaalueet
           UNION ALL
           SELECT * FROM w_ammatillisen_tutkinnon_osat
@@ -511,6 +534,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           SELECT * FROM w_tuvat
           UNION ALL
           SELECT * FROM w_telmat
+          UNION ALL
+          SELECT * FROM w_yotutkinnot
           UNION ALL
           SELECT * FROM w_perusopetuksen_opiskeluoikeudet
           UNION ALL
@@ -588,6 +613,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               case None => Some(Seq(suoritus))
             }
             None //Nämä tulevat AmmatilliseenOpiskeluoikeuteen käärittyinä suorituksina
+          case YOTUTKINTO =>
+            val suoritus = MAPPER.readValue(data, classOf[YOTutkinto])
+            Some(versio.get -> YOOpiskeluoikeus(suoritus))
           case PERUSOPETUKSEN_OPPIAINE =>
             val osa = MAPPER.readValue(data, classOf[PerusopetuksenOppiaine])
             perusopetuksenOppiaineet = perusopetuksenOppiaineet.updatedWith(parentTunniste)(osat => osat match
