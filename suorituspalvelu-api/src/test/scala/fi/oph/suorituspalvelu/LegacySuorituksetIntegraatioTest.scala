@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYYPPI_AMMATILLINENTUTKINTO
 import fi.oph.suorituspalvelu.resource.ApiConstants.{JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI}
-import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacySuorituksetFailureResponse, LegacySuoritus, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacySuorituksetFailureResponse, LegacyAmmatillinenTaiYOSuoritus, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.validation.Validator
 import fi.oph.suorituspalvelu.validation.Validator.{VALIDATION_MUOKATTUJALKEEN_EI_VALIDI, VALIDATION_OPPIJANUMERO_EI_VALIDI}
@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.time.LocalDate
+import java.util.Optional
 
 /**
  * Legacy-suoritusapin integraatiotestit. Testeissä on pyritty kattamaan kaikkien endpointtien kaikki eri paluuarvoihin
@@ -94,10 +95,10 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     // haetaan tutkinnot legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(OPPIJA_OID)))
       .andExpect(status().isOk).andReturn()
-    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacySuoritus]] {})
+    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyAmmatillinenTaiYOSuoritus]] {})
 
     Assertions.assertEquals(Seq(
-      LegacySuoritus(OPPIJA_OID, SUORITYSTYYPPI_AMMATILLINENTUTKINTO, tutkintoKoodi, "VALMIS"),
-      LegacySuoritus(OPPIJA_OID, "yotutkinto", "", "VALMIS")
+      LegacyAmmatillinenTaiYOSuoritus(OPPIJA_OID, SUORITYSTYYPPI_AMMATILLINENTUTKINTO, Optional.of(tutkintoKoodi), "VALMIS"),
+      LegacyAmmatillinenTaiYOSuoritus(OPPIJA_OID, "yotutkinto", Optional.empty, "VALMIS")
     ), legacySuorituksetResponse)
 }

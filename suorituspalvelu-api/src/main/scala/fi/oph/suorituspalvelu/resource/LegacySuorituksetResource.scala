@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
-import io.swagger.v3.oas.annotations.media.{ArraySchema, Content, Schema}
+import io.swagger.v3.oas.annotations.media.{Content, ExampleObject, Schema}
 import io.swagger.v3.oas.annotations.responses.{ApiResponse, ApiResponses}
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
@@ -70,12 +70,16 @@ vaan se palauttaa automaattisesti kaikki sopivat suoritukset (hakemuspalvelun to
 niin että kutsu tehdään vain kerran eikä neljästi).
 */
 
-case class LegacySuoritus(
-                           @(Schema @field)(example = "1.2.246.562.24.40483869857") @BeanProperty henkiloOid: String,
-                           @(Schema @field)(example = "ammatillinentutkinto") @BeanProperty tyyppiKoodi: String,
-                           @(Schema @field)(example = "351301") @BeanProperty koulutusModuuliKoodi: String,
-                           @(Schema @field)(example = "VALMIS") @BeanProperty tila: String,
-                         )
+case class LegacyAmmatillinenTaiYOSuoritus(
+  @(Schema @field)(example = "1.2.246.562.24.40483869857") @BeanProperty henkiloOid: String,
+  @(Schema @field)(example = "ammatillinentutkinto") @BeanProperty tyyppiKoodi: String,
+  @(Schema @field)(example = "351301") @BeanProperty koulutusModuuliKoodi: Optional[String],
+  @(Schema @field)(example = "VALMIS") @BeanProperty tila: String,
+)
+
+case class LegacyMuuttunutSuoritus(
+  @(Schema @field)(example = "1.2.246.562.24.40483869857") @BeanProperty henkiloOid: String,
+)
 
 @RequestMapping(path = Array(LEGACY_SUORITUKSET_PATH))
 @RestController
@@ -85,7 +89,7 @@ class LegacySuorituksetResource {
 
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
 
-  def getSuorituksetForOppija(oppijaNumero: String): Seq[LegacySuoritus] =
+  def getSuorituksetForOppija(oppijaNumero: String): Seq[LegacyAmmatillinenTaiYOSuoritus] =
     val kantaOperaatiot = KantaOperaatiot(database)
     val opiskeluoikeudet = kantaOperaatiot.haeSuoritukset(oppijaNumero)
     val ammatillisetTutkinnot = opiskeluoikeudet
@@ -99,7 +103,7 @@ class LegacySuorituksetResource {
       .flatten
       .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
       .map(s => s.asInstanceOf[AmmatillinenTutkinto])
-      .map(t => LegacySuoritus(oppijaNumero, "ammatillinentutkinto", t.tyyppi.arvo, if (t.vahvistusPaivamaara.isDefined) "VALMIS" else "EI VALMIS"))
+      .map(t => LegacyAmmatillinenTaiYOSuoritus(oppijaNumero, "ammatillinentutkinto", Optional.of(t.tyyppi.arvo), if (t.vahvistusPaivamaara.isDefined) "VALMIS" else "KESKEN"))
       .toSeq
 
     val yoTutkinnot = opiskeluoikeudet
@@ -109,25 +113,45 @@ class LegacySuorituksetResource {
       .filter(o => o.isInstanceOf[YOOpiskeluoikeus])
       .map(o => o.asInstanceOf[YOOpiskeluoikeus])
       .map(o => o.yoTutkinto)
-      .map(t => LegacySuoritus(oppijaNumero, "yotutkinto", "", "VALMIS"))
+      .map(t => LegacyAmmatillinenTaiYOSuoritus(oppijaNumero, "yotutkinto", Optional.empty(), "VALMIS"))
       .toSeq
 
     Seq(ammatillisetTutkinnot, yoTutkinnot).flatten
 
-
   @GetMapping(path = Array(""),
     produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @Operation(
-    summary = "Hakemuspalvelua varten tehty korvike suoritusrekisterin /rest/v1/suoritukset-rajapinnalle jota hakemuspalvelu käyttää" +
+    summary = "Tuottaa hakemuspalvelulle automaattisen hakukelpoisuuden määrittelyyn tarvittavat tiedot",
+    description = "Hakemuspalvelua varten tehty korvike suoritusrekisterin /rest/v1/suoritukset-rajapinnalle jota hakemuspalvelu käyttää" +
       "automaattisen hakukelpoisuuden määrittämiseen kahdella tavalla:\n" +
-      "- " + LEGACY_SUORITUKSET_HENKILO_PARAM_NAME+ "-parametri määrilteltynä halutaan tietään onko yksittäisellä hakijalla yo- tai ammatillinen tutkinto. Hakemuspalvelu hakemuspalvelu etsii tuloksista vähintään yhtä suoritusta jonka tila on VALMIS" +
-      "- " + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "-parametri määriteltynä halutaan tietää hakijat joilla on muuttuneita suorituksia määritellyn aikaleiman jälkeen. Hakemuspalvelu käynnistää palautetuille henkilöille hakukelpoisuuden tarkistuksen",
-    description = "Huomioita:\n" +
-      "- Huomio 1",
-    parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH)),
+      "- " + LEGACY_SUORITUKSET_HENKILO_PARAM_NAME + "-parametri määrilteltynä halutaan tietään onko yksittäisellä hakijalla yo- tai ammatillinen tutkinto. Hakemuspalvelu etsii tuloksista vähintään yhtä suoritusta jonka tila on VALMIS\n" +
+      "- " + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "-parametri määriteltynä halutaan tietää hakijat joilla on muuttuneita suorituksia määritellyn aikaleiman jälkeen. Hakemuspalvelu käynnistää palautetuille henkilöille hakukelpoisuuden tarkistuksen\n",
+    parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH))
   )
   @ApiResponses(value = Array(
-    new ApiResponse(responseCode = "200", description = "Palauttaa suoritukset", content = Array(new Content(mediaType = "application/json", array = new ArraySchema(schema = new Schema(implementation = classOf[LegacySuoritus]))))),
+    new ApiResponse(responseCode = "200", description = "Palauttaa suoritukset", content = Array(new Content(
+      mediaType = "application/json",
+      examples = Array(
+        new ExampleObject(name="palautetaan kun henkilo-parametri määritelty", summary="Ammatilliset ja YO-tutkinnot", value =
+          """
+            [
+              {
+                "henkiloOd": "1.2.246.562.24.40483869857",
+                "tyyppikoodi": "ammatillinentutkinto",
+                "351301": "koulutusModuuliKoodi",
+                "tila": "VAlMIS"
+              }
+            ]
+          """),
+        new ExampleObject(name="palautetaan kun muokattuJalkeen-parametri määritelty", summary="Muuttuneet henkilöt", value =
+          """
+            [
+              {
+                "henkiloOd": "1.2.246.562.24.40483869857"
+              }
+            ]
+          """))
+    ))),
     new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LegacySuorituksetFailureResponse])))),
     new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
   ))
