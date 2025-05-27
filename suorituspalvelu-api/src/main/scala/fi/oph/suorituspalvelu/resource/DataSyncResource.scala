@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.integration.KoskiIntegration
+import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_PATH, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.VirtaService
@@ -85,8 +85,8 @@ class DataSyncResource {
     LogContext(path = KOSKI_DATASYNC_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
       if (securityOperaatiot.onRekisterinpitaja()) {
         LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
-        val result = koskiIntegration.syncKoskiForHaku(hakuOid)
-        val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.isDefined)} versiotietoa."
+        val result: Seq[SyncResultForHenkilo] = koskiIntegration.syncKoskiForHaku(hakuOid)
+        val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
         LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
         ResponseEntity.status(HttpStatus.OK).body(responseStr) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
       } else {

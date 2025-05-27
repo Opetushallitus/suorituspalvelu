@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.integration
 
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -9,14 +9,16 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, PerusopetuksenOpiskeluoikeus, Suoritus, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, Opiskeluoikeus}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
 import slick.jdbc.JdbcBackend
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+
+case class SyncResultForHenkilo(henkiloOid: String, versio: Option[VersioEntiteetti], exception: Option[Exception])
 
 class KoskiIntegration {
 
@@ -24,35 +26,33 @@ class KoskiIntegration {
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   @Autowired val koskiClient: KoskiClient = null
-  
+
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
-  
-  
-  
+
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  
-  val KOSKI_BATCH_SIZE = 5000
-  
-  def syncKoskiForHaku(hakuOid: String): Seq[Option[VersioEntiteetti]] = {
+  private val KOSKI_BATCH_SIZE = 5000
+  private val HENKILO_TIMEOUT = 5.minutes
+
+  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
     val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))), 1.minute)
+      Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
 
     //Todo, mietitään näille hyvä rinnakkaisuus. Ehkä paria kyselyä kannattaa ajella rinnakkain?
     val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toList
     val started = new AtomicInteger(0)
-    grouped.flatMap(group =>
+    grouped.flatMap(group => {
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
-      syncKoski(group))
-
+      syncKoski(group)
+    })
   }
-  
-  
-  def syncKoski(personOids: Set[String]): Seq[Option[VersioEntiteetti]] = {
+
+
+  def syncKoski(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
     LOG.info(s"Synkataan Koski-data ${personOids.size} henkilölle")
     val query = KoskiMassaluovutusQueryParams.forOids(personOids)
 
@@ -62,7 +62,7 @@ class KoskiIntegration {
         handleFiles(finishedQuery.files)
       })
     })
-    Await.result(syncResultF, 5.minutes)
+    Await.result(syncResultF, 2.hours)
   }
 
 
@@ -82,8 +82,8 @@ class KoskiIntegration {
       }
     })
   }
-  
-  def handleFiles(fileUrls: Seq[String]): Future[Seq[Option[VersioEntiteetti]]] = {
+
+  def handleFiles(fileUrls: Seq[String]): Future[Seq[SyncResultForHenkilo]] = {
     LOG.info(s"Käsitellään ${fileUrls.size} Koski-tiedostoa.")
     val handled = new AtomicInteger(0)
 
@@ -96,22 +96,27 @@ class KoskiIntegration {
         val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
         val splitted = KoskiParser.splitKoskiDataByOppija(inputStream).toList
         LOG.info(s"Saatiin tulokset tiedostolle $fileUrl: käsitellään yhteensä ${splitted.size} henkilön Koski-tiedot.")
-        val kantaResults = splitted.map(henkilonTiedot => {
-          LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} Koski-tiedot")
-          val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
-          versio.foreach(v => {
-            LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
-            val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
-            LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${oikeudet.size} opiskeluoikeutta.")
-            kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, Set.empty)
-          })
-          versio
+        val kantaResults: Seq[SyncResultForHenkilo] = splitted.map(henkilonTiedot => {
+          try {
+            LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} Koski-tiedot")
+            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
+            versio.foreach(v => {
+              LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
+              val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
+              LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${oikeudet.size} opiskeluoikeutta.")
+              kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, Set.empty)
+            })
+            SyncResultForHenkilo(henkilonTiedot._1, versio, None)
+          } catch {
+            case e: Exception =>
+              LOG.error(s"Henkilon ${henkilonTiedot._1} Koski-tietojen tallentaminen epäonnistui", e)
+              SyncResultForHenkilo(henkilonTiedot._1, None, Some(e))
+          }
         })
         LOG.info(s"Valmista! $kantaResults")
         Future.successful(kantaResults)
       })
     })
-    //Todo, miten käsitellään osittaiset onnistumiset? Halutaanko retryjä?
     Future.sequence(futures).map(_.flatten) //Todo, rajoitetaanko rinnakkaisuutta jotenkin?
   }
 }
