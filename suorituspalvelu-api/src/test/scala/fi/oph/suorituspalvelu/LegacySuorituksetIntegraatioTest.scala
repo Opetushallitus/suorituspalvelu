@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYYPPI_AMMATILLINENTUTKINTO
 import fi.oph.suorituspalvelu.resource.ApiConstants.{JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI}
-import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacySuorituksetFailureResponse, LegacyAmmatillinenTaiYOSuoritus, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacyAmmatillinenTaiYOSuoritus, LegacyMuuttunutSuoritus, LegacySuorituksetFailureResponse, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.validation.Validator
 import fi.oph.suorituspalvelu.validation.Validator.{VALIDATION_MUOKATTUJALKEEN_EI_VALIDI, VALIDATION_OPPIJANUMERO_EI_VALIDI}
@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.Optional
 
 /**
@@ -81,15 +81,15 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testLegacySuorituksetAllowed(): Unit =
+  @Test def testLegacySuorituksetHenkilolleAllowed(): Unit =
     val tutkintoKoodi = "123456"
 
     // tallennetaan ammatillinen- ja yo-tutkinto
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{}")
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
     val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi(tutkintoKoodi, "koulutus", 1), Koodi("valmistunut", "jokutila", 1), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", 1), Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Seq(ammatillinenTutkinto), None)), Set.empty)
 
-    val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{}")
+    val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{\"testi\": \"suorituksetHenkilölle\"}")
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto())), Set.empty)
 
     // haetaan tutkinnot legacy-rajapinnasta
@@ -101,4 +101,20 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       LegacyAmmatillinenTaiYOSuoritus(OPPIJA_OID, SUORITYSTYYPPI_AMMATILLINENTUTKINTO, Optional.of(tutkintoKoodi), "VALMIS"),
       LegacyAmmatillinenTaiYOSuoritus(OPPIJA_OID, "yotutkinto", Optional.empty, "VALMIS")
     ), legacySuorituksetResponse)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testLegacySuorituksetMuuttuneetAllowed(): Unit =
+    val aikaleima = Instant.now()
+    
+    // tallennetaan suoritus
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"muuttuneetSuoritukset\"}")
+    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi("123456", "koulutus", 1), Koodi("valmistunut", "jokutila", 1), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", 1), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(OPPIJA_OID, "2.3.4", Seq(ammatillinenTutkinto), None)), Set.empty)
+
+    // haetaan muuttuneet legacy-rajapinnasta
+    val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_SUORITUKSET_PATH + "?" + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "=" + aikaleima.toString))
+      .andExpect(status().isOk).andReturn()
+    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyMuuttunutSuoritus]] {})
+
+    Assertions.assertEquals(Seq(LegacyMuuttunutSuoritus(OPPIJA_OID)), legacySuorituksetResponse)
 }

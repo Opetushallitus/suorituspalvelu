@@ -16,6 +16,7 @@ import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.*
 import slick.jdbc.JdbcBackend
 
+import java.time.Instant
 import java.util.Optional
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
@@ -193,8 +194,8 @@ class LegacySuorituksetResource {
               LOG.info(s"Haetaan hakijat joilla muuttuneita suorituksia ${muokattuJalkeen} jälkeen")
               AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME -> muokattuJalkeen.orElse(null)), AuditOperation.HaeKoskiTaiYTRMuuttuneet, null)
 
-              // TODO: lisää muuttuneiden haku
-              ResponseEntity.status(HttpStatus.OK).body("[]")
+              val muuttuneet = kantaOperaatiot.haeUusimmatMuuttuneetVersiot(Instant.parse(muokattuJalkeen.get)).map(m => LegacyMuuttunutSuoritus(m.oppijaNumero))
+              ResponseEntity.status(HttpStatus.OK).body(muuttuneet)
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LegacySuorituksetFailureResponse]])
     catch
