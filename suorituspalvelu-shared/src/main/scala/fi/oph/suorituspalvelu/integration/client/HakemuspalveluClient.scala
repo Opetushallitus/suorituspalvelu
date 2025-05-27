@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.jdk.javaapi.FutureConverters.asScala
 
@@ -27,9 +27,8 @@ case class AtaruResponseHenkilot(applications: List[AtaruHakemuksenHenkilotiedot
 
 case class CasParams(user: String, password: String, casUrl: String, envBaseUrl: String)
 
-///lomake-editori/api/external/suoritusrekisteri/henkilot
 trait HakemuspalveluClient {
-  def getHaunHakijat(params: AtaruHenkiloSearchParams): Seq[AtaruHakemuksenHenkilotiedot]
+  def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
 }
 
 class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClient {
@@ -41,24 +40,19 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
   mapper.registerModule(DefaultScalaModule)
 
 
-  override def getHaunHakijat(params: AtaruHenkiloSearchParams): Seq[AtaruHakemuksenHenkilotiedot] = {
-    val res: Either[Throwable, String] = fetch("https://virkailija.testiopintopolku.fi/lomake-editori/api/external/suoritusrekisteri/henkilot", params)
-    res match {
-      case Left(e) =>
-        LOG.error(s"Pieleen meni, lopetetaan :( $e")
-        throw e
-      case Right(data) =>
+  override def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
+    fetch("https://virkailija.testiopintopolku.fi/lomake-editori/api/external/suoritusrekisteri/henkilot", params)
+      .map(data => {
         //Todo handle offset/paging! Currently the ataru api external/suoritusrekisteri/henkilot
         // returns the first 200k hakemukses, which is of course enough for most cases/hakus.
-        val parsed = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
+        val parsed: AtaruResponseHenkilot = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
         LOG.info(s"Offset: ${parsed.offset}")
         LOG.info(s"Saatiin hakemuspalvelusta ${parsed.applications.size} hakemuksen henkilötiedot parametreille $params")
         parsed.applications
-    }
+      })
   }
 
-
-  private def fetch(url: String, body: AtaruHenkiloSearchParams): Either[Throwable, String] = {
+  private def fetch(url: String, body: AtaruHenkiloSearchParams): Future[String] = {
     val bodyMap = Map("hakuOid" -> body.hakuOid.get)
     LOG.info(s"fetch, $url $body ${mapper.writeValueAsString(body)} ${mapper.writeValueAsString(bodyMap)}")
     val req = new RequestBuilder()
@@ -68,19 +62,22 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
       .setUrl(url)
       .build()
     try {
-      val result = asScala(casClient.execute(req)).map {
+      asScala(casClient.execute(req)).map {
         case r if r.getStatusCode == 200 =>
-          Right(r.getResponseBody())
+          r.getResponseBody()
         case r =>
+          val errorStr = s"Failed to fetch data from hakemuspalvelu: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
           LOG.error(
-            s"Failed to fetch data from hakemuspalvelu: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+            errorStr
           )
-          Left(new RuntimeException("Failed to fetch data from hakemuspalvelu: " + r.getResponseBody()))
+          throw new RuntimeException(errorStr)
       }
-      Await.result(result, Duration(10, TimeUnit.SECONDS))
     } catch {
       case e: Throwable =>
-        Left(e)
+        LOG.error(
+          s"Failed to fetch data from hakemuspalvelu", e
+        )
+        Future.failed(e)
     }
   }
 }

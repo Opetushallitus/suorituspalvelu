@@ -1,9 +1,8 @@
 package fi.oph.suorituspalvelu.configuration
 
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.integration.client.KoskiClient
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{CasParams, HakemuspalveluClientImpl, KoskiClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}

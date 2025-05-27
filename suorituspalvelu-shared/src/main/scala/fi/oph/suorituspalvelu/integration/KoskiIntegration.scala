@@ -38,18 +38,17 @@ class KoskiIntegration {
   val KOSKI_BATCH_SIZE = 5000
   
   def syncKoskiForHaku(hakuOid: String): Seq[Option[VersioEntiteetti]] = {
-    //todo, ois ehkä tyylikkäämpää jos client palauttaisi futuurin ja käsiteltäisiin täällä eteenpäin
-    val hakemustenHenkilot: Seq[AtaruHakemuksenHenkilotiedot] = hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid)))
-    val personOids = hakemustenHenkilot.flatMap(_.personOid).toSet
-    
-    //Todo, mietitään näille hyvä rinnakkaisuus. Ehkä paria kyselyä kannattaa ajella rinnakkain? 
-    //Toinen vaihtoehto olisi muodostaa kaikki kyselyt Koskeen samanaikaisesti ja harvakseltaan pollailla kaikkia.
+    val personOids =
+      Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))), 1.minute)
+        .flatMap(_.personOid).toSet
+
+    //Todo, mietitään näille hyvä rinnakkaisuus. Ehkä paria kyselyä kannattaa ajella rinnakkain?
     val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toList
     val started = new AtomicInteger(0)
-    grouped.flatMap(group => 
+    grouped.flatMap(group =>
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
       syncKoski(group))
-    
+
   }
   
   
