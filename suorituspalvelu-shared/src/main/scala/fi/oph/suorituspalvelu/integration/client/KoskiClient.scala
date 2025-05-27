@@ -27,7 +27,7 @@ class KoskiClient(username: String, password: String, environmentBaseUrl: String
   }
 
   def getWithBasicAuth(url: String, followRedirects: Boolean = false): Future[String] = {
-    LOG.info(s"Get with basic auth, url: $url")
+    LOG.debug(s"Get with basic auth, url: $url")
     val realm = new Realm.Builder(username, password)
       .setUsePreemptiveAuth(false)
       .setScheme(Realm.AuthScheme.NTLM)

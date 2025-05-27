@@ -98,12 +98,10 @@ class KoskiIntegration {
         LOG.info(s"Saatiin tulokset tiedostolle $fileUrl: käsitellään yhteensä ${splitted.size} henkilön Koski-tiedot.")
         val kantaResults: Seq[SyncResultForHenkilo] = splitted.map(henkilonTiedot => {
           try {
-            LOG.info(s"Tallennetaan henkilön ${henkilonTiedot._1} Koski-tiedot")
             val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
             versio.foreach(v => {
               LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
               val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
-              LOG.info(s"Henkilölle ${henkilonTiedot._1} yhteensä ${oikeudet.size} opiskeluoikeutta.")
               kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, Set.empty)
             })
             SyncResultForHenkilo(henkilonTiedot._1, versio, None)
