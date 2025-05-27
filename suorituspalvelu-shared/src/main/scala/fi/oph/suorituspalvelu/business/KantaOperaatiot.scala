@@ -80,7 +80,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                  RETURNING tunniste::text""".as[String]
           val insertVersioAction = discontinueOldVersionAction
             .flatMap(useVersioTunnisteet => {
-              val useVersioTunniste = if (useVersioTunnisteet.isEmpty) null else useVersioTunnisteet.head
+              val useVersioTunniste = if (useVersioTunnisteet.isEmpty) {
+                // tilanteessa jossa kyseessä oppijan ensimmäinen versio käytetään edellisenä versiona talletettavaa versiota
+                // jotta a) pystytään indikoimaan että versio ei ole käytössä (ts. use_version_tunniste ei null), ja
+                // b) foreign key constraint toimii (pitää viitata taulussa olevaan versioon)
+                tunniste.toString
+              } else useVersioTunnisteet.head
               tietolahde match
                 case VIRTA => sqlu"""
                     INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)
@@ -92,6 +97,36 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           insertVersioAction.map(_ => Some(VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, tietolahde)))
       })
     Await.result(db.run(insertVersioIfNewDataAction.transactionally), DB_TIMEOUT)
+
+  def haeUusimmatMuuttuneetVersiot(alkaen: Instant): Seq[VersioEntiteetti] =
+    Await.result(db.run(
+      sql"""
+        WITH RECURSIVE
+          w_versiot_in_use(tunniste, use_versio_tunniste, loppu) AS (
+              SELECT versiot.tunniste, versiot.use_versio_tunniste, upper(versiot.voimassaolo)
+              FROM versiot
+              WHERE use_versio_tunniste IS NOT NULL
+              OR (use_versio_tunniste IS NULL AND lower(voimassaolo)>=${alkaen.toString}::timestamptz)
+            UNION
+              SELECT versiot.tunniste, versiot.use_versio_tunniste, upper(versiot.voimassaolo)
+              FROM w_versiot_in_use JOIN versiot ON w_versiot_in_use.use_versio_tunniste=versiot.tunniste
+              WHERE w_versiot_in_use.loppu>upper(versiot.voimassaolo) -- estetään syklit
+              AND w_versiot_in_use.tunniste<>versiot.tunniste -- estetään syklit
+              AND lower(voimassaolo)>=${alkaen.toString}::timestamptz
+          ),
+          w_versiot AS (
+            SELECT jsonb_build_object(
+              'tunniste', versiot.tunniste,
+              'oppijaNumero', versiot.oppijanumero,
+              'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
+              'loppu', CASE WHEN loppu='infinity'::timestamptz THEN null ELSE to_json(loppu::timestamptz)#>>'{}' END,
+              'tietolahde', versiot.lahde
+            )::text AS versio
+            FROM w_versiot_in_use JOIN versiot ON w_versiot_in_use.tunniste=versiot.tunniste
+            WHERE w_versiot_in_use.use_versio_tunniste IS NULL
+          )
+          SELECT * FROM w_versiot""".as[String]), DB_TIMEOUT)
+      .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
   def haeData(versio: VersioEntiteetti): (VersioEntiteetti, String) =
     Await.result(db.run(
@@ -314,6 +349,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 SELECT versiot.tunniste, versiot.use_versio_tunniste, w_versiot_in_use.loppu
                 FROM w_versiot_in_use JOIN versiot ON w_versiot_in_use.use_versio_tunniste=versiot.tunniste
                 WHERE w_versiot_in_use.loppu>upper(versiot.voimassaolo) -- estetään syklit
+                AND w_versiot_in_use.tunniste<>versiot.tunniste -- estetään syklit
             ),
             w_versiot AS (
               SELECT versiot.tunniste, jsonb_build_object(
