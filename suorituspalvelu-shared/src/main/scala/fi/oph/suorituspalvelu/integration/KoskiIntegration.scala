@@ -37,20 +37,23 @@ class KoskiIntegration {
   private val KOSKI_BATCH_SIZE = 5000
   private val HENKILO_TIMEOUT = 5.minutes
 
-  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
 
-    //Todo, mietitään näille hyvä rinnakkaisuus. Ehkä paria kyselyä kannattaa ajella rinnakkain?
+  def syncKoskiInBatches(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
     val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toList
     val started = new AtomicInteger(0)
+
     grouped.flatMap(group => {
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
       syncKoski(group)
     })
   }
 
+  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
+    val personOids =
+      Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))), HENKILO_TIMEOUT)
+        .flatMap(_.personOid).toSet
+    syncKoskiInBatches(personOids)
+  }
 
   def syncKoski(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
     LOG.info(s"Synkataan Koski-data ${personOids.size} henkilölle")

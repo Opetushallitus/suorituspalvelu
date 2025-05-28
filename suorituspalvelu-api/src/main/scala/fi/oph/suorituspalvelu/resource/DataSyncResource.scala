@@ -55,7 +55,7 @@ class DataSyncResource {
     LogContext(path = KOSKI_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
       if (securityOperaatiot.onRekisterinpitaja()) {
         LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
-        val result = koskiIntegration.syncKoski(personOids.toSet)
+        val result = koskiIntegration.syncKoskiInBatches(personOids.toSet)
         LOG.info(s"Palautetaan rajapintavastaus, $result")
         ResponseEntity.status(HttpStatus.OK).body(result.toString())//Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
       } else {
