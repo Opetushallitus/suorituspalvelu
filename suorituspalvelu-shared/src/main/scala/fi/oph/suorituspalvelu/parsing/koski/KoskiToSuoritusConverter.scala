@@ -127,6 +127,7 @@ object KoskiToSuoritusConverter {
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
+      //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
     )
 
@@ -136,6 +137,7 @@ object KoskiToSuoritusConverter {
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
+      //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
     )
 
