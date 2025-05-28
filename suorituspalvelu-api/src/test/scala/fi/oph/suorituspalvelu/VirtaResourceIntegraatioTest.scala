@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.resource.{ApiConstants, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
-import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -69,5 +69,10 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // varmistetaan että kentät tulevat kantaan oikein
     // TODO: lisää suoritusten vertailu
+
+    // ja että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedot.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
 }

@@ -99,7 +99,7 @@ class DataSyncResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
           .map(_ =>
             val user = AuditLog.getUser(request)
-            AuditLog.logCreate(user, Map("oppijaNumero" -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, null)
+            AuditLog.logCreate(user, Map(VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, null)
             LOG.info(s"Haetaan Virta-tiedot henkilölle ${oppijaNumero}")
             val jobId = virtaService.syncVirta(oppijaNumero, Option.apply(hetu))
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
