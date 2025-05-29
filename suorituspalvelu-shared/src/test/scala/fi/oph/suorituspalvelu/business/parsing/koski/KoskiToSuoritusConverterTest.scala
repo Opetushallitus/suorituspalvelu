@@ -24,11 +24,11 @@ class KoskiToSuoritusConverterTest {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
 
-      Assertions.assertEquals(5, oikeudet.size)
+      Assertions.assertEquals(7, oikeudet.size)
 
       val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
       Assertions.assertEquals(1, perusopetukset.size)
-      Assertions.assertEquals(3, ammatilliset.size)
+      Assertions.assertEquals(5, ammatilliset.size)
       Assertions.assertEquals(1, geneeriset.size)
     })
 
@@ -60,11 +60,13 @@ class KoskiToSuoritusConverterTest {
   }
 
   @Test def testKoskiParsingForAmmatillistenOpiskeluoikeuksienSuoritukset(): Unit = {
-    val fileName = "/1.2.246.562.24.56916824272.json"
+    val fileName = "/1_2_246_562_24_56916824272.json"
     val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet).map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+      val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
+        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
 
       //Pitäisi syntyä kolme ammatillista opiskeluoikeutta, joista kahdella on yksi suoritus ja yhdellä ei suorituksia.
       Assertions.assertEquals(oikeudet.size, 3)
