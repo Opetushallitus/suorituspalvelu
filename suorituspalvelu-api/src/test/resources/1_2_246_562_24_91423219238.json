@@ -1,0 +1,911 @@
+[
+  {
+    "oppijaOid": "1.2.246.562.24.91423219238",
+    "kaikkiOidit": [
+      "1.2.246.562.24.91423219238"
+    ],
+    "aikaleima": "2024-12-18T12:53:12.120389",
+    "opiskeluoikeudet": [
+      {
+        "tyyppi": {
+          "koodiarvo": "perusopetus",
+          "nimi": {
+            "fi": "Perusopetus",
+            "sv": "Grundläggande utbildning",
+            "en": "Primary and lower secondary education"
+          },
+          "lyhytNimi": {
+            "fi": "Perusopetus"
+          },
+          "koodistoUri": "opiskeluoikeudentyyppi",
+          "koodistoVersio": 1
+        },
+        "oid": "1.2.246.562.15.80919344202",
+        "koulutustoimija": {
+          "oid": "1.2.246.562.10.494695390410",
+          "nimi": {
+            "fi": "Vantaan kaupunki",
+            "sv": "Vanda stad",
+            "en": "Vantaan kaupunki"
+          },
+          "yTunnus": "0124610-9",
+          "kotipaikka": {
+            "koodiarvo": "092",
+            "nimi": {
+              "fi": "Vantaa",
+              "sv": "Vanda"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "oppilaitos": {
+          "oid": "1.2.246.562.10.86694591198",
+          "oppilaitosnumero": {
+            "koodiarvo": "03210",
+            "nimi": {
+              "fi": "Hämeenkylän koulu",
+              "sv": "Hämeenkylän koulu",
+              "en": "Hämeenkylän koulu"
+            },
+            "lyhytNimi": {
+              "fi": "Hämeenkylän koulu",
+              "sv": "Hämeenkylän koulu",
+              "en": "Hämeenkylän koulu"
+            },
+            "koodistoUri": "oppilaitosnumero",
+            "koodistoVersio": 1
+          },
+          "nimi": {
+            "fi": "Hämeenkylän koulu",
+            "sv": "Hämeenkylän koulu",
+            "en": "Hämeenkylän koulu"
+          },
+          "kotipaikka": {
+            "koodiarvo": "092",
+            "nimi": {
+              "fi": "Vantaa",
+              "sv": "Vanda"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "tila": {
+          "opiskeluoikeusjaksot": [
+            {
+              "alku": "2021-08-11",
+              "tila": {
+                "koodiarvo": "lasna",
+                "nimi": {
+                  "fi": "Läsnä",
+                  "sv": "Närvarande",
+                  "en": "Present"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              }
+            },
+            {
+              "alku": "2022-06-04",
+              "tila": {
+                "koodiarvo": "valmistunut",
+                "nimi": {
+                  "fi": "Valmistunut",
+                  "sv": "Utexaminerad",
+                  "en": "Graduated"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              }
+            }
+          ]
+        },
+        "suoritukset": [
+          {
+            "tyyppi": {
+              "koodiarvo": "perusopetuksenoppimaara",
+              "nimi": {
+                "fi": "Perusopetuksen oppimäärä",
+                "sv": "Grundläggande utbildningens lärokurs",
+                "en": "Comprehensive school education syllabus"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            },
+            "koulutusmoduuli": {
+              "perusteenDiaarinumero": "104/011/2014",
+              "tunniste": {
+                "koodiarvo": "201101",
+                "nimi": {
+                  "fi": "Perusopetus",
+                  "sv": "Grundläggande utbildning",
+                  "en": "Basic education"
+                },
+                "koodistoUri": "koulutus",
+                "koodistoVersio": 12
+              },
+              "koulutustyyppi": {
+                "koodiarvo": "16",
+                "nimi": {
+                  "fi": "Perusopetus",
+                  "sv": "Grundläggande utbildning"
+                },
+                "lyhytNimi": {
+                  "fi": "Perusopetus",
+                  "sv": "Grundläggande utbildning"
+                },
+                "koodistoUri": "koulutustyyppi",
+                "koodistoVersio": 2
+              }
+            },
+            "vahvistus": {
+              "päivä": "2022-06-04"
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "koulusivistyskieli": [
+              {
+                "koodiarvo": "SV",
+                "nimi": {
+                  "fi": "ruotsi"
+                },
+                "koodistoUri": "kieli"
+              }
+            ],
+            "osasuoritukset": [
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "AI",
+                    "nimi": {
+                      "fi": "Äidinkieli ja kirjallisuus",
+                      "sv": "Modersmålet och litteratur",
+                      "en": "Mother tongue and literature"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Äidinkieli ja kirjallisuus",
+                      "sv": "Modersmålet och litteratur"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "AI2",
+                    "nimi": {
+                      "fi": "Ruotsin kieli ja kirjallisuus",
+                      "sv": "Svenska och litteratur",
+                      "en": "Swedish language and literature"
+                    },
+                    "koodistoUri": "oppiaineaidinkielijakirjallisuus",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 6.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "8",
+                      "nimi": {
+                        "fi": "hyvä",
+                        "sv": "god",
+                        "en": "good"
+                      },
+                      "lyhytNimi": {
+                        "fi": "8"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Subject in comprehensive school education"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "A1",
+                    "nimi": {
+                      "fi": "A1-kieli",
+                      "sv": "A1-språk",
+                      "en": "A1-language"
+                    },
+                    "lyhytNimi": {
+                      "fi": "A1-kieli",
+                      "sv": "A1-språk"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "EN",
+                    "nimi": {
+                      "fi": "englanti",
+                      "sv": "engelska",
+                      "en": "English"
+                    },
+                    "lyhytNimi": {
+                      "fi": "englanti",
+                      "sv": "engelska",
+                      "en": "English"
+                    },
+                    "koodistoUri": "kielivalikoima",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 4.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "8",
+                      "nimi": {
+                        "fi": "hyvä",
+                        "sv": "god",
+                        "en": "good"
+                      },
+                      "lyhytNimi": {
+                        "fi": "8"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Subject in comprehensive school education"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "B1",
+                    "nimi": {
+                      "fi": "B1-kieli",
+                      "sv": "B1-språk",
+                      "en": "B1-language"
+                    },
+                    "lyhytNimi": {
+                      "fi": "B1-kieli",
+                      "sv": "B1-språk"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "FI",
+                    "nimi": {
+                      "fi": "suomi",
+                      "sv": "finska",
+                      "en": "Finnish"
+                    },
+                    "lyhytNimi": {
+                      "fi": "suomi",
+                      "sv": "finska",
+                      "en": "Finnish"
+                    },
+                    "koodistoUri": "kielivalikoima",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 4.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "8",
+                      "nimi": {
+                        "fi": "hyvä",
+                        "sv": "god",
+                        "en": "good"
+                      },
+                      "lyhytNimi": {
+                        "fi": "8"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Subject in comprehensive school education"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "MA",
+                    "nimi": {
+                      "fi": "Matematiikka",
+                      "sv": "Matematik",
+                      "en": "Mathematics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Matematiikka",
+                      "sv": "Matematik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 4.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "8",
+                      "nimi": {
+                        "fi": "hyvä",
+                        "sv": "god",
+                        "en": "good"
+                      },
+                      "lyhytNimi": {
+                        "fi": "8"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Subject in comprehensive school education"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              }
+            ]
+          },
+          {
+            "tyyppi": {
+              "koodiarvo": "perusopetuksenvuosiluokka",
+              "nimi": {
+                "fi": "Perusopetuksen vuosiluokka",
+                "sv": "Årskurs i grundläggande utbildning",
+                "en": "Comprehensive school class"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            },
+            "koulutusmoduuli": {
+              "tunniste": {
+                "koodiarvo": "9",
+                "nimi": {
+                  "fi": "9. vuosiluokka",
+                  "sv": "Årskurs 9",
+                  "en": "9th grade"
+                },
+                "koodistoUri": "perusopetuksenluokkaaste",
+                "koodistoVersio": 1
+              },
+              "perusteenDiaarinumero": "104/011/2014"
+            },
+            "alkamispäivä": "2021-08-11",
+            "vahvistus": {
+              "päivä": "2022-06-04"
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "jääLuokalle": false
+          }
+        ]
+      },
+      {
+        "tyyppi": {
+          "koodiarvo": "aikuistenperusopetus",
+          "nimi": {
+            "fi": "Aikuisten perusopetus",
+            "sv": "Grundläggande utbildning för vuxna",
+            "en": "Preparatory instruction and lower secondary education for adults"
+          },
+          "lyhytNimi": {
+            "fi": "Aikuisten perusopetus"
+          },
+          "koodistoUri": "opiskeluoikeudentyyppi",
+          "koodistoVersio": 1
+        },
+        "oid": "1.2.246.562.15.23838014928",
+        "koulutustoimija": {
+          "oid": "1.2.246.562.10.26464466668",
+          "nimi": {
+            "fi": "Touko Voutilaisen koulusäätiö sr",
+            "sv": "Touko Voutilaisen koulusäätiö sr",
+            "en": "Touko Voutilaisen koulusäätiö sr"
+          },
+          "yTunnus": "1997270-7",
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "oppilaitos": {
+          "oid": "1.2.246.562.10.96398657237",
+          "oppilaitosnumero": {
+            "koodiarvo": "00316",
+            "nimi": {
+              "fi": "Eiran aikuislukio",
+              "sv": "Eiran aikuislukio",
+              "en": "Eiran aikuislukio"
+            },
+            "lyhytNimi": {
+              "fi": "Eiran aikuislukio",
+              "sv": "Eiran aikuislukio",
+              "en": "Eiran aikuislukio"
+            },
+            "koodistoUri": "oppilaitosnumero",
+            "koodistoVersio": 1
+          },
+          "nimi": {
+            "fi": "Eiran aikuislukio",
+            "sv": "Eiran aikuislukio",
+            "en": "Eiran aikuislukio"
+          },
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "tila": {
+          "opiskeluoikeusjaksot": [
+            {
+              "alku": "2024-01-08",
+              "tila": {
+                "koodiarvo": "lasna",
+                "nimi": {
+                  "fi": "Läsnä",
+                  "sv": "Närvarande",
+                  "en": "Present"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              },
+              "opintojenRahoitus": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Valtionosuusrahoitteinen koulutus",
+                  "sv": "Statsandelsfinansierad utbildning",
+                  "en": "Education financed by the state"
+                },
+                "koodistoUri": "opintojenrahoitus",
+                "koodistoVersio": 1
+              }
+            },
+            {
+              "alku": "2024-05-20",
+              "tila": {
+                "koodiarvo": "valmistunut",
+                "nimi": {
+                  "fi": "Valmistunut",
+                  "sv": "Utexaminerad",
+                  "en": "Graduated"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              },
+              "opintojenRahoitus": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Valtionosuusrahoitteinen koulutus",
+                  "sv": "Statsandelsfinansierad utbildning",
+                  "en": "Education financed by the state"
+                },
+                "koodistoUri": "opintojenrahoitus",
+                "koodistoVersio": 1
+              }
+            }
+          ]
+        },
+        "suoritukset": [
+          {
+            "koulutusmoduuli": {
+              "tunniste": {
+                "koodiarvo": "BI",
+                "nimi": {
+                  "fi": "Biologia",
+                  "sv": "Biologi",
+                  "en": "Biology"
+                },
+                "lyhytNimi": {
+                  "fi": "Biologia",
+                  "sv": "Biologi"
+                },
+                "koodistoUri": "koskioppiaineetyleissivistava",
+                "koodistoVersio": 1
+              },
+              "pakollinen": true,
+              "perusteenDiaarinumero": "OPH-1280-2017"
+            },
+            "toimipiste": {
+              "oid": "1.2.246.562.10.96398657237",
+              "oppilaitosnumero": {
+                "koodiarvo": "00316",
+                "nimi": {
+                  "fi": "Eiran aikuislukio",
+                  "sv": "Eiran aikuislukio",
+                  "en": "Eiran aikuislukio"
+                },
+                "lyhytNimi": {
+                  "fi": "Eiran aikuislukio",
+                  "sv": "Eiran aikuislukio",
+                  "en": "Eiran aikuislukio"
+                },
+                "koodistoUri": "oppilaitosnumero",
+                "koodistoVersio": 1
+              },
+              "nimi": {
+                "fi": "Eiran aikuislukio",
+                "sv": "Eiran aikuislukio",
+                "en": "Eiran aikuislukio"
+              },
+              "kotipaikka": {
+                "koodiarvo": "091",
+                "nimi": {
+                  "fi": "Helsinki",
+                  "sv": "Helsingfors"
+                },
+                "koodistoUri": "kunta",
+                "koodistoVersio": 2
+              }
+            },
+            "arviointi": [
+              {
+                "arvosana": {
+                  "koodiarvo": "8",
+                  "nimi": {
+                    "fi": "hyvä",
+                    "sv": "god",
+                    "en": "good"
+                  },
+                  "lyhytNimi": {
+                    "fi": "8"
+                  },
+                  "koodistoUri": "arviointiasteikkoyleissivistava",
+                  "koodistoVersio": 1
+                },
+                "hyväksytty": true
+              }
+            ],
+            "vahvistus": {
+              "päivä": "2024-05-20"
+            },
+            "suoritustapa": {
+              "koodiarvo": "koulutus",
+              "nimi": {
+                "fi": "Koulutus",
+                "sv": "Utbildning",
+                "en": "Education"
+              },
+              "koodistoUri": "perusopetuksensuoritustapa",
+              "koodistoVersio": 1
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "tyyppi": {
+              "koodiarvo": "perusopetuksenoppiaineenoppimaara",
+              "nimi": {
+                "fi": "Perusopetuksen oppiaineen oppimäärä",
+                "sv": "Lärokurs i ett läroämne i grundläggande utbildning",
+                "en": "Subject syllabus in comprehensive school education"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            }
+          }
+        ]
+      },
+      {
+        "tyyppi": {
+          "koodiarvo": "perusopetus",
+          "nimi": {
+            "fi": "Perusopetus",
+            "sv": "Grundläggande utbildning",
+            "en": "Primary and lower secondary education"
+          },
+          "lyhytNimi": {
+            "fi": "Perusopetus"
+          },
+          "koodistoUri": "opiskeluoikeudentyyppi",
+          "koodistoVersio": 1
+        },
+        "oid": "1.2.246.562.15.83931646828",
+        "koulutustoimija": {
+          "oid": "1.2.246.562.10.2013120314194853405606",
+          "nimi": {
+            "fi": "Tuntematon",
+            "sv": "Tuntematon",
+            "en": "Tuntematon"
+          },
+          "kotipaikka": {
+            "koodiarvo": "999",
+            "nimi": {
+              "fi": "Ei tiedossa (kunta)",
+              "sv": "Okänd kommun",
+              "en": "Not known"
+            },
+            "lyhytNimi": {
+              "fi": "Ei tiedossa (kunta)",
+              "sv": "Okänd kommun"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "oppilaitos": {
+          "oid": "1.2.246.562.10.57118763579",
+          "oppilaitosnumero": {
+            "koodiarvo": "00000",
+            "nimi": {
+              "fi": "Tuntematon",
+              "sv": "Okänd",
+              "en": "Unknown"
+            },
+            "lyhytNimi": {
+              "fi": "Tuntematon",
+              "sv": "Okänd",
+              "en": "Unknown"
+            },
+            "koodistoUri": "oppilaitosnumero",
+            "koodistoVersio": 1
+          },
+          "nimi": {
+            "fi": "Tuntematon",
+            "sv": "Okänd",
+            "en": "Unknown"
+          },
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "tila": {
+          "opiskeluoikeusjaksot": [
+            {
+              "alku": "2024-08-12",
+              "tila": {
+                "koodiarvo": "lasna",
+                "nimi": {
+                  "fi": "Läsnä",
+                  "sv": "Närvarande",
+                  "en": "Present"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              }
+            }
+          ]
+        },
+        "suoritukset": [
+          {
+            "tyyppi": {
+              "koodiarvo": "perusopetuksenoppimaara",
+              "nimi": {
+                "fi": "Perusopetuksen oppimäärä",
+                "sv": "Grundläggande utbildningens lärokurs",
+                "en": "Comprehensive school education syllabus"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            },
+            "koulutusmoduuli": {
+              "perusteenDiaarinumero": "104/011/2014",
+              "tunniste": {
+                "koodiarvo": "201101",
+                "nimi": {
+                  "fi": "Perusopetus",
+                  "sv": "Grundläggande utbildning",
+                  "en": "Basic education"
+                },
+                "koodistoUri": "koulutus",
+                "koodistoVersio": 12
+              },
+              "koulutustyyppi": {
+                "koodiarvo": "16",
+                "nimi": {
+                  "fi": "Perusopetus",
+                  "sv": "Grundläggande utbildning"
+                },
+                "lyhytNimi": {
+                  "fi": "Perusopetus",
+                  "sv": "Grundläggande utbildning"
+                },
+                "koodistoUri": "koulutustyyppi",
+                "koodistoVersio": 2
+              }
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "osasuoritukset": []
+          }
+        ],
+        "lisätiedot": {
+          "erityisenTuenPäätökset": [
+            {
+              "alku": "2024-08-12",
+              "opiskeleeToimintaAlueittain": false
+            }
+          ],
+          "vuosiluokkiinSitoutumatonOpetus": false
+        }
+      }
+    ]
+  }
+]

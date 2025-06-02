@@ -16,7 +16,7 @@ object Validator {
   final val VALIDATION_OPPIJANUMERO_TYHJA = "oppijaNumero: Kenttä on pakollinen"
   final val VALIDATION_OPPIJANUMERO_EI_VALIDI = "oppijaNumero: Oppijanumero ei oli validi oppija oid"
   final val VALIDATION_HAKUOID_TYHJA = "hakuOid: Kenttä on pakollinen"
-  final val VALIDATION_HAKUOID_EI_VALIDI = "hakuOid ei ole validi"
+  final val VALIDATION_HAKUOID_EI_VALIDI = "hakuOid ei ole validi: "
   final val VALIDATION_EI_VALIDIT_OIDIT = "Seuraavat oppijanumerot eivät ole valideja: "
 
   final val VALIDATION_MUOKATTUJALKEEN_TYHJA          = "muokattuJalkeen: Kenttä on pakollinen"
@@ -66,7 +66,7 @@ object Validator {
     if (hakuOid.isEmpty)
       Set(VALIDATION_HAKUOID_TYHJA)
     else if (!hakuOidPattern.matches(hakuOid))
-      Set(VALIDATION_HAKUOID_EI_VALIDI)
+      Set(VALIDATION_HAKUOID_EI_VALIDI+hakuOid)
     else
       Set.empty
   }
