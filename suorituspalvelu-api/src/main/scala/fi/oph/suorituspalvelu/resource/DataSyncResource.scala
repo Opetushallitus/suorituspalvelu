@@ -71,7 +71,7 @@ class DataSyncResource {
           LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
           val result = koskiIntegration.syncKoskiInBatches(personOids.toSet)
           LOG.info(s"Palautetaan rajapintavastaus, $result")
-          ResponseEntity.status(HttpStatus.OK).body(result.toString()) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
+          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
