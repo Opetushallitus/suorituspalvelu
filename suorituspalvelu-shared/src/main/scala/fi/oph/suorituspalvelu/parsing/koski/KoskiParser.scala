@@ -70,7 +70,8 @@ case class Suoritus(tyyppi: SuoritusTyyppi,
                     osasuoritukset: Option[Set[OsaSuoritus]],
                     arviointi: Option[Set[Arviointi]],
                     keskiarvo: Option[BigDecimal],
-                    suoritustapa: Option[SuoritusTapa])
+                    suoritustapa: Option[SuoritusTapa],
+                    `jääLuokalle`: Option[Boolean])
 
 case class OpiskeluoikeusJaksoTila(koodiarvo: String,
                                    koodistoUri: String,

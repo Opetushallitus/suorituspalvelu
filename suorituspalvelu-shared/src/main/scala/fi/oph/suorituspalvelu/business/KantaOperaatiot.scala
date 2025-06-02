@@ -209,8 +209,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def getPerusopetuksenVuosiluokkaInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: PerusopetuksenVuosiluokka): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
-      sqlu"""INSERT INTO perusopetuksen_vuosiluokat(versio_tunniste, opiskeluoikeus_tunniste, nimi, koodi, alkamispaiva)
-            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.alkamisPaiva.map(d => d.toString)}::date)"""))
+      sqlu"""INSERT INTO perusopetuksen_vuosiluokat(versio_tunniste, opiskeluoikeus_tunniste, nimi, koodi, alkamispaiva, jaaluokalle)
+            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.alkamisPaiva.map(d => d.toString)}::date, ${suoritus.jaaLuokalle})"""))
 
   def getNuortenPerusopetuksenOppiaineenOppimaaraInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: NuortenPerusopetuksenOppiaineenOppimaara): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
@@ -501,7 +501,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 jsonb_build_object(
                   'nimi', nimi,
                   'koodi', koodi,
-                  'alkamisPaiva', alkamispaiva
+                  'alkamisPaiva', alkamispaiva,
+                  'jaaLuokalle', jaaluokalle
                 )::text AS data,
                 w_versiot.versio AS versio
               FROM perusopetuksen_vuosiluokat

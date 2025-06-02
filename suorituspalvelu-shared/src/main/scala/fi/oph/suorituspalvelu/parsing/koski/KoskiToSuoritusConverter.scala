@@ -147,7 +147,8 @@ object KoskiToSuoritusConverter {
     PerusopetuksenVuosiluokka(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
       suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
-      suoritus.alkamispäivä.map(p => LocalDate.parse(p))
+      suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
+      suoritus.`jääLuokalle`.getOrElse(false)
     )
 
   def toTelma(suoritus: Suoritus): Telma =

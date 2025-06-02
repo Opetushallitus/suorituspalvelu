@@ -72,7 +72,8 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_vuosiluokat (
     opiskeluoikeus_tunniste INT REFERENCES perusopetuksen_opiskeluoikeudet (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
-    alkamispaiva            DATE
+    alkamispaiva            DATE,
+    jaaluokalle             BOOLEAN
 );
 CREATE INDEX perusopetuksen_vuosiluokat_versio_tunniste_idx ON perusopetuksen_vuosiluokat (versio_tunniste);
 
