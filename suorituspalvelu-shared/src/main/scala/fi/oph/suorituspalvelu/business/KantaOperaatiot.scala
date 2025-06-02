@@ -607,13 +607,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )
             None
           case AMMATILLINEN_OPISKELUOIKEUS =>
-            val opiskeluoikeus = MAPPER.readValue(data, classOf[AmmatillinenOpiskeluoikeus]).copy(suoritukset = ammatillinenByOpiskeluoikeus.getOrElse(tunniste, Seq.empty))
+            val opiskeluoikeus = MAPPER.readValue(data, classOf[AmmatillinenOpiskeluoikeus]).copy(suoritukset = ammatillinenByOpiskeluoikeus.getOrElse(tunniste, Seq.empty).toSet)
             Some(versio.get -> opiskeluoikeus)
           case PERUSOPETUKSEN_OPISKELUOIKEUS =>
-            val opiskeluoikeus = MAPPER.readValue(data, classOf[PerusopetuksenOpiskeluoikeus]).copy(suoritukset = perusopetusByOpiskeluoikeus.getOrElse(tunniste, Seq.empty))
+            val opiskeluoikeus = MAPPER.readValue(data, classOf[PerusopetuksenOpiskeluoikeus]).copy(suoritukset = perusopetusByOpiskeluoikeus.getOrElse(tunniste, Seq.empty).toSet)
             Some(versio.get -> opiskeluoikeus)
           case GENEERINEN_OPISKELUOIKEUS =>
-            val opiskeluoikeus = MAPPER.readValue(data, classOf[GeneerinenOpiskeluoikeus]).copy(suoritukset = geneerinenByOpiskeluoikeus.getOrElse(tunniste, Seq.empty))
+            val opiskeluoikeus = MAPPER.readValue(data, classOf[GeneerinenOpiskeluoikeus]).copy(suoritukset = geneerinenByOpiskeluoikeus.getOrElse(tunniste, Seq.empty).toSet)
             Some(versio.get -> opiskeluoikeus)
           case PERUSOPETUKSEN_OPPIMAARA =>
             val suoritus = MAPPER.readValue(data, classOf[PerusopetuksenOppimaara]).copy(aineet = perusopetuksenOppiaineet.getOrElse(tunniste, Seq.empty).toSet)

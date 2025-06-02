@@ -36,11 +36,11 @@ case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String)
 
 case class PerusopetuksenVuosiluokka(nimi: String, koodi: String, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus
 
-case class PerusopetuksenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], lisatiedot: Option[KoskiLisatiedot], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
+case class PerusopetuksenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus], lisatiedot: Option[KoskiLisatiedot], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
-case class AmmatillinenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
+case class AmmatillinenOpiskeluoikeus(oid: String, oppilaitosOid: String, suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
-case class GeneerinenOpiskeluoikeus(oid: String, tyyppi: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
+case class GeneerinenOpiskeluoikeus(oid: String, tyyppi: String, oppilaitosOid: String, suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
 case class YOOpiskeluoikeus(yoTutkinto: YOTutkinto) extends Opiskeluoikeus
 

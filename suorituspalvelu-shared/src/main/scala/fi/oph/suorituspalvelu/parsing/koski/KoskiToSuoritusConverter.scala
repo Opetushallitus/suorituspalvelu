@@ -188,7 +188,7 @@ object KoskiToSuoritusConverter {
   }
 
   def toPerusopetuksenOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus): fi.oph.suorituspalvelu.business.Opiskeluoikeus = {
-    val convertedSuoritukset: Seq[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
+    val convertedSuoritukset: Set[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
     PerusopetuksenOpiskeluoikeus(
       opiskeluoikeus.oppilaitos.oid,
       opiskeluoikeus.oid,
@@ -205,7 +205,7 @@ object KoskiToSuoritusConverter {
   val SUORITYSTYYPPI_TELMA                                    = "telma"
   val SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS                  = "tuvakoulutuksensuoritus"
 
-  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
+  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opiskeluoikeudet.flatMap(opiskeluoikeus =>
@@ -218,7 +218,7 @@ object KoskiToSuoritusConverter {
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TELMA => Some(toTelma(suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS => Some(toTuva(suoritus))
-            case default => None))
+            case default => None)).toSet
     finally
       allowMissingFields.set(false)
 }
