@@ -103,7 +103,8 @@ CREATE TABLE IF NOT EXISTS nuorten_perusopetuksen_oppiaineen_oppimaarat (
     opiskeluoikeus_tunniste INT REFERENCES perusopetuksen_opiskeluoikeudet (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
-    arvosana                VARCHAR NOT NULL
+    arvosana                VARCHAR NOT NULL,
+    vahvistuspaivamaara     DATE
 );
 CREATE INDEX nuorten_perusopetuksen_oppiaineen_oppimaarat_versio_tunniste_idx ON nuorten_perusopetuksen_oppiaineen_oppimaarat (versio_tunniste);
 

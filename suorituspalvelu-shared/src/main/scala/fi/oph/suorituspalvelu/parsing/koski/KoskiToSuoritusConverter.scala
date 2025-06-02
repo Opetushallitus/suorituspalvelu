@@ -118,7 +118,8 @@ object KoskiToSuoritusConverter {
         if(arvosanat.size>1)
           throw new RuntimeException("liikaa arvosanoja")
         arvosanat.head
-      }
+      },
+      suoritus.vahvistuspäivä.map(p => LocalDate.parse(p))
     )
 
   def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
