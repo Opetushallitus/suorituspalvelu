@@ -15,7 +15,7 @@ import scala.jdk.javaapi.FutureConverters.asScala
 //Todo, oma ec?
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class AtaruHenkiloSearchParams(hakukohdeOids: Option[List[String]], hakuOid: Option[String])
+case class AtaruHenkiloSearchParams(hakukohdeOids: Option[List[String]], hakuOid: Option[String], offset: Option[String] = None)
 
 
 case class AtaruHakemuksenHenkilotiedot(oid: String, //hakemuksen oid
@@ -39,17 +39,24 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-
   override def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
-    fetch("https://virkailija.testiopintopolku.fi/lomake-editori/api/external/suoritusrekisteri/henkilot", params)
-      .map(data => {
-        //Todo handle offset/paging! Currently the ataru api external/suoritusrekisteri/henkilot
-        // returns the first 200k hakemukses, which is of course enough for most cases/hakus.
-        val parsed: AtaruResponseHenkilot = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
-        LOG.info(s"Offset: ${parsed.offset}")
-        LOG.info(s"Saatiin hakemuspalvelusta ${parsed.applications.size} hakemuksen henkilötiedot parametreille $params")
-        parsed.applications
-      })
+    def fetchAllRecursive(currentParams: AtaruHenkiloSearchParams, accResults: Seq[AtaruHakemuksenHenkilotiedot] = Seq.empty): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
+      fetch("https://virkailija.testiopintopolku.fi/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
+        .flatMap(data => {
+          val parsed: AtaruResponseHenkilot = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
+          val newResults = accResults ++ parsed.applications
+
+          parsed.offset match {
+            case Some(nextOffset) =>
+              LOG.info(s"Saatiin ${parsed.applications.size} hakemusta, haetaan seuraava erä (offset $nextOffset)")
+              fetchAllRecursive(currentParams.copy(offset = Some(nextOffset)), newResults)
+            case None =>
+              LOG.info(s"Saatiin hakemuspalvelusta yhteensä ${newResults.size} hakemuksen henkilötiedot parametreille $params, ei enää haettavaa.")
+              Future.successful(newResults)
+          }
+        })
+    }
+    fetchAllRecursive(params)
   }
 
   private def fetch(url: String, body: AtaruHenkiloSearchParams): Future[String] = {
