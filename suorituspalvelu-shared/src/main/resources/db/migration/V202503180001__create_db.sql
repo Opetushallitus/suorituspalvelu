@@ -84,7 +84,8 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_oppimaarat (
     tila                    VARCHAR NOT NULL,
     tilakoodisto            VARCHAR NOT NULL,
     tilaversio              INT,
-    vahvistuspaivamaara     DATE
+    vahvistuspaivamaara     DATE,
+    koulusivistyskieli      JSONB
 );
 CREATE INDEX perusopetuksen_oppimaarat_versio_tunniste_idx ON perusopetuksen_oppimaarat (versio_tunniste);
 

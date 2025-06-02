@@ -30,7 +30,7 @@ case class Telma(koodi: String) extends Suoritus
 
 case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: String, arvosana: String) extends Suoritus
 
-case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus
+case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus
 
 case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String)
 

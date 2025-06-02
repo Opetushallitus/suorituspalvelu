@@ -126,6 +126,7 @@ object KoskiToSuoritusConverter {
     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
@@ -133,9 +134,10 @@ object KoskiToSuoritusConverter {
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
-    PerusopetuksenOppimaara(
+     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      Set.empty,
       suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)

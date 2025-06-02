@@ -223,9 +223,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.arvosana})"""))
 
   def getPerusopetuksenOppimaaraInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: PerusopetuksenOppimaara): DBIOAction[_, NoStream, Effect] =
-    sql"""INSERT INTO perusopetuksen_oppimaarat(versio_tunniste, opiskeluoikeus_tunniste, organisaatio_oid, tila, tilakoodisto, tilaversio, vahvistuspaivamaara)
+    sql"""INSERT INTO perusopetuksen_oppimaarat(versio_tunniste, opiskeluoikeus_tunniste, organisaatio_oid, tila, tilakoodisto, tilaversio, vahvistuspaivamaara, koulusivistyskieli)
             VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.organisaatioOid}, ${suoritus.tila.arvo}, ${suoritus.tila.koodisto},
-            ${suoritus.tila.versio}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date) RETURNING tunniste""".as[(Int)]
+            ${suoritus.tila.versio}, ${suoritus.vahvistusPaivamaara.map(d => d.toString)}::date, ${MAPPER.writeValueAsString(suoritus.koulusivistyskieli)}::jsonb) RETURNING tunniste""".as[(Int)]
       .flatMap(oppimaaraTunnisteet => {DBIO.sequence(oppimaaraTunnisteet.map(tunniste => suoritus.aineet.map(osa => getPerusopetuksenOppimaaranAineInserts(tunniste, osa))).flatten)
     })
 
@@ -473,7 +473,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 jsonb_build_object(
                   'organisaatioOid', organisaatio_oid,
                   'tila', jsonb_build_object('arvo', perusopetuksen_oppimaarat.tila, 'koodisto', tilakoodisto, 'versio', tilaversio),
-                  'vahvistusPaivamaara', vahvistuspaivamaara
+                  'vahvistusPaivamaara', vahvistuspaivamaara, 'koulusivistyskieli', koulusivistyskieli
                 )::text AS data,
                 w_versiot.versio AS versio
               FROM perusopetuksen_oppimaarat

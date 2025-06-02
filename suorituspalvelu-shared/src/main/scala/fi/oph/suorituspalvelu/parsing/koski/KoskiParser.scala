@@ -36,7 +36,8 @@ case class OsaSuoritus(tyyppi: SuoritusTyyppi,
                        osasuoritukset: Option[Set[OsaSuoritus]])
 
 case class SuoritusKieli(koodiarvo: String,
-                         koodistoUri: String)
+                         koodistoUri: String,
+                         koodistoVersio: Option[Int]) extends VersioituTunniste
 
 case class SuoritusTapa(koodiarvo: String,
                         koodistoUri: String,
@@ -63,6 +64,7 @@ case class SuoritusTyyppi(koodiarvo: String,
 case class Suoritus(tyyppi: SuoritusTyyppi,
                     koulutusmoduuli: Option[KoulutusModuuli],
                     suorituskieli: SuoritusKieli,
+                    koulusivistyskieli: Option[Set[SuoritusKieli]],
                     alkamispäivä: Option[String],
                     vahvistuspäivä: Option[String],
                     osasuoritukset: Option[Set[OsaSuoritus]],
