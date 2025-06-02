@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_oppimaarat (
     organisaatio_oid        VARCHAR NOT NULL,
     tila                    VARCHAR NOT NULL,
     tilakoodisto            VARCHAR NOT NULL,
-    tilaversio              INT NOT NULL,
+    tilaversio              INT,
     vahvistuspaivamaara     DATE
 );
 CREATE INDEX perusopetuksen_oppimaarat_versio_tunniste_idx ON perusopetuksen_oppimaarat (versio_tunniste);
@@ -112,10 +112,10 @@ CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
     nimi                    VARCHAR NOT NULL,
     tyyppi                  VARCHAR NOT NULL,
     koodisto                VARCHAR NOT NULL,
-    koodistoversio          INT NOT NULL,
+    koodistoversio          INT,
     tila                    VARCHAR NOT NULL,
     tilakoodisto            VARCHAR NOT NULL,
-    tilaversio              INT NOT NULL,
+    tilaversio              INT,
     suoritustapa            VARCHAR NOT NULL,
     suoritustapakoodisto    VARCHAR NOT NULL,
     suoritustapaversio      INT NOT NULL,
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
     koodisto                VARCHAR, --Fixme ehkä, NOT NULL-constraint poistettu ainakin väliaikaisesti. Ilmeisesti joissain tutkinnon osissa voi olla koulutusmoduuli->tunniste->koodistoUri -kenttä tyhjänä, esimerkiksi QA-Koskessa ja massaluovutusrajapinnan skeemassa.
-    koodistoversio          INT NOT NULL,
+    koodistoversio          INT,
     yto                     BOOLEAN NOT NULL,
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
     koodisto                VARCHAR, --Fixme ehkä, NOT NULL-constraint poistettu ainakin väliaikaisesti. Ilmeisesti joissain tutkinnon osissa voi olla koulutusmoduuli->tunniste->koodistoUri -kenttä tyhjänä, esimerkiksi QA-Koskessa ja massaluovutusrajapinnan skeemassa.
-    koodistoversio          INT NOT NULL,
+    koodistoversio          INT,
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
     arvosanaversio          INT,

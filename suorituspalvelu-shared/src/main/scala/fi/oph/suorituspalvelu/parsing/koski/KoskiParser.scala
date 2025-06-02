@@ -12,7 +12,7 @@ import java.time.LocalDate
 trait VersioituTunniste {
   def koodiarvo: String
   def koodistoUri: String
-  def koodistoVersio: Int
+  def koodistoVersio: Option[Int]
 }
 
 case class Kielistetty(fi: Option[String],
@@ -22,7 +22,7 @@ case class Kielistetty(fi: Option[String],
 case class Arvosana(koodiarvo: String,
                     koodistoUri: String,
                     nimi: Kielistetty,
-                    koodistoVersio: Int) extends VersioituTunniste
+                    koodistoVersio: Option[Int]) extends VersioituTunniste
 
 case class Arviointi(arvosana: Arvosana,
                      hyväksytty: Boolean)
@@ -40,17 +40,17 @@ case class SuoritusKieli(koodiarvo: String,
 
 case class SuoritusTapa(koodiarvo: String,
                         koodistoUri: String,
-                        koodistoVersio: Int,
+                        koodistoVersio: Option[Int],
                         nimi: Kielistetty) extends VersioituTunniste
 
 case class Yksikko(koodiarvo: String,
                    koodistoUri: String,
-                   koodistoVersio: Int,
+                   koodistoVersio: Option[Int],
                    nimi: Kielistetty) extends VersioituTunniste
 
 case class KoulutusModuuliTunniste(koodiarvo: String,
                                    koodistoUri: String,
-                                   koodistoVersio: Int,
+                                   koodistoVersio: Option[Int],
                                    nimi: Kielistetty) extends VersioituTunniste
 
 case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste,
@@ -72,7 +72,7 @@ case class Suoritus(tyyppi: SuoritusTyyppi,
 
 case class OpiskeluoikeusJaksoTila(koodiarvo: String,
                                    koodistoUri: String,
-                                   koodistoVersio: Int) extends VersioituTunniste
+                                   koodistoVersio: Option[Int]) extends VersioituTunniste
 
 case class OpiskeluoikeusJakso(alku: LocalDate,
                                tila: OpiskeluoikeusJaksoTila)

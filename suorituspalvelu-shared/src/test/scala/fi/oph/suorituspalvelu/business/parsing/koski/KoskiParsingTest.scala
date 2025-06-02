@@ -82,7 +82,7 @@ class KoskiParsingTest {
         |  }
         |]
         |""".stripMargin)
-    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", 1), tutkinto.tila)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.tila)
 
   @Test def testAmmatillisenTutkinnonKentat(): Unit =
     val tutkinto = getFirstAmmatillinenTutkintoFromJson("""
@@ -121,11 +121,11 @@ class KoskiParsingTest {
         |]
         |""".stripMargin)
 
-    Assertions.assertEquals(Koodi("351301", "koulutus", 12), tutkinto.tyyppi)
+    Assertions.assertEquals(Koodi("351301", "koulutus", Some(12)), tutkinto.tyyppi)
     Assertions.assertEquals("Ajoneuvoalan perustutkinto", tutkinto.nimi)
     Assertions.assertEquals(Some(BigDecimal.valueOf(1.0)), tutkinto.keskiarvo)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
-    Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", 1), tutkinto.suoritustapa)
+    Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", Some(1)), tutkinto.suoritustapa)
 
   @Test def testAmmatillisenTutkinnonOsasuoritukset(): Unit =
     val tutkinto = getFirstAmmatillinenTutkintoFromJson("""
@@ -183,12 +183,12 @@ class KoskiParsingTest {
         |""".stripMargin)
 
     val osaSuoritus = tutkinto.osat.head
-    Assertions.assertEquals(Koodi("106727", "tutkinnonosat", 2), osaSuoritus.koodi)
+    Assertions.assertEquals(Koodi("106727", "tutkinnonosat", Some(2)), osaSuoritus.koodi)
     Assertions.assertEquals("Viestintä- ja vuorovaikutusosaaminen", osaSuoritus.nimi)
     Assertions.assertEquals(true, osaSuoritus.yto) // koodi 106727 kuuluu yleisiin tutkinnon osiin
-    Assertions.assertEquals(Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", 1)), osaSuoritus.arvosana)
+    Assertions.assertEquals(Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", Some(1))), osaSuoritus.arvosana)
     Assertions.assertEquals(Some(20), osaSuoritus.laajuus)
-    Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", 1)), osaSuoritus.laajuusKoodi)
+    Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", Some(1))), osaSuoritus.laajuusKoodi)
 
   @Test def testAmmatillisenTutkinnonOsaAlueet(): Unit =
     val tutkinto = getFirstAmmatillinenTutkintoFromJson("""
@@ -249,10 +249,10 @@ class KoskiParsingTest {
         |""".stripMargin)
 
     val osaAlue = tutkinto.osat.head.osaAlueet.head
-    Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", 1), osaAlue.koodi)
+    Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", Some(1)), osaAlue.koodi)
     Assertions.assertEquals("Viestintä ja vuorovaikutus äidinkielellä", osaAlue.nimi)
-    Assertions.assertEquals(Some(Koodi("1", "arviointiasteikkoammatillinen15", 1)), osaAlue.arvosana)
+    Assertions.assertEquals(Some(Koodi("1", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
     Assertions.assertEquals(Some(4), osaAlue.laajuus)
-    Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", 1)), osaAlue.laajuusKoodi)
+    Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", Some(1))), osaAlue.laajuusKoodi)
 
 }

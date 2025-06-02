@@ -175,11 +175,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getAmmatillisenTutkinnonOsaAlueInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsaAlue): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
       sqlu"""INSERT INTO ammatillisen_tutkinnon_osaalueet(osa_tunniste, nimi, koodi, koodisto, koodistoversio, arvosana, arvosanaasteikko, arvosanaversio, laajuus, laajuuskoodi, laajuuskoodisto, laajuusversio)
-            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.map(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.map(_.arvo)}, ${suoritus.laajuusKoodi.map(_.koodisto)}, ${suoritus.laajuusKoodi.map(_.versio)})"""))
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.flatMap(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.map(_.arvo)}, ${suoritus.laajuusKoodi.map(_.koodisto)}, ${suoritus.laajuusKoodi.flatMap(_.versio)})"""))
 
   def getAmmatillisenTutkinnonOsaInserts(parentId: Int, suoritus: AmmatillisenTutkinnonOsa): DBIOAction[_, NoStream, Effect] =
     sql"""INSERT INTO ammatillisen_tutkinnon_osat(tutkinto_tunniste, nimi, koodi, koodisto, koodistoversio, yto, arvosana, arvosanaasteikko, arvosanaversio, laajuus, laajuuskoodi, laajuuskoodisto, laajuusversio)
-            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.yto}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.map(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.map(_.arvo)}, ${suoritus.laajuusKoodi.map(_.koodisto)}, ${suoritus.laajuusKoodi.map(_.versio)}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
+            VALUES(${parentId}, ${suoritus.nimi}, ${suoritus.koodi.arvo}, ${suoritus.koodi.koodisto}, ${suoritus.koodi.versio}, ${suoritus.yto}, ${suoritus.arvosana.map(a => a.arvo)}, ${suoritus.arvosana.map(a => a.koodisto)}, ${suoritus.arvosana.flatMap(a => a.versio)}, ${suoritus.laajuus}, ${suoritus.laajuusKoodi.map(_.arvo)}, ${suoritus.laajuusKoodi.map(_.koodisto)}, ${suoritus.laajuusKoodi.flatMap(_.versio)}) RETURNING tunniste""".as[(Int)].flatMap(osaTunnisteet => {
       DBIO.sequence(osaTunnisteet.map(tunniste => suoritus.osaAlueet.map(osa => getAmmatillisenTutkinnonOsaAlueInserts(tunniste, osa))).flatten)
     })
 

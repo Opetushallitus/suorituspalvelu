@@ -88,7 +88,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan ammatillinen- ja yo-tutkinto
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi(tutkintoKoodi, "koulutus", 1), Koodi("valmistunut", "jokutila", 1), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", 1), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Seq(ammatillinenTutkinto), None)), Set.empty)
 
     val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{\"testi\": \"suorituksetHenkilölle\"}")
@@ -116,7 +116,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     
     // tallennetaan suoritus
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"muuttuneetSuoritukset\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi("123456", "koulutus", 1), Koodi("valmistunut", "jokutila", 1), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", 1), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi("123456", "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(OPPIJA_OID, "2.3.4", Seq(ammatillinenTutkinto), None)), Set.empty)
 
     // haetaan muuttuneet legacy-rajapinnasta
