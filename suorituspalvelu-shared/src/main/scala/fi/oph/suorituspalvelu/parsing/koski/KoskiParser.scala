@@ -61,12 +61,14 @@ case class SuoritusTyyppi(koodiarvo: String,
                           koodistoUri: String,
                           nimi: Kielistetty)
 
+case class Vahvistus(`päivä`: String)
+
 case class Suoritus(tyyppi: SuoritusTyyppi,
                     koulutusmoduuli: Option[KoulutusModuuli],
                     suorituskieli: SuoritusKieli,
                     koulusivistyskieli: Option[Set[SuoritusKieli]],
                     alkamispäivä: Option[String],
-                    vahvistuspäivä: Option[String],
+                    vahvistus: Option[Vahvistus],
                     osasuoritukset: Option[Set[OsaSuoritus]],
                     arviointi: Option[Set[Arviointi]],
                     keskiarvo: Option[BigDecimal],
