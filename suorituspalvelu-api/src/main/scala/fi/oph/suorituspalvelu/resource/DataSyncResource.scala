@@ -68,6 +68,8 @@ class DataSyncResource {
           else
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(virheet.toSeq))))
         .map(_ => {
+          val user = AuditLog.getUser(request)
+          AuditLog.logCreate(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, null)
           LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
           val result = koskiIntegration.syncKoskiInBatches(personOids.toSet)
           LOG.info(s"Palautetaan rajapintavastaus, $result")
@@ -110,6 +112,8 @@ class DataSyncResource {
           else
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(virheet.toSeq))))
         .map(_ => {
+          val user = AuditLog.getUser(request)
+          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, null)
           LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
           val result: Seq[SyncResultForHenkilo] = koskiIntegration.syncKoskiForHaku(hakuOid)
           val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
