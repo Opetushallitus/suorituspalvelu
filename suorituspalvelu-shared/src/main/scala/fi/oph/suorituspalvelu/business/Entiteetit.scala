@@ -42,6 +42,10 @@ case class AmmatillinenOpiskeluoikeus(oid: String, oppilaitosOid: String, suorit
 
 case class GeneerinenOpiskeluoikeus(oid: String, tyyppi: String, oppilaitosOid: String, suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus], tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus
 
+case class YOOpiskeluoikeus(yoTutkinto: YOTutkinto) extends Opiskeluoikeus
+
+case class YOTutkinto() extends Suoritus
+
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
 
 case class VirtaTutkinto(

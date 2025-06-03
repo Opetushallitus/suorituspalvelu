@@ -5,10 +5,12 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.dockerjava.api.model.{ExposedPort, HostConfig, PortBinding, Ports}
+import com.github.kagkarlsson.scheduler.Scheduler
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti.postgresPort
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import org.junit.jupiter.api.extension.ExtendWith
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,15 +18,19 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.{UseMainMethod, WebEnvironment}
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.util.TestSocketUtils
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.{MockHttpServletRequestBuilder, MockMvcRequestBuilders}
 import org.springframework.test.web.servlet.setup.{DefaultMockMvcBuilder, MockMvcBuilders, MockMvcConfigurer}
+import org.springframework.boot.test.system.{CapturedOutput, OutputCaptureExtension}
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
 import slick.jdbc.JdbcBackend.Database
 
 class OphPostgresContainer(dockerImageName: String) extends PostgreSQLContainer[OphPostgresContainer](dockerImageName) {}
+
+case class AuditLogEntry(operation: String, target: Map[String, Any])
 
 object BaseIntegraatioTesti {
 
@@ -38,6 +44,8 @@ object BaseIntegraatioTesti {
  * [[KantaOperaatiot]]-instanssin, jonka avulla voidaan validoida kannan tila.
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, useMainMethod = UseMainMethod.ALWAYS, classes = Array(classOf[App]))
+@ExtendWith(Array(classOf[OutputCaptureExtension]))
+@DirtiesContext
 @TestInstance(Lifecycle.PER_CLASS)
 class BaseIntegraatioTesti {
 
@@ -85,6 +93,8 @@ class BaseIntegraatioTesti {
 
   @Autowired private val context: WebApplicationContext = null
 
+  @Autowired(required = false) private val scheduler: Scheduler = null
+
   var mvc: MockMvc = null
 
   @BeforeAll def setup(): Unit =
@@ -92,14 +102,35 @@ class BaseIntegraatioTesti {
     val intermediate: DefaultMockMvcBuilder = MockMvcBuilders.webAppContextSetup(context).apply(configurer)
     mvc = intermediate.build()
 
-  @AfterAll def teardown(): Unit =
+  @AfterAll def teardown(): Unit = {
+    if(scheduler!=null)
+      scheduler.stop()
     postgres.stop()
+  }
+
+  var capturedOutput: CapturedOutput = null
+  var outputLength = 0;
+
+  def getLatestAuditLogEntry(): AuditLogEntry =
+    val output = capturedOutput.subSequence(outputLength, capturedOutput.length()).toString
+      .split("\n")
+      .filter(s => s.contains(".AuditLog"))
+      .map(s => s.split("\\.AuditLog(\\s)+:(\\s)+")(1))
+      .last
+    val entry = objectMapper.readValue(output, classOf[AuditLogEntry])
+    outputLength = capturedOutput.length()
+    entry
+
+  @BeforeEach def beforeEach(output: CapturedOutput): Unit =
+    capturedOutput = output
+    outputLength = output.length()
 
   val objectMapper: ObjectMapper =
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
     mapper.registerModule(new JavaTimeModule())
     mapper.registerModule(new Jdk8Module()) // tämä on java.util.Optional -kenttiä varten
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
     mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     mapper

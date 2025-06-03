@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.resource.{ApiConstants, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
-import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -42,7 +42,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
       .andExpect(status().isBadRequest).andReturn()
 
-    Assertions.assertEquals(VirtaSyncFailureResponse(List(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+    Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -69,5 +69,10 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // varmistetaan että kentät tulevat kantaan oikein
     // TODO: lisää suoritusten vertailu
+
+    // ja että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedot.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
 }

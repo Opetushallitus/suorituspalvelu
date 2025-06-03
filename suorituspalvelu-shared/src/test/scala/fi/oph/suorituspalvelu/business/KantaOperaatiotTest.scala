@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
-import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
+import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.{AfterAll, AfterEach, Assertions, BeforeAll, BeforeEach, Test, TestInstance}
@@ -95,6 +95,7 @@ class KantaOperaatiotTest {
             DROP TABLE perusopetuksen_opiskeluoikeudet;
             DROP TABLE ammatilliset_opiskeluoikeudet;
             DROP TABLE geneeriset_opiskeluoikeudet;
+            DROP TABLE yotutkinnot;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -165,6 +166,25 @@ class KantaOperaatiotTest {
         case (None, Some(later)) => // ensimmäinen versio
         case (None, None) => Assertions.fail()
     })
+
+  @Test def testHaeUusimmatMuuttuneetVersiot(): Unit =
+    // tallennetaan ja otetaan käyttöön versio ennen aikaleimaa
+    val vanhaVersio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", KOSKI, "{\"attr\": \"value1\"}").get
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(vanhaVersio1, Set.empty, Set.empty)
+
+    // tallennetaan aikaleima ja todetaan ettei ole versioita ennen sitä
+    val alkaen = Instant.now
+    Assertions.assertEquals(Seq.empty, this.kantaOperaatiot.haeUusimmatMuuttuneetVersiot(alkaen))
+
+    // tallennetaan ja otetaan käyttöön versio aikaleiman jälkeen
+    val uusiVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", KOSKI, "{\"attr\": \"value2\"}").get
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(uusiVersio, Set.empty, Set.empty)
+
+    // tallennetaan (muttei oteta käyttöön) vielä uudempi versio
+    val eiKaytossaVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", KOSKI, "{\"attr\": \"value3\"}").get
+
+    // palautuu aikaleiman jälkeen tallennettu ja käyttöönotettu versio
+    Assertions.assertEquals(Seq(uusiVersio.tunniste), this.kantaOperaatiot.haeUusimmatMuuttuneetVersiot(alkaen).map(v => v.tunniste))
 
   /**
    * Testataan että minimaalinen suoritus tallentuu ja luetaan oikein.
@@ -377,4 +397,14 @@ class KantaOperaatiotTest {
 
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
     Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
+
+  @Test def testYTRRoundTrip(): Unit =
+    val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, YTR, "{}").get
+    val opiskeluoikeus = YOOpiskeluoikeus(YOTutkinto())
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
+
+    val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
+    Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
+
 }

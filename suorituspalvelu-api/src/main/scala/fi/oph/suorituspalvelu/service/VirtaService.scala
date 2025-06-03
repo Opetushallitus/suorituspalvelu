@@ -37,7 +37,7 @@ class VirtaRefresh {
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(6, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(1), 2)))
     .execute((instance, ctx) => {
     val oppijaNumero = instance.getData.split(":").head
-    val hetu = instance.getData.split(":").tail.head
+    val hetu = instance.getData.split(":").tail.headOption.getOrElse("")
     try
       val virtaXMLs = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, { if(hetu.isBlank) None else Some(hetu)}), TIMEOUT)
       val parseroidut = virtaXMLs.map(r => VirtaParser.parseVirtaData(new ByteArrayInputStream(r.getBytes)))

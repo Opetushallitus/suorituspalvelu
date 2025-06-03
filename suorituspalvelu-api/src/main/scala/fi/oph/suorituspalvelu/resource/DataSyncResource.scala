@@ -89,17 +89,17 @@ class DataSyncResource {
             if(securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(List("ei oikeuksia")))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
           .flatMap(_ =>
             // validoidaan parametri
-            val virheet = Validator.validateOppijanumero(Some(oppijaNumero))
+            val virheet = Validator.validateOppijanumero(Some(oppijaNumero), true)
             if(virheet.isEmpty)
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(Seq(VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
           .map(_ =>
             val user = AuditLog.getUser(request)
-            AuditLog.logCreate(user, Map("oppijaNumero" -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, null)
+            AuditLog.logCreate(user, Map(VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, null)
             LOG.info(s"Haetaan Virta-tiedot henkilölle ${oppijaNumero}")
             val jobId = virtaService.syncVirta(oppijaNumero, Option.apply(hetu))
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
@@ -108,7 +108,7 @@ class DataSyncResource {
     catch
       case e: Exception =>
         LOG.error("Oppijan Virta-päivitysjobin luonti epäonnistui", e)
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(VirtaSyncFailureResponse(Seq(DATASYNC_JOBIN_LUONTI_EPAONNISTUI)))
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_JOBIN_LUONTI_EPAONNISTUI)))
   }
 }
 

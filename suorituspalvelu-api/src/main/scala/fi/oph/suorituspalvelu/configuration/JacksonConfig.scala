@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.springframework.context.annotation.Configuration
@@ -9,7 +10,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 import java.util
-
 import scala.jdk.CollectionConverters.*
 
 @Configuration
@@ -21,6 +21,7 @@ class JacksonConfig extends WebMvcConfigurer {
 
         val mapper = ObjectMapper()
         mapper.registerModule(new JavaTimeModule())
+        mapper.registerModule(new Jdk8Module())
         mapper.registerModule(DefaultScalaModule)
         converters.set(index, MappingJackson2HttpMessageConverter(mapper))
 }
