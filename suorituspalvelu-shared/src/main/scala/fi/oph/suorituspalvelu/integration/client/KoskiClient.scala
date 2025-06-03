@@ -27,7 +27,7 @@ class KoskiClient(username: String, password: String, environmentBaseUrl: String
   }
 
   def getWithBasicAuth(url: String, followRedirects: Boolean = false): Future[String] = {
-    LOG.info(s"Get with basic auth, url: $url")
+    LOG.debug(s"Get with basic auth, url: $url")
     val realm = new Realm.Builder(username, password)
       .setUsePreemptiveAuth(false)
       .setScheme(Realm.AuthScheme.NTLM)
@@ -62,7 +62,7 @@ class KoskiClient(username: String, password: String, environmentBaseUrl: String
   def createMassaluovutusQuery(params: KoskiMassaluovutusQueryParams): Future[KoskiMassaluovutusQueryResponse] = {
     postWithBasicAuth(environmentBaseUrl+"/koski/api/massaluovutus", params).map(result =>
       val parsed: KoskiMassaluovutusQueryResponse = mapper.readValue[KoskiMassaluovutusQueryResponse](result, classOf[KoskiMassaluovutusQueryResponse])
-      LOG.info(s"Saatiin vastaus massaluovutusrajapinnalta: $result")
+      LOG.info(s"Saatiin vastaus massaluovutusrajapinnalta: ${parsed.getTruncatedLoggable()}")
       parsed)}
 
   private def encodeBasicAuth(username: String, password: String) = {

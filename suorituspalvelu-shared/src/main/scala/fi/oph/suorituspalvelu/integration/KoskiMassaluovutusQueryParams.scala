@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.integration
 
 object KoskiMassaluovutusQueryParams {
   def forOids(oids: Set[String]): KoskiMassaluovutusQueryParams = {
-    KoskiMassaluovutusQueryParams("sure-oppijat", "application/json", Some(oids), None)
+    KoskiMassaluovutusQueryParams("supa-oppijat", "application/json", Some(oids), None)
   }
 }
 

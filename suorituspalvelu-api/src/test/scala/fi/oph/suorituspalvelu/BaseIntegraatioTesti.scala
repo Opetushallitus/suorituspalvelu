@@ -135,6 +135,13 @@ class BaseIntegraatioTesti {
     mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     mapper
 
+  def jsonPostString(path: String, body: String): MockHttpServletRequestBuilder =
+    MockMvcRequestBuilders
+      .post(path)
+      .contentType(MediaType.APPLICATION_JSON_VALUE)
+      .accept(MediaType.APPLICATION_JSON_VALUE)
+      .content(body)
+
   def jsonPost(path: String, body: Any): MockHttpServletRequestBuilder =
     MockMvcRequestBuilders
       .post(path)
