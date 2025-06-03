@@ -71,8 +71,8 @@ object Validator {
       Set.empty
   }
 
-  def validateSuoritus(suoritus: Suoritus): Set[String] =
+  def validateSuoritus(suoritus: Suoritus, oppijanumeroPakollinen: Boolean): Set[String] =
     Set(
-      validateOppijanumero(suoritus.oppijaNumero.toScala)
+      validateOppijanumero(suoritus.oppijaNumero.toScala, oppijanumeroPakollinen)
     ).flatten
 }

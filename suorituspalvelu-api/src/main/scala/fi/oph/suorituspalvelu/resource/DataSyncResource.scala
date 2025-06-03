@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
+import scala.jdk.CollectionConverters.*
+
 
 @RequestMapping(path = Array(""))
 @RestController
@@ -59,17 +61,17 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(List("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
         .flatMap(_ =>
           // validoidaan parametri
           if (personOids.toSet.size > 5000) {
-            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(List("Korkeintaan 5000 henkilöä kerrallaan"))))
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of("Korkeintaan 5000 henkilöä kerrallaan"))))
           } else {
-            val virheet = Validator.validatePersonOids(personOids.toSet)
+            val virheet: Set[String] = Validator.validatePersonOids(personOids.toSet)
             if (virheet.isEmpty)
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(virheet.toSeq)))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava))))
           })
         .map(_ => {
           val user = AuditLog.getUser(request)
@@ -107,14 +109,14 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(List("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
         .flatMap(_ =>
           // validoidaan parametri
           val virheet = Validator.validateHakuOid(hakuOid)
           if (virheet.isEmpty)
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(virheet.toSeq))))
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
           val user = AuditLog.getUser(request)
           AuditLog.logCreate(user, Map("hakuOid" -> hakuOid), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, null)
