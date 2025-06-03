@@ -62,11 +62,15 @@ class DataSyncResource {
             Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(List("ei oikeuksia")))))
         .flatMap(_ =>
           // validoidaan parametri
-          val virheet = Validator.validatePersonOids(personOids.toSet)
-          if (virheet.isEmpty)
-            Right(None)
-          else
-            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(virheet.toSeq))))
+          if (personOids.toSet.size > 5000) {
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(List("Korkeintaan 5000 henkilöä kerrallaan"))))
+          } else {
+            val virheet = Validator.validatePersonOids(personOids.toSet)
+            if (virheet.isEmpty)
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(virheet.toSeq)))
+          })
         .map(_ => {
           val user = AuditLog.getUser(request)
           AuditLog.logCreate(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, null)
