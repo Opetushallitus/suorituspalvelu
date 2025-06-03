@@ -71,8 +71,9 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_vuosiluokat (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
     opiskeluoikeus_tunniste INT REFERENCES perusopetuksen_opiskeluoikeudet (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
-    koodi                   VARCHAR NOT NULL,
-    alkamispaiva            DATE
+    koodi                   JSONB NOT NULL,
+    alkamispaiva            DATE,
+    jaaluokalle             BOOLEAN
 );
 CREATE INDEX perusopetuksen_vuosiluokat_versio_tunniste_idx ON perusopetuksen_vuosiluokat (versio_tunniste);
 
@@ -83,8 +84,9 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_oppimaarat (
     organisaatio_oid        VARCHAR NOT NULL,
     tila                    VARCHAR NOT NULL,
     tilakoodisto            VARCHAR NOT NULL,
-    tilaversio              INT NOT NULL,
-    vahvistuspaivamaara     DATE
+    tilaversio              INT,
+    vahvistuspaivamaara     DATE,
+    koulusivistyskieli      JSONB
 );
 CREATE INDEX perusopetuksen_oppimaarat_versio_tunniste_idx ON perusopetuksen_oppimaarat (versio_tunniste);
 
@@ -101,7 +103,8 @@ CREATE TABLE IF NOT EXISTS nuorten_perusopetuksen_oppiaineen_oppimaarat (
     opiskeluoikeus_tunniste INT REFERENCES perusopetuksen_opiskeluoikeudet (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
-    arvosana                VARCHAR NOT NULL
+    arvosana                VARCHAR NOT NULL,
+    vahvistuspaivamaara     DATE
 );
 CREATE INDEX nuorten_perusopetuksen_oppiaineen_oppimaarat_versio_tunniste_idx ON nuorten_perusopetuksen_oppiaineen_oppimaarat (versio_tunniste);
 
@@ -112,10 +115,10 @@ CREATE TABLE IF NOT EXISTS ammatilliset_tutkinnot (
     nimi                    VARCHAR NOT NULL,
     tyyppi                  VARCHAR NOT NULL,
     koodisto                VARCHAR NOT NULL,
-    koodistoversio          INT NOT NULL,
+    koodistoversio          INT,
     tila                    VARCHAR NOT NULL,
     tilakoodisto            VARCHAR NOT NULL,
-    tilaversio              INT NOT NULL,
+    tilaversio              INT,
     suoritustapa            VARCHAR NOT NULL,
     suoritustapakoodisto    VARCHAR NOT NULL,
     suoritustapaversio      INT NOT NULL,
@@ -130,7 +133,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osat (
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
     koodisto                VARCHAR, --Fixme ehkä, NOT NULL-constraint poistettu ainakin väliaikaisesti. Ilmeisesti joissain tutkinnon osissa voi olla koulutusmoduuli->tunniste->koodistoUri -kenttä tyhjänä, esimerkiksi QA-Koskessa ja massaluovutusrajapinnan skeemassa.
-    koodistoversio          INT NOT NULL,
+    koodistoversio          INT,
     yto                     BOOLEAN NOT NULL,
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
@@ -147,7 +150,7 @@ CREATE TABLE IF NOT EXISTS ammatillisen_tutkinnon_osaalueet (
     nimi                    VARCHAR NOT NULL,
     koodi                   VARCHAR NOT NULL,
     koodisto                VARCHAR, --Fixme ehkä, NOT NULL-constraint poistettu ainakin väliaikaisesti. Ilmeisesti joissain tutkinnon osissa voi olla koulutusmoduuli->tunniste->koodistoUri -kenttä tyhjänä, esimerkiksi QA-Koskessa ja massaluovutusrajapinnan skeemassa.
-    koodistoversio          INT NOT NULL,
+    koodistoversio          INT,
     arvosana                VARCHAR,
     arvosanaasteikko        VARCHAR,
     arvosanaversio          INT,

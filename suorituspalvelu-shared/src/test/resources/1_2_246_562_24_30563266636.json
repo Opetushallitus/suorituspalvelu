@@ -153,7 +153,624 @@
               },
               "koodistoUri": "kieli",
               "koodistoVersio": 1
-            }
+            },
+            "osasuoritukset": [
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "AI",
+                    "nimi": {
+                      "fi": "Äidinkieli ja kirjallisuus",
+                      "sv": "Modersmålet och litteratur",
+                      "en": "Mother tongue and literature"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Äidinkieli ja kirjallisuus",
+                      "sv": "Modersmålet och litteratur"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "AI1",
+                    "nimi": {
+                      "fi": "Suomen kieli ja kirjallisuus",
+                      "sv": "Finska och litteratur",
+                      "en": "Finnish language and literature"
+                    },
+                    "koodistoUri": "oppiaineaidinkielijakirjallisuus",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "A1",
+                    "nimi": {
+                      "fi": "A1-kieli",
+                      "sv": "A1-språk",
+                      "en": "A1-language"
+                    },
+                    "lyhytNimi": {
+                      "fi": "A1-kieli",
+                      "sv": "A1-språk"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "EN",
+                    "nimi": {
+                      "fi": "englanti",
+                      "sv": "engelska",
+                      "en": "English"
+                    },
+                    "lyhytNimi": {
+                      "fi": "englanti",
+                      "sv": "engelska",
+                      "en": "English"
+                    },
+                    "koodistoUri": "kielivalikoima",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "B1",
+                    "nimi": {
+                      "fi": "B1-kieli",
+                      "sv": "B1-språk",
+                      "en": "B1-language"
+                    },
+                    "lyhytNimi": {
+                      "fi": "B1-kieli",
+                      "sv": "B1-språk"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "SV",
+                    "nimi": {
+                      "fi": "ruotsi",
+                      "sv": "svenska",
+                      "en": "Swedish"
+                    },
+                    "lyhytNimi": {
+                      "fi": "ruotsi",
+                      "sv": "svenska",
+                      "en": "Swedish"
+                    },
+                    "koodistoUri": "kielivalikoima",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "MA",
+                    "nimi": {
+                      "fi": "Matematiikka",
+                      "sv": "Matematik",
+                      "en": "Mathematics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Matematiikka",
+                      "sv": "Matematik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "BI",
+                    "nimi": {
+                      "fi": "Biologia",
+                      "sv": "Biologi",
+                      "en": "Biology"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Biologia",
+                      "sv": "Biologi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "GE",
+                    "nimi": {
+                      "fi": "Maantieto",
+                      "sv": "Geografi",
+                      "en": "Geography"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Maantieto",
+                      "sv": "Geografi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "FY",
+                    "nimi": {
+                      "fi": "Fysiikka",
+                      "sv": "Fysik",
+                      "en": "Physics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Fysiikka",
+                      "sv": "Fysik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KE",
+                    "nimi": {
+                      "fi": "Kemia",
+                      "sv": "Kemi",
+                      "en": "Chemistry"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kemia",
+                      "sv": "Kemi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "TE",
+                    "nimi": {
+                      "fi": "Terveystieto",
+                      "sv": "Hälsokunskap",
+                      "en": "Health education"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Terveystieto",
+                      "sv": "Hälsokunskap"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KT",
+                    "nimi": {
+                      "fi": "Uskonto/Elämänkatsomustieto",
+                      "sv": "Religion/Livsåskådningskunskap",
+                      "en": "Religion/ethics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Uskonto",
+                      "sv": "Religion"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "HI",
+                    "nimi": {
+                      "fi": "Historia",
+                      "sv": "Historia",
+                      "en": "History"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Historia",
+                      "sv": "Historia"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "YH",
+                    "nimi": {
+                      "fi": "Yhteiskuntaoppi",
+                      "sv": "Samhällslära",
+                      "en": "Social studies"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Yhteiskuntaoppi",
+                      "sv": "Samhällslära"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "MU",
+                    "nimi": {
+                      "fi": "Musiikki",
+                      "sv": "Musik",
+                      "en": "Music"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Musiikki",
+                      "sv": "Musik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KU",
+                    "nimi": {
+                      "fi": "Kuvataide",
+                      "sv": "Bildkonst",
+                      "en": "Visual arts"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kuvataide",
+                      "sv": "Bildkonst"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KS",
+                    "nimi": {
+                      "fi": "Käsityö",
+                      "sv": "Slöjd",
+                      "en": "Crafts"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Käsityö",
+                      "sv": "Slöjd"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "LI",
+                    "nimi": {
+                      "fi": "Liikunta",
+                      "sv": "Gymnastik",
+                      "en": "Physical education"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Liikunta",
+                      "sv": "Gymnastik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KO",
+                    "nimi": {
+                      "fi": "Kotitalous",
+                      "sv": "Huslig ekonomi",
+                      "en": "Home economics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kotitalous",
+                      "sv": "Huslig ekonomi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "OP",
+                    "nimi": {
+                      "fi": "Opinto-ohjaus",
+                      "sv": "Elevhandledning",
+                      "en": "Guidance counselling"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Opinto-ohjaus"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              }
+            ]
           },
           {
             "tyyppi": {
@@ -194,7 +811,8 @@
               },
               "koodistoUri": "kieli",
               "koodistoVersio": 1
-            }
+            },
+            "jääLuokalle": false
           }
         ],
         "lisätiedot": {
@@ -203,7 +821,8 @@
               "alku": "2021-08-24",
               "loppu": "2022-01-23"
             }
-          ]
+          ],
+          "vuosiluokkiinSitoutumatonOpetus": false
         }
       },
       {
@@ -339,7 +958,9 @@
                 "koodistoVersio": 2
               }
             },
-            "vahvistuspäivä": "2024-06-01",
+            "vahvistus": {
+              "päivä": "2024-06-01"
+            },
             "suorituskieli": {
               "koodiarvo": "FI",
               "nimi": {
@@ -354,7 +975,1481 @@
               },
               "koodistoUri": "kieli",
               "koodistoVersio": 1
-            }
+            },
+            "koulusivistyskieli": [
+              {
+                "koodiarvo": "FI",
+                "nimi": {
+                  "fi": "suomi"
+                },
+                "koodistoUri": "kieli"
+              }
+            ],
+            "osasuoritukset": [
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "AI",
+                    "nimi": {
+                      "fi": "Äidinkieli ja kirjallisuus",
+                      "sv": "Modersmålet och litteratur",
+                      "en": "Mother tongue and literature"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Äidinkieli ja kirjallisuus",
+                      "sv": "Modersmålet och litteratur"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "AI1",
+                    "nimi": {
+                      "fi": "Suomen kieli ja kirjallisuus",
+                      "sv": "Finska och litteratur",
+                      "en": "Finnish language and literature"
+                    },
+                    "koodistoUri": "oppiaineaidinkielijakirjallisuus",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "A1",
+                    "nimi": {
+                      "fi": "A1-kieli",
+                      "sv": "A1-språk",
+                      "en": "A1-language"
+                    },
+                    "lyhytNimi": {
+                      "fi": "A1-kieli",
+                      "sv": "A1-språk"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "EN",
+                    "nimi": {
+                      "fi": "englanti",
+                      "sv": "engelska",
+                      "en": "English"
+                    },
+                    "lyhytNimi": {
+                      "fi": "englanti",
+                      "sv": "engelska",
+                      "en": "English"
+                    },
+                    "koodistoUri": "kielivalikoima",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "B1",
+                    "nimi": {
+                      "fi": "B1-kieli",
+                      "sv": "B1-språk",
+                      "en": "B1-language"
+                    },
+                    "lyhytNimi": {
+                      "fi": "B1-kieli",
+                      "sv": "B1-språk"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "kieli": {
+                    "koodiarvo": "SV",
+                    "nimi": {
+                      "fi": "ruotsi",
+                      "sv": "svenska",
+                      "en": "Swedish"
+                    },
+                    "lyhytNimi": {
+                      "fi": "ruotsi",
+                      "sv": "svenska",
+                      "en": "Swedish"
+                    },
+                    "koodistoUri": "kielivalikoima",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "MA",
+                    "nimi": {
+                      "fi": "Matematiikka",
+                      "sv": "Matematik",
+                      "en": "Mathematics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Matematiikka",
+                      "sv": "Matematik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "BI",
+                    "nimi": {
+                      "fi": "Biologia",
+                      "sv": "Biologi",
+                      "en": "Biology"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Biologia",
+                      "sv": "Biologi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "GE",
+                    "nimi": {
+                      "fi": "Maantieto",
+                      "sv": "Geografi",
+                      "en": "Geography"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Maantieto",
+                      "sv": "Geografi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "FY",
+                    "nimi": {
+                      "fi": "Fysiikka",
+                      "sv": "Fysik",
+                      "en": "Physics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Fysiikka",
+                      "sv": "Fysik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KE",
+                    "nimi": {
+                      "fi": "Kemia",
+                      "sv": "Kemi",
+                      "en": "Chemistry"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kemia",
+                      "sv": "Kemi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "TE",
+                    "nimi": {
+                      "fi": "Terveystieto",
+                      "sv": "Hälsokunskap",
+                      "en": "Health education"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Terveystieto",
+                      "sv": "Hälsokunskap"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KT",
+                    "nimi": {
+                      "fi": "Uskonto/Elämänkatsomustieto",
+                      "sv": "Religion/Livsåskådningskunskap",
+                      "en": "Religion/ethics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Uskonto",
+                      "sv": "Religion"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "HI",
+                    "nimi": {
+                      "fi": "Historia",
+                      "sv": "Historia",
+                      "en": "History"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Historia",
+                      "sv": "Historia"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "YH",
+                    "nimi": {
+                      "fi": "Yhteiskuntaoppi",
+                      "sv": "Samhällslära",
+                      "en": "Social studies"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Yhteiskuntaoppi",
+                      "sv": "Samhällslära"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "MU",
+                    "nimi": {
+                      "fi": "Musiikki",
+                      "sv": "Musik",
+                      "en": "Music"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Musiikki",
+                      "sv": "Musik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KU",
+                    "nimi": {
+                      "fi": "Kuvataide",
+                      "sv": "Bildkonst",
+                      "en": "Visual arts"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kuvataide",
+                      "sv": "Bildkonst"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KS",
+                    "nimi": {
+                      "fi": "Käsityö",
+                      "sv": "Slöjd",
+                      "en": "Crafts"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Käsityö",
+                      "sv": "Slöjd"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "LI",
+                    "nimi": {
+                      "fi": "Liikunta",
+                      "sv": "Gymnastik",
+                      "en": "Physical education"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Liikunta",
+                      "sv": "Gymnastik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KO",
+                    "nimi": {
+                      "fi": "Kotitalous",
+                      "sv": "Huslig ekonomi",
+                      "en": "Home economics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kotitalous",
+                      "sv": "Huslig ekonomi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 5.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "mmm",
+                    "nimi": {
+                      "fi": "Tanssa"
+                    }
+                  },
+                  "laajuus": {
+                    "arvo": 1.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  },
+                  "kuvaus": {
+                    "fi": "Tanssa"
+                  },
+                  "pakollinen": false
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "8",
+                      "nimi": {
+                        "fi": "hyvä",
+                        "sv": "god",
+                        "en": "good"
+                      },
+                      "lyhytNimi": {
+                        "fi": "8"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "MU",
+                    "nimi": {
+                      "fi": "Musiikki",
+                      "sv": "Musik",
+                      "en": "Music"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Musiikki",
+                      "sv": "Musik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": false,
+                  "laajuus": {
+                    "arvo": 2.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "LI",
+                    "nimi": {
+                      "fi": "Liikunta",
+                      "sv": "Gymnastik",
+                      "en": "Physical education"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Liikunta",
+                      "sv": "Gymnastik"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": false,
+                  "laajuus": {
+                    "arvo": 2.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "9",
+                      "nimi": {
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
+                      },
+                      "lyhytNimi": {
+                        "fi": "9"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "KO",
+                    "nimi": {
+                      "fi": "Kotitalous",
+                      "sv": "Huslig ekonomi",
+                      "en": "Home economics"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Kotitalous",
+                      "sv": "Huslig ekonomi"
+                    },
+                    "koodistoUri": "koskioppiaineetyleissivistava",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": false,
+                  "laajuus": {
+                    "arvo": 1.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  }
+                },
+                "yksilöllistettyOppimäärä": false,
+                "rajattuOppimäärä": false,
+                "painotettuOpetus": false,
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "S",
+                      "nimi": {
+                        "fi": "hyväksytty",
+                        "sv": "godkänd",
+                        "en": "pass"
+                      },
+                      "lyhytNimi": {
+                        "fi": "S"
+                      },
+                      "koodistoUri": "arviointiasteikkoyleissivistava",
+                      "koodistoVersio": 1
+                    },
+                    "hyväksytty": true
+                  }
+                ],
+                "tyyppi": {
+                  "koodiarvo": "perusopetuksenoppiaine",
+                  "nimi": {
+                    "fi": "Perusopetuksen oppiaine",
+                    "sv": "Läroämne i grundläggande utbildning",
+                    "en": "Basic education subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              }
+            ]
           },
           {
             "tyyppi": {
@@ -394,7 +2489,9 @@
               }
             },
             "alkamispäivä": "2023-08-10",
-            "vahvistuspäivä": "2024-06-01",
+            "vahvistus": {
+              "päivä": "2024-06-01"
+            },
             "suorituskieli": {
               "koodiarvo": "FI",
               "nimi": {
@@ -409,7 +2506,8 @@
               },
               "koodistoUri": "kieli",
               "koodistoVersio": 1
-            }
+            },
+            "jääLuokalle": false
           }
         ]
       },
@@ -540,7 +2638,9 @@
               "koodistoUri": "suorituksentyyppi",
               "koodistoVersio": 1
             },
-            "vahvistuspäivä": "2025-04-16",
+            "vahvistus": {
+              "päivä": "2025-04-16"
+            },
             "koulutusmoduuli": {
               "tunniste": {
                 "koodiarvo": "999908",
@@ -863,88 +2963,7 @@
               }
             ],
             "vahvistus": {
-              "päivä": "2022-05-18",
-              "paikkakunta": {
-                "koodiarvo": "297",
-                "nimi": {
-                  "fi": "Kuopio",
-                  "sv": "Kuopio"
-                },
-                "koodistoUri": "kunta",
-                "koodistoVersio": 2
-              },
-              "myöntäjäOrganisaatio": {
-                "oid": "1.2.246.562.10.19666365424",
-                "oppilaitosnumero": {
-                  "koodiarvo": "03244",
-                  "nimi": {
-                    "fi": "Länsi-Puijon koulu",
-                    "sv": "Länsi-Puijon koulu",
-                    "en": "Länsi-Puijon koulu"
-                  },
-                  "lyhytNimi": {
-                    "fi": "Länsi-Puijon koulu",
-                    "sv": "Länsi-Puijon koulu",
-                    "en": "Länsi-Puijon koulu"
-                  },
-                  "koodistoUri": "oppilaitosnumero",
-                  "koodistoVersio": 1
-                },
-                "nimi": {
-                  "fi": "Länsi-Puijon koulu",
-                  "sv": "Länsi-Puijon koulu",
-                  "en": "Länsi-Puijon koulu"
-                },
-                "kotipaikka": {
-                  "koodiarvo": "297",
-                  "nimi": {
-                    "fi": "Kuopio",
-                    "sv": "Kuopio"
-                  },
-                  "koodistoUri": "kunta",
-                  "koodistoVersio": 2
-                }
-              },
-              "myöntäjäHenkilöt": [
-                {
-                  "nimi": "Reijo Reksi",
-                  "titteli": {
-                    "fi": "Rehtori"
-                  },
-                  "organisaatio": {
-                    "oid": "1.2.246.562.10.19666365424",
-                    "oppilaitosnumero": {
-                      "koodiarvo": "03244",
-                      "nimi": {
-                        "fi": "Länsi-Puijon koulu",
-                        "sv": "Länsi-Puijon koulu",
-                        "en": "Länsi-Puijon koulu"
-                      },
-                      "lyhytNimi": {
-                        "fi": "Länsi-Puijon koulu",
-                        "sv": "Länsi-Puijon koulu",
-                        "en": "Länsi-Puijon koulu"
-                      },
-                      "koodistoUri": "oppilaitosnumero",
-                      "koodistoVersio": 1
-                    },
-                    "nimi": {
-                      "fi": "Länsi-Puijon koulu",
-                      "sv": "Länsi-Puijon koulu",
-                      "en": "Länsi-Puijon koulu"
-                    },
-                    "kotipaikka": {
-                      "koodiarvo": "297",
-                      "nimi": {
-                        "fi": "Kuopio",
-                        "sv": "Kuopio"
-                      },
-                      "koodistoUri": "kunta",
-                      "koodistoVersio": 2
-                    }
-                  }
-                }
-              ]
+              "päivä": "2022-05-18"
             },
             "suoritustapa": {
               "koodiarvo": "erityinentutkinto",

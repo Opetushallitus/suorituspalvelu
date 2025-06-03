@@ -83,7 +83,7 @@ object KoskiToSuoritusConverter {
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).getOrElse(dummy()),
       suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).getOrElse(dummy()),
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
-      suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.keskiarvo,
       suoritus.suoritustapa.map(suoritusTapa => asKoodiObject(suoritusTapa)).getOrElse(dummy()),
       suoritus.osasuoritukset.map(os => os.map(os => toAmmatillisenTutkinnonOsa(os))).getOrElse(Set.empty)
@@ -118,7 +118,8 @@ object KoskiToSuoritusConverter {
         if(arvosanat.size>1)
           throw new RuntimeException("liikaa arvosanoja")
         arvosanat.head
-      }
+      },
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
   def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
@@ -126,26 +127,29 @@ object KoskiToSuoritusConverter {
     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
-      suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
+      suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
     )
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
-    PerusopetuksenOppimaara(
+     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
-      suoritus.vahvistuspäivä.map(p => LocalDate.parse(p)),
-      //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
-      suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
+      Set.empty,
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
+       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
     )
 
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
     PerusopetuksenVuosiluokka(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
-      suoritus.alkamispäivä.map(p => LocalDate.parse(p))
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
+      suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
+      suoritus.`jääLuokalle`.getOrElse(false)
     )
 
   def toTelma(suoritus: Suoritus): Telma =
@@ -156,7 +160,7 @@ object KoskiToSuoritusConverter {
   def toTuva(suoritus: Suoritus): Tuva =
     Tuva(
       suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
-      suoritus.vahvistuspäivä.map(p => LocalDate.parse(p))
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
   def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] = {
@@ -185,7 +189,7 @@ object KoskiToSuoritusConverter {
   }
 
   def toPerusopetuksenOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus): fi.oph.suorituspalvelu.business.Opiskeluoikeus = {
-    val convertedSuoritukset: Seq[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
+    val convertedSuoritukset: Set[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
     PerusopetuksenOpiskeluoikeus(
       opiskeluoikeus.oppilaitos.oid,
       opiskeluoikeus.oid,
@@ -202,7 +206,7 @@ object KoskiToSuoritusConverter {
   val SUORITYSTYYPPI_TELMA                                    = "telma"
   val SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS                  = "tuvakoulutuksensuoritus"
 
-  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Seq[fi.oph.suorituspalvelu.business.Suoritus] =
+  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opiskeluoikeudet.flatMap(opiskeluoikeus =>
@@ -215,7 +219,7 @@ object KoskiToSuoritusConverter {
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TELMA => Some(toTelma(suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS => Some(toTuva(suoritus))
-            case default => None))
+            case default => None)).toSet
     finally
       allowMissingFields.set(false)
 }

@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 object TestDataUtil {
 
-  def getTestKoodi(arvo: String = "arvo", koodisto: String = "koodisto", versio: Int = 1): Koodi =
+  def getTestKoodi(arvo: String = "arvo", koodisto: String = "koodisto", versio: Option[Int] = Some(1)): Koodi =
     Koodi(arvo, koodisto, versio)
 
   def getTestAmmatillisenTutkinnonOsa(nimi: String = "tutkinnonOsa",

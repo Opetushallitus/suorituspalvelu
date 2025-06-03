@@ -4,7 +4,7 @@
     "kaikkiOidit": [
       "1.2.246.562.24.40483869857"
     ],
-    "aikaleima": "2025-04-16T16:05:18.425297",
+    "aikaleima": "2025-05-16T15:11:44.552622",
     "opiskeluoikeudet": [
       {
         "tyyppi": {
@@ -437,7 +437,9 @@
               "koodistoUri": "suorituksentyyppi",
               "koodistoVersio": 1
             },
-            "vahvistuspäivä": "2023-03-15",
+            "vahvistus": {
+              "päivä": "2023-03-15"
+            },
             "koulutusmoduuli": {
               "tunniste": {
                 "koodiarvo": "351301",
@@ -2552,6 +2554,367 @@
       },
       {
         "tyyppi": {
+          "koodiarvo": "ammatillinenkoulutus",
+          "nimi": {
+            "fi": "Ammatillinen koulutus",
+            "sv": "Yrkesutbildning",
+            "en": "Vocational education and training"
+          },
+          "lyhytNimi": {
+            "fi": "Ammatillinen koulutus"
+          },
+          "koodistoUri": "opiskeluoikeudentyyppi",
+          "koodistoVersio": 1
+        },
+        "oid": "1.2.246.562.15.82348633197",
+        "koulutustoimija": {
+          "oid": "1.2.246.562.10.346830761110",
+          "nimi": {
+            "fi": "Helsingin kaupunki",
+            "sv": "Helsingin kaupunki",
+            "en": "Helsingin kaupunki"
+          },
+          "yTunnus": "0201256-6",
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "oppilaitos": {
+          "oid": "1.2.246.562.10.52251087186",
+          "oppilaitosnumero": {
+            "koodiarvo": "10105",
+            "nimi": {
+              "fi": "Stadin ammattiopisto",
+              "sv": "Stadin ammattiopisto",
+              "en": "Stadin ammattiopisto"
+            },
+            "lyhytNimi": {
+              "fi": "Stadin ammattiopisto",
+              "sv": "Stadin ammattiopisto",
+              "en": "Stadin ammattiopisto"
+            },
+            "koodistoUri": "oppilaitosnumero",
+            "koodistoVersio": 1
+          },
+          "nimi": {
+            "fi": "Stadin ammattiopisto",
+            "sv": "Stadin ammattiopisto",
+            "en": "Stadin ammattiopisto"
+          },
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "tila": {
+          "opiskeluoikeusjaksot": [
+            {
+              "alku": "2023-03-16",
+              "tila": {
+                "koodiarvo": "lasna",
+                "nimi": {
+                  "fi": "Läsnä",
+                  "sv": "Närvarande",
+                  "en": "Present"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              },
+              "opintojenRahoitus": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Valtionosuusrahoitteinen koulutus",
+                  "sv": "Statsandelsfinansierad utbildning",
+                  "en": "Education financed by the state"
+                },
+                "koodistoUri": "opintojenrahoitus",
+                "koodistoVersio": 1
+              }
+            },
+            {
+              "alku": "2025-05-16",
+              "tila": {
+                "koodiarvo": "mitatoity",
+                "nimi": {
+                  "fi": "Mitätöity",
+                  "sv": "Annullerad",
+                  "en": "Invalidated"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              }
+            }
+          ]
+        },
+        "suoritukset": [
+          {
+            "tyyppi": {
+              "koodiarvo": "ammatillinentutkinto",
+              "nimi": {
+                "fi": "Ammatillinen tutkinto",
+                "sv": "Yrkesinriktad examen",
+                "en": "Vocational education  qualification"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            },
+            "koulutusmoduuli": {
+              "tunniste": {
+                "koodiarvo": "351301",
+                "nimi": {
+                  "fi": "Ajoneuvoalan perustutkinto",
+                  "sv": "Grundexamen inom fordonsbranschen",
+                  "en": "Vocational qualification in the Vehicle Sector"
+                },
+                "lyhytNimi": {
+                  "fi": "Ajoneuvoalan perustutkinto",
+                  "sv": "Grundexamen inom fordonsbranschen",
+                  "en": "Vocational qualification in the Vehicle Sector"
+                },
+                "koodistoUri": "koulutus",
+                "koodistoVersio": 12
+              },
+              "perusteenDiaarinumero": "OPH-5410-2021",
+              "perusteenNimi": {
+                "fi": "Ajoneuvoalan perustutkinto",
+                "sv": "Grundexamen inom fordonsbranschen",
+                "en": "Vocational qualification in the motor vehicles sector"
+              },
+              "koulutustyyppi": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Ammatillinen perustutkinto",
+                  "sv": "Yrkesinriktad grundexamen",
+                  "en": "Vocational upper secondary qualification"
+                },
+                "lyhytNimi": {
+                  "fi": "Ammatillinen perustutkinto",
+                  "sv": "Yrkesinriktad grundexamen"
+                },
+                "koodistoUri": "koulutustyyppi",
+                "koodistoVersio": 2
+              }
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "osasuoritukset": [],
+            "suoritustapa": {
+              "koodiarvo": "reformi",
+              "nimi": {
+                "fi": "Reformin mukainen näyttö",
+                "sv": "Kunnandet visas i yrkesprov (reformen)",
+                "en": "Reform"
+              },
+              "lyhytNimi": {
+                "fi": "Reformi",
+                "sv": "Kunnandet visas i yrkesprov (reformen)"
+              },
+              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
+              "koodistoVersio": 1
+            }
+          }
+        ]
+      },
+      {
+        "tyyppi": {
+          "koodiarvo": "ammatillinenkoulutus",
+          "nimi": {
+            "fi": "Ammatillinen koulutus",
+            "sv": "Yrkesutbildning",
+            "en": "Vocational education and training"
+          },
+          "lyhytNimi": {
+            "fi": "Ammatillinen koulutus"
+          },
+          "koodistoUri": "opiskeluoikeudentyyppi",
+          "koodistoVersio": 1
+        },
+        "oid": "1.2.246.562.15.24840754618",
+        "koulutustoimija": {
+          "oid": "1.2.246.562.10.346830761110",
+          "nimi": {
+            "fi": "Helsingin kaupunki",
+            "sv": "Helsingin kaupunki",
+            "en": "Helsingin kaupunki"
+          },
+          "yTunnus": "0201256-6",
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "oppilaitos": {
+          "oid": "1.2.246.562.10.52251087186",
+          "oppilaitosnumero": {
+            "koodiarvo": "10105",
+            "nimi": {
+              "fi": "Stadin ammattiopisto",
+              "sv": "Stadin ammattiopisto",
+              "en": "Stadin ammattiopisto"
+            },
+            "lyhytNimi": {
+              "fi": "Stadin ammattiopisto",
+              "sv": "Stadin ammattiopisto",
+              "en": "Stadin ammattiopisto"
+            },
+            "koodistoUri": "oppilaitosnumero",
+            "koodistoVersio": 1
+          },
+          "nimi": {
+            "fi": "Stadin ammattiopisto",
+            "sv": "Stadin ammattiopisto",
+            "en": "Stadin ammattiopisto"
+          },
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "tila": {
+          "opiskeluoikeusjaksot": [
+            {
+              "alku": "2023-03-16",
+              "tila": {
+                "koodiarvo": "lasna",
+                "nimi": {
+                  "fi": "Läsnä",
+                  "sv": "Närvarande",
+                  "en": "Present"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              },
+              "opintojenRahoitus": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Valtionosuusrahoitteinen koulutus",
+                  "sv": "Statsandelsfinansierad utbildning",
+                  "en": "Education financed by the state"
+                },
+                "koodistoUri": "opintojenrahoitus",
+                "koodistoVersio": 1
+              }
+            }
+          ]
+        },
+        "suoritukset": [
+          {
+            "tyyppi": {
+              "koodiarvo": "ammatillinentutkinto",
+              "nimi": {
+                "fi": "Ammatillinen tutkinto",
+                "sv": "Yrkesinriktad examen",
+                "en": "Vocational education  qualification"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            },
+            "koulutusmoduuli": {
+              "tunniste": {
+                "koodiarvo": "351301",
+                "nimi": {
+                  "fi": "Ajoneuvoalan perustutkinto",
+                  "sv": "Grundexamen inom fordonsbranschen",
+                  "en": "Vocational qualification in the Vehicle Sector"
+                },
+                "lyhytNimi": {
+                  "fi": "Ajoneuvoalan perustutkinto",
+                  "sv": "Grundexamen inom fordonsbranschen",
+                  "en": "Vocational qualification in the Vehicle Sector"
+                },
+                "koodistoUri": "koulutus",
+                "koodistoVersio": 12
+              },
+              "perusteenDiaarinumero": "OPH-5410-2021",
+              "perusteenNimi": {
+                "fi": "Ajoneuvoalan perustutkinto",
+                "sv": "Grundexamen inom fordonsbranschen",
+                "en": "Vocational qualification in the motor vehicles sector"
+              },
+              "koulutustyyppi": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Ammatillinen perustutkinto",
+                  "sv": "Yrkesinriktad grundexamen",
+                  "en": "Vocational upper secondary qualification"
+                },
+                "lyhytNimi": {
+                  "fi": "Ammatillinen perustutkinto",
+                  "sv": "Yrkesinriktad grundexamen"
+                },
+                "koodistoUri": "koulutustyyppi",
+                "koodistoVersio": 2
+              }
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "osasuoritukset": [],
+            "suoritustapa": {
+              "koodiarvo": "reformi",
+              "nimi": {
+                "fi": "Reformin mukainen näyttö",
+                "sv": "Kunnandet visas i yrkesprov (reformen)",
+                "en": "Reform"
+              },
+              "lyhytNimi": {
+                "fi": "Reformi",
+                "sv": "Kunnandet visas i yrkesprov (reformen)"
+              },
+              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
+              "koodistoVersio": 1
+            }
+          }
+        ]
+      },
+      {
+        "tyyppi": {
           "koodiarvo": "aikuistenperusopetus",
           "nimi": {
             "fi": "Aikuisten perusopetus",
@@ -2672,12 +3035,14 @@
               "nimi": {
                 "fi": "Aikuisten perusopetuksen oppimäärä",
                 "sv": "Lärokurs i den grundläggande utbildningen för vuxna",
-                "en": "Basic education for adults syllabus"
+                "en": "Preparatory instruction and lower secondary education for adults syllabus"
               },
               "koodistoUri": "suorituksentyyppi",
               "koodistoVersio": 1
             },
-            "vahvistuspäivä": "2022-04-16",
+            "vahvistus": {
+              "päivä": "2022-04-16"
+            },
             "koulutusmoduuli": {
               "perusteenDiaarinumero": "OPH-1280-2017",
               "tunniste": {
@@ -2804,7 +3169,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -2845,7 +3210,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -2886,7 +3251,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -2927,7 +3292,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -2939,7 +3304,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3032,7 +3397,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3073,7 +3438,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3114,7 +3479,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3126,7 +3491,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3219,7 +3584,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3260,7 +3625,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3272,7 +3637,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3350,7 +3715,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3391,7 +3756,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3432,7 +3797,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3444,7 +3809,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3522,7 +3887,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3534,7 +3899,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3612,7 +3977,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3624,7 +3989,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3702,7 +4067,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3714,7 +4079,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3792,7 +4157,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3804,7 +4169,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3882,7 +4247,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3894,7 +4259,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -3972,7 +4337,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -3984,7 +4349,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -4062,7 +4427,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -4074,7 +4439,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
@@ -4152,7 +4517,7 @@
                       "nimi": {
                         "fi": "Aikuisten perusopetuksen kurssi",
                         "sv": "Kurs inom den grundläggande utbildningen för vuxna",
-                        "en": "Basic education for adults course"
+                        "en": "Course in preparatory instruction and lower secondary education for adults"
                       },
                       "koodistoUri": "suorituksentyyppi",
                       "koodistoVersio": 1
@@ -4164,7 +4529,7 @@
                   "nimi": {
                     "fi": "Aikuisten perusopetuksen oppiaine",
                     "sv": "Läroämne inom grundläggande utbildning för vuxna",
-                    "en": "Basic education for adults subject"
+                    "en": "Subject in preparatory instruction and lower secondary education for adults"
                   },
                   "koodistoUri": "suorituksentyyppi",
                   "koodistoVersio": 1
