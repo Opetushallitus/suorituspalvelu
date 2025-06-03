@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, Koodi, PerusopetuksenOppimaara, Suoritus}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
 
@@ -35,6 +35,12 @@ class KoskiParsingTest {
     Assertions.assertFalse(KoskiToSuoritusConverter.isYTO("123456"))
     Assertions.assertFalse(KoskiToSuoritusConverter.isYTO("234567"))
 
+  private def getFirstOpiskeluoikeusFromJson(data: String): Opiskeluoikeus =
+    val splitData = KoskiParser.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
+    splitData.map((oppijaOid, data) => {
+      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
+      KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
+    }).next().head
 
   private def getFirstSuoritusFromJson(data: String): Suoritus =
     val splitData = KoskiParser.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
@@ -256,6 +262,63 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(Koodi("1", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
     Assertions.assertEquals(Some(4), osaAlue.laajuus)
     Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", Some(1))), osaAlue.laajuusKoodi)
+
+  @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =
+    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "tyyppi": {
+        |          "koodiarvo": "perusopetus",
+        |          "koodistoUri": "opiskeluoikeudentyyppi",
+        |          "koodistoVersio": 1
+        |        },
+        |        "oid": "1.2.246.562.15.77661702355",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.19666365424"
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-05-01",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |        ],
+        |        "lisätiedot": {
+        |          "erityisenTuenPäätökset": [
+        |            {
+        |              "opiskeleeToimintaAlueittain": true
+        |            }
+        |          ],
+        |          "kotiopetusjaksot": [
+        |            {
+        |              "alku": "2021-08-24",
+        |              "loppu": "2022-01-23"
+        |            }
+        |          ],
+        |          "vuosiluokkiinSitoutumatonOpetus": false
+        |        }        
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
+    
+    Assertions.assertEquals("1.2.246.562.15.77661702355", opiskeluoikeus.oid)
+    Assertions.assertEquals("1.2.246.562.10.19666365424", opiskeluoikeus.oppilaitosOid)
+    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
+      LocalDate.parse("2022-05-01"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1)))))), opiskeluoikeus.tila)
+    Assertions.assertEquals(Some(KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(true)))), Some(false),
+      Some(List(Kotiopetusjakso("2021-08-24", Some("2022-01-23")))))), opiskeluoikeus.lisatiedot)
 
   @Test def testPerusopetuksenOppimaarat(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""
