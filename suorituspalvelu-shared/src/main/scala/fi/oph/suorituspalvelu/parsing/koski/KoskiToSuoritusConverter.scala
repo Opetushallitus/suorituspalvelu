@@ -147,7 +147,7 @@ object KoskiToSuoritusConverter {
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
     PerusopetuksenVuosiluokka(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
       suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
       suoritus.`jääLuokalle`.getOrElse(false)
     )

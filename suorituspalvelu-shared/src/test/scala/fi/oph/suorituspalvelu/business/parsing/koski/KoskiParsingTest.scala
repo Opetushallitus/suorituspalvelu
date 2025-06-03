@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -373,4 +373,50 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), oppimaara.koulusivistyskieli);
+
+  @Test def testPerusopetuksenVuosiluokat(): Unit =
+    val vuosiluokka = getFirstSuoritusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.21583363224",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "suoritukset": [
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "7",
+        |                "nimi": {
+        |                  "fi": "7. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "7A",
+        |            "alkamispäivä": "2020-08-15",
+        |            "vahvistus": {
+        |              "päivä": "2021-06-01"
+        |            },
+        |            "jääLuokalle": true,
+        |            "osasuoritukset": [
+        |            ],
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            }
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[PerusopetuksenVuosiluokka]
+
+    Assertions.assertEquals("7. vuosiluokka", vuosiluokka.nimi)
+    Assertions.assertEquals(Koodi("7", "perusopetuksenluokkaaste", Some(1)), vuosiluokka.koodi)
+    Assertions.assertEquals(Some(LocalDate.parse("2020-08-15")), vuosiluokka.alkamisPaiva)
+    Assertions.assertEquals(true, vuosiluokka.jaaLuokalle)
+
 }

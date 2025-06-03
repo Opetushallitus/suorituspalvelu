@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS perusopetuksen_vuosiluokat (
     versio_tunniste         UUID REFERENCES versiot (tunniste) ON DELETE CASCADE,
     opiskeluoikeus_tunniste INT REFERENCES perusopetuksen_opiskeluoikeudet (tunniste) ON DELETE CASCADE,
     nimi                    VARCHAR NOT NULL,
-    koodi                   VARCHAR NOT NULL,
+    koodi                   JSONB NOT NULL,
     alkamispaiva            DATE,
     jaaluokalle             BOOLEAN
 );

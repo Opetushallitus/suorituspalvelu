@@ -210,7 +210,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getPerusopetuksenVuosiluokkaInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: PerusopetuksenVuosiluokka): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
       sqlu"""INSERT INTO perusopetuksen_vuosiluokat(versio_tunniste, opiskeluoikeus_tunniste, nimi, koodi, alkamispaiva, jaaluokalle)
-            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.nimi}, ${suoritus.koodi}, ${suoritus.alkamisPaiva.map(d => d.toString)}::date, ${suoritus.jaaLuokalle})"""))
+            VALUES(${versio.tunniste.toString}::uuid, $parentOpiskeluoikeusId, ${suoritus.nimi}, ${MAPPER.writeValueAsString(suoritus.koodi)}::jsonb, ${suoritus.alkamisPaiva.map(d => d.toString)}::date, ${suoritus.jaaLuokalle})"""))
 
   def getNuortenPerusopetuksenOppiaineenOppimaaraInserts(versio: VersioEntiteetti, parentOpiskeluoikeusId: Int, suoritus: NuortenPerusopetuksenOppiaineenOppimaara): DBIOAction[_, NoStream, Effect] =
     DBIO.sequence(Seq(
