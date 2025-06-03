@@ -14,7 +14,7 @@ import scala.jdk.OptionConverters.*
 object Validator {
 
   final val VALIDATION_OPPIJANUMERO_TYHJA = "oppijaNumero: Kenttä on pakollinen"
-  final val VALIDATION_OPPIJANUMERO_EI_VALIDI = "oppijaNumero: Oppijanumero ei oli validi oppija oid"
+  final val VALIDATION_OPPIJANUMERO_EI_VALIDI = "oppijaNumero: Oppijanumero ei ole validi oppija oid"
   final val VALIDATION_HAKUOID_TYHJA = "hakuOid: Kenttä on pakollinen"
   final val VALIDATION_HAKUOID_EI_VALIDI = "hakuOid ei ole validi: "
   final val VALIDATION_EI_VALIDIT_OIDIT = "Seuraavat oppijanumerot eivät ole valideja: "

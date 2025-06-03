@@ -77,7 +77,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
 
-    //Tarkistetaan että kantaan on tallentnettu kolme opiskeluoikeutta
+    //Tarkistetaan että kantaan on tallennettu kolme opiskeluoikeutta
     Assertions.assertEquals(haetut.head._2.size, 3)
   }
 
@@ -127,7 +127,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
 
-    //Tarkistetaan että kantaan on tallentnettu kolme opiskeluoikeutta
+    //Tarkistetaan että kantaan on tallennettu kolme opiskeluoikeutta
     Assertions.assertEquals(haetut.head._2.size, 3)
   }
 
