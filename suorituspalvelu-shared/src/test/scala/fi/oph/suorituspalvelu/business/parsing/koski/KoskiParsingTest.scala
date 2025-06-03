@@ -120,6 +120,11 @@ class KoskiParsingTest {
         |              "koodiarvo": "reformi",
         |              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
         |              "koodistoVersio": 1
+        |            },
+        |            "suorituskieli": {
+        |              "koodiarvo": "FI",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
         |            }
         |          }
         |        ]
@@ -134,6 +139,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(BigDecimal.valueOf(1.0)), tutkinto.keskiarvo)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", Some(1)), tutkinto.suoritustapa)
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
 
   @Test def testAmmatillisenTutkinnonOsasuoritukset(): Unit =
     val tutkinto = getFirstSuoritusFromJson("""

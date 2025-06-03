@@ -65,7 +65,7 @@ case class Vahvistus(`päivä`: String)
 
 case class Suoritus(tyyppi: SuoritusTyyppi,
                     koulutusmoduuli: Option[KoulutusModuuli],
-                    suorituskieli: SuoritusKieli,
+                    suorituskieli: Option[SuoritusKieli],
                     koulusivistyskieli: Option[Set[SuoritusKieli]],
                     alkamispäivä: Option[String],
                     vahvistus: Option[Vahvistus],
