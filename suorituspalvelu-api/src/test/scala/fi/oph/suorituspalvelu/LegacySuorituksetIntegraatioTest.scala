@@ -92,7 +92,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
 
     val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{\"testi\": \"suorituksetHenkilölle\"}")
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto())), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto("fi"))), Set.empty)
 
     // haetaan tutkinnot legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(OPPIJA_OID)))
