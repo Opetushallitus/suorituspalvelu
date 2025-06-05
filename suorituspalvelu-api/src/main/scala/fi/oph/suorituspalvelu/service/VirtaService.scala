@@ -30,12 +30,13 @@ object VirtaService {
 }
 
 object VirtaUtil {
+  val replacementHetu = "010190-937W"
 
   //For now, we don't really need/want to store such information.
   def replaceHetusWithPlaceholder(xml: String): String = {
     val start = "<virta:Henkilotunnus>"
     val end = "</virta:Henkilotunnus>"
-    val replacement = start + "010190-937W" + end
+    val replacement = start + replacementHetu + end
     val pattern = s"(?<=$start).*?(?=$end)".r
     pattern.replaceAllIn(xml, replacement)
   }

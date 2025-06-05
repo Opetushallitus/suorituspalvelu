@@ -6,6 +6,7 @@ import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenk
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.resource.{ApiConstants, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
+import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -48,7 +49,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testRefreshVirtaAllowedActuallySaveSuoritukset(): Unit =
+  @Test def testRefreshVirtaAllowedActuallySaveSuoritukset(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967215"
 
     val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
@@ -73,5 +74,28 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedot.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(ApiConstants.VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+  }
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshVirtaReplacesHetuWithMockHetu(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.21250967215"
+
+    val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
+
+    Mockito.when(virtaClient.haeKaikkiTiedot(oppijaNumero, None)).thenReturn(Future.successful(Seq(VirtaResultForHenkilo(oppijaNumero, virtaXml))))
+
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
+      .andExpect(status().isOk()).andReturn()
+
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncSuccessResponse])
+
+    //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
+    Thread.sleep(2000)
+
+    //Tarkistetaan että version yhteyteen tallennetusta lähdedatasta ei löydy alkuperäistä hetua mutta korvaava hetu löytyy
+    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    val versionData = kantaOperaatiot.haeData(suorituksetKannasta.head._1)
+    Assertions.assertTrue(versionData._2.contains(VirtaUtil.replacementHetu))
+    Assertions.assertFalse(versionData._2.contains("010296-1230"))
+  }
 }
