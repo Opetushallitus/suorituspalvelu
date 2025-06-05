@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYYPPI_AMMATILLINENTUTKINTO
-import fi.oph.suorituspalvelu.resource.ApiConstants.{JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI}
 import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacyAmmatillinenTaiYOSuoritus, LegacyMuuttunutSuoritus, LegacySuorituksetFailureResponse, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.validation.Validator
@@ -53,7 +53,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_SUORITUKSET_PATH))
       .andExpect(status().isBadRequest).andReturn()
 
-    Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU)),
+    Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -63,7 +63,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
         LEGACY_SUORITUKSET_HENKILO_PARAM_NAME + "=1.2.3" + "&" + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "=aikaleima"))
       .andExpect(status().isBadRequest).andReturn()
 
-    Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU)),
+    Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -92,7 +92,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
 
     val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{\"testi\": \"suorituksetHenkilölle\"}")
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto("fi"))), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto(Koodi("fi", "kieli", Some(1))))), Set.empty)
 
     // haetaan tutkinnot legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(OPPIJA_OID)))
