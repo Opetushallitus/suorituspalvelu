@@ -261,28 +261,17 @@ class KantaOperaatiotTest {
       val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
       val suoritukset = splitData.foreach((oppijaOid, data) => {
 
-/*
-        Range(0, 20000).foreach(i => {
-          val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value" + i + "\"}").get
-          this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set.empty, Set.empty)
-        })
-*/
-
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
         val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet).toSet
         this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Set.empty)
 
-
-
         val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
 
         Assertions.assertEquals(Map(versio -> oo), haetutSuoritukset);
       })
     })
-
-    val s = ""
   }
 
   /**

@@ -68,13 +68,6 @@ class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, enviro
     Future.sequence(futures)
   }
 
-  def haeKaikkiTiedotO(oppijanumero: String, hetu: Option[String]): Future[Seq[String]] =
-    val url = this.environmentBaseUrl + "/luku/OpiskelijanTiedot"
-    Future.sequence(Seq(
-      Some(this.post(url, this.getSoapOperationEnvelope(Left(oppijanumero)))),
-      hetu.map(h => this.post(url, this.getSoapOperationEnvelope(Right(h))))
-    ).flatten)
-
   /**
    * Execute the HTTP request and handle the response asynchronously.
    *

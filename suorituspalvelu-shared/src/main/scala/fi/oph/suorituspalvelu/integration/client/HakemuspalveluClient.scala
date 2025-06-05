@@ -25,8 +25,6 @@ case class AtaruHakemuksenHenkilotiedot(oid: String, //hakemuksen oid
 case class AtaruResponseHenkilot(applications: List[AtaruHakemuksenHenkilotiedot],
                                  offset: Option[String])
 
-case class CasParams(user: String, password: String, casUrl: String, envBaseUrl: String)
-
 trait HakemuspalveluClient {
   def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
 }
