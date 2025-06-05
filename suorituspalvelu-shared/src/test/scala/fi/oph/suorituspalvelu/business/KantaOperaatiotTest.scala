@@ -395,7 +395,7 @@ class KantaOperaatiotTest {
   @Test def testYTRRoundTrip(): Unit =
     val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, YTR, "{}").get
-    val opiskeluoikeus = YOOpiskeluoikeus(YOTutkinto("fi"))
+    val opiskeluoikeus = YOOpiskeluoikeus(YOTutkinto(Koodi("fi", "kieli", Some(1))))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
 
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)

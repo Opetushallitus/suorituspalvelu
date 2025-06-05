@@ -75,7 +75,7 @@ case class GeneerinenOpiskeluoikeus(
 
 case class YOOpiskeluoikeus(yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
 
-case class YOTutkinto(suoritusKieli: String) extends Suoritus
+case class YOTutkinto(suoritusKieli: Koodi) extends Suoritus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
 
