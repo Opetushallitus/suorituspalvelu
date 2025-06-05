@@ -2,16 +2,19 @@ package fi.oph.suorituspalvelu.integration.virta
 
 import org.asynchttpclient.*
 import org.asynchttpclient.Dsl.asyncHttpClient
-import org.slf4j.LoggerFactory
+
 
 import java.time.Duration
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
 
+//Todo, erotetaan hetu oppijanumerosta kun on selvää miten tiedot tallennetaan. Haetaan ja tallennetaan toistaiseksi tiedot vain oppijanumerolle.
+case class VirtaResultForHenkilo(oppijanumeroTaiHetu: String, resultXml: String)
+
 trait VirtaClient {
 
-  def haeKaikkiTiedot(oppijanumero: String, hetu: Option[String]): Future[Seq[String]]
+  def haeKaikkiTiedot(oppijanumero: String, hetu: Option[String]): Future[Seq[VirtaResultForHenkilo]]
 }
 
 class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, environmentBaseUrl: String) extends VirtaClient {
@@ -48,7 +51,24 @@ class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, enviro
     executeRequest(request)
   }
 
-  def haeKaikkiTiedot(oppijanumero: String, hetu: Option[String]): Future[Seq[String]] =
+  def haeTiedotOppijanumerolle(oppijanumero: String): Future[VirtaResultForHenkilo] = {
+    post(environmentBaseUrl + "/luku/OpiskelijanTiedot", this.getSoapOperationEnvelope(Left(oppijanumero))).map(result => VirtaResultForHenkilo(oppijanumero, result))
+  }
+
+  def haeTiedotHetulle(hetu: String): Future[VirtaResultForHenkilo] = {
+    post(environmentBaseUrl + "/luku/OpiskelijanTiedot", this.getSoapOperationEnvelope(Right(hetu))).map(result => VirtaResultForHenkilo(hetu, result))
+  }
+
+  def haeKaikkiTiedot(oppijanumero: String, hetu: Option[String]): Future[Seq[VirtaResultForHenkilo]] = {
+    val futures =
+      Seq(
+        Some(haeTiedotOppijanumerolle(oppijanumero))
+        //hetu.map(haeTiedotHetulle) todo ei haeta eikä tallenneta tietoja hetuille toistaiseksi.
+      ).filter(_.isDefined).flatten
+    Future.sequence(futures)
+  }
+
+  def haeKaikkiTiedotO(oppijanumero: String, hetu: Option[String]): Future[Seq[String]] =
     val url = this.environmentBaseUrl + "/luku/OpiskelijanTiedot"
     Future.sequence(Seq(
       Some(this.post(url, this.getSoapOperationEnvelope(Left(oppijanumero)))),

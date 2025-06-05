@@ -34,13 +34,16 @@ object KantaOperaatiot {
       classOf[PerusopetuksenOpiskeluoikeus],
       classOf[PerusopetuksenOppimaara],
       classOf[AmmatillinenOpiskeluoikeus],
+      classOf[VirtaOpiskeluoikeus],
       classOf[AmmatillinenTutkinto],
       classOf[GeneerinenOpiskeluoikeus],
       classOf[YOOpiskeluoikeus],
       classOf[PerusopetuksenVuosiluokka],
       classOf[Telma],
       classOf[NuortenPerusopetuksenOppiaineenOppimaara],
-      classOf[Tuva])
+      classOf[Tuva],
+      classOf[VirtaTutkinto],
+      classOf[Opintosuoritus])
     mapper
   }
 
@@ -100,7 +103,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               } else useVersioTunnisteet.head
               tietolahde match
                 case VIRTA => sqlu"""
-                    INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)
+                    INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_xml)
                     VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${tietolahde.toString}::lahde, ${data}::xml)"""
                 case default => sqlu"""
                     INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, lahde, data_json)

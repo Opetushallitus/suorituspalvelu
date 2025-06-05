@@ -3,8 +3,10 @@ package fi.oph.suorituspalvelu.service
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
+import fi.oph.suorituspalvelu.business.Tietolahde.VIRTA
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, Suoritus, Tietolahde, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
-import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.service.VirtaService.VIRTA_REFRESH_TASK
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,8 +19,8 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-
 import fi.oph.suorituspalvelu.service.VirtaService.LOG
+import slick.jdbc.JdbcBackend
 
 object VirtaService {
 
@@ -27,8 +29,22 @@ object VirtaService {
   val VIRTA_REFRESH_TASK: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh", classOf[String]);
 }
 
+object VirtaUtil {
+
+  //For now, we don't really need/want to store such information.
+  def replaceHetusWithPlaceholder(xml: String): String = {
+    val start = "<virta:Henkilotunnus>"
+    val end = "</virta:Henkilotunnus>"
+    val replacement = start + "010190-937W" + end
+    val pattern = s"(?<=$start).*?(?=$end)".r
+    pattern.replaceAllIn(xml, replacement)
+  }
+}
+
 @Configuration
 class VirtaRefresh {
+
+  @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
 
   final val TIMEOUT = 30.seconds
 
@@ -38,16 +54,30 @@ class VirtaRefresh {
     .execute((instance, ctx) => {
     val oppijaNumero = instance.getData.split(":").head
     val hetu = instance.getData.split(":").tail.headOption.getOrElse("")
-    try
-      val virtaXMLs = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, { if(hetu.isBlank) None else Some(hetu)}), TIMEOUT)
-      val parseroidut = virtaXMLs.map(r => VirtaParser.parseVirtaData(new ByteArrayInputStream(r.getBytes)))
-      val konvertoidut = parseroidut.map(p => VirtaToSuoritusConverter.toSuoritukset(p).toSet).flatten
+    try {
+      val kantaOperaatiot = KantaOperaatiot(database)
+      val virtaResults = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, {
+        if (hetu.isBlank) None else Some(hetu)
+      }), TIMEOUT)
+      val versiot: Seq[Option[VersioEntiteetti]] = virtaResults.map(virtaResult => {
+        val hetulessXml = VirtaUtil.replaceHetusWithPlaceholder(virtaResult.resultXml)
 
-      // TODO: tallennus tapahtuu tässä
+        //Todo, lisätään jossain vaiheessa versiotauluun oma sarake hetulle, tai kehitetään muu ratkaisu tietojen tallennukseen hetun alle.
+        // Tiedot pitäisi periaatteessa tallentaa nimenomaan hetun alle, koska hetuun liittyvälle oppijanumerolle saattaisi palautua Virrasta eri tiedot.
+        kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, VIRTA, hetulessXml)
+      })
 
-      LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${oppijaNumero}, yhteensä ${konvertoidut.size} suoritusta.")
-    catch
+      versiot.filter(_.isDefined).flatten.foreach((versio: VersioEntiteetti) => {
+        LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
+        val versionParseroidut: VirtaSuoritukset = virtaResults.find(_.oppijanumeroTaiHetu == versio.oppijaNumero)
+          .map(r => VirtaParser.parseVirtaData(new ByteArrayInputStream(r.resultXml.getBytes))).get
+        val konvertoidut: Seq[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(versionParseroidut)
+        val foo = kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, konvertoidut.toSet, Set.empty)
+        LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${oppijaNumero}, yhteensä ${konvertoidut.size} suoritusta.")
+      })
+    } catch {
       case e: Exception => LOG.error(s"Virhe päivettäessä Virta-tietoja oppijanumerolle ${oppijaNumero}", e)
+    }
   })
 }
 

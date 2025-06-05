@@ -79,6 +79,12 @@ case class YOTutkinto() extends Suoritus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
 
+case class VirtaOpiskeluoikeus(
+                              tunniste: String,
+                              @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                              suoritukset: Set[Suoritus]
+                              ) extends Opiskeluoikeus, Tyypitetty
+
 case class VirtaTutkinto(
                           nimiFi: Option[String],
                           nimiSv: Option[String],
@@ -88,7 +94,8 @@ case class VirtaTutkinto(
                           suoritusPvm: LocalDate,
                           myontaja: String,
                           kieli: String,
-                          koulutusKoodi: String
+                          koulutusKoodi: String,
+                          opiskeluoikeusAvain: String
                         ) extends Suoritus, Tyypitetty
 
 case class Opintosuoritus(
@@ -109,5 +116,6 @@ case class Opintosuoritus(
                            kieli: String,
                            koulutusala: Int,
                            koulutusalaKoodisto: String,
-                           opinnaytetyo: Boolean
+                           opinnaytetyo: Boolean,
+                           opiskeluoikeusAvain: String //Onhan tämä aina saatavilla?
                          ) extends Suoritus, Tyypitetty
