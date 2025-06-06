@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClient}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,10 +37,16 @@ class LegacyOppijatService {
           .values
           .flatten
           .map(oo => oo match {
-            case oo: PerusopetuksenOpiskeluoikeus => oo.suoritukset
-              .filter(s => s.isInstanceOf[PerusopetuksenOppimaara])
-              .map(s => s.asInstanceOf[PerusopetuksenOppimaara])
-              .map(poo => Some(LegacySuoritusJaArvosanat(LegacySuoritus(poo.suoritusKieli.arvo))))
+            case oo: PerusopetuksenOpiskeluoikeus => Set(
+              oo.suoritukset
+                .filter(s => s.isInstanceOf[PerusopetuksenOppimaara])
+                .map(s => s.asInstanceOf[PerusopetuksenOppimaara])
+                .map(poo => Some(LegacySuoritusJaArvosanat(LegacySuoritus(poo.suoritusKieli.arvo)))),
+              oo.suoritukset
+                .filter(s => s.isInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara])
+                .map(s => s.asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara])
+                .map(poo => Some(LegacySuoritusJaArvosanat(LegacySuoritus(poo.suoritusKieli.arvo)))),
+            ).flatten
             case oo: AmmatillinenOpiskeluoikeus => oo.suoritukset
               .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
               .map(s => s.asInstanceOf[AmmatillinenTutkinto])

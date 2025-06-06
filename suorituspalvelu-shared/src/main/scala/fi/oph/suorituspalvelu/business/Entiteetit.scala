@@ -42,7 +42,7 @@ case class Tuva(koodi: String, vahvistusPaivamaara: Option[LocalDate]) extends S
 
 case class Telma(koodi: String) extends Suoritus, Tyypitetty
 
-case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: String, arvosana: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: Koodi, arvosana: String, suoritusKieli: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
 
