@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, HEALTHCHECK_PATH, JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME, YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, HEALTHCHECK_PATH, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
@@ -175,7 +175,7 @@ class LegacySuorituksetResource {
             if(oppijaNumero.isPresent ^ muokattuJalkeen.isPresent)
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LegacySuorituksetFailureResponse(java.util.Set.of(JOKO_OID_TAI_PVM_PITAA_OLLA_ANNETTU)))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)))))
           .flatMap(_ =>
             val virheet = Set(Validator.validateOppijanumero(oppijaNumero.toScala, false), Validator.validateMuokattujalkeen(muokattuJalkeen.toScala, false)).flatten
             if(virheet.isEmpty)
@@ -201,6 +201,6 @@ class LegacySuorituksetResource {
     catch
       case e: Exception =>
         LOG.error("YO tai ammatillisten tutkintojen haku epäonnistui", e)
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LegacySuorituksetFailureResponse(java.util.Set.of(YO_TAI_AMMATILLISTEN_HAKU_EPAONNISTUI)))
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_HAKU_EPAONNISTUI)))
 
 }
