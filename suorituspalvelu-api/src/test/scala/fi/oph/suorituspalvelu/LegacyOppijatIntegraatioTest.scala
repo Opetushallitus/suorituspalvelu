@@ -23,8 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-import java.time.{Instant, LocalDate}
-import java.util.Optional
+import java.time.LocalDate
 import scala.concurrent.Future
 
 /**
@@ -87,12 +86,22 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testLegacySuorituksetHenkilolleAllowed(): Unit =
     val hakuOid = ApiConstants.EXAMPLE_HAKU_OID
     val tutkintoKoodi = "123456"
-    val suoritusKieli = "fi"
+    val suoritusKieli = Koodi("fi", "kieli", Some(1))
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi(suoritusKieli, "suorituskieli", Some(1)), Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val telma = Telma(Koodi("arvo", "koodisto", None), suoritusKieli)
+    val perusopetuksenOppimaara = PerusopetuksenOppimaara("oid", Koodi("arvo", "koodisto", None), suoritusKieli, Set.empty, None, Set.empty)
+    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara("nimi", Koodi("arvo", "koodisto", None), "", suoritusKieli, None)
+    val yoTutkinto = YOTutkinto(suoritusKieli)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
+      AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None),
+      AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(telma), None),
+      PerusopetuksenOpiskeluoikeus("1.2.3", "2.3.4", Set(perusopetuksenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus("1.2.3", "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
+      YOOpiskeluoikeus(yoTutkinto)
+    ), Set.empty)
 
     // määritellään että hakemuspalvelun mukaan haun ainoa hakija
     Mockito.when(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(None, Some(hakuOid), None))).thenReturn(Future.successful(Seq(AtaruHakemuksenHenkilotiedot("", Some(OPPIJA_OID), None))))
@@ -103,9 +112,14 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     val legacyOppijatResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyOppija]] {})
 
     // varmistetaan että tulokset täsmäävät
-    Assertions.assertEquals(
-      List(LegacyOppija(OPPIJA_OID, List(LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli, Komot.ammatillinen))))),
-      legacyOppijatResponse)
+    Assertions.assertEquals(List(LegacyOppija(OPPIJA_OID, Set(
+      LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli.arvo, Komot.ammatillinen)),
+      LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli.arvo, Komot.telma)),
+      LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli.arvo, Komot.perusopetus)),
+      LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli.arvo, Komot.perusopetuksenOppiaineenOppimaara)),
+      LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli.arvo, Komot.yoTutkinto))
+    ))),
+    legacyOppijatResponse)
 
     // ja että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
