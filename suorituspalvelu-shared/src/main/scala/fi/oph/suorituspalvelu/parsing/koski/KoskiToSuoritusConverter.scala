@@ -109,7 +109,7 @@ object KoskiToSuoritusConverter {
   def toNuortenPerusopetuksenOppiaineenOppimaara(suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
     NuortenPerusopetuksenOppiaineenOppimaara(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
       {
         val arvosanat = suoritus.arviointi
           .map(arviointi => arviointi
@@ -120,6 +120,7 @@ object KoskiToSuoritusConverter {
           throw new RuntimeException("liikaa arvosanoja")
         arvosanat.head
       },
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
