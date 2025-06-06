@@ -358,6 +358,11 @@ class KoskiParsingTest {
         |            "vahvistus": {
         |              "päivä": "2024-06-01"
         |            },
+        |            "suorituskieli": {
+        |              "koodiarvo": "FI",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
+        |            },
         |            "koulusivistyskieli": [
         |              {
         |                "koodiarvo": "FI",
@@ -378,6 +383,7 @@ class KoskiParsingTest {
     Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.vahvistusPaivamaara)
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli);
     Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), oppimaara.koulusivistyskieli);
 
   @Test def testPerusopetuksenVuosiluokat(): Unit =

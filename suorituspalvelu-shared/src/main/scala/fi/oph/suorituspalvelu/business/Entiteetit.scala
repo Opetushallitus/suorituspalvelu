@@ -44,7 +44,7 @@ case class Telma(koodi: String) extends Suoritus, Tyypitetty
 
 case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: String, arvosana: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
+case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String) extends Tyypitetty
 

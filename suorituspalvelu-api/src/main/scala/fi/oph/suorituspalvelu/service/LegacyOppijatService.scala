@@ -40,7 +40,7 @@ class LegacyOppijatService {
             case oo: PerusopetuksenOpiskeluoikeus => oo.suoritukset
               .filter(s => s.isInstanceOf[PerusopetuksenOppimaara])
               .map(s => s.asInstanceOf[PerusopetuksenOppimaara])
-              .map(poo => Some(LegacySuoritusJaArvosanat(LegacySuoritus("kieli"))))
+              .map(poo => Some(LegacySuoritusJaArvosanat(LegacySuoritus(poo.suoritusKieli.arvo))))
             case oo: AmmatillinenOpiskeluoikeus => oo.suoritukset
               .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
               .map(s => s.asInstanceOf[AmmatillinenTutkinto])
