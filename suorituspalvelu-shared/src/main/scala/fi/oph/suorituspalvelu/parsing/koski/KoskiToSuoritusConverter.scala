@@ -158,7 +158,8 @@ object KoskiToSuoritusConverter {
 
   def toTelma(suoritus: Suoritus): Telma =
     Telma(
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).getOrElse(dummy()),
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
     )
 
   def toTuva(suoritus: Suoritus): Tuva =

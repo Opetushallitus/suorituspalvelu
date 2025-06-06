@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Telma, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClient}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,10 +47,16 @@ class LegacyOppijatService {
                 .map(s => s.asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara])
                 .map(poo => Some(LegacySuoritusJaArvosanat(LegacySuoritus(poo.suoritusKieli.arvo)))),
             ).flatten
-            case oo: AmmatillinenOpiskeluoikeus => oo.suoritukset
-              .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
-              .map(s => s.asInstanceOf[AmmatillinenTutkinto])
-              .map(at => Some(LegacySuoritusJaArvosanat(LegacySuoritus(at.suoritusKieli.arvo))))
+            case oo: AmmatillinenOpiskeluoikeus => Set(
+              oo.suoritukset
+                .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
+                .map(s => s.asInstanceOf[AmmatillinenTutkinto])
+                .map(at => Some(LegacySuoritusJaArvosanat(LegacySuoritus(at.suoritusKieli.arvo)))),
+              oo.suoritukset
+                .filter(s => s.isInstanceOf[Telma])
+                .map(s => s.asInstanceOf[Telma])
+                .map(t => Some(LegacySuoritusJaArvosanat(LegacySuoritus(t.suoritusKieli.arvo)))),
+            ).flatten
             case oo: YOOpiskeluoikeus => Set(Some(LegacySuoritusJaArvosanat(LegacySuoritus(oo.yoTutkinto.suoritusKieli.arvo))))
             case default => None
           })
