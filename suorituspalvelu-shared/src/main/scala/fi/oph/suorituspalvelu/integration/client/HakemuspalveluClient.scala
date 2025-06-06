@@ -58,7 +58,12 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
   }
 
   private def fetch(url: String, body: AtaruHenkiloSearchParams): Future[String] = {
-    val bodyMap = Map("hakuOid" -> body.hakuOid.get)
+    val bodyMap = List(
+      body.hakuOid.map("hakuOid" -> _),
+      body.hakukohdeOids.map("hakukohdeOids" -> _),
+      body.offset.map("offset" -> _)
+    ).flatten.toMap
+
     LOG.info(s"fetch, $url $body ${mapper.writeValueAsString(body)} ${mapper.writeValueAsString(bodyMap)}")
     val req = new RequestBuilder()
       .setMethod("POST")
