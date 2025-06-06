@@ -1,5 +1,9 @@
 package fi.oph.suorituspalvelu.business
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
@@ -79,23 +83,10 @@ class KantaOperaatiotTest {
   @AfterEach def teardownTest(): Unit =
     Await.result(database.run(
       sqlu"""
+            DROP FUNCTION get_tyyppi(text, text);
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
             DROP TABLE scheduled_tasks;
-            DROP TABLE opiskeluoikeudet;
-            DROP TABLE perusopetuksen_vuosiluokat;
-            DROP TABLE nuorten_perusopetuksen_oppiaineen_oppimaarat;
-            DROP TABLE perusopetuksen_oppiaineet;
-            DROP TABLE perusopetuksen_oppimaarat;
-            DROP TABLE ammatillisen_tutkinnon_osaalueet;
-            DROP TABLE ammatillisen_tutkinnon_osat;
-            DROP TABLE ammatilliset_tutkinnot;
-            DROP TABLE tuvat;
-            DROP TABLE telmat;
-            DROP TABLE perusopetuksen_opiskeluoikeudet;
-            DROP TABLE ammatilliset_opiskeluoikeudet;
-            DROP TABLE geneeriset_opiskeluoikeudet;
-            DROP TABLE yotutkinnot;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -261,7 +252,7 @@ class KantaOperaatiotTest {
    * Testataan että suoritukset tallentuvat ja luetaan oikein oikealla KOSKI-datalla. Tämän testin tulisi kattaa kaikki
    * erityyppiset KOSKI-suoritukset.
    */
-  @Test def testAitoKoskiDataSuorituksetRoundtrip(): Unit =
+  @Test def testAitoKoskiDataSuorituksetRoundtrip(): Unit = {
     Seq(
       "/1_2_246_562_24_40483869857.json",
       "/1_2_246_562_24_30563266636.json",
@@ -269,6 +260,7 @@ class KantaOperaatiotTest {
     ).foreach(fileName => {
       val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
       val suoritukset = splitData.foreach((oppijaOid, data) => {
+
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
@@ -280,6 +272,7 @@ class KantaOperaatiotTest {
         Assertions.assertEquals(Map(versio -> oo), haetutSuoritukset);
       })
     })
+  }
 
   /**
    * Testataan että suorituksia haettaessa palautetaan viimeisin versio jonka data on parseroitu onnistuneesti.

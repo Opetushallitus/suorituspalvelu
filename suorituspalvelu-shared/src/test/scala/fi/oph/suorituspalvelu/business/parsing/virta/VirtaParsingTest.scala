@@ -14,7 +14,7 @@ object KoskiParsing {
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
-class KoskiParsingTest {
+class VirtaParsingTest {
 
   @Test def testVirtaParsingAndConversion(): Unit =
     Seq(
