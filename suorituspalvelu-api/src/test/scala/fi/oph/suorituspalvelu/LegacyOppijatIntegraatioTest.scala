@@ -11,7 +11,7 @@ import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYY
 import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_HAKU_OID, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME}
 import fi.oph.suorituspalvelu.resource.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.service.{LegacyOppija, LegacySuoritus, LegacySuoritusJaArvosanat}
+import fi.oph.suorituspalvelu.service.{Komot, LegacyOppija, LegacySuoritus, LegacySuoritusJaArvosanat}
 import fi.oph.suorituspalvelu.validation.Validator
 import fi.oph.suorituspalvelu.validation.Validator.{VALIDATION_HAKUKOHDEOID_EI_VALIDI, VALIDATION_HAKUOID_EI_VALIDI, VALIDATION_HAKUOID_TYHJA, VALIDATION_MUOKATTUJALKEEN_EI_VALIDI, VALIDATION_OPPIJANUMERO_EI_VALIDI}
 import org.junit.jupiter.api.*
@@ -104,7 +104,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
     // varmistetaan että tulokset täsmäävät
     Assertions.assertEquals(
-      List(LegacyOppija(OPPIJA_OID, List(LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli))))),
+      List(LegacyOppija(OPPIJA_OID, List(LegacySuoritusJaArvosanat(LegacySuoritus(suoritusKieli, Komot.ammatillinen))))),
       legacyOppijatResponse)
 
     // ja että auditloki täsmää
