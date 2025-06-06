@@ -22,7 +22,7 @@ case class LegacySuoritus(suoritusKieli: String, komo: String)
 
 case class LegacySuoritusJaArvosanat(suoritus: LegacySuoritus)
 
-case class LegacyOppija(oppijanumero: String, suoritukset: List[LegacySuoritusJaArvosanat])
+case class LegacyOppija(oppijanumero: String, suoritukset: Set[LegacySuoritusJaArvosanat])
 
 @Component
 class LegacyOppijatService {
@@ -70,7 +70,7 @@ class LegacyOppijatService {
           })
           .flatten
           .flatten
-          .toList
+          .toSet
         
         LegacyOppija(h.personOid.get, suoritukset)
       })
