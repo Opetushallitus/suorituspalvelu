@@ -29,7 +29,7 @@ trait HakemuspalveluClient {
   def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
 }
 
-class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClient {
+class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
 
 
   val LOG = LoggerFactory.getLogger(classOf[HakemuspalveluClientImpl]);
@@ -37,9 +37,10 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
+  //"https://virkailija.testiopintopolku.fi...
   override def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
     def fetchAllRecursive(currentParams: AtaruHenkiloSearchParams, accResults: Seq[AtaruHakemuksenHenkilotiedot] = Seq.empty): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
-      fetch("https://virkailija.testiopintopolku.fi/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
+      fetch(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
         .flatMap(data => {
           val parsed: AtaruResponseHenkilot = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
           val newResults = accResults ++ parsed.applications
