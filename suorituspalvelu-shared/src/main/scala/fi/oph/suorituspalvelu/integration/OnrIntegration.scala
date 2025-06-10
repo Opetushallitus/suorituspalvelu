@@ -8,14 +8,37 @@ import org.slf4j.LoggerFactory
 
 import java.util.concurrent.Executors
 
-case class PersonOidsWithAliases(
-                                 allOidsByQueriedOids: Map[String, Set[String]] //Avaimina oidit joille kysyttiin, arvona setti jossa mukana kaikki aliakset sis. oid jolla kysyttiin
-                                 ) {
+//Avaimina oidit joille kysyttiin, arvona setti jossa mukana kaikki aliakset sis. oid jolla kysyttiin
+case class PersonOidsWithAliases(allOidsByQueriedOids: Map[String, Set[String]]) {
   def allOids: Set[String] = allOidsByQueriedOids.values.flatten.toSet
+}
+
+case class Kieli(kieliKoodi: String,
+                 kieliTyyppi: Option[String] = None)
+
+case class Kansalaisuus(kansalaisuusKoodi: String)
+
+case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
+                            hetu: Option[String],
+                            kaikkiHetut: Option[Seq[String]], //Huom. Tämä kenttä ei sisällä hetu-kentän hetua
+                            etunimet: Option[String],
+                            kutsumanimi: Option[String],
+                            sukunimi: Option[String],
+                            aidinkieli: Option[Kieli],
+                            kansalaisuus: List[Kansalaisuus],
+                            syntymaaika: Option[String],
+                            sukupuoli: Option[String],
+                            turvakielto: Option[Boolean]) {
+  def combinedHetut: Set[String] = {
+    val hetut = kaikkiHetut.getOrElse(Seq.empty).toSet
+    hetut ++ hetu.toSet
+  }
 }
 
 trait OnrIntegration {
   def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases]
+
+  def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]]
 }
 
 class OnrIntegrationImpl extends OnrIntegration {
@@ -27,7 +50,7 @@ class OnrIntegrationImpl extends OnrIntegration {
   @Autowired val onrClient: OnrClientImpl = null
 
   override def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases] = {
-    val viitteet = onrClient.getHenkiloviitteetForHenkilot(personOids)
+    val viitteet: Future[Set[Henkiloviite]] = onrClient.getHenkiloviitteetForHenkilot(personOids)
 
     viitteet.flatMap((viiteResult: Set[Henkiloviite]) => {
       LOG.info(s"Got ${viiteResult.size} viittees for ${personOids.size} personOids")
@@ -47,9 +70,10 @@ class OnrIntegrationImpl extends OnrIntegration {
         queriedOid -> allOids
       }).toMap
       Future.successful(PersonOidsWithAliases(resultMap))
-
     })
-
   }
 
+  override def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]] = {
+    onrClient.getMasterHenkilosForPersonOids(personOids)
+  }
 }
