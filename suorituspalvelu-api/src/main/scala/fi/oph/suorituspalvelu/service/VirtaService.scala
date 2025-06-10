@@ -73,7 +73,7 @@ class VirtaRefresh {
         val versionParseroidut: VirtaSuoritukset = virtaResults.find(_.oppijanumeroTaiHetu == versio.oppijaNumero)
           .map(r => VirtaParser.parseVirtaData(new ByteArrayInputStream(r.resultXml.getBytes))).get
         val konvertoidut: Seq[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(versionParseroidut)
-        val foo = kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, konvertoidut.toSet, Set.empty)
+        kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, konvertoidut.toSet, Set.empty)
         LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${oppijaNumero}, yhteensä ${konvertoidut.size} suoritusta.")
       })
     } catch {
