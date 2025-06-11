@@ -86,6 +86,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.keskiarvo,
       suoritus.suoritustapa.map(suoritusTapa => asKoodiObject(suoritusTapa)).getOrElse(dummy()),
+      suoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy()),
       suoritus.osasuoritukset.map(os => os.map(os => toAmmatillisenTutkinnonOsa(os))).getOrElse(Set.empty)
     )
 
@@ -108,7 +109,7 @@ object KoskiToSuoritusConverter {
   def toNuortenPerusopetuksenOppiaineenOppimaara(suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
     NuortenPerusopetuksenOppiaineenOppimaara(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
       {
         val arvosanat = suoritus.arviointi
           .map(arviointi => arviointi
@@ -119,6 +120,7 @@ object KoskiToSuoritusConverter {
           throw new RuntimeException("liikaa arvosanoja")
         arvosanat.head
       },
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
@@ -127,6 +129,7 @@ object KoskiToSuoritusConverter {
     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
@@ -138,6 +141,7 @@ object KoskiToSuoritusConverter {
      PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       Set.empty,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
        //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
@@ -154,7 +158,8 @@ object KoskiToSuoritusConverter {
 
   def toTelma(suoritus: Suoritus): Telma =
     Telma(
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).getOrElse(dummy()),
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
     )
 
   def toTuva(suoritus: Suoritus): Tuva =

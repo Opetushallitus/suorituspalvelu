@@ -25,6 +25,7 @@ object TestDataUtil {
                                   vahvistusPaivamaara: Option[LocalDate] = Some(LocalDate.parse("2025-01-02")),
                                   keskiarvo: Option[BigDecimal] = Some(BigDecimal(3.5)),
                                   suoritustapa: Koodi = getTestKoodi(),
+                                  suoritusKieli: Koodi = getTestKoodi(),
                                   osat: Set[AmmatillisenTutkinnonOsa] = Set.empty): AmmatillinenTutkinto =
-    AmmatillinenTutkinto(nimi, tyyppi, tila, vahvistusPaivamaara, keskiarvo, suoritustapa, osat)
+    AmmatillinenTutkinto(nimi, tyyppi, tila, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
   }

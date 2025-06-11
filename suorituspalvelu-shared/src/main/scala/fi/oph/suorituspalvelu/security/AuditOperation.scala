@@ -11,6 +11,8 @@ object AuditOperation {
 
   case object HaeYoTaiAmmatillinenTutkintoTiedot extends AuditOperation("HAE YO TAI AMMATILLINEN TUTKINNOT")
 
+  case object HaeOppijaTiedot extends AuditOperation("HAE OPPIJATIEDOT")
+
   case object HaeKoskiTaiYTRMuuttuneet extends AuditOperation("HAE KOSKI TAI YTR MUUTTUNEET HENKILÖT")
 
   case object PaivitaKoskiTiedotHenkiloille extends AuditOperation("KOSKITIETOJEN PÄIVITYS HENKILÖILLE")
