@@ -2,27 +2,26 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Telma, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClient}
+import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacyOppija, LegacySuoritus, LegacySuoritusJaArvosanat}
+import io.swagger.v3.oas.annotations.media.Schema
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
 
+import scala.annotation.meta.field
+import scala.beans.BeanProperty
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import scala.jdk.CollectionConverters.*
 
 object Komot {
-  val perusopetus = "1.2.246.562.13.62959769647"
-  val perusopetuksenOppiaineenOppimaara = "TODO perusopetuksenOppiaineenOppimäärä"
-  val ammatillinen = "TODO ammatillinen komo oid"
-  val yoTutkinto = "1.2.246.562.5.2013061010184237348007"
-  val telma = "telma"
+  final val perusopetus = "1.2.246.562.13.62959769647"
+  final val perusopetuksenOppiaineenOppimaara = "TODO perusopetuksenOppiaineenOppimäärä"
+  final val ammatillinen = "TODO ammatillinen komo oid"
+  final val yoTutkinto = "1.2.246.562.5.2013061010184237348007"
+  final val telma = "telma"
 }
-
-case class LegacySuoritus(suoritusKieli: String, komo: String)
-
-case class LegacySuoritusJaArvosanat(suoritus: LegacySuoritus)
-
-case class LegacyOppija(oppijanumero: String, suoritukset: Set[LegacySuoritusJaArvosanat])
 
 @Component
 class LegacyOppijatService {
@@ -72,7 +71,7 @@ class LegacyOppijatService {
           .flatten
           .toSet
         
-        LegacyOppija(h.personOid.get, suoritukset)
+        LegacyOppija(h.personOid.get, suoritukset.asJava)
       })
   }
 }

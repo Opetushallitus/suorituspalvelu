@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, EXAMPLE_HAKUKOHDE_OID, EXAMPLE_HAKU_OID, HEALTHCHECK_PATH, LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_OPPIJAT_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.LegacyOppijatService
+import fi.oph.suorituspalvelu.service.{Komot, LegacyOppijatService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -24,14 +24,27 @@ import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
-@Schema(name = "LegacyOppijatSuccessResponse")
-case class LegacyOppijatSuccessResponse()
+@Schema(name = "Suoritus")
+case class LegacySuoritus(
+  @(Schema @field)(example = ApiConstants.EXAMPLE_SUORITUSKIELI)
+  @BeanProperty suoritusKieli: String,
+  @(Schema @field)(example = Komot.perusopetus)
+  @BeanProperty komo: String)
 
+@Schema(name = "SuoritusJaArvosanat")
+case class LegacySuoritusJaArvosanat(
+  @BeanProperty suoritus: LegacySuoritus)
 
-@Schema(name = "LegacyOppijatFailureResponse")
+@Schema(name = "Oppija")
+case class LegacyOppija(
+  @(Schema @field)(example = ApiConstants.EXAMPLE_OPPIJANUMERO)
+  @BeanProperty oppijanumero: String,
+  @BeanProperty suoritukset: java.util.Set[LegacySuoritusJaArvosanat])
+
+@Schema(name = "OppijatFailureResponse")
 case class LegacyOppijatFailureResponse(
-                                     @(Schema @field)(example = Validator.VALIDATION_HAKUOID_EI_VALIDI)
-                                     @BeanProperty virheet: java.util.Set[String])
+  @(Schema @field)(example = Validator.VALIDATION_HAKUOID_EI_VALIDI)
+  @BeanProperty virheet: java.util.Set[String])
 
 @RequestMapping(path = Array(LEGACY_OPPIJAT_PATH))
 @RestController
@@ -51,7 +64,7 @@ class LegacyOppijatResource {
     parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH))
   )
   @ApiResponses(value = Array(
-    new ApiResponse(responseCode = "200", description = "Palautttaa oppijat", content = Array(new Content(schema = new Schema(implementation = classOf[LegacyOppijatSuccessResponse])))),
+    new ApiResponse(responseCode = "200", description = "Palauttaa oppijat", content = Array(new Content(schema = new Schema(implementation = classOf[LegacyOppija])))),
     new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LegacyOppijatFailureResponse])))),
     new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
   ))

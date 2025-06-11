@@ -47,5 +47,7 @@ object ApiConstants {
   
   final val EXAMPLE_HAKU_OID                                = "1.2.246.562.29.00000000000000044639"
   final val EXAMPLE_HAKUKOHDE_OID                           = "1.2.246.562.20.00000000000000044758"
+  final val EXAMPLE_SUORITUSKIELI                           = "fi"
+  final val EXAMPLE_OPPIJANUMERO                            = "1.2.246.562.24.40483869857"
 
 }
