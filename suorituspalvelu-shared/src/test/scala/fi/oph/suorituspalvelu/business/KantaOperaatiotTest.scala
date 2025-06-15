@@ -185,7 +185,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritukset = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritukset = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None))))
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus("4.5.6", "opiskeluoikeusoid1", Set(suoritukset), None, None)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
 
@@ -207,7 +207,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset oppijalle 1
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritus1 = PerusopetuksenOppimaara(OPPILAITOSOID1, Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritus1 = PerusopetuksenOppimaara(OPPILAITOSOID1, Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None))))
     val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(OPISKELUOIKEUSOID1, OPPILAITOSOID1, Set(suoritus1), None, None)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1), Set.empty)
 
@@ -216,7 +216,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan suoritukset kerran ja sitten toisen kerran oppijalle 2
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus1), Set.empty)
-    val suoritus2 = PerusopetuksenOppimaara(OPPILAITOSOID2, Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
+    val suoritus2 = PerusopetuksenOppimaara(OPPILAITOSOID2, Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("englanti", Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None))))
     val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus(OPISKELUOIKEUSOID2, OPPILAITOSOID2, Set(suoritus2), None, None)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus2), Set.empty)
 
@@ -287,7 +287,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio ja suoritukset
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, KOSKI, "{\"attr\": \"value4\"}").get
-    val suoritus = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto",  Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritus = PerusopetuksenOppimaara("3.4.5", Koodi("arvo", "koodisto",  Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None))))
     val lisatiedot = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus("opiskeluoikeusOid", "oppilaitosOid", Set(suoritus), Some(lisatiedot), None)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
@@ -351,13 +351,13 @@ class KantaOperaatiotTest {
 
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
 
-    val suoritus1 = PerusopetuksenOppimaara(OPPILAITOSOID1, Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", "koodi", "10")))
+    val suoritus1 = PerusopetuksenOppimaara(OPPILAITOSOID1, Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("äidinkieli", Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None))))
     val luokkasuoritus1 = PerusopetuksenVuosiluokka("vuosiluokka", Koodi("arvo1", "koodisto", Some(1)), Some(LocalDate.parse("2024-08-01")), false)
     val lisatiedot = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(true)))), Some(false), Some(List(Kotiopetusjakso("2023-08-24", Some("2024-01-22")))))
     val tilat = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-06-03"), OpiskeluoikeusJaksoTila("opiskelu", "tilakoodisto", Some(6))), OpiskeluoikeusJakso(LocalDate.parse("2024-11-09"), OpiskeluoikeusJaksoTila("joulunvietto", "tilakoodisto", Some(6)))))
     val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(OPISKELUOIKEUSOID1, OPPILAITOSOID1, Set(suoritus1, luokkasuoritus1), Some(lisatiedot), Some(tilat))
 
-    val suoritus2 = PerusopetuksenOppimaara(OPPILAITOSOID2, Koodi("toinenarvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("englanti", "koodi", "10")))
+    val suoritus2 = PerusopetuksenOppimaara(OPPILAITOSOID2, Koodi("toinenarvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Set(PerusopetuksenOppiaine("englanti", Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None))))
     val luokkasuoritus2 = PerusopetuksenVuosiluokka("vuosiluokka2", Koodi("arvo2", "koodisto", Some(1)), Some(LocalDate.parse("2023-08-01")), false)
     val lisatiedot2 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(false)))), Some(true), None)
     val tilat2 = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2022-07-02"), OpiskeluoikeusJaksoTila("hengailu", "tilakoodisto", Some(6))), OpiskeluoikeusJakso(LocalDate.parse("2022-10-09"), OpiskeluoikeusJaksoTila("juhannusvalmistelut", "tilakoodisto", Some(6)))))
