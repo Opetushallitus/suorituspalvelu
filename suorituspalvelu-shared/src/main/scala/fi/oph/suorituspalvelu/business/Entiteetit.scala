@@ -46,7 +46,7 @@ case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: Koodi, 
 
 case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String) extends Tyypitetty
+case class PerusopetuksenOppiaine(nimi: String, koodi: Koodi, arvosana: Koodi) extends Tyypitetty
 
 case class PerusopetuksenVuosiluokka(nimi: String, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 

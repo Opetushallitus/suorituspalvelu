@@ -93,12 +93,12 @@ object KoskiToSuoritusConverter {
   def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine =
     PerusopetuksenOppiaine(
       osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.nimi.fi).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.map(k => asKoodi(k.tunniste)).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
       {
         val arvosanat = osaSuoritus.arviointi
           .map(arviointi => arviointi
             .filter(arviointi => arviointi.arvosana.koodistoUri=="arviointiasteikkoyleissivistava")
-            .map(arviointi => arviointi.arvosana.koodiarvo))
+            .map(arviointi => asKoodiObject(arviointi.arvosana)))
           .getOrElse(Set.empty)
         if(arvosanat.size>1)
           throw new RuntimeException("liikaa arvosanoja")

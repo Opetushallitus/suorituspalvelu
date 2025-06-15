@@ -383,8 +383,66 @@ class KoskiParsingTest {
     Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.vahvistusPaivamaara)
-    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli);
-    Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), oppimaara.koulusivistyskieli);
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
+    Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), oppimaara.koulusivistyskieli)
+
+  @Test def testPerusopetuksenOppimaaranOppiaineet(): Unit =
+    val oppimaara = getFirstSuoritusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402"
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": [
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "AI",
+        |                    "nimi": {
+        |                      "fi": "Äidinkieli ja kirjallisuus"
+        |                    },
+        |                    "lyhytNimi": {
+        |                      "fi": "Äidinkieli ja kirjallisuus",
+        |                      "sv": "Modersmålet och litteratur"
+        |                    },
+        |                    "koodistoUri": "koskioppiaineetyleissivistava",
+        |                    "koodistoVersio": 1
+        |                  }
+        |                },
+        |                "arviointi": [
+        |                  {
+        |                    "arvosana": {
+        |                      "koodiarvo": "10",
+        |                      "koodistoUri": "arviointiasteikkoyleissivistava",
+        |                      "koodistoVersio": 1
+        |                    },
+        |                    "hyväksytty": true
+        |                  }
+        |                ]
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+
+    val oppiaine = oppimaara.aineet.head
+    Assertions.assertEquals("Äidinkieli ja kirjallisuus", oppiaine.nimi)
+    Assertions.assertEquals(Koodi("AI", "koskioppiaineetyleissivistava", Some(1)), oppiaine.koodi)
+    Assertions.assertEquals(Koodi("10", "arviointiasteikkoyleissivistava", Some(1)), oppiaine.arvosana)
 
   @Test def testPerusopetuksenVuosiluokat(): Unit =
     val vuosiluokka = getFirstSuoritusFromJson("""
@@ -486,6 +544,108 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.koodi)
     Assertions.assertEquals("8", oppimaara.arvosana)
     Assertions.assertEquals(Some(LocalDate.parse("2022-05-18")), oppimaara.vahvistusPaivamaara)
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
+
+  @Test def testAikuistenPerusopetuksenOpiskeluoikeudet(): Unit =
+    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "tyyppi": {
+        |          "koodiarvo": "aikuistenperusopetus",
+        |          "koodistoUri": "opiskeluoikeudentyyppi",
+        |          "koodistoVersio": 1
+        |        },
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.42923230215"
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2021-04-16",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            {
+        |              "alku": "2022-04-16",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
+
+    Assertions.assertEquals("1.2.246.562.15.50478693398", opiskeluoikeus.oid)
+    Assertions.assertEquals("1.2.246.562.10.42923230215", opiskeluoikeus.oppilaitosOid)
+    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(
+      OpiskeluoikeusJakso(LocalDate.parse("2021-04-16"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1))),
+      OpiskeluoikeusJakso(LocalDate.parse("2022-04-16"), OpiskeluoikeusJaksoTila("valmistunut", "koskiopiskeluoikeudentila", Some(1)))
+    ))), opiskeluoikeus.tila)
+    Assertions.assertEquals(None, opiskeluoikeus.lisatiedot)
+
+  @Test def testAikuistenPerusopetuksenOppimaarat(): Unit =
+    val oppimaara = getFirstSuoritusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402"
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2024-06-01",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "aikuistenperusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2022-04-16"
+        |            },
+        |            "suorituskieli": {
+        |              "koodiarvo": "FI",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
+        |            }
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+
+    Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-04-16")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
 
   @Test def testTelma(): Unit =
