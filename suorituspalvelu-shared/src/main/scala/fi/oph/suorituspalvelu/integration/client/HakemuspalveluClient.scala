@@ -42,7 +42,6 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
     getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(None, Some(hakuOid)))
   }
 
-  //"https://virkailija.testiopintopolku.fi...
   override def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
     def fetchAllRecursive(currentParams: AtaruHenkiloSearchParams, accResults: Seq[AtaruHakemuksenHenkilotiedot] = Seq.empty): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
       fetch(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)

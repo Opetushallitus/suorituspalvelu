@@ -113,7 +113,7 @@ class OnrIntegrationTest {
     val saranaAlias = "1.2.246.562.24.00000000456" //duplikaatti 2
 
     //Testi tapaukselle, jossa kysytään onr:sta duplikaatin oidilla
-    // ja löytyy kaksi linkitystä: duplikaatti 1 -> masterOid ja lisäksi masterOid -> duplikaatti 2
+    // ja löytyy kaksi linkitystä: duplikaatti 1 <-> masterOid ja lisäksi duplikaatti 2 <-> masterOid
     val viitteet = Set(
       Henkiloviite(queriedOid, masterOid),
       Henkiloviite(saranaAlias, masterOid)

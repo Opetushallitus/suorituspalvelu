@@ -20,15 +20,8 @@ case class Kansalaisuus(kansalaisuusKoodi: String)
 
 case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
                             hetu: Option[String],
-                            kaikkiHetut: Option[Seq[String]], //Huom. Tämä kenttä ei sisällä hetu-kentän hetua
-                            etunimet: Option[String],
-                            kutsumanimi: Option[String],
-                            sukunimi: Option[String],
-                            aidinkieli: Option[Kieli],
-                            kansalaisuus: List[Kansalaisuus],
-                            syntymaaika: Option[String],
-                            sukupuoli: Option[String],
-                            turvakielto: Option[Boolean]) {
+                            kaikkiHetut: Option[Seq[String]] //Huom. Tämä kenttä ei sisällä hetu-kentän hetua
+                            ) {
   def combinedHetut: Set[String] = {
     val hetut = kaikkiHetut.getOrElse(Seq.empty).toSet
     hetut ++ hetu.toSet
