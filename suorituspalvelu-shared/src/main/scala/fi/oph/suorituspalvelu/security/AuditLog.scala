@@ -38,7 +38,7 @@ object AuditLog {
     val target = new Target.Builder().setField(kohde, tunniste).build()
     audit.log(getUser(request), operaatio, target, Changes.EMPTY)
 
-  def logCreate(user: User, targetFields: Map[String, String], operaatio: AuditOperation, entity: Any): Unit =
+  def logCreate(user: User, targetFields: Map[String, String], operaatio: AuditOperation, entity: Option[Any]): Unit =
     val target = new Target.Builder()
     for ((key, value) <- targetFields)
       target.setField(key, value)
@@ -46,7 +46,8 @@ object AuditLog {
     // (eikä paljon muutakaan), mutta kirjaston metodit haluavat kuitenkin parametreina gson-objekteja.
     // Tällä tavoin audit lokille voi antaa suoraan entiteetin ja kaikki kentät tallennetaan.
     val elements: JsonArray = new JsonArray()
-    elements.add(JsonParser.parseString(mapper.writeValueAsString(entity)))
+    if(entity.isDefined)
+      elements.add(JsonParser.parseString(mapper.writeValueAsString(entity.get)))
     audit.log(user, operaatio, target.build(), elements)
 
   def logChanges(user: User, targetFields: Map[String, String], operaatio: AuditOperation, changes: Changes): Unit =
