@@ -188,11 +188,11 @@ class LegacySuorituksetResource {
 
             if(oppijaNumero.isPresent)
               LOG.info(s"Haetaan ammatilliset ja yo-suoritukset henkilölle ${oppijaNumero}")
-              AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_HENKILO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeYoTaiAmmatillinenTutkintoTiedot, null)
+              AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_HENKILO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeYoTaiAmmatillinenTutkintoTiedot, None)
               ResponseEntity.status(HttpStatus.OK).body(getSuorituksetForOppija(oppijaNumero.get).asJava)
             else
               LOG.info(s"Haetaan hakijat joilla muuttuneita suorituksia ${muokattuJalkeen} jälkeen")
-              AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME -> muokattuJalkeen.orElse(null)), AuditOperation.HaeKoskiTaiYTRMuuttuneet, null)
+              AuditLog.logCreate(user, Map(LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME -> muokattuJalkeen.orElse(null)), AuditOperation.HaeKoskiTaiYTRMuuttuneet, None)
 
               val muuttuneet = kantaOperaatiot.haeUusimmatMuuttuneetVersiot(Instant.parse(muokattuJalkeen.get)).map(m => LegacyMuuttunutSuoritus(m.oppijaNumero))
               ResponseEntity.status(HttpStatus.OK).body(muuttuneet)

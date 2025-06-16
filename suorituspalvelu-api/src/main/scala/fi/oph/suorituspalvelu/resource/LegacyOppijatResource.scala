@@ -102,7 +102,7 @@ class LegacyOppijatResource {
             AuditLog.logCreate(user, Seq(
               hakuOid.toScala.map(h => LEGACY_OPPIJAT_HAKU_PARAM_NAME -> h),
               hakukohdeOid.toScala.map(h => LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME -> h)
-            ).flatten.toMap, AuditOperation.HaeOppijaTiedot, null)
+            ).flatten.toMap, AuditOperation.HaeOppijaTiedot, None)
             val oppijat = legacyOppijatService.getOppijat(hakuOid.get(), hakukohdeOid.toScala)
             ResponseEntity.status(HttpStatus.OK).body(oppijat.asJava)
           )
