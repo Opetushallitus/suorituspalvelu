@@ -85,7 +85,8 @@ case class OpiskeluoikeusJakso(alku: LocalDate,
 case class OpiskeluoikeusTila(opiskeluoikeusjaksot: List[OpiskeluoikeusJakso])
 
 case class OpiskeluoikeusTyyppi(koodiarvo: String,
-                                koodistoUri: String)
+                                koodistoUri: String,
+                                koodistoVersio: Option[Int]) extends VersioituTunniste
 
 case class Oppilaitos(nimi: Kielistetty,
                       oid: String)

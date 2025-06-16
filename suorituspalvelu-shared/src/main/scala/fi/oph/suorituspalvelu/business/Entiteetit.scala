@@ -38,7 +38,7 @@ case class AmmatillisenTutkinnonOsa(
                                      nimi: String,
                                      koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
-case class Tuva(koodi: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class Tuva(koodi: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
 case class Telma(koodi: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
@@ -67,7 +67,7 @@ case class AmmatillinenOpiskeluoikeus(
 
 case class GeneerinenOpiskeluoikeus(
                                      oid: String,
-                                     tyyppi: String,
+                                     tyyppi: Koodi,
                                      oppilaitosOid: String,
                                      @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                      suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],

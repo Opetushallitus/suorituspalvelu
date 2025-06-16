@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma}
+import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -685,5 +685,82 @@ class KoskiParsingTest {
 
     Assertions.assertEquals(Koodi("999903", "koulutus", Some(12)), telma.koodi)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
+
+  @Test def testTuvaOpiskeluoikeus(): Unit =
+    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.21583363224",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "tyyppi": {
+        |          "koodiarvo": "tuva",
+        |          "koodistoUri": "opiskeluoikeudentyyppi",
+        |          "koodistoVersio": 1
+        |        },
+        |        "oid": "1.2.246.562.15.30994048939",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.41945921983"
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2025-04-16",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": []
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[GeneerinenOpiskeluoikeus]
+
+    Assertions.assertEquals(Koodi("tuva", "opiskeluoikeudentyyppi", Some(1)), opiskeluoikeus.tyyppi)
+    Assertions.assertEquals("1.2.246.562.15.30994048939", opiskeluoikeus.oid)
+    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2025-04-16"), OpiskeluoikeusJaksoTila("valmistunut", "koskiopiskeluoikeudentila", Some(1)))))), opiskeluoikeus.tila)
+    Assertions.assertEquals("1.2.246.562.10.41945921983", opiskeluoikeus.oppilaitosOid)
+
+  @Test def testTuvaSuoritus(): Unit =
+    val tuva = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.21583363224",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "tuvakoulutuksensuoritus",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2025-04-16"
+        |            },
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "999908",
+        |                "koodistoUri": "koulutus",
+        |                "koodistoVersio": 12
+        |              }
+        |            }
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[Tuva]
+
+    Assertions.assertEquals(Koodi("999908", "koulutus", Some(12)), tuva.koodi)
+    Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
   
 }

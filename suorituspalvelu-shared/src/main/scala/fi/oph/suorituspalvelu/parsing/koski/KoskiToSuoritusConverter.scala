@@ -164,7 +164,7 @@ object KoskiToSuoritusConverter {
 
   def toTuva(suoritus: Suoritus): Tuva =
     Tuva(
-      suoritus.koulutusmoduuli.map(km => asKoodi(km.tunniste)).get,
+      suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
@@ -186,7 +186,7 @@ object KoskiToSuoritusConverter {
       case opiskeluoikeus =>
         GeneerinenOpiskeluoikeus(
           opiskeluoikeus.oid,
-          opiskeluoikeus.tyyppi.koodiarvo,
+          asKoodiObject(opiskeluoikeus.tyyppi),
           opiskeluoikeus.oppilaitos.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.tila)
