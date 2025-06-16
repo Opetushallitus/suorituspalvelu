@@ -114,7 +114,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
         None, None, List(), Some(pollUrl), None, None, "pending")
     val queryReadyResponse = queryCreatedResponse.copy(startedAt = Some("2025-05-28T16:30:51.852087+03:00"), finishedAt = Some("2025-05-28T16:30:51.892906+03:00"), files = List(resultFileUrl), status = "complete")
 
-    Mockito.when(hakemuspalveluClient.getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))))
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(Set(AtaruHakemuksenHenkilotiedot("hakemusOid", Some(oppijaNumero), None))))
     Mockito.when(koskiClient.createMassaluovutusQuery(KoskiMassaluovutusQueryParams.forOids(Set(oppijaNumero)))).thenReturn(Future.successful(queryCreatedResponse))
     Mockito.when(koskiClient.pollQuery(pollUrl)).thenReturn(Future.successful(queryReadyResponse))
