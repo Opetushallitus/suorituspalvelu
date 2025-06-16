@@ -4,15 +4,10 @@ import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.integration.OnrMasterHenkilo
-import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
+import fi.vm.sade.javautils.nio.cas.{CasClient}
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-
-import scala.concurrent.duration.DurationInt
-import java.util.concurrent.TimeUnit
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
+import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 
 //Todo, oma ec?
@@ -67,21 +62,27 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
   override def getHenkiloviitteetForHenkilot(henkiloOids: Set[String]): Future[Set[Henkiloviite]] = {
     val batches: Seq[(Set[String], Int)] = henkiloOids.grouped(onrBatchSize).zipWithIndex.toList
 
-    val allResults: Seq[Future[Set[Henkiloviite]]] = batches.map((batch: (Set[String], Int)) => {
-      LOG.info(s"Haetaan tiedot oppijanumerorekisteristä ${batch._1.size} henkilölle, erä ${batch._2 + 1}/${batches.size}")
-
-      val queryObject: Map[String, Set[String]] = Map("henkiloOids" -> batch._1)
-      val batchResult: Future[Set[Henkiloviite]] =
-        doPost(environmentBaseUrl + "/oppijanumerorekisteri-service/s2s/duplicateHenkilos", queryObject)
-          .map(result => {
-            val typeRef = new TypeReference[List[Henkiloviite]] {}
-            val parsed = mapper.readValue(result, typeRef).toSet
-            LOG.info(s"Tiedot oppijanumerorekisteristä haettu, erä ${batch._2 + 1}/${batches.size}, henkiloviitteet: ${parsed.size}")
-            parsed
-          })
-      batchResult
-    })
-    Future.sequence(allResults).map(_.flatten.toSet)
+    val allResults: Future[Set[Henkiloviite]] = batches.foldLeft(Future(Set[Henkiloviite]())) {
+      case (result: Future[Set[Henkiloviite]], chunk: (Set[String], Int)) =>
+        result.flatMap(rs => {
+          LOG.info(
+            s"Querying onr for Henkilo batch: ${chunk._1.size} oids, batch ${chunk._2 + 1 + "/" + batches.size}"
+          )
+          val queryObject: Map[String, Set[String]] = Map("henkiloOids" -> chunk._1)
+          val chunkResult: Future[Set[Henkiloviite]] = {
+            doPost(environmentBaseUrl + "/oppijanumerorekisteri-service/s2s/duplicateHenkilos", queryObject)
+              .map(result => {
+                LOG.info(s"Saatiin tulos: $result")
+                val typeRef = new TypeReference[List[Henkiloviite]] {}
+                val parsed = mapper.readValue(result, typeRef).toSet
+                LOG.info(s"Tiedot oppijanumerorekisteristä haettu, erä ${chunk._2 + 1}/${batches.size}, henkiloviitteet: ${parsed.size}")
+                parsed
+              })
+          }
+          chunkResult.map(cr => rs ++ cr)
+        })
+    }
+    allResults
   }
 
   private def doPost(url: String, body: Object): Future[String] = {
