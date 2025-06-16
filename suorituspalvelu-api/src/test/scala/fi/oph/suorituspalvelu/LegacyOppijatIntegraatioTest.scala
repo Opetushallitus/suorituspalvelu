@@ -28,7 +28,7 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
 /**
- * 
+ *
  */
 class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
@@ -82,7 +82,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_HAKUKOHDEOID_EI_VALIDI + invalidHakukohdeOid)),
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
-  
+
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetHenkilolleAllowed(): Unit =
     val hakuOid = ApiConstants.EXAMPLE_HAKU_OID
@@ -105,7 +105,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     ), Set.empty)
 
     // määritellään että hakemuspalvelun mukaan haun ainoa hakija
-    Mockito.when(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(None, Some(hakuOid), None))).thenReturn(Future.successful(Seq(AtaruHakemuksenHenkilotiedot("", Some(OPPIJA_OID), None))))
+    Mockito.when(hakemuspalveluClient.getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(None, Some(hakuOid), None))).thenReturn(Future.successful(Seq(AtaruHakemuksenHenkilotiedot("", Some(OPPIJA_OID), None))))
 
     // haetaan muuttuneet legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_OPPIJAT_PATH + "?" + LEGACY_OPPIJAT_HAKU_PARAM_NAME + "=" + hakuOid))

@@ -26,7 +26,8 @@ case class AtaruResponseHenkilot(applications: List[AtaruHakemuksenHenkilotiedot
                                  offset: Option[String])
 
 trait HakemuspalveluClient {
-  def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
+  def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]]
+  def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
 }
 
 class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
@@ -37,8 +38,12 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
+  override def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
+    getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(None, Some(hakuOid)))
+  }
+
   //"https://virkailija.testiopintopolku.fi...
-  override def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
+  override def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
     def fetchAllRecursive(currentParams: AtaruHenkiloSearchParams, accResults: Seq[AtaruHakemuksenHenkilotiedot] = Seq.empty): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
       fetch(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
         .flatMap(data => {
