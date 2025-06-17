@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
     <name>suorituspalvelu</name>
     <modules>
-        <module>suorituspalvelu-api</module>
+        <module>suorituspalvelu-service</module>
         <module>suorituspalvelu-shared</module>
         <module>suorituspalvelu-paattelyt</module>
         <module>suorituspalvelu-domain</module>

@@ -28,7 +28,7 @@ jobs:
         id: restore-build
         with:
           path: |
-            suorituspalvelu-api/target
+            suorituspalvelu-service/target
             suorituspalvelu-domain/target
             suorituspalvelu-paattelyt/target
             suorituspalvelu-shared/target
@@ -46,7 +46,7 @@ jobs:
         id: restore-build
         with:
           path: |
-            suorituspalvelu-api/target
+            suorituspalvelu-service/target
             suorituspalvelu-domain/target
             suorituspalvelu-paattelyt/target
             suorituspalvelu-shared/target
@@ -62,8 +62,8 @@ jobs:
           source ci-tools/common/setup-tools.sh
 
           export ARTIFACT_NAME="suorituspalvelu"
-          mv suorituspalvelu-api/target/suorituspalvelu-api-exec.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
-          cp -vr suorituspalvelu-api/src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
+          mv suorituspalvelu-service/target/suorituspalvelu-service-exec.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
+          cp -vr suorituspalvelu-service/src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
           export BASE_IMAGE="baseimage-fatjar-openjdk21:master"
           ./ci-tools/common/pull-image.sh
           ./ci-tools/github-build/build-fatjar.sh $ARTIFACT_NAME
