@@ -38,7 +38,7 @@ case class AmmatillisenTutkinnonOsa(
                                      nimi: String,
                                      koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
-case class Tuva(koodi: String, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class Tuva(koodi: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
 case class Telma(koodi: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
@@ -46,7 +46,7 @@ case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: Koodi, 
 
 case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOppiaine(nimi: String, koodi: String, arvosana: String) extends Tyypitetty
+case class PerusopetuksenOppiaine(nimi: String, koodi: Koodi, arvosana: Koodi) extends Tyypitetty
 
 case class PerusopetuksenVuosiluokka(nimi: String, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
@@ -67,7 +67,7 @@ case class AmmatillinenOpiskeluoikeus(
 
 case class GeneerinenOpiskeluoikeus(
                                      oid: String,
-                                     tyyppi: String,
+                                     tyyppi: Koodi,
                                      oppilaitosOid: String,
                                      @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                      suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
