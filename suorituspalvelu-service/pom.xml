@@ -8,9 +8,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>suorituspalvelu-api</artifactId>
+    <artifactId>suorituspalvelu-service</artifactId>
     <packaging>jar</packaging>
-    <name>suorituspalvelu-api</name>
+    <name>suorituspalvelu-service</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -96,7 +96,7 @@
     </dependencies>
 
     <build>
-        <finalName>suorituspalvelu-api</finalName>
+        <finalName>suorituspalvelu-service</finalName>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
