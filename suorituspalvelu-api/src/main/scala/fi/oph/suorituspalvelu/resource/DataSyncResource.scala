@@ -205,17 +205,17 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
         .flatMap(_ =>
           // validoidaan parametri
           val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
           if (virheet.isEmpty)
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
           val user = AuditLog.getUser(request)
-          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, null)
+          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, null)
           LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
           val jobId = virtaService.syncVirtaForHaku(hakuOid.get)
           LOG.info(s"Palautetaan rajapintavastaus, $jobId")
