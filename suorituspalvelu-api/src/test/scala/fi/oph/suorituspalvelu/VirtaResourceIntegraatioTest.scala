@@ -98,4 +98,22 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertTrue(versionData._2.contains(VirtaUtil.replacementHetu))
     Assertions.assertFalse(versionData._2.contains("010296-1230"))
   }
+
+  @WithAnonymousUser
+  @Test def testRefreshVirtaForHakuAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.29.01000000000000013275"))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testRefreshVirtaForHakuNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.29.01000000000000013275"))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshVirtaForHakuMalformedOid(): Unit =
+    // ei validi oid ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.23.01000000000000013275"))
+      .andExpect(status().isBadRequest).andReturn()
 }

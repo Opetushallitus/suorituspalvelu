@@ -20,6 +20,7 @@ object ApiConstants {
   final val VIRTA_DATASYNC_PARAM_NAME                       = "oppijaNumero"
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
   final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta" + "/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
+  final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta" + "/haku/"
   final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
 
   final val LEGACY_SUORITUKSET_HENKILO_PARAM_NAME           = "henkilo"
@@ -44,7 +45,7 @@ object ApiConstants {
   final val DATASYNC_VIRTA_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
-  
+
   final val EXAMPLE_HAKU_OID                                = "1.2.246.562.29.00000000000000044639"
   final val EXAMPLE_HAKUKOHDE_OID                           = "1.2.246.562.20.00000000000000044758"
   final val EXAMPLE_SUORITUSKIELI                           = "fi"

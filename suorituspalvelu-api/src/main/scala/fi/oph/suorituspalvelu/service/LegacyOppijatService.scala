@@ -36,7 +36,7 @@ class LegacyOppijatService {
 
   def getOppijat(hakuOid: String, hakukohdeOid: Option[String]): Seq[LegacyOppija] = {
     val kantaOperaatiot = KantaOperaatiot(database)
-    val hakijat = Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOid.map(oid => List(oid)), Some(hakuOid), None)), TIMEOUT)
+    val hakijat = Await.result(hakemuspalveluClient.getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(hakukohdeOid.map(oid => List(oid)), Some(hakuOid), None)), TIMEOUT)
     hakijat
       .filter(h => h.personOid.isDefined)
       .map(h => {
@@ -70,7 +70,7 @@ class LegacyOppijatService {
           .flatten
           .flatten
           .toSet
-        
+
         LegacyOppija(h.personOid.get, suoritukset.asJava)
       })
   }

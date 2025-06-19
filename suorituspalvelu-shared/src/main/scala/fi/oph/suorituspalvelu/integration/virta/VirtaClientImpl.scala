@@ -2,9 +2,10 @@ package fi.oph.suorituspalvelu.integration.virta
 
 import org.asynchttpclient.*
 import org.asynchttpclient.Dsl.asyncHttpClient
-
+import org.slf4j.LoggerFactory
 
 import java.time.Duration
+import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
@@ -12,16 +13,22 @@ import scala.xml.Elem
 //Todo, erotetaan hetu oppijanumerosta kun on selvää miten tiedot tallennetaan. Haetaan ja tallennetaan toistaiseksi tiedot vain oppijanumerolle.
 case class VirtaResultForHenkilo(oppijanumeroTaiHetu: String, resultXml: String)
 
+case class OppijanumeroTaiHetu(oppijanumero: Option[String], hetu: Option[String])
+
 trait VirtaClient {
 
   def haeKaikkiTiedot(oppijanumero: String, hetu: Option[String]): Future[Seq[VirtaResultForHenkilo]]
+  def haeTiedotHetulle(hetu: String): Future[VirtaResultForHenkilo]
+  def haeTiedotOppijanumerolle(oppijanumero: String): Future[VirtaResultForHenkilo]
 }
 
 class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, environmentBaseUrl: String) extends VirtaClient {
 
   private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build);
 
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
+  val LOG = LoggerFactory.getLogger(classOf[VirtaClientImpl]);
+
+  implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   def getSoapOperationEnvelope(oppijanumeroTaiHetu: Either[String, String]): String =
     "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
@@ -97,4 +104,5 @@ class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, enviro
   }
 
   def close(): Unit = client.close()
+
 }

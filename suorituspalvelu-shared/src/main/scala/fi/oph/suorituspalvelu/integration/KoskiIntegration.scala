@@ -50,7 +50,7 @@ class KoskiIntegration {
 
   def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
     val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(AtaruHenkiloSearchParams(hakukohdeOids = None, hakuOid = Some(hakuOid))), HENKILO_TIMEOUT)
+      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
     syncKoskiInBatches(personOids)
   }
