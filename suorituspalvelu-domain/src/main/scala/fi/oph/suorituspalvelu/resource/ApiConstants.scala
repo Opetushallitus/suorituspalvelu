@@ -34,6 +34,12 @@ object ApiConstants {
   final val LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME    = "ensikertalaisuudet"
   final val LEGACY_OPPIJAT_PATH                             = VERSIONED_API_PREFIX + "/oppijat/legacy"
 
+  final val UI_SUORITUKSET_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
+  final val UI_SUORITUKSET_OPPIJANUMERO_PARAM_PLACEHOLDER   = "{" + UI_SUORITUKSET_OPPIJANUMERO_PARAM_NAME + "}"
+  final val UI_SUORITUKSET_PATH                             = "/ui/suoritukset/" + UI_SUORITUKSET_OPPIJANUMERO_PARAM_PLACEHOLDER
+  final val UI_SUORITUKSET_400_DESCRIPTION                  = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val UI_SUORITUKSET_403_DESCRIPTION                  = "Käyttäjällä ei ole oikeuksia nähdä pyydetyn henkilön suorituksia"
+
   /**
    * Swagger-kuvauksiin liittyvät vakiot
    */
