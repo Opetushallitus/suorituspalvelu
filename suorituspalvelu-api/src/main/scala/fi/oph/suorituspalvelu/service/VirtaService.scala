@@ -4,9 +4,9 @@ import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.oph.suorituspalvelu.business.Tietolahde.VIRTA
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, Suoritus, Tietolahde, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, Tietolahde, VersioEntiteetti}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenkilo}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.service.VirtaService.{VIRTA_REFRESH_TASK, VIRTA_REFRESH_TASK_FOR_HAKU}
@@ -127,7 +127,7 @@ class VirtaRefresh {
 
         //Haetaan Virrasta yksitellen tiedot kaikkien hakijoiden kaikille aliaksille
         val resultsForOids: Future[Seq[SyncResultForHenkilo]] = aliakset.flatMap(aliasResult => {
-          LOG.info(s"Saatiin oppijanumerorekisteristä yhteensä ${aliasResult.allOids} oppijanumeroa ja aliasta hakemuksilta poimituille ${personOids} henkilöOidille")
+          LOG.info(s"Saatiin oppijanumerorekisteristä yhteensä ${aliasResult.allOids.size} oppijanumeroa ja aliasta hakemuksilta poimituille ${personOids.size} henkilöOidille")
           val synced = new AtomicInteger(0)
           aliasResult.allOids.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
             case (result: Future[Seq[SyncResultForHenkilo]], personOid: String) =>
