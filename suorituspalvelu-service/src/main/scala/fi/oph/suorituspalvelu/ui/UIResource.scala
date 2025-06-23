@@ -287,7 +287,7 @@ case class AmmatillinenTutkinto(
   @(Schema @field)(example = "4.34", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty ammatillisetYtotKeskiarvo: BigDecimal,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty ytot: Optional[java.util.List[YTO]],
+  @BeanProperty ytot: java.util.List[YTO],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty ammatillisenTutkinnonOsat: java.util.List[AmmatillisenTutkinnonOsa],
   @(Schema @field)(example = "Näyttötutkinto")
@@ -471,29 +471,29 @@ case class PerusopetuksenOppiaineenOppimaara(
 )
 
 case class OppijanTiedot(
-                          @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppijaNumero: String,
-                          @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
-                          @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],
-                          @BeanProperty yoTutkinto: Optional[YOTutkinto],
-                          @BeanProperty lukionOppimaara: Optional[LukionOppimaara],
-                          @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
-                          @BeanProperty diaTutkinto: Optional[DIATutkinto],
-                          @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistus],
-                          @BeanProperty ebTutkinto: Optional[EBTutkinto],
-                          @BeanProperty ibTutkinto: Optional[IBTutkinto],
-                          @BeanProperty preIB: Optional[PreIB],
-                          @BeanProperty ammatillisetTutkinnot: java.util.List[AmmatillinenTutkinto],
-                          @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
-                          @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
-                          @BeanProperty telmat: java.util.List[Telma],
-                          @BeanProperty tuvat: java.util.List[Tuva],
-                          @BeanProperty vapaanSivistystyonKoulutukset: java.util.List[VapaanSivistysTyonKoulutus],
-                          @BeanProperty perusopetuksenOppimaarat: java.util.List[PerusopetuksenOppimaara],
-                          @BeanProperty perusopetuksenOppimaara78Luokkalaiset: Optional[PerusopetuksenOppimaara78Luokkalaiset],
-                          @BeanProperty nuortenPerusopetuksenOppiaineenOppimaarat: java.util.List[NuortenPerusopetuksenOppiaineenOppimaara],
-                          @BeanProperty perusopetuksenOppiaineenOppimaarat: java.util.List[PerusopetuksenOppiaineenOppimaara],
-                          @BeanProperty aikuistenPerusopetuksenOppimaarat: java.util.List[AikuistenPerusopetuksenOppimaara]
+  @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
+  @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],
+  @BeanProperty yoTutkinto: Optional[YOTutkinto],
+  @BeanProperty lukionOppimaara: Optional[LukionOppimaara],
+  @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
+  @BeanProperty diaTutkinto: Optional[DIATutkinto],
+  @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistus],
+  @BeanProperty ebTutkinto: Optional[EBTutkinto],
+  @BeanProperty ibTutkinto: Optional[IBTutkinto],
+  @BeanProperty preIB: Optional[PreIB],
+  @BeanProperty ammatillisetTutkinnot: java.util.List[AmmatillinenTutkinto],
+  @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
+  @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
+  @BeanProperty telmat: java.util.List[Telma],
+  @BeanProperty tuvat: java.util.List[Tuva],
+  @BeanProperty vapaanSivistystyonKoulutukset: java.util.List[VapaanSivistysTyonKoulutus],
+  @BeanProperty perusopetuksenOppimaarat: java.util.List[PerusopetuksenOppimaara],
+  @BeanProperty perusopetuksenOppimaara78Luokkalaiset: Optional[PerusopetuksenOppimaara78Luokkalaiset],
+  @BeanProperty nuortenPerusopetuksenOppiaineenOppimaarat: java.util.List[NuortenPerusopetuksenOppiaineenOppimaara],
+  @BeanProperty perusopetuksenOppiaineenOppimaarat: java.util.List[PerusopetuksenOppiaineenOppimaara],
+  @BeanProperty aikuistenPerusopetuksenOppimaarat: java.util.List[AikuistenPerusopetuksenOppimaara]
 )
 
 @Schema(name = "OppijatFailureResponse")

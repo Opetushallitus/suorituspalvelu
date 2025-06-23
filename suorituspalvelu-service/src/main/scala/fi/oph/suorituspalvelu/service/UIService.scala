@@ -289,7 +289,7 @@ class UIService {
       suorituskieli = "suomi",
       painotettuKeskiarvo = 4.34,
       ammatillisetYtotKeskiarvo = 4.34,
-      ytot = Optional.of(java.util.List.of(YTO(
+      ytot = java.util.List.of(YTO(
         nimi = "Viestintä- ja vuorovaikutusosaaminen",
         laajuus = 11,
         tila = HYVAKSYTTY
@@ -301,7 +301,7 @@ class UIService {
         nimi = "Yhteiskunta- ja työelämäosaaminen",
         laajuus = 11,
         tila = HYVAKSYTTY
-      ))),
+      )),
       ammatillisenTutkinnonOsat = java.util.List.of(AmmatillisenTutkinnonOsa(
         nimi = "Audiovisuaalisen kulttuurin perusteet",
         laajuus = 11,
@@ -323,7 +323,7 @@ class UIService {
       suorituskieli = "suomi",
       painotettuKeskiarvo = 4.34,
       ammatillisetYtotKeskiarvo = 4.34,
-      ytot = Optional.empty(),
+      ytot = java.util.List.of(),
       ammatillisenTutkinnonOsat = java.util.List.of(),
       suoritustapa = Optional.of("Näyttötutkinto")
     ))
