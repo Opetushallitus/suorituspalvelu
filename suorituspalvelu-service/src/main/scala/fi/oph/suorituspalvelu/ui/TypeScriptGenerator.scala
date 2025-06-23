@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import com.scalatsi.{TSType, *}
 import com.scalatsi.output.{OutputOptions, StyleOptions, WriteTSToFiles}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, IBTutkinto, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanTiedot, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, VapaanSivistysTyonKoulutus, YOTutkinto}
 
 import java.io.File
 import java.time.LocalDate

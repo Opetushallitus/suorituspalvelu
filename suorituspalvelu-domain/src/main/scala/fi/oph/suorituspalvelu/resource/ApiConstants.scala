@@ -39,6 +39,7 @@ object ApiConstants {
   final val UI_SUORITUKSET_PATH                             = "/ui/suoritukset/" + UI_SUORITUKSET_OPPIJANUMERO_PARAM_PLACEHOLDER
   final val UI_SUORITUKSET_400_DESCRIPTION                  = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val UI_SUORITUKSET_403_DESCRIPTION                  = "Käyttäjällä ei ole oikeuksia nähdä pyydetyn henkilön suorituksia"
+  final val UI_SUORITUKSET_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
 
   /**
    * Swagger-kuvauksiin liittyvät vakiot
