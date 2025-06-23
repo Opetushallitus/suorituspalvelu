@@ -161,7 +161,7 @@ class VirtaRefresh {
         val fullResults = Future.sequence(Seq(resultsForOids))
         val succeeded = fullResults.map(_.flatten.filter(_.exception.isEmpty))
         succeeded.map(results => {
-          LOG.info(s"Synkattiin onnistuneesti ${results.size} henkiloita VIRTA-tietojen synkronoinnissa.")
+          LOG.info(s"Synkattiin onnistuneesti ${results.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
         })
         val failed = fullResults.map(_.flatten.filter(_.exception.isDefined))
         failed.map(failedResults => {
