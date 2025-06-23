@@ -1,7 +1,5 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.resource.Suoritus
-
 import java.time.Instant
 import java.util.Optional
 import scala.util.matching.Regex
@@ -82,9 +80,4 @@ object Validator {
     else
       Set.empty
   }
-  
-  def validateSuoritus(suoritus: Suoritus, oppijanumeroPakollinen: Boolean): Set[String] =
-    Set(
-      validateOppijanumero(suoritus.oppijaNumero.toScala, oppijanumeroPakollinen)
-    ).flatten
 }
