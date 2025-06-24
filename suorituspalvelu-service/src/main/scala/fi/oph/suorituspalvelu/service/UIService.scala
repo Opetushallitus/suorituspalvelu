@@ -1,10 +1,10 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus}
-import fi.oph.suorituspalvelu.resource.ui.OppijanTiedot
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, Oppija, OppijanTiedotSuccessResponse, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTOTila}
 import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.YTOTila.HYVAKSYTTY
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, OppijanTiedot, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTOTila}
+import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -13,10 +13,26 @@ import java.util.Optional
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
+object UIService {
+  val EXAMPLE_OPPIJA_OID = "1.2.246.562.24.40483869857"
+  val EXAMPLE_HETU = "010296-1230"
+  val EXAMPLE_NIMI = "Olli Oppija"
+}
+
 @Component
 class UIService {
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
+
+  def haeOppijat(oppija: Option[String], oppilaitos: Option[String], vuosi: Option[String], luokka: Option[String]): Set[Oppija] =
+    // TODO: implementaatiohuomio. Todennäköisesti halutaan purkaa olennainen tieto (oppilaitos, vuosi, luokka) erilliseen sopivasti GIN-indeksoituun tauluun KOSKI-hakujen yhteydessä josta sitten haetaan tässä
+    Set(Oppija(
+      EXAMPLE_OPPIJA_OID,
+      Optional.of(EXAMPLE_HETU),
+      EXAMPLE_NIMI
+    )).filter(o => {
+      oppija.isDefined && (o.oppijaNumero==oppija.get || o.hetu.get()==oppija.get || o.nimi.contains(oppija.get))
+    })
 
   def getOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): List[UIOpiskeluoikeus] =
     List(
@@ -537,32 +553,35 @@ class UIService {
       ))
     ))
 
-  def getOppijanTiedot(oppijaNumero: String): Option[OppijanTiedot] = {
+  def getOppijanTiedot(oppijaNumero: String): Option[OppijanTiedotSuccessResponse] = {
     val opiskeluoikeudet = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
 
-    Some(OppijanTiedot(
-      oppijaNumero =                              oppijaNumero,
-      opiskeluoikeudet =                          getOpiskeluoikeudet(opiskeluoikeudet).asJava,
-      kkTutkinnot =                               getKKTutkinnot(opiskeluoikeudet).asJava,
-      yoTutkinto =                                getYOTutkinto(opiskeluoikeudet).toJava,
-      lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
-      lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-      diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet).toJava,
-      diaVastaavuusTodistus =                     getDiaVastaavuusTodistus(opiskeluoikeudet).toJava,
-      ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
-      ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
-      preIB =                                     getPreIB(opiskeluoikeudet).toJava,
-      ammatillisetTutkinnot =                     getAmmatillisetTutkinnot(opiskeluoikeudet).asJava,
-      ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
-      erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,
-      telmat =                                    getTelmat(opiskeluoikeudet).asJava,
-      tuvat =                                     getTuvat(opiskeluoikeudet).asJava,
-      vapaanSivistystyonKoulutukset =             getVapaanSivistystyonKoulutukset(opiskeluoikeudet).asJava,
-      perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat(opiskeluoikeudet).asJava,
-      perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet).toJava,
-      nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-      perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-      aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat(opiskeluoikeudet).asJava
-    ))
+    if(opiskeluoikeudet.isEmpty && !EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
+      None
+    else
+      Some(OppijanTiedotSuccessResponse(
+        oppijaNumero =                              oppijaNumero,
+        opiskeluoikeudet =                          getOpiskeluoikeudet(opiskeluoikeudet).asJava,
+        kkTutkinnot =                               getKKTutkinnot(opiskeluoikeudet).asJava,
+        yoTutkinto =                                getYOTutkinto(opiskeluoikeudet).toJava,
+        lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
+        lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
+        diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet).toJava,
+        diaVastaavuusTodistus =                     getDiaVastaavuusTodistus(opiskeluoikeudet).toJava,
+        ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
+        ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
+        preIB =                                     getPreIB(opiskeluoikeudet).toJava,
+        ammatillisetTutkinnot =                     getAmmatillisetTutkinnot(opiskeluoikeudet).asJava,
+        ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
+        erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,
+        telmat =                                    getTelmat(opiskeluoikeudet).asJava,
+        tuvat =                                     getTuvat(opiskeluoikeudet).asJava,
+        vapaanSivistystyonKoulutukset =             getVapaanSivistystyonKoulutukset(opiskeluoikeudet).asJava,
+        perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat(opiskeluoikeudet).asJava,
+        perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet).toJava,
+        nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
+        perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
+        aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat(opiskeluoikeudet).asJava
+      ))
   }
 }

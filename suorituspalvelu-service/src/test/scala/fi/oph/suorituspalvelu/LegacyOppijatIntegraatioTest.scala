@@ -28,7 +28,9 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
 /**
- *
+ * Legacy oppijat-apin integraatiotestit. Testeissä on pyritty kattamaan kaikkien endpointtien kaikki eri paluuarvoihin
+ * johtavat skenaariot. Eri variaatiot näiden skenaarioiden sisällä (esim. erityyppiset validointiongelmat) testataan
+ * yksikkötasolla. Onnistuneiden kutsujen osalta validoidaan että kannan tila kutsun jälkeen vastaa oletusta.
  */
 class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 

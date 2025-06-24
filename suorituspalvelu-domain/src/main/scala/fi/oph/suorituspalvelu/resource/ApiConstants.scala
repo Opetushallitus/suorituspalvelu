@@ -7,6 +7,7 @@ object ApiConstants {
    */
   final val API_PREFIX                                      = ""
   final val VERSIONED_API_PREFIX                            = API_PREFIX + "/v1"
+  final val UI_API_PREFIX                                   = "/ui"
 
   final val LOGIN_PATH                                      = API_PREFIX + "/login"
   final val CAS_TICKET_VALIDATION_PATH                      = LOGIN_PATH + "/j_spring_cas_security_check"
@@ -34,12 +35,32 @@ object ApiConstants {
   final val LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME    = "ensikertalaisuudet"
   final val LEGACY_OPPIJAT_PATH                             = VERSIONED_API_PREFIX + "/oppijat/legacy"
 
-  final val UI_SUORITUKSET_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
-  final val UI_SUORITUKSET_OPPIJANUMERO_PARAM_PLACEHOLDER   = "{" + UI_SUORITUKSET_OPPIJANUMERO_PARAM_NAME + "}"
-  final val UI_SUORITUKSET_PATH                             = "/ui/suoritukset/" + UI_SUORITUKSET_OPPIJANUMERO_PARAM_PLACEHOLDER
-  final val UI_SUORITUKSET_400_DESCRIPTION                  = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val UI_SUORITUKSET_403_DESCRIPTION                  = "Käyttäjällä ei ole oikeuksia nähdä pyydetyn henkilön suorituksia"
-  final val UI_SUORITUKSET_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
+  final val UI_TIEDOT_OPPIJANUMERO_PARAM_NAME               = "oppijaNumero"
+  final val UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER        = "{" + UI_TIEDOT_OPPIJANUMERO_PARAM_NAME + "}"
+  final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot/" + UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER
+  final val UI_TIEDOT_400_DESCRIPTION                       = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val UI_TIEDOT_403_DESCRIPTION                       = "Käyttäjällä ei ole oikeuksia nähdä pyydetyn henkilön suorituksia"
+  final val UI_TIEDOT_ESIMERKKI_VIRHE                       = "oppijaNumero ei ole validi oid"
+  final val UI_TIEDOT_HAKU_EPAONNISTUI                      = "Oppijan tietojen haku epäonnistui"
+
+  final val UI_HAKU_PATH                                    = UI_API_PREFIX + "/oppijat"
+  final val UI_HAKU_OPPIJA_PARAM_NAME                       = "oppija"
+  final val UI_HAKU_OPPILAITOS_PARAM_NAME                   = "oppilaitos"
+  final val UI_HAKU_VUOSI_PARAM_NAME                        = "vuosi"
+  final val UI_HAKU_LUOKKA_PARAM_NAME                       = "luokka"
+  final val UI_HAKU_ESIMERKKI_OPPIJA                        = "Olli Op"
+  final val UI_HAKU_ESIMERKKI_OPPILAITOS                    = "1.2.246.562.10.56753942459"
+  final val UI_HAKU_ESIMERKKI_VUOSI                         = "2025"
+  final val UI_HAKU_ESIMERKKI_LUOKKA                        = "9B"
+  final val UI_HAKU_ESIMERKKI_VIRHE                         = "oppilaitoksen tunniste ei ole validi oid"
+  final val UI_HAKU_ESIMERKKI_OPPIJANUMERO                  = "1.2.246.562.24.40483869857"
+  final val UI_HAKU_ESIMERKKI_HETU                          = "010296-1230"
+  final val UI_HAKU_ESIMERKKI_NIMI                          = "Olli Oppija"
+  final val UI_HAKU_KRITEERI_PAKOLLINEN                     = "Jokin hakukriteeri on pakollinen"
+  final val UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN             = "Oppija tai vuosi on pakollinen jos oppilaitos määritelty"
+  final val UI_HAKU_OPPILAITOS_PAKOLLINEN                   = "Oppilaitos on pakollinen jos vuosi määritelty"
+  final val UI_HAKU_VUOSI_PAKOLLINEN                        = "Vuosi on pakollinen jos luokka määritelty"
+  final val UI_HAKU_EPAONNISTUI                             = "Oppijoiden haku epäonnistui"
 
   /**
    * Swagger-kuvauksiin liittyvät vakiot

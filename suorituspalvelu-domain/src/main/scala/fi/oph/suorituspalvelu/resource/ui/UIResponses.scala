@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.ui
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_SUORITUKSET_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_ESIMERKKI_HETU, UI_HAKU_ESIMERKKI_NIMI, UI_HAKU_ESIMERKKI_OPPIJANUMERO, UI_HAKU_ESIMERKKI_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE}
 import fi.oph.suorituspalvelu.resource.*
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
@@ -9,6 +9,27 @@ import java.time.LocalDate
 import java.util.Optional
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
+
+trait OppijanHakuResponse()
+
+case class Oppija(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppijaNumero: String,
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_HETU)
+  @BeanProperty hetu: Optional[String],
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_NIMI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: String
+)
+
+case class OppijanHakuSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppijat: java.util.List[Oppija]
+) extends OppijanHakuResponse
+
+case class OppijanHakuFailureResponse(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends OppijanHakuResponse
 
 enum Tila:
   case VALMIS
@@ -460,7 +481,9 @@ case class PerusopetuksenOppiaineenOppimaara(
   @BeanProperty oppiaineet: java.util.List[OppimaaranOppiaine]
 )
 
-case class OppijanTiedot(
+trait OppijanTiedotResponse()
+
+case class OppijanTiedotSuccessResponse(
   @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppijaNumero: String,
   @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
@@ -484,11 +507,10 @@ case class OppijanTiedot(
   @BeanProperty nuortenPerusopetuksenOppiaineenOppimaarat: java.util.List[NuortenPerusopetuksenOppiaineenOppimaara],
   @BeanProperty perusopetuksenOppiaineenOppimaarat: java.util.List[PerusopetuksenOppiaineenOppimaara],
   @BeanProperty aikuistenPerusopetuksenOppimaarat: java.util.List[AikuistenPerusopetuksenOppimaara]
-)
+) extends OppijanTiedotResponse
 
-@Schema(name = "OppijatFailureResponse")
-case class OppijatFailureResponse(
-  @(Schema @field)(example = UI_SUORITUKSET_ESIMERKKI_VIRHE)
+case class OppijanTiedotFailureResponse(
+  @(Schema @field)(example = UI_TIEDOT_ESIMERKKI_VIRHE)
   @BeanProperty virheet: java.util.Set[String]
-)
+) extends OppijanTiedotResponse
 
