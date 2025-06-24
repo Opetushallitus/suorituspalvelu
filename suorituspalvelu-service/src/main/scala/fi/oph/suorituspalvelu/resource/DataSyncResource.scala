@@ -77,7 +77,7 @@ class DataSyncResource {
           })
         .map(_ => {
           val user = AuditLog.getUser(request)
-          AuditLog.logCreate(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, None)
+          AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, None)
           LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
           val result = koskiIntegration.syncKoskiInBatches(personOids.toSet)
           LOG.info(s"Palautetaan rajapintavastaus, $result")
@@ -122,7 +122,7 @@ class DataSyncResource {
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
           val user = AuditLog.getUser(request)
-          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
+          AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
           val result: Seq[SyncResultForHenkilo] = koskiIntegration.syncKoskiForHaku(hakuOid.get)
           val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
@@ -167,7 +167,7 @@ class DataSyncResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
           .map(_ =>
             val user = AuditLog.getUser(request)
-            AuditLog.logCreate(user, Map(VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, None)
+            AuditLog.log(user, Map(VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, None)
             LOG.info(s"Haetaan Virta-tiedot henkilölle ${oppijaNumero}")
             val jobId = virtaService.syncVirta(oppijaNumero, Option.apply(hetu))
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
@@ -215,7 +215,7 @@ class DataSyncResource {
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
           val user = AuditLog.getUser(request)
-          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, None)
+          AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
           val jobId = virtaService.syncVirtaForHaku(hakuOid.get)
           LOG.info(s"Palautetaan rajapintavastaus, $jobId")

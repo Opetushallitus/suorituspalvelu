@@ -86,7 +86,7 @@ class UIResource {
             val user = AuditLog.getUser(request)
 
             LOG.info(s"Haetaan käyttöliittymälle lista oppijoista")
-            AuditLog.logCreate(user, Map(
+            AuditLog.log(user, Map(
               UI_HAKU_OPPIJA_PARAM_NAME -> oppija.orElse(null),
               UI_HAKU_OPPILAITOS_PARAM_NAME -> oppilaitos.orElse(null),
               UI_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
@@ -139,7 +139,7 @@ class UIResource {
             val user = AuditLog.getUser(request)
 
             LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero.get}")
-            AuditLog.logCreate(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeOppijaTiedotUI, None)
+            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeOppijaTiedotUI, None)
             val oppijanTiedot = uiService.getOppijanTiedot(oppijaNumero.get())
             if(oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))
