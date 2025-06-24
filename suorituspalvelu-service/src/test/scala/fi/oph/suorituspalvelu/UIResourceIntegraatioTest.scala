@@ -2,15 +2,13 @@ package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Telma, VersioEntiteetti, VirtaOpiskeluoikeus, YOOpiskeluoikeus, YOTutkinto}
-import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi}
+import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
-import org.mockito.Mockito
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -25,6 +23,30 @@ import java.util.Optional
  * yksikkötasolla. Onnistuneiden kutsujen osalta validoidaan että kannan tila kutsun jälkeen vastaa oletusta.
  */
 class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
+
+  @WithAnonymousUser
+  @Test def testHaeOppilaitoksetAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPILAITOKSET_PATH, ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeOppilaitoksetNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPILAITOKSET_PATH, ""))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppilaitoksetAllowed(): Unit =
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPILAITOKSET_PATH, ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    Assertions.assertEquals(OppilaitosSuccessResponse(java.util.List.of(Oppilaitos(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_OID))),
+      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppilaitosSuccessResponse]))
 
   /*
    * Integraatiotestit oppijalistauksen haulle

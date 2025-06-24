@@ -49,7 +49,8 @@ object ApiConstants {
   final val UI_HAKU_VUOSI_PARAM_NAME                        = "vuosi"
   final val UI_HAKU_LUOKKA_PARAM_NAME                       = "luokka"
   final val UI_HAKU_ESIMERKKI_OPPIJA                        = "Olli Op"
-  final val UI_HAKU_ESIMERKKI_OPPILAITOS                    = "1.2.246.562.10.56753942459"
+  final val UI_HAKU_ESIMERKKI_OPPILAITOS_OID                = "1.2.246.562.10.95136889433"
+  final val UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI               = "Pitäjänmäen peruskoulu"
   final val UI_HAKU_ESIMERKKI_VUOSI                         = "2025"
   final val UI_HAKU_ESIMERKKI_LUOKKA                        = "9B"
   final val UI_HAKU_ESIMERKKI_VIRHE                         = "oppilaitoksen tunniste ei ole validi oid"
@@ -61,6 +62,8 @@ object ApiConstants {
   final val UI_HAKU_OPPILAITOS_PAKOLLINEN                   = "Oppilaitos on pakollinen jos vuosi määritelty"
   final val UI_HAKU_VUOSI_PAKOLLINEN                        = "Vuosi on pakollinen jos luokka määritelty"
   final val UI_HAKU_EPAONNISTUI                             = "Oppijoiden haku epäonnistui"
+
+  final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
 
   /**
    * Swagger-kuvauksiin liittyvät vakiot

@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.ui
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_ESIMERKKI_HETU, UI_HAKU_ESIMERKKI_NIMI, UI_HAKU_ESIMERKKI_OPPIJANUMERO, UI_HAKU_ESIMERKKI_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_ESIMERKKI_HETU, UI_HAKU_ESIMERKKI_NIMI, UI_HAKU_ESIMERKKI_OPPIJANUMERO, UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE}
 import fi.oph.suorituspalvelu.resource.*
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
@@ -9,6 +9,25 @@ import java.time.LocalDate
 import java.util.Optional
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
+
+case class Oppilaitos(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: String,
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oid: String
+)
+
+trait OppilaitosResponse()
+
+case class OppilaitosSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppilaitokset: java.util.List[Oppilaitos]
+) extends OppilaitosResponse
+
+case class OppilaitosFailureResponse(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends OppilaitosResponse
 
 trait OppijanHakuResponse()
 
