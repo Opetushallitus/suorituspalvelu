@@ -215,7 +215,7 @@ class DataSyncResource {
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
           val user = AuditLog.getUser(request)
-          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, null)
+          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
           val jobId = virtaService.syncVirtaForHaku(hakuOid.get)
           LOG.info(s"Palautetaan rajapintavastaus, $jobId")
