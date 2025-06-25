@@ -34,11 +34,7 @@ object AuditLog {
     new Audit(entry => LOG.info(entry), "suorituspalvelu", ApplicationType.VIRKAILIJA)
   }
 
-  def logRead(kohde: String, tunniste: String, operaatio: AuditOperation, request: HttpServletRequest): Unit =
-    val target = new Target.Builder().setField(kohde, tunniste).build()
-    audit.log(getUser(request), operaatio, target, Changes.EMPTY)
-
-  def logCreate(user: User, targetFields: Map[String, String], operaatio: AuditOperation, entity: Option[Any]): Unit =
+  def log(user: User, targetFields: Map[String, String], operaatio: AuditOperation, entity: Option[Any]): Unit =
     val target = new Target.Builder()
     for ((key, value) <- targetFields)
       target.setField(key, value)
@@ -49,12 +45,6 @@ object AuditLog {
     if(entity.isDefined)
       elements.add(JsonParser.parseString(mapper.writeValueAsString(entity.get)))
     audit.log(user, operaatio, target.build(), elements)
-
-  def logChanges(user: User, targetFields: Map[String, String], operaatio: AuditOperation, changes: Changes): Unit =
-    val target = new Target.Builder()
-    for ((key, value) <- targetFields)
-      target.setField(key, value)
-    audit.log(user, operaatio, target.build(), changes)
 
   def getUser(request: HttpServletRequest): User =
     val userOid = getCurrentPersonOid()

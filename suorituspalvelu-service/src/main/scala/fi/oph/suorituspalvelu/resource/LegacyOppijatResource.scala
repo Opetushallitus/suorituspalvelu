@@ -99,7 +99,7 @@ class LegacyOppijatResource {
             val user = AuditLog.getUser(request)
             val kantaOperaatiot = KantaOperaatiot(database)
 
-            AuditLog.logCreate(user, Seq(
+            AuditLog.log(user, Seq(
               hakuOid.toScala.map(h => LEGACY_OPPIJAT_HAKU_PARAM_NAME -> h),
               hakukohdeOid.toScala.map(h => LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME -> h)
             ).flatten.toMap, AuditOperation.HaeOppijaTiedot, None)

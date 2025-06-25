@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.configuration
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -23,5 +23,6 @@ class JacksonConfig extends WebMvcConfigurer {
         mapper.registerModule(new JavaTimeModule())
         mapper.registerModule(new Jdk8Module())
         mapper.registerModule(DefaultScalaModule)
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         converters.set(index, MappingJackson2HttpMessageConverter(mapper))
 }

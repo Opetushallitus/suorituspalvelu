@@ -8,9 +8,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>suorituspalvelu-api</artifactId>
+    <artifactId>suorituspalvelu-service</artifactId>
     <packaging>jar</packaging>
-    <name>suorituspalvelu-api</name>
+    <name>suorituspalvelu-service</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -96,7 +96,7 @@
     </dependencies>
 
     <build>
-        <finalName>suorituspalvelu-api</finalName>
+        <finalName>suorituspalvelu-service</finalName>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
@@ -108,6 +108,25 @@
                         <id>repackage</id>
                         <configuration>
                             <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-typescript</id>
+                        <!-- TS-tyyppien generointia ei voi tehdä generate-sources -vaiheessa koska TypeScriptGenerator-luokkaa ei ole vielä käännetty -->
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>fi.oph.suorituspalvelu.ui.TypeScriptGenerator</mainClass>
+                            <classpathScope>compile</classpathScope>
                         </configuration>
                     </execution>
                 </executions>
