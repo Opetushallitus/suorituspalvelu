@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_PATH, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_PATH, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.VirtaService
 import fi.oph.suorituspalvelu.util.LogContext
@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
 
-import java.util.Optional
+import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
@@ -177,6 +177,51 @@ class DataSyncResource {
       case e: Exception =>
         LOG.error("Oppijan Virta-päivitysjobin luonti epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(VirtaSyncFailureResponse(java.util.List.of(VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI)))
+  }
+
+  @PostMapping(
+    path = Array(VIRTA_DATASYNC_HAKU_PATH),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee haun hakijoiden tiedot Virrasta",
+    description = "Huomioita:\n" +
+      "- Huomio 1",
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
+      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
+      new ApiResponse(responseCode = "403", description = "addme")
+    ))
+  def paivitaVirtaTiedotHaulle(@RequestBody hakuOid: Optional[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = VIRTA_DATASYNC_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      Right(None)
+        .flatMap(_ =>
+          // tarkastetaan oikeudet
+          if (securityOperaatiot.onRekisterinpitaja())
+            Right(None)
+          else
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+        .flatMap(_ =>
+          // validoidaan parametri
+          val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
+          if (virheet.isEmpty)
+            Right(None)
+          else
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
+        .map(_ => {
+          val user = AuditLog.getUser(request)
+          AuditLog.logCreate(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, null)
+          LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
+          val jobId = virtaService.syncVirtaForHaku(hakuOid.get)
+          LOG.info(s"Palautetaan rajapintavastaus, $jobId")
+          ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId))
+        })
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
 }
 

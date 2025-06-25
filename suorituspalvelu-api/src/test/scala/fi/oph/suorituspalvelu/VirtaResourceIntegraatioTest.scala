@@ -2,8 +2,9 @@ package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, VirtaOpiskeluoikeus}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenkilo}
-import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.resource.{ApiConstants, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.VirtaUtil
@@ -26,6 +27,12 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockBean
   var virtaClient: VirtaClient = null
+
+  @MockBean
+  var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  @MockBean
+  var onrIntegration: OnrIntegration = null
 
   @WithAnonymousUser
   @Test def testRefreshVirtaAnonymous(): Unit =
@@ -97,5 +104,98 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val versionData = kantaOperaatiot.haeData(suorituksetKannasta.head._1)
     Assertions.assertTrue(versionData._2.contains(VirtaUtil.replacementHetu))
     Assertions.assertFalse(versionData._2.contains("010296-1230"))
+  }
+
+  @WithAnonymousUser
+  @Test def testRefreshVirtaForHakuAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.29.01000000000000013275"))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testRefreshVirtaForHakuNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.29.01000000000000013275"))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshVirtaForHakuMalformedOid(): Unit =
+    // ei validi oid ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.23.01000000000000013275"))
+      .andExpect(status().isBadRequest).andReturn()
+
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshVirtaForHakuAllowedActuallySaveSuoritukset(): Unit = {
+    val hakijaOid1 = "1.2.246.562.24.00000000111"
+    val hakijaOid2 = "1.2.246.562.24.00000000222"
+    val failingHakijaOid = "1.2.246.562.24.00000000987"
+    val hakijaOid3 = "1.2.246.562.24.00000000333"
+    val aliasForHakijaOid2 = "1.2.246.562.24.00000999222"
+
+    val haunHakijatOids: Seq[String] = Seq(hakijaOid1, hakijaOid2, failingHakijaOid, hakijaOid3)
+
+    val henkiloTiedot: Seq[AtaruHakemuksenHenkilotiedot] = haunHakijatOids.map(oppijaNumero => {
+      AtaruHakemuksenHenkilotiedot("hakemusOid", Some(oppijaNumero), None)
+    })
+
+    //Yhdellä oppijoista on alias
+    val aliasMap = haunHakijatOids.map(oppijaNumero => {
+      val aliasSet = if (oppijaNumero == hakijaOid2) Set(oppijaNumero, aliasForHakijaOid2) else Set(oppijaNumero)
+      (oppijaNumero, aliasSet)
+    }).toMap
+
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
+
+    Mockito.when(onrIntegration.getAliasesForPersonOids(haunHakijatOids.toSet))
+      .thenReturn(Future.successful(PersonOidsWithAliases(aliasMap)))
+
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
+      .thenReturn(Future.successful(henkiloTiedot))
+
+    Mockito.when(virtaClient.haeTiedotOppijanumerolle(hakijaOid1))
+      .thenReturn(Future.successful(VirtaResultForHenkilo(hakijaOid1, virtaXml)))
+    Mockito.when(virtaClient.haeTiedotOppijanumerolle(hakijaOid2))
+      .thenReturn(Future.successful(VirtaResultForHenkilo(hakijaOid2, virtaXml)))
+    Mockito.when(virtaClient.haeTiedotOppijanumerolle(failingHakijaOid))
+      .thenThrow(new RuntimeException("Yllättävä virhe haettaessa tietoja Virrasta"))
+    Mockito.when(virtaClient.haeTiedotOppijanumerolle(hakijaOid3))
+      .thenReturn(Future.successful(VirtaResultForHenkilo(hakijaOid3, virtaXml)))
+    //Oppijan "1.2.246.562.24.00000000222" alias
+    Mockito.when(virtaClient.haeTiedotOppijanumerolle(aliasForHakijaOid2))
+      .thenReturn(Future.successful(VirtaResultForHenkilo(aliasForHakijaOid2, virtaXml)))
+
+
+    val result = mvc.perform(jsonPostString(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, hakuOid))
+      .andExpect(status().isOk()).andReturn()
+
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncSuccessResponse])
+
+    //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK_FOR_HAKU ehtii pyörähtää
+    Thread.sleep(2000)
+
+    //Jokaiselle oppijaNumerolle pitäisi syntyä kaksi opiskeluoikeutta, joista toisella 0 ja toisella 50 alisuoritusta.
+    haunHakijatOids.foreach(oppijaNumero => {
+      //Virheeseen päätyneen hakijan tietoja ei löydy kannasta.
+      if (oppijaNumero != failingHakijaOid) {
+         val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+        Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
+        Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
+        Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+      }
+    })
+
+    //Tarkistetaan myös aliaksen suoritukset
+    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(aliasForHakijaOid2)
+    Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
+    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
+    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedotHaunHakijoille.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map("hakuOid" -> hakuOid), auditLogEntry.target)
   }
 }

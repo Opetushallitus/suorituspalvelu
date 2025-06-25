@@ -26,10 +26,11 @@ case class AtaruResponseHenkilot(applications: List[AtaruHakemuksenHenkilotiedot
                                  offset: Option[String])
 
 trait HakemuspalveluClient {
-  def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
+  def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]]
+  def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
 }
 
-class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClient {
+class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
 
 
   val LOG = LoggerFactory.getLogger(classOf[HakemuspalveluClientImpl]);
@@ -37,9 +38,13 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  override def getHaunHakijat(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
+  override def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
+    getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(None, Some(hakuOid)))
+  }
+
+  override def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
     def fetchAllRecursive(currentParams: AtaruHenkiloSearchParams, accResults: Seq[AtaruHakemuksenHenkilotiedot] = Seq.empty): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
-      fetch("https://virkailija.testiopintopolku.fi/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
+      fetch(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
         .flatMap(data => {
           val parsed: AtaruResponseHenkilot = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
           val newResults = accResults ++ parsed.applications
@@ -58,7 +63,12 @@ class HakemuspalveluClientImpl(casClient: CasClient) extends HakemuspalveluClien
   }
 
   private def fetch(url: String, body: AtaruHenkiloSearchParams): Future[String] = {
-    val bodyMap = Map("hakuOid" -> body.hakuOid.get)
+    val bodyMap = List(
+      body.hakuOid.map("hakuOid" -> _),
+      body.hakukohdeOids.map("hakukohdeOids" -> _),
+      body.offset.map("offset" -> _)
+    ).flatten.toMap
+
     LOG.info(s"fetch, $url $body ${mapper.writeValueAsString(body)} ${mapper.writeValueAsString(bodyMap)}")
     val req = new RequestBuilder()
       .setMethod("POST")

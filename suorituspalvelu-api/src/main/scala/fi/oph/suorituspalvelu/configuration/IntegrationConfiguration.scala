@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.configuration
 
-import fi.oph.suorituspalvelu.integration.KoskiIntegration
+import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient, OnrClientImpl}
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -13,6 +13,10 @@ class IntegrationConfiguration {
   @Bean
   def getKoskiIntegration(): KoskiIntegration =
     new KoskiIntegration
+
+  @Bean
+  def getOnrIntegration(): OnrIntegrationImpl =
+    new OnrIntegrationImpl
 
   @Bean
   def getKoskiClient(@Value("${integrations.koski.username}") user: String,
@@ -47,6 +51,28 @@ class IntegrationConfiguration {
 
     val casClient: CasClient = CasClientBuilder.build(casConfig)
 
-    new HakemuspalveluClientImpl(casClient)
+    new HakemuspalveluClientImpl(casClient, envBaseUrl)
+  }
+
+  @Bean
+  def getOnrClient(@Value("${integrations.koski.username}") user: String,
+                   @Value("${integrations.koski.password}") password: String,
+                   @Value("${integrations.koski.base-url}") envBaseUrl: String,
+                   @Value("${integrations.koski.base-url}") casUrl: String): OnrClientImpl = {
+
+    val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
+    val casConfig: CasConfig = new CasConfig.CasConfigBuilder(
+      user,
+      password,
+      envBaseUrl + "/cas",
+      envBaseUrl + "/oppijanumerorekisteri-service",
+      CALLER_ID,
+      CALLER_ID,
+      "/j_spring_cas_security_check")
+      .setJsessionName("JSESSIONID").build
+
+    val casClient: CasClient = CasClientBuilder.build(casConfig)
+
+    new OnrClientImpl(casClient, envBaseUrl)
   }
 }

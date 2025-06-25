@@ -18,4 +18,6 @@ object AuditOperation {
   case object PaivitaKoskiTiedotHenkiloille extends AuditOperation("KOSKITIETOJEN PÄIVITYS HENKILÖILLE")
 
   case object PaivitaKoskiTiedotHaunHakijoille extends AuditOperation("KOSKITIETOJEN PÄIVITYS HAUN HAKIJOILLE")
+
+  case object PaivitaVirtaTiedotHaunHakijoille extends AuditOperation("VIRTATIETOJEN PÄIVITYS HAUN HAKIJOILLE")
 }
