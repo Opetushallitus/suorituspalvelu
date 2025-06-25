@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
 
@@ -176,7 +176,7 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[AmmatillinenTutkinto]
 
     Assertions.assertEquals(Koodi("351301", "koulutus", Some(12)), tutkinto.tyyppi)
-    Assertions.assertEquals("Ajoneuvoalan perustutkinto", tutkinto.nimi)
+    Assertions.assertEquals(Kielistetty(Some("Ajoneuvoalan perustutkinto"), None, None), tutkinto.nimi)
     Assertions.assertEquals(Some(BigDecimal.valueOf(1.0)), tutkinto.keskiarvo)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", Some(1)), tutkinto.suoritustapa)
@@ -239,7 +239,7 @@ class KoskiParsingTest {
 
     val osaSuoritus = tutkinto.osat.head
     Assertions.assertEquals(Koodi("106727", "tutkinnonosat", Some(2)), osaSuoritus.koodi)
-    Assertions.assertEquals("Viestintä- ja vuorovaikutusosaaminen", osaSuoritus.nimi)
+    Assertions.assertEquals(Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None), osaSuoritus.nimi)
     Assertions.assertEquals(true, osaSuoritus.yto) // koodi 106727 kuuluu yleisiin tutkinnon osiin
     Assertions.assertEquals(Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", Some(1))), osaSuoritus.arvosana)
     Assertions.assertEquals(Some(20), osaSuoritus.laajuus)
@@ -305,7 +305,7 @@ class KoskiParsingTest {
 
     val osaAlue = tutkinto.osat.head.osaAlueet.head
     Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", Some(1)), osaAlue.koodi)
-    Assertions.assertEquals("Viestintä ja vuorovaikutus äidinkielellä", osaAlue.nimi)
+    Assertions.assertEquals(Kielistetty(Some("Viestintä ja vuorovaikutus äidinkielellä"), None, None), osaAlue.nimi)
     Assertions.assertEquals(Some(Koodi("1", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
     Assertions.assertEquals(Some(4), osaAlue.laajuus)
     Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", Some(1))), osaAlue.laajuusKoodi)
@@ -391,13 +391,13 @@ class KoskiParsingTest {
         |            }
         |          ],
         |          "vuosiluokkiinSitoutumatonOpetus": false
-        |        }        
+        |        }
         |      }
         |    ]
         |  }
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
-    
+
     Assertions.assertEquals("1.2.246.562.15.77661702355", opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.19666365424", opiskeluoikeus.oppilaitosOid)
     Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
@@ -519,7 +519,7 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
 
     val oppiaine = oppimaara.aineet.head
-    Assertions.assertEquals("Äidinkieli ja kirjallisuus", oppiaine.nimi)
+    Assertions.assertEquals(Kielistetty(Some("Äidinkieli ja kirjallisuus"), None, None), oppiaine.nimi)
     Assertions.assertEquals(Koodi("AI", "koskioppiaineetyleissivistava", Some(1)), oppiaine.koodi)
     Assertions.assertEquals(Koodi("10", "arviointiasteikkoyleissivistava", Some(1)), oppiaine.arvosana)
 
@@ -563,7 +563,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenVuosiluokka]
 
-    Assertions.assertEquals("7. vuosiluokka", vuosiluokka.nimi)
+    Assertions.assertEquals(Kielistetty(Some("7. vuosiluokka"), None, None), vuosiluokka.nimi)
     Assertions.assertEquals(Koodi("7", "perusopetuksenluokkaaste", Some(1)), vuosiluokka.koodi)
     Assertions.assertEquals(Some(LocalDate.parse("2020-08-15")), vuosiluokka.alkamisPaiva)
     Assertions.assertEquals(true, vuosiluokka.jaaLuokalle)
@@ -619,7 +619,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]
 
-    Assertions.assertEquals("Matematiikka", oppimaara.nimi)
+    Assertions.assertEquals(Kielistetty(Some("Matematiikka"), None, None), oppimaara.nimi)
     Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.koodi)
     Assertions.assertEquals("8", oppimaara.arvosana)
     Assertions.assertEquals(Some(LocalDate.parse("2022-05-18")), oppimaara.vahvistusPaivamaara)
@@ -803,5 +803,5 @@ class KoskiParsingTest {
 
     Assertions.assertEquals(Koodi("999908", "koulutus", Some(12)), tuva.koodi)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
-  
+
 }

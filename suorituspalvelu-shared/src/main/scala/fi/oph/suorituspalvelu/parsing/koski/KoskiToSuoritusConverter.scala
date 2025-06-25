@@ -46,7 +46,7 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsaAlue(
-      nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      nimi = osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
       arvosana = arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
       laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(_.arvo)),
@@ -66,7 +66,7 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsa(
-      nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      nimi = osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.map((k: KoulutusModuuli) => asKoodiObject(k.tunniste)).getOrElse(dummy()),
       yto = osaSuoritus.koulutusmoduuli.exists(k => isYTO(k.tunniste.koodiarvo)),
       arvosana = arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
@@ -80,7 +80,7 @@ object KoskiToSuoritusConverter {
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
 
     AmmatillinenTutkinto(
-      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.map(km => km.tunniste.nimi).getOrElse(dummy()),
       suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).getOrElse(dummy()),
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
@@ -92,7 +92,7 @@ object KoskiToSuoritusConverter {
 
   def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine =
     PerusopetuksenOppiaine(
-      osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.nimi.fi).getOrElse(dummy()),
+      osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi).getOrElse(dummy()),
       osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
       {
         val arvosanat = osaSuoritus.arviointi
@@ -108,7 +108,7 @@ object KoskiToSuoritusConverter {
 
   def toNuortenPerusopetuksenOppiaineenOppimaara(suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
     NuortenPerusopetuksenOppiaineenOppimaara(
-      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
+      suoritus.koulutusmoduuli.map(km => km.tunniste.nimi).getOrElse(dummy()),
       suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
       {
         val arvosanat = suoritus.arviointi
@@ -150,7 +150,7 @@ object KoskiToSuoritusConverter {
 
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
     PerusopetuksenVuosiluokka(
-      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).get,
+      suoritus.koulutusmoduuli.map(km => km.tunniste.nimi).getOrElse(dummy()),
       suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
       suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
       suoritus.`jääLuokalle`.getOrElse(false)

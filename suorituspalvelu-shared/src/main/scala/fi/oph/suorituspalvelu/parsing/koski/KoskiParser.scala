@@ -17,7 +17,16 @@ trait VersioituTunniste {
 
 case class Kielistetty(fi: Option[String],
                        sv: Option[String],
-                       en: Option[String])
+                       en: Option[String]) {
+  def pickWithFallback() = {
+    (fi, sv, en) match {
+      case (Some(fi), _, _) => fi
+      case (_, Some(sv), _) => sv
+      case (_, _, Some(en)) => en
+      case _ => ""
+    }
+  }
+}
 
 case class Arvosana(koodiarvo: String,
                     koodistoUri: String,

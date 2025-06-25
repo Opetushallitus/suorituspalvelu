@@ -7,6 +7,7 @@ import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYYPPI_AMMATILLINENTUTKINTO
 import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_HAKU_OID, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME}
 import fi.oph.suorituspalvelu.resource.*
@@ -93,10 +94,10 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto("diplomi", Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     val telma = Telma(Koodi("arvo", "koodisto", None), suoritusKieli)
     val perusopetuksenOppimaara = PerusopetuksenOppimaara("oid", Koodi("arvo", "koodisto", None), suoritusKieli, Set.empty, None, Set.empty)
-    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara("nimi", Koodi("arvo", "koodisto", None), "", suoritusKieli, None)
+    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), "", suoritusKieli, None)
     val yoTutkinto = YOTutkinto(suoritusKieli)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None),
