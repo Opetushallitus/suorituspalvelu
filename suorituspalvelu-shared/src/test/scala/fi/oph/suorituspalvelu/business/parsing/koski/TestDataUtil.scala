@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Koodi}
+import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Koodi, Oppilaitos}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 
 import java.time.LocalDate
@@ -22,11 +22,12 @@ object TestDataUtil {
 
   def getTestAmmatillinenTutkinto(nimi: Kielistetty = Kielistetty(Some("tutkinnonNimi"), None, None),
                                   tyyppi: Koodi = getTestKoodi(),
+                                  oppilaitos: Oppilaitos = Oppilaitos(None, None, None, "1.2.246.562.10.95136889433"),
                                   tila: Koodi = getTestKoodi(),
                                   vahvistusPaivamaara: Option[LocalDate] = Some(LocalDate.parse("2025-01-02")),
                                   keskiarvo: Option[BigDecimal] = Some(BigDecimal(3.5)),
                                   suoritustapa: Koodi = getTestKoodi(),
                                   suoritusKieli: Koodi = getTestKoodi(),
                                   osat: Set[AmmatillisenTutkinnonOsa] = Set.empty): AmmatillinenTutkinto =
-    AmmatillinenTutkinto(nimi, tyyppi, tila, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
+    AmmatillinenTutkinto(nimi, tyyppi, Oppilaitos(Some(""), Some(""), Some(""), ""), tila, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
   }

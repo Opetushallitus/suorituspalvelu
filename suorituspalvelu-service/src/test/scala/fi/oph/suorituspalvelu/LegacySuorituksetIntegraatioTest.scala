@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nimbusds.jose.util.StandardCharset
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -89,8 +89,8 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan ammatillinen- ja yo-tutkinto
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(None, None, None, "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(None, None, None, "1.2.3.4"), Set(ammatillinenTutkinto), None)), Set.empty)
 
     val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{\"testi\": \"suorituksetHenkilölle\"}")
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto(Koodi("fi", "kieli", Some(1))))), Set.empty)
@@ -117,8 +117,8 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     
     // tallennetaan suoritus
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"muuttuneetSuoritukset\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(OPPIJA_OID, "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(None, None, None, "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(OPPIJA_OID, Oppilaitos(None, None, None, "1.2.3.4"), Set(ammatillinenTutkinto), None)), Set.empty)
 
     // haetaan muuttuneet legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_SUORITUKSET_PATH + "?" + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "=" + aikaleima.toString))

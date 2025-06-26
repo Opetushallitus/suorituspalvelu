@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva}
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, KoskiKoodi, Kielistetty, KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -63,7 +63,12 @@ class KoskiParsingTest {
         |        },
         |        "oid": "1.2.246.562.15.24186343661",
         |        "oppilaitos": {
-        |          "oid": "1.2.246.562.10.41945921983"
+        |          "oid": "1.2.246.562.10.41945921983",
+        |          "nimi": {
+        |            "fi": "Stadin ammattiopisto",
+        |            "sv": "Stadin ammattiopisto",
+        |            "en": "Stadin ammattiopisto"
+        |          }
         |        },
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
@@ -86,7 +91,7 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[AmmatillinenOpiskeluoikeus]
 
     Assertions.assertEquals("1.2.246.562.15.24186343661", opiskeluoikeus.oid)
-    Assertions.assertEquals("1.2.246.562.10.41945921983", opiskeluoikeus.oppilaitosOid)
+    Assertions.assertEquals("1.2.246.562.10.41945921983", opiskeluoikeus.oppilaitos.oid)
     Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
       LocalDate.parse("2022-06-06"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1)))))), opiskeluoikeus.tila)
 
@@ -138,6 +143,14 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.41945921983",
+        |          "nimi": {
+        |            "fi": "Stadin ammattiopisto",
+        |            "sv": "Stadin ammattiopisto sv",
+        |            "en": "Stadin ammattiopisto en"
+        |          }
+        |        },
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -181,6 +194,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", Some(1)), tutkinto.suoritustapa)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
+    Assertions.assertEquals(Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"), tutkinto.oppilaitos)
 
   @Test def testAmmatillisenTutkinnonOsasuoritukset(): Unit =
     val tutkinto = getFirstSuoritusFromJson("""

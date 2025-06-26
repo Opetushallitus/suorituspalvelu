@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.service.UIService
+import fi.oph.suorituspalvelu.ui.UIService
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
@@ -197,9 +197,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(None, None, None, "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
-      AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None),
+      AmmatillinenOpiskeluoikeus("1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(None, None, None, "1.2.3.4"), Set(ammatillinenTutkinto), None),
     ), Set.empty)
 
     // suoritetaan kutsu ja parseroidaan vastaus
