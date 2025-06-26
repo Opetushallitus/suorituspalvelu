@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.ui
 
+import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_EPAONNISTUI, UI_HAKU_ESIMERKKI_LUOKKA, UI_HAKU_ESIMERKKI_OPPIJA, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VUOSI, UI_HAKU_KRITEERI_PAKOLLINEN, UI_HAKU_LUOKKA_PARAM_NAME, UI_HAKU_OPPIJA_PARAM_NAME, UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN, UI_HAKU_OPPILAITOS_PAKOLLINEN, UI_HAKU_OPPILAITOS_PARAM_NAME, UI_HAKU_PATH, UI_HAKU_VUOSI_PAKOLLINEN, UI_HAKU_VUOSI_PARAM_NAME, UI_OPPILAITOKSET_PATH, UI_TIEDOT_400_DESCRIPTION, UI_TIEDOT_403_DESCRIPTION, UI_TIEDOT_HAKU_EPAONNISTUI, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH}
 import fi.oph.suorituspalvelu.resource.ui.{OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -30,6 +30,8 @@ class UIResource {
 
   @Autowired val uiService: UIService = null
 
+  @Autowired val kantaOperaatiot: KantaOperaatiot = null
+  
   @GetMapping(
     path = Array(UI_OPPILAITOKSET_PATH),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
@@ -180,7 +182,7 @@ class UIResource {
 
             LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero.get}")
             AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeOppijaTiedotUI, None)
-            val oppijanTiedot = uiService.getOppijanTiedot(oppijaNumero.get())
+            val oppijanTiedot = EntityToUIConverter.getOppijanTiedot(oppijaNumero.get(), this.kantaOperaatiot.haeSuoritukset(oppijaNumero.get()).values.toSet.flatten)
             if(oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))
             else

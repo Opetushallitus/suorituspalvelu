@@ -373,9 +373,10 @@ class KantaOperaatiotTest {
   @Test def testAmmatillinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, KOSKI, "{\"attr\": \"value\"}").get
-    val suoritus = TestDataUtil.getTestAmmatillinenTutkinto()
+    val oppilaitos = Oppilaitos(Some("Nimi suomi"), Some("Nimi Ruotsi"), Some("Nimi englanti"), "1.2.246.562.10.95136889433")
+    val suoritus = TestDataUtil.getTestAmmatillinenTutkinto(oppilaitos = oppilaitos)
     val tilat = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-06-03"), OpiskeluoikeusJaksoTila("opiskelu", "tilakoodisto", Some(6))), OpiskeluoikeusJakso(LocalDate.parse("2024-11-09"), OpiskeluoikeusJaksoTila("joulunvietto", "tilakoodisto", Some(6)))))
-    val opiskeluoikeus = AmmatillinenOpiskeluoikeus("opiskeluoikeusOid", "oppilaitosOid", Set(suoritus), Some(tilat))
+    val opiskeluoikeus = AmmatillinenOpiskeluoikeus("opiskeluoikeusOid", oppilaitos, Set(suoritus), Some(tilat))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Set.empty)
 
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)

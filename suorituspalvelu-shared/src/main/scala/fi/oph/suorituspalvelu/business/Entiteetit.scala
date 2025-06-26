@@ -30,7 +30,9 @@ case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
 case class Arvosana(arvosana: String, koodi: String)
 
-case class AmmatillinenTutkinto(nimi: Kielistetty, tyyppi: Koodi, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
+case class Oppilaitos(nimiFi: Option[String], nimiSV: Option[String], nimiEN: Option[String], oid: String)
+
+case class AmmatillinenTutkinto(nimi: Kielistetty, tyyppi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
 
 case class AmmatillisenTutkinnonOsaAlue(nimi: Kielistetty, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Tyypitetty
 
@@ -61,7 +63,7 @@ case class PerusopetuksenOpiskeluoikeus(
 
 case class AmmatillinenOpiskeluoikeus(
                                        oid: String,
-                                       oppilaitosOid: String,
+                                       oppilaitos: Oppilaitos,
                                        @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                        suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
                                        tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty

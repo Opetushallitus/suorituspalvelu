@@ -111,7 +111,7 @@ case class KoskiLisatiedot(erityisenTuenPäätökset: Option[List[KoskiErityisen
                            kotiopetusjaksot: Option[List[Kotiopetusjakso]])
 
 case class Opiskeluoikeus(oid: String,
-                          oppilaitos: Oppilaitos,
+                          oppilaitos: Option[Oppilaitos],
                           tyyppi: OpiskeluoikeusTyyppi,
                           tila: Option[OpiskeluoikeusTila],
                           suoritukset: Set[Suoritus],
