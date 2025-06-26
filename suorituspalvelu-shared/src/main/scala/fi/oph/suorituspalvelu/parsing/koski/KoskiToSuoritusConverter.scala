@@ -82,6 +82,12 @@ object KoskiToSuoritusConverter {
     AmmatillinenTutkinto(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.nimi.fi).getOrElse(dummy()),
       suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).getOrElse(dummy()),
+      opiskeluoikeus.oppilaitos.map(o =>
+      fi.oph.suorituspalvelu.business.Oppilaitos(
+        o.nimi.fi,
+        o.nimi.sv,
+        o.nimi.en,
+        o.oid)).getOrElse(dummy()),
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.keskiarvo,
@@ -127,7 +133,7 @@ object KoskiToSuoritusConverter {
   def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
     PerusopetuksenOppimaara(
-      opiskeluoikeus.oppilaitos.oid,
+      opiskeluoikeus.oppilaitos.get.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
@@ -139,7 +145,7 @@ object KoskiToSuoritusConverter {
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
      PerusopetuksenOppimaara(
-      opiskeluoikeus.oppilaitos.oid,
+      opiskeluoikeus.oppilaitos.get.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       Set.empty,
@@ -173,21 +179,26 @@ object KoskiToSuoritusConverter {
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         PerusopetuksenOpiskeluoikeus(
           opiskeluoikeus.oid,
-          opiskeluoikeus.oppilaitos.oid,
+          opiskeluoikeus.oppilaitos.get.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.lisätiedot,
           opiskeluoikeus.tila)
       case opiskeluoikeus if opiskeluoikeus.isAmmatillinen =>
         AmmatillinenOpiskeluoikeus(
           opiskeluoikeus.oid,
-          opiskeluoikeus.oppilaitos.oid,
+          opiskeluoikeus.oppilaitos.map(o =>
+            fi.oph.suorituspalvelu.business.Oppilaitos(
+              o.nimi.fi,
+              o.nimi.sv,
+              o.nimi.en,
+              o.oid)).getOrElse(dummy()),
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.tila)
       case opiskeluoikeus =>
         GeneerinenOpiskeluoikeus(
           opiskeluoikeus.oid,
           asKoodiObject(opiskeluoikeus.tyyppi),
-          opiskeluoikeus.oppilaitos.oid,
+          opiskeluoikeus.oppilaitos.get.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.tila)
     }
@@ -196,7 +207,7 @@ object KoskiToSuoritusConverter {
   def toPerusopetuksenOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus): fi.oph.suorituspalvelu.business.Opiskeluoikeus = {
     val convertedSuoritukset: Set[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
     PerusopetuksenOpiskeluoikeus(
-      opiskeluoikeus.oppilaitos.oid,
+      opiskeluoikeus.oppilaitos.get.oid,
       opiskeluoikeus.oid,
       convertedSuoritukset,
       opiskeluoikeus.lisätiedot,

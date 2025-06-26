@@ -55,9 +55,6 @@ enum Tila:
   case KESKEN
   case KESKEYTYNYT
 
-enum YTOTila:
-  case HYVAKSYTTY
-
 case class OOOppilaitos(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
@@ -279,23 +276,27 @@ case class YTO(
   @(Schema @field)(example = "Viestintä- ja vuorovaikutusosaaminen", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(example = "11", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Int,
+  @BeanProperty laajuus: Optional[Int],
   @(Schema @field)(example = "HYVAKSYTTY", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: YTOTila
+  @BeanProperty arvosana: Optional[String]
 )
 
 case class AmmatillisenTutkinnonOsa(
   @(Schema @field)(example = "Audiovisuaalisen kulttuurin perusteet", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(example = "11", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Int,
+  @BeanProperty laajuus: Optional[Int],
   @(Schema @field)(example = "4", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Int
+  @BeanProperty arvosana: Optional[String]
 )
 
 case class AmmatillinenOppilaitos(
   @(Schema @field)(example = "Hämeen ammatti-instituutti, Lepaa", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: String,
+  @BeanProperty nimiFI: Optional[String],
+  @(Schema @field)(example = "", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimiSV: Optional[String],
+  @(Schema @field)(example = "", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimiEN: Optional[String],
   @(Schema @field)(example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oid: String
 )
