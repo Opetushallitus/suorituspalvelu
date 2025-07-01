@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva}
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Arvosana, Kielistetty, KoskiErityisenTuenPaatos, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
 
@@ -814,4 +814,49 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("999908", "koulutus", Some(12)), tuva.koodi)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
 
+  @Test def testParasArviointiAmmatillinen(): Unit = {
+    val arvioinnit = Set(
+      Arviointi(Arvosana("4", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), true),
+      Arviointi(Arvosana("2", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), true),
+      Arviointi(Arvosana("Hyväksytty", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), true)
+    )
+     Assertions.assertEquals(
+       Some(Arviointi(Arvosana("4", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), true)),
+       KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
+     )
+  }
+
+  @Test def testParasArviointiAmmatillinenSanalliset(): Unit = {
+    val arvioinnit = Set(
+      Arviointi(Arvosana("Hylätty", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), false),
+      Arviointi(Arvosana("Hyväksytty", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), true)
+    )
+    Assertions.assertEquals(
+      Some(Arviointi(Arvosana("Hyväksytty", "arviointiasteikkoammatillinen15", Kielistetty(None, None, None), None), true)),
+      KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
+    )
+  }
+
+  @Test def testParasArviointiPerusopetus(): Unit = {
+    val arvioinnit = Set(
+      Arviointi(Arvosana("8", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true),
+      Arviointi(Arvosana("7", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true),
+      Arviointi(Arvosana("S", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true)
+    )
+    Assertions.assertEquals(
+      Some(Arviointi(Arvosana("8", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true)),
+      KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
+    )
+  }
+
+  @Test def testParasArviointiPerusopetusSanalliset(): Unit = {
+    val arvioinnit = Set(
+      Arviointi(Arvosana("O", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true),
+      Arviointi(Arvosana("S", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true)
+    )
+    Assertions.assertEquals(
+      Some(Arviointi(Arvosana("S", "arviointiasteikkoyleissivistava", Kielistetty(None, None, None), None), true)),
+      KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
+    )
+  }
 }
