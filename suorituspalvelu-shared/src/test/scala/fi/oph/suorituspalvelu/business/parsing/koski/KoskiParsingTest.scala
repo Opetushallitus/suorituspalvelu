@@ -289,6 +289,16 @@ class KoskiParsingTest {
         |                          "koodistoUri": "arviointiasteikkoammatillinen15",
         |                          "koodistoVersio": 1
         |                        }
+        |                      },
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "3",
+        |                          "nimi": {
+        |                            "fi": "1"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoammatillinen15",
+        |                          "koodistoVersio": 1
+        |                        }
         |                      }
         |                    ]
         |                  }
@@ -306,7 +316,7 @@ class KoskiParsingTest {
     val osaAlue = tutkinto.osat.head.osaAlueet.head
     Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", Some(1)), osaAlue.koodi)
     Assertions.assertEquals(Kielistetty(Some("Viestintä ja vuorovaikutus äidinkielellä"), None, None), osaAlue.nimi)
-    Assertions.assertEquals(Some(Koodi("1", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
+    Assertions.assertEquals(Some(Koodi("3", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
     Assertions.assertEquals(Some(4), osaAlue.laajuus)
     Assertions.assertEquals(Some(Koodi("6", "opintojenlaajuusyksikko", Some(1))), osaAlue.laajuusKoodi)
 
@@ -621,7 +631,7 @@ class KoskiParsingTest {
 
     Assertions.assertEquals(Kielistetty(Some("Matematiikka"), None, None), oppimaara.nimi)
     Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.koodi)
-    Assertions.assertEquals("8", oppimaara.arvosana)
+    Assertions.assertEquals(Koodi("8", "arviointiasteikkoyleissivistava", Some(1)), oppimaara.arvosana)
     Assertions.assertEquals(Some(LocalDate.parse("2022-05-18")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
 

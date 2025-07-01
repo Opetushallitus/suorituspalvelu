@@ -13,7 +13,7 @@ object KoskiToSuoritusConverter {
   val allowMissingFields = new ThreadLocal[Boolean]
 
   def dummy[A](): A =
-    if(allowMissingFields.get())
+    if (allowMissingFields.get())
       null.asInstanceOf[A]
     else
       throw new RuntimeException("Dummies not allowed")
@@ -27,12 +27,51 @@ object KoskiToSuoritusConverter {
   def asKoodisto(tunniste: VersioituTunniste): String =
     tunniste.koodistoUri + "#" + tunniste.koodistoVersio
 
-  def isYTO(koodiarvo: String): Boolean =
+  def isYTO(koodiarvo: String): Boolean = {
     koodiarvo match
       case "106727" => true // viestintä- ja vuorovaikutusosaaminen
       case "106728" => true // matemaattis-luonnontieteellinen osaaminen
       case "106729" => true // yhteiskunta- ja työelämäosaaminen
       case default => false
+  }
+
+  def valitseParasArviointi(arvioinnit: Set[Arviointi]): Option[Arviointi] = {
+    if (arvioinnit.isEmpty) None
+    else {
+      val asteikot: Set[String] = arvioinnit.map(arviointi => arviointi.arvosana.koodistoUri)
+      val parasArviointi = asteikot match {
+        case asteikot if asteikot.size > 1 => throw new RuntimeException(s"Arvioinnit sisältävät useita asteikkoja: $arvioinnit")
+        case asteikot if asteikot.isEmpty => throw new RuntimeException(s"Arvioinneilta puuttuu asteikko: $arvioinnit")
+        case asteikot =>
+          asteikot.head match {
+            case "arviointiasteikkoyleissivistava" =>
+              val numeeriset = arvioinnit.filter(arv => Set("10", "9", "8", "7", "6", "5", "4").contains(arv.arvosana.koodiarvo))
+              val parasArviointi: Option[Arviointi] = {
+                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
+                else {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("S"))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("O")))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("H")))
+                }
+              }
+              parasArviointi
+            case "arviointiasteikkoammatillinen15" =>
+              val numeeriset = arvioinnit.filter(arv => Set("1", "2", "3", "4", "5").contains(arv.arvosana.koodiarvo))
+              val parasArviointi: Option[Arviointi] = {
+                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
+                else {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
+                }
+              }
+              parasArviointi
+            case _ =>
+              ???
+          }
+      }
+      parasArviointi
+    }
+  }
 
   def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: OsaSuoritus): AmmatillisenTutkinnonOsaAlue = {
     val arviointi = {
@@ -40,9 +79,7 @@ object KoskiToSuoritusConverter {
         .map(arviointi => arviointi
           .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoammatillinen15"))
         .getOrElse(Set.empty)
-      if (arvioinnit.size > 1)
-        throw new RuntimeException("liikaa arvosanoja")
-      arvioinnit.headOption
+      valitseParasArviointi(arvioinnit)
     }
 
     AmmatillisenTutkinnonOsaAlue(
@@ -60,9 +97,7 @@ object KoskiToSuoritusConverter {
         .map(arviointi => arviointi
           .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoammatillinen15"))
         .getOrElse(Set.empty)
-      if (arvioinnit.size > 1)
-        throw new RuntimeException("liikaa arvosanoja")
-      arvioinnit.headOption
+      valitseParasArviointi(arvioinnit)
     }
 
     AmmatillisenTutkinnonOsa(
@@ -91,35 +126,33 @@ object KoskiToSuoritusConverter {
     )
 
   def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine =
+    val parasArviointi = {
+      val arvioinnit = osaSuoritus.arviointi
+        .map(arviointi => arviointi
+          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoyleissivistava"))
+        .getOrElse(Set.empty)
+      valitseParasArviointi(arvioinnit)
+    }
+
     PerusopetuksenOppiaine(
       osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi).getOrElse(dummy()),
       osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
-      {
-        val arvosanat = osaSuoritus.arviointi
-          .map(arviointi => arviointi
-            .filter(arviointi => arviointi.arvosana.koodistoUri=="arviointiasteikkoyleissivistava")
-            .map(arviointi => asKoodiObject(arviointi.arvosana)))
-          .getOrElse(Set.empty)
-        if(arvosanat.size>1)
-          throw new RuntimeException("liikaa arvosanoja")
-        arvosanat.head
-      }
+      parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
     )
 
   def toNuortenPerusopetuksenOppiaineenOppimaara(suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
+    val parasArviointi = {
+      val arvioinnit = suoritus.arviointi
+        .map(arviointi => arviointi
+          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoyleissivistava"))
+        .getOrElse(Set.empty)
+      valitseParasArviointi(arvioinnit)
+    }
+
     NuortenPerusopetuksenOppiaineenOppimaara(
       suoritus.koulutusmoduuli.map(km => km.tunniste.nimi).getOrElse(dummy()),
       suoritus.koulutusmoduuli.map(km => asKoodiObject(km.tunniste)).get,
-      {
-        val arvosanat = suoritus.arviointi
-          .map(arviointi => arviointi
-            .filter(arviointi => arviointi.arvosana.koodistoUri=="arviointiasteikkoyleissivistava")
-            .map(arviointi => arviointi.arvosana.koodiarvo))
-          .getOrElse(Set.empty)
-        if(arvosanat.size>1)
-          throw new RuntimeException("liikaa arvosanoja")
-        arvosanat.head
-      },
+      parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
@@ -138,14 +171,14 @@ object KoskiToSuoritusConverter {
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
-     PerusopetuksenOppimaara(
+    PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.oid,
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       Set.empty,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
-       suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
+      //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
+      suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
     )
 
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
