@@ -5,7 +5,7 @@ tarjoilee edelleen muille järjestelmille (Hakemuspalvelu, Valintalaskenta).
 
 ### Arkkitehtuuri
 
-Komponenttikuvau on osoitteessa: https://wiki.eduuni.fi/spaces/KEIJO/pages/574036482/SUPA+Komponenttimalli
+Komponenttikuvaus on osoitteessa: https://wiki.eduuni.fi/spaces/KEIJO/pages/574036482/SUPA+Komponenttimalli
 
 ### Lokaali ympäristö
 
