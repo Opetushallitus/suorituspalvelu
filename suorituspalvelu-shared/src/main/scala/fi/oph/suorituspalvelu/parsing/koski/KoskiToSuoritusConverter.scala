@@ -36,7 +36,7 @@ object KoskiToSuoritusConverter {
   }
 
   def valitseParasArviointi(arvioinnit: Set[Arviointi]): Option[Arviointi] = {
-    if (arvioinnit.isEmpty) None
+    if (arvioinnit.size <= 1) arvioinnit.headOption
     else {
       val asteikot: Set[String] = arvioinnit.map(arviointi => arviointi.arvosana.koodistoUri)
       val parasArviointi = asteikot match {
