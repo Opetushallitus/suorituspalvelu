@@ -125,7 +125,7 @@ object KoskiToSuoritusConverter {
       suoritus.osasuoritukset.map(os => os.map(os => toAmmatillisenTutkinnonOsa(os))).getOrElse(Set.empty)
     )
 
-  def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine =
+  def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine = {
     val parasArviointi = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
@@ -137,8 +137,10 @@ object KoskiToSuoritusConverter {
     PerusopetuksenOppiaine(
       osaSuoritus.koulutusmoduuli.map(k => k.tunniste.nimi).getOrElse(dummy()),
       osaSuoritus.koulutusmoduuli.map(k => asKoodiObject(k.tunniste)).getOrElse(dummy()),
-      parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
+      parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
+      osaSuoritus.koulutusmoduuli.flatMap((k: KoulutusModuuli) => k.kieli.map(kieli => asKoodiObject(kieli)))
     )
+  }
 
   def toNuortenPerusopetuksenOppiaineenOppimaara(suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
     val parasArviointi = {

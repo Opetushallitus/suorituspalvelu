@@ -28,12 +28,12 @@ case class Kielistetty(fi: Option[String],
   }
 }
 
-case class Arvosana(koodiarvo: String,
-                    koodistoUri: String,
-                    nimi: Kielistetty,
-                    koodistoVersio: Option[Int]) extends VersioituTunniste
+case class KoskiKoodi(koodiarvo: String,
+                      koodistoUri: String,
+                      nimi: Kielistetty,
+                      koodistoVersio: Option[Int]) extends VersioituTunniste
 
-case class Arviointi(arvosana: Arvosana,
+case class Arviointi(arvosana: KoskiKoodi,
                      hyväksytty: Boolean)
 
 case class Laajuus(arvo: Int,
@@ -64,7 +64,8 @@ case class KoulutusModuuliTunniste(koodiarvo: String,
                                    nimi: Kielistetty) extends VersioituTunniste
 
 case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste,
-                           laajuus: Option[Laajuus])
+                           laajuus: Option[Laajuus],
+                           kieli: Option[KoskiKoodi])
 
 case class SuoritusTyyppi(koodiarvo: String,
                           koodistoUri: String,

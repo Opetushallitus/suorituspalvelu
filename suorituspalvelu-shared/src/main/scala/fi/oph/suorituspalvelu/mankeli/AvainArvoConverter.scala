@@ -1,10 +1,12 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Tietolahde}
+import fi.oph.suorituspalvelu.business.{NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus}
 import org.slf4j.LoggerFactory
 
-case class ValintaData(personOid: String, hakemusOid: Option[String], keyValues: Map[String, String])
+//Lisätään filtteröityihin suorituksiin kaikki sellaiset suoritukset, joilta on poimittu avainArvoja. Eli jos jossain kohtaa pudotetaan pois suorituksia syystä tai toisesta, ne eivät ole mukana filtteröidyissä suorituksissa.
+//Opiskeluoikeudet sisältävät kaiken lähdedatan.
+case class ValintaData(personOid: String, hakemusOid: Option[String], keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty, filtteroidytSuoritukset: Seq[Suoritus])
 
 object AvainArvoConstants {
   //Sama tieto tallennetaan kahden avaimen alle: vanhan Valintalaskentakoostepalvelusta periytyvän,
@@ -16,6 +18,10 @@ object AvainArvoConstants {
   final val peruskouluSuoritettuKeys = Set("PK_TILA", "PERUSKOULU_SUORITETTU")
 
   final val peruskouluAineenArvosanaPrefixes = Set("PK_", "PERUSKOULU_ARVOSANA_")
+
+  //Nämä tulevat aineen arvosanojen perään, eli esimerkiksi jos varsinainen arvosana
+  // on avaimen "PK_B1" alla, tulee kieli avainten "PK_B1_OPPIAINE" ja "PK_B1_OPPIAINEEN_KIELI" alle
+  final val peruskouluAineenKieliPostfixes = Set("_OPPIAINE", "_OPPIAINEEN_KIELI")
 }
 
 object AvainArvoConverter {
@@ -26,12 +32,22 @@ object AvainArvoConverter {
   def korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]): Set[(String, String)] = {
     val oppimaaranArvosanat: Set[(String, String)] = perusopetuksenOppimaara.map(s => {
       if (s.vahvistusPaivamaara.isDefined) {
-        s.aineet.flatMap(aine => AvainArvoConstants.peruskouluAineenArvosanaPrefixes.map(prefix => (prefix + aine.koodi.arvo, aine.arvosana.arvo)))
+        s.aineet.flatMap(aine =>
+          val arvosanaArvot: Set[(String, String)] = AvainArvoConstants.peruskouluAineenArvosanaPrefixes.map(prefix => (prefix + aine.koodi.arvo, aine.arvosana.arvo))
+          val kieliArvot: Set[(String, String)] = aine.kieli.map(k => AvainArvoConstants.peruskouluAineenKieliPostfixes.map(postfix => {
+            arvosanaArvot.map(arvosanaArvo => (arvosanaArvo._1 + postfix, k.arvo))
+          })).map(_.flatten).getOrElse(Set.empty)
+          arvosanaArvot ++ kieliArvot
+        )
       } else Set.empty
     }).getOrElse(Set.empty)
-    oppimaaranArvosanat
-  }
 
+    //Yhdistetään data niin, että jokaisesta aineesta huomioidaan korkein arvosana
+    val byAineKey = oppimaaranArvosanat.groupBy(_._1)
+    val korkeimmatArvosanat = byAineKey.keys.map(key => (key, byAineKey(key).maxBy(_._2))).toMap
+
+    korkeimmatArvosanat.values.toSet
+  }
 
   def convertPeruskouluArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): ValintaData = {
     val perusopetukset: Seq[PerusopetuksenOpiskeluoikeus] = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
@@ -56,7 +72,7 @@ object AvainArvoConverter {
     val suoritettu: Set[(String, String)] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => (key, valmisOppimaara.isDefined.toString))
 
     val combined = (arvosanat ++ kieliArvot ++ suoritusvuosi ++ suoritettu).toMap
-    ValintaData(personOid, None, combined)
+    ValintaData(personOid, None, combined, opiskeluoikeudet, Seq.empty ++ useOppimaara)
   }
 
 }
