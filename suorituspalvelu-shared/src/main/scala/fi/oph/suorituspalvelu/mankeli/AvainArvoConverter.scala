@@ -52,7 +52,7 @@ object AvainArvoConverter {
     val arvosanat: Set[(String, String)] = korkeimmatPerusopetuksenArvosanatAineittain(valmisOppimaara, Seq.empty)
 
     //Nämä poimitaan vain valmiilta suorituksilta
-    val suoritusvuosi: Set[(String, String)] = AvainArvoConstants.peruskouluSuoritusvuosiKeys.map(key => (key, "2025")) //Todo, get from vahvistus date?
+    val suoritusvuosi: Set[(String, String)] = valmisOppimaara.flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear)).map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys.map(key => (key, year.toString))).getOrElse(Set.empty)
     val suoritettu: Set[(String, String)] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => (key, valmisOppimaara.isDefined.toString))
 
     val combined = (arvosanat ++ kieliArvot ++ suoritusvuosi ++ suoritettu).toMap
