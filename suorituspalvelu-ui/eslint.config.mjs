@@ -5,6 +5,7 @@ import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
 import ts from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import playwright from 'eslint-plugin-playwright';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +17,7 @@ const compat = new FlatCompat({
 
 const config = ts.config(
   {
-    ignores: ['.next/*', 'cdk/*', './.lintstagedrc.mjs', 'coverage'],
+    ignores: ['.next/*', 'out', './.lintstagedrc.mjs', 'coverage'],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   eslintConfigPrettier,
@@ -49,6 +50,15 @@ const config = ts.config(
           default: 'generic',
         },
       ],
+    },
+  },
+    {
+    ...playwright.configs['flat/recommended'],
+    files: ['playwright/**/*.ts'],
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+      '@typescript-eslint/no-floating-promises': 'error',
+      'playwright/expect-expect': 'off',
     },
   },
 );
