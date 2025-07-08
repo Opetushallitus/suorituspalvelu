@@ -17,3 +17,12 @@ Lokaalin ympäristön käyttöönotto
    pitäisi pystyä kokeilemaan esimerkkiparametreilla
 3. Järjestelmän tilaa voi seurata kannasta (salasana on "app"): psql -U app --host localhost --port 55432 -d suorituspalvelu
 
+#### Palvelimen ja käyttölittymän ajaminen yhdessä
+
+Koko sovelluksen ajaminen yhdessä on toteutettu docker composella. Jotta backend saa docker-kontissa asennettua riippuvuudet, täytyy Github packages -kirjautumistunnuksen tunnukset löytyä mavenin konfiguraatiosta .m2/settings.xml. Jos olet käyttänyt Opetushallituksen Github packagesia aiemmin, tarvittava tiedosto löytyy kotihakemistostasi polusta .m2/settings.xml.
+
+Voit käynnistää koko sovelluksen yhdessä komennolla
+
+docker compose up
+
+Komento käynnistää backendin, käyttöliittymän, postgreSQL-tietokannan ja nginx-proxyn. Ympäristömuuttujat luetaan .env.docker ja .env.docker.local-tiedostosta. Kopioi itsellesi .env.docker tiedosts .env.docker.local-tiedostoon ja ylikirjoita haluamasi ympäristömuuttujat (jos esim. haluat ajaa sovellusta jotakin toista ympäristöä vasten)

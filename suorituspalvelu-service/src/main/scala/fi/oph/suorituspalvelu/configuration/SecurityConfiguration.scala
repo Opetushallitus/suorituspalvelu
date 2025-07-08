@@ -73,7 +73,7 @@ class SecurityConfiguration {
 
   @Bean
   def ticketValidator(environment: Environment): TicketValidator =
-    val ticketValidator = new Cas20ProxyTicketValidator(environment.getRequiredProperty("web.url.cas"))
+    val ticketValidator = new Cas20ProxyTicketValidator(environment.getRequiredProperty("web.url.cas-internal"))
     ticketValidator.setAcceptAnyProxy(true)
     ticketValidator
 

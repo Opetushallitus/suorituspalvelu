@@ -1,7 +1,8 @@
+'use client';
 import Head from 'next/head';
-import React from 'react';
 
 const HomePage = () => {
+
   return (
     <div>
       <Head>
