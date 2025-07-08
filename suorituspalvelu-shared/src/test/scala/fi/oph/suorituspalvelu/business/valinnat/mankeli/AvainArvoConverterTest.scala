@@ -11,25 +11,29 @@ import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
 @TestInstance(Lifecycle.PER_CLASS)
 class AvainArvoConverterTest {
 
-  @Test def testKoskiParsingForAmmatillistenOpiskeluoikeuksienSuoritukset(): Unit = {
+  @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
     val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oos: Seq[Opiskeluoikeus] =  KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
-      val oikeudet: Seq[PerusopetuksenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
-        .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
-        .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
+      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
 
-      Assertions.assertEquals(1, oikeudet.size)
+      Assertions.assertEquals(1, oos.size)
 
       val converterResult = AvainArvoConverter.convertPeruskouluArvot("1.2.246.562.98.69863082363", oos)
 
-      Assertions.assertEquals(Some("9"), converterResult.keyValues.get(AvainArvoConstants.peruskouluAineenArvosanaPrefixes.head+"GE"))
-      Assertions.assertEquals(Some("FI"), converterResult.keyValues.get(AvainArvoConstants.perusopetuksenKieliKeys.head))
-      Assertions.assertEquals(Some("2025"), converterResult.keyValues.get(AvainArvoConstants.peruskouluSuoritusvuosiKeys.head))
-      Assertions.assertEquals(Some("true"), converterResult.keyValues.get(AvainArvoConstants.peruskouluSuoritettuKeys.head))
+      AvainArvoConstants.peruskouluAineenArvosanaPrefixes.foreach(prefix => {
+        Assertions.assertEquals(Some("9"), converterResult.keyValues.get(prefix + "GE"))
+      })
+      AvainArvoConstants.perusopetuksenKieliKeys.foreach(key => {
+        Assertions.assertEquals(Some("FI"), converterResult.keyValues.get(key))
+      })
+      AvainArvoConstants.peruskouluSuoritusvuosiKeys.foreach(key => {
+        Assertions.assertEquals(Some("2025"), converterResult.keyValues.get(key))
+      })
+      AvainArvoConstants.peruskouluSuoritettuKeys.foreach(key => {
+        Assertions.assertEquals(Some("true"), converterResult.keyValues.get(AvainArvoConstants.peruskouluSuoritettuKeys.head))
+      })
     })
   }
-
 }
