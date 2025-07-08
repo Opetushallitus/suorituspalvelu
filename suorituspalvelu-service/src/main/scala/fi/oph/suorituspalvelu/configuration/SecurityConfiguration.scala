@@ -92,7 +92,7 @@ class SecurityConfiguration {
   //
   @Bean def casAuthenticationEntryPoint(environment: Environment, serviceProperties: ServiceProperties): CasAuthenticationEntryPoint =
     val casAuthenticationEntryPoint = new CasAuthenticationEntryPoint()
-    casAuthenticationEntryPoint.setLoginUrl(environment.getRequiredProperty("web.url.cas") + "/login")
+    casAuthenticationEntryPoint.setLoginUrl(environment.getRequiredProperty("web.url.cas-login"))
     casAuthenticationEntryPoint.setServiceProperties(serviceProperties)
     casAuthenticationEntryPoint
 

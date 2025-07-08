@@ -1,0 +1,7 @@
+FROM node:22-alpine
+WORKDIR /app
+COPY suorituspalvelu-ui/package.json suorituspalvelu-ui/package-lock.json ./
+RUN npm ci
+COPY suorituspalvelu-ui/ ./
+EXPOSE 3000
+CMD ["npm", "run", "dev"]

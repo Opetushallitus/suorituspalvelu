@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    networks:
+      - supanet
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    user: "${USERID}:${GROUPID}"
+    env_file: 
+     - .env.docker
+     - .env.docker.local
+    environment:
+      USER: appuser
+      HOME: /home/appuser
+      MAVEN_CONFIG: /home/appuser/.m2
+      # Ei käynnistetä tietokantaa automaattisesti backendin kanssa DevApp:ssa
+      NO_DB: true
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/suorituspalvelu
+    ports:
+      - "8443:8443"
+    networks:
+      - supanet
+    volumes:
+      - .:/app
+      - ~/.m2:/home/appuser/.m2
+    depends_on:
+      - postgres
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    user: "${USERID}:${GROUPID}"
+    ports:
+      - "3000:3000"
+    networks:
+      - supanet
+    volumes:
+      - ./suorituspalvelu-ui:/app
+  nginx:
+    image: nginx:alpine
+    env_file:
+      - .env.docker
+      - .env.docker.local
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/templates/default.conf.template:ro
+    networks:
+      - supanet
+    depends_on:
+      - frontend
+      - backend
+networks:
+  supanet:
+    driver: bridge
+volumes:
+  pgdata:

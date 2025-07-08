@@ -5,6 +5,7 @@ host:
 web:
   url:
     cas: https://${host.cas}/cas
+    cas-login: https://${host.cas}/cas/login
 
 cas-service:
   service: https://{{host_virkailija}}/suorituspalvelu

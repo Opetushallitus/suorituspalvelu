@@ -5,7 +5,7 @@ tarjoilee edelleen muille järjestelmille (Hakemuspalvelu, Valintalaskenta).
 
 ### Arkkitehtuuri
 
-Komponenttikuvau on osoitteessa: https://wiki.eduuni.fi/spaces/KEIJO/pages/574036482/SUPA+Komponenttimalli
+Komponenttikuvaus on osoitteessa: https://wiki.eduuni.fi/spaces/KEIJO/pages/574036482/SUPA+Komponenttimalli
 
 ### Lokaali ympäristö
 
@@ -17,3 +17,14 @@ Lokaalin ympäristön käyttöönotto
    pitäisi pystyä kokeilemaan esimerkkiparametreilla
 3. Järjestelmän tilaa voi seurata kannasta (salasana on "app"): psql -U app --host localhost --port 55432 -d suorituspalvelu
 
+#### Palvelimen ja käyttölittymän ajaminen yhdessä
+
+Koko sovelluksen ajaminen yhdessä on toteutettu docker composella. Voit käynnistää koko sovelluksen yhdessä komennolla
+
+./docker-compose.sh up
+
+Komento käynnistää backendin, käyttöliittymän, postgreSQL-tietokannan ja nginx-proxyn. Ympäristömuuttujat luetaan .env.docker ja .env.docker.local-tiedostosta. Kopioi itsellesi .env.docker tiedosts .env.docker.local-tiedostoon ja ylikirjoita haluamasi ympäristömuuttujat (jos esim. haluat ajaa sovellusta jotakin toista ympäristöä vasten).
+
+docker-compose.sh on kääreskripti, joka asettaa ympäristömuuttujia ja ajaa komennon "docker compose". Voit antaa sille samoja komentoriviparametreja kuin "docker compose":lle. 
+
+Sovelluksen käyttöliittymä on käytettävissä osoitteessa http:/localhost/suorituspalvelu. 
