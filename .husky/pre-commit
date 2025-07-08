@@ -1,0 +1,1 @@
+cd suorituspalvelu-ui && npx lint-staged
