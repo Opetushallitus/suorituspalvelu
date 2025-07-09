@@ -8,7 +8,7 @@ import scala.collection.immutable
 
 //Lisätään filtteröityihin suorituksiin kaikki sellaiset suoritukset, joilta on poimittu avainArvoja. Eli jos jossain kohtaa pudotetaan pois suorituksia syystä tai toisesta, ne eivät ole mukana filtteröidyissä suorituksissa.
 //Opiskeluoikeudet sisältävät kaiken lähdedatan.
-case class ValintaData(personOid: String, hakemusOid: Option[String], keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty, filtteroidytSuoritukset: Seq[Suoritus])
+case class ValintaData(personOid: String, keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty, filtteroidytSuoritukset: Seq[Suoritus])
 
 object AvainArvoConstants {
   //Sama tieto tallennetaan kahden avaimen alle: vanhan Valintalaskentakoostepalvelusta periytyvän,
@@ -52,6 +52,34 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): ValintaData = {
+
+    val peruskouluSuoritus: Option[PerusopetuksenOppimaara] = filterForPeruskoulu(personOid, opiskeluoikeudet)
+    val peruskouluArvot: Map[String, String] = convertPeruskouluArvot(personOid, peruskouluSuoritus, Seq.empty)
+
+    ValintaData(personOid, peruskouluArvot, opiskeluoikeudet, Seq.empty ++ peruskouluSuoritus)
+  }
+
+  def filterForPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Option[PerusopetuksenOppimaara] = {
+    val perusopetuksenOpiskeluoikeudet: Seq[PerusopetuksenOpiskeluoikeus] = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
+    val (vahvistetut, eiVahvistetut) = perusopetuksenOpiskeluoikeudet.flatMap(po => po.suoritukset.find(_.isInstanceOf[PerusopetuksenOppimaara]).map(_.asInstanceOf[PerusopetuksenOppimaara])).partition(o => o.vahvistusPaivamaara.isDefined)
+
+    if (vahvistetut.size > 1) {
+      LOG.error(s"Oppijalle $personOid enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
+      throw new RuntimeException(s"Oppijalle $personOid löytyy enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
+    }
+
+    //Todo, lisätään mahdollisesti ehto, että suorituksen vahvistuspäivämäärän on oltava ennen haun leikkuripäivämäärää
+    val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.headOption
+    //Todo, tämän käsittelyyn tarvitaan jotain päivämäärätietoa suorituksille, jotta voidaan poimia tuorein. Periaatteessa ei-vahvistettuja voisi olla useita.
+    // Toisaalta voi olla että riittää tieto siitä, että jotain keskeneräistä löytyy. Halutaan ehkä filtteröidä selkeästi keskeytyneet (eronnut, erotettu jne) pois.
+    val keskenOppimaara: Option[PerusopetuksenOppimaara] = eiVahvistetut.headOption
+
+    val useOppimaara = valmisOppimaara.orElse(keskenOppimaara)
+    useOppimaara
+  }
+
+
   //Ottaa huomioon ensi vaiheessa PerusopetuksenOppimaarat ja myöhemmin myös PerusopetuksenOppiaineenOppimaarien sisältämät arvosanat JOS löytyy suoritettu PerusopetuksenOppimaara
   def korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]): Set[(String, String)] = {
     val aineet: Set[PerusopetuksenOppiaine] = perusopetuksenOppimaara.map(om => om.aineet).getOrElse(Set.empty)
@@ -73,31 +101,18 @@ object AvainArvoConverter {
     avainArvot
   }
 
-  def convertPeruskouluArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): ValintaData = {
-    val perusopetukset: Seq[PerusopetuksenOpiskeluoikeus] = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
-    val (vahvistetut, eiVahvistetut) = perusopetukset.flatMap(po => po.suoritukset.find(_.isInstanceOf[PerusopetuksenOppimaara]).map(_.asInstanceOf[PerusopetuksenOppimaara])).partition(o => o.vahvistusPaivamaara.isDefined)
+  def convertPeruskouluArvot(personOid: String, perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]): Map[String, String] = {
+    val oppimaaraOnVahvistettu: Boolean = perusopetuksenOppimaara.exists(_.vahvistusPaivamaara.isDefined)
 
-    if (vahvistetut.size > 1) {
-      LOG.error(s"Oppijalle $personOid enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
-      throw new RuntimeException(s"Oppijalle $personOid löytyy enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
+    val kieliArvot: Set[(String, String)] = perusopetuksenOppimaara.map(_.suoritusKieli.arvo).map(kieli => AvainArvoConstants.perusopetuksenKieliKeys.map(key => (key, kieli))).getOrElse(Set.empty)
+
+    if (oppimaaraOnVahvistettu) {
+      val arvosanaArvot: Set[(String, String)] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, Seq.empty)
+      val suoritusVuosiArvot: Set[(String, String)] = perusopetuksenOppimaara.flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear)).map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys.map(key => (key, year.toString))).getOrElse(Set.empty)
+      val suoritusArvot: Set[(String, String)] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => (key, oppimaaraOnVahvistettu.toString))
+      (arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvot ++ suoritusArvot).toMap
+    } else {
+      kieliArvot.toMap
     }
-
-    val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.headOption
-    //Todo, tämän käsittelyyn tarvitaan jotain päivämäärätietoa suorituksille, jotta voidaan poimia tuorein. Periaatteessa ei-vahvistettuja voisi olla useita.
-    // Toisaalta voi olla että riittää tieto siitä, että jotain keskeneräistä löytyy. Halutaan ehkä filtteröidä selkeästi keskeytyneet pois.
-    val keskenOppimaara: Option[PerusopetuksenOppimaara] = eiVahvistetut.headOption
-
-    val useOppimaara = valmisOppimaara.orElse(keskenOppimaara)
-
-    val kieliArvot: Set[(String, String)] = useOppimaara.map(_.suoritusKieli.arvo).map(kieli => AvainArvoConstants.perusopetuksenKieliKeys.map(key => (key, kieli))).getOrElse(Set.empty)
-
-    val arvosanat: Set[(String, String)] = korkeimmatPerusopetuksenArvosanatAineittain(valmisOppimaara, Seq.empty)
-
-    //Nämä poimitaan vain valmiilta suorituksilta
-    val suoritusvuosi: Set[(String, String)] = valmisOppimaara.flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear)).map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys.map(key => (key, year.toString))).getOrElse(Set.empty)
-    val suoritettu: Set[(String, String)] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => (key, valmisOppimaara.isDefined.toString))
-
-    val combined = (arvosanat ++ kieliArvot ++ suoritusvuosi ++ suoritettu).toMap
-    ValintaData(personOid, None, combined, opiskeluoikeudet, Seq.empty ++ useOppimaara)
   }
 }
