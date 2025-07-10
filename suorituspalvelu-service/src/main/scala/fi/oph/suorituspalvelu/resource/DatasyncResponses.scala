@@ -34,3 +34,13 @@ case class KoskiSyncSuccessResponse(
 case class KoskiSyncFailureResponse(
                                      @(Schema@field)(example = DATASYNC_VIRTA_ESIMERKKI_VIRHE)
                                      @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
+
+@Schema(name = "YtrSyncSuccessResponse")
+case class YtrSyncSuccessResponse(
+                                     @(Schema @field)(example = "")
+                                     @BeanProperty responseStr: String) extends SyncResponse {}
+
+@Schema(name = "YtrSyncFailureResponse")
+case class YtrSyncFailureResponse(
+                                     @(Schema@field)(example = DATASYNC_VIRTA_ESIMERKKI_VIRHE)
+                                     @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
