@@ -4,7 +4,7 @@ import scala.concurrent.duration.DurationInt
 import com.github.benmanes.caffeine.cache.Caffeine
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -35,6 +35,12 @@ class IntegrationConfiguration {
                      @Value("${integrations.virta.avain}") avain: String,
                      @Value("${integrations.virta.base-url}") environmentBaseUrl: String): VirtaClientImpl =
     new VirtaClientImpl(jarjestelma, tunnus, avain, environmentBaseUrl)
+
+  @Bean
+  def getYtrClient(@Value("${integrations.ytr.username}") user: String,
+                   @Value("${integrations.ytr.password}") password: String,
+                   @Value("${integrations.ytr.base-url}") envBaseUrl: String): YtrClient =
+    new YtrClient(user, password, envBaseUrl)
 
   //Todo, näille konffeille vaikka uusi cas-ryhmä application.ymliin, kannattanee käyttää samoja tunnuksia kaikissa cas-käyttöisissä integraatioissa
   @Bean
