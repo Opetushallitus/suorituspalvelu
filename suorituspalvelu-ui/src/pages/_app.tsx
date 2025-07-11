@@ -1,3 +1,4 @@
+'use client';
 import { Layout } from '@/components/Layout';
 import type { AppProps } from 'next/app';
 import { configPromise } from '@/configuration';
@@ -5,6 +6,7 @@ import Script from 'next/script';
 import { use, useEffect, useState } from 'react';
 import '@/styles/global.css';
 import { SessionExpiredError } from '@/http-client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const LoginLink = ({ url }: { url: string }) => {
   const loginUrl = new URL(url);
@@ -13,6 +15,17 @@ const LoginLink = ({ url }: { url: string }) => {
   loginUrl.searchParams.set('service', serviceUrl.toString());
   return <a href={loginUrl.toString()}>Log in</a>;
 };
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+    },
+  },
+});
 
 export default function App({ Component, pageProps }: AppProps) {
   const config = use(configPromise);
@@ -34,7 +47,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <Layout>
-      <Component {...pageProps} />
+      <QueryClientProvider client={queryClient}>
+        <Component {...pageProps} />
+      </QueryClientProvider>
       <Script src={config.routes.yleiset.raamitUrl} />
       {isSessionExpired && (
         <div>
