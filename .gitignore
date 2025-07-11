@@ -40,3 +40,9 @@ dependency-reduced-pom.xml
 .flattened-pom.xml
 node_modules/
 cdk.out
+
+### Maven ###
+.m2
+
+### docker ###
+.env.docker.local

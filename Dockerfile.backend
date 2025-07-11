@@ -1,0 +1,13 @@
+FROM amazoncorretto:21-alpine-jdk
+WORKDIR /app
+COPY --link suorituspalvelu-service ./suorituspalvelu-service
+COPY --link suorituspalvelu-domain ./suorituspalvelu-domain
+COPY --link suorituspalvelu-paattelyt ./suorituspalvelu-paattelyt
+COPY --link suorituspalvelu-shared ./suorituspalvelu-shared
+COPY --link pom.xml ./pom.xml
+COPY --link .m2 /root/.m2
+RUN apk add --no-cache maven
+EXPOSE 8443
+RUN mvn install -DskipTests
+WORKDIR /app/suorituspalvelu-service
+CMD ["mvn", "scala:run", "-DmainClass=fi.oph.suorituspalvelu.DevApp", "-DaddArgs=no_db"]

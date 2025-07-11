@@ -5,6 +5,7 @@ host:
 web:
   url:
     cas: https://${host.cas}/cas
+    cas-internal: https://${host.cas}/cas
 
 cas-service:
   service: https://{{host_virkailija}}/suorituspalvelu
