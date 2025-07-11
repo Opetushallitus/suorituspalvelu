@@ -1,5 +1,4 @@
-import { isEmpty, isPlainObject, pathOr } from 'remeda';
-import { configPromise } from './configuration';
+import { isPlainObject } from 'remeda';
 
 export function getCookies() {
   return document.cookie.split('; ').reduce(
@@ -100,11 +99,6 @@ const makeBareRequest = (request: Request) => {
   return doFetch(request);
 };
 
-const retryWithLogin = async (request: Request, loginUrl: string) => {
-  await makeBareRequest(new Request(loginUrl));
-  return makeBareRequest(request);
-};
-
 type BodyParser<T> = (res: Response) => Promise<T>;
 
 const TEXT_PARSER = (res: Response) => res.text();
@@ -144,12 +138,6 @@ const responseToData = async <Result = unknown>(
   }
 };
 
-const LOGIN_MAP = [
-  {
-    urlIncludes: '/suorituspalvelu-backend',
-    loginParam: ['suorituspalvelu', 'loginUrl'],
-  },
-] as const;
 const makeRequest = async <Result>(request: Request) => {
   try {
     const response = await makeBareRequest(request);
