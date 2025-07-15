@@ -1,11 +1,14 @@
 services:
-  postgres:
+  pgdatabase:
     image: postgres:15
-    restart: always
     networks:
       - supanet
     volumes:
       - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: suorituspalvelu
   backend:
     build:
       context: .
@@ -20,7 +23,9 @@ services:
       MAVEN_CONFIG: /home/appuser/.m2
       # Ei käynnistetä tietokantaa automaattisesti backendin kanssa DevApp:ssa
       NO_DB: true
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/suorituspalvelu
+      SPRING_DATASOURCE_USERNAME: app
+      SPRING_DATASOURCE_PASSWORD: app
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pgdatabase:5432/suorituspalvelu
     ports:
       - "8443:8443"
     networks:
@@ -29,7 +34,7 @@ services:
       - .:/app
       - ~/.m2:/home/appuser/.m2
     depends_on:
-      - postgres
+      - pgdatabase
   frontend:
     build:
       context: .
