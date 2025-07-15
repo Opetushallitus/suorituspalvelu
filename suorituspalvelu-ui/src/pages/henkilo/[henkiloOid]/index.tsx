@@ -30,7 +30,6 @@ export default function Page() {
 
   if (typeof henkiloOid === 'string') {
     return (
-
       <Suspense fallback={<FullSpinner />}>
         <Content oppijaNumero={henkiloOid} />
       </Suspense>

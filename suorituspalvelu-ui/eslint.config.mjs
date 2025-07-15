@@ -52,7 +52,7 @@ const config = ts.config(
       ],
     },
   },
-    {
+  {
     ...playwright.configs['flat/recommended'],
     files: ['playwright/**/*.ts'],
     rules: {
