@@ -2,6 +2,8 @@
 import { FullSpinner } from '@/components/FullSpinner';
 import { configPromise } from '@/configuration';
 import { client, useApiSuspenseQuery } from '@/http-client';
+import { useTranslate } from '@tolgee/react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { Suspense } from 'react';
 
@@ -26,12 +28,18 @@ const Content = ({ oppijaNumero }: { oppijaNumero: string }) => {
 export default function Page() {
   const router = useRouter();
   const { henkiloOid } = router.query;
+  const { t } = useTranslate();
 
   if (typeof henkiloOid === 'string') {
     return (
-      <Suspense fallback={<FullSpinner />}>
-        <Content oppijaNumero={henkiloOid} />
-      </Suspense>
+      <div>
+        <Head>
+          <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')}`}</title>
+        </Head>
+        <Suspense fallback={<FullSpinner />}>
+          <Content oppijaNumero={henkiloOid} />
+        </Suspense>
+      </div>
     );
   }
 }

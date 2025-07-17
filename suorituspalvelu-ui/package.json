@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.82.0",
+    "@tolgee/format-icu": "^6.2.6",
+    "@tolgee/react": "^6.2.6",
     "next": "15.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
