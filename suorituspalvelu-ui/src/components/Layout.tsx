@@ -1,19 +1,20 @@
 'use client';
 
 import { HenkilotSidebar } from './HenkilotSidebar';
-import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { SearchControls } from './SearchControls';
+import { SessionExpired, useIsSessionExpired } from './SessionExpired';
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { isSessionExpired } = useIsSessionExpired();
+
   return (
-    <QuerySuspenseBoundary>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <SearchControls />
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <HenkilotSidebar />
-          <main style={{ flexGrow: 1 }}>{children}</main>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <SearchControls />
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <HenkilotSidebar />
+        <main style={{ flexGrow: 1 }}>{children}</main>
       </div>
-    </QuerySuspenseBoundary>
+      {isSessionExpired && <SessionExpired />}
+    </div>
   );
 };

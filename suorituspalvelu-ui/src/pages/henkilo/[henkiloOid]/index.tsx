@@ -1,8 +1,7 @@
 'use client';
 import { FullSpinner } from '@/components/FullSpinner';
 import { configPromise } from '@/configuration';
-import { client } from '@/http-client';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { client, useApiSuspenseQuery } from '@/http-client';
 import { useRouter } from 'next/router';
 import { Suspense } from 'react';
 
@@ -16,9 +15,9 @@ const getOppijanTiedot = async (oppijaNumero?: string) => {
 };
 
 const Content = ({ oppijaNumero }: { oppijaNumero: string }) => {
-  const { data: tiedot } = useSuspenseQuery({
+  const { data: tiedot } = useApiSuspenseQuery({
     queryKey: ['henkiloTiedot', oppijaNumero],
-    queryFn: async () => getOppijanTiedot(oppijaNumero),
+    queryFn: () => getOppijanTiedot(oppijaNumero),
   });
 
   return <p>{JSON.stringify(tiedot)}</p>;
