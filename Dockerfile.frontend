@@ -1,5 +1,6 @@
 FROM node:22-alpine
 WORKDIR /app/suorituspalvelu-ui
 EXPOSE 3000
+RUN mkdir /.cache && chmod -R 777 /.cache
 CMD ["npm", "run", "dev"]
 
