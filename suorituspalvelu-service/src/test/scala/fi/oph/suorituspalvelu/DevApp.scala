@@ -19,7 +19,9 @@ object DevApp {
     main(args.toArray)
 
   def main(args: Array[String]): Unit =
-    startContainers()
+    if (!sys.env.getOrElse("NO_DB", "false").equalsIgnoreCase("true")) {
+      startContainers()
+    }
 
     // virta-integraatio
     System.setProperty("integrations.virta.jarjestelma", "")
@@ -28,11 +30,15 @@ object DevApp {
     System.setProperty("integrations.virta.base-url", "http://virtawstesti.csc.fi:8084")
 
     // cas-configuraatio
-    System.setProperty("cas-service.service", "https://localhost:8443")
+    System.setProperty("cas-service.service", sys.env.getOrElse("CAS_SERVICE_URL", "https://localhost:8443"))
     System.setProperty("cas-service.sendRenew", "false")
     System.setProperty("cas-service.key", "suorituspalvelu")
-    System.setProperty("web.url.cas", "https://virkailija.hahtuvaopintopolku.fi/cas")
-    System.setProperty("host.virkailija", "virkailija.hahtuvaopintopolku.fi")
+
+    val virkailijaDomain = sys.env.getOrElse("VIRKAILIJA_DOMAIN", "virkailija.hahtuvaopintopolku.fi")
+    val virkailijaCasUrl = s"https://$virkailijaDomain/cas"
+    System.setProperty("web.url.cas-login", sys.env.getOrElse("CAS_LOGIN_URL", s"$virkailijaCasUrl/login"))
+    System.setProperty("web.url.cas", virkailijaCasUrl)
+    System.setProperty("host.virkailija", sys.env.getOrElse("VIRKAILIJA_DOMAIN", "virkailija.hahtuvaopintopolku.fi"))
 
     App.main(args)
 }

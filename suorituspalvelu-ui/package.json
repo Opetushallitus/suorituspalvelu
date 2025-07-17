@@ -1,0 +1,46 @@
+{
+  "name": "suorituspalvelu-ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prepare": "cd .. && husky",
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "npx serve out",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "prettier": "prettier -u -c *",
+    "prettier:fix": "prettier --write -u *",
+    "test": "vitest",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.82.0",
+    "next": "15.3.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-error-boundary": "^6.0.0",
+    "remeda": "^2.24.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.53.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/node": "^22.16.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.6.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.5",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-playwright": "^2.2.0",
+    "husky": "^9.1.7",
+    "jsdom": "^26.1.0",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "serve": "^14.2.4",
+    "typescript": "^5",
+    "typescript-eslint": "^8.35.1",
+    "vitest": "^3.2.4"
+  }
+}
