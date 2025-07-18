@@ -230,12 +230,9 @@ export function useApiSuspenseQuery<Result = unknown>(
     queryFn: async (context) => {
       try {
         const result = await options?.queryFn?.(context);
-        console.log({ result });
         return result;
       } catch (error) {
-        console.log('error', { error });
         if (error instanceof SessionExpiredError) {
-          console.log('SetIsSessionExpired');
           setIsSessionExpired(true);
           const data = context.client.getQueryData(options.queryKey);
           if (data) {
@@ -249,7 +246,6 @@ export function useApiSuspenseQuery<Result = unknown>(
       }
     },
   });
-  console.log('error', queryResult.error);
 
   if (queryResult.error && !queryResult.isFetching) {
     throw queryResult.error;
