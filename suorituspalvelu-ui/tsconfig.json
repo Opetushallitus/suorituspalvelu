@@ -17,16 +17,22 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
     "./*.mjs",
     "./*.mts",
-    "./.*.mjs"
+    "./.*.mjs",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "out/suorituspalvelu/types/**/*.ts"
   ],
   "exclude": ["node_modules", "cdk", ".next"]
 }

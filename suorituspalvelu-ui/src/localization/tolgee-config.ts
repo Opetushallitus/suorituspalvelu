@@ -1,6 +1,6 @@
 import { BackendFetch, DevTools, Tolgee } from '@tolgee/react';
 import { FormatIcu } from '@tolgee/format-icu';
-import { configPromise } from '@/configuration';
+import { configPromise, isTest, localTranslations } from '@/configuration';
 
 const NAMESPACE = 'suorituspalvelu';
 
@@ -15,7 +15,7 @@ export async function tolgeeBase() {
       defaultLanguage: 'fi',
     });
 
-  if (config.isTesting || config.localTranslations) {
+  if (isTest || localTranslations) {
     return tg
       .updateDefaults({
         staticData: {

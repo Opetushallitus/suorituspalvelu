@@ -2,9 +2,6 @@
 import { FullSpinner } from '@/components/FullSpinner';
 import { configPromise } from '@/configuration';
 import { client, useApiSuspenseQuery } from '@/http-client';
-import { useTranslate } from '@tolgee/react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
 import { Suspense } from 'react';
 
 const getOppijanTiedot = async (oppijaNumero?: string) => {
@@ -25,21 +22,16 @@ const Content = ({ oppijaNumero }: { oppijaNumero: string }) => {
   return <p>{JSON.stringify(tiedot)}</p>;
 };
 
-export default function Page() {
-  const router = useRouter();
-  const { henkiloOid } = router.query;
-  const { t } = useTranslate();
-
-  if (typeof henkiloOid === 'string') {
-    return (
-      <div>
-        <Head>
-          <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')}`}</title>
-        </Head>
-        <Suspense fallback={<FullSpinner />}>
-          <Content oppijaNumero={henkiloOid} />
-        </Suspense>
-      </div>
-    );
-  }
+export default function HenkiloPage({
+  oppijaNumero,
+}: {
+  oppijaNumero: string;
+}) {
+  return (
+    <div>
+      <Suspense fallback={<FullSpinner />}>
+        <Content oppijaNumero={oppijaNumero} />
+      </Suspense>
+    </div>
+  );
 }
