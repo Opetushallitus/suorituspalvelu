@@ -12,7 +12,9 @@
     "prettier": "prettier -u -c *",
     "prettier:fix": "prettier --write -u *",
     "test": "vitest",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test-playwright-docker": "./scripts/run-playwright-tests-in-docker.sh",
+    "start-and-test-playwright-docker": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start http://localhost:3000 'npm run test-playwright-docker -- $PLAYWRIGHT_ARGS'"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.82.0",
@@ -39,6 +41,7 @@
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
     "serve": "^14.2.4",
+    "start-server-and-test": "^2.0.12",
     "typescript": "^5",
     "typescript-eslint": "^8.35.1",
     "vitest": "^3.2.4"
