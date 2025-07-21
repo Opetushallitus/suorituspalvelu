@@ -1,10 +1,10 @@
-import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import {
   ErrorBoundary,
   type ErrorBoundaryPropsWithRender,
 } from 'react-error-boundary';
 import { FullSpinner } from './FullSpinner';
+import { useQueryErrorResetBoundary } from '@tanstack/react-query';
 
 type FallbackRenderType = ErrorBoundaryPropsWithRender['fallbackRender'];
 
@@ -28,16 +28,10 @@ export function QuerySuspenseBoundary({
   suspenseFallback?: React.ReactNode;
   errorFallbackRender?: FallbackRenderType;
 }) {
+  const { reset } = useQueryErrorResetBoundary();
   return (
-    <QueryErrorResetBoundary>
-      {({ reset }) => (
-        <ErrorBoundary
-          onReset={reset}
-          fallbackRender={errorFallbackRender ?? defaultFallbackRender}
-        >
-          <Suspense fallback={suspenseFallback}>{children}</Suspense>
-        </ErrorBoundary>
-      )}
-    </QueryErrorResetBoundary>
+    <ErrorBoundary onReset={reset} fallbackRender={errorFallbackRender}>
+      <Suspense fallback={suspenseFallback}>{children}</Suspense>
+    </ErrorBoundary>
   );
 }
