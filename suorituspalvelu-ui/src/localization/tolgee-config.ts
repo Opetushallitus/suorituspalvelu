@@ -8,7 +8,7 @@ const REVALIDATE_TIME_SECONDS = 10 * 60;
 
 export async function tolgeeBase() {
   const config = await configPromise;
-  const tg = Tolgee()
+  let tg = Tolgee()
     .use(FormatIcu())
     .updateDefaults({
       availableLanguages: ['fi', 'sv', 'en'],
@@ -16,17 +16,15 @@ export async function tolgeeBase() {
     });
 
   if (isTest || localTranslations) {
-    return tg
-      .updateDefaults({
-        staticData: {
-          fi: () => import('./messages/fi.json'),
-          sv: () => import('./messages/sv.json'),
-          en: () => import('./messages/en.json'),
-        },
-      })
-      .init();
+    tg = tg.updateDefaults({
+      staticData: {
+        fi: () => import('./messages/fi.json'),
+        sv: () => import('./messages/sv.json'),
+        en: () => import('./messages/en.json'),
+      },
+    });
   } else {
-    return tg
+    tg = tg
       .use(
         BackendFetch({
           prefix: config.routes.yleiset.lokalisointiUrl,
@@ -40,9 +38,14 @@ export async function tolgeeBase() {
         defaultNs: NAMESPACE,
         ns: [NAMESPACE],
         projectId: 11100,
-      })
-      .init();
+      });
   }
+
+  const instance = tg.init();
+  instance.on('error', (error) => {
+    console.error(error);
+  });
+  return instance;
 }
 
 export const tolgeePromise = tolgeeBase();
