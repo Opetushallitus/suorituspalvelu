@@ -72,7 +72,7 @@ jobs:
         with:
           project_path: suorituspalvelu-ui
       - name: Build app
-        run: npm run build
+        run: npm run build:test
       - name: Run Playwright tests
         env:
           PLAYWRIGHT_ARGS: --project=${{ matrix.browser }}

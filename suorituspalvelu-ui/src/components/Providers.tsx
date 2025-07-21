@@ -1,14 +1,11 @@
 'use client';
-import { Layout } from '@/components/Layout';
-import type { AppProps } from 'next/app';
-import { configPromise } from '@/configuration';
-import Script from 'next/script';
 import { use } from 'react';
 import '@/styles/global.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionExpiredProvider } from '@/components/SessionExpired';
 import { TolgeeProvider } from '@tolgee/react';
 import { tolgeePromise } from '@/localization/tolgee-config';
+import { NuqsAdapter } from 'nuqs/adapters/next';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,20 +18,16 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function App({ Component, pageProps }: AppProps) {
-  const config = use(configPromise);
+export function Providers({ children }: { children: React.ReactNode }) {
   const tolgee = use(tolgeePromise);
 
   return (
     <TolgeeProvider tolgee={tolgee}>
-      <QueryClientProvider client={queryClient}>
-        <SessionExpiredProvider>
-          <Layout>
-            <Component {...pageProps} />
-            <Script src={config.routes.yleiset.raamitUrl} />
-          </Layout>
-        </SessionExpiredProvider>
-      </QueryClientProvider>
+      <NuqsAdapter>
+        <QueryClientProvider client={queryClient}>
+          <SessionExpiredProvider>{children}</SessionExpiredProvider>
+        </QueryClientProvider>
+      </NuqsAdapter>
     </TolgeeProvider>
   );
 }

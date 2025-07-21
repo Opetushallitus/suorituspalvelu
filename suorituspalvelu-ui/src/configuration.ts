@@ -1,11 +1,14 @@
 const DOMAIN = 'http://localhost';
 
+export const isTest = process.env.NEXT_PUBLIC_TEST === 'true';
+
+export const localTranslations =
+  process.env.NEXT_PUBLIC_LOCAL_TRANSLATIONS === 'true';
+
 export const getConfiguration = async () => {
   const suorituspalveluBackendUrl = `${DOMAIN}/suorituspalvelu-backend`;
 
   return {
-    isTesting: process.env.NODE_ENV === 'test',
-    localTranslations: process.env.NEXT_PUBLIC_LOCAL_TRANSLATIONS === 'true',
     routes: {
       yleiset: {
         raamitUrl: `${DOMAIN}/virkailija-raamit/apply-raamit.js`,
