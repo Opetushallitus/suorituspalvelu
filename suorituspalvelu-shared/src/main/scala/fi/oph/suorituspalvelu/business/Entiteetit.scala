@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonTypeName}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiLisatiedot, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, OpiskeluoikeusTila}
 
 import java.util.UUID
 import java.time.{Instant, LocalDate}
@@ -30,25 +30,26 @@ case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
 case class Arvosana(arvosana: String, koodi: String)
 
-case class AmmatillinenTutkinto(nimi: String, tyyppi: Koodi, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
+case class AmmatillinenTutkinto(nimi: Kielistetty, tyyppi: Koodi, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
 
-case class AmmatillisenTutkinnonOsaAlue(nimi: String, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Tyypitetty
+case class AmmatillisenTutkinnonOsaAlue(nimi: Kielistetty, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Tyypitetty
 
 case class AmmatillisenTutkinnonOsa(
-                                     nimi: String,
+                                     nimi: Kielistetty,
                                      koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
 case class Tuva(koodi: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
 case class Telma(koodi: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
-case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: String, koodi: Koodi, arvosana: String, suoritusKieli: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, suoritusKieli: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOppiaine(nimi: String, koodi: Koodi, arvosana: Koodi) extends Tyypitetty
+//Kieli määritelty oppiaineille kuten A1, B1 jne.
+case class PerusopetuksenOppiaine(nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, kieli: Option[Koodi]) extends Tyypitetty
 
-case class PerusopetuksenVuosiluokka(nimi: String, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
+case class PerusopetuksenVuosiluokka(nimi: Kielistetty, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOpiskeluoikeus(
                                          oid: String,
