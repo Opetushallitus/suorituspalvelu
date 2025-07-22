@@ -22,12 +22,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const tolgee = use(tolgeePromise);
 
   return (
-    <TolgeeProvider tolgee={tolgee}>
-      <NuqsAdapter>
-        <QueryClientProvider client={queryClient}>
-          <SessionExpiredProvider>{children}</SessionExpiredProvider>
-        </QueryClientProvider>
-      </NuqsAdapter>
-    </TolgeeProvider>
+    <SessionExpiredProvider>
+      <TolgeeProvider tolgee={tolgee}>
+        <NuqsAdapter>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </NuqsAdapter>
+      </TolgeeProvider>
+    </SessionExpiredProvider>
   );
 }
