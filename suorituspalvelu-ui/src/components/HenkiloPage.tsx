@@ -1,9 +1,7 @@
 'use client';
 import { FullSpinner } from '@/components/FullSpinner';
 import { configPromise } from '@/configuration';
-import { client } from '@/http-client';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/router';
+import { client, useApiSuspenseQuery } from '@/http-client';
 import { Suspense } from 'react';
 
 const getOppijanTiedot = async (oppijaNumero?: string) => {
@@ -16,23 +14,24 @@ const getOppijanTiedot = async (oppijaNumero?: string) => {
 };
 
 const Content = ({ oppijaNumero }: { oppijaNumero: string }) => {
-  const { data: tiedot } = useSuspenseQuery({
+  const { data: tiedot } = useApiSuspenseQuery({
     queryKey: ['henkiloTiedot', oppijaNumero],
-    queryFn: async () => getOppijanTiedot(oppijaNumero),
+    queryFn: () => getOppijanTiedot(oppijaNumero),
   });
 
   return <p>{JSON.stringify(tiedot)}</p>;
 };
 
-export default function Page() {
-  const router = useRouter();
-  const { henkiloOid } = router.query;
-
-  if (typeof henkiloOid === 'string') {
-    return (
+export default function HenkiloPage({
+  oppijaNumero,
+}: {
+  oppijaNumero: string;
+}) {
+  return (
+    <div>
       <Suspense fallback={<FullSpinner />}>
-        <Content oppijaNumero={henkiloOid} />
+        <Content oppijaNumero={oppijaNumero} />
       </Suspense>
-    );
-  }
+    </div>
+  );
 }

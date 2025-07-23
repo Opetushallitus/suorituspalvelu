@@ -16,7 +16,8 @@ services:
     user: "${USERID}:${GROUPID}"
     env_file: 
      - .env.docker
-     - .env.docker.local
+     - path: .env.docker.local
+       required: false
     environment:
       USER: appuser
       HOME: /home/appuser
@@ -50,7 +51,8 @@ services:
     image: nginx:alpine
     env_file:
       - .env.docker
-      - .env.docker.local
+      - path: .env.docker.local
+        required: false
     ports:
       - "80:80"
     volumes:

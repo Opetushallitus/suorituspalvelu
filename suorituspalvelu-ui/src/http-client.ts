@@ -1,4 +1,11 @@
+'use client';
+
+import {
+  useSuspenseQuery,
+  UseSuspenseQueryOptions,
+} from '@tanstack/react-query';
 import { isPlainObject } from 'remeda';
+import { useIsSessionExpired } from './components/SessionExpired';
 
 export function getCookies() {
   return document.cookie.split('; ').reduce(
@@ -205,3 +212,44 @@ export const client = {
   delete: <Result = unknown>(url: UrlType, options: RequestInit = {}) =>
     makeRequest<Result>(new Request(url, { method: 'DELETE', ...options })),
 } as const;
+
+type QueryKey = [string, ...Array<unknown>];
+
+export function useApiSuspenseQuery<Result = unknown>(
+  options: UseSuspenseQueryOptions<
+    Result | undefined | null,
+    Error,
+    Result | null,
+    QueryKey
+  >,
+) {
+  const { setIsSessionExpired } = useIsSessionExpired();
+
+  const queryResult = useSuspenseQuery({
+    ...options,
+    queryFn: async (context) => {
+      try {
+        const result = await options?.queryFn?.(context);
+        return result;
+      } catch (error) {
+        if (error instanceof SessionExpiredError) {
+          setIsSessionExpired(true);
+          const data = context.client.getQueryData(options.queryKey);
+          if (data) {
+            // Jos data on jo ladattu, palautetaan se.
+            return data as Result;
+          }
+          return null;
+        }
+
+        throw error;
+      }
+    },
+  });
+
+  if (queryResult.error && !queryResult.isFetching) {
+    throw queryResult.error;
+  }
+
+  return queryResult;
+}
