@@ -36,13 +36,36 @@ export const searchOppijat = async (params: SearchParams) => {
   return res.data;
 };
 
+export type Opiskeluoikeus = {
+  tutkinto: string;
+  oppilaitos: {
+    oid: string;
+    nimi: string;
+  };
+  voimassaolonAlku?: string;
+  voimassaolonLoppu?: string;
+};
+
+export type OppijaResponse = {
+  opiskeluoikeudet: Array<{
+    tutkinto: string;
+    oppilaitos: {
+      oid: string;
+      nimi: string;
+    };
+    voimassaolonAlku?: string;
+    voimassaolonLoppu?: string;
+  }>;
+};
+
 export const getOppija = async (oppijaNumero: string) => {
   const config = await configPromise;
 
-  // eslint-disable-next-line
-  return client.get<any>(
+  const res = await client.get<OppijaResponse>(
     `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
   );
+
+  return res.data;
 };
 
 type OppilaitoksetResponse = {
@@ -55,7 +78,8 @@ type OppilaitoksetResponse = {
 export const getOppilaitokset = async () => {
   const config = await configPromise;
 
-  return client.get<OppilaitoksetResponse>(
+  const res = await client.get<OppilaitoksetResponse>(
     `${config.routes.suorituspalvelu.oppilaitoksetUrl}`,
   );
+  return res.data;
 };
