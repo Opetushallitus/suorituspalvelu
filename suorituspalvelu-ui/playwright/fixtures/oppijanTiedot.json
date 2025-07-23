@@ -1,0 +1,578 @@
+{
+  "oppijaNumero": "1.2.246.562.24.40483869857",
+  "opiskeluoikeudet": [
+    {
+      "tutkinto": "Kasvatust. maist., kasvatustiede",
+      "oppilaitos": {
+        "nimi": "Tampereen yliopisto",
+        "oid": "1.2.3.4"
+      },
+      "voimassaolonAlku": "2001-08-01",
+      "voimassaolonLoppu": "2025-12-11"
+    }
+  ],
+  "kkTutkinnot": [
+    {
+      "tutkinto": "Kasvatust. maist., kasvatustiede",
+      "oppilaitos": {
+        "nimi": "Tampereen yliopisto",
+        "oid": "1.2.3.4"
+      },
+      "tila": "KESKEN",
+      "valmistumispaiva": null,
+      "hakukohde": {
+        "nimi": "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)"
+      }
+    }
+  ],
+  "yoTutkinto": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2019-06-01",
+    "suorituskieli": "suomi",
+    "yoKokeet": [
+      {
+        "aine": "Psykologia",
+        "taso": "Ainemuotoinen reaali",
+        "arvosana": "E",
+        "yhteispistemaara": 28,
+        "tutkintokerta": "2018-12-21"
+      },
+      {
+        "aine": "Englanti",
+        "taso": "Pitkä oppimäärä (KIELI)",
+        "arvosana": "E",
+        "yhteispistemaara": 259,
+        "tutkintokerta": "2019-06-01"
+      },
+      {
+        "aine": "Matematiikka",
+        "taso": "Lyhyt oppimäärä (MA)",
+        "arvosana": "C",
+        "yhteispistemaara": 23,
+        "tutkintokerta": "2019-06-01"
+      },
+      {
+        "aine": "Suomi",
+        "taso": "Äidinkieli",
+        "arvosana": "C",
+        "yhteispistemaara": 49,
+        "tutkintokerta": "2019-06-01"
+      },
+      {
+        "aine": "Historia",
+        "taso": "Ainemuotoinen reaali",
+        "arvosana": "M",
+        "yhteispistemaara": 25,
+        "tutkintokerta": "2019-06-01"
+      },
+      {
+        "aine": "Yhteiskuntaoppi",
+        "taso": "Ainemuotoinen reaali",
+        "arvosana": "E",
+        "yhteispistemaara": 32,
+        "tutkintokerta": "2019-06-01"
+      }
+    ]
+  },
+  "lukionOppimaara": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2024-12-31",
+    "suorituskieli": "suomi",
+    "oppiaineet": [
+      {
+        "nimi": "Äidinkieli ja kirjallisuus"
+      },
+      {
+        "nimi": "Uskonto/Elämänkatsomustieto"
+      }
+    ]
+  },
+  "lukionOppiaineenOppimaarat": [
+    {
+      "oppilaitos": {
+        "nimi": "Ylioppilastutkintolautakunta",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2024-12-31",
+      "suorituskieli": "suomi",
+      "oppiaineet": [
+        {
+          "nimi": "Äidinkieli ja kirjallisuus, suomi äidinkielenä"
+        },
+        {
+          "nimi": "Matematiikka, lyhyt oppimäärä, valinnainen"
+        }
+      ]
+    }
+  ],
+  "diaTutkinto": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2024-12-31",
+    "suorituskieli": "suomi"
+  },
+  "diaVastaavuusTodistus": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2024-12-31",
+    "suorituskieli": "suomi",
+    "kieletKirjallisuusTaide": [
+      {
+        "nimi": "A-kieli, englanti",
+        "laajuus": 3,
+        "keskiarvo": 8.5
+      },
+      {
+        "nimi": "Historia",
+        "laajuus": 2,
+        "keskiarvo": 8.5
+      }
+    ],
+    "matematiikkaLuonnontieteet": [
+      {
+        "nimi": "Matematiikka",
+        "laajuus": 3,
+        "keskiarvo": 6
+      },
+      {
+        "nimi": "Kuvataide",
+        "laajuus": 3,
+        "keskiarvo": 8.5
+      }
+    ]
+  },
+  "ebTutkinto": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2024-12-31",
+    "suorituskieli": "suomi",
+    "oppiaineet": [
+      {
+        "nimi": "Mathematics",
+        "suorituskieli": "englanti",
+        "laajuus": 4,
+        "written": {
+          "arvosana": 8.67
+        },
+        "oral": null,
+        "final": {
+          "arvosana": 8.67
+        }
+      },
+      {
+        "nimi": "First language, ranska",
+        "suorituskieli": "englanti",
+        "laajuus": 3,
+        "written": {
+          "arvosana": 8.67
+        },
+        "oral": {
+          "arvosana": 8.67
+        },
+        "final": {
+          "arvosana": 8.67
+        }
+      },
+      {
+        "nimi": "Second language, saksa",
+        "suorituskieli": "englanti",
+        "laajuus": 3,
+        "written": {
+          "arvosana": 8.67
+        },
+        "oral": {
+          "arvosana": 8.67
+        },
+        "final": {
+          "arvosana": 8.67
+        }
+      }
+    ]
+  },
+  "ibTutkinto": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2024-12-31",
+    "suorituskieli": "suomi",
+    "oppiaineet": [
+      {
+        "nimi": "Studies in language and literature",
+        "suoritukset": [
+          {
+            "nimi": "Language A: literature, suomi",
+            "laajuus": 9,
+            "predictedGrade": 7,
+            "arvosana": 7
+          },
+          {
+            "nimi": "Language A: language and literature, englanti",
+            "laajuus": 6,
+            "predictedGrade": 7,
+            "arvosana": 7
+          }
+        ]
+      },
+      {
+        "nimi": "Individuals and societies",
+        "suoritukset": [
+          {
+            "nimi": "History",
+            "laajuus": 3,
+            "predictedGrade": 7,
+            "arvosana": 7
+          },
+          {
+            "nimi": "Psychology",
+            "laajuus": 3,
+            "predictedGrade": 7,
+            "arvosana": 7
+          }
+        ]
+      },
+      {
+        "nimi": "Experimental sciences",
+        "suoritukset": [
+          {
+            "nimi": "Biology",
+            "laajuus": 3,
+            "predictedGrade": 7,
+            "arvosana": 7
+          }
+        ]
+      },
+      {
+        "nimi": "Mathematics",
+        "suoritukset": [
+          {
+            "nimi": "Mathematical studies",
+            "laajuus": 3,
+            "predictedGrade": 7,
+            "arvosana": 7
+          }
+        ]
+      }
+    ]
+  },
+  "preIB": {
+    "oppilaitos": {
+      "nimi": "Ylioppilastutkintolautakunta",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2024-12-31",
+    "suorituskieli": "suomi"
+  },
+  "ammatillisetTutkinnot": [
+    {
+      "nimi": "Puutarha-alan perustutkinto",
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2024-12-31",
+      "suorituskieli": "suomi",
+      "painotettuKeskiarvo": 4.34,
+      "ammatillisetYtotKeskiarvo": 4.34,
+      "ytot": [
+        {
+          "nimi": "Viestintä- ja vuorovaikutusosaaminen",
+          "laajuus": 11,
+          "tila": "HYVAKSYTTY"
+        },
+        {
+          "nimi": "Matemaattis-luonnontiellinen osaaminen",
+          "laajuus": 11,
+          "tila": "HYVAKSYTTY"
+        },
+        {
+          "nimi": "Yhteiskunta- ja työelämäosaaminen",
+          "laajuus": 11,
+          "tila": "HYVAKSYTTY"
+        }
+      ],
+      "ammatillisenTutkinnonOsat": [
+        {
+          "nimi": "Audiovisuaalisen kulttuurin perusteet",
+          "laajuus": 11,
+          "arvosana": 4
+        },
+        {
+          "nimi": "Äänimaailman suunnittelu",
+          "laajuus": 11,
+          "arvosana": 4
+        }
+      ],
+      "suoritustapa": null
+    },
+    {
+      "nimi": "Hevostalouden perustutkinto",
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2024-12-31",
+      "suorituskieli": "suomi",
+      "painotettuKeskiarvo": 4.34,
+      "ammatillisetYtotKeskiarvo": 4.34,
+      "ytot": [],
+      "ammatillisenTutkinnonOsat": [],
+      "suoritustapa": "Näyttötutkinto"
+    }
+  ],
+  "ammattitutkinnot": [
+    {
+      "nimi": "Maanmittausalan ammattitutkinto",
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2017-06-01",
+      "suorituskieli": "suomi"
+    }
+  ],
+  "erikoisammattitutkinnot": [
+    {
+      "nimi": "Talous- ja henkilöstöalan erikoisammattitutkinto",
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2017-06-01",
+      "suorituskieli": "suomi"
+    }
+  ],
+  "telmat": [
+    {
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2017-06-01",
+      "suorituskieli": "suomi"
+    }
+  ],
+  "tuvat": [
+    {
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2017-06-01",
+      "suorituskieli": "suomi",
+      "laajuus": 38
+    }
+  ],
+  "vapaanSivistystyonKoulutukset": [
+    {
+      "nimi": "Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille",
+      "oppilaitos": {
+        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "oid": "1.2.3.4"
+      },
+      "tila": "KESKEYTYNYT",
+      "valmistumispaiva": null,
+      "suorituskieli": "suomi",
+      "laajuus": 38
+    }
+  ],
+  "perusopetuksenOppimaarat": [
+    {
+      "oppilaitos": {
+        "nimi": "Keltinmäen koulu",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2016-06-01",
+      "suorituskieli": "suomi",
+      "luokka": "9A",
+      "yksilollistetty": false,
+      "oppiaineet": [
+        {
+          "nimi": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "A1-kieli, englanti",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "B1-kieli, ruotsi",
+          "arvosana": 9,
+          "valinnainen": "S"
+        },
+        {
+          "nimi": "B2-kieli, saksa",
+          "arvosana": null,
+          "valinnainen": "S"
+        },
+        {
+          "nimi": "Matematiikka",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Biologia",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Maantieto",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Fysiikka",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Kemia",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Terveystieto",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Uskonto tai elämänkatsomustieto",
+          "arvosana": 9,
+          "valinnainen": null
+        }
+      ]
+    }
+  ],
+  "perusopetuksenOppimaara78Luokkalaiset": {
+    "oppilaitos": {
+      "nimi": "Keltinmäen koulu",
+      "oid": "1.2.3.4"
+    },
+    "tila": "VALMIS",
+    "valmistumispaiva": "2016-06-01",
+    "suorituskieli": "suomi",
+    "koulusivistyskieli": "suomi",
+    "luokka": "9A",
+    "yksilollistetty": false
+  },
+  "nuortenPerusopetuksenOppiaineenOppimaarat": [
+    {
+      "oppilaitos": {
+        "nimi": "Keltinmäen koulu",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2016-06-01",
+      "suorituskieli": "suomi",
+      "oppiaineet": [
+        {
+          "nimi": "Biologia",
+          "arvosana": 9
+        },
+        {
+          "nimi": "Historia",
+          "arvosana": 8
+        }
+      ]
+    }
+  ],
+  "perusopetuksenOppiaineenOppimaarat": [
+    {
+      "oppilaitos": {
+        "nimi": "Keltinmäen koulu",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2016-06-01",
+      "suorituskieli": "suomi",
+      "oppiaineet": [
+        {
+          "nimi": "matematiikka",
+          "arvosana": 9
+        }
+      ]
+    }
+  ],
+  "aikuistenPerusopetuksenOppimaarat": [
+    {
+      "oppilaitos": {
+        "nimi": "Keltinmäen koulu",
+        "oid": "1.2.3.4"
+      },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2016-06-01",
+      "suorituskieli": "suomi",
+      "oppiaineet": [
+        {
+          "nimi": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "A1-kieli, englanti",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "B1-kieli, ruotsi",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "B2-kieli, saksa",
+          "arvosana": 9,
+          "valinnainen": null
+        },
+        {
+          "nimi": "Matematiikka",
+          "arvosana": null,
+          "valinnainen": "10"
+        },
+        {
+          "nimi": "Biologia",
+          "arvosana": null,
+          "valinnainen": "9"
+        },
+        {
+          "nimi": "Maantieto",
+          "arvosana": null,
+          "valinnainen": "8"
+        },
+        {
+          "nimi": "Fysiikka",
+          "arvosana": null,
+          "valinnainen": "9"
+        }
+      ]
+    }
+  ]
+}

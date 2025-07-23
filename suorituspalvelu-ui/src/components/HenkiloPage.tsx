@@ -17,13 +17,10 @@ const VoimassaoloBadge = ({
   voimassaolonAlku,
   voimassaolonLoppu,
 }: {
-  voimassaolonAlku?: string;
-  voimassaolonLoppu?: string;
+  voimassaolonAlku?: Date;
+  voimassaolonLoppu?: Date;
 }) => {
   const { t } = useTranslate();
-
-  const alkuDate = voimassaolonAlku ? new Date(voimassaolonAlku) : undefined;
-  const loppuDate = voimassaolonLoppu ? new Date(voimassaolonLoppu) : undefined;
 
   const isVoimassa = isInRange(
     currentFinnishDate(),
@@ -34,9 +31,9 @@ const VoimassaoloBadge = ({
   return (
     <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 2 }}>
       <Box>
-        {alkuDate ? formatDate(alkuDate, 'd.M.y') : ''}
+        {voimassaolonAlku ? formatDate(voimassaolonAlku, 'd.M.y') : ''}
         {` ${NDASH} `}
-        {loppuDate ? formatDate(loppuDate, 'd.M.y') : ''}
+        {voimassaolonLoppu ? formatDate(voimassaolonLoppu, 'd.M.y') : ''}
       </Box>
       <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 0.5 }}>
         <Circle
@@ -60,14 +57,21 @@ const Opiskeluoikeudet = ({
 }) => {
   const { t } = useTranslate();
   return (
-    <Box>
+    <Box data-test-id="opiskeluoikeudet">
       <OphTypography variant="h2" component="h5" sx={{ marginBottom: 2 }}>
         {t('oppija.opiskeluoikeudet')}
       </OphTypography>
       {opiskeluoikeudet.map((oo) => {
         return (
-          <PaperWithTopColor key={`${oo.tutkinto}-${oo.oppilaitos.oid}`} topColor={ophColors.red1}>
-            <Stack direction="column" gap={1}>
+          <PaperWithTopColor
+            key={`${oo.tutkinto}-${oo.oppilaitos.oid}`}
+            topColor={ophColors.red1}
+          >
+            <Stack
+              direction="column"
+              gap={1}
+              data-test-id="opiskeluoikeus-paper"
+            >
               <OphTypography variant="label" sx={{ marginBottom: 1 }}>
                 {oo.tutkinto}
               </OphTypography>

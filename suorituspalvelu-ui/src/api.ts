@@ -5,6 +5,7 @@ import {
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
+  IUIOpiskeluoikeus,
 } from './types/backend';
 
 export type OppijatSearchParams = {
@@ -33,15 +34,7 @@ export const searchOppijat = async (params: OppijatSearchParams) => {
   return res.data;
 };
 
-export type Opiskeluoikeus = {
-  tutkinto: string;
-  oppilaitos: {
-    oid: string;
-    nimi: string;
-  };
-  voimassaolonAlku?: string;
-  voimassaolonLoppu?: string;
-};
+export type Opiskeluoikeus = IUIOpiskeluoikeus;
 
 export type OppijaResponse = IOppijanTiedotSuccessResponse;
 
