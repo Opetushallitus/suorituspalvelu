@@ -3,8 +3,12 @@ import { Opiskeluoikeus } from '@/api';
 import { FullSpinner } from '@/components/FullSpinner';
 import { useOppija } from '@/queries';
 import { Box, Stack } from '@mui/material';
-import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
-import { Suspense } from 'react';
+import {
+  ophColors,
+  OphLink,
+  OphTypography,
+} from '@opetushallitus/oph-design-system';
+import { Suspense, use } from 'react';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { useTranslate } from '@tolgee/react';
 import { LabeledInfoItem } from './LabeledInfoItem';
@@ -12,6 +16,8 @@ import { Circle } from '@mui/icons-material';
 import { currentFinnishDate, isInRange } from '@/lib/time-utils';
 import { formatDate } from 'date-fns';
 import { NDASH } from '@/common';
+import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
+import { configPromise } from '@/configuration';
 
 const VoimassaoloBadge = ({
   voimassaolonAlku,
@@ -56,6 +62,7 @@ const Opiskeluoikeudet = ({
   opiskeluoikeudet: Array<Opiskeluoikeus>;
 }) => {
   const { t } = useTranslate();
+  const config = use(configPromise);
   return (
     <Box data-test-id="opiskeluoikeudet">
       <OphTypography variant="h2" component="h5" sx={{ marginBottom: 2 }}>
@@ -84,7 +91,13 @@ const Opiskeluoikeudet = ({
               >
                 <LabeledInfoItem
                   label={t('oppija.oppilaitos')}
-                  value={oo.oppilaitos.nimi}
+                  value={
+                    <OphLink
+                      href={getOppilaitosLinkUrl(config, oo.oppilaitos.oid)}
+                    >
+                      {oo.oppilaitos.nimi}
+                    </OphLink>
+                  }
                 />
                 <LabeledInfoItem
                   label={t('oppija.voimassaolo')}
