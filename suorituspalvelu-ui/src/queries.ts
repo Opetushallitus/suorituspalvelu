@@ -3,7 +3,7 @@ import {
   getOppija,
   getOppilaitokset,
   searchOppijat,
-  SearchParams,
+  OppijatSearchParams,
 } from './api';
 import { useApiSuspenseQuery } from './http-client';
 
@@ -14,7 +14,7 @@ export const useOppija = (oppijaNumero: string) => {
   });
 };
 
-export const queryOptionsSearchOppijat = (params: SearchParams) =>
+export const queryOptionsSearchOppijat = (params: OppijatSearchParams) =>
   queryOptions({
     queryKey: ['searchOppijat', params],
     queryFn: () => searchOppijat(params),

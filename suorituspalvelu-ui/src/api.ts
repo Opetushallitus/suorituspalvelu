@@ -1,30 +1,27 @@
 import { isEmpty, isNullish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client } from './http-client';
+import {
+  IOppijanHakuSuccessResponse,
+  IOppijanTiedotSuccessResponse,
+  IOppilaitosSuccessResponse,
+} from './types/backend';
 
-export type SearchParams = {
+export type OppijatSearchParams = {
   oppija?: string;
   oppilaitos?: string;
   vuosi?: string;
   luokka?: string;
 };
 
-type SearchResult = {
-  oppijat: Array<{
-    oppijaNumero: string;
-    hetu?: string;
-    nimi: string;
-  }>;
-};
-
-export const cleanSearchParams = (params: SearchParams) => {
+export const cleanSearchParams = (params: OppijatSearchParams) => {
   return omitBy(params, (value) => isEmpty(value) || value === '');
 };
 
-export const searchOppijat = async (params: SearchParams) => {
+export const searchOppijat = async (params: OppijatSearchParams) => {
   const cleanParams = cleanSearchParams(params);
   if (isEmpty(cleanParams)) {
-    return { oppijat: [] } as SearchResult;
+    return { oppijat: [] };
   }
 
   const config = await configPromise;
@@ -32,7 +29,7 @@ export const searchOppijat = async (params: SearchParams) => {
 
   const url = `${config.routes.suorituspalvelu.oppijatSearchUrl}?${urlSearch.toString()}`;
 
-  const res = await client.get<SearchResult>(url);
+  const res = await client.get<IOppijanHakuSuccessResponse>(url);
   return res.data;
 };
 
@@ -46,17 +43,7 @@ export type Opiskeluoikeus = {
   voimassaolonLoppu?: string;
 };
 
-export type OppijaResponse = {
-  opiskeluoikeudet: Array<{
-    tutkinto: string;
-    oppilaitos: {
-      oid: string;
-      nimi: string;
-    };
-    voimassaolonAlku?: string;
-    voimassaolonLoppu?: string;
-  }>;
-};
+export type OppijaResponse = IOppijanTiedotSuccessResponse;
 
 export const getOppija = async (oppijaNumero: string) => {
   const config = await configPromise;
@@ -68,17 +55,10 @@ export const getOppija = async (oppijaNumero: string) => {
   return res.data;
 };
 
-type OppilaitoksetResponse = {
-  oppilaitokset: Array<{
-    oid: string;
-    nimi: string;
-  }>;
-};
-
 export const getOppilaitokset = async () => {
   const config = await configPromise;
 
-  const res = await client.get<OppilaitoksetResponse>(
+  const res = await client.get<IOppilaitosSuccessResponse>(
     `${config.routes.suorituspalvelu.oppilaitoksetUrl}`,
   );
   return res.data;

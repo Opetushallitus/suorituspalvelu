@@ -17,7 +17,13 @@ const compat = new FlatCompat({
 
 const config = ts.config(
   {
-    ignores: ['.next/*', 'out', '.lintstagedrc.js', 'coverage'],
+    ignores: [
+      '.next/*',
+      'out',
+      '.lintstagedrc.js',
+      'coverage',
+      '**/*/types/backend.ts',
+    ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   eslintConfigPrettier,
