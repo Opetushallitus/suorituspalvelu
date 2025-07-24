@@ -9,12 +9,12 @@ import {
   SessionExpired,
   useIsSessionExpired,
 } from '@/components/SessionExpired';
+import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
 import { useTranslate } from '@tolgee/react';
-import { useQueryState } from 'nuqs';
 
 const useDocumentTitle = () => {
   const { t } = useTranslate();
-  const [oppijaNumero] = useQueryState('oppijaNumero');
+  const [oppijaNumero] = useSelectedOppijaNumero();
   if (oppijaNumero) {
     return `${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${oppijaNumero}`;
   }
@@ -25,7 +25,7 @@ const useDocumentTitle = () => {
 const HomePage = () => {
   const { t } = useTranslate();
   const { isSessionExpired } = useIsSessionExpired();
-  const [oppijaNumero] = useQueryState('oppijaNumero');
+  const [oppijaNumero] = useSelectedOppijaNumero();
 
   return (
     <QuerySuspenseBoundary>

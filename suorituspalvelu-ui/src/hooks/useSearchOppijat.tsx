@@ -1,7 +1,9 @@
+import { SearchParams } from '@/api';
+import { DEFAULT_NUQS_OPTIONS } from '@/common';
 import { useApiSuspenseQuery } from '@/http-client';
 import { queryOptionsSearchOppijat } from '@/queries';
 import { useQueryState } from 'nuqs';
-import { isEmpty, omitBy } from 'remeda';
+import { isEmpty, isNullish, omitBy, values } from 'remeda';
 
 export const useOppijatSearchURLParams = () => {
   const params = useOppijatSearchParamsState();
@@ -17,10 +19,16 @@ export const useOppijatSearchURLParams = () => {
 };
 
 export const useOppijatSearchParamsState = () => {
-  const [oppijaSearchTerm, setOppijaSearchTerm] = useQueryState('oppija');
-  const [oppilaitos, setOppilaitos] = useQueryState('oppilaitos');
-  const [luokka, setLuokka] = useQueryState('luokka');
-  const [vuosi, setVuosi] = useQueryState('vuosi');
+  const [oppijaSearchTerm, setOppijaSearchTerm] = useQueryState(
+    'oppija',
+    DEFAULT_NUQS_OPTIONS,
+  );
+  const [oppilaitos, setOppilaitos] = useQueryState(
+    'oppilaitos',
+    DEFAULT_NUQS_OPTIONS,
+  );
+  const [luokka, setLuokka] = useQueryState('luokka', DEFAULT_NUQS_OPTIONS);
+  const [vuosi, setVuosi] = useQueryState('vuosi', DEFAULT_NUQS_OPTIONS);
 
   return {
     oppijaSearchTerm,
@@ -31,7 +39,19 @@ export const useOppijatSearchParamsState = () => {
     setLuokka,
     vuosi,
     setVuosi,
+    hasEmptySearchParams: isEmptySearchParams({
+      oppija: oppijaSearchTerm,
+      oppilaitos,
+      luokka,
+      vuosi,
+    }),
   };
+};
+
+const isEmptySearchParams = (searchParams: SearchParams) => {
+  return values(searchParams).every(
+    (value) => isNullish(value) || isEmpty(value) || value === '',
+  );
 };
 
 export const useOppijatSearch = () => {
