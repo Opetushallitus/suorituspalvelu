@@ -1,6 +1,8 @@
+/* Generated using Scala-TSI (https://github.com/scala-tsi/scala-tsi) */
+
 export interface IAikuistenPerusopetuksenOppimaara {
   oppilaitos: IPKOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: IPerusopetuksenOppiaine[];
@@ -14,7 +16,7 @@ export interface IAmmatillinenOppilaitos {
 export interface IAmmatillinenTutkinto {
   nimi: string;
   oppilaitos: IAmmatillinenOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   painotettuKeskiarvo: number;
@@ -33,21 +35,21 @@ export interface IAmmatillisenTutkinnonOsa {
 export interface IAmmattitutkinto {
   nimi: string;
   oppilaitos: IAmmatillinenOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
 }
 
 export interface IDIATutkinto {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
 }
 
 export interface IDIAVastaavuusTodistus {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   kieletKirjallisuusTaide: IOppiaine[];
@@ -69,7 +71,7 @@ export interface IEBSuoritus {
 
 export interface IEBTutkinto {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: IEBOppiaine[];
@@ -78,12 +80,10 @@ export interface IEBTutkinto {
 export interface IErikoisammattitutkinto {
   nimi: string;
   oppilaitos: IAmmatillinenOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
 }
-
-export interface IHYVAKSYTTY {}
 
 export interface IHakukohde {
   nimi: string;
@@ -103,18 +103,10 @@ export interface IIBSuoritus {
 
 export interface IIBTutkinto {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: IIBOppiaine[];
-}
-
-export interface IKESKEN {
-  type: 'KESKEN';
-}
-
-export interface IKESKEYTYNYT {
-  type: 'KESKEYTYNYT';
 }
 
 export interface IKKOppilaitos {
@@ -125,7 +117,7 @@ export interface IKKOppilaitos {
 export interface IKKSuoritus {
   tutkinto: string;
   oppilaitos: IKKOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   hakukohde: IHakukohde;
 }
@@ -136,7 +128,7 @@ export interface ILukionOppiaine {
 
 export interface ILukionOppiaineenOppimaara {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: ILukionOppiaine[];
@@ -144,7 +136,7 @@ export interface ILukionOppiaineenOppimaara {
 
 export interface ILukionOppimaara {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: ILukionOppiaine[];
@@ -152,7 +144,7 @@ export interface ILukionOppimaara {
 
 export interface INuortenPerusopetuksenOppiaineenOppimaara {
   oppilaitos: IPKOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: IOppimaaranOppiaine[];
@@ -243,7 +235,7 @@ export interface IPerusopetuksenOppiaine {
 
 export interface IPerusopetuksenOppiaineenOppimaara {
   oppilaitos: IPKOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   oppiaineet: IOppimaaranOppiaine[];
@@ -251,7 +243,7 @@ export interface IPerusopetuksenOppiaineenOppimaara {
 
 export interface IPerusopetuksenOppimaara {
   oppilaitos: IPKOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   luokka: string;
@@ -261,7 +253,7 @@ export interface IPerusopetuksenOppimaara {
 
 export interface IPerusopetuksenOppimaara78Luokkalaiset {
   oppilaitos: IPKOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   koulusivistyskieli: string;
@@ -271,21 +263,21 @@ export interface IPerusopetuksenOppimaara78Luokkalaiset {
 
 export interface IPreIB {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
 }
 
 export interface ITelma {
   oppilaitos: IAmmatillinenOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
 }
 
 export interface ITuva {
   oppilaitos: IAmmatillinenOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   laajuus: number;
@@ -298,14 +290,10 @@ export interface IUIOpiskeluoikeus {
   voimassaolonLoppu: Date;
 }
 
-export interface IVALMIS {
-  type: 'VALMIS';
-}
-
 export interface IVapaanSivistysTyonKoulutus {
   nimi: string;
   oppilaitos: IAmmatillinenOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   laajuus: number;
@@ -326,7 +314,7 @@ export interface IYOOppilaitos {
 
 export interface IYOTutkinto {
   oppilaitos: IYOOppilaitos;
-  tila: Tila;
+  tila: SuoritusTila;
   valmistumispaiva?: Date;
   suorituskieli: string;
   yoKokeet: IYOKoe[];
@@ -338,6 +326,6 @@ export interface IYTO {
   tila: YTOTila;
 }
 
-export type Tila = IVALMIS | IKESKEN | IKESKEYTYNYT;
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type YTOTila = IHYVAKSYTTY;
+export type YTOTila = 'HYVAKSYTTY';

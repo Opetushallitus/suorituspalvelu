@@ -1,14 +1,21 @@
 package fi.oph.suorituspalvelu.ui
 
 import com.scalatsi.*
+import com.scalatsi.TypescriptType.TSUnion
 import com.scalatsi.output.{OutputOptions, StyleOptions, WriteTSToFiles}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, IBTutkinto, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, VapaanSivistysTyonKoulutus, YOTutkinto}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, IBTutkinto, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Tila, VapaanSivistysTyonKoulutus, YOTutkinto, YTOTila}
 
 import java.io.File
 import java.time.LocalDate
 import java.util.Optional
 
 object TypeScriptGenerator extends App {
+
+  // Scala-TSI ei osaa oletuksena muuntaa Scala-enumeja oikein
+  implicit val suoritusTilaTSType: TSType[Tila] =
+    TSType.alias("SuoritusTila", TSUnion(Tila.values.map(v => TypescriptType.TSLiteralString(v.toString))))
+  implicit val ytoTilaTSType: TSType[YTOTila] =
+    TSType.alias("YTOTila", TSUnion(YTOTila.values.map(v => TypescriptType.TSLiteralString(v.toString))))
 
   implicit val date: TSType[LocalDate] = TSType.external("Date")
   implicit val optionalDate: TSType[Optional[LocalDate]] = TSType.sameAs[Optional[LocalDate], Option[LocalDate]]
@@ -41,7 +48,11 @@ object TypeScriptGenerator extends App {
 
   // Kirjoitetaan TS-tyypit tiedostoon, polku kannattaa muuttaa sopivammaksi kun fronttityö etenee
   val outputDir = new File("target/generated-sources/typescript/Interface.ts")
-  WriteTSToFiles.generate(OutputOptions(outputDir, StyleOptions()))(Map(
+  WriteTSToFiles.generate(OutputOptions(
+    outputDir,
+    StyleOptions(semicolons = true),
+    Some("/* Generated using Scala-TSI (https://github.com/scala-tsi/scala-tsi) */"))
+  )(Map(
     "oppijanTiedotSuccess" -> oppijanTiedotSuccessTSType.get,
     "oppijanTiedotFailure" -> oppijanTiedotFailureTSType.get,
     "oppijaHakuSuccess" -> oppijatSuccessTSType.get,
