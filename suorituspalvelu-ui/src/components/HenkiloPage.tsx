@@ -3,9 +3,9 @@ import { FullSpinner } from '@/components/FullSpinner';
 import { useOppija } from '@/queries';
 import { Suspense } from 'react';
 
-const Content = ({ oppijaNumero }: { oppijaNumero: string }) => {
+const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const { data: tiedot } = useOppija(oppijaNumero);
-  return <p>{JSON.stringify(tiedot)}</p>;
+  return <pre>{JSON.stringify(tiedot.data, null, 2)}</pre>;
 };
 
 export default function HenkiloPage({
@@ -16,7 +16,7 @@ export default function HenkiloPage({
   return (
     <div>
       <Suspense fallback={<FullSpinner />}>
-        <Content oppijaNumero={oppijaNumero} />
+        <OppijaContent oppijaNumero={oppijaNumero} />
       </Suspense>
     </div>
   );

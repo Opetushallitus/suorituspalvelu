@@ -7,6 +7,12 @@
   "select": {
     "valitse": "Valitse..."
   },
+  "virhe": {
+    "palvelin": "Palvelinvirhe",
+    "tuntematon": "Tuntematon virhe",
+    "virhekoodi": "Virhekoodi",
+    "yrita-uudelleen": "Yritä uudelleen"
+  },
   "sivupalkki": {
     "navigaatio": "Oppijavalitsin",
     "nayta": "Näytä hakutulos",
