@@ -1,6 +1,8 @@
 'use client';
+import { Header } from '@/components/Header';
 import HenkiloPage from '@/components/HenkiloPage';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
+import { PageLayout } from '@/components/PageLayout';
 import { SearchControls } from '@/components/SearchControls';
 import {
   SessionExpired,
@@ -25,7 +27,8 @@ const HomePage = () => {
   const [oppijaNumero] = useQueryState('oppijaNumero');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <PageLayout header={<Header title={t('suorituspalvelu')} />}>
+      {/* Set the document title */}
       <title>{useDocumentTitle()}</title>
       <SearchControls />
       <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -39,7 +42,7 @@ const HomePage = () => {
         </main>
       </div>
       {isSessionExpired && <SessionExpired />}
-    </div>
+    </PageLayout>
   );
 };
 

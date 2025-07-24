@@ -6,6 +6,7 @@ import { SessionExpiredProvider } from '@/components/SessionExpired';
 import { TolgeeProvider } from '@tolgee/react';
 import { tolgeePromise } from '@/localization/tolgee-config';
 import { NuqsAdapter } from 'nuqs/adapters/next';
+import { OphNextJsThemeProvider } from '@opetushallitus/oph-design-system/next/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionExpiredProvider>
+      <OphNextJsThemeProvider variant="oph">
       <TolgeeProvider tolgee={tolgee}>
         <NuqsAdapter>
           <QueryClientProvider client={queryClient}>
@@ -30,6 +32,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           </QueryClientProvider>
         </NuqsAdapter>
       </TolgeeProvider>
+      </OphNextJsThemeProvider>
     </SessionExpiredProvider>
   );
 }

@@ -19,6 +19,11 @@
     "start-and-test-playwright-docker": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start http://localhost:3000 'npm run test-playwright-docker -- $PLAYWRIGHT_ARGS'"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "@opetushallitus/oph-design-system": "^1.0.0",
     "@tanstack/react-query": "^5.82.0",
     "@tolgee/format-icu": "^6.2.6",
     "@tolgee/react": "^6.2.6",
