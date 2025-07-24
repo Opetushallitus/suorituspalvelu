@@ -44,3 +44,18 @@ export const getOppija = async (oppijaNumero: string) => {
     `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
   );
 };
+
+type OppilaitoksetResponse = {
+  oppilaitokset: Array<{
+    oid: string;
+    nimi: string;
+  }>;
+};
+
+export const getOppilaitokset = async () => {
+  const config = await configPromise;
+
+  return client.get<OppilaitoksetResponse>(
+    `${config.routes.suorituspalvelu.oppilaitoksetUrl}`,
+  );
+};

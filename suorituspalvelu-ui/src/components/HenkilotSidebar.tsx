@@ -1,22 +1,21 @@
 'use client';
 
-import { DEFAULT_BORDER } from '@/common';
-import { useSearchOppijat, useURLParams } from '@/hooks/useSearchOppijat';
+import {
+  useOppijatSearch,
+  useOppijatSearchURLParams,
+} from '@/hooks/useSearchOppijat';
+import { DEFAULT_BOX_BORDER } from '@/lib/theme';
 import Link from 'next/link';
+import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 
-export function HenkilotSidebar() {
-  const { result } = useSearchOppijat();
-  const params = useURLParams();
+const HenkilotSidebarContent = () => {
+  const params = useOppijatSearchURLParams();
+
+  const { result } = useOppijatSearch();
+
   return (
-    <div
-      style={{
-        width: '200px',
-        minWidth: '200px',
-        minHeight: '100%',
-        borderRight: DEFAULT_BORDER,
-      }}
-    >
-      {result?.data?.oppijat?.map((oppija) => (
+    <div>
+      {result.data.oppijat?.map((oppija) => (
         <div key={oppija.oppijaNumero}>
           <Link
             href={{
@@ -30,6 +29,23 @@ export function HenkilotSidebar() {
           </Link>
         </div>
       ))}
+    </div>
+  );
+};
+
+export function HenkilotSidebar() {
+  return (
+    <div
+      style={{
+        width: '200px',
+        minWidth: '200px',
+        minHeight: '100%',
+        borderRight: DEFAULT_BOX_BORDER,
+      }}
+    >
+      <QuerySuspenseBoundary>
+        <HenkilotSidebarContent />
+      </QuerySuspenseBoundary>
     </div>
   );
 }

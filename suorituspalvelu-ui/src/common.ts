@@ -1,1 +1,1 @@
-export const DEFAULT_BORDER = '2px solid lightgray';
+export const SEARCH_DEBOUNCE_DELAY_MS = 300;

@@ -1,6 +1,11 @@
 {
   "suorituspalvelu": "Suorituspalvelu",
   "valitse-oppija": "Valitse oppija",
+  "hae-henkiloa": "Hae henkilöä",
+  "oppilaitos": "Oppilaitos",
+  "select": {
+    "valitse": "Valitse..."
+  },
   "oppija": {
     "otsikko": "Oppijan tiedot"
   }

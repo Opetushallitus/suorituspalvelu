@@ -1,10 +1,10 @@
+import { useApiSuspenseQuery } from '@/http-client';
 import { queryOptionsSearchOppijat } from '@/queries';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { useQueryState } from 'nuqs';
 import { isEmpty, omitBy } from 'remeda';
 
-export const useURLParams = () => {
-  const params = useSearchQueryParamsState();
+export const useOppijatSearchURLParams = () => {
+  const params = useOppijatSearchParamsState();
   return omitBy(
     {
       oppija: params.oppijaSearchTerm ?? undefined,
@@ -16,9 +16,9 @@ export const useURLParams = () => {
   );
 };
 
-export const useSearchQueryParamsState = () => {
+export const useOppijatSearchParamsState = () => {
   const [oppijaSearchTerm, setOppijaSearchTerm] = useQueryState('oppija');
-  const [oppilaitos, setOppijaitos] = useQueryState('oppilaitos');
+  const [oppilaitos, setOppilaitos] = useQueryState('oppilaitos');
   const [luokka, setLuokka] = useQueryState('luokka');
   const [vuosi, setVuosi] = useQueryState('vuosi');
 
@@ -26,7 +26,7 @@ export const useSearchQueryParamsState = () => {
     oppijaSearchTerm,
     setOppijaSearchTerm,
     oppilaitos,
-    setOppijaitos,
+    setOppilaitos,
     luokka,
     setLuokka,
     vuosi,
@@ -34,12 +34,12 @@ export const useSearchQueryParamsState = () => {
   };
 };
 
-export const useSearchOppijat = () => {
-  const params = useSearchQueryParamsState();
+export const useOppijatSearch = () => {
+  const params = useOppijatSearchParamsState();
 
-  const urlParams = useURLParams();
+  const urlParams = useOppijatSearchURLParams();
 
-  const result = useSuspenseQuery(queryOptionsSearchOppijat(urlParams));
+  const result = useApiSuspenseQuery(queryOptionsSearchOppijat(urlParams));
 
   return {
     ...params,
