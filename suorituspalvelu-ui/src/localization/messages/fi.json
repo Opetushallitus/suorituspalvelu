@@ -1,6 +1,25 @@
 {
   "suorituspalvelu": "Suorituspalvelu",
   "valitse-oppija": "Valitse oppija",
+  "hae-henkiloa": "Hae henkilöä",
+  "oppilaitos": "Oppilaitos",
+  "ladataan": "Ladataan...",
+  "select": {
+    "valitse": "Valitse..."
+  },
+  "virhe": {
+    "palvelin": "Palvelinvirhe",
+    "tuntematon": "Tuntematon virhe",
+    "virhekoodi": "Virhekoodi",
+    "yrita-uudelleen": "Yritä uudelleen"
+  },
+  "sivupalkki": {
+    "navigaatio": "Oppijavalitsin",
+    "nayta": "Näytä hakutulos",
+    "piilota": "Piilota hakutulos",
+    "hakutulos": "Hakutulos",
+    "henkilo-maara": "{count, plural, =0 {Henkilöitä ei löytynyt} one {1 henkilö} other {{count} henkilöä}}"
+  },
   "oppija": {
     "otsikko": "Oppijan tiedot"
   }

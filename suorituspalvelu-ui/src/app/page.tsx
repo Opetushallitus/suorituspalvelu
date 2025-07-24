@@ -1,17 +1,20 @@
 'use client';
+import { Header } from '@/components/Header';
 import HenkiloPage from '@/components/HenkiloPage';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
+import { PageLayout } from '@/components/PageLayout';
+import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { SearchControls } from '@/components/SearchControls';
 import {
   SessionExpired,
   useIsSessionExpired,
 } from '@/components/SessionExpired';
+import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
 import { useTranslate } from '@tolgee/react';
-import { useQueryState } from 'nuqs';
 
 const useDocumentTitle = () => {
   const { t } = useTranslate();
-  const [oppijaNumero] = useQueryState('oppijaNumero');
+  const [oppijaNumero] = useSelectedOppijaNumero();
   if (oppijaNumero) {
     return `${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${oppijaNumero}`;
   }
@@ -22,24 +25,27 @@ const useDocumentTitle = () => {
 const HomePage = () => {
   const { t } = useTranslate();
   const { isSessionExpired } = useIsSessionExpired();
-  const [oppijaNumero] = useQueryState('oppijaNumero');
+  const [oppijaNumero] = useSelectedOppijaNumero();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <title>{useDocumentTitle()}</title>
-      <SearchControls />
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <HenkilotSidebar />
-        <main style={{ flexGrow: 1 }}>
-          {oppijaNumero ? (
-            <HenkiloPage oppijaNumero={oppijaNumero} />
-          ) : (
-            <div>{t('valitse-oppija')}</div>
-          )}
-        </main>
-      </div>
-      {isSessionExpired && <SessionExpired />}
-    </div>
+    <QuerySuspenseBoundary>
+      <PageLayout header={<Header title={t('suorituspalvelu')} />}>
+        {/* Set the document title */}
+        <title>{useDocumentTitle()}</title>
+        <SearchControls />
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <HenkilotSidebar />
+          <main style={{ flexGrow: 1 }}>
+            {oppijaNumero ? (
+              <HenkiloPage oppijaNumero={oppijaNumero} />
+            ) : (
+              <div>{t('valitse-oppija')}</div>
+            )}
+          </main>
+        </div>
+        {isSessionExpired && <SessionExpired />}
+      </PageLayout>
+    </QuerySuspenseBoundary>
   );
 };
 

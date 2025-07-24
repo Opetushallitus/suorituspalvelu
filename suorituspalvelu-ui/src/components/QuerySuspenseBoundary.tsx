@@ -5,19 +5,21 @@ import {
 } from 'react-error-boundary';
 import { FullSpinner } from './FullSpinner';
 import { useQueryErrorResetBoundary } from '@tanstack/react-query';
+import { SessionExpiredError } from '@/http-client';
+import { SessionExpired } from './SessionExpired';
+import { ErrorView } from './ErrorView';
 
 type FallbackRenderType = ErrorBoundaryPropsWithRender['fallbackRender'];
 
 const defaultFallbackRender: FallbackRenderType = ({
   resetErrorBoundary,
   error,
-}) => (
-  <div>
-    <p>Jokin meni vikaan</p>
-    <p>{JSON.stringify(error)}</p>
-    <button onClick={resetErrorBoundary}>Yritä uudelleen</button>
-  </div>
-);
+}) =>
+  error instanceof SessionExpiredError ? (
+    <SessionExpired />
+  ) : (
+    <ErrorView error={error} reset={resetErrorBoundary} />
+  );
 
 export function QuerySuspenseBoundary({
   children,

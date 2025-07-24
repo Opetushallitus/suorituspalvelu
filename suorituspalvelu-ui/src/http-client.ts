@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  useSuspenseQuery,
-  UseSuspenseQueryOptions,
-} from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { isPlainObject } from 'remeda';
 import { useIsSessionExpired } from './components/SessionExpired';
 
@@ -213,16 +210,7 @@ export const client = {
     makeRequest<Result>(new Request(url, { method: 'DELETE', ...options })),
 } as const;
 
-type QueryKey = [string, ...Array<unknown>];
-
-export function useApiSuspenseQuery<Result = unknown>(
-  options: UseSuspenseQueryOptions<
-    Result | undefined | null,
-    Error,
-    Result | null,
-    QueryKey
-  >,
-) {
+export const useApiSuspenseQuery: typeof useSuspenseQuery = (options) => {
   const { setIsSessionExpired } = useIsSessionExpired();
 
   const queryResult = useSuspenseQuery({
@@ -234,14 +222,15 @@ export function useApiSuspenseQuery<Result = unknown>(
       } catch (error) {
         if (error instanceof SessionExpiredError) {
           setIsSessionExpired(true);
+
+          // Jos autentikaatio feilasi, mutta data on jo ladattu, palautetaan aiempi data.
+          // Näin voidaan näyttää vanha data UI:ssa kunnes käyttäjä kirjautuu uudelleen.
           const data = context.client.getQueryData(options.queryKey);
           if (data) {
-            // Jos data on jo ladattu, palautetaan se.
-            return data as Result;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return data as any;
           }
-          return null;
         }
-
         throw error;
       }
     },
@@ -252,4 +241,4 @@ export function useApiSuspenseQuery<Result = unknown>(
   }
 
   return queryResult;
-}
+};

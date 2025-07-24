@@ -1,25 +1,11 @@
 'use client';
 import { FullSpinner } from '@/components/FullSpinner';
-import { configPromise } from '@/configuration';
-import { client, useApiSuspenseQuery } from '@/http-client';
+import { useOppija } from '@/queries';
 import { Suspense } from 'react';
 
-const getOppijanTiedot = async (oppijaNumero?: string) => {
-  const config = await configPromise;
-
-  // eslint-disable-next-line
-  return client.get<any>(
-    `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
-  );
-};
-
-const Content = ({ oppijaNumero }: { oppijaNumero: string }) => {
-  const { data: tiedot } = useApiSuspenseQuery({
-    queryKey: ['henkiloTiedot', oppijaNumero],
-    queryFn: () => getOppijanTiedot(oppijaNumero),
-  });
-
-  return <p>{JSON.stringify(tiedot)}</p>;
+const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
+  const { data: tiedot } = useOppija(oppijaNumero);
+  return <pre>{JSON.stringify(tiedot.data, null, 2)}</pre>;
 };
 
 export default function HenkiloPage({
@@ -30,7 +16,7 @@ export default function HenkiloPage({
   return (
     <div>
       <Suspense fallback={<FullSpinner />}>
-        <Content oppijaNumero={oppijaNumero} />
+        <OppijaContent oppijaNumero={oppijaNumero} />
       </Suspense>
     </div>
   );
