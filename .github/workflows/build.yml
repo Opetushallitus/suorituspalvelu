@@ -48,7 +48,7 @@ jobs:
         working-directory: ./suorituspalvelu-ui
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-next-env
+      - uses: ./.github/actions/setup-node-env
         with:
           project_path: suorituspalvelu-ui
       - name: Check types
@@ -68,7 +68,7 @@ jobs:
         browser: [chromium, firefox]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-next-env
+      - uses: ./.github/actions/setup-node-env
         with:
           project_path: suorituspalvelu-ui
       - name: Build app

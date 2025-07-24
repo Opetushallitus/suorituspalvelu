@@ -1,8 +1,8 @@
-name: setup-next-env
-description: 'Setup Next.js environment'
+name: setup-node-env
+description: 'Setup Node.js environment'
 inputs:
   project_path:
-    description: Path to the package.json
+    description: Path to the package-lock.json
     required: true
 runs:
   using: 'composite'
@@ -18,7 +18,7 @@ runs:
       id: node_modules-cache
       with:
         path: ${{ github.workspace }}/${{ inputs.project_path }}/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('package-lock.json') }}
+        key: ${{ runner.os }}-modules-${{ hashFiles(format('{0}/package-lock.json', inputs.project_path)) }}
     - name: Install npm dependencies
       if: steps.node_modules-cache.outputs.cache-hit != 'true'
       shell: bash
