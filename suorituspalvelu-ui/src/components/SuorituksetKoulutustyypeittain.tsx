@@ -13,6 +13,7 @@ import { PaperWithTopColor } from './PaperWithTopColor';
 import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
 import { configPromise } from '@/configuration';
 import {
+  PerusopetuksenOppiaine,
   SuorituksenPerustiedot,
   SuorituksenTila,
   YOKoe,
@@ -185,6 +186,47 @@ const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
   return <ListTable columns={cols} rows={yoKokeet} rowKeyProp="aine" />;
 };
 
+const PerusopetusOppiaineetTable = ({
+  oppiaineet,
+}: {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+}) => {
+  const { t } = useTranslate();
+
+  const hasArvosana = oppiaineet.some((oppiaine) => oppiaine.arvosana);
+  const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine.valinnainen);
+
+  const columns = useMemo(() => {
+    const cols: Array<ListTableColumn<PerusopetuksenOppiaine>> = [
+      {
+        key: 'nimi',
+        title: t('oppija.oppiaine'),
+        render: (row) => row.nimi,
+      } as ListTableColumn<PerusopetuksenOppiaine>,
+    ];
+
+    if (hasArvosana) {
+      cols.push({
+        key: 'arvosana',
+        title: t('oppija.arvosana'),
+        render: (row) => row.arvosana,
+      } as ListTableColumn<PerusopetuksenOppiaine>);
+    }
+
+    if (hasValinnainen) {
+      cols.push({
+        key: 'valinnainen',
+        title: t('oppija.valinnainen'),
+        render: (row) => row.valinnainen,
+      } as ListTableColumn<PerusopetuksenOppiaine>);
+    }
+
+    return cols;
+  }, [hasArvosana, hasValinnainen, t]);
+
+  return <ListTable columns={columns} rows={oppiaineet} rowKeyProp="nimi" />;
+};
+
 export const SuorituksetKoulutustyypeittain = ({
   tiedot,
 }: {
@@ -337,6 +379,7 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.cyan2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
+            <PerusopetusOppiaineetTable oppiaineet={oppimaara.oppiaineet} />
           </OppijaInfoPaper>
         ))}
         {tiedot.nuortenPerusopetuksenOppiaineenOppimaarat.map((oppiaine) => (
@@ -349,6 +392,7 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.cyan2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={oppiaine} />
+            <PerusopetusOppiaineetTable oppiaineet={oppiaine.oppiaineet} />
           </OppijaInfoPaper>
         ))}
         {tiedot.perusopetuksenOppiaineenOppimaarat.map((oppiaine) => (
@@ -359,6 +403,7 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.cyan2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={oppiaine} />
+            <PerusopetusOppiaineetTable oppiaineet={oppiaine.oppiaineet} />
           </OppijaInfoPaper>
         ))}
         {tiedot.aikuistenPerusopetuksenOppimaarat.map((oppimaara) => (
@@ -369,6 +414,7 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.cyan2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
+            <PerusopetusOppiaineetTable oppiaineet={oppimaara.oppiaineet} />
           </OppijaInfoPaper>
         ))}
       </LabeledSuoritusSection>
