@@ -1,4 +1,4 @@
-import { SuoritusTila } from './backend';
+import { IYOKoe, SuoritusTila } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
 
@@ -11,3 +11,5 @@ export type SuorituksenPerustiedot = {
   suorituskieli?: string;
   valmistumispaiva?: Date;
 };
+
+export type YOKoe = IYOKoe;

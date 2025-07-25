@@ -1,6 +1,6 @@
 'use client';
 import { Box, Stack } from '@mui/material';
-import { use } from 'react';
+import { use, useMemo } from 'react';
 import { OppijaResponse } from '@/api';
 import { useTranslate } from '@tolgee/react';
 import {
@@ -12,9 +12,14 @@ import { LabeledInfoItem } from './LabeledInfoItem';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
 import { configPromise } from '@/configuration';
-import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
+import {
+  SuorituksenPerustiedot,
+  SuorituksenTila,
+  YOKoe,
+} from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
 import { formatDate } from 'date-fns';
+import { ListTable, ListTableColumn } from './ListTable';
 
 const OppijaInfoPaper = ({
   suorituksenNimi,
@@ -43,7 +48,7 @@ const OppijaInfoPaper = ({
           </OphTypography>
         )}
       </OphTypography>
-      <Stack spacing={2}>{children}</Stack>
+      <Stack spacing={4}>{children}</Stack>
     </PaperWithTopColor>
   );
 };
@@ -143,6 +148,43 @@ const LabeledSuoritusSection = ({
   );
 };
 
+const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
+  const { t } = useTranslate();
+
+  const cols: Array<ListTableColumn<YOKoe>> = useMemo(
+    () => [
+      {
+        key: 'aine',
+        title: t('oppija.yo-kokeen-aine'),
+        render: (row) => row.aine,
+      },
+      {
+        key: 'taso',
+        title: t('oppija.yo-kokeen-taso'),
+        render: (row) => row.taso,
+      },
+      {
+        key: 'arvosana',
+        title: t('oppija.yo-kokeen-arvosana'),
+        render: (row) => row.arvosana,
+      },
+      {
+        key: 'yhteispistemaara',
+        title: t('oppija.yo-kokeen-yhteispistemaara'),
+        render: (row) => row.yhteispistemaara.toString(),
+      },
+      {
+        key: 'tutkintokerta',
+        title: t('oppija.yo-kokeen-tutkintokerta'),
+        render: (row) => formatDate(row.tutkintokerta, 'd.M.y'),
+      },
+    ],
+    [t],
+  );
+
+  return <ListTable columns={cols} rows={yoKokeet} rowKeyProp="aine" />;
+};
+
 export const SuorituksetKoulutustyypeittain = ({
   tiedot,
 }: {
@@ -178,6 +220,7 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.blue2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={tiedot.yoTutkinto} />
+            <YoKokeetTable yoKokeet={tiedot.yoTutkinto.yoKokeet} />
           </OppijaInfoPaper>
         )}
         {tiedot?.lukionOppimaara && (

@@ -56,7 +56,12 @@
     "perusopetus": "Perusopetus",
     "koulutustyypeittain": "Koulutustyypeittäin",
     "uusin-ensin": "Uusin ensin",
-    "hakukohde": "Hakukohde"
+    "hakukohde": "Hakukohde",
+    "yo-kokeen-aine": "Aine",
+    "yo-kokeen-taso": "Taso",
+    "yo-kokeen-arvosana": "Arvosana",
+    "yo-kokeen-yhteispistemaara": "Yhteispistemäärä",
+    "yo-kokeen-tutkintokerta": "Tutkintokerta"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",
