@@ -15,6 +15,8 @@ import {
   IAmmatillinenTutkinto,
   IAmmattitutkinto,
   IErikoisammattitutkinto,
+  IVapaanSivistysTyonKoulutus,
+  ITuva,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -51,3 +53,7 @@ export type AmmatillinenSuoritus =
   | IAmmatillinenTutkinto
   | IAmmattitutkinto
   | IErikoisammattitutkinto;
+
+export type TUVASuoritus = ITuva;
+
+export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus;
