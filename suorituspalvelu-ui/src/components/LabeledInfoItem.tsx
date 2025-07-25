@@ -9,13 +9,15 @@ const InfoLabel = styled('label')(({ theme }) => ({
 export const LabeledInfoItem = ({
   label,
   value,
+  sx,
 }: {
   label: string;
   value: React.ReactNode;
+  sx?: React.CSSProperties;
 }) => {
   const labelId = useId();
   return (
-    <Box sx={{ flex: '1 1 auto' }}>
+    <Box sx={{ flex: '0 1 25%', ...sx }}>
       <InfoLabel id={labelId}>{label}</InfoLabel>
       <Box aria-labelledby={labelId}>{value}</Box>
     </Box>
