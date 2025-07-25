@@ -12,6 +12,9 @@ import {
   IEBTutkinto,
   IIBTutkinto,
   IPreIB,
+  IAmmatillinenTutkinto,
+  IAmmattitutkinto,
+  IErikoisammattitutkinto,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -43,3 +46,8 @@ export type LukioSuoritus =
   | IEBTutkinto
   | IIBTutkinto
   | IPreIB;
+
+export type AmmatillinenSuoritus =
+  | IAmmatillinenTutkinto
+  | IAmmattitutkinto
+  | IErikoisammattitutkinto;

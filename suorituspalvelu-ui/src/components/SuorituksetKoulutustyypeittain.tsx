@@ -8,6 +8,7 @@ import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { KorkeakouluSuoritusPaper } from './KorkeakouluSuoritusPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { LukioSuoritusPaper } from './LukioSuoritusPaper';
+import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 
 const LabeledSuoritusSection = ({
   label,
@@ -96,41 +97,29 @@ export const SuorituksetKoulutustyypeittain = ({
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.ammatillinen-koulutus')}>
         {tiedot.ammatillisetTutkinnot.map((tutkinto) => (
-          <SuoritusInfoPaper
+          <AmmatillinenSuoritusPaper
             key={tutkinto.nimi}
-            suorituksenNimi={tutkinto.nimi}
-            valmistumispaiva={tutkinto.valmistumispaiva}
-            topColor={ophColors.green2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tutkinto} />
-          </SuoritusInfoPaper>
+            ammatillinenSuoritus={tutkinto}
+          />
         ))}
         {tiedot.ammattitutkinnot.map((tutkinto) => (
-          <SuoritusInfoPaper
+          <AmmatillinenSuoritusPaper
             key={tutkinto.nimi}
-            suorituksenNimi={tutkinto.nimi}
-            valmistumispaiva={tutkinto.valmistumispaiva}
-            topColor={ophColors.green2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tutkinto} />
-          </SuoritusInfoPaper>
+            ammatillinenSuoritus={tutkinto}
+          />
         ))}
         {tiedot.erikoisammattitutkinnot.map((tutkinto) => (
-          <SuoritusInfoPaper
+          <AmmatillinenSuoritusPaper
             key={tutkinto.nimi}
-            suorituksenNimi={tutkinto.nimi}
-            valmistumispaiva={tutkinto.valmistumispaiva}
-            topColor={ophColors.green2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tutkinto} />
-          </SuoritusInfoPaper>
+            ammatillinenSuoritus={tutkinto}
+          />
         ))}
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.tuva')}>
         {tiedot.tuvat.map((tutkinto) => (
           <SuoritusInfoPaper
             key={tutkinto.oppilaitos.oid}
-            suorituksenNimi={tutkinto.oppilaitos.nimi}
+            suorituksenNimi={t('oppija.tuva')}
             valmistumispaiva={tutkinto.valmistumispaiva}
             topColor={ophColors.yellow2}
           >
@@ -142,7 +131,7 @@ export const SuorituksetKoulutustyypeittain = ({
         {tiedot.vapaanSivistystyonKoulutukset.map((koulutus) => (
           <SuoritusInfoPaper
             key={koulutus.oppilaitos.oid}
-            suorituksenNimi={koulutus.oppilaitos.nimi}
+            suorituksenNimi={koulutus.nimi}
             valmistumispaiva={koulutus.valmistumispaiva}
             topColor={ophColors.cyan1}
           >
