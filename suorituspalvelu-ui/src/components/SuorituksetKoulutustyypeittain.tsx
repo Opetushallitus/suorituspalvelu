@@ -2,15 +2,13 @@
 import { Box, Stack } from '@mui/material';
 import { OppijaResponse } from '@/api';
 import { useTranslate } from '@tolgee/react';
-import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
-import { LabeledInfoItem } from './LabeledInfoItem';
-import { SuoritusInfoPaper } from './SuoritusInfoPaper';
+import { OphTypography } from '@opetushallitus/oph-design-system';
 import { KorkeakouluSuoritusPaper } from './KorkeakouluSuoritusPaper';
-import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { LukioSuoritusPaper } from './LukioSuoritusPaper';
 import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';
 import { TuvaSuoritusPaper } from './TuvaSuoritusPaper';
+import { PerusopetusSuoritusPaper } from './PerusopetusSuoritusPaper';
 
 const LabeledSuoritusSection = ({
   label,
@@ -135,56 +133,39 @@ export const SuorituksetKoulutustyypeittain = ({
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.perusopetus')}>
         {tiedot.perusopetuksenOppimaarat.map((oppimaara) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppimaara.oppilaitos.oid}
-            suorituksenNimi={t('oppija.perusopetuksen-oppimaara')}
-            valmistumispaiva={oppimaara.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
-            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
-              <LabeledInfoItem
-                label={t('oppija.luokka')}
-                value={oppimaara.luokka}
-              />
-              <LabeledInfoItem
-                label={t('oppija.yksilollistetty')}
-                value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
-              />
-            </Stack>
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppimaara}
+            nimi={t('oppija.perusopetuksen-oppimaara')}
+          />
         ))}
+        {tiedot.perusopetuksenOppimaara78Luokkalaiset && (
+          <PerusopetusSuoritusPaper
+            key={tiedot.perusopetuksenOppimaara78Luokkalaiset.oppilaitos.oid}
+            perusopetusSuoritus={tiedot.perusopetuksenOppimaara78Luokkalaiset}
+            nimi={t('oppija.perusopetuksen-oppimaara')}
+          />
+        )}
         {tiedot.nuortenPerusopetuksenOppiaineenOppimaarat.map((oppiaine) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppiaine.oppilaitos.oid}
-            suorituksenNimi={t(
-              'oppija.nuorten-perusopetuksen-oppiaineen-oppimaara',
-            )}
-            valmistumispaiva={oppiaine.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppiaine} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppiaine}
+            nimi={t('oppija.nuorten-perusopetuksen-oppiaineen-oppimaara')}
+          />
         ))}
         {tiedot.perusopetuksenOppiaineenOppimaarat.map((oppiaine) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppiaine.oppilaitos.oid}
-            suorituksenNimi={t('oppija.perusopetuksen-oppiaineen-oppimaara')}
-            valmistumispaiva={oppiaine.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppiaine} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppiaine}
+            nimi={t('oppija.perusopetuksen-oppiaineen-oppimaara')}
+          />
         ))}
         {tiedot.aikuistenPerusopetuksenOppimaarat.map((oppimaara) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppimaara.oppilaitos.oid}
-            suorituksenNimi={t('oppija.aikuisten-perusopetuksen-oppimaara')}
-            valmistumispaiva={oppimaara.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppimaara}
+            nimi={t('oppija.aikuisten-perusopetuksen-oppimaara')}
+          />
         ))}
       </LabeledSuoritusSection>
     </Stack>
