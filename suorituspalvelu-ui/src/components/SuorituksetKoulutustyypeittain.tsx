@@ -43,7 +43,7 @@ const OppijaInfoPaper = ({
           </OphTypography>
         )}
       </OphTypography>
-      {children}
+      <Stack spacing={2}>{children}</Stack>
     </PaperWithTopColor>
   );
 };
@@ -161,6 +161,12 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.red1}
           >
             <SuorituksenPerustiedotIndicator perustiedot={kkTutkinto} />
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+              <LabeledInfoItem
+                label={t('oppija.hakukohde')}
+                value={kkTutkinto.hakukohde.nimi}
+              />
+            </Stack>
           </OppijaInfoPaper>
         ))}
       </LabeledSuoritusSection>
