@@ -272,12 +272,10 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.red1}
           >
             <SuorituksenPerustiedotIndicator perustiedot={kkTutkinto} />
-            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
-              <LabeledInfoItem
-                label={t('oppija.hakukohde')}
-                value={kkTutkinto.hakukohde.nimi}
-              />
-            </Stack>
+            <LabeledInfoItem
+              label={t('oppija.hakukohde')}
+              value={kkTutkinto.hakukohde.nimi}
+            />
           </OppijaInfoPaper>
         ))}
       </LabeledSuoritusSection>
@@ -430,6 +428,16 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.cyan2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+              <LabeledInfoItem
+                label={t('oppija.luokka')}
+                value={oppimaara.luokka}
+              />
+              <LabeledInfoItem
+                label={t('oppija.yksilollistetty')}
+                value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
+              />
+            </Stack>
 
             <PerusopetusOppiaineetTable oppiaineet={oppimaara.oppiaineet} />
           </OppijaInfoPaper>
