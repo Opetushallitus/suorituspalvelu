@@ -7,6 +7,11 @@
   "select": {
     "valitse": "Valitse..."
   },
+  "istunto": {
+    "login-sivulle": "Siirry sisäänkirjautumissivulle",
+    "virhe-otsikko": "Istuntoa ei löytynyt",
+    "virhe-teksti": "Et ole enää kirjautuneena sisään palveluun. Ole hyvä ja kirjaudu uudelleen."
+  },
   "virhe": {
     "palvelin": "Palvelinvirhe",
     "tuntematon": "Tuntematon virhe",
