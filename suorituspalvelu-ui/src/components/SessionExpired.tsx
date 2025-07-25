@@ -1,23 +1,26 @@
 'use client';
 
 import { configPromise } from '@/configuration';
+import { useTranslate } from '@tolgee/react';
 import React, { use } from 'react';
 
 const LoginLink = ({ url }: { url: string }) => {
+  const { t } = useTranslate();
   const loginUrl = new URL(url);
   const serviceUrl = new URL(window.location.href);
   serviceUrl.searchParams.delete('ticket');
   loginUrl.searchParams.set('service', serviceUrl.toString());
-  return <a href={loginUrl.toString()}>Log in</a>;
+  return <a href={loginUrl.toString()}>{t('istunto.login-sivulle')}</a>;
 };
 
 export function SessionExpired() {
   const config = use(configPromise);
+  const { t } = useTranslate();
 
   return (
     <div>
-      <h1>Session expired</h1>
-      <p>Please log in again.</p>
+      <h1>{t('istunto.virhe-otsikko')}</h1>
+      <p>{t('istunto.virhe-teksti')}</p>
       <LoginLink url={config.routes.yleiset.casLoginUrl} />
     </div>
   );

@@ -1,5 +1,5 @@
 import { Opiskeluoikeus } from '@/api';
-import { NDASH } from '@/common';
+import { NDASH } from '@/lib/common';
 import { currentFinnishDate, isInRange } from '@/lib/time-utils';
 import { Circle } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
@@ -83,6 +83,7 @@ export const Opiskeluoikeudet = ({
                 <Stack direction="row" gap={1}>
                   <LabeledInfoItem
                     label={t('oppija.oppilaitos')}
+                    sx={{ flexBasis: '50%' }}
                     value={
                       <OphLink
                         href={getOppilaitosLinkUrl(config, oo.oppilaitos.oid)}
@@ -93,6 +94,7 @@ export const Opiskeluoikeudet = ({
                   />
                   <LabeledInfoItem
                     label={t('oppija.voimassaolo')}
+                    sx={{ flexBasis: '50%' }}
                     value={
                       <VoimassaoloIndicator
                         voimassaolonAlku={oo.voimassaolonAlku}
