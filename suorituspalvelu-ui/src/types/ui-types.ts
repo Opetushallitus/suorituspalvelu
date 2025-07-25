@@ -3,6 +3,7 @@ import {
   SuoritusTila,
   IPerusopetuksenOppiaine,
   ILukionOppiaine,
+  IKKSuoritus,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -22,3 +23,5 @@ export type YOKoe = IYOKoe;
 export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
 
 export type LukionOppiaine = ILukionOppiaine;
+
+export type KorkeakouluSuoritus = IKKSuoritus;
