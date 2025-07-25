@@ -17,6 +17,11 @@ import {
   IErikoisammattitutkinto,
   IVapaanSivistysTyonKoulutus,
   ITuva,
+  IPerusopetuksenOppiaineenOppimaara,
+  IPerusopetuksenOppimaara78Luokkalaiset,
+  INuortenPerusopetuksenOppiaineenOppimaara,
+  IAikuistenPerusopetuksenOppimaara,
+  IPerusopetuksenOppimaara,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -57,3 +62,10 @@ export type AmmatillinenSuoritus =
 export type TUVASuoritus = ITuva;
 
 export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus;
+
+export type PerusopetusSuoritus =
+  | IPerusopetuksenOppimaara
+  | IPerusopetuksenOppiaineenOppimaara
+  | IPerusopetuksenOppimaara78Luokkalaiset
+  | INuortenPerusopetuksenOppiaineenOppimaara
+  | IAikuistenPerusopetuksenOppimaara;

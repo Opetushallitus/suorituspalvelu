@@ -1,19 +1,14 @@
 'use client';
 import { Box, Stack } from '@mui/material';
-import { useMemo } from 'react';
 import { OppijaResponse } from '@/api';
 import { useTranslate } from '@tolgee/react';
-import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
-import { LabeledInfoItem } from './LabeledInfoItem';
-import { PerusopetuksenOppiaine } from '@/types/ui-types';
-import { ListTable, ListTableColumn } from './ListTable';
-import { SuoritusInfoPaper } from './SuoritusInfoPaper';
-import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
+import { OphTypography } from '@opetushallitus/oph-design-system';
 import { KorkeakouluSuoritusPaper } from './KorkeakouluSuoritusPaper';
 import { LukioSuoritusPaper } from './LukioSuoritusPaper';
 import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';
 import { TuvaSuoritusPaper } from './TuvaSuoritusPaper';
+import { PerusopetusSuoritusPaper } from './PerusopetusSuoritusPaper';
 
 const LabeledSuoritusSection = ({
   label,
@@ -30,47 +25,6 @@ const LabeledSuoritusSection = ({
       <Stack gap={4}>{children}</Stack>
     </Box>
   );
-};
-
-const PerusopetusOppiaineetTable = ({
-  oppiaineet,
-}: {
-  oppiaineet: Array<PerusopetuksenOppiaine>;
-}) => {
-  const { t } = useTranslate();
-
-  const hasArvosana = oppiaineet.some((oppiaine) => oppiaine.arvosana);
-  const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine.valinnainen);
-
-  const columns = useMemo(() => {
-    const cols: Array<ListTableColumn<PerusopetuksenOppiaine>> = [
-      {
-        key: 'nimi',
-        title: t('oppija.oppiaine'),
-        render: (row) => row.nimi,
-      } as ListTableColumn<PerusopetuksenOppiaine>,
-    ];
-
-    if (hasArvosana) {
-      cols.push({
-        key: 'arvosana',
-        title: t('oppija.arvosana'),
-        render: (row) => row.arvosana,
-      } as ListTableColumn<PerusopetuksenOppiaine>);
-    }
-
-    if (hasValinnainen) {
-      cols.push({
-        key: 'valinnainen',
-        title: t('oppija.valinnainen'),
-        render: (row) => row.valinnainen,
-      } as ListTableColumn<PerusopetuksenOppiaine>);
-    }
-
-    return cols;
-  }, [hasArvosana, hasValinnainen, t]);
-
-  return <ListTable columns={columns} rows={oppiaineet} rowKeyProp="nimi" />;
 };
 
 export const SuorituksetKoulutustyypeittain = ({
@@ -179,61 +133,39 @@ export const SuorituksetKoulutustyypeittain = ({
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.perusopetus')}>
         {tiedot.perusopetuksenOppimaarat.map((oppimaara) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppimaara.oppilaitos.oid}
-            suorituksenNimi={t('oppija.perusopetuksen-oppimaara')}
-            valmistumispaiva={oppimaara.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
-            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
-              <LabeledInfoItem
-                label={t('oppija.luokka')}
-                value={oppimaara.luokka}
-              />
-              <LabeledInfoItem
-                label={t('oppija.yksilollistetty')}
-                value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
-              />
-            </Stack>
-
-            <PerusopetusOppiaineetTable oppiaineet={oppimaara.oppiaineet} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppimaara}
+            nimi={t('oppija.perusopetuksen-oppimaara')}
+          />
         ))}
+        {tiedot.perusopetuksenOppimaara78Luokkalaiset && (
+          <PerusopetusSuoritusPaper
+            key={tiedot.perusopetuksenOppimaara78Luokkalaiset.oppilaitos.oid}
+            perusopetusSuoritus={tiedot.perusopetuksenOppimaara78Luokkalaiset}
+            nimi={t('oppija.perusopetuksen-oppimaara')}
+          />
+        )}
         {tiedot.nuortenPerusopetuksenOppiaineenOppimaarat.map((oppiaine) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppiaine.oppilaitos.oid}
-            suorituksenNimi={t(
-              'oppija.nuorten-perusopetuksen-oppiaineen-oppimaara',
-            )}
-            valmistumispaiva={oppiaine.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppiaine} />
-            <PerusopetusOppiaineetTable oppiaineet={oppiaine.oppiaineet} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppiaine}
+            nimi={t('oppija.nuorten-perusopetuksen-oppiaineen-oppimaara')}
+          />
         ))}
         {tiedot.perusopetuksenOppiaineenOppimaarat.map((oppiaine) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppiaine.oppilaitos.oid}
-            suorituksenNimi={t('oppija.perusopetuksen-oppiaineen-oppimaara')}
-            valmistumispaiva={oppiaine.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppiaine} />
-            <PerusopetusOppiaineetTable oppiaineet={oppiaine.oppiaineet} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppiaine}
+            nimi={t('oppija.perusopetuksen-oppiaineen-oppimaara')}
+          />
         ))}
         {tiedot.aikuistenPerusopetuksenOppimaarat.map((oppimaara) => (
-          <SuoritusInfoPaper
+          <PerusopetusSuoritusPaper
             key={oppimaara.oppilaitos.oid}
-            suorituksenNimi={t('oppija.aikuisten-perusopetuksen-oppimaara')}
-            valmistumispaiva={oppimaara.valmistumispaiva}
-            topColor={ophColors.cyan2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
-            <PerusopetusOppiaineetTable oppiaineet={oppimaara.oppiaineet} />
-          </SuoritusInfoPaper>
+            perusopetusSuoritus={oppimaara}
+            nimi={t('oppija.aikuisten-perusopetuksen-oppimaara')}
+          />
         ))}
       </LabeledSuoritusSection>
     </Stack>
