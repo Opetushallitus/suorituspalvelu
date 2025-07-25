@@ -1,4 +1,4 @@
-/* Generated using Scala-TSI (https://github.com/scala-tsi/scala-tsi) */
+/* Scala-koodista automaattisesti generoituja tyyppejä (kts. TypeScriptGenerator.scala). Älä muokkaa käsin! */
 
 export interface IAikuistenPerusopetuksenOppimaara {
   oppilaitos: IPKOppilaitos;

@@ -51,7 +51,7 @@ object TypeScriptGenerator extends App {
   WriteTSToFiles.generate(OutputOptions(
     outputDir,
     StyleOptions(semicolons = true),
-    Some("/* Generated using Scala-TSI (https://github.com/scala-tsi/scala-tsi) */"))
+    Some("/* Scala-koodista automaattisesti generoituja tyyppejä (kts. TypeScriptGenerator.scala). Älä muokkaa käsin! */"))
   )(Map(
     "oppijanTiedotSuccess" -> oppijanTiedotSuccessTSType.get,
     "oppijanTiedotFailure" -> oppijanTiedotFailureTSType.get,
