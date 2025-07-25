@@ -1,4 +1,4 @@
-import { SearchParams } from '@/api';
+import { OppijatSearchParams } from '@/api';
 import { DEFAULT_NUQS_OPTIONS } from '@/common';
 import { useApiSuspenseQuery } from '@/http-client';
 import { queryOptionsSearchOppijat } from '@/queries';
@@ -48,7 +48,7 @@ export const useOppijatSearchParamsState = () => {
   };
 };
 
-const isEmptySearchParams = (searchParams: SearchParams) => {
+const isEmptySearchParams = (searchParams: OppijatSearchParams) => {
   return values(searchParams).every(
     (value) => isNullish(value) || isEmpty(value) || value === '',
   );

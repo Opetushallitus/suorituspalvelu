@@ -14,6 +14,7 @@ export const getConfiguration = async () => {
         raamitUrl: `${DOMAIN}/virkailija-raamit/apply-raamit.js`,
         casLoginUrl: `${DOMAIN}/cas/login`,
         lokalisointiUrl: `${DOMAIN}/lokalisointi/tolgee`,
+        organisaatioLinkUrl: `${DOMAIN}/organisaatio-service/lomake`,
       },
       suorituspalvelu: {
         loginUrl: `${suorituspalveluBackendUrl}/login`,

@@ -21,7 +21,7 @@ const OppilaitosSelectField = ({
   const { data: oppilaitoksetOptions } = useApiSuspenseQuery({
     ...queryOptionsGetOppilaitokset(),
     select: (data) =>
-      data?.data?.oppilaitokset?.map(($) => ({
+      data?.oppilaitokset?.map(($) => ({
         value: $.oid,
         label: $.nimi,
       })) ?? [],

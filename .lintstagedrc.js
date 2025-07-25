@@ -1,4 +1,4 @@
-const eslintCommand = 'eslint --fix --no-ignore --max-warnings=0';
+const eslintCommand = 'eslint --fix --no-warn-ignored --max-warnings=0';
 const prettierCommand = 'prettier --write -u';
 
 const config = {

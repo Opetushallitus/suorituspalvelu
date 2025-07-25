@@ -1,11 +1,17 @@
 'use client';
 import { FullSpinner } from '@/components/FullSpinner';
 import { useOppija } from '@/queries';
+import { Stack } from '@mui/material';
 import { Suspense } from 'react';
+import { Opiskeluoikeudet } from './Opiskeluoikeudet';
 
 const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const { data: tiedot } = useOppija(oppijaNumero);
-  return <pre>{JSON.stringify(tiedot.data, null, 2)}</pre>;
+  return (
+    <Stack sx={{ margin: 2, gap: 2 }}>
+      <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
+    </Stack>
+  );
 };
 
 export default function HenkiloPage({

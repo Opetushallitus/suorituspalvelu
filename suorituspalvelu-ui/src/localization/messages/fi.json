@@ -21,6 +21,11 @@
     "henkilo-maara": "{count, plural, =0 {Henkilöitä ei löytynyt} one {1 henkilö} other {{count} henkilöä}}"
   },
   "oppija": {
-    "otsikko": "Oppijan tiedot"
+    "otsikko": "Oppijan tiedot",
+    "opiskeluoikeudet": "Opiskeluoikeudet",
+    "voimassaolo": "Voimassaolo",
+    "oppilaitos": "Oppilaitos",
+    "voimassa": "Voimassa",
+    "ei-voimassa": "Ei voimassa"
   }
 }
