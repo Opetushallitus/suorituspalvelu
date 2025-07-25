@@ -290,6 +290,26 @@ export const SuorituksetKoulutustyypeittain = ({
             <SuorituksenPerustiedotIndicator perustiedot={tutkinto} />
           </OppijaInfoPaper>
         ))}
+        {tiedot.ammattitutkinnot.map((tutkinto) => (
+          <OppijaInfoPaper
+            key={tutkinto.nimi}
+            suorituksenNimi={tutkinto.nimi}
+            valmistumispaiva={tutkinto.valmistumispaiva}
+            topColor={ophColors.green2}
+          >
+            <SuorituksenPerustiedotIndicator perustiedot={tutkinto} />
+          </OppijaInfoPaper>
+        ))}
+        {tiedot.erikoisammattitutkinnot.map((tutkinto) => (
+          <OppijaInfoPaper
+            key={tutkinto.nimi}
+            suorituksenNimi={tutkinto.nimi}
+            valmistumispaiva={tutkinto.valmistumispaiva}
+            topColor={ophColors.green2}
+          >
+            <SuorituksenPerustiedotIndicator perustiedot={tutkinto} />
+          </OppijaInfoPaper>
+        ))}
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.tuva')}>
         {tiedot.tuvat.map((tutkinto) => (
