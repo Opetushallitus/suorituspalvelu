@@ -64,7 +64,8 @@
     "yo-kokeen-tutkintokerta": "Tutkintokerta",
     "oppiaine": "Oppiaine",
     "arvosana": "Arvosana",
-    "valinnainen": "Valinnainen"
+    "valinnainen": "Valinnainen",
+    "oppiaineet": "Oppiaineet"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",
