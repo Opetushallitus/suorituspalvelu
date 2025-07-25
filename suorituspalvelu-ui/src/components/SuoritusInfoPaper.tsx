@@ -17,13 +17,13 @@ export const SuoritusInfoPaper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <PaperWithTopColor topColor={topColor}>
+    <PaperWithTopColor topColor={topColor} data-test-id="suoritus-paper">
       <OphTypography
         variant="h5"
         component={headingLevel}
         sx={{ marginBottom: 2 }}
       >
-        {suorituksenNimi}{' '}
+        {`${suorituksenNimi} `}
         {valmistumispaiva && (
           <OphTypography variant="body1" component="span">
             ({formatDate(valmistumispaiva, 'y')})
