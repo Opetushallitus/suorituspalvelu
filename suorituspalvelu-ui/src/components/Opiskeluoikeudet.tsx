@@ -1,5 +1,5 @@
 import { Opiskeluoikeus } from '@/api';
-import { NDASH } from '@/common';
+import { NDASH } from '@/lib/common';
 import { currentFinnishDate, isInRange } from '@/lib/time-utils';
 import { Circle } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';

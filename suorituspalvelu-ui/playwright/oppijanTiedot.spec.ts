@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from './fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json';
-import { NDASH } from '@/common';
+import { NDASH } from '@/lib/common';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
 

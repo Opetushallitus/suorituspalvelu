@@ -1,4 +1,4 @@
-import { DEFAULT_NUQS_OPTIONS } from '@/common';
+import { DEFAULT_NUQS_OPTIONS } from '@/lib/common';
 import { useQueryState } from 'nuqs';
 
 export const useSelectedOppijaNumero = () => {
