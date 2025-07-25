@@ -4,18 +4,10 @@ import { OppijaResponse } from '@/api';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import {
-  LukionOppiaine
-} from '@/types/ui-types';
-import { styled } from '@/lib/theme';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { KorkeakouluSuoritusPaper } from './KorkeakouluSuoritusPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-
-const UnorderedList = styled('ul')(({ theme }) => ({
-  margin: 0,
-  paddingLeft: theme.spacing(2),
-}));
+import { LukioSuoritusPaper } from './LukioSuoritusPaper';
 
 const LabeledSuoritusSection = ({
   label,
@@ -31,26 +23,6 @@ const LabeledSuoritusSection = ({
       </OphTypography>
       <Stack gap={4}>{children}</Stack>
     </Box>
-  );
-};
-
-const LukionOppiaineetList = ({
-  oppiaineet,
-}: {
-  oppiaineet: Array<LukionOppiaine>;
-}) => {
-  const { t } = useTranslate();
-  return (
-    <LabeledInfoItem
-      label={t('oppija.oppiaineet')}
-      value={
-        <UnorderedList>
-          {oppiaineet.map((oppiaine) => (
-            <li key={oppiaine.nimi}>{oppiaine.nimi}</li>
-          ))}
-        </UnorderedList>
-      }
-    />
   );
 };
 
@@ -73,85 +45,53 @@ export const SuorituksetKoulutustyypeittain = ({
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.lukiokoulutus')}>
         {tiedot?.yoTutkinto && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.ylioppilastutkinto')}
-            valmistumispaiva={tiedot.yoTutkinto.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tiedot.yoTutkinto} />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.ylioppilastutkinto')}
+            lukioSuoritus={tiedot.yoTutkinto}
+          />
         )}
         {tiedot?.lukionOppimaara && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.lukion-oppimaara')}
-            valmistumispaiva={tiedot.lukionOppimaara.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator
-              perustiedot={tiedot.lukionOppimaara}
-            />
-            <LukionOppiaineetList
-              oppiaineet={tiedot.lukionOppimaara.oppiaineet}
-            />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.lukion-oppimaara')}
+            lukioSuoritus={tiedot.lukionOppimaara}
+          />
         )}
         {tiedot?.lukionOppiaineenOppimaarat.map((oppimaara) => (
-          <SuoritusInfoPaper
+          <LukioSuoritusPaper
             key={oppimaara.oppilaitos.oid}
-            suorituksenNimi={t('oppija.lukion-oppiaineen-oppimaara')}
-            valmistumispaiva={oppimaara.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
-            <LukionOppiaineetList oppiaineet={oppimaara.oppiaineet} />
-          </SuoritusInfoPaper>
+            nimi={t('oppija.lukion-oppiaineen-oppimaara')}
+            lukioSuoritus={oppimaara}
+          />
         ))}
         {tiedot.diaTutkinto && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.dia-tutkinto')}
-            valmistumispaiva={tiedot.diaTutkinto.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tiedot.diaTutkinto} />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.dia-tutkinto')}
+            lukioSuoritus={tiedot.diaTutkinto}
+          />
         )}
         {tiedot.diaVastaavuusTodistus && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.dia-vastaavuustodistus')}
-            valmistumispaiva={tiedot.diaVastaavuusTodistus.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator
-              perustiedot={tiedot.diaVastaavuusTodistus}
-            />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.dia-vastaavuustodistus')}
+            lukioSuoritus={tiedot.diaVastaavuusTodistus}
+          />
         )}
         {tiedot.ebTutkinto && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.eb-tutkinto')}
-            valmistumispaiva={tiedot.ebTutkinto.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tiedot.ebTutkinto} />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.eb-tutkinto')}
+            lukioSuoritus={tiedot.ebTutkinto}
+          />
         )}
         {tiedot.ibTutkinto && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.ib-tutkinto')}
-            valmistumispaiva={tiedot.ibTutkinto.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tiedot.ibTutkinto} />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.ib-tutkinto')}
+            lukioSuoritus={tiedot.ibTutkinto}
+          />
         )}
         {tiedot.preIB && (
-          <SuoritusInfoPaper
-            suorituksenNimi={t('oppija.pre-ib')}
-            valmistumispaiva={tiedot.preIB.valmistumispaiva}
-            topColor={ophColors.blue2}
-          >
-            <SuorituksenPerustiedotIndicator perustiedot={tiedot.preIB} />
-          </SuoritusInfoPaper>
+          <LukioSuoritusPaper
+            nimi={t('oppija.pre-ib')}
+            lukioSuoritus={tiedot.preIB}
+          />
         )}
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.ammatillinen-koulutus')}>

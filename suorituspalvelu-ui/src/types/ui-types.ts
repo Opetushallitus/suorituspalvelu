@@ -4,6 +4,14 @@ import {
   IPerusopetuksenOppiaine,
   ILukionOppiaine,
   IKKSuoritus,
+  ILukionOppimaara,
+  ILukionOppiaineenOppimaara,
+  IYOTutkinto,
+  IDIATutkinto,
+  IDIAVastaavuusTodistus,
+  IEBTutkinto,
+  IIBTutkinto,
+  IPreIB,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -25,3 +33,13 @@ export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
 export type LukionOppiaine = ILukionOppiaine;
 
 export type KorkeakouluSuoritus = IKKSuoritus;
+
+export type LukioSuoritus =
+  | IYOTutkinto
+  | ILukionOppimaara
+  | ILukionOppiaineenOppimaara
+  | IDIATutkinto
+  | IDIAVastaavuusTodistus
+  | IEBTutkinto
+  | IIBTutkinto
+  | IPreIB;
