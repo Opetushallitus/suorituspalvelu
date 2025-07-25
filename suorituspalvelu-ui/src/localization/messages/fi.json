@@ -56,7 +56,8 @@
     "perusopetus": "Perusopetus",
     "koulutustyypeittain": "Koulutustyypeittäin",
     "uusin-ensin": "Uusin ensin",
-    "hakukohde": "Hakukohde"
+    "hakukohde": "Hakukohde",
+    "oppiaineet": "Oppiaineet"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",

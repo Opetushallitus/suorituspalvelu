@@ -12,9 +12,15 @@ import { LabeledInfoItem } from './LabeledInfoItem';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
 import { configPromise } from '@/configuration';
-import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
+import { LukionOppiaine, SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
 import { formatDate } from 'date-fns';
+import { styled } from '@/lib/theme';
+
+const UnorderedList = styled('ul')(({ theme }) => ({
+  margin: 0,
+  paddingLeft: theme.spacing(2),
+}));
 
 const OppijaInfoPaper = ({
   suorituksenNimi,
@@ -143,6 +149,26 @@ const LabeledSuoritusSection = ({
   );
 };
 
+const LukionOppiaineetList = ({
+  oppiaineet,
+}: {
+  oppiaineet: Array<LukionOppiaine>;
+}) => {
+  const { t } = useTranslate();
+  return (
+    <LabeledInfoItem
+      label={t('oppija.oppiaineet')}
+      value={
+        <UnorderedList>
+          {oppiaineet.map((oppiaine) => (
+            <li key={oppiaine.nimi}>{oppiaine.nimi}</li>
+          ))}
+        </UnorderedList>
+      }
+    />
+  );
+};
+
 export const SuorituksetKoulutustyypeittain = ({
   tiedot,
 }: {
@@ -189,6 +215,9 @@ export const SuorituksetKoulutustyypeittain = ({
             <SuorituksenPerustiedotIndicator
               perustiedot={tiedot.lukionOppimaara}
             />
+            <LukionOppiaineetList
+              oppiaineet={tiedot.lukionOppimaara.oppiaineet}
+            />
           </OppijaInfoPaper>
         )}
         {tiedot?.lukionOppiaineenOppimaarat.map((oppimaara) => (
@@ -199,6 +228,7 @@ export const SuorituksetKoulutustyypeittain = ({
             topColor={ophColors.blue2}
           >
             <SuorituksenPerustiedotIndicator perustiedot={oppimaara} />
+            <LukionOppiaineetList oppiaineet={oppimaara.oppiaineet} />
           </OppijaInfoPaper>
         ))}
         {tiedot.diaTutkinto && (

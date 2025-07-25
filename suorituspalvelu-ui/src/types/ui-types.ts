@@ -1,4 +1,9 @@
-import { SuoritusTila } from './backend';
+import {
+  IYOKoe,
+  SuoritusTila,
+  IPerusopetuksenOppiaine,
+  ILukionOppiaine,
+} from './backend';
 
 export type SuorituksenTila = SuoritusTila;
 
@@ -11,3 +16,9 @@ export type SuorituksenPerustiedot = {
   suorituskieli?: string;
   valmistumispaiva?: Date;
 };
+
+export type YOKoe = IYOKoe;
+
+export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
+
+export type LukionOppiaine = ILukionOppiaine;
