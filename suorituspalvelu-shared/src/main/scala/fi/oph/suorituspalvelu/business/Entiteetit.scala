@@ -30,7 +30,7 @@ case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
 case class Arvosana(arvosana: String, koodi: String)
 
-case class Oppilaitos(nimiFi: Option[String], nimiSV: Option[String], nimiEN: Option[String], oid: String)
+case class Oppilaitos(nimi: Kielistetty, oid: String)
 
 case class AmmattiTutkinto(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritustapa: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 

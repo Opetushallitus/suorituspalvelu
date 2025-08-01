@@ -293,9 +293,9 @@ object EntityToUIConverter {
           ),
           oppilaitos = AmmatillinenOppilaitos(
             AmmatillisenOppilaitoksenNimi(
-              t.oppilaitos.nimiFi.toJava,
-              t.oppilaitos.nimiSV.toJava,
-              t.oppilaitos.nimiEN.toJava
+              t.oppilaitos.nimi.fi.toJava,
+              t.oppilaitos.nimi.sv.toJava,
+              t.oppilaitos.nimi.en.toJava
             ),
             t.oppilaitos.oid,
           ),
@@ -346,9 +346,9 @@ object EntityToUIConverter {
           ),
           oppilaitos = AmmatillinenOppilaitos(
             AmmatillisenOppilaitoksenNimi(
-              t.oppilaitos.nimiFi.toJava,
-              t.oppilaitos.nimiSV.toJava,
-              t.oppilaitos.nimiEN.toJava
+              t.oppilaitos.nimi.fi.toJava,
+              t.oppilaitos.nimi.sv.toJava,
+              t.oppilaitos.nimi.en.toJava
             ),
             t.oppilaitos.oid,
           ),

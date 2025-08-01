@@ -119,9 +119,11 @@ object KoskiToSuoritusConverter {
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       opiskeluoikeus.oppilaitos.map(o =>
         fi.oph.suorituspalvelu.business.Oppilaitos(
-          o.nimi.fi,
-          o.nimi.sv,
-          o.nimi.en,
+          Kielistetty(
+            o.nimi.fi,
+            o.nimi.sv,
+            o.nimi.en
+          ),
           o.oid)).getOrElse(dummy()),
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
@@ -139,9 +141,11 @@ object KoskiToSuoritusConverter {
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       opiskeluoikeus.oppilaitos.map(o =>
         fi.oph.suorituspalvelu.business.Oppilaitos(
-          o.nimi.fi,
-          o.nimi.sv,
-          o.nimi.en,
+          Kielistetty(
+            o.nimi.fi,
+            o.nimi.sv,
+            o.nimi.en,
+          ),
           o.oid)).getOrElse(dummy()),
       tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
@@ -248,9 +252,11 @@ object KoskiToSuoritusConverter {
           opiskeluoikeus.oid,
           opiskeluoikeus.oppilaitos.map(o =>
             fi.oph.suorituspalvelu.business.Oppilaitos(
-              o.nimi.fi,
-              o.nimi.sv,
-              o.nimi.en,
+              Kielistetty(
+                o.nimi.fi,
+                o.nimi.sv,
+                o.nimi.en,
+              ),
               o.oid)).getOrElse(dummy()),
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.tila)
