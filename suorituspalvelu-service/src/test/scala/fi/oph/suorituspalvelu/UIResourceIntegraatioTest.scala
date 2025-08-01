@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -197,7 +197,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(None, None, None, "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(None, None, None, "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus("1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(None, None, None, "1.2.3.4"), Set(ammatillinenTutkinto), None),
     ), Set.empty)

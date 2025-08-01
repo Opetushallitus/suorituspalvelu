@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, Koodi, Opiskeluoikeus, Oppilaitos}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, Koodi, Opiskeluoikeus, Oppilaitos}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -19,7 +19,7 @@ class EntityToUIConverterTest {
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
       OPPIJANUMERO,
       Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
-      Set(AmmatillinenTutkinto(
+      Set(AmmatillinenPerustutkinto(
         Kielistetty(Some("Tutkinnon nimi"), None, None),
         Koodi("351301", "koulutus", Some(12)),
         Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
@@ -92,7 +92,7 @@ class EntityToUIConverterTest {
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
       OPPIJANUMERO,
       Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
-      Set(AmmatillinenTutkinto(
+      Set(AmmatillinenPerustutkinto(
         Kielistetty(Some("Tutkinnon nimi"), None, None),
         Koodi("351301", "koulutus", Some(12)),
         Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
@@ -148,7 +148,7 @@ class EntityToUIConverterTest {
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
       OPPIJANUMERO,
       Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
-      Set(AmmatillinenTutkinto(
+      Set(AmmatillinenPerustutkinto(
         Kielistetty(Some("Tutkinnon nimi"), None, None),
         Koodi("351301", "koulutus", Some(12)),
         Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),

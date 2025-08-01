@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, EXAMPLE_HAKUKOHDE_OID, EXAMPLE_HAKU_OID, HEALTHCHECK_PATH, LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_OPPIJAT_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{Komot, LegacyOppijatService}

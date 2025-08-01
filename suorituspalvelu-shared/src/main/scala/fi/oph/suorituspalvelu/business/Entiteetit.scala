@@ -32,7 +32,9 @@ case class Arvosana(arvosana: String, koodi: String)
 
 case class Oppilaitos(nimiFi: Option[String], nimiSV: Option[String], nimiEN: Option[String], oid: String)
 
-case class AmmatillinenTutkinto(nimi: Kielistetty, tyyppi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
+case class AmmattiTutkinto(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritustapa: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+
+case class AmmatillinenPerustutkinto(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
 
 case class AmmatillisenTutkinnonOsaAlue(nimi: Kielistetty, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Tyypitetty
 

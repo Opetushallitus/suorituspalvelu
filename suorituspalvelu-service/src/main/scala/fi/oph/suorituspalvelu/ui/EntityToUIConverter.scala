@@ -280,8 +280,8 @@ object EntityToUIConverter {
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.suoritukset)
       .flatten
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenTutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenTutkinto])
+      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
+      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(t => {
         // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
         // 

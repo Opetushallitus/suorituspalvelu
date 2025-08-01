@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, HEALTHCHECK_PATH, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
@@ -102,9 +102,9 @@ class LegacySuorituksetResource {
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.suoritukset)
       .flatten
-      .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
-      .map(s => s.asInstanceOf[AmmatillinenTutkinto])
-      .map(t => LegacyAmmatillinenTaiYOSuoritus(oppijaNumero, "ammatillinentutkinto", Optional.of(t.tyyppi.arvo), if (t.vahvistusPaivamaara.isDefined) "VALMIS" else "KESKEN"))
+      .filter(s => s.isInstanceOf[AmmatillinenPerustutkinto])
+      .map(s => s.asInstanceOf[AmmatillinenPerustutkinto])
+      .map(t => LegacyAmmatillinenTaiYOSuoritus(oppijaNumero, "ammatillinentutkinto", Optional.of(t.koodi.arvo), if (t.vahvistusPaivamaara.isDefined) "VALMIS" else "KESKEN"))
       .toSeq
 
     val yoTutkinnot = opiskeluoikeudet
