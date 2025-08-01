@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, Koodi, Opiskeluoikeus, Oppilaitos}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -18,7 +18,7 @@ class EntityToUIConverterTest {
 
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
       OPPIJANUMERO,
-      Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
+      Oppilaitos(None, None, None, ""),
       Set(AmmatillinenPerustutkinto(
         Kielistetty(Some("Tutkinnon nimi"), None, None),
         Koodi("351301", "koulutus", Some(12)),
@@ -81,7 +81,7 @@ class EntityToUIConverterTest {
       )),
       java.util.List.of(),
       Optional.empty()
-    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammatillisetTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammatillisetPerusTutkinnot)
   }
 
   @Test def testConvertAmmatillinenTutkintoNaytto(): Unit = {
@@ -91,7 +91,7 @@ class EntityToUIConverterTest {
 
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
       OPPIJANUMERO,
-      Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
+      Oppilaitos(None, None, None, ""),
       Set(AmmatillinenPerustutkinto(
         Kielistetty(Some("Tutkinnon nimi"), None, None),
         Koodi("351301", "koulutus", Some(12)),
@@ -137,17 +137,15 @@ class EntityToUIConverterTest {
       java.util.List.of(),
       java.util.List.of(),
       Optional.of(NAYTTOTUTKINTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
-    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammatillisetTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammatillisetPerusTutkinnot)
   }
 
   @Test def testConvertAmmatillinenTutkintoEnnenReformia(): Unit = {
-    // TODO: pitääkö suorituksen olla valmis jotta voidaan päätellä onko kyseessä näyttö vai ei?
-
     val OPPIJANUMERO = "1.2.3"
 
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
       OPPIJANUMERO,
-      Oppilaitos(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en"), "1.2.246.562.10.41945921983"),
+      Oppilaitos(None, None, None, ""),
       Set(AmmatillinenPerustutkinto(
         Kielistetty(Some("Tutkinnon nimi"), None, None),
         Koodi("351301", "koulutus", Some(12)),
@@ -201,7 +199,44 @@ class EntityToUIConverterTest {
         Optional.empty,
       )),
       Optional.of(NAYTTOTUTKINTO)
-    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammatillisetTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammatillisetPerusTutkinnot)
   }
 
+  @Test def testConvertAmmattiTutkinto(): Unit = {
+    val OPPIJANUMERO = "1.2.3"
+
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(AmmatillinenOpiskeluoikeus(
+      OPPIJANUMERO,
+      Oppilaitos(None, None, None, ""),
+      Set(AmmattiTutkinto(
+        Kielistetty(Some("Hieronnan ammattitutkinto"), None, None),
+        Koodi("351301", "koulutus", Some(12)),
+        Oppilaitos(Some("Pirkanmaan urheiluhierojakoulu"), Some("Pirkanmaan urheiluhierojakoulu sv"), Some("Pirkanmaan urheiluhierojakoulu en"), "1.2.246.562.10.41945921983"),
+        Koodi("", "", None),
+        Some(LocalDate.parse("2020-01-01")),
+        Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
+        Koodi("FI", "kieli", Some(1))
+      )),
+      None
+    ))
+
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Ammattitutkinto(
+      AmmattitutkinnonNimi(
+        Optional.of("Hieronnan ammattitutkinto"),
+        Optional.empty(),
+        Optional.empty()
+      ),
+      AmmatillinenOppilaitos(
+        AmmatillisenOppilaitoksenNimi(
+          fi = Optional.of("Pirkanmaan urheiluhierojakoulu"),
+          sv = Optional.of("Pirkanmaan urheiluhierojakoulu sv"),
+          en = Optional.of("Pirkanmaan urheiluhierojakoulu en")
+        ),
+        "1.2.246.562.10.41945921983"
+      ),
+      Tila.VALMIS,
+      Optional.of(LocalDate.parse("2020-01-01")),
+      "FI"
+    )), EntityToUIConverter.getOppijanTiedot(OPPIJANUMERO, opiskeluoikeudet).get.ammattitutkinnot)
+  }
 }

@@ -362,9 +362,18 @@ case class AmmatillinenTutkinto(
   @BeanProperty suoritustapa: Optional[SuoritusTapa]
 )
 
+case class AmmattitutkinnonNimi(
+  @(Schema @field)(example = "Hieronnan ammattitutkinto", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Yrkesexamen i massage", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Further vocational qualification in Massage", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
 case class Ammattitutkinto(
-  @(Schema @field)(example = "Maanmittausalan ammattitutkinto", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: AmmattitutkinnonNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -541,7 +550,7 @@ case class PerusopetuksenOppiaineenOppimaara(
 trait OppijanTiedotResponse()
 
 case class OppijanTiedotSuccessResponse(
-  @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+                                         @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppijaNumero: String,
   @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
   @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],
@@ -553,7 +562,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty ebTutkinto: Optional[EBTutkinto],
   @BeanProperty ibTutkinto: Optional[IBTutkinto],
   @BeanProperty preIB: Optional[PreIB],
-  @BeanProperty ammatillisetTutkinnot: java.util.List[AmmatillinenTutkinto],
+  @BeanProperty ammatillisetPerusTutkinnot: java.util.List[AmmatillinenTutkinto],
   @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
   @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
   @BeanProperty telmat: java.util.List[Telma],
