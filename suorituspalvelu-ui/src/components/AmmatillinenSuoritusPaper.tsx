@@ -12,7 +12,7 @@ export const AmmatillinenSuoritusPaper = ({
     <SuoritusInfoPaper
       suorituksenNimi={suoritus.nimi}
       valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.red1}
+      topColor={ophColors.green2}
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
     </SuoritusInfoPaper>
