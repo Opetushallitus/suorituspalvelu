@@ -95,7 +95,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
-    val telma = Telma(Koodi("arvo", "koodisto", None), suoritusKieli)
+    val telma = Telma(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), suoritusKieli)
     val perusopetuksenOppimaara = PerusopetuksenOppimaara("oid", Koodi("arvo", "koodisto", None), suoritusKieli, Set.empty, None, Set.empty)
     val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None)
     val yoTutkinto = YOTutkinto(suoritusKieli)

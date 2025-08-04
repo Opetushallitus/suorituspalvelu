@@ -160,6 +160,25 @@ object KoskiToSuoritusConverter {
       case "11" => toAmmattiTutkinto(opiskeluoikeus, suoritus)
   }
 
+  def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma =
+    val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
+
+    Telma(
+      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
+      opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          Kielistetty(
+            o.nimi.fi,
+            o.nimi.sv,
+            o.nimi.en
+          ),
+          o.oid)).getOrElse(dummy()),
+      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
+    )
+
   def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine = {
     val parasArviointi = {
       val arvioinnit = osaSuoritus.arviointi
@@ -224,12 +243,6 @@ object KoskiToSuoritusConverter {
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
       suoritus.`jääLuokalle`.getOrElse(false)
-    )
-
-  def toTelma(suoritus: Suoritus): Telma =
-    Telma(
-      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
-      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
     )
 
   def toTuva(suoritus: Suoritus): Tuva =
@@ -299,7 +312,7 @@ object KoskiToSuoritusConverter {
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA => Some(toPerusopetuksenVuosiluokka(suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA && suoritus.arviointi.exists(_.nonEmpty) => Some(toNuortenPerusopetuksenOppiaineenOppimaara(suoritus))
-            case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TELMA => Some(toTelma(suoritus))
+            case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TELMA => Some(toTelma(opiskeluoikeus, suoritus))
             case suoritus if suoritus.tyyppi.koodiarvo == SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS => Some(toTuva(suoritus))
             case default => None)).toSet
     finally

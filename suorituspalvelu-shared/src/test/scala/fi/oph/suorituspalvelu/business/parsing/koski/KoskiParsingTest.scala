@@ -372,9 +372,15 @@ class KoskiParsingTest {
         |            "koulutusmoduuli": {
         |              "tunniste": {
         |                "koodiarvo": "999903",
+        |                "nimi": {
+        |                  "fi": "Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"
+        |                },
         |                "koodistoUri": "koulutus",
         |                "koodistoVersio": 12
         |              }
+        |            },
+        |            "vahvistus": {
+        |               "päivä": "2023-03-15"
         |            },
         |            "suorituskieli": {
         |              "koodiarvo": "FI",
@@ -390,6 +396,8 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[Telma]
 
     Assertions.assertEquals(Koodi("999903", "koulutus", Some(12)), telma.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), telma.nimi)
+    Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
 
   @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =

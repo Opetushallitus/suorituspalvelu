@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos, Telma}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -218,8 +218,40 @@ class EntityToUIConverterTest {
         tutkinto.oppilaitos.oid
       ),
       Tila.VALMIS,
-      Optional.of(LocalDate.parse("2020-01-01")),
-      "FI"
+      tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.suoritusKieli.arvo,
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None))).get.ammattitutkinnot)
+  }
+
+  @Test def testConvertTelma(): Unit = {
+    val OPPIJANUMERO = "1.2.3"
+
+    val telma = Telma(
+      Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None),
+      Koodi("999903", "koulutus", Some(12)),
+      Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
+      Koodi("", "", None),
+      Some(LocalDate.parse("2020-01-01")),
+      Koodi("FI", "kieli", Some(1))
+    )
+    
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Telma(
+      TelmaNimi(
+        telma.nimi.fi.toJava,
+        telma.nimi.sv.toJava,
+        telma.nimi.en.toJava,
+      ),
+      AmmatillinenOppilaitos(
+        AmmatillisenOppilaitoksenNimi(
+          telma.oppilaitos.nimi.fi.toJava,
+          telma.oppilaitos.nimi.sv.toJava,
+          telma.oppilaitos.nimi.en.toJava
+        ),
+        telma.oppilaitos.oid
+      ),
+      Tila.VALMIS,
+      telma.vahvistusPaivamaara.toJava,
+      telma.suoritusKieli.arvo
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(telma), None))).get.telmat)
   }
 }

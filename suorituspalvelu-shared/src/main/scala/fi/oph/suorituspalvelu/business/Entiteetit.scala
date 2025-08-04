@@ -44,7 +44,7 @@ case class AmmatillisenTutkinnonOsa(
 
 case class Tuva(koodi: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
-case class Telma(koodi: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+case class Telma(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
 case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, suoritusKieli: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 

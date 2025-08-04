@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenOppilaitoksenNimi, AmmatillisenTutkinnonNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsanNimi, AmmattitutkinnonNimi, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, OppijanTiedotSuccessResponse, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, Tila, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTONimi}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenOppilaitoksenNimi, AmmatillisenTutkinnonNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsanNimi, AmmattitutkinnonNimi, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, OppijanTiedotSuccessResponse, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, TelmaNimi, Tila, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTONimi}
 import fi.oph.suorituspalvelu.ui.UIService.EXAMPLE_OPPIJA_OID
 
 import java.time.LocalDate
@@ -375,19 +375,33 @@ object EntityToUIConverter {
     ))
 
   def getTelmat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Telma] =
-    List(Telma(
-      oppilaitos = AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
-          fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
-          sv = Optional.empty(),
-          en = Optional.empty()
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
-      suorituskieli = "suomi"
-    ))
+    opiskeluoikeudet
+      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+      .map(o => o.suoritukset)
+      .flatten
+      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Telma])
+      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Telma])
+      .map(t => {
+        Telma(
+          nimi = TelmaNimi(
+            t.nimi.fi.toJava,
+            t.nimi.sv.toJava,
+            t.nimi.en.toJava
+          ),
+          oppilaitos = AmmatillinenOppilaitos(
+            AmmatillisenOppilaitoksenNimi(
+              t.oppilaitos.nimi.fi.toJava,
+              t.oppilaitos.nimi.sv.toJava,
+              t.oppilaitos.nimi.en.toJava
+            ),
+            t.oppilaitos.oid,
+          ),
+          tila = VALMIS,
+          valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          suorituskieli = t.suoritusKieli.arvo,
+        )
+      }).toList
 
   def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Tuva] =
     List(Tuva(

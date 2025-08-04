@@ -397,7 +397,18 @@ case class Erikoisammattitutkinto(
   @BeanProperty suorituskieli: String,
 )
 
+case class TelmaNimi(
+  @(Schema @field)(example = "Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Utbildning som handleder för arbete och ett självständigt liv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Preparatory education for work and independent living", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
 case class Telma(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: TelmaNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
