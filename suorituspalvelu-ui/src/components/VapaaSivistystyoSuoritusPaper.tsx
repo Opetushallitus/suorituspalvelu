@@ -4,18 +4,18 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { VapaaSivistystyoSuoritus } from '@/types/ui-types';
 
 export const VapaaSivistystyoSuoritusPaper = ({
-  vapaaSivistystyoSuoritus,
+  suoritus,
 }: {
-  vapaaSivistystyoSuoritus: VapaaSivistystyoSuoritus;
+  suoritus: VapaaSivistystyoSuoritus;
 }) => {
   return (
     <SuoritusInfoPaper
-      key={vapaaSivistystyoSuoritus.oppilaitos.oid}
-      suorituksenNimi={vapaaSivistystyoSuoritus.nimi}
-      valmistumispaiva={vapaaSivistystyoSuoritus.valmistumispaiva}
+      key={suoritus.oppilaitos.oid}
+      suorituksenNimi={suoritus.nimi}
+      valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.cyan1}
     >
-      <SuorituksenPerustiedotIndicator perustiedot={vapaaSivistystyoSuoritus} />
+      <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
     </SuoritusInfoPaper>
   );
 };

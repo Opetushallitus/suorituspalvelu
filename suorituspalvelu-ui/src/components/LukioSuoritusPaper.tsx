@@ -32,21 +32,19 @@ const LukionOppiaineetList = ({
 };
 
 export const LukioSuoritusPaper = ({
-  nimi,
-  lukioSuoritus,
+  suoritus,
 }: {
-  nimi: string;
-  lukioSuoritus: LukioSuoritus;
+  suoritus: LukioSuoritus;
 }) => {
   return (
     <SuoritusInfoPaper
-      suorituksenNimi={nimi}
-      valmistumispaiva={lukioSuoritus.valmistumispaiva}
+      suorituksenNimi={suoritus.nimi}
+      valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.blue2}
     >
-      <SuorituksenPerustiedotIndicator perustiedot={lukioSuoritus} />
-      {'oppiaineet' in lukioSuoritus && (
-        <LukionOppiaineetList oppiaineet={lukioSuoritus.oppiaineet} />
+      <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
+      {'oppiaineet' in suoritus && (
+        <LukionOppiaineetList oppiaineet={suoritus.oppiaineet} />
       )}
     </SuoritusInfoPaper>
   );

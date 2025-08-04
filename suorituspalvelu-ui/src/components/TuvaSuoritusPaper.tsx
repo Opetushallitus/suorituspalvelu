@@ -4,20 +4,16 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { useTranslate } from '@tolgee/react';
 import { ophColors } from '@opetushallitus/oph-design-system';
 
-export const TuvaSuoritusPaper = ({
-  tuvaSuoritus,
-}: {
-  tuvaSuoritus: TUVASuoritus;
-}) => {
+export const TuvaSuoritusPaper = ({ suoritus }: { suoritus: TUVASuoritus }) => {
   const { t } = useTranslate();
   return (
     <SuoritusInfoPaper
-      key={tuvaSuoritus.oppilaitos.oid}
+      key={suoritus.oppilaitos.oid}
       suorituksenNimi={t('oppija.tuva')}
-      valmistumispaiva={tuvaSuoritus.valmistumispaiva}
-      topColor={ophColors.yellow2}
+      valmistumispaiva={suoritus.valmistumispaiva}
+      topColor={ophColors.yellow1}
     >
-      <SuorituksenPerustiedotIndicator perustiedot={tuvaSuoritus} />
+      <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
     </SuoritusInfoPaper>
   );
 };

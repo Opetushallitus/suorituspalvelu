@@ -5,7 +5,6 @@ import {
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
-  IUIOpiskeluoikeus,
 } from './types/backend';
 
 export type OppijatSearchParams = {
@@ -34,14 +33,10 @@ export const searchOppijat = async (params: OppijatSearchParams) => {
   return res.data;
 };
 
-export type Opiskeluoikeus = IUIOpiskeluoikeus;
-
-export type OppijaResponse = IOppijanTiedotSuccessResponse;
-
 export const getOppija = async (oppijaNumero: string) => {
   const config = await configPromise;
 
-  const res = await client.get<OppijaResponse>(
+  const res = await client.get<IOppijanTiedotSuccessResponse>(
     `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
   );
 

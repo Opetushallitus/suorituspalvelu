@@ -1,9 +1,10 @@
-import { OppijaResponse } from '@/api';
 import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslate } from '@tolgee/react';
 import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain';
 import { useState } from 'react';
+import { OppijaResponse } from '@/types/ui-types';
+import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
 
@@ -41,7 +42,7 @@ export function Suoritukset({ tiedot }: { tiedot: OppijaResponse }) {
       {suoritusOrder === 'koulutustyypeittain' ? (
         <SuorituksetKoulutustyypeittain tiedot={tiedot} />
       ) : (
-        <div>TODO: Suoritukset uusin ensin -järjestyksessä</div>
+        <SuorituksetAikajarjestyksessa tiedot={tiedot} />
       )}
     </Box>
   );

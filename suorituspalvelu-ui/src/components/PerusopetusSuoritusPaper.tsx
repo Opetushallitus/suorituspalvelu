@@ -24,23 +24,19 @@ const Luokkatiedot = ({
 };
 
 export const PerusopetusSuoritusPaper = ({
-  nimi,
-  perusopetusSuoritus,
+  suoritus,
 }: {
-  nimi: string;
-  perusopetusSuoritus: PerusopetusSuoritus;
+  suoritus: PerusopetusSuoritus;
 }) => {
   return (
     <SuoritusInfoPaper
-      key={perusopetusSuoritus.oppilaitos.oid}
-      suorituksenNimi={nimi}
-      valmistumispaiva={perusopetusSuoritus.valmistumispaiva}
+      key={suoritus.oppilaitos.oid}
+      suorituksenNimi={suoritus.nimi}
+      valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.cyan2}
     >
-      <SuorituksenPerustiedotIndicator perustiedot={perusopetusSuoritus} />
-      {'luokka' in perusopetusSuoritus && (
-        <Luokkatiedot oppimaara={perusopetusSuoritus} />
-      )}
+      <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
+      {'luokka' in suoritus && <Luokkatiedot oppimaara={suoritus} />}
     </SuoritusInfoPaper>
   );
 };

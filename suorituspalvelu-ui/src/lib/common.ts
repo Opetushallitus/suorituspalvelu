@@ -5,3 +5,17 @@ export const DEFAULT_NUQS_OPTIONS = {
 } as const;
 
 export const NDASH = '\u2013';
+
+export const EMPTY_OBJECT = Object.freeze({});
+export const EMPTY_ARRAY = Object.freeze([]) as Array<never>;
+export const EMPTY_STRING_SET = Object.freeze(new Set<string>());
+
+export const createId = () => Math.random().toString(16).slice(2);
+
+export function castToArray<T>(args: T) {
+  return (Array.isArray(args) ? args : [args]) as T extends Array<unknown>
+    ? T
+    : Array<T>;
+}
+
+export type ValueOf<T> = T[keyof T];

@@ -22,6 +22,8 @@ import {
   INuortenPerusopetuksenOppiaineenOppimaara,
   IAikuistenPerusopetuksenOppimaara,
   IPerusopetuksenOppimaara,
+  IOppijanTiedotSuccessResponse,
+  IUIOpiskeluoikeus,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -36,15 +38,22 @@ export type SuorituksenPerustiedot = {
   valmistumispaiva?: Date;
 };
 
+export type Opiskeluoikeus = IUIOpiskeluoikeus;
+
+export type OppijaResponse = IOppijanTiedotSuccessResponse;
+
 export type YOKoe = IYOKoe;
 
 export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
 
 export type LukionOppiaine = ILukionOppiaine;
 
-export type KorkeakouluSuoritus = IKKSuoritus;
+export type KorkeakouluSuoritus = IKKSuoritus & {
+  koulutustyyppi: 'korkeakoulutus';
+  key: string;
+};
 
-export type LukioSuoritus =
+export type LukioSuoritus = (
   | IYOTutkinto
   | ILukionOppimaara
   | ILukionOppiaineenOppimaara
@@ -52,20 +61,34 @@ export type LukioSuoritus =
   | IDIAVastaavuusTodistus
   | IEBTutkinto
   | IIBTutkinto
-  | IPreIB;
+  | IPreIB
+) & { koulutustyyppi: 'lukio'; nimi: string; key: string };
 
-export type AmmatillinenSuoritus =
+export type AmmatillinenSuoritus = (
   | IAmmatillinenTutkinto
   | IAmmattitutkinto
-  | IErikoisammattitutkinto;
+  | IErikoisammattitutkinto
+) & { koulutustyyppi: 'ammatillinen'; key: string };
 
-export type TUVASuoritus = ITuva;
+export type TUVASuoritus = ITuva & { koulutustyyppi: 'tuva'; key: string };
 
-export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus;
+export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus & {
+  koulutustyyppi: 'vapaa-sivistystyo';
+  key: string;
+};
 
-export type PerusopetusSuoritus =
+export type PerusopetusSuoritus = (
   | IPerusopetuksenOppimaara
   | IPerusopetuksenOppiaineenOppimaara
   | IPerusopetuksenOppimaara78Luokkalaiset
   | INuortenPerusopetuksenOppiaineenOppimaara
-  | IAikuistenPerusopetuksenOppimaara;
+  | IAikuistenPerusopetuksenOppimaara
+) & { koulutustyyppi: 'perusopetus'; nimi: string; key: string };
+
+export type Suoritus =
+  | KorkeakouluSuoritus
+  | LukioSuoritus
+  | AmmatillinenSuoritus
+  | TUVASuoritus
+  | VapaaSivistystyoSuoritus
+  | PerusopetusSuoritus;

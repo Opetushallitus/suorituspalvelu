@@ -4,17 +4,17 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { AmmatillinenSuoritus } from '@/types/ui-types';
 
 export const AmmatillinenSuoritusPaper = ({
-  ammatillinenSuoritus,
+  suoritus,
 }: {
-  ammatillinenSuoritus: AmmatillinenSuoritus;
+  suoritus: AmmatillinenSuoritus;
 }) => {
   return (
     <SuoritusInfoPaper
-      suorituksenNimi={ammatillinenSuoritus.nimi}
-      valmistumispaiva={ammatillinenSuoritus.valmistumispaiva}
+      suorituksenNimi={suoritus.nimi}
+      valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.red1}
     >
-      <SuorituksenPerustiedotIndicator perustiedot={ammatillinenSuoritus} />
+      <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
     </SuoritusInfoPaper>
   );
 };

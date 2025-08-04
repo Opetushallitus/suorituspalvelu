@@ -6,23 +6,25 @@ import { useTranslate } from '@tolgee/react';
 import { KorkeakouluSuoritus } from '@/types/ui-types';
 
 export const KorkeakouluSuoritusPaper = ({
-  korkeakouluSuoritus,
+  suoritus,
 }: {
-  korkeakouluSuoritus: KorkeakouluSuoritus;
+  suoritus?: KorkeakouluSuoritus | undefined;
 }) => {
   const { t } = useTranslate();
   return (
-    <SuoritusInfoPaper
-      key={korkeakouluSuoritus.tutkinto}
-      suorituksenNimi={korkeakouluSuoritus.tutkinto}
-      valmistumispaiva={korkeakouluSuoritus.valmistumispaiva}
-      topColor={ophColors.red1}
-    >
-      <SuorituksenPerustiedotIndicator perustiedot={korkeakouluSuoritus} />
-      <LabeledInfoItem
-        label={t('oppija.hakukohde')}
-        value={korkeakouluSuoritus.hakukohde.nimi}
-      />
-    </SuoritusInfoPaper>
+    suoritus && (
+      <SuoritusInfoPaper
+        key={suoritus.tutkinto}
+        suorituksenNimi={suoritus.tutkinto}
+        valmistumispaiva={suoritus.valmistumispaiva}
+        topColor={ophColors.red1}
+      >
+        <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
+        <LabeledInfoItem
+          label={t('oppija.hakukohde')}
+          value={suoritus.hakukohde.nimi}
+        />
+      </SuoritusInfoPaper>
+    )
   );
 };
