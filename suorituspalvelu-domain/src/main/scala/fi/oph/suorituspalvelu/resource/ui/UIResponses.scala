@@ -276,11 +276,11 @@ case class PreIB(
 )
 
 case class YTONimi(
-  @(Schema @field)(example = "Viestintä- ja vuorovaikutusosaaminen", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "Viestintä- ja vuorovaikutusosaaminen", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Kunnande i kommunikation och interaktion", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "Kunnande i kommunikation och interaktion", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Communication and interaction competence", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "Communication and interaction competence", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
 )
 
@@ -384,9 +384,18 @@ case class Ammattitutkinto(
   @BeanProperty suorituskieli: String,
 )
 
+case class ErikoisammattitutkinnonNimi(
+  @(Schema @field)(example = "Talous- ja henkilöstöhallinnon erikoisammattitutkinto", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Specialyrkesexamen i ekonomi- och personalförvaltning", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Specialist vocational qualification in Business Administration, Financing, Accounting and HR Management", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
 case class Erikoisammattitutkinto(
-  @(Schema @field)(example = "Talous- ja henkilöstöalan erikoisammattitutkinto", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: ErikoisammattitutkinnonNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)

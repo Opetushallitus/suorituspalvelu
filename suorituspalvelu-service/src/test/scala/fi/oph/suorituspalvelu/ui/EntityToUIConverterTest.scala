@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos, Telma}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos, ErikoisAmmattiTutkinto, Telma}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -223,6 +223,38 @@ class EntityToUIConverterTest {
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None))).get.ammattitutkinnot)
   }
 
+  @Test def testConvertErikoisAmmattiTutkinto(): Unit = {
+    val OPPIJANUMERO = "1.2.3"
+
+    val tutkinto = ErikoisAmmattiTutkinto(
+      Kielistetty(Some("Talous- ja henkilöstöhallinnon erikoisammattitutkinto"), None, None),
+      Koodi("437109", "koulutus", Some(12)),
+      Oppilaitos(Kielistetty(Some("HAUS kehittämiskeskus Oy"), Some("HAUS kehittämiskeskus Oy sv"), Some("HAUS kehittämiskeskus Oy en")), "1.2.246.562.10.54019331674"),
+      Koodi("", "", None),
+      Some(LocalDate.parse("2020-01-01")),
+      Koodi("FI", "kieli", Some(1))
+    )
+    
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Erikoisammattitutkinto(
+      ErikoisammattitutkinnonNimi(
+        tutkinto.nimi.fi.toJava,
+        tutkinto.nimi.sv.toJava,
+        tutkinto.nimi.en.toJava,
+      ),
+      AmmatillinenOppilaitos(
+        AmmatillisenOppilaitoksenNimi(
+          tutkinto.oppilaitos.nimi.fi.toJava,
+          tutkinto.oppilaitos.nimi.sv.toJava,
+          tutkinto.oppilaitos.nimi.en.toJava
+        ),
+        tutkinto.oppilaitos.oid
+      ),
+      Tila.VALMIS,
+      tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.suoritusKieli.arvo
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None))).get.erikoisammattitutkinnot)
+  }
+  
   @Test def testConvertTelma(): Unit = {
     val OPPIJANUMERO = "1.2.3"
 
