@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
 import java.time.LocalDate
-import java.util.Optional
+import java.util.{Optional, UUID}
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
 
@@ -69,6 +69,8 @@ case class OOOppilaitos(
 )
 
 case class UIOpiskeluoikeus(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Kasvatustieteen maisteri", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tutkinto: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -93,6 +95,8 @@ case class KKOppilaitos(
 )
 
 case class KKSuoritus(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(description = "Tutkinnon nimi", example = "Kasvatustieteen maisteri", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tutkinto: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -106,6 +110,8 @@ case class KKSuoritus(
 )
 
 case class YOKoe(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(description = "Aine", example = "Matematiikka", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty aine: String,
   @(Schema @field)(example = "Lyhyt oppimäärä (MA)", requiredMode = RequiredMode.REQUIRED)
@@ -127,6 +133,8 @@ case class YOOppilaitos(
 
 case class YOTutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: Tila,
@@ -139,11 +147,15 @@ case class YOTutkinto(
 )
 
 case class LukionOppiaine(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Äidinkieli ja kirjallisuus", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
 )
 
 case class LukionOppimaara(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -158,6 +170,8 @@ case class LukionOppimaara(
 
 case class LukionOppiaineenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: Tila,
@@ -171,6 +185,8 @@ case class LukionOppiaineenOppimaara(
 
 case class DIATutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: Tila,
@@ -181,6 +197,8 @@ case class DIATutkinto(
 )
 
 case class Oppiaine(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Historia", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
@@ -190,6 +208,8 @@ case class Oppiaine(
 )
 
 case class DIAVastaavuusTodistus(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -205,11 +225,15 @@ case class DIAVastaavuusTodistus(
 )
 
 case class EBSuoritus(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "8.67", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: BigDecimal
 )
 
 case class EBOppiaine(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Mathematics", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(example = "englanti", requiredMode = RequiredMode.REQUIRED)
@@ -225,6 +249,8 @@ case class EBOppiaine(
 
 case class EBTutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: Tila,
@@ -237,6 +263,8 @@ case class EBTutkinto(
 )
 
 case class IBSuoritus(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Mathematical studies", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(description = "Oppiaineen laajuus (kurssia)", example = "3", requiredMode = RequiredMode.REQUIRED)
@@ -248,6 +276,8 @@ case class IBSuoritus(
 )
 
 case class IBOppiaine(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Experimental sciences", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -255,6 +285,8 @@ case class IBOppiaine(
 )
 
 case class IBTutkinto(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -268,6 +300,8 @@ case class IBTutkinto(
 )
 
 case class PreIB(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -289,6 +323,8 @@ case class YTONimi(
 
 case class YTO(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: YTONimi,
   @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[Int],
@@ -306,6 +342,8 @@ case class AmmatillisenTutkinnonOsanNimi(
 )
 
 case class AmmatillisenTutkinnonOsa(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: AmmatillisenTutkinnonOsanNimi,
   @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
@@ -340,6 +378,8 @@ case class AmmatillisenTutkinnonNimi(
 )
 
 case class AmmatillinenTutkinto(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: AmmatillisenTutkinnonNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -376,6 +416,8 @@ case class AmmattitutkinnonNimi(
 
 case class Ammattitutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: AmmattitutkinnonNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
@@ -397,6 +439,8 @@ case class ErikoisammattitutkinnonNimi(
 )
 
 case class Erikoisammattitutkinto(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: ErikoisammattitutkinnonNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -420,6 +464,8 @@ case class TelmaNimi(
 
 case class Telma(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: TelmaNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
@@ -432,6 +478,8 @@ case class Telma(
 )
 
 case class OsittainenAmmatillinenTutkinto(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Kasvatus- ja ohjausalan perustutkinto", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -448,6 +496,8 @@ case class OsittainenAmmatillinenTutkinto(
 
 case class Tuva(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "KESKEYTYNYT", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: Tila,
@@ -460,6 +510,8 @@ case class Tuva(
 )
 
 case class VapaanSivistysTyonKoulutus(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -482,6 +534,8 @@ case class PKOppilaitos(
 )
 
 case class PerusopetuksenOppiaine(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "matematiikka", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
@@ -491,6 +545,8 @@ case class PerusopetuksenOppiaine(
 )
 
 case class PerusopetuksenOppimaara(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -509,6 +565,8 @@ case class PerusopetuksenOppimaara(
 
 case class AikuistenPerusopetuksenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: Tila,
@@ -521,6 +579,8 @@ case class AikuistenPerusopetuksenOppimaara(
 )
 
 case class PerusopetuksenOppimaara78Luokkalaiset(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -538,6 +598,8 @@ case class PerusopetuksenOppimaara78Luokkalaiset(
 )
 
 case class OppimaaranOppiaine(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(example = "matematiikka", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
   @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
@@ -545,6 +607,8 @@ case class OppimaaranOppiaine(
 )
 
 case class NuortenPerusopetuksenOppiaineenOppimaara(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -558,6 +622,8 @@ case class NuortenPerusopetuksenOppiaineenOppimaara(
 )
 
 case class PerusopetuksenOppiaineenOppimaara(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)

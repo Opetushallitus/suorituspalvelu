@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenPerustutkinto, AmmatillisenT
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 
 import java.time.LocalDate
+import java.util.UUID
 
 object TestDataUtil {
 
@@ -17,7 +18,7 @@ object TestDataUtil {
                                       laajuus: Option[Int] = Some(2),
                                       laajuusKoodi: Option[Koodi] = Some(getTestKoodi()),
                                       osaAlueet: Set[AmmatillisenTutkinnonOsaAlue] = Set.empty) = {
-    AmmatillisenTutkinnonOsa(nimi, koodi, yto, arvosana, laajuus, laajuusKoodi, osaAlueet)
+    AmmatillisenTutkinnonOsa(UUID.randomUUID(), nimi, koodi, yto, arvosana, laajuus, laajuusKoodi, osaAlueet)
   }
 
   def getTestAmmatillinenTutkinto(nimi: Kielistetty = Kielistetty(Some("tutkinnonNimi"), None, None),
@@ -29,5 +30,5 @@ object TestDataUtil {
                                   suoritustapa: Koodi = getTestKoodi(),
                                   suoritusKieli: Koodi = getTestKoodi(),
                                   osat: Set[AmmatillisenTutkinnonOsa] = Set.empty): AmmatillinenPerustutkinto =
-    AmmatillinenPerustutkinto(nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
+    AmmatillinenPerustutkinto(UUID.randomUUID(), nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
   }
