@@ -573,7 +573,7 @@ case class PerusopetuksenOppiaineenOppimaara(
 trait OppijanTiedotResponse()
 
 case class OppijanTiedotSuccessResponse(
-                                         @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = EXAMPLE_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppijaNumero: String,
   @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
   @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],

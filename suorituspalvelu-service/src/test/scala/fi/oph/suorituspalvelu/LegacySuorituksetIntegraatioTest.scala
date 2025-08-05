@@ -2,7 +2,6 @@ package fi.oph.suorituspalvelu
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
@@ -21,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+import java.nio.charset.Charset
 import java.time.{Instant, LocalDate}
 import java.util.Optional
 
@@ -55,7 +55,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetBothParameters(): Unit =
@@ -65,7 +65,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetMalformedOid(): Unit =
@@ -73,7 +73,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_OPPIJANUMERO_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetMalformedTimestamp(): Unit =
@@ -81,7 +81,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_MUOKATTUJALKEEN_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetHenkilolleAllowed(capturedOutput: CapturedOutput): Unit =
@@ -98,7 +98,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     // haetaan tutkinnot legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(OPPIJA_OID)))
       .andExpect(status().isOk).andReturn()
-    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyAmmatillinenTaiYOSuoritus]] {})
+    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), new TypeReference[Seq[LegacyAmmatillinenTaiYOSuoritus]] {})
 
     // varmistetaan että tulokset täsmäävät
     Assertions.assertEquals(Seq(
@@ -123,7 +123,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     // haetaan muuttuneet legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_SUORITUKSET_PATH + "?" + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "=" + aikaleima.toString))
       .andExpect(status().isOk).andReturn()
-    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyMuuttunutSuoritus]] {})
+    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), new TypeReference[Seq[LegacyMuuttunutSuoritus]] {})
 
     // varmistetaan että tulokset täsmäävät
     Assertions.assertEquals(Seq(LegacyMuuttunutSuoritus(OPPIJA_OID)), legacySuorituksetResponse)
