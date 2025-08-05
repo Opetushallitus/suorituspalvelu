@@ -54,6 +54,9 @@ enum Tila:
   case VALMIS
   case KESKEN
   case KESKEYTYNYT
+  case MITATOITY
+  case PERUUTETTU
+  case PAATTYNYT
 
 enum SuoritusTapa:
   case NAYTTOTUTKINTO

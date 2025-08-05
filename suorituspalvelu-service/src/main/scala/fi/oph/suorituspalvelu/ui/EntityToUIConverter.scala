@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Opiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenOppilaitoksenNimi, AmmatillisenTutkinnonNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsanNimi, AmmattitutkinnonNimi, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, ErikoisammattitutkinnonNimi, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, OppijanTiedotSuccessResponse, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, TelmaNimi, Tila, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTONimi}
@@ -12,6 +12,20 @@ import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
 object EntityToUIConverter {
+
+  def convertTila(koodi: Koodi): Tila =
+    koodi.arvo match
+      case "hyvaksytystisuoritettu"     => Tila.VALMIS
+      case "valmistunut"                => Tila.VALMIS
+      case "loma"                       => Tila.KESKEN
+      case "lasna"                      => Tila.KESKEN
+      case "eronnut"                    => Tila.KESKEYTYNYT
+      case "katsotaaneronneeksi"        => Tila.KESKEYTYNYT
+      case "keskeytynyt"                => Tila.KESKEYTYNYT
+      case "valiaikaisestikeskeytynyt"  => Tila.KESKEYTYNYT
+      case "mitatoity"                  => Tila.MITATOITY
+      case "peruutettu"                 => Tila.PERUUTETTU
+      case "paattynyt"                  => Tila.PAATTYNYT
 
   def getOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): List[UIOpiskeluoikeus] =
     List(
@@ -299,7 +313,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = if (t.vahvistusPaivamaara.isDefined) Tila.VALMIS else Tila.KESKEN, // TODO: muut kuin valmis-tilan voisi hakea opiskeluoikeuden tilasta
+          tila = convertTila(t.tila),
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
           painotettuKeskiarvo = t.keskiarvo.toJava,
@@ -352,7 +366,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = if (t.vahvistusPaivamaara.isDefined) Tila.VALMIS else Tila.KESKEN, // TODO: muut kuin valmis-tilan voisi hakea opiskeluoikeuden tilasta
+          tila = convertTila(t.tila),
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo
         )
@@ -381,7 +395,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = VALMIS,
+          tila = convertTila(t.tila),
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )
@@ -410,7 +424,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = VALMIS,
+          tila = convertTila(t.tila),
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )

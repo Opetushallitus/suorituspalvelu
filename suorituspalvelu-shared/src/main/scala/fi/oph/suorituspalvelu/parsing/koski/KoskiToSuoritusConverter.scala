@@ -35,6 +35,13 @@ object KoskiToSuoritusConverter {
       case default => false
   }
 
+  def parseTila(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Option[VersioituTunniste] =
+    if(suoritus.vahvistus.isDefined)
+      Some(OpiskeluoikeusJaksoTila("valmistunut", "koskiopiskeluoikeudentila", Some(1)))
+    else
+      opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
+
+
   def valitseParasArviointi(arvioinnit: Set[Arviointi]): Option[Arviointi] = {
     if (arvioinnit.size <= 1) arvioinnit.headOption
     else {
@@ -112,8 +119,6 @@ object KoskiToSuoritusConverter {
   }
 
   def toAmmatillinenPerustutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): AmmatillinenPerustutkinto =
-    val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
-
     AmmatillinenPerustutkinto(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
@@ -125,7 +130,7 @@ object KoskiToSuoritusConverter {
             o.nimi.en
           ),
           o.oid)).getOrElse(dummy()),
-      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.keskiarvo,
       suoritus.suoritustapa.map(suoritusTapa => asKoodiObject(suoritusTapa)).getOrElse(dummy()),
@@ -134,8 +139,6 @@ object KoskiToSuoritusConverter {
     )
 
   def toAmmattiTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): AmmattiTutkinto =
-    val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
-
     AmmattiTutkinto(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
@@ -147,15 +150,13 @@ object KoskiToSuoritusConverter {
             o.nimi.en,
           ),
           o.oid)).getOrElse(dummy()),
-      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suoritustapa.map(suoritusTapa => asKoodiObject(suoritusTapa)).getOrElse(dummy()),
       suoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy())
     )
 
   def toErikoisAmmattiTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): ErikoisAmmattiTutkinto =
-    val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
-
     ErikoisAmmattiTutkinto(
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
@@ -167,7 +168,7 @@ object KoskiToSuoritusConverter {
             o.nimi.en,
           ),
           o.oid)).getOrElse(dummy()),
-      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy())
     )
@@ -234,10 +235,9 @@ object KoskiToSuoritusConverter {
     )
 
   def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
-    val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.get.oid,
-      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
@@ -246,10 +246,9 @@ object KoskiToSuoritusConverter {
     )
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
-    val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
     PerusopetuksenOppimaara(
       opiskeluoikeus.oppilaitos.get.oid,
-      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       Set.empty,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),

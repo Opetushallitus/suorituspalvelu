@@ -20,7 +20,7 @@ class EntityToUIConverterTest {
       Kielistetty(Some("Tutkinnon nimi"), None, None),
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"),
-      Koodi("", "", None),
+      Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Some(3.4),
       Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
@@ -88,7 +88,7 @@ class EntityToUIConverterTest {
       Kielistetty(Some("Tutkinnon nimi"), None, None),
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"),
-      Koodi("", "", None),
+      Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       None,
       Koodi("naytto", "ammatillisentutkinnonsuoritustapa", None),
@@ -137,7 +137,7 @@ class EntityToUIConverterTest {
       Kielistetty(Some("Tutkinnon nimi"), None, None),
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"),
-      Koodi("", "", None),
+      Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Some(3.4),
       Koodi("ops", "ammatillisentutkinnonsuoritustapa", None),
@@ -197,7 +197,7 @@ class EntityToUIConverterTest {
       Kielistetty(Some("Hieronnan ammattitutkinto"), None, None),
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Pirkanmaan urheiluhierojakoulu"), Some("Pirkanmaan urheiluhierojakoulu sv"), Some("Pirkanmaan urheiluhierojakoulu en")), "1.2.246.562.10.41945921983"),
-      Koodi("", "", None),
+      Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1))
@@ -230,7 +230,7 @@ class EntityToUIConverterTest {
       Kielistetty(Some("Talous- ja henkilöstöhallinnon erikoisammattitutkinto"), None, None),
       Koodi("437109", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("HAUS kehittämiskeskus Oy"), Some("HAUS kehittämiskeskus Oy sv"), Some("HAUS kehittämiskeskus Oy en")), "1.2.246.562.10.54019331674"),
-      Koodi("", "", None),
+      Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Koodi("FI", "kieli", Some(1))
     )
@@ -262,7 +262,7 @@ class EntityToUIConverterTest {
       Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None),
       Koodi("999903", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
-      Koodi("", "", None),
+      Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Koodi("FI", "kieli", Some(1))
     )
