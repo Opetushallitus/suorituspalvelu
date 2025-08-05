@@ -4,8 +4,15 @@
   "hae-henkiloa": "Hae henkilöä",
   "oppilaitos": "Oppilaitos",
   "ladataan": "Ladataan...",
+  "kylla": "Kyllä",
+  "ei": "Ei",
   "select": {
     "valitse": "Valitse..."
+  },
+  "istunto": {
+    "login-sivulle": "Siirry sisäänkirjautumissivulle",
+    "virhe-otsikko": "Istuntoa ei löytynyt",
+    "virhe-teksti": "Et ole enää kirjautuneena sisään palveluun. Ole hyvä ja kirjaudu uudelleen."
   },
   "virhe": {
     "palvelin": "Palvelinvirhe",
@@ -26,6 +33,39 @@
     "voimassaolo": "Voimassaolo",
     "oppilaitos": "Oppilaitos",
     "voimassa": "Voimassa",
-    "ei-voimassa": "Ei voimassa"
+    "suoritukset": "Suoritukset",
+    "ei-voimassa": "Ei voimassa",
+    "tila": "Tila",
+    "valmistumispaiva": "Valmistumispäivä",
+    "suorituskieli": "Suorituskieli",
+    "ylioppilastutkinto": "Ylioppilastutkinto",
+    "lukion-oppimaara": "Lukion oppimäärä",
+    "lukion-oppiaineen-oppimaara": "Lukion oppiaineen oppimäärä",
+    "dia-tutkinto": "DIA-tutkinto",
+    "dia-vastaavuustodistus": "DIA-vastaavuustodistus",
+    "eb-tutkinto": "EB-tutkinto (European Baccalaureate)",
+    "ib-tutkinto": "IB-tutkinto (International Baccalaureate)",
+    "pre-ib": "Pre-IB",
+    "perusopetuksen-oppimaara": "Perusopetuksen oppimäärä",
+    "nuorten-perusopetuksen-oppiaineen-oppimaara": "Nuorten perusopetuksen oppiaineen oppimäärä",
+    "perusopetuksen-oppiaineen-oppimaara": "Perusopetuksen oppiaineen oppimäärä",
+    "aikuisten-perusopetuksen-oppimaara": "Aikuisten perusopetuksen oppimäärä",
+    "korkeakoulutus": "Korkeakoulutus",
+    "lukiokoulutus": "Lukiokoulutus",
+    "ammatillinen-koulutus": "Ammatillinen koulutus",
+    "tuva": "Tutkintokoulutukseen valmentava koulutus",
+    "vapaa-sivistystyo": "Vapaa sivistystyö",
+    "perusopetus": "Perusopetus",
+    "koulutustyypeittain": "Koulutustyypeittäin",
+    "uusin-ensin": "Uusin ensin",
+    "hakukohde": "Hakukohde",
+    "oppiaineet": "Oppiaineet",
+    "luokka": "Luokka",
+    "yksilollistetty": "Yksilöllistetty"
+  },
+  "suorituksen-tila": {
+    "VALMIS": "Suoritus valmis",
+    "KESKEN": "Suoritus kesken",
+    "KESKEYTYNYT": "Suoritus keskeytynyt"
   }
 }
