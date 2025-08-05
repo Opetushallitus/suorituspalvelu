@@ -21,10 +21,15 @@ export function Suoritukset({ tiedot }: { tiedot: OppijaResponse }) {
         direction="row"
         sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}
       >
-        <OphTypography variant="h3" component="h2" sx={{ marginBottom: 2 }}>
+        <OphTypography
+          variant="h3"
+          component="h2"
+          sx={{ marginBottom: 2, alignSelf: 'flex-end' }}
+        >
           {t('oppija.suoritukset')}
         </OphTypography>
         <ToggleButtonGroup
+          sx={{ marginBottom: suoritusOrder === 'uusin-ensin' ? 2 : 0 }}
           value={suoritusOrder}
           exclusive
           onChange={(_event, newValue) => {
