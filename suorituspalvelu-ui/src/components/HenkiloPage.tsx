@@ -11,7 +11,7 @@ const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
   return (
     <Stack sx={{ margin: 2, gap: 6 }}>
       <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
-      <Suoritukset tiedot={tiedot} />
+      <Suoritukset oppijanTiedot={tiedot} />
     </Stack>
   );
 };

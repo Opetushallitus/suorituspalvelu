@@ -1,4 +1,4 @@
-import { OppijaResponse } from '@/types/ui-types';
+import { OppijanTiedot } from '@/types/ui-types';
 import { KorkeakouluSuoritusPaper } from './KorkeakouluSuoritusPaper';
 import { LukioSuoritusPaper } from './LukioSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';
@@ -8,11 +8,11 @@ import { Stack } from '@mui/material';
 import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
 import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 
-const SuoritusPaper = ({
+function SuoritusPaper({
   suoritus,
 }: {
   suoritus: ReturnType<typeof useSuorituksetFlattened>[number];
-}) => {
+}) {
   switch (suoritus.koulutustyyppi) {
     case 'korkeakoulutus':
       return <KorkeakouluSuoritusPaper suoritus={suoritus} />;
@@ -29,14 +29,14 @@ const SuoritusPaper = ({
     default:
       return null;
   }
-};
+}
 
-export const SuorituksetAikajarjestyksessa = ({
-  tiedot,
+export function SuorituksetAikajarjestyksessa({
+  oppijanTiedot,
 }: {
-  tiedot: OppijaResponse;
-}) => {
-  const suoritukset = useSuorituksetFlattened(tiedot, true);
+  oppijanTiedot: OppijanTiedot;
+}) {
+  const suoritukset = useSuorituksetFlattened(oppijanTiedot, true);
 
   return (
     <Stack spacing={4}>
@@ -45,4 +45,4 @@ export const SuorituksetAikajarjestyksessa = ({
       ))}
     </Stack>
   );
-};
+}

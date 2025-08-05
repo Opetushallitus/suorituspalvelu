@@ -3,12 +3,16 @@ import { OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslate } from '@tolgee/react';
 import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain';
 import { useState } from 'react';
-import { OppijaResponse } from '@/types/ui-types';
+import { OppijanTiedot } from '@/types/ui-types';
 import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
 
-export function Suoritukset({ tiedot }: { tiedot: OppijaResponse }) {
+export function Suoritukset({
+  oppijanTiedot,
+}: {
+  oppijanTiedot: OppijanTiedot;
+}) {
   const { t } = useTranslate();
 
   const [suoritusOrder, setSuoritusOrder] = useState<SuoritusOrder>(
@@ -45,9 +49,9 @@ export function Suoritukset({ tiedot }: { tiedot: OppijaResponse }) {
         </ToggleButtonGroup>
       </Stack>
       {suoritusOrder === 'koulutustyypeittain' ? (
-        <SuorituksetKoulutustyypeittain tiedot={tiedot} />
+        <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
       ) : (
-        <SuorituksetAikajarjestyksessa tiedot={tiedot} />
+        <SuorituksetAikajarjestyksessa oppijanTiedot={oppijanTiedot} />
       )}
     </Box>
   );

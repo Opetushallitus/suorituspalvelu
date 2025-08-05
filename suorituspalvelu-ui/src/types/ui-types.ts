@@ -40,7 +40,7 @@ export type SuorituksenPerustiedot = {
 
 export type Opiskeluoikeus = IUIOpiskeluoikeus;
 
-export type OppijaResponse = IOppijanTiedotSuccessResponse;
+export type OppijanTiedot = IOppijanTiedotSuccessResponse;
 
 export type YOKoe = IYOKoe;
 

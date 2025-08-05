@@ -1,16 +1,16 @@
 import { castToArray, createId, ValueOf } from '@/lib/common';
-import { OppijaResponse, Suoritus } from '@/types/ui-types';
+import { OppijanTiedot, Suoritus } from '@/types/ui-types';
 import { useTranslate } from '@tolgee/react';
 import { useMemo } from 'react';
 import { omit } from 'remeda';
 
 export function useSuorituksetFlattened(
-  tiedot: OppijaResponse,
+  oppijanTiedot: OppijanTiedot,
   sortByDate: boolean = false,
 ) {
   const { t } = useTranslate();
   const unsortedSuoritukset = useMemo(() => {
-    const suoritusTiedot = omit(tiedot, ['oppijaNumero', 'opiskeluoikeudet']);
+    const suoritusTiedot = omit(oppijanTiedot, ['oppijaNumero', 'opiskeluoikeudet']);
 
     const result: Array<Suoritus> = [];
 
@@ -76,7 +76,7 @@ export function useSuorituksetFlattened(
       t('oppija.aikuisten-perusopetuksen-oppimaara'),
     );
     return result;
-  }, [tiedot, t]);
+  }, [oppijanTiedot, t]);
 
   return useMemo(() => {
     if (sortByDate) {
