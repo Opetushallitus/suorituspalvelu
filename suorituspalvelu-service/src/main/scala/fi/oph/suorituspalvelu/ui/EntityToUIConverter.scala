@@ -50,6 +50,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = KESKEN,
+      aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
       valmistumispaiva = Optional.empty(),
       hakukohde = Hakukohde(
         nimi = "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)"
@@ -119,6 +120,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(LukionOppiaine(
@@ -138,6 +140,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(LukionOppiaine(
@@ -157,6 +160,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
     ))
@@ -169,6 +173,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
       kieletKirjallisuusTaide = java.util.List.of(Oppiaine(
@@ -203,6 +208,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(EBOppiaine(
@@ -264,6 +270,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(IBOppiaine(
@@ -329,6 +336,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
     ))
@@ -361,6 +369,7 @@ object EntityToUIConverter {
             t.oppilaitos.oid,
           ),
           tila = convertTila(t.tila),
+          aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
           painotettuKeskiarvo = t.keskiarvo.toJava,
@@ -417,6 +426,7 @@ object EntityToUIConverter {
             t.oppilaitos.oid,
           ),
           tila = convertTila(t.tila),
+          aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo
         )
@@ -447,6 +457,7 @@ object EntityToUIConverter {
             t.oppilaitos.oid,
           ),
           tila = convertTila(t.tila),
+          aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )
@@ -477,6 +488,7 @@ object EntityToUIConverter {
             t.oppilaitos.oid,
           ),
           tila = convertTila(t.tila),
+          aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )
@@ -494,6 +506,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
       suorituskieli = "suomi",
       laajuus = 38
@@ -512,6 +525,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = KESKEYTYNYT,
+      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.empty(),
       suorituskieli = "suomi",
       laajuus = 38))
@@ -524,6 +538,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
       luokka = "9A",
@@ -596,6 +611,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
       koulusivistyskieli = "suomi",
@@ -611,6 +627,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(OppimaaranOppiaine(
@@ -632,6 +649,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(OppimaaranOppiaine(
@@ -649,6 +667,7 @@ object EntityToUIConverter {
         oid = "1.2.3.4"
       ),
       tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(

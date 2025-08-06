@@ -67,6 +67,7 @@ class EntityToUIConverterTest {
         tutkinto.oppilaitos.oid
       ),
       Tila.VALMIS,
+      tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
       tutkinto.keskiarvo.toJava,
@@ -131,6 +132,7 @@ class EntityToUIConverterTest {
         tutkinto.oppilaitos.oid
       ),
       Tila.VALMIS,
+      tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
       Optional.empty(),
@@ -184,6 +186,7 @@ class EntityToUIConverterTest {
         tutkinto.oppilaitos.oid
       ),
       Tila.VALMIS,
+      tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
       tutkinto.keskiarvo.toJava,
@@ -236,6 +239,7 @@ class EntityToUIConverterTest {
         tutkinto.oppilaitos.oid
       ),
       Tila.VALMIS,
+      tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None))).get.ammattitutkinnot)
@@ -271,6 +275,7 @@ class EntityToUIConverterTest {
         tutkinto.oppilaitos.oid
       ),
       Tila.VALMIS,
+      tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None))).get.erikoisammattitutkinnot)
@@ -306,6 +311,7 @@ class EntityToUIConverterTest {
         telma.oppilaitos.oid
       ),
       Tila.VALMIS,
+      telma.aloitusPaivamaara.toJava,
       telma.vahvistusPaivamaara.toJava,
       telma.suoritusKieli.arvo
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(telma), None))).get.telmat)
