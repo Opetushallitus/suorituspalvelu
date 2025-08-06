@@ -30,12 +30,18 @@ export type SuorituksenTila = SuoritusTila;
 
 export type SuorituksenPerustiedot = {
   oppilaitos: {
-    nimi: string;
+    nimi: string | Kielistetty;
     oid: string;
   };
   tila: SuorituksenTila;
   suorituskieli?: string;
   valmistumispaiva?: Date;
+};
+
+export type Kielistetty = {
+  fi?: string;
+  sv?: string;
+  en?: string;
 };
 
 export type Opiskeluoikeus = IUIOpiskeluoikeus;
@@ -51,6 +57,7 @@ export type LukionOppiaine = ILukionOppiaine;
 export type KorkeakouluSuoritus = IKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';
   key: string;
+  nimi: string;
 };
 
 export type LukioSuoritus = (
@@ -68,13 +75,18 @@ export type AmmatillinenSuoritus = (
   | IAmmatillinenTutkinto
   | IAmmattitutkinto
   | IErikoisammattitutkinto
-) & { koulutustyyppi: 'ammatillinen'; key: string };
+) & { koulutustyyppi: 'ammatillinen'; key: string; nimi: string };
 
-export type TUVASuoritus = ITuva & { koulutustyyppi: 'tuva'; key: string };
+export type TUVASuoritus = ITuva & {
+  koulutustyyppi: 'tuva';
+  key: string;
+  nimi: string;
+};
 
 export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
   key: string;
+  nimi: string;
 };
 
 export type PerusopetusSuoritus = (
@@ -92,3 +104,5 @@ export type Suoritus =
   | TUVASuoritus
   | VapaaSivistystyoSuoritus
   | PerusopetusSuoritus;
+
+export type Language = 'fi' | 'sv' | 'en';

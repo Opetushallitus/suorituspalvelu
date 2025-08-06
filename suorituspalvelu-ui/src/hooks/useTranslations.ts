@@ -1,0 +1,27 @@
+'use client';
+import { useCallback } from 'react';
+import { translateKielistetty } from '@/lib/translation-utils';
+import { TFnType, useTolgee, useTranslate } from '@tolgee/react';
+import { Kielistetty, Language } from '@/types/ui-types';
+
+export type TFunction = TFnType;
+
+export const useTranslations = () => {
+  const { getLanguage } = useTolgee(['language']);
+  const { t } = useTranslate();
+
+  const translateNimi = useCallback(
+    (translateable?: Kielistetty) => {
+      return translateable
+        ? translateKielistetty(translateable, getLanguage() as Language)
+        : '';
+    },
+    [getLanguage],
+  );
+
+  return {
+    t,
+    translateKielistetty: translateNimi,
+    getLanguage: getLanguage as () => Language,
+  };
+};

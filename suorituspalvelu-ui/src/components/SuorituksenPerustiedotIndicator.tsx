@@ -13,6 +13,8 @@ import { configPromise } from '@/configuration';
 import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
 import { formatDate } from 'date-fns';
+import { useTranslations } from '@/hooks/useTranslations';
+import { isKielistetty } from '@/lib/translation-utils';
 
 const SuorituksenTilaIcon = ({ tila }: { tila: SuorituksenTila }) => {
   switch (tila) {
@@ -55,7 +57,7 @@ export const SuorituksenPerustiedotIndicator = ({
 }: {
   perustiedot: SuorituksenPerustiedot;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
   const config = use(configPromise);
 
   return (
@@ -66,7 +68,9 @@ export const SuorituksenPerustiedotIndicator = ({
           <OphLink
             href={getOppilaitosLinkUrl(config, perustiedot.oppilaitos.oid)}
           >
-            {perustiedot.oppilaitos.nimi}
+            {isKielistetty(perustiedot.oppilaitos.nimi)
+              ? translateKielistetty(perustiedot.oppilaitos.nimi)
+              : perustiedot.oppilaitos.nimi}
           </OphLink>
         }
       />

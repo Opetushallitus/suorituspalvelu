@@ -2,22 +2,18 @@
   "oppijaNumero": "1.2.246.562.24.40483869857",
   "opiskeluoikeudet": [
     {
+      "tunniste": "6414c899-bbec-4eef-831e-d37c3f2f141e",
       "tutkinto": "Kasvatust. maist., kasvatustiede",
-      "oppilaitos": {
-        "nimi": "Tampereen yliopisto",
-        "oid": "1.2.3.4"
-      },
+      "oppilaitos": { "nimi": "Tampereen yliopisto", "oid": "1.2.3.4" },
       "voimassaolonAlku": "2001-08-01",
       "voimassaolonLoppu": "2025-12-11"
     }
   ],
   "kkTutkinnot": [
     {
+      "tunniste": "59522468-b809-4994-bb1f-36e69bc4107a",
       "tutkinto": "Kasvatust. maist., kasvatustiede",
-      "oppilaitos": {
-        "nimi": "Tampereen yliopisto",
-        "oid": "1.2.3.4"
-      },
+      "oppilaitos": { "nimi": "Tampereen yliopisto", "oid": "1.2.3.4" },
       "tila": "KESKEN",
       "valmistumispaiva": null,
       "hakukohde": {
@@ -26,15 +22,14 @@
     }
   ],
   "yoTutkinto": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "be6a3f1a-b783-47c8-aad0-cb095adb353e",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2019-06-01",
     "suorituskieli": "suomi",
     "yoKokeet": [
       {
+        "tunniste": "09924702-4612-4b8d-a5c0-5e637394e815",
         "aine": "Psykologia",
         "taso": "Ainemuotoinen reaali",
         "arvosana": "E",
@@ -42,6 +37,7 @@
         "tutkintokerta": "2018-12-21"
       },
       {
+        "tunniste": "12ac3767-3a60-4988-86bf-1e58e41cbc3a",
         "aine": "Englanti",
         "taso": "Pitkä oppimäärä (KIELI)",
         "arvosana": "E",
@@ -49,6 +45,7 @@
         "tutkintokerta": "2019-06-01"
       },
       {
+        "tunniste": "a123b059-4390-4c10-8021-6beffe15c7f6",
         "aine": "Matematiikka",
         "taso": "Lyhyt oppimäärä (MA)",
         "arvosana": "C",
@@ -56,6 +53,7 @@
         "tutkintokerta": "2019-06-01"
       },
       {
+        "tunniste": "5869b71a-ec1c-4c13-a7cd-af8f8972f9c6",
         "aine": "Suomi",
         "taso": "Äidinkieli",
         "arvosana": "C",
@@ -63,6 +61,7 @@
         "tutkintokerta": "2019-06-01"
       },
       {
+        "tunniste": "fe899cd5-2590-4aeb-9b18-5c8530713aab",
         "aine": "Historia",
         "taso": "Ainemuotoinen reaali",
         "arvosana": "M",
@@ -70,6 +69,7 @@
         "tutkintokerta": "2019-06-01"
       },
       {
+        "tunniste": "db0007aa-75ca-41db-b31f-81254df41a18",
         "aine": "Yhteiskuntaoppi",
         "taso": "Ainemuotoinen reaali",
         "arvosana": "E",
@@ -79,24 +79,25 @@
     ]
   },
   "lukionOppimaara": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "0e4a2dee-d3c1-487d-8297-67e01aa909a3",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2024-12-31",
     "suorituskieli": "suomi",
     "oppiaineet": [
       {
+        "tunniste": "75f335c4-e712-4f0a-a6df-d73eeabd5630",
         "nimi": "Äidinkieli ja kirjallisuus"
       },
       {
+        "tunniste": "f852bb8f-aabf-47d2-b20e-992ae3cefe2f",
         "nimi": "Uskonto/Elämänkatsomustieto"
       }
     ]
   },
   "lukionOppiaineenOppimaarat": [
     {
+      "tunniste": "490ded79-7751-4f0c-851d-08ff2f601c93",
       "oppilaitos": {
         "nimi": "Ylioppilastutkintolautakunta",
         "oid": "1.2.3.4"
@@ -106,38 +107,38 @@
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
+          "tunniste": "80f91542-cb45-40c6-b1d4-2d7bdfcacfd6",
           "nimi": "Äidinkieli ja kirjallisuus, suomi äidinkielenä"
         },
         {
+          "tunniste": "13766d59-fbf5-4080-a491-55fd078dfdf2",
           "nimi": "Matematiikka, lyhyt oppimäärä, valinnainen"
         }
       ]
     }
   ],
   "diaTutkinto": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "a0ef7ecb-e67d-462f-9957-14cbd21676dc",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2024-12-31",
     "suorituskieli": "suomi"
   },
   "diaVastaavuusTodistus": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "1b067776-aa65-4bdb-b889-bd03c53c0e33",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2024-12-31",
     "suorituskieli": "suomi",
     "kieletKirjallisuusTaide": [
       {
+        "tunniste": "a6f1e02d-faf3-450c-b767-0371d7a1f873",
         "nimi": "A-kieli, englanti",
         "laajuus": 3,
         "keskiarvo": 8.5
       },
       {
+        "tunniste": "9eac988e-162f-4fd3-b171-d7ec0077f835",
         "nimi": "Historia",
         "laajuus": 2,
         "keskiarvo": 8.5
@@ -145,11 +146,13 @@
     ],
     "matematiikkaLuonnontieteet": [
       {
+        "tunniste": "a98610a1-c3b0-4117-83f3-ac7cc7c0cf74",
         "nimi": "Matematiikka",
         "laajuus": 3,
         "keskiarvo": 6
       },
       {
+        "tunniste": "eb81696e-c3cd-46f4-9dbf-4c02ce02c168",
         "nimi": "Kuvataide",
         "laajuus": 3,
         "keskiarvo": 8.5
@@ -157,75 +160,85 @@
     ]
   },
   "ebTutkinto": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "e23261ae-c2af-4e12-96e5-bfe233bb2b50",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2024-12-31",
     "suorituskieli": "suomi",
     "oppiaineet": [
       {
+        "tunniste": "e046996c-3d52-41bc-8328-aeb7ec610ebd",
         "nimi": "Mathematics",
         "suorituskieli": "englanti",
         "laajuus": 4,
         "written": {
+          "tunniste": "fd045cd3-d3c7-406a-92d5-8f2af3596aa0",
           "arvosana": 8.67
         },
         "oral": null,
         "final": {
+          "tunniste": "07af0ba0-8b2b-4aa3-857b-3700fd76fc14",
           "arvosana": 8.67
         }
       },
       {
+        "tunniste": "776508bf-4bf2-4c60-806d-69a94eeaa66f",
         "nimi": "First language, ranska",
         "suorituskieli": "englanti",
         "laajuus": 3,
         "written": {
+          "tunniste": "ddcd5ff5-aa31-443a-ba92-ee9d196f8231",
           "arvosana": 8.67
         },
         "oral": {
+          "tunniste": "fc1fd225-a26b-4796-b816-7ba45e3d318a",
           "arvosana": 8.67
         },
         "final": {
+          "tunniste": "37ae876d-ee3e-48ec-b3e2-6d0e0acb5af3",
           "arvosana": 8.67
         }
       },
       {
+        "tunniste": "fb3587e3-929b-4fba-bbf0-6521c1a9db54",
         "nimi": "Second language, saksa",
         "suorituskieli": "englanti",
         "laajuus": 3,
         "written": {
+          "tunniste": "f1cacb4f-87f8-48d7-a3f8-0450c5ac28d9",
           "arvosana": 8.67
         },
         "oral": {
+          "tunniste": "687787cc-cf3a-48bc-8a1c-10456dd5becd",
           "arvosana": 8.67
         },
         "final": {
+          "tunniste": "ea562608-677c-43fb-a806-14a667adfd6d",
           "arvosana": 8.67
         }
       }
     ]
   },
   "ibTutkinto": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "04ce1eae-b786-4b86-8014-93f83165b48c",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2024-12-31",
     "suorituskieli": "suomi",
     "oppiaineet": [
       {
+        "tunniste": "547bb1b9-ac46-48e0-b5ca-dcaca81998de",
         "nimi": "Studies in language and literature",
         "suoritukset": [
           {
+            "tunniste": "06034c4b-7da8-41c6-82ce-821bf7e651d8",
             "nimi": "Language A: literature, suomi",
             "laajuus": 9,
             "predictedGrade": 7,
             "arvosana": 7
           },
           {
+            "tunniste": "bef54ead-cead-4a85-b526-dc290cd77015",
             "nimi": "Language A: language and literature, englanti",
             "laajuus": 6,
             "predictedGrade": 7,
@@ -234,15 +247,18 @@
         ]
       },
       {
+        "tunniste": "626112f6-052c-4296-a157-1e0ae6e1df62",
         "nimi": "Individuals and societies",
         "suoritukset": [
           {
+            "tunniste": "7df149c5-b595-4b67-a38d-ed0bd28e2d3b",
             "nimi": "History",
             "laajuus": 3,
             "predictedGrade": 7,
             "arvosana": 7
           },
           {
+            "tunniste": "83e85b34-8e93-410b-ba5b-453938312daa",
             "nimi": "Psychology",
             "laajuus": 3,
             "predictedGrade": 7,
@@ -251,9 +267,11 @@
         ]
       },
       {
+        "tunniste": "92035799-7497-4caf-b821-126229520025",
         "nimi": "Experimental sciences",
         "suoritukset": [
           {
+            "tunniste": "7f27741a-f96a-4a38-a44a-8a8b9d936e9b",
             "nimi": "Biology",
             "laajuus": 3,
             "predictedGrade": 7,
@@ -262,9 +280,11 @@
         ]
       },
       {
+        "tunniste": "2d36309b-226d-40c1-9845-a967eb7f18a4",
         "nimi": "Mathematics",
         "suoritukset": [
           {
+            "tunniste": "d81a45ad-9d12-48e1-a1f2-3ec140a0d32a",
             "nimi": "Mathematical studies",
             "laajuus": 3,
             "predictedGrade": 7,
@@ -275,16 +295,15 @@
     ]
   },
   "preIB": {
-    "oppilaitos": {
-      "nimi": "Ylioppilastutkintolautakunta",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "c9510e8b-4637-4b4c-aa20-c4ceb3e45a9e",
+    "oppilaitos": { "nimi": "Ylioppilastutkintolautakunta", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2024-12-31",
     "suorituskieli": "suomi"
   },
-  "ammatillisetTutkinnot": [
+  "ammatillisetPerusTutkinnot": [
     {
+      "tunniste": "92bba988-2738-4f7a-9440-428e47229999",
       "nimi": "Puutarha-alan perustutkinto",
       "oppilaitos": {
         "nimi": "Hämeen ammatti-instituutti, Lepaa",
@@ -327,6 +346,7 @@
       "suoritustapa": null
     },
     {
+      "tunniste": "92bba988-2738-4f7a-9440-428e47221234",
       "nimi": "Hevostalouden perustutkinto",
       "oppilaitos": {
         "nimi": "Hämeen ammatti-instituutti, Lepaa",
@@ -344,6 +364,7 @@
   ],
   "ammattitutkinnot": [
     {
+      "tunniste": "92bba988-2738-4f7a-9440-428e47227f12",
       "nimi": "Maanmittausalan ammattitutkinto",
       "oppilaitos": {
         "nimi": "Hämeen ammatti-instituutti, Lepaa",
@@ -356,6 +377,7 @@
   ],
   "erikoisammattitutkinnot": [
     {
+      "tunniste": "92bba988-2738-4f7a-9440-428e47227fff",
       "nimi": "Talous- ja henkilöstöalan erikoisammattitutkinto",
       "oppilaitos": {
         "nimi": "Hämeen ammatti-instituutti, Lepaa",
@@ -368,6 +390,7 @@
   ],
   "telmat": [
     {
+      "tunniste": "92bba988-2738-4f7a-9440-428e47227f61",
       "oppilaitos": {
         "nimi": "Hämeen ammatti-instituutti, Lepaa",
         "oid": "1.2.3.4"
@@ -379,8 +402,13 @@
   ],
   "tuvat": [
     {
+      "tunniste": "92bba988-2738-4f7a-9440-428e475f7f61",
       "oppilaitos": {
-        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "nimi": {
+          "fi": "Hämeen ammatti-instituutti, Lepaa",
+          "sv": null,
+          "en": null
+        },
         "oid": "1.2.3.4"
       },
       "tila": "VALMIS",
@@ -391,9 +419,14 @@
   ],
   "vapaanSivistystyonKoulutukset": [
     {
+      "tunniste": "989114e9-defd-47cd-9d98-69dc6089990d",
       "nimi": "Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille",
       "oppilaitos": {
-        "nimi": "Hämeen ammatti-instituutti, Lepaa",
+        "nimi": {
+          "fi": "Hämeen ammatti-instituutti, Lepaa",
+          "sv": null,
+          "en": null
+        },
         "oid": "1.2.3.4"
       },
       "tila": "KESKEYTYNYT",
@@ -404,10 +437,8 @@
   ],
   "perusopetuksenOppimaarat": [
     {
-      "oppilaitos": {
-        "nimi": "Keltinmäen koulu",
-        "oid": "1.2.3.4"
-      },
+      "tunniste": "8096c9f3-9563-4766-9358-9ca73516133d",
+      "oppilaitos": { "nimi": "Keltinmäen koulu", "oid": "1.2.3.4" },
       "tila": "VALMIS",
       "valmistumispaiva": "2016-06-01",
       "suorituskieli": "suomi",
@@ -415,56 +446,67 @@
       "yksilollistetty": false,
       "oppiaineet": [
         {
+          "tunniste": "a3e3c9d6-85cc-4c63-984c-d987c748bd94",
           "nimi": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "5023a39d-d8d7-41d0-b295-24e7cb4f2991",
           "nimi": "A1-kieli, englanti",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "c3428e94-44e9-4b76-8e48-9eed8a9b94f5",
           "nimi": "B1-kieli, ruotsi",
           "arvosana": 9,
           "valinnainen": "S"
         },
         {
+          "tunniste": "0ffe26bb-6054-4847-b485-70a15cbbb26d",
           "nimi": "B2-kieli, saksa",
           "arvosana": null,
           "valinnainen": "S"
         },
         {
+          "tunniste": "1089307b-4bdb-4df5-bafc-c80c647fe6d7",
           "nimi": "Matematiikka",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "f3dee5ca-eae6-4be3-a762-b63c8ab9d947",
           "nimi": "Biologia",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "78e38e6a-6a8d-4772-b920-9de134254b50",
           "nimi": "Maantieto",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "44ac2c3a-a4a9-4bf3-a6aa-8b34abe4e50b",
           "nimi": "Fysiikka",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "2a4d68b4-8591-4beb-8e55-2af278f930c8",
           "nimi": "Kemia",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "2153fdf9-dc50-4608-a6e2-d2e63498a628",
           "nimi": "Terveystieto",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "55624e5f-f7d6-4d8a-8cf1-8741e7208368",
           "nimi": "Uskonto tai elämänkatsomustieto",
           "arvosana": 9,
           "valinnainen": null
@@ -473,10 +515,8 @@
     }
   ],
   "perusopetuksenOppimaara78Luokkalaiset": {
-    "oppilaitos": {
-      "nimi": "Keltinmäen koulu",
-      "oid": "1.2.3.4"
-    },
+    "tunniste": "106f1662-15aa-4e74-8470-d39a95f343b6",
+    "oppilaitos": { "nimi": "Keltinmäen koulu", "oid": "1.2.3.4" },
     "tila": "VALMIS",
     "valmistumispaiva": "2016-06-01",
     "suorituskieli": "suomi",
@@ -486,19 +526,19 @@
   },
   "nuortenPerusopetuksenOppiaineenOppimaarat": [
     {
-      "oppilaitos": {
-        "nimi": "Keltinmäen koulu",
-        "oid": "1.2.3.4"
-      },
+      "tunniste": "4ce2b883-8435-4179-abdd-c3c0dc796ef4",
+      "oppilaitos": { "nimi": "Keltinmäen koulu", "oid": "1.2.3.4" },
       "tila": "VALMIS",
       "valmistumispaiva": "2016-06-01",
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
+          "tunniste": "487e93ff-465e-49b5-9543-e8250901bb8b",
           "nimi": "Biologia",
           "arvosana": 9
         },
         {
+          "tunniste": "4c76e50d-b086-4d21-bb9c-49cc9df8ec25",
           "nimi": "Historia",
           "arvosana": 8
         }
@@ -507,15 +547,14 @@
   ],
   "perusopetuksenOppiaineenOppimaarat": [
     {
-      "oppilaitos": {
-        "nimi": "Keltinmäen koulu",
-        "oid": "1.2.3.4"
-      },
+      "tunniste": "88e6d7cc-5b4d-4e2d-a349-2da349f02b4c",
+      "oppilaitos": { "nimi": "Keltinmäen koulu", "oid": "1.2.3.4" },
       "tila": "VALMIS",
       "valmistumispaiva": "2016-06-01",
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
+          "tunniste": "5f613c9f-907a-4c50-9839-0274a541466c",
           "nimi": "matematiikka",
           "arvosana": 9
         }
@@ -524,50 +563,56 @@
   ],
   "aikuistenPerusopetuksenOppimaarat": [
     {
-      "oppilaitos": {
-        "nimi": "Keltinmäen koulu",
-        "oid": "1.2.3.4"
-      },
+      "tunniste": "1e84a332-2cd3-4503-9b9f-5f655712045e",
+      "oppilaitos": { "nimi": "Keltinmäen koulu", "oid": "1.2.3.4" },
       "tila": "VALMIS",
       "valmistumispaiva": "2016-06-01",
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
+          "tunniste": "2e5bbabb-2551-4333-bb00-a9c1f6e2d11f",
           "nimi": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "14dc575b-f804-4912-9b07-3738c44d4eb9",
           "nimi": "A1-kieli, englanti",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "88935d05-f1fe-4e4c-9526-c9c9e52e5e9e",
           "nimi": "B1-kieli, ruotsi",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "04b3bd51-9d38-4be3-a45b-3aeb00d31ca5",
           "nimi": "B2-kieli, saksa",
           "arvosana": 9,
           "valinnainen": null
         },
         {
+          "tunniste": "9d215181-47bd-44c8-97b4-249e8c4b8240",
           "nimi": "Matematiikka",
           "arvosana": null,
           "valinnainen": "10"
         },
         {
+          "tunniste": "e130023b-f757-4e2b-80c5-cd53edaec01e",
           "nimi": "Biologia",
           "arvosana": null,
           "valinnainen": "9"
         },
         {
+          "tunniste": "249afc13-bc3b-4252-a101-aed7f793a461",
           "nimi": "Maantieto",
           "arvosana": null,
           "valinnainen": "8"
         },
         {
+          "tunniste": "033c0147-7355-4936-8a6c-fe502fec2d83",
           "nimi": "Fysiikka",
           "arvosana": null,
           "valinnainen": "9"
