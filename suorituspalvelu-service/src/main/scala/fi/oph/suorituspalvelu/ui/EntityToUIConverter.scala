@@ -1,10 +1,11 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus}
+import fi.oph.suorituspalvelu.resource.ApiConstants.EXAMPLE_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenOppilaitoksenNimi, AmmatillisenTutkinnonNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsanNimi, AmmattitutkinnonNimi, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, ErikoisammattitutkinnonNimi, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, OppijanTiedotSuccessResponse, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, TelmaNimi, Tila, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTONimi}
-import fi.oph.suorituspalvelu.ui.UIService.EXAMPLE_OPPIJA_OID
+import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -700,7 +701,12 @@ object EntityToUIConverter {
       None
     else
       Some(OppijanTiedotSuccessResponse(
+        // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
+        nimi =                                      EXAMPLE_NIMI,
+        henkiloTunnus =                             EXAMPLE_HETU,
+        syntymaAika =                               LocalDate.parse(EXAMPLE_SYNTYMAIKA),
         oppijaNumero =                              oppijaNumero,
+        henkiloOID =                                oppijaNumero,
         opiskeluoikeudet =                          getOpiskeluoikeudet(opiskeluoikeudet).asJava,
         kkTutkinnot =                               getKKTutkinnot(opiskeluoikeudet).asJava,
         yoTutkinto =                                getYOTutkinto(opiskeluoikeudet).toJava,
