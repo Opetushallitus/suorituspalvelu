@@ -1,16 +1,19 @@
-import { castToArray, createId, ValueOf } from '@/lib/common';
+import { castToArray, ValueOf } from '@/lib/common';
 import { OppijanTiedot, Suoritus } from '@/types/ui-types';
-import { useTranslate } from '@tolgee/react';
 import { useMemo } from 'react';
-import { omit } from 'remeda';
+import { isPlainObject, isString, omit } from 'remeda';
+import { useTranslations } from './useTranslations';
 
 export function useSuorituksetFlattened(
   oppijanTiedot: OppijanTiedot,
   sortByDate: boolean = false,
 ) {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
   const unsortedSuoritukset = useMemo(() => {
-    const suoritusTiedot = omit(oppijanTiedot, ['oppijaNumero', 'opiskeluoikeudet']);
+    const suoritusTiedot = omit(oppijanTiedot, [
+      'oppijaNumero',
+      'opiskeluoikeudet',
+    ]);
 
     const result: Array<Suoritus> = [];
 
@@ -21,16 +24,42 @@ export function useSuorituksetFlattened(
     ) => {
       const arrayValue = castToArray(v);
       arrayValue.forEach((suoritus) => {
-        const suoritusWithNimi =
-          nimi !== undefined
-            ? { ...suoritus, koulutustyyppi, nimi, key: createId() }
-            : { ...suoritus, koulutustyyppi, key: createId() };
-        result.push(suoritusWithNimi as Suoritus);
+        if (suoritus && 'nimi' in suoritus) {
+          if (isPlainObject(suoritus.nimi)) {
+            return result.push({
+              ...suoritus,
+              koulutustyyppi,
+              nimi: translateKielistetty(suoritus.nimi),
+              key: suoritus?.tunniste,
+            } as Suoritus);
+          } else if (isString(suoritus.nimi)) {
+            return result.push({
+              ...suoritus,
+              koulutustyyppi,
+              nimi: suoritus.nimi,
+              key: suoritus?.tunniste,
+            } as Suoritus);
+          }
+        }
+        return result.push({
+          ...suoritus,
+          koulutustyyppi,
+          nimi: nimi,
+          key: suoritus?.tunniste,
+        } as Suoritus);
       });
     };
     addValue(suoritusTiedot.kkTutkinnot, 'korkeakoulutus');
-    addValue(suoritusTiedot.yoTutkinto, 'lukio', t('oppija.ylioppilastutkinto'));
-    addValue(suoritusTiedot.lukionOppimaara, 'lukio', t('oppija.lukion-oppimaara'));
+    addValue(
+      suoritusTiedot.yoTutkinto,
+      'lukio',
+      t('oppija.ylioppilastutkinto'),
+    );
+    addValue(
+      suoritusTiedot.lukionOppimaara,
+      'lukio',
+      t('oppija.lukion-oppimaara'),
+    );
     addValue(
       suoritusTiedot.lukionOppiaineenOppimaarat,
       'lukio',
@@ -45,7 +74,7 @@ export function useSuorituksetFlattened(
     addValue(suoritusTiedot.ebTutkinto, 'lukio', t('oppija.eb-tutkinto'));
     addValue(suoritusTiedot.ibTutkinto, 'lukio', t('oppija.ib-tutkinto'));
     addValue(suoritusTiedot.preIB, 'lukio', t('oppija.pre-ib'));
-    addValue(suoritusTiedot.ammatillisetTutkinnot, 'ammatillinen');
+    addValue(suoritusTiedot.ammatillisetPerusTutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.ammattitutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.erikoisammattitutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.vapaanSivistystyonKoulutukset, 'vapaa-sivistystyo');
@@ -76,7 +105,7 @@ export function useSuorituksetFlattened(
       t('oppija.aikuisten-perusopetuksen-oppimaara'),
     );
     return result;
-  }, [oppijanTiedot, t]);
+  }, [oppijanTiedot, t, translateKielistetty]);
 
   return useMemo(() => {
     if (sortByDate) {
