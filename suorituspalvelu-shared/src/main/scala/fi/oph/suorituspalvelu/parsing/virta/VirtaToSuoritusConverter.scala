@@ -2,6 +2,8 @@ package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.{Opintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
 
+import java.util.UUID
+
 /**
  * Muuntaa Kosken suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
  */
@@ -32,7 +34,7 @@ object VirtaToSuoritusConverter {
     val oikeudet = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o =>
       o.Opiskeluoikeudet.map(oo => {
       val oikeudenSuoritukset: Set[Suoritus] = suorituksetByOpiskeluoikeusTunniste.getOrElse(oo.avain, Set.empty).toSet
-      VirtaOpiskeluoikeus(oo.avain, oikeudenSuoritukset)
+      VirtaOpiskeluoikeus(UUID.randomUUID(), oo.avain, oikeudenSuoritukset)
     }))
     oikeudet
   }
@@ -43,6 +45,7 @@ object VirtaToSuoritusConverter {
       virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o => o.Opintosuoritukset.map(o => o.flatMap(suoritus => {
         suoritus.Laji match
           case 1 => Seq(VirtaTutkinto(
+            UUID.randomUUID(),
             getDefaultNimi(suoritus.Nimi),
             getNimi(suoritus.Nimi, "sv"),
             getNimi(suoritus.Nimi, "en"),
@@ -55,6 +58,7 @@ object VirtaToSuoritusConverter {
             suoritus.opiskeluoikeusAvain
           ))
           case 2 => Seq(Opintosuoritus(
+            UUID.randomUUID(),
             getDefaultNimi(suoritus.Nimi),
             getNimi(suoritus.Nimi, "sv"),
             getNimi(suoritus.Nimi, "en"),

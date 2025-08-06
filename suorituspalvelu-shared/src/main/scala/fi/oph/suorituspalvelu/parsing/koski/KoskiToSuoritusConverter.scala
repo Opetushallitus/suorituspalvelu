@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, TallennettavaEntiteetti, Telma, Tuva}
 
 import java.time.LocalDate
+import java.util.UUID
 
 /**
  * Muuntaa Kosken suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
@@ -90,6 +91,7 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsaAlue(
+      UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       arvosana = arviointi.map(arviointi => asKoodiObject(arviointi.arvosana)),
@@ -108,6 +110,7 @@ object KoskiToSuoritusConverter {
     }
 
     AmmatillisenTutkinnonOsa(
+      UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       yto = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => isYTO(t.koodiarvo))).getOrElse(false),
@@ -120,6 +123,7 @@ object KoskiToSuoritusConverter {
 
   def toAmmatillinenPerustutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): AmmatillinenPerustutkinto =
     AmmatillinenPerustutkinto(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       opiskeluoikeus.oppilaitos.map(o =>
@@ -140,6 +144,7 @@ object KoskiToSuoritusConverter {
 
   def toAmmattiTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): AmmattiTutkinto =
     AmmattiTutkinto(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       opiskeluoikeus.oppilaitos.map(o =>
@@ -158,6 +163,7 @@ object KoskiToSuoritusConverter {
 
   def toErikoisAmmattiTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): ErikoisAmmattiTutkinto =
     ErikoisAmmattiTutkinto(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       opiskeluoikeus.oppilaitos.map(o =>
@@ -185,6 +191,7 @@ object KoskiToSuoritusConverter {
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
 
     Telma(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       opiskeluoikeus.oppilaitos.map(o =>
@@ -210,6 +217,7 @@ object KoskiToSuoritusConverter {
     }
 
     PerusopetuksenOppiaine(
+      UUID.randomUUID(),
       osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
@@ -227,6 +235,7 @@ object KoskiToSuoritusConverter {
     }
 
     NuortenPerusopetuksenOppiaineenOppimaara(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
@@ -236,6 +245,7 @@ object KoskiToSuoritusConverter {
 
   def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
+      UUID.randomUUID(),
       opiskeluoikeus.oppilaitos.get.oid,
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
@@ -247,6 +257,7 @@ object KoskiToSuoritusConverter {
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
+      UUID.randomUUID(),
       opiskeluoikeus.oppilaitos.get.oid,
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
@@ -258,6 +269,7 @@ object KoskiToSuoritusConverter {
 
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
     PerusopetuksenVuosiluokka(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
@@ -266,6 +278,7 @@ object KoskiToSuoritusConverter {
 
   def toTuva(suoritus: Suoritus): Tuva =
     Tuva(
+      UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
@@ -274,6 +287,7 @@ object KoskiToSuoritusConverter {
     opiskeluoikeudet.map {
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         PerusopetuksenOpiskeluoikeus(
+          UUID.randomUUID(),
           opiskeluoikeus.oid,
           opiskeluoikeus.oppilaitos.get.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
@@ -281,6 +295,7 @@ object KoskiToSuoritusConverter {
           opiskeluoikeus.tila)
       case opiskeluoikeus if opiskeluoikeus.isAmmatillinen =>
         AmmatillinenOpiskeluoikeus(
+          UUID.randomUUID(),
           opiskeluoikeus.oid,
           opiskeluoikeus.oppilaitos.map(o =>
             fi.oph.suorituspalvelu.business.Oppilaitos(
@@ -294,22 +309,13 @@ object KoskiToSuoritusConverter {
           opiskeluoikeus.tila)
       case opiskeluoikeus =>
         GeneerinenOpiskeluoikeus(
+          UUID.randomUUID(),
           opiskeluoikeus.oid,
           asKoodiObject(opiskeluoikeus.tyyppi),
           opiskeluoikeus.oppilaitos.get.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.tila)
     }
-  }
-
-  def toPerusopetuksenOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus): fi.oph.suorituspalvelu.business.Opiskeluoikeus = {
-    val convertedSuoritukset: Set[business.Suoritus] = toSuoritukset(Seq(opiskeluoikeus))
-    PerusopetuksenOpiskeluoikeus(
-      opiskeluoikeus.oppilaitos.get.oid,
-      opiskeluoikeus.oid,
-      convertedSuoritukset,
-      opiskeluoikeus.lisätiedot,
-      opiskeluoikeus.tila)
   }
 
   val SUORITYSTYYPPI_AMMATILLINENTUTKINTO                     = "ammatillinentutkinto"

@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.nio.charset.Charset
 import java.time.LocalDate
+import java.util.UUID
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
@@ -94,17 +95,17 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenPerustutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
-    val telma = Telma(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), suoritusKieli)
-    val perusopetuksenOppimaara = PerusopetuksenOppimaara("oid", Koodi("arvo", "koodisto", None), suoritusKieli, Set.empty, None, Set.empty)
-    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None)
-    val yoTutkinto = YOTutkinto(suoritusKieli)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val telma = Telma(UUID.randomUUID(), Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), suoritusKieli)
+    val perusopetuksenOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), "oid", Koodi("arvo", "koodisto", None), suoritusKieli, Set.empty, None, Set.empty)
+    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(UUID.randomUUID(), Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None)
+    val yoTutkinto = YOTutkinto(UUID.randomUUID(), suoritusKieli)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
-      AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
-      AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(telma), None),
-      PerusopetuksenOpiskeluoikeus("1.2.3", "2.3.4", Set(perusopetuksenOppimaara), None, None),
-      PerusopetuksenOpiskeluoikeus("1.2.3", "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
-      YOOpiskeluoikeus(yoTutkinto)
+      AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
+      AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(telma), None),
+      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", "2.3.4", Set(perusopetuksenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
+      YOOpiskeluoikeus(UUID.randomUUID(), yoTutkinto)
     ), Set.empty)
 
     // määritellään että hakemuspalvelun mukaan haun ainoa hakija

@@ -32,32 +32,31 @@ case class Arvosana(arvosana: String, koodi: String)
 
 case class Oppilaitos(nimi: Kielistetty, oid: String)
 
-case class ErikoisAmmattiTutkinto(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+case class ErikoisAmmattiTutkinto(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
-case class AmmattiTutkinto(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritustapa: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+case class AmmattiTutkinto(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritustapa: Koodi, suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
-case class AmmatillinenPerustutkinto(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
+case class AmmatillinenPerustutkinto(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], keskiarvo: Option[BigDecimal], suoritustapa: Koodi, suoritusKieli: Koodi, osat: Set[AmmatillisenTutkinnonOsa]) extends Suoritus, Tyypitetty
 
-case class AmmatillisenTutkinnonOsaAlue(nimi: Kielistetty, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Tyypitetty
+case class AmmatillisenTutkinnonOsaAlue(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Tyypitetty
 
-case class AmmatillisenTutkinnonOsa(
-                                     nimi: Kielistetty,
-                                     koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
+case class AmmatillisenTutkinnonOsa(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
-case class Tuva(koodi: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class Tuva(tunniste: UUID, koodi: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
-case class Telma(nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+case class Telma(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
-case class NuortenPerusopetuksenOppiaineenOppimaara(nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, suoritusKieli: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class NuortenPerusopetuksenOppiaineenOppimaara(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, suoritusKieli: Koodi, vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOppimaara(organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
+case class PerusopetuksenOppimaara(tunniste: UUID, organisaatioOid: String, tila: Koodi, suoritusKieli: Koodi, koulusivistyskieli: Set[Koodi], vahvistusPaivamaara: Option[LocalDate], aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
 
 //Kieli määritelty oppiaineille kuten A1, B1 jne.
-case class PerusopetuksenOppiaine(nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, kieli: Option[Koodi]) extends Tyypitetty
+case class PerusopetuksenOppiaine(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, kieli: Option[Koodi]) extends Tyypitetty
 
-case class PerusopetuksenVuosiluokka(nimi: Kielistetty, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
+case class PerusopetuksenVuosiluokka(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOpiskeluoikeus(
+                                         tunniste: UUID,
                                          oid: String,
                                          oppilaitosOid: String,
                                          @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -66,6 +65,7 @@ case class PerusopetuksenOpiskeluoikeus(
                                          tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
 case class AmmatillinenOpiskeluoikeus(
+                                       tunniste: UUID,
                                        oid: String,
                                        oppilaitos: Oppilaitos,
                                        @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -73,6 +73,7 @@ case class AmmatillinenOpiskeluoikeus(
                                        tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
 case class GeneerinenOpiskeluoikeus(
+                                     tunniste: UUID,
                                      oid: String,
                                      tyyppi: Koodi,
                                      oppilaitosOid: String,
@@ -80,19 +81,21 @@ case class GeneerinenOpiskeluoikeus(
                                      suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
                                      tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
-case class YOOpiskeluoikeus(yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
+case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
 
-case class YOTutkinto(suoritusKieli: Koodi) extends Suoritus
+case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi) extends Suoritus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
 
 case class VirtaOpiskeluoikeus(
-                              tunniste: String,
-                              @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                              suoritukset: Set[Suoritus]
+                                tunniste: UUID,
+                                virtaTunniste: String,
+                                @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type") 
+                                suoritukset: Set[Suoritus]
                               ) extends Opiskeluoikeus, Tyypitetty
 
 case class VirtaTutkinto(
+                          tunniste: UUID,
                           nimiFi: Option[String],
                           nimiSv: Option[String],
                           nimiEn: Option[String],
@@ -106,6 +109,7 @@ case class VirtaTutkinto(
                         ) extends Suoritus, Tyypitetty
 
 case class Opintosuoritus(
+                           tunniste: UUID,
                            nimiFi: Option[String],
                            nimiSv: Option[String],
                            nimiEn: Option[String],
