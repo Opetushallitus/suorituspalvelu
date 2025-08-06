@@ -183,7 +183,7 @@ case class DIATutkinto(
 case class Oppiaine(
   @(Schema @field)(example = "Historia", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
-  @(Schema @field)(example = "3", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Int,
   @(Schema @field)(example = "8.5", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty keskiarvo: BigDecimal
@@ -214,7 +214,7 @@ case class EBOppiaine(
   @BeanProperty nimi: String,
   @(Schema @field)(example = "englanti", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
-  @(Schema @field)(example = "3", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Int,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty written: EBSuoritus,
@@ -239,7 +239,7 @@ case class EBTutkinto(
 case class IBSuoritus(
   @(Schema @field)(example = "Mathematical studies", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: String,
-  @(Schema @field)(example = "3", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Oppiaineen laajuus (kurssia)", example = "3", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Int,
   @(Schema @field)(example = "7")
   @BeanProperty predictedGrade: Option[Int],
@@ -290,7 +290,7 @@ case class YTONimi(
 case class YTO(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: YTONimi,
-  @(Schema @field)(example = "11", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[Int],
   @(Schema @field)(example = "HYVAKSYTTY", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[String]
@@ -308,7 +308,7 @@ case class AmmatillisenTutkinnonOsanNimi(
 case class AmmatillisenTutkinnonOsa(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: AmmatillisenTutkinnonOsanNimi,
-  @(Schema @field)(example = "11", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[Int],
   @(Schema @field)(example = "4", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[String]
