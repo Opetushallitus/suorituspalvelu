@@ -1,6 +1,5 @@
 package fi.oph.suorituspalvelu
 
-import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient}
@@ -15,6 +14,7 @@ import org.springframework.security.test.context.support.{WithAnonymousUser, Wit
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+import java.nio.charset.Charset
 import scala.io.Source
 import scala.concurrent.Future
 
@@ -73,7 +73,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_PATH, Set(oppijaNumero)))
       .andExpect(status().isOk).andReturn()
-    val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[KoskiSyncSuccessResponse])
+    val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse])
 
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
 
@@ -123,7 +123,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val result = mvc.perform(jsonPostString(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, hakuOid))
       .andExpect(status().isOk).andReturn()
-    val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[KoskiSyncSuccessResponse])
+    val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse])
 
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
 

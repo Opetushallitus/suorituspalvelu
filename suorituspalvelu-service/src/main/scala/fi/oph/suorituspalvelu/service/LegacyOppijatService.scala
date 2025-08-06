@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, KantaOperaatiot, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Telma, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Telma, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClient}
 import fi.oph.suorituspalvelu.resource.{ApiConstants, LegacyOppija, LegacySuoritus, LegacySuoritusJaArvosanat}
 import io.swagger.v3.oas.annotations.media.Schema
@@ -56,8 +56,8 @@ class LegacyOppijatService {
             ).flatten
             case oo: AmmatillinenOpiskeluoikeus => Set(
               oo.suoritukset
-                .filter(s => s.isInstanceOf[AmmatillinenTutkinto])
-                .map(s => s.asInstanceOf[AmmatillinenTutkinto])
+                .filter(s => s.isInstanceOf[AmmatillinenPerustutkinto])
+                .map(s => s.asInstanceOf[AmmatillinenPerustutkinto])
                 .map(at => Some(LegacySuoritusJaArvosanat(LegacySuoritus(at.suoritusKieli.arvo, Komot.ammatillinen)))),
               oo.suoritukset
                 .filter(s => s.isInstanceOf[Telma])

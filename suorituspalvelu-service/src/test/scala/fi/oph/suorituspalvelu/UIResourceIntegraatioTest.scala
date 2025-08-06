@@ -1,13 +1,12 @@
 package fi.oph.suorituspalvelu
 
-import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.service.UIService
+import fi.oph.suorituspalvelu.ui.UIService
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
@@ -15,6 +14,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+import java.nio.charset.Charset
 import java.time.LocalDate
 import java.util.Optional
 
@@ -47,7 +47,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppilaitosSuccessResponse(java.util.List.of(Oppilaitos(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_OID))),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppilaitosSuccessResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppilaitosSuccessResponse]))
 
   /*
    * Integraatiotestit oppijalistauksen haulle
@@ -75,7 +75,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_KRITEERI_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanHakuFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijatVainOppilaitusMaaritelty(): Unit =
@@ -85,7 +85,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanHakuFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijatVainVuosiMaaritelty(): Unit =
@@ -95,7 +95,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_OPPILAITOS_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanHakuFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijatVainLuokkaMaaritelty(): Unit =
@@ -106,7 +106,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_VUOSI_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanHakuFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijatMalformedParameters(): Unit =
@@ -122,7 +122,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Validator.VALIDATION_LUOKKA_EI_VALIDI + "ei validi luokka",
         Validator.VALIDATION_VUOSI_EI_VALIDI + "ei validi vuosi"
       )),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanHakuFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijatAllowed(): Unit =
@@ -133,7 +133,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(UIService.EXAMPLE_OPPIJA_OID, Optional.of(UIService.EXAMPLE_HETU), UIService.EXAMPLE_NIMI))),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanHakuSuccessResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
@@ -172,7 +172,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanTiedotFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijanTiedotNotFound(): Unit =
@@ -197,9 +197,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
-      AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None),
+      AmmatillinenOpiskeluoikeus("1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
     ), Set.empty)
 
     // suoritetaan kutsu ja parseroidaan vastaus
@@ -207,7 +207,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk)
       .andReturn()
-    val response = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[OppijanTiedotSuccessResponse])
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
 
     // TODO: validoidaan vastauksen sisältö kun liitetty oikeisiin suorituksiin
 

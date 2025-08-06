@@ -63,7 +63,13 @@ case class KoulutusModuuliTunniste(koodiarvo: String,
                                    koodistoVersio: Option[Int],
                                    nimi: Kielistetty) extends VersioituTunniste
 
-case class KoulutusModuuli(tunniste: KoulutusModuuliTunniste,
+case class KoulutusTyyppi(koodiarvo: String,
+                          koodistoUri: String,
+                          koodistoVersio: Option[Int],
+                          nimi: Kielistetty) extends VersioituTunniste
+
+case class KoulutusModuuli(tunniste: Option[KoulutusModuuliTunniste],
+                           koulutustyyppi: Option[KoulutusTyyppi],
                            laajuus: Option[Laajuus],
                            kieli: Option[KoskiKoodi])
 
@@ -111,7 +117,7 @@ case class KoskiLisatiedot(erityisenTuenPäätökset: Option[List[KoskiErityisen
                            kotiopetusjaksot: Option[List[Kotiopetusjakso]])
 
 case class Opiskeluoikeus(oid: String,
-                          oppilaitos: Oppilaitos,
+                          oppilaitos: Option[Oppilaitos],
                           tyyppi: OpiskeluoikeusTyyppi,
                           tila: Option[OpiskeluoikeusTila],
                           suoritukset: Set[Suoritus],

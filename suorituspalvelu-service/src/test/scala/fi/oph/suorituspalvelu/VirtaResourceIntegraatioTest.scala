@@ -1,6 +1,5 @@
 package fi.oph.suorituspalvelu
 
-import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, VirtaOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
@@ -16,6 +15,7 @@ import org.springframework.security.test.context.support.{WithAnonymousUser, Wit
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+import java.nio.charset.Charset
 import scala.concurrent.Future
 
 /**
@@ -53,7 +53,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaAllowedActuallySaveSuoritukset(): Unit = {
@@ -66,7 +66,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk()).andReturn()
 
-    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncSuccessResponse])
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
 
     //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     Thread.sleep(2000)
@@ -94,7 +94,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk()).andReturn()
 
-    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncSuccessResponse])
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
 
     //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     Thread.sleep(2000)
@@ -171,7 +171,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPostString(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, hakuOid))
       .andExpect(status().isOk()).andReturn()
 
-    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[VirtaSyncSuccessResponse])
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
 
     //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK_FOR_HAKU ehtii pyörähtää
     Thread.sleep(2000)

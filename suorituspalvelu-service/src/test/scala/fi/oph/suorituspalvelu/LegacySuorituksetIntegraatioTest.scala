@@ -2,8 +2,7 @@ package fi.oph.suorituspalvelu
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nimbusds.jose.util.StandardCharset
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkinto, Koodi, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -21,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+import java.nio.charset.Charset
 import java.time.{Instant, LocalDate}
 import java.util.Optional
 
@@ -55,7 +55,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetBothParameters(): Unit =
@@ -65,7 +65,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetMalformedOid(): Unit =
@@ -73,7 +73,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_OPPIJANUMERO_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetMalformedTimestamp(): Unit =
@@ -81,7 +81,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_MUOKATTUJALKEEN_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[LegacySuorituksetFailureResponse]))
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LegacySuorituksetFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetHenkilolleAllowed(capturedOutput: CapturedOutput): Unit =
@@ -89,8 +89,8 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan ammatillinen- ja yo-tutkinto
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus("1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None)), Set.empty)
 
     val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, YTR, "{\"testi\": \"suorituksetHenkilölle\"}")
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(YOTutkinto(Koodi("fi", "kieli", Some(1))))), Set.empty)
@@ -98,7 +98,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     // haetaan tutkinnot legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(OPPIJA_OID)))
       .andExpect(status().isOk).andReturn()
-    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyAmmatillinenTaiYOSuoritus]] {})
+    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), new TypeReference[Seq[LegacyAmmatillinenTaiYOSuoritus]] {})
 
     // varmistetaan että tulokset täsmäävät
     Assertions.assertEquals(Seq(
@@ -117,13 +117,13 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     
     // tallennetaan suoritus
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"muuttuneetSuoritukset\"}")
-    val ammatillinenTutkinto = AmmatillinenTutkinto(Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(OPPIJA_OID, "2.3.4", Set(ammatillinenTutkinto), None)), Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(OPPIJA_OID, Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None)), Set.empty)
 
     // haetaan muuttuneet legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_SUORITUKSET_PATH + "?" + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "=" + aikaleima.toString))
       .andExpect(status().isOk).andReturn()
-    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), new TypeReference[Seq[LegacyMuuttunutSuoritus]] {})
+    val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), new TypeReference[Seq[LegacyMuuttunutSuoritus]] {})
 
     // varmistetaan että tulokset täsmäävät
     Assertions.assertEquals(Seq(LegacyMuuttunutSuoritus(OPPIJA_OID)), legacySuorituksetResponse)

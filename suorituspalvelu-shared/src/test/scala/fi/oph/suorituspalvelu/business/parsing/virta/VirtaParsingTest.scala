@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenTutkinto, Koodi, Opintosuoritus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenPerustutkinto, Koodi, Opintosuoritus, VirtaTutkinto}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
