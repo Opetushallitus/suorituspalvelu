@@ -1,10 +1,12 @@
-import { PerusopetusSuoritus } from '@/types/ui-types';
+import { PerusopetuksenOppiaine, PerusopetusSuoritus } from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { Stack } from '@mui/material';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslate } from '@tolgee/react';
+import { ListTable, ListTableColumn } from './ListTable';
+import { useMemo } from 'react';
 
 const Luokkatiedot = ({
   oppimaara,
@@ -23,6 +25,47 @@ const Luokkatiedot = ({
   );
 };
 
+const PerusopetusOppiaineetTable = ({
+  oppiaineet,
+}: {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+}) => {
+  const { t } = useTranslate();
+
+  const hasArvosana = oppiaineet.some((oppiaine) => oppiaine.arvosana);
+  const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine?.valinnainen);
+
+  const columns = useMemo(() => {
+    const cols: Array<ListTableColumn<PerusopetuksenOppiaine>> = [
+      {
+        key: 'nimi',
+        title: t('oppija.oppiaine'),
+        render: (row) => row.nimi,
+      } as ListTableColumn<PerusopetuksenOppiaine>,
+    ];
+
+    if (hasArvosana) {
+      cols.push({
+        key: 'arvosana',
+        title: t('oppija.arvosana'),
+        render: (row) => row.arvosana,
+      } as ListTableColumn<PerusopetuksenOppiaine>);
+    }
+
+    if (hasValinnainen) {
+      cols.push({
+        key: 'valinnainen',
+        title: t('oppija.valinnainen'),
+        render: (row) => row.valinnainen,
+      } as ListTableColumn<PerusopetuksenOppiaine>);
+    }
+
+    return cols;
+  }, [hasArvosana, hasValinnainen, t]);
+
+  return <ListTable columns={columns} rows={oppiaineet} rowKeyProp="nimi" />;
+};
+
 export const PerusopetusSuoritusPaper = ({
   suoritus,
 }: {
@@ -37,6 +80,9 @@ export const PerusopetusSuoritusPaper = ({
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       {'luokka' in suoritus && <Luokkatiedot oppimaara={suoritus} />}
+      {'oppiaineet' in suoritus && (
+        <PerusopetusOppiaineetTable oppiaineet={suoritus.oppiaineet} />
+      )}
     </SuoritusInfoPaper>
   );
 };

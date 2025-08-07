@@ -66,7 +66,10 @@
     "yo-kokeen-taso": "Taso",
     "yo-kokeen-arvosana": "Arvosana",
     "yo-kokeen-yhteispistemaara": "Yhteispistemäärä",
-    "yo-kokeen-tutkintokerta": "Tutkintokerta"
+    "yo-kokeen-tutkintokerta": "Tutkintokerta",
+    "oppiaine": "Oppiaine",
+    "arvosana": "Arvosana",
+    "valinnainen": "Valinnainen"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",
