@@ -51,15 +51,15 @@ class EntityToUIConverterTest {
       )
     )
     
-    Assertions.assertEquals(List(fi.oph.suorituspalvelu.resource.ui.AmmatillinenTutkinto(
+    Assertions.assertEquals(List(fi.oph.suorituspalvelu.resource.ui.Ammatillinentutkinto(
       tutkinto.tunniste,
-      AmmatillisenTutkinnonNimi(
+      AmmatillinentutkintoNimi(
         tutkinto.nimi.fi.toJava,
         tutkinto.nimi.sv.toJava,
         tutkinto.nimi.en.toJava,
       ),
       AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
+        AmmatillinenOppilaitosNimi(
           tutkinto.oppilaitos.nimi.fi.toJava,
           tutkinto.oppilaitos.nimi.sv.toJava,
           tutkinto.oppilaitos.nimi.en.toJava
@@ -116,15 +116,15 @@ class EntityToUIConverterTest {
       )
     )
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.AmmatillinenTutkinto(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Ammatillinentutkinto(
       tutkinto.tunniste,
-      AmmatillisenTutkinnonNimi(
+      AmmatillinentutkintoNimi(
         tutkinto.nimi.fi.toJava,
         tutkinto.nimi.sv.toJava,
         tutkinto.nimi.en.toJava,
       ),
       AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
+        AmmatillinenOppilaitosNimi(
           tutkinto.oppilaitos.nimi.fi.toJava,
           tutkinto.oppilaitos.nimi.sv.toJava,
           tutkinto.oppilaitos.nimi.en.toJava
@@ -170,15 +170,15 @@ class EntityToUIConverterTest {
       )
     )
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.AmmatillinenTutkinto(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Ammatillinentutkinto(
       tutkinto.tunniste,
-      AmmatillisenTutkinnonNimi(
+      AmmatillinentutkintoNimi(
         tutkinto.nimi.fi.toJava,
         tutkinto.nimi.sv.toJava,
         tutkinto.nimi.en.toJava,
       ),
       AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
+        AmmatillinenOppilaitosNimi(
           tutkinto.oppilaitos.nimi.fi.toJava,
           tutkinto.oppilaitos.nimi.sv.toJava,
           tutkinto.oppilaitos.nimi.en.toJava
@@ -195,7 +195,7 @@ class EntityToUIConverterTest {
         .filter(osa => !osa.yto)
         .map(osa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsa(
           osa.tunniste,
-          AmmatillisenTutkinnonOsanNimi(
+          AmmatillisenTutkinnonOsaNimi(
             osa.nimi.fi.toJava,
             osa.nimi.sv.toJava,
             osa.nimi.en.toJava
@@ -225,13 +225,13 @@ class EntityToUIConverterTest {
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Ammattitutkinto(
       tutkinto.tunniste,
-      AmmattitutkinnonNimi(
+      AmmattitutkintoNimi(
         tutkinto.nimi.fi.toJava,
         tutkinto.nimi.sv.toJava,
         tutkinto.nimi.en.toJava,
       ),
       AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
+        AmmatillinenOppilaitosNimi(
           tutkinto.oppilaitos.nimi.fi.toJava,
           tutkinto.oppilaitos.nimi.sv.toJava,
           tutkinto.oppilaitos.nimi.en.toJava
@@ -261,13 +261,13 @@ class EntityToUIConverterTest {
     
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Erikoisammattitutkinto(
       tutkinto.tunniste,
-      ErikoisammattitutkinnonNimi(
+      ErikoisammattitutkintoNimi(
         tutkinto.nimi.fi.toJava,
         tutkinto.nimi.sv.toJava,
         tutkinto.nimi.en.toJava,
       ),
       AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
+        AmmatillinenOppilaitosNimi(
           tutkinto.oppilaitos.nimi.fi.toJava,
           tutkinto.oppilaitos.nimi.sv.toJava,
           tutkinto.oppilaitos.nimi.en.toJava
@@ -303,7 +303,7 @@ class EntityToUIConverterTest {
         telma.nimi.en.toJava,
       ),
       AmmatillinenOppilaitos(
-        AmmatillisenOppilaitoksenNimi(
+        AmmatillinenOppilaitosNimi(
           telma.oppilaitos.nimi.fi.toJava,
           telma.oppilaitos.nimi.sv.toJava,
           telma.oppilaitos.nimi.en.toJava

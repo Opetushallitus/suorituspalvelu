@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AmmatillinenTutkinto, AmmatillisenTutkinnonOsa, NuortenPerusopetuksenOppiaineenOppimaara, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Telma, Tuva, YOTutkinto, *}
+import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID, EXAMPLE_OPPILAITOS_NIMI, EXAMPLE_OPPILAITOS_OID}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -28,7 +28,11 @@ class UIService {
 
   def haeOppilaitokset(): Set[Oppilaitos] =
     Set(Oppilaitos(
-      nimi = EXAMPLE_OPPILAITOS_NIMI,
+      nimi = OppilaitosNimi(
+        fi = Optional.of(EXAMPLE_OPPILAITOS_NIMI),
+        sv = Optional.of(EXAMPLE_OPPILAITOS_NIMI),
+        en = Optional.of(EXAMPLE_OPPILAITOS_NIMI)
+      ),
       oid = EXAMPLE_OPPILAITOS_OID
     ))
 
