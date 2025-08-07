@@ -32,7 +32,6 @@ export const TableHeaderCell = memo(function TableHeaderCell({
   title,
   style,
 }: {
-  colId?: string;
   title?: React.ReactNode;
   style?: React.CSSProperties;
 }) {
@@ -132,7 +131,6 @@ export function ListTable<T>({
                 return (
                   <TableHeaderCell
                     key={key.toString()}
-                    colId={key.toString()}
                     title={translateHeader ? t(title ?? '') : title}
                     style={style}
                   />

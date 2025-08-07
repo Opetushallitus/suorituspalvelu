@@ -71,8 +71,8 @@ export function useSuorituksetFlattened(
       'lukio',
       t('oppija.dia-vastaavuustodistus'),
     );
-    addValue(suoritusTiedot.ebTutkinto, 'lukio', t('oppija.eb-tutkinto'));
-    addValue(suoritusTiedot.ibTutkinto, 'lukio', t('oppija.ib-tutkinto'));
+    addValue(suoritusTiedot.ebTutkinto, 'eb', t('oppija.eb-tutkinto'));
+    addValue(suoritusTiedot.ibTutkinto, 'ib', t('oppija.ib-tutkinto'));
     addValue(suoritusTiedot.preIB, 'lukio', t('oppija.pre-ib'));
     addValue(suoritusTiedot.ammatillisetPerusTutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.ammattitutkinnot, 'ammatillinen');

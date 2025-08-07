@@ -65,12 +65,16 @@
     "yksilollistetty": "Yksilöllistetty",
     "yo-kokeen-aine": "Aine",
     "yo-kokeen-taso": "Taso",
-    "yo-kokeen-arvosana": "Arvosana",
     "yo-kokeen-yhteispistemaara": "Yhteispistemäärä",
     "yo-kokeen-tutkintokerta": "Tutkintokerta",
-    "oppiaine": "Oppiaine",
     "arvosana": "Arvosana",
-    "valinnainen": "Valinnainen"
+    "oppiaine": "Oppiaine",
+    "valinnainen": "Valinnainen",
+    "eb-written": "Written",
+    "eb-oral": "Oral",
+    "eb-final": "Final",
+    "laajuus-vvt": "Laajuus (vvt)",
+    "predicted-grade": "Predicted grade"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",

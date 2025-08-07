@@ -48,7 +48,12 @@ export function SuorituksetKoulutustyypeittain({
       </LabeledSuoritusSection>
       <LabeledSuoritusSection label={t('oppija.lukiokoulutus')}>
         {suoritukset
-          .filter((s) => s.koulutustyyppi === 'lukio')
+          .filter(
+            (s) =>
+              s.koulutustyyppi === 'lukio' ||
+              s.koulutustyyppi === 'eb' ||
+              s.koulutustyyppi === 'ib',
+          )
           ?.map((suoritus) => (
             <LukioSuoritusPaper key={suoritus.key} suoritus={suoritus} />
           ))}

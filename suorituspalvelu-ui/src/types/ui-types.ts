@@ -25,6 +25,8 @@ import {
   IOppijanTiedotSuccessResponse,
   IUIOpiskeluoikeus,
   ITelma,
+  IEBOppiaine,
+  IIBOppiaine,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -53,7 +55,11 @@ export type YOKoe = IYOKoe;
 
 export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
 
-export type LukionOppiaine = ILukionOppiaine;
+export type LukionOppiaine = ILukionOppiaine | IEBOppiaine | IIBOppiaine;
+
+export type IBOppiaine = IIBOppiaine;
+
+export type EBOppiaine = IEBOppiaine;
 
 export type KorkeakouluSuoritus = IKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';
@@ -61,16 +67,29 @@ export type KorkeakouluSuoritus = IKKSuoritus & {
   nimi: string;
 };
 
-export type LukioSuoritus = (
-  | IYOTutkinto
-  | ILukionOppimaara
-  | ILukionOppiaineenOppimaara
-  | IDIATutkinto
-  | IDIAVastaavuusTodistus
-  | IEBTutkinto
-  | IIBTutkinto
-  | IPreIB
-) & { koulutustyyppi: 'lukio'; nimi: string; key: string };
+export type EBSuoritus = IEBTutkinto & {
+  koulutustyyppi: 'eb';
+  nimi: string;
+  key: string;
+};
+
+export type IBSuoritus = IIBTutkinto & {
+  koulutustyyppi: 'ib';
+  nimi: string;
+  key: string;
+};
+
+export type LukioSuoritus =
+  | EBSuoritus
+  | IBSuoritus
+  | ((
+      | IYOTutkinto
+      | ILukionOppimaara
+      | ILukionOppiaineenOppimaara
+      | IDIATutkinto
+      | IDIAVastaavuusTodistus
+      | IPreIB
+    ) & { koulutustyyppi: 'lukio'; nimi: string; key: string });
 
 export type AmmatillinenSuoritus = (
   | IAmmatillinenTutkinto
