@@ -77,8 +77,9 @@ export function useSuorituksetFlattened(
     addValue(suoritusTiedot.ammatillisetPerusTutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.ammattitutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.erikoisammattitutkinnot, 'ammatillinen');
-    addValue(suoritusTiedot.vapaanSivistystyonKoulutukset, 'vapaa-sivistystyo');
+    addValue(suoritusTiedot.telmat, 'ammatillinen', t('oppija.telma'));
     addValue(suoritusTiedot.tuvat, 'tuva', t('oppija.tuva'));
+    addValue(suoritusTiedot.vapaanSivistystyonKoulutukset, 'vapaa-sivistystyo');
     addValue(
       suoritusTiedot.perusopetuksenOppimaarat,
       'perusopetus',

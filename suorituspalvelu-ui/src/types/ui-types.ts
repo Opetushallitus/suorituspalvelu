@@ -24,6 +24,7 @@ import {
   IPerusopetuksenOppimaara,
   IOppijanTiedotSuccessResponse,
   IUIOpiskeluoikeus,
+  ITelma,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -82,6 +83,11 @@ export type TUVASuoritus = ITuva & {
   key: string;
   nimi: string;
 };
+export type TelmaSuoritus = ITelma & {
+  koulutustyyppi: 'telma';
+  key: string;
+  nimi: string;
+};
 
 export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
@@ -101,6 +107,7 @@ export type Suoritus =
   | KorkeakouluSuoritus
   | LukioSuoritus
   | AmmatillinenSuoritus
+  | TelmaSuoritus
   | TUVASuoritus
   | VapaaSivistystyoSuoritus
   | PerusopetusSuoritus;
