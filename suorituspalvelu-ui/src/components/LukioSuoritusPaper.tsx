@@ -8,7 +8,7 @@ import {
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-import { useTranslate } from '@tolgee/react';
+import { useTranslations } from '@/hooks/useTranslations';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { styled } from '@/lib/theme';
 import { formatDate } from 'date-fns';
@@ -26,14 +26,16 @@ const LukionOppiaineetList = ({
 }: {
   oppiaineet: Array<LukionOppiaine>;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
   return (
     <LabeledInfoItem
       label={t('oppija.oppiaineet')}
       value={
         <UnorderedList>
           {oppiaineet.map((oppiaine) => (
-            <li key={oppiaine.nimi}>{oppiaine.nimi}</li>
+            <li key={oppiaine.tunniste}>
+              {translateKielistetty(oppiaine.nimi)}
+            </li>
           ))}
         </UnorderedList>
       }
@@ -50,7 +52,7 @@ const EBOppiaineetTable = ({
 }: {
   oppiaineet: Array<EBOppiaine>;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
 
   return (
     <StripedTable stripeGroup="body">
@@ -67,9 +69,9 @@ const EBOppiaineetTable = ({
         </TableRow>
       </TableHead>
       {oppiaineet.map((row) => (
-        <TableBody key={row.nimi}>
+        <TableBody key={row.tunniste}>
           <TableRow>
-            <TableCell>{row.nimi}</TableCell>
+            <TableCell>{translateKielistetty(row.nimi)}</TableCell>
             <TableCell>{row.suorituskieli}</TableCell>
             <TableCell>{row.laajuus}</TableCell>
             <TableCell />
@@ -97,7 +99,7 @@ const IBOppiaineetTable = ({
 }: {
   oppiaineet: Array<IBOppiaine>;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
 
   return (
     <StripedTable stripeGroup="body">
@@ -114,13 +116,15 @@ const IBOppiaineetTable = ({
         </TableRow>
       </TableHead>
       {oppiaineet.map((oppiaine) => (
-        <TableBody key={oppiaine.nimi}>
+        <TableBody key={oppiaine.tunniste}>
           <TableRow>
-            <TableCell colSpan={4}>{oppiaine.nimi}</TableCell>
+            <TableCell colSpan={4}>
+              {translateKielistetty(oppiaine.nimi)}
+            </TableCell>
           </TableRow>
           {oppiaine.suoritukset.map((suoritus) => (
-            <TableRow key={suoritus.nimi}>
-              <IndentedCell>{suoritus.nimi}</IndentedCell>
+            <TableRow key={suoritus.tunniste}>
+              <IndentedCell>{translateKielistetty(suoritus.nimi)}</IndentedCell>
               <TableCell>{suoritus.laajuus}</TableCell>
               <TableCell>{suoritus.predictedGrade}</TableCell>
               <TableCell>{suoritus.arvosana}</TableCell>
@@ -137,7 +141,7 @@ function DiaVastaavuusTodistusOppiaineet({
 }: {
   suoritus: LukioSuoritus;
 }) {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
 
   return (
     'kieletKirjallisuusTaide' in suoritus && (
@@ -161,8 +165,10 @@ function DiaVastaavuusTodistusOppiaineet({
               </TableCell>
             </TableRow>
             {suoritus.kieletKirjallisuusTaide.map((oppiaine) => (
-              <TableRow key={oppiaine.nimi}>
-                <IndentedCell>{oppiaine.nimi}</IndentedCell>
+              <TableRow key={oppiaine.tunniste}>
+                <IndentedCell>
+                  {translateKielistetty(oppiaine.nimi)}
+                </IndentedCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
                 <TableCell>{oppiaine.keskiarvo}</TableCell>
               </TableRow>
@@ -177,8 +183,10 @@ function DiaVastaavuusTodistusOppiaineet({
               </TableCell>
             </TableRow>
             {suoritus.matematiikkaLuonnontieteet.map((oppiaine) => (
-              <TableRow key={oppiaine.nimi}>
-                <IndentedCell>{oppiaine.nimi}</IndentedCell>
+              <TableRow key={oppiaine.tunniste}>
+                <IndentedCell>
+                  {translateKielistetty(oppiaine.nimi)}
+                </IndentedCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
                 <TableCell>{oppiaine.keskiarvo}</TableCell>
               </TableRow>
@@ -207,7 +215,7 @@ function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
 }
 
 const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslations();
 
   return (
     <StripedTable>
@@ -240,9 +248,11 @@ export const LukioSuoritusPaper = ({
 }: {
   suoritus: LukioSuoritus;
 }) => {
+  const { translateKielistetty } = useTranslations();
+
   return (
     <SuoritusInfoPaper
-      suorituksenNimi={suoritus.nimi}
+      suorituksenNimi={translateKielistetty(suoritus.nimi)}
       valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.blue2}
     >

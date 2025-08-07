@@ -9,7 +9,7 @@ export const TuvaSuoritusPaper = ({ suoritus }: { suoritus: TUVASuoritus }) => {
   const { t } = useTranslate();
   return (
     <SuoritusInfoPaper
-      key={suoritus.oppilaitos.oid}
+      key={suoritus.tunniste}
       suorituksenNimi={t('oppija.tuva')}
       valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.yellow1}

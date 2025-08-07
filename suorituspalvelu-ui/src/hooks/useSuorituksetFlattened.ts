@@ -1,18 +1,20 @@
 import { castToArray, ValueOf } from '@/lib/common';
 import { OppijanTiedot, Suoritus } from '@/types/ui-types';
 import { useMemo } from 'react';
-import { isPlainObject, isString, omit } from 'remeda';
-import { useTranslations } from './useTranslations';
+import { omit } from 'remeda';
 
 export function useSuorituksetFlattened(
   oppijanTiedot: OppijanTiedot,
   sortByDate: boolean = false,
 ) {
-  const { t, translateKielistetty } = useTranslations();
   const unsortedSuoritukset = useMemo(() => {
     const suoritusTiedot = omit(oppijanTiedot, [
+      'nimi',
       'oppijaNumero',
+      'henkiloTunnus',
+      'syntymaAika',
       'opiskeluoikeudet',
+      'henkiloOID',
     ]);
 
     const result: Array<Suoritus> = [];
@@ -20,93 +22,45 @@ export function useSuorituksetFlattened(
     const addValue = <V extends ValueOf<typeof suoritusTiedot>>(
       v: V,
       koulutustyyppi: Suoritus['koulutustyyppi'],
-      nimi?: string,
     ) => {
       const arrayValue = castToArray(v);
       arrayValue.forEach((suoritus) => {
-        if (suoritus && 'nimi' in suoritus) {
-          if (isPlainObject(suoritus.nimi)) {
-            return result.push({
-              ...suoritus,
-              koulutustyyppi,
-              nimi: translateKielistetty(suoritus.nimi),
-              key: suoritus?.tunniste,
-            } as Suoritus);
-          } else if (isString(suoritus.nimi)) {
-            return result.push({
-              ...suoritus,
-              koulutustyyppi,
-              nimi: suoritus.nimi,
-              key: suoritus?.tunniste,
-            } as Suoritus);
-          }
-        }
         return result.push({
           ...suoritus,
           koulutustyyppi,
-          nimi: nimi,
           key: suoritus?.tunniste,
         } as Suoritus);
       });
     };
     addValue(suoritusTiedot.kkTutkinnot, 'korkeakoulutus');
-    addValue(
-      suoritusTiedot.yoTutkinto,
-      'lukio',
-      t('oppija.ylioppilastutkinto'),
-    );
-    addValue(
-      suoritusTiedot.lukionOppimaara,
-      'lukio',
-      t('oppija.lukion-oppimaara'),
-    );
-    addValue(
-      suoritusTiedot.lukionOppiaineenOppimaarat,
-      'lukio',
-      t('oppija.lukion-oppiaineen-oppimaara'),
-    );
-    addValue(suoritusTiedot.diaTutkinto, 'lukio', t('oppija.dia-tutkinto'));
-    addValue(
-      suoritusTiedot.diaVastaavuusTodistus,
-      'lukio',
-      t('oppija.dia-vastaavuustodistus'),
-    );
-    addValue(suoritusTiedot.ebTutkinto, 'eb', t('oppija.eb-tutkinto'));
-    addValue(suoritusTiedot.ibTutkinto, 'ib', t('oppija.ib-tutkinto'));
-    addValue(suoritusTiedot.preIB, 'lukio', t('oppija.pre-ib'));
+    addValue(suoritusTiedot.yoTutkinto, 'lukio');
+    addValue(suoritusTiedot.lukionOppimaara, 'lukio');
+    addValue(suoritusTiedot.lukionOppiaineenOppimaarat, 'lukio');
+    addValue(suoritusTiedot.diaTutkinto, 'lukio');
+    addValue(suoritusTiedot.diaVastaavuusTodistus, 'lukio');
+    addValue(suoritusTiedot.ebTutkinto, 'eb');
+    addValue(suoritusTiedot.ibTutkinto, 'ib');
+    addValue(suoritusTiedot.preIB, 'lukio');
     addValue(suoritusTiedot.ammatillisetPerusTutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.ammattitutkinnot, 'ammatillinen');
     addValue(suoritusTiedot.erikoisammattitutkinnot, 'ammatillinen');
-    addValue(suoritusTiedot.telmat, 'ammatillinen', t('oppija.telma'));
-    addValue(suoritusTiedot.tuvat, 'tuva', t('oppija.tuva'));
+
+    addValue(suoritusTiedot.telmat, 'ammatillinen');
+    addValue(suoritusTiedot.tuvat, 'tuva');
     addValue(suoritusTiedot.vapaanSivistystyonKoulutukset, 'vapaa-sivistystyo');
-    addValue(
-      suoritusTiedot.perusopetuksenOppimaarat,
-      'perusopetus',
-      t('oppija.perusopetuksen-oppimaara'),
-    );
+    addValue(suoritusTiedot.perusopetuksenOppimaarat, 'perusopetus');
     addValue(
       suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset,
       'perusopetus',
-      t('oppija.perusopetuksen-oppimaara'),
     );
     addValue(
       suoritusTiedot.nuortenPerusopetuksenOppiaineenOppimaarat,
       'perusopetus',
-      t('oppija.nuorten-perusopetuksen-oppiaineen-oppimaara'),
     );
-    addValue(
-      suoritusTiedot.perusopetuksenOppiaineenOppimaarat,
-      'perusopetus',
-      t('oppija.perusopetuksen-oppiaineen-oppimaara'),
-    );
-    addValue(
-      suoritusTiedot.aikuistenPerusopetuksenOppimaarat,
-      'perusopetus',
-      t('oppija.aikuisten-perusopetuksen-oppimaara'),
-    );
+    addValue(suoritusTiedot.perusopetuksenOppiaineenOppimaarat, 'perusopetus');
+    addValue(suoritusTiedot.aikuistenPerusopetuksenOppimaarat, 'perusopetus');
     return result;
-  }, [oppijanTiedot, t, translateKielistetty]);
+  }, [oppijanTiedot]);
 
   return useMemo(() => {
     if (sortByDate) {

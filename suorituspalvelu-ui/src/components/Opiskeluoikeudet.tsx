@@ -7,7 +7,7 @@ import {
   OphLink,
   OphTypography,
 } from '@opetushallitus/oph-design-system';
-import { useTranslate } from '@tolgee/react';
+import { useTranslations } from '@/hooks/useTranslations';
 import { formatDate } from 'date-fns';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { use } from 'react';
@@ -23,7 +23,7 @@ const VoimassaoloIndicator = ({
   voimassaolonAlku?: Date;
   voimassaolonLoppu?: Date;
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslations();
 
   const isVoimassa = isInRange(
     currentFinnishDate(),
@@ -58,7 +58,7 @@ export const Opiskeluoikeudet = ({
 }: {
   opiskeluoikeudet: Array<Opiskeluoikeus>;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
   const config = use(configPromise);
   return (
     <Box data-test-id="opiskeluoikeudet">
@@ -68,17 +68,14 @@ export const Opiskeluoikeudet = ({
       <Stack spacing={4}>
         {opiskeluoikeudet.map((oo) => {
           return (
-            <PaperWithTopColor
-              key={`${oo.tutkinto}-${oo.oppilaitos.oid}`}
-              topColor={ophColors.red1}
-            >
+            <PaperWithTopColor key={oo.tunniste} topColor={ophColors.red1}>
               <Stack
                 direction="column"
                 spacing={1}
                 data-test-id="opiskeluoikeus-paper"
               >
                 <OphTypography variant="label" sx={{ marginBottom: 1 }}>
-                  {oo.tutkinto}
+                  {translateKielistetty(oo.nimi)}
                 </OphTypography>
                 <Stack direction="row" spacing={1}>
                   <LabeledInfoItem
@@ -88,7 +85,7 @@ export const Opiskeluoikeudet = ({
                       <OphLink
                         href={getOppilaitosLinkUrl(config, oo.oppilaitos.oid)}
                       >
-                        {oo.oppilaitos.nimi}
+                        {translateKielistetty(oo.oppilaitos.nimi)}
                       </OphLink>
                     }
                   />

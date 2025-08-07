@@ -39,8 +39,8 @@ test.describe('Henkilö-haku', () => {
       await route.fulfill({
         json: {
           oppilaitokset: [
-            { oid: '1', nimi: 'Oppilaitos 1' },
-            { oid: '2', nimi: 'Oppilaitos 2' },
+            { oid: '1', nimi: { fi: 'Oppilaitos 1' } },
+            { oid: '2', nimi: { fi: 'Oppilaitos 2' } },
           ],
         },
       });
