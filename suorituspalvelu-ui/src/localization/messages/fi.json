@@ -61,7 +61,12 @@
     "hakukohde": "Hakukohde",
     "oppiaineet": "Oppiaineet",
     "luokka": "Luokka",
-    "yksilollistetty": "Yksilöllistetty"
+    "yksilollistetty": "Yksilöllistetty",
+    "yo-kokeen-aine": "Aine",
+    "yo-kokeen-taso": "Taso",
+    "yo-kokeen-arvosana": "Arvosana",
+    "yo-kokeen-yhteispistemaara": "Yhteispistemäärä",
+    "yo-kokeen-tutkintokerta": "Tutkintokerta"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",
