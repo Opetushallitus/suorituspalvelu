@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.resource.ApiConstants.EXAMPLE_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AmmatillinenOppilaitos, AmmatillinenTutkinto, AmmatillisenOppilaitoksenNimi, AmmatillisenTutkinnonNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsanNimi, AmmattitutkinnonNimi, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBOppiaine, EBSuoritus, EBTutkinto, ErikoisammattitutkinnonNimi, Erikoisammattitutkinto, Hakukohde, IBOppiaine, IBSuoritus, IBTutkinto, KKOppilaitos, KKSuoritus, LukionOppiaine, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OOOppilaitos, Oppiaine, OppijanTiedotSuccessResponse, OppimaaranOppiaine, PKOppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, Telma, TelmaNimi, Tila, Tuva, UIOpiskeluoikeus, VapaanSivistysTyonKoulutus, YOKoe, YOOppilaitos, YOTutkinto, YTO, YTONimi}
+import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID}
 
 import java.time.LocalDate
@@ -12,7 +12,7 @@ import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
-object EntityToUIConverter {
+object MockEntityToUIConverter {
 
   def convertTila(koodi: Koodi): Tila =
     koodi.arvo match
@@ -28,7 +28,7 @@ object EntityToUIConverter {
       case "peruutettu"                 => Tila.PERUUTETTU
       case "paattynyt"                  => Tila.PAATTYNYT
 
-  def getOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): List[UIOpiskeluoikeus] =
+  def getOpiskeluoikeudet(): List[UIOpiskeluoikeus] =
     List(
       UIOpiskeluoikeus(
         tunniste = UUID.randomUUID(),
@@ -41,7 +41,7 @@ object EntityToUIConverter {
         voimassaolonLoppu = LocalDate.parse("2025-12-11")
       ))
 
-  def getKKTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[KKSuoritus] =
+  def getKKTutkinnot(): List[KKSuoritus] =
     List(KKSuoritus(
       tunniste = UUID.randomUUID(),
       tutkinto = "Kasvatust. maist., kasvatustiede",
@@ -57,7 +57,7 @@ object EntityToUIConverter {
       ),
     ))
 
-  def getYOTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[YOTutkinto] =
+  def getYOTutkinto(): Option[YOTutkinto] =
     Some(YOTutkinto(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -112,7 +112,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getLukionOppimaara(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[LukionOppimaara] =
+  def getLukionOppimaara(): Option[LukionOppimaara] =
     Some(LukionOppimaara(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -132,7 +132,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] =
+  def getLukionOppiaineenOppimaarat(): List[LukionOppiaineenOppimaara] =
     List(LukionOppiaineenOppimaara(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -152,7 +152,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkinto] =
+  def getDiaTutkinto(): Option[DIATutkinto] =
     Some(DIATutkinto(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -165,7 +165,7 @@ object EntityToUIConverter {
       suorituskieli = "suomi",
     ))
 
-  def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistus] =
+  def getDiaVastaavuusTodistus(): Option[DIAVastaavuusTodistus] =
     Some(DIAVastaavuusTodistus(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -200,7 +200,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[EBTutkinto] =
+  def getEBTutkinto(): Option[EBTutkinto] =
     Some(EBTutkinto(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -262,7 +262,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getIBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[IBTutkinto] =
+  def getIBTutkinto(): Option[IBTutkinto] =
     Some(IBTutkinto(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -328,7 +328,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getPreIB(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PreIB] =
+  def getPreIB(): Option[PreIB] =
     Some(PreIB(
       tunniste = UUID.randomUUID(),
       oppilaitos = YOOppilaitos(
@@ -341,160 +341,172 @@ object EntityToUIConverter {
       suorituskieli = "suomi",
     ))
 
-  def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[AmmatillinenTutkinto] =
-    opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
-      .map(t => {
-        // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
-        // 
-        val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
-        AmmatillinenTutkinto(
-          t.tunniste,
-          nimi = AmmatillisenTutkinnonNimi(
-            t.nimi.fi.toJava,
-            t.nimi.sv.toJava,
-            t.nimi.en.toJava
+  def getAmmatillisetPerusTutkinnot(): List[AmmatillinenTutkinto] =
+    List(
+      AmmatillinenTutkinto(
+        tunniste = UUID.randomUUID(),
+        nimi = AmmatillisenTutkinnonNimi(
+          fi = Optional.of("Puutarha-alan perustutkinto"),
+          sv = Optional.of("Puutarha-alan perustutkinto sv"),
+          en = Optional.of("Puutarha-alan perustutkinto en")
+        ),
+        oppilaitos = AmmatillinenOppilaitos(
+          nimi = AmmatillisenOppilaitoksenNimi(
+            fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
+            sv = Optional.of("Hämeen ammatti-instituutti, Lepaa sv"),
+            en = Optional.of("Hämeen ammatti-instituutti, Lepaa en")
           ),
-          oppilaitos = AmmatillinenOppilaitos(
-            AmmatillisenOppilaitoksenNimi(
-              t.oppilaitos.nimi.fi.toJava,
-              t.oppilaitos.nimi.sv.toJava,
-              t.oppilaitos.nimi.en.toJava
+          oid = "1.2.3.4"
+        ),
+        tila = VALMIS,
+        aloituspaiva = Optional.of(LocalDate.parse("2024-12-31")),
+        valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+        suorituskieli = "suomi",
+        painotettuKeskiarvo = Optional.of(4.34),
+        ytot = java.util.List.of(YTO(
+          tunniste = UUID.randomUUID(),
+          nimi = YTONimi(
+            fi = Optional.of("Viestintä- ja vuorovaikutusosaaminen"),
+            sv = Optional.of("Viestintä- ja vuorovaikutusosaaminen sv"),
+            en = Optional.of("Viestintä- ja vuorovaikutusosaaminen en"),
+          ),
+          laajuus = Optional.of(11),
+          arvosana = Optional.of("HYVAKSYTTY")
+        ), YTO(
+          tunniste = UUID.randomUUID(),
+          nimi = YTONimi(
+            fi = Optional.of("Matemaattis-luonnontiellinen osaaminen"),
+            sv = Optional.of("Matemaattis-luonnontiellinen osaaminen sv"),
+            en = Optional.of("Matemaattis-luonnontiellinen osaaminen en")
+          ),
+          laajuus = Optional.of(11),
+          arvosana = Optional.of("HYVAKSYTTY")
+        ), YTO(
+          tunniste = UUID.randomUUID(),
+          nimi = YTONimi(
+            fi = Optional.of("Yhteiskunta- ja työelämäosaaminen"),
+            sv = Optional.of("Yhteiskunta- ja työelämäosaaminen sv"),
+            en = Optional.of("Yhteiskunta- ja työelämäosaaminen en")
+          ),
+          laajuus = Optional.of(11),
+          arvosana = Optional.of("HYVAKSYTTY")
+        )),
+        ammatillisenTutkinnonOsat = java.util.List.of(
+          AmmatillisenTutkinnonOsa(
+            tunniste = UUID.randomUUID(),
+            nimi = AmmatillisenTutkinnonOsanNimi(
+              fi = Optional.of("Audiovisuaalisen kulttuurin perusteet"),
+              sv = Optional.of("Audiovisuaalisen kulttuurin perusteet sv"),
+              en = Optional.of("Audiovisuaalisen kulttuurin perusteet en")
             ),
-            t.oppilaitos.oid,
+            laajuus = Optional.of(11),
+            arvosana = Optional.of("4"),
           ),
-          tila = convertTila(t.tila),
-          aloituspaiva = t.aloitusPaivamaara.toJava,
-          valmistumispaiva = t.vahvistusPaivamaara.toJava,
-          suorituskieli = t.suoritusKieli.arvo,
-          painotettuKeskiarvo = t.keskiarvo.toJava,
-          ytot = t.osat
-            .filter(o => o.yto)
-            .map(o => YTO(
-              o.tunniste,
-              nimi = YTONimi(
-                fi = o.nimi.fi.toJava,
-                sv = o.nimi.sv.toJava,
-                en = o.nimi.en.toJava
-              ),
-              laajuus = o.laajuus.toJava,
-              arvosana = o.arvosana.map(a => a.arvo).toJava
-            )).toList.asJava,
-          ammatillisenTutkinnonOsat = if(t.suoritustapa.arvo!="ops") java.util.List.of() else t.osat
-            .filter(o => !o.yto)
-            .map(o => AmmatillisenTutkinnonOsa(
-              o.tunniste,
-              nimi = AmmatillisenTutkinnonOsanNimi(
-                o.nimi.fi.toJava,
-                o.nimi.sv.toJava,
-                o.nimi.en.toJava
-              ),
-              laajuus = o.laajuus.toJava,
-              arvosana = o.arvosana.map(a => a.arvo).toJava
-            )).toList.asJava,
-          suoritustapa = if (nayttoTutkinto) Optional.of(NAYTTOTUTKINTO) else Optional.empty()
-        )
-      }).toList
-
-  def getAmmattitutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Ammattitutkinto] =
-    opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
-      .map(t => {
-        Ammattitutkinto(
-          t.tunniste,
-          nimi = AmmattitutkinnonNimi(
-            t.nimi.fi.toJava,
-            t.nimi.sv.toJava,
-            t.nimi.en.toJava
-          ),
-          oppilaitos = AmmatillinenOppilaitos(
-            AmmatillisenOppilaitoksenNimi(
-              t.oppilaitos.nimi.fi.toJava,
-              t.oppilaitos.nimi.sv.toJava,
-              t.oppilaitos.nimi.en.toJava
+          AmmatillisenTutkinnonOsa(
+            tunniste = UUID.randomUUID(),
+            nimi = AmmatillisenTutkinnonOsanNimi(
+              fi = Optional.of("Äänimaailman suunnittelu"),
+              sv = Optional.of("Äänimaailman suunnittelu sv"),
+              en = Optional.of("Äänimaailman suunnittelu en")
             ),
-            t.oppilaitos.oid,
+            laajuus = Optional.of(11),
+            arvosana = Optional.of("4"),
+          )
+        ),
+        suoritustapa = Optional.empty()
+      ), AmmatillinenTutkinto(
+        tunniste = UUID.randomUUID(),
+        nimi = AmmatillisenTutkinnonNimi(
+          fi = Optional.of("Hevostalouden perustutkinto"),
+          sv = Optional.of("Hevostalouden perustutkinto sv"),
+          en = Optional.of("Hevostalouden perustutkinto en")
+        ),
+        oppilaitos = AmmatillinenOppilaitos(
+          nimi = AmmatillisenOppilaitoksenNimi(
+            fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
+            sv = Optional.of("Hämeen ammatti-instituutti, Lepaa sv"),
+            en = Optional.of("Hämeen ammatti-instituutti, Lepaa en")
           ),
-          tila = convertTila(t.tila),
-          aloituspaiva = t.aloitusPaivamaara.toJava,
-          valmistumispaiva = t.vahvistusPaivamaara.toJava,
-          suorituskieli = t.suoritusKieli.arvo
-        )
-      }).toList
+          oid = "1.2.3.4"
+        ),
+        tila = VALMIS,
+        aloituspaiva = Optional.of(LocalDate.parse("2024-12-31")),
+        valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+        suorituskieli = "suomi",
+        painotettuKeskiarvo = Optional.of(4.34),
+        ytot = java.util.List.of(),
+        ammatillisenTutkinnonOsat = java.util.List.of(),
+        suoritustapa = Optional.of(SuoritusTapa.NAYTTOTUTKINTO)
+      )
+    )
 
-  def getErikoisAmmattitutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Erikoisammattitutkinto] =
-    opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
-      .map(t => {
-        Erikoisammattitutkinto(
-          t.tunniste,
-          nimi = ErikoisammattitutkinnonNimi(
-            t.nimi.fi.toJava,
-            t.nimi.sv.toJava,
-            t.nimi.en.toJava
-          ),
-          oppilaitos = AmmatillinenOppilaitos(
-            AmmatillisenOppilaitoksenNimi(
-              t.oppilaitos.nimi.fi.toJava,
-              t.oppilaitos.nimi.sv.toJava,
-              t.oppilaitos.nimi.en.toJava
-            ),
-            t.oppilaitos.oid,
-          ),
-          tila = convertTila(t.tila),
-          aloituspaiva = t.aloitusPaivamaara.toJava,
-          valmistumispaiva = t.vahvistusPaivamaara.toJava,
-          suorituskieli = t.suoritusKieli.arvo,
-        )
-      }).toList
+  def getAmmattitutkinnot(): List[Ammattitutkinto] =
+    List(Ammattitutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = AmmattitutkinnonNimi(
+        fi = Optional.of("Maanmittausalan ammattitutkinto"),
+        sv = Optional.of("Maanmittausalan ammattitutkinto sv"),
+        en = Optional.of("Maanmittausalan ammattitutkinto en")
+      ),
+      oppilaitos = AmmatillinenOppilaitos(
+        nimi = AmmatillisenOppilaitoksenNimi(
+          fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
+          sv = Optional.of("Hämeen ammatti-instituutti, Lepaa sv"),
+          en = Optional.of("Hämeen ammatti-instituutti, Lepaa en")
+        ),
+        oid = "1.2.3.4"
+      ),
+      tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      suorituskieli = "suomi"
+    ))
 
-  def getTelmat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Telma] =
-    opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Telma])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Telma])
-      .map(t => {
-        Telma(
-          t.tunniste,
-          nimi = TelmaNimi(
-            t.nimi.fi.toJava,
-            t.nimi.sv.toJava,
-            t.nimi.en.toJava
-          ),
-          oppilaitos = AmmatillinenOppilaitos(
-            AmmatillisenOppilaitoksenNimi(
-              t.oppilaitos.nimi.fi.toJava,
-              t.oppilaitos.nimi.sv.toJava,
-              t.oppilaitos.nimi.en.toJava
-            ),
-            t.oppilaitos.oid,
-          ),
-          tila = convertTila(t.tila),
-          aloituspaiva = t.aloitusPaivamaara.toJava,
-          valmistumispaiva = t.vahvistusPaivamaara.toJava,
-          suorituskieli = t.suoritusKieli.arvo,
-        )
-      }).toList
+  def getErikoisAmmattitutkinnot(): List[Erikoisammattitutkinto] =
+    List(Erikoisammattitutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = ErikoisammattitutkinnonNimi(
+        fi = Optional.of("Talous- ja henkilöstöalan erikoisammattitutkinto"),
+        sv = Optional.of("Talous- ja henkilöstöalan erikoisammattitutkinto sv"),
+        en = Optional.of("Talous- ja henkilöstöalan erikoisammattitutkinto en")
+      ),
+      oppilaitos = AmmatillinenOppilaitos(
+        nimi = AmmatillisenOppilaitoksenNimi(
+          fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
+          sv = Optional.of("Hämeen ammatti-instituutti, Lepaa sv"),
+          en = Optional.of("Hämeen ammatti-instituutti, Lepaa en")
+        ),
+        oid = "1.2.3.4"
+      ),
+      tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      suorituskieli = "suomi"
+    ))
 
-  def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Tuva] =
+  def getTelmat(): List[Telma] =
+    List(Telma(
+      nimi = TelmaNimi(
+        fi = Optional.of("Työhön ja itsenäiseen elämään valmentava koulutus"),
+        sv = Optional.of("Utbildning som handleder för arbete och ett självständigt liv"),
+        en = Optional.of("Preparatory education for work and independent living")
+      ),
+      tunniste = UUID.randomUUID(),
+      oppilaitos = AmmatillinenOppilaitos(
+        nimi = AmmatillisenOppilaitoksenNimi(
+          fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
+          sv = Optional.of("Hämeen ammatti-instituutti, Lepaa sv"),
+          en = Optional.of("Hämeen ammatti-instituutti, Lepaa en")
+        ),
+        oid = "1.2.3.4"
+      ),
+      tila = VALMIS,
+      aloituspaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      suorituskieli = "suomi"
+    ))
+
+  def getTuvat(): List[Tuva] =
     List(Tuva(
       tunniste = UUID.randomUUID(),
       oppilaitos = AmmatillinenOppilaitos(
@@ -512,7 +524,7 @@ object EntityToUIConverter {
       laajuus = 38
     ))
 
-  def getVapaanSivistystyonKoulutukset(opiskeluoikeudet: Set[Opiskeluoikeus]): List[VapaanSivistysTyonKoulutus] =
+  def getVapaanSivistystyonKoulutukset(): List[VapaanSivistysTyonKoulutus] =
     List(VapaanSivistysTyonKoulutus(
       tunniste = UUID.randomUUID(),
       nimi = "Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille",
@@ -530,7 +542,7 @@ object EntityToUIConverter {
       suorituskieli = "suomi",
       laajuus = 38))
 
-  def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppimaara] =
+  def getPerusopetuksenOppimaarat(): List[PerusopetuksenOppimaara] =
     List(PerusopetuksenOppimaara(
       tunniste = UUID.randomUUID(),
       oppilaitos = PKOppilaitos(
@@ -603,7 +615,7 @@ object EntityToUIConverter {
       )
     ))
 
-  def getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PerusopetuksenOppimaara78Luokkalaiset] =
+  def getPerusopetuksenOppimaarat78Luokkalaiset(): Option[PerusopetuksenOppimaara78Luokkalaiset] =
     Some(PerusopetuksenOppimaara78Luokkalaiset(
       tunniste = UUID.randomUUID(),
       oppilaitos = PKOppilaitos(
@@ -619,7 +631,7 @@ object EntityToUIConverter {
       yksilollistetty = false
     ))
 
-  def getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[NuortenPerusopetuksenOppiaineenOppimaara] =
+  def getNuortenPerusopetuksenOppiaineenOppimaarat(): List[NuortenPerusopetuksenOppiaineenOppimaara] =
     List(NuortenPerusopetuksenOppiaineenOppimaara(
       tunniste = UUID.randomUUID(),
       oppilaitos = PKOppilaitos(
@@ -641,7 +653,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppiaineenOppimaara] =
+  def getPerusopetuksenOppiaineenOppimaarat(): List[PerusopetuksenOppiaineenOppimaara] =
     List(PerusopetuksenOppiaineenOppimaara(
       tunniste = UUID.randomUUID(),
       oppilaitos = PKOppilaitos(
@@ -659,7 +671,7 @@ object EntityToUIConverter {
       ))
     ))
 
-  def getAikuistenPerusopetuksetOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[AikuistenPerusopetuksenOppimaara] =
+  def getAikuistenPerusopetuksetOppimaarat(): List[AikuistenPerusopetuksenOppimaara] =
     List(AikuistenPerusopetuksenOppimaara(
       tunniste = UUID.randomUUID(),
       oppilaitos = PKOppilaitos(
@@ -715,40 +727,35 @@ object EntityToUIConverter {
       )
     ))
 
-  def getOppijanTiedot(oppijaNumero: String, opiskeluoikeudet: Set[Opiskeluoikeus]): Option[OppijanTiedotSuccessResponse] = {
-    if(opiskeluoikeudet.isEmpty && !EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
-      None
-    else if(EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
-      MockEntityToUIConverter.getOppijanTiedot()
-    else
-      Some(OppijanTiedotSuccessResponse(
-        // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
-        nimi =                                      EXAMPLE_NIMI,
-        henkiloTunnus =                             EXAMPLE_HETU,
-        syntymaAika =                               LocalDate.parse(EXAMPLE_SYNTYMAIKA),
-        oppijaNumero =                              oppijaNumero,
-        henkiloOID =                                oppijaNumero,
-        opiskeluoikeudet =                          getOpiskeluoikeudet(opiskeluoikeudet).asJava,
-        kkTutkinnot =                               getKKTutkinnot(opiskeluoikeudet).asJava,
-        yoTutkinto =                                getYOTutkinto(opiskeluoikeudet).toJava,
-        lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
-        lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-        diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet).toJava,
-        diaVastaavuusTodistus =                     getDiaVastaavuusTodistus(opiskeluoikeudet).toJava,
-        ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
-        ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
-        preIB =                                     getPreIB(opiskeluoikeudet).toJava,
-        ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet).asJava,
-        ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
-        erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,
-        telmat =                                    getTelmat(opiskeluoikeudet).asJava,
-        tuvat =                                     getTuvat(opiskeluoikeudet).asJava,
-        vapaanSivistystyonKoulutukset =             getVapaanSivistystyonKoulutukset(opiskeluoikeudet).asJava,
-        perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat(opiskeluoikeudet).asJava,
-        perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet).toJava,
-        nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-        perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-        aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat(opiskeluoikeudet).asJava
-      ))
+  def getOppijanTiedot(): Option[OppijanTiedotSuccessResponse] = {
+    Some(OppijanTiedotSuccessResponse(
+      // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
+      nimi =                                      EXAMPLE_NIMI,
+      henkiloTunnus =                             EXAMPLE_HETU,
+      syntymaAika =                               LocalDate.parse(EXAMPLE_SYNTYMAIKA),
+      oppijaNumero =                              EXAMPLE_OPPIJA_OID,
+      henkiloOID =                                EXAMPLE_OPPIJA_OID,
+      opiskeluoikeudet =                          getOpiskeluoikeudet().asJava,
+      kkTutkinnot =                               getKKTutkinnot().asJava,
+      yoTutkinto =                                getYOTutkinto().toJava,
+      lukionOppimaara =                           getLukionOppimaara().toJava,
+      lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat().asJava,
+      diaTutkinto =                               getDiaTutkinto().toJava,
+      diaVastaavuusTodistus =                     getDiaVastaavuusTodistus().toJava,
+      ebTutkinto =                                getEBTutkinto().toJava,
+      ibTutkinto =                                getIBTutkinto().toJava,
+      preIB =                                     getPreIB().toJava,
+      ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot().asJava,
+      ammattitutkinnot =                          getAmmattitutkinnot().asJava,
+      erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot().asJava,
+      telmat =                                    getTelmat().asJava,
+      tuvat =                                     getTuvat().asJava,
+      vapaanSivistystyonKoulutukset =             getVapaanSivistystyonKoulutukset().asJava,
+      perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat().asJava,
+      perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset().toJava,
+      nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat().asJava,
+      perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava,
+      aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat().asJava
+    ))
   }
 }
