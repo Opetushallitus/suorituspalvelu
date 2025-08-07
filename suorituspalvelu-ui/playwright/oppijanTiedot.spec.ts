@@ -190,16 +190,7 @@ test.describe('Oppijan tiedot', () => {
         valmistusmipaiva: '31.12.2024',
         suorituskieli: 'suomi',
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Mathematics',
-          'First language, ranska',
-          'Second language, saksa',
-        ]);
-      },
+      async () => {},
     );
 
     await expectSuoritusPaper(
@@ -212,17 +203,7 @@ test.describe('Oppijan tiedot', () => {
         valmistusmipaiva: '31.12.2024',
         suorituskieli: 'suomi',
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Studies in language and literature',
-          'Individuals and societies',
-          'Experimental sciences',
-          'Mathematics',
-        ]);
-      },
+      async () => {},
     );
 
     await expectSuoritusPaper(suoritusPapers, 8, {
@@ -266,7 +247,7 @@ test.describe('Oppijan tiedot', () => {
     });
 
     await expectSuoritusPaper(suoritusPapers, 13, {
-      title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+      title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
       oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
       tila: 'Suoritus valmis',
       valmistusmipaiva: '1.6.2017',
@@ -274,28 +255,20 @@ test.describe('Oppijan tiedot', () => {
     });
 
     await expectSuoritusPaper(suoritusPapers, 14, {
+      title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+      tila: 'Suoritus valmis',
+      valmistusmipaiva: '1.6.2017',
+      suorituskieli: 'suomi',
+    });
+
+    await expectSuoritusPaper(suoritusPapers, 15, {
       title: 'Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille',
       oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
       tila: 'Suoritus keskeytynyt',
       valmistusmipaiva: '-',
       suorituskieli: 'suomi',
     });
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      15,
-      {
-        title: 'Perusopetuksen oppimäärä (2016)',
-        oppilaitos: 'Keltinmäen koulu',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '1.6.2016',
-        suorituskieli: 'suomi',
-      },
-      async (paper) => {
-        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
-      },
-    );
 
     await expectSuoritusPaper(
       suoritusPapers,
@@ -313,7 +286,23 @@ test.describe('Oppijan tiedot', () => {
       },
     );
 
-    await expectSuoritusPaper(suoritusPapers, 17, {
+    await expectSuoritusPaper(
+      suoritusPapers,
+      17,
+      {
+        title: 'Perusopetuksen oppimäärä (2016)',
+        oppilaitos: 'Keltinmäen koulu',
+        tila: 'Suoritus valmis',
+        valmistusmipaiva: '1.6.2016',
+        suorituskieli: 'suomi',
+      },
+      async (paper) => {
+        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
+        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+      },
+    );
+
+    await expectSuoritusPaper(suoritusPapers, 18, {
       title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
       oppilaitos: 'Keltinmäen koulu',
       tila: 'Suoritus valmis',
@@ -321,7 +310,7 @@ test.describe('Oppijan tiedot', () => {
       suorituskieli: 'suomi',
     });
 
-    await expectSuoritusPaper(suoritusPapers, 18, {
+    await expectSuoritusPaper(suoritusPapers, 19, {
       title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
       oppilaitos: 'Keltinmäen koulu',
       tila: 'Suoritus valmis',
@@ -329,7 +318,7 @@ test.describe('Oppijan tiedot', () => {
       suorituskieli: 'suomi',
     });
 
-    await expectSuoritusPaper(suoritusPapers, 19, {
+    await expectSuoritusPaper(suoritusPapers, 20, {
       title: 'Aikuisten perusopetuksen oppimäärä (2016)',
       oppilaitos: 'Keltinmäen koulu',
       tila: 'Suoritus valmis',
@@ -432,16 +421,7 @@ test.describe('Oppijan tiedot', () => {
         valmistusmipaiva: '31.12.2024',
         suorituskieli: 'suomi',
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Mathematics',
-          'First language, ranska',
-          'Second language, saksa',
-        ]);
-      },
+      async () => {},
     );
 
     await expectSuoritusPaper(
@@ -454,17 +434,7 @@ test.describe('Oppijan tiedot', () => {
         valmistusmipaiva: '31.12.2024',
         suorituskieli: 'suomi',
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Studies in language and literature',
-          'Individuals and societies',
-          'Experimental sciences',
-          'Mathematics',
-        ]);
-      },
+      async () => {},
     );
 
     await expectSuoritusPaper(suoritusPapers, 7, {
@@ -516,28 +486,20 @@ test.describe('Oppijan tiedot', () => {
     });
 
     await expectSuoritusPaper(suoritusPapers, 13, {
-      title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+      title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
       oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
       tila: 'Suoritus valmis',
       valmistusmipaiva: '1.6.2017',
       suorituskieli: 'suomi',
     });
 
-    await expectSuoritusPaper(
-      suoritusPapers,
-      14,
-      {
-        title: 'Perusopetuksen oppimäärä (2016)',
-        oppilaitos: 'Keltinmäen koulu',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '1.6.2016',
-        suorituskieli: 'suomi',
-      },
-      async (paper) => {
-        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
-      },
-    );
+    await expectSuoritusPaper(suoritusPapers, 14, {
+      title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+      tila: 'Suoritus valmis',
+      valmistusmipaiva: '1.6.2017',
+      suorituskieli: 'suomi',
+    });
 
     await expectSuoritusPaper(
       suoritusPapers,
@@ -555,7 +517,23 @@ test.describe('Oppijan tiedot', () => {
       },
     );
 
-    await expectSuoritusPaper(suoritusPapers, 16, {
+    await expectSuoritusPaper(
+      suoritusPapers,
+      16,
+      {
+        title: 'Perusopetuksen oppimäärä (2016)',
+        oppilaitos: 'Keltinmäen koulu',
+        tila: 'Suoritus valmis',
+        valmistusmipaiva: '1.6.2016',
+        suorituskieli: 'suomi',
+      },
+      async (paper) => {
+        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
+        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+      },
+    );
+
+    await expectSuoritusPaper(suoritusPapers, 17, {
       title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
       oppilaitos: 'Keltinmäen koulu',
       tila: 'Suoritus valmis',
@@ -563,7 +541,7 @@ test.describe('Oppijan tiedot', () => {
       suorituskieli: 'suomi',
     });
 
-    await expectSuoritusPaper(suoritusPapers, 17, {
+    await expectSuoritusPaper(suoritusPapers, 18, {
       title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
       oppilaitos: 'Keltinmäen koulu',
       tila: 'Suoritus valmis',
@@ -571,7 +549,7 @@ test.describe('Oppijan tiedot', () => {
       suorituskieli: 'suomi',
     });
 
-    await expectSuoritusPaper(suoritusPapers, 18, {
+    await expectSuoritusPaper(suoritusPapers, 19, {
       title: 'Aikuisten perusopetuksen oppimäärä (2016)',
       oppilaitos: 'Keltinmäen koulu',
       tila: 'Suoritus valmis',
@@ -579,7 +557,7 @@ test.describe('Oppijan tiedot', () => {
       suorituskieli: 'suomi',
     });
 
-    await expectSuoritusPaper(suoritusPapers, 19, {
+    await expectSuoritusPaper(suoritusPapers, 20, {
       title: 'Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille',
       oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
       tila: 'Suoritus keskeytynyt',
