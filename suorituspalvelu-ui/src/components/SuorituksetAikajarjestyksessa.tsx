@@ -19,6 +19,8 @@ function SuoritusPaper({
     case 'ammatillinen':
       return <AmmatillinenSuoritusPaper suoritus={suoritus} />;
     case 'lukio':
+    case 'eb':
+    case 'ib':
       return <LukioSuoritusPaper suoritus={suoritus} />;
     case 'vapaa-sivistystyo':
       return <VapaaSivistystyoSuoritusPaper suoritus={suoritus} />;

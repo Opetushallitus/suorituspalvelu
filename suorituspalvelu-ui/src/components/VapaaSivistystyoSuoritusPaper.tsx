@@ -2,12 +2,15 @@ import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { VapaaSivistystyoSuoritus } from '@/types/ui-types';
+import { LabeledInfoItem } from './LabeledInfoItem';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export const VapaaSivistystyoSuoritusPaper = ({
   suoritus,
 }: {
   suoritus: VapaaSivistystyoSuoritus;
 }) => {
+  const { t } = useTranslations();
   return (
     <SuoritusInfoPaper
       key={suoritus.oppilaitos.oid}
@@ -16,6 +19,10 @@ export const VapaaSivistystyoSuoritusPaper = ({
       topColor={ophColors.cyan1}
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
+      <LabeledInfoItem
+        label={t('oppija.suoritettu')}
+        value={`${suoritus.laajuus} ${t('oppija.lyhenne-opintopiste')}`}
+      />
     </SuoritusInfoPaper>
   );
 };
