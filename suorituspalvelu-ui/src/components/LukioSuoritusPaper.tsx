@@ -14,6 +14,7 @@ import { styled } from '@/lib/theme';
 import { formatDate } from 'date-fns';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { StripedTable } from './StripedTable';
+import { isEmpty } from 'remeda';
 
 const UnorderedList = styled('ul')(({ theme }) => ({
   margin: 0,
@@ -123,6 +124,60 @@ const IBOppiaineetTable = ({
   );
 };
 
+function DiaVastaavuusTodistusOppiaineet({
+  suoritus,
+}: {
+  suoritus: LukioSuoritus;
+}) {
+  const { t } = useTranslate();
+
+  return (
+    'kieletKirjallisuusTaide' in suoritus && (
+      <StripedTable stripeGroup="body">
+        <TableHead>
+          <TableRow>
+            <TableCell>{t('oppija.oppiaine')}</TableCell>
+            <TableCell>{t('oppija.laajuus-vvt')}</TableCell>
+            <TableCell>{t('oppija.keskiarvo')}</TableCell>
+          </TableRow>
+        </TableHead>
+        {!isEmpty(suoritus.kieletKirjallisuusTaide) && (
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={3}>
+                {t('oppija.kielet-kirjallisuus-taide')}
+              </TableCell>
+            </TableRow>
+            {suoritus.kieletKirjallisuusTaide.map((oppiaine) => (
+              <TableRow key={oppiaine.nimi}>
+                <IndentedCell>{oppiaine.nimi}</IndentedCell>
+                <TableCell>{oppiaine.laajuus}</TableCell>
+                <TableCell>{oppiaine.keskiarvo}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        )}
+        {!isEmpty(suoritus.matematiikkaLuonnontieteet) && (
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={3}>
+                {t('oppija.matematiikka-ja-luonnontieteet')}
+              </TableCell>
+            </TableRow>
+            {suoritus.matematiikkaLuonnontieteet.map((oppiaine) => (
+              <TableRow key={oppiaine.nimi}>
+                <IndentedCell>{oppiaine.nimi}</IndentedCell>
+                <TableCell>{oppiaine.laajuus}</TableCell>
+                <TableCell>{oppiaine.keskiarvo}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        )}
+      </StripedTable>
+    )
+  );
+}
+
 function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
   if ('oppiaineet' in suoritus) {
     switch (suoritus.koulutustyyppi) {
@@ -133,7 +188,10 @@ function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
       default:
         return <LukionOppiaineetList oppiaineet={suoritus.oppiaineet} />;
     }
+  } else if ('kieletKirjallisuusTaide' in suoritus) {
+    return <DiaVastaavuusTodistusOppiaineet suoritus={suoritus} />;
   }
+  return null;
 }
 
 const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {

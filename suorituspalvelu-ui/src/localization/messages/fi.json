@@ -74,7 +74,10 @@
     "eb-oral": "Oral",
     "eb-final": "Final",
     "laajuus-vvt": "Laajuus (vvt)",
-    "predicted-grade": "Predicted grade"
+    "predicted-grade": "Predicted grade",
+    "keskiarvo": "Keskiarvo",
+    "kielet-kirjallisuus-taide": "Kielet, kirjallisuus, taide",
+    "matematiikka-ja-luonnontieteet": "Matematiikka ja luonnontieteet"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",
