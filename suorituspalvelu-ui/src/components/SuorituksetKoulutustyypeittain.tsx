@@ -10,6 +10,7 @@ import { TuvaSuoritusPaper } from './TuvaSuoritusPaper';
 import { PerusopetusSuoritusPaper } from './PerusopetusSuoritusPaper';
 import { OppijanTiedot } from '@/types/ui-types';
 import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
+import React from 'react';
 
 function LabeledSuoritusSection({
   label,
@@ -19,12 +20,14 @@ function LabeledSuoritusSection({
   children: React.ReactNode;
 }) {
   return (
-    <Box sx={{ marginBottom: 4 }}>
-      <OphTypography variant="h4" component="h3" sx={{ marginBottom: 2 }}>
-        {label}
-      </OphTypography>
-      <Stack gap={4}>{children}</Stack>
-    </Box>
+    React.Children.count(children) > 0 && (
+      <Box sx={{ marginBottom: 4 }}>
+        <OphTypography variant="h4" component="h3" sx={{ marginBottom: 2 }}>
+          {label}
+        </OphTypography>
+        <Stack spacing={4}>{children}</Stack>
+      </Box>
+    )
   );
 }
 
