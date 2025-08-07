@@ -77,7 +77,10 @@
     "predicted-grade": "Predicted grade",
     "keskiarvo": "Keskiarvo",
     "kielet-kirjallisuus-taide": "Kielet, kirjallisuus, taide",
-    "matematiikka-ja-luonnontieteet": "Matematiikka ja luonnontieteet"
+    "matematiikka-ja-luonnontieteet": "Matematiikka ja luonnontieteet",
+    "suoritettu": "Suoritettu",
+    "suoritustapa": "Suoritustapa",
+    "koulusivistyskieli": "Koulusivistyskieli"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",

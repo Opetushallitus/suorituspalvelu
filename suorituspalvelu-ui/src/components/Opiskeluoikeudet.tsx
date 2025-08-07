@@ -65,7 +65,7 @@ export const Opiskeluoikeudet = ({
       <OphTypography variant="h3" component="h2" sx={{ marginBottom: 2 }}>
         {t('oppija.opiskeluoikeudet')}
       </OphTypography>
-      <Stack gap={4}>
+      <Stack spacing={4}>
         {opiskeluoikeudet.map((oo) => {
           return (
             <PaperWithTopColor
@@ -74,13 +74,13 @@ export const Opiskeluoikeudet = ({
             >
               <Stack
                 direction="column"
-                gap={1}
+                spacing={1}
                 data-test-id="opiskeluoikeus-paper"
               >
                 <OphTypography variant="label" sx={{ marginBottom: 1 }}>
                   {oo.tutkinto}
                 </OphTypography>
-                <Stack direction="row" gap={1}>
+                <Stack direction="row" spacing={1}>
                   <LabeledInfoItem
                     label={t('oppija.oppilaitos')}
                     sx={{ flexBasis: '50%' }}

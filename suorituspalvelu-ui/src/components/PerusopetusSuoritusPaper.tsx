@@ -17,11 +17,21 @@ import { StripedTable } from './StripedTable';
 const Luokkatiedot = ({
   oppimaara,
 }: {
-  oppimaara: { luokka?: string; yksilollistetty?: boolean };
+  oppimaara: {
+    koulusivistyskieli?: string;
+    luokka?: string;
+    yksilollistetty?: boolean;
+  };
 }) => {
   const { t } = useTranslate();
   return (
     <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+      {oppimaara.koulusivistyskieli && (
+        <LabeledInfoItem
+          label={t('oppija.koulusivistyskieli')}
+          value={oppimaara.koulusivistyskieli}
+        />
+      )}
       <LabeledInfoItem label={t('oppija.luokka')} value={oppimaara.luokka} />
       <LabeledInfoItem
         label={t('oppija.yksilollistetty')}
