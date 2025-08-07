@@ -18,7 +18,7 @@ export const AmmatillinenSuoritusPaper = ({
       topColor={ophColors.green2}
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
-      {'suoritustapa' in suoritus && (
+      {'suoritustapa' in suoritus && suoritus.suoritustapa && (
         <LabeledInfoItem
           label={t('oppija.suoritustapa')}
           value={suoritus.suoritustapa}
