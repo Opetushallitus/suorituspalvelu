@@ -1,4 +1,4 @@
-import { expect, Locator } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { test } from './fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json';
 import { NDASH } from '@/lib/common';
@@ -13,7 +13,7 @@ type Perustiedot = {
   suorituskieli?: string;
 };
 
-const expectPerustiedot = async (paper: Locator, perustiedot: Perustiedot) => {
+async function expectPerustiedot(paper: Locator, perustiedot: Perustiedot) {
   await expect(
     paper.getByRole('heading', { name: perustiedot.title }),
   ).toBeVisible();
@@ -29,17 +29,22 @@ const expectPerustiedot = async (paper: Locator, perustiedot: Perustiedot) => {
       perustiedot.suorituskieli,
     );
   }
-};
+}
 
-async function expectSuoritusPaper(
-  papers: Locator,
-  index: number,
-  perustiedot: Perustiedot,
-  additionalChecks?: (paper: Locator) => Promise<void>,
+async function expectSuoritukset(
+  page: Page,
+  suoritusSpecs: Array<{
+    perustiedot: Perustiedot;
+    additionalChecks?: (paper: Locator) => Promise<void>;
+  }>,
 ) {
-  const paper = papers.nth(index);
-  await expectPerustiedot(paper, perustiedot);
-  await additionalChecks?.(paper);
+  const suoritusPapers = page.getByTestId('suoritus-paper');
+
+  for (const [index, spec] of suoritusSpecs.entries()) {
+    const paper = suoritusPapers.nth(index);
+    await expectPerustiedot(paper, spec.perustiedot);
+    await spec.additionalChecks?.(paper);
+  }
 }
 
 const expectList = async (list: Locator, items: Array<string>) => {
@@ -96,235 +101,227 @@ test.describe('Oppijan tiedot', () => {
       page.getByRole('heading', { name: 'Suoritukset' }),
     ).toBeVisible();
 
-    const suoritusPapers = page.getByTestId('suoritus-paper');
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      0,
+    await expectSuoritukset(page, [
       {
-        title: 'Kasvatust. maist., kasvatustiede',
-        oppilaitos: 'Tampereen yliopisto',
-        tila: 'Suoritus kesken',
-        valmistusmipaiva: '-',
+        perustiedot: {
+          title: 'Kasvatust. maist., kasvatustiede',
+          oppilaitos: 'Tampereen yliopisto',
+          tila: 'Suoritus kesken',
+          valmistusmipaiva: '-',
+        },
+        additionalChecks: async (paper) => {
+          await expect(paper.getByLabel('Hakukohde')).toHaveText(
+            'Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)',
+          );
+        },
       },
-      async (paper) => {
-        await expect(paper.getByLabel('Hakukohde')).toHaveText(
-          'Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)',
-        );
-      },
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 1, {
-      title: 'Ylioppilastutkinto (2019)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2019',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      2,
       {
-        title: 'Lukion oppimäärä (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'Ylioppilastutkinto (2019)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2019',
+        },
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Äidinkieli ja kirjallisuus',
-          'Uskonto/Elämänkatsomustieto',
-        ]);
-      },
-    );
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      3,
       {
-        title: 'Lukion oppiaineen oppimäärä (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'Lukion oppimäärä (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+        },
+        additionalChecks: async (paper) => {
+          const oppiaineListItems = paper
+            .getByLabel('Oppiaineet')
+            .getByRole('listitem');
+
+          await expectList(oppiaineListItems, [
+            'Äidinkieli ja kirjallisuus',
+            'Uskonto/Elämänkatsomustieto',
+          ]);
+        },
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Äidinkieli ja kirjallisuus, suomi äidinkielenä',
-          'Matematiikka, lyhyt oppimäärä, valinnainen',
-        ]);
-      },
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 4, {
-      title: 'DIA-tutkinto (2024)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 5, {
-      title: 'DIA-vastaavuustodistus (2024)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      6,
       {
-        title: 'EB-tutkinto (European Baccalaureate) (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
-      },
-      async () => {},
-    );
+        perustiedot: {
+          title: 'Lukion oppiaineen oppimäärä (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+        },
+        additionalChecks: async (paper) => {
+          const oppiaineListItems = paper
+            .getByLabel('Oppiaineet')
+            .getByRole('listitem');
 
-    await expectSuoritusPaper(
-      suoritusPapers,
-      7,
+          await expectList(oppiaineListItems, [
+            'Äidinkieli ja kirjallisuus, suomi äidinkielenä',
+            'Matematiikka, lyhyt oppimäärä, valinnainen',
+          ]);
+        },
+      },
       {
-        title: 'IB-tutkinto (International Baccalaureate) (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'DIA-tutkinto (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async () => {},
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 8, {
-      title: 'Pre-IB (2024)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 9, {
-      title: 'Puutarha-alan perustutkinto (2024)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 10, {
-      title: 'Hevostalouden perustutkinto (2024)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 11, {
-      title: 'Maanmittausalan ammattitutkinto (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 12, {
-      title: 'Talous- ja henkilöstöalan erikoisammattitutkinto (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 13, {
-      title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 14, {
-      title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 15, {
-      title: 'Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus keskeytynyt',
-      valmistusmipaiva: '-',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      16,
       {
-        title: 'Perusopetuksen oppimäärä (2016)',
-        oppilaitos: 'Keltinmäen koulu',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '1.6.2016',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'DIA-vastaavuustodistus (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async (paper) => {
-        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
-      },
-    );
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      17,
       {
-        title: 'Perusopetuksen oppimäärä (2016)',
-        oppilaitos: 'Keltinmäen koulu',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '1.6.2016',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'EB-tutkinto (European Baccalaureate) (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async (paper) => {
-        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+      {
+        perustiedot: {
+          title: 'IB-tutkinto (International Baccalaureate) (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 18, {
-      title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 19, {
-      title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 20, {
-      title: 'Aikuisten perusopetuksen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    });
+      {
+        perustiedot: {
+          title: 'Pre-IB (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Puutarha-alan perustutkinto (2024)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Hevostalouden perustutkinto (2024)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Maanmittausalan ammattitutkinto (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Talous- ja henkilöstöalan erikoisammattitutkinto (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title:
+            'Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus keskeytynyt',
+          valmistusmipaiva: '-',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Perusopetuksen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+        additionalChecks: async (paper) => {
+          await expect(paper.getByLabel('Luokka')).toHaveText('9A');
+          await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Perusopetuksen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+        additionalChecks: async (paper) => {
+          await expect(paper.getByLabel('Luokka')).toHaveText('9A');
+          await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Aikuisten perusopetuksen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+      },
+    ]);
   });
 
   test('Suoritukset aikajärjestyksessä', async ({ page }) => {
@@ -334,235 +331,229 @@ test.describe('Oppijan tiedot', () => {
 
     await page.getByRole('button', { name: 'Uusin ensin' }).click();
 
-    const suoritusPapers = page.getByTestId('suoritus-paper');
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      0,
+    await expectSuoritukset(page, [
       {
-        title: 'Kasvatust. maist., kasvatustiede',
-        oppilaitos: 'Tampereen yliopisto',
-        tila: 'Suoritus kesken',
-        valmistusmipaiva: '-',
+        perustiedot: {
+          title: 'Kasvatust. maist., kasvatustiede',
+          oppilaitos: 'Tampereen yliopisto',
+          tila: 'Suoritus kesken',
+          valmistusmipaiva: '-',
+        },
+        additionalChecks: async (paper) => {
+          await expect(paper.getByLabel('Hakukohde')).toHaveText(
+            'Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)',
+          );
+        },
       },
-      async (paper) => {
-        await expect(paper.getByLabel('Hakukohde')).toHaveText(
-          'Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)',
-        );
-      },
-    );
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      1,
       {
-        title: 'Lukion oppimäärä (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
-      },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
+        perustiedot: {
+          title: 'Lukion oppimäärä (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+        additionalChecks: async (paper) => {
+          const oppiaineListItems = paper
+            .getByLabel('Oppiaineet')
+            .getByRole('listitem');
 
-        await expectList(oppiaineListItems, [
-          'Äidinkieli ja kirjallisuus',
-          'Uskonto/Elämänkatsomustieto',
-        ]);
+          await expectList(oppiaineListItems, [
+            'Äidinkieli ja kirjallisuus',
+            'Uskonto/Elämänkatsomustieto',
+          ]);
+        },
       },
-    );
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      2,
       {
-        title: 'Lukion oppiaineen oppimäärä (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'Lukion oppiaineen oppimäärä (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+        additionalChecks: async (paper) => {
+          const oppiaineListItems = paper
+            .getByLabel('Oppiaineet')
+            .getByRole('listitem');
+
+          await expectList(oppiaineListItems, [
+            'Äidinkieli ja kirjallisuus, suomi äidinkielenä',
+            'Matematiikka, lyhyt oppimäärä, valinnainen',
+          ]);
+        },
       },
-      async (paper) => {
-        const oppiaineListItems = paper
-          .getByLabel('Oppiaineet')
-          .getByRole('listitem');
-        await expectList(oppiaineListItems, [
-          'Äidinkieli ja kirjallisuus, suomi äidinkielenä',
-          'Matematiikka, lyhyt oppimäärä, valinnainen',
-        ]);
-      },
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 3, {
-      title: 'DIA-tutkinto (2024)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 4, {
-      title: 'DIA-vastaavuustodistus (2024)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      5,
       {
-        title: 'EB-tutkinto (European Baccalaureate) (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'DIA-tutkinto (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async () => {},
-    );
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      6,
       {
-        title: 'IB-tutkinto (International Baccalaureate) (2024)',
-        oppilaitos: 'Ylioppilastutkintolautakunta',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '31.12.2024',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'DIA-vastaavuustodistus (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async () => {},
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 7, {
-      title: 'Pre-IB (2024)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 8, {
-      title: 'Puutarha-alan perustutkinto (2024)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 9, {
-      title: 'Hevostalouden perustutkinto (2024)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '31.12.2024',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 10, {
-      title: 'Ylioppilastutkinto (2019)',
-      oppilaitos: 'Ylioppilastutkintolautakunta',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2019',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 11, {
-      title: 'Maanmittausalan ammattitutkinto (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 12, {
-      title: 'Talous- ja henkilöstöalan erikoisammattitutkinto (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 13, {
-      title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 14, {
-      title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      15,
       {
-        title: 'Perusopetuksen oppimäärä (2016)',
-        oppilaitos: 'Keltinmäen koulu',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '1.6.2016',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'EB-tutkinto (European Baccalaureate) (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async (paper) => {
-        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
-      },
-    );
-
-    await expectSuoritusPaper(
-      suoritusPapers,
-      16,
       {
-        title: 'Perusopetuksen oppimäärä (2016)',
-        oppilaitos: 'Keltinmäen koulu',
-        tila: 'Suoritus valmis',
-        valmistusmipaiva: '1.6.2016',
-        suorituskieli: 'suomi',
+        perustiedot: {
+          title: 'IB-tutkinto (International Baccalaureate) (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-      async (paper) => {
-        await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-        await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+      {
+        perustiedot: {
+          title: 'Pre-IB (2024)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
       },
-    );
-
-    await expectSuoritusPaper(suoritusPapers, 17, {
-      title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 18, {
-      title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 19, {
-      title: 'Aikuisten perusopetuksen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    });
-
-    await expectSuoritusPaper(suoritusPapers, 20, {
-      title: 'Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille',
-      oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
-      tila: 'Suoritus keskeytynyt',
-      valmistusmipaiva: '-',
-      suorituskieli: 'suomi',
-    });
+      {
+        perustiedot: {
+          title: 'Puutarha-alan perustutkinto (2024)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Hevostalouden perustutkinto (2024)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '31.12.2024',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Ylioppilastutkinto (2019)',
+          oppilaitos: 'Ylioppilastutkintolautakunta',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2019',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Maanmittausalan ammattitutkinto (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Talous- ja henkilöstöalan erikoisammattitutkinto (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2017',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Perusopetuksen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+        additionalChecks: async (paper) => {
+          await expect(paper.getByLabel('Luokka')).toHaveText('9A');
+          await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Perusopetuksen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+        additionalChecks: async (paper) => {
+          await expect(paper.getByLabel('Luokka')).toHaveText('9A');
+          await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title: 'Aikuisten perusopetuksen oppimäärä (2016)',
+          oppilaitos: 'Keltinmäen koulu',
+          tila: 'Suoritus valmis',
+          valmistusmipaiva: '1.6.2016',
+          suorituskieli: 'suomi',
+        },
+      },
+      {
+        perustiedot: {
+          title:
+            'Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille',
+          oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+          tila: 'Suoritus keskeytynyt',
+          valmistusmipaiva: '-',
+          suorituskieli: 'suomi',
+        },
+      },
+    ]);
   });
 });
