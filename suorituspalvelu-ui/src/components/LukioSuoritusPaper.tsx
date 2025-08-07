@@ -10,10 +10,8 @@ import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { useTranslate } from '@tolgee/react';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
-import { ListTable, ListTableColumn, TableHeaderCell } from './ListTable';
+import { styled } from '@/lib/theme';
 import { formatDate } from 'date-fns';
-import { useMemo } from 'react';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { StripedTable } from './StripedTable';
 
@@ -54,16 +52,13 @@ const EBOppiaineetTable = ({
   const { t } = useTranslate();
 
   return (
-    <StripedTable stripeTarget="body">
+    <StripedTable stripeGroup="body">
       <TableHead>
-        <TableRow sx={{ borderBottom: DEFAULT_BOX_BORDER }}>
-          <TableHeaderCell key="nimi" title={t('oppija.oppiaine')} />
-          <TableHeaderCell
-            key="suorituskieli"
-            title={t('oppija.suorituskieli')}
-          />
-          <TableHeaderCell key="laajuus" title={t('oppija.laajuus-vvt')} />
-          <TableHeaderCell key="arvosana" title={t('oppija.arvosana')} />
+        <TableRow>
+          <TableCell>{t('oppija.oppiaine')}</TableCell>
+          <TableCell>{t('oppija.suorituskieli')}</TableCell>
+          <TableCell>{t('oppija.laajuus-vvt')}</TableCell>
+          <TableCell>{t('oppija.arvosana')}</TableCell>
         </TableRow>
       </TableHead>
       {oppiaineet.map((row) => (
@@ -100,13 +95,13 @@ const IBOppiaineetTable = ({
   const { t } = useTranslate();
 
   return (
-    <StripedTable stripeTarget="row">
+    <StripedTable stripeGroup="body">
       <TableHead>
-        <TableRow sx={{ borderBottom: DEFAULT_BOX_BORDER }}>
-          <TableHeaderCell title={t('oppija.oppiaine')} />
-          <TableHeaderCell title={t('oppija.laajuus-vvt')} />
-          <TableHeaderCell title={t('oppija.predicted-grade')} />
-          <TableHeaderCell title={t('oppija.arvosana')} />
+        <TableRow>
+          <TableCell>{t('oppija.oppiaine')}</TableCell>
+          <TableCell>{t('oppija.laajuus-vvt')}</TableCell>
+          <TableCell>{t('oppija.predicted-grade')}</TableCell>
+          <TableCell>{t('oppija.arvosana')}</TableCell>
         </TableRow>
       </TableHead>
       {oppiaineet.map((oppiaine) => (
@@ -144,38 +139,30 @@ function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
 const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
   const { t } = useTranslate();
 
-  const cols: Array<ListTableColumn<YOKoe>> = useMemo(
-    () => [
-      {
-        key: 'aine',
-        title: t('oppija.yo-kokeen-aine'),
-        render: (row) => row.aine,
-      },
-      {
-        key: 'taso',
-        title: t('oppija.yo-kokeen-taso'),
-        render: (row) => row.taso,
-      },
-      {
-        key: 'arvosana',
-        title: t('oppija.arvosana'),
-        render: (row) => row.arvosana,
-      },
-      {
-        key: 'yhteispistemaara',
-        title: t('oppija.yo-kokeen-yhteispistemaara'),
-        render: (row) => row.yhteispistemaara.toString(),
-      },
-      {
-        key: 'tutkintokerta',
-        title: t('oppija.yo-kokeen-tutkintokerta'),
-        render: (row) => formatDate(row.tutkintokerta, 'd.M.y'),
-      },
-    ],
-    [t],
+  return (
+    <StripedTable>
+      <TableHead>
+        <TableRow>
+          <TableCell>{t('oppija.yo-kokeen-aine')}</TableCell>
+          <TableCell>{t('oppija.yo-kokeen-taso')}</TableCell>
+          <TableCell>{t('oppija.arvosana')}</TableCell>
+          <TableCell>{t('oppija.yo-kokeen-yhteispistemaara')}</TableCell>
+          <TableCell>{t('oppija.yo-kokeen-tutkintokerta')}</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {yoKokeet.map((row) => (
+          <TableRow key={row.aine}>
+            <TableCell>{row.aine}</TableCell>
+            <TableCell>{row.taso}</TableCell>
+            <TableCell>{row.arvosana}</TableCell>
+            <TableCell>{row.yhteispistemaara.toString()}</TableCell>
+            <TableCell>{formatDate(row.tutkintokerta, 'd.M.y')}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </StripedTable>
   );
-
-  return <ListTable columns={cols} rows={yoKokeet} rowKeyProp="aine" />;
 };
 
 export const LukioSuoritusPaper = ({

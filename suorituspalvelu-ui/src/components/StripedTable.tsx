@@ -1,15 +1,15 @@
-import { ophColors, styled } from '@/lib/theme';
-import { Box, Table, TableCell, TableProps } from '@mui/material';
-
-export const StripedTableHeaderCell = styled(TableCell)(({ theme }) => ({
-  padding: theme.spacing(0, 0, 1, 2),
-  textAlign: 'left',
-}));
+import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
+import { Box, Table, TableProps } from '@mui/material';
 
 const StyledTable = styled(Table, {
-  shouldForwardProp: (prop) => prop !== 'stripeTarget',
-})<{ stripeTarget: 'row' | 'body' }>(({ theme, stripeTarget = 'row' }) => ({
+  shouldForwardProp: (prop) => prop !== 'stripeGroup',
+})<{ stripeGroup: 'row' | 'body' }>(({ theme, stripeGroup = 'row' }) => ({
   width: '100%',
+  '& .MuiTableHead-root': {
+    '& .MuiTableRow-root': {
+      borderBottom: DEFAULT_BOX_BORDER,
+    },
+  },
   '& .MuiTableCell-root': {
     padding: theme.spacing(0, 0, 0, 2),
     textAlign: 'left',
@@ -17,7 +17,7 @@ const StyledTable = styled(Table, {
     height: '42px',
     borderWidth: 0,
   },
-  [stripeTarget === 'body' ? '& .MuiTableBody-root' : '& .MuiTableRow-root']: {
+  [stripeGroup === 'body' ? '& .MuiTableBody-root' : '& .MuiTableRow-root']: {
     '&:nth-of-type(even)': {
       '.MuiTableCell-root': {
         backgroundColor: ophColors.grey50,
@@ -45,9 +45,9 @@ export const TableWrapper = styled(Box)(({ theme }) => ({
 }));
 
 export const StripedTable = (
-  props: TableProps & { stripeTarget?: 'row' | 'body' },
+  props: TableProps & { stripeGroup?: 'row' | 'body' },
 ) => (
   <TableWrapper tabIndex={0}>
-    <StyledTable {...props} stripeTarget={props.stripeTarget ?? 'row'} />
+    <StyledTable {...props} stripeGroup={props.stripeGroup ?? 'row'} />
   </TableWrapper>
 );

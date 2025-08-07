@@ -2,11 +2,17 @@ import { PerusopetuksenOppiaine, PerusopetusSuoritus } from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-import { Stack } from '@mui/material';
+import {
+  Stack,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslate } from '@tolgee/react';
-import { ListTable, ListTableColumn } from './ListTable';
 import { useMemo } from 'react';
+import { StripedTable } from './StripedTable';
 
 const Luokkatiedot = ({
   oppimaara,
@@ -36,34 +42,53 @@ const PerusopetusOppiaineetTable = ({
   const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine?.valinnainen);
 
   const columns = useMemo(() => {
-    const cols: Array<ListTableColumn<PerusopetuksenOppiaine>> = [
+    const cols: Array<{
+      key: keyof (typeof oppiaineet)[number];
+      title: string;
+    }> = [
       {
         key: 'nimi',
         title: t('oppija.oppiaine'),
-        render: (row) => row.nimi,
-      } as ListTableColumn<PerusopetuksenOppiaine>,
+      },
     ];
 
     if (hasArvosana) {
       cols.push({
         key: 'arvosana',
         title: t('oppija.arvosana'),
-        render: (row) => row.arvosana,
-      } as ListTableColumn<PerusopetuksenOppiaine>);
+      });
     }
 
     if (hasValinnainen) {
       cols.push({
         key: 'valinnainen',
         title: t('oppija.valinnainen'),
-        render: (row) => row.valinnainen,
-      } as ListTableColumn<PerusopetuksenOppiaine>);
+      });
     }
 
     return cols;
   }, [hasArvosana, hasValinnainen, t]);
 
-  return <ListTable columns={columns} rows={oppiaineet} rowKeyProp="nimi" />;
+  return (
+    <StripedTable>
+      <TableHead>
+        <TableRow>
+          {columns.map((column) => (
+            <TableCell key={column.key}>{column.title}</TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {oppiaineet.map((oppiaine) => (
+          <TableRow key={oppiaine.nimi}>
+            {columns.map((column) => (
+              <TableCell key={column.key}>{oppiaine[column.key]}</TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </StripedTable>
+  );
 };
 
 export const PerusopetusSuoritusPaper = ({
