@@ -21,7 +21,7 @@ export const VapaaSivistystyoSuoritusPaper = ({
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LabeledInfoItem
         label={t('oppija.suoritettu')}
-        value={`${suoritus.laajuus} op`}
+        value={`${suoritus.laajuus} ${t('oppija.lyhenne-opintopiste')}`}
       />
     </SuoritusInfoPaper>
   );

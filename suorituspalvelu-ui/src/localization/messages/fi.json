@@ -73,14 +73,17 @@
     "eb-written": "Written",
     "eb-oral": "Oral",
     "eb-final": "Final",
-    "laajuus-vvt": "Laajuus (vvt)",
+    "laajuus-yksikolla": "Laajuus ({unit})",
     "predicted-grade": "Predicted grade",
     "keskiarvo": "Keskiarvo",
     "kielet-kirjallisuus-taide": "Kielet, kirjallisuus, taide",
     "matematiikka-ja-luonnontieteet": "Matematiikka ja luonnontieteet",
     "suoritettu": "Suoritettu",
     "suoritustapa": "Suoritustapa",
-    "koulusivistyskieli": "Koulusivistyskieli"
+    "koulusivistyskieli": "Koulusivistyskieli",
+    "lyhenne-opintopiste": "op",
+    "lyhenne-viikko": "vk",
+    "lyhenne-vuosiviikkotunti": "vvt"
   },
   "suorituksen-tila": {
     "VALMIS": "Suoritus valmis",

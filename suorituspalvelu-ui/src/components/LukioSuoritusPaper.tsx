@@ -58,7 +58,11 @@ const EBOppiaineetTable = ({
         <TableRow>
           <TableCell>{t('oppija.oppiaine')}</TableCell>
           <TableCell>{t('oppija.suorituskieli')}</TableCell>
-          <TableCell>{t('oppija.laajuus-vvt')}</TableCell>
+          <TableCell>
+            {t('oppija.laajuus-yksikolla', {
+              unit: t('oppija.lyhenne-vuosiviikkotunti'),
+            })}
+          </TableCell>
           <TableCell>{t('oppija.arvosana')}</TableCell>
         </TableRow>
       </TableHead>
@@ -100,7 +104,11 @@ const IBOppiaineetTable = ({
       <TableHead>
         <TableRow>
           <TableCell>{t('oppija.oppiaine')}</TableCell>
-          <TableCell>{t('oppija.laajuus-vvt')}</TableCell>
+          <TableCell>
+            {t('oppija.laajuus-yksikolla', {
+              unit: t('oppija.lyhenne-vuosiviikkotunti'),
+            })}
+          </TableCell>
           <TableCell>{t('oppija.predicted-grade')}</TableCell>
           <TableCell>{t('oppija.arvosana')}</TableCell>
         </TableRow>
@@ -137,7 +145,11 @@ function DiaVastaavuusTodistusOppiaineet({
         <TableHead>
           <TableRow>
             <TableCell>{t('oppija.oppiaine')}</TableCell>
-            <TableCell>{t('oppija.laajuus-vvt')}</TableCell>
+            <TableCell>
+              {t('oppija.laajuus-yksikolla', {
+                unit: t('oppija.lyhenne-vuosiviikkotunti'),
+              })}
+            </TableCell>
             <TableCell>{t('oppija.keskiarvo')}</TableCell>
           </TableRow>
         </TableHead>

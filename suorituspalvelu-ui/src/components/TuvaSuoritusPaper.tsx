@@ -17,7 +17,7 @@ export const TuvaSuoritusPaper = ({ suoritus }: { suoritus: TUVASuoritus }) => {
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LabeledInfoItem
         label={t('oppija.suoritettu')}
-        value={`${suoritus.laajuus} vk`}
+        value={`${suoritus.laajuus} ${t('oppija.lyhenne-viikko')}`}
       />
     </SuoritusInfoPaper>
   );
