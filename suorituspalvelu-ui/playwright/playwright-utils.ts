@@ -1,4 +1,5 @@
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
+import { isFunction } from 'remeda';
 
 export async function selectOption({
   page,
@@ -27,3 +28,37 @@ export async function selectOption({
 
   await listbox.getByRole('option', { name: option, exact: true }).click();
 }
+
+export const checkRow = async (
+  row: Locator,
+  expectedValues: Array<string | ((cell: Locator) => Promise<void>)>,
+  cellType: 'th' | 'td' | 'th,td' = 'th,td',
+  exact: boolean = true,
+) => {
+  const cells = row.locator(cellType);
+  for (const [index, expectedValue] of expectedValues.entries()) {
+    const cell = cells.nth(index);
+    if (isFunction(expectedValue)) {
+      await expectedValue(cell);
+    } else {
+      if (exact) {
+        await expect(cell).toHaveText(expectedValue);
+      } else {
+        await expect(cell).toContainText(expectedValue);
+      }
+    }
+  }
+};
+
+export const checkTable = async (
+  table: Locator,
+  expectedValues: Array<Array<string | ((cell: Locator) => Promise<void>)>>,
+) => {
+  const rows = table.locator('tr');
+  await expect(rows).toHaveCount(expectedValues.length);
+
+  for (const [rowIndex, expectedRow] of expectedValues.entries()) {
+    const row = rows.nth(rowIndex);
+    await checkRow(row, expectedRow);
+  }
+};
