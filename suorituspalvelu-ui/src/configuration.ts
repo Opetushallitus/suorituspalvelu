@@ -1,12 +1,12 @@
-const DOMAIN = 'http://localhost';
-
 export const isTest = process.env.NEXT_PUBLIC_TEST === 'true';
 
 export const localTranslations =
   process.env.NEXT_PUBLIC_LOCAL_TRANSLATIONS === 'true';
 
 export const getConfiguration = async () => {
-  const suorituspalveluBackendUrl = `${DOMAIN}/suorituspalvelu-backend/api`;
+  const DOMAIN = '';
+
+  const suorituspalveluBackendUrl = `${DOMAIN}/suorituspalvelu/api`;
 
   return {
     routes: {
