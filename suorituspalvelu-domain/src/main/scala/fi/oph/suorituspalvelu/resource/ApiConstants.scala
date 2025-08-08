@@ -7,9 +7,9 @@ object ApiConstants {
   /**
    * Lähetys-API:n endpointtien polkuihin liittyvät vakiot
    */
-  final val API_PREFIX                                      = ""
+  final val API_PREFIX                                      = "/api"
   final val VERSIONED_API_PREFIX                            = API_PREFIX + "/v1"
-  final val UI_API_PREFIX                                   = "/ui"
+  final val UI_API_PREFIX                                   = "/api/ui"
 
   final val LOGIN_PATH                                      = API_PREFIX + "/login"
   final val CAS_TICKET_VALIDATION_PATH                      = LOGIN_PATH + "/j_spring_cas_security_check"

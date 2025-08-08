@@ -6,7 +6,7 @@ import React, { use } from 'react';
 
 const LoginLink = ({ url }: { url: string }) => {
   const { t } = useTranslate();
-  const loginUrl = new URL(url);
+  const loginUrl = new URL(url, window.location.origin);
   const serviceUrl = new URL(window.location.href);
   serviceUrl.searchParams.delete('ticket');
   loginUrl.searchParams.set('service', serviceUrl.toString());
