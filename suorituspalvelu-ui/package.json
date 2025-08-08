@@ -17,7 +17,7 @@
     "typecheck": "tsc",
     "test-playwright-docker": "./scripts/run-playwright-tests-in-docker.sh",
     "start-and-test-playwright-docker": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start http://localhost:3000 'npm run test-playwright-docker -- $PLAYWRIGHT_ARGS'",
-    "build-and-copy": "npm run build && cp -r out/suorituspalvelu/* ../suorituspalvelu-service/src/main/resources/static/"
+    "build-and-copy": "npm run build && mkdir -p ../suorituspalvelu-service/src/main/resources/static && cp -r out/suorituspalvelu/* ../suorituspalvelu-service/src/main/resources/static/"
   },
   "dependencies": {
     "@date-fns/tz": "^1.2.0",
