@@ -6,7 +6,7 @@ export const localTranslations =
   process.env.NEXT_PUBLIC_LOCAL_TRANSLATIONS === 'true';
 
 export const getConfiguration = async () => {
-  const suorituspalveluBackendUrl = `${DOMAIN}/suorituspalvelu-backend`;
+  const suorituspalveluBackendUrl = `${DOMAIN}/suorituspalvelu-backend/api`;
 
   return {
     routes: {
@@ -17,7 +17,6 @@ export const getConfiguration = async () => {
         organisaatioLinkUrl: `${DOMAIN}/organisaatio-service/lomake`,
       },
       suorituspalvelu: {
-        loginUrl: `${suorituspalveluBackendUrl}/login`,
         oppijanTiedotUrl: `${suorituspalveluBackendUrl}/ui/tiedot`,
         oppijatSearchUrl: `${suorituspalveluBackendUrl}/ui/oppijat`,
         oppilaitoksetUrl: `${suorituspalveluBackendUrl}/ui/oppilaitokset`,
