@@ -25,8 +25,15 @@ jobs:
           java-version-file: ".java-version"
           distribution: "corretto"
           cache: "maven"
+      - uses: ./.github/actions/setup-node-env
+        with:
+          project_path: suorituspalvelu-ui
+      - name: Build and copy frontend to backend static-dir
+        run: |
+          cd suorituspalvelu-ui
+          npm run build-and-copy
 
-      - name: Build
+      - name: Build Scala projects
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn clean package
