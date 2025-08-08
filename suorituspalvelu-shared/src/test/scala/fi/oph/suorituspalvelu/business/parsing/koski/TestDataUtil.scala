@@ -25,10 +25,11 @@ object TestDataUtil {
                                   koodi: Koodi = getTestKoodi(),
                                   oppilaitos: Oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.246.562.10.95136889433"),
                                   tila: Koodi = getTestKoodi(),
+                                  aloitusPaivamaara: Option[LocalDate] = Some(LocalDate.parse("2025-01-02")),
                                   vahvistusPaivamaara: Option[LocalDate] = Some(LocalDate.parse("2025-01-02")),
                                   keskiarvo: Option[BigDecimal] = Some(BigDecimal(3.5)),
                                   suoritustapa: Koodi = getTestKoodi(),
                                   suoritusKieli: Koodi = getTestKoodi(),
                                   osat: Set[AmmatillisenTutkinnonOsa] = Set.empty): AmmatillinenPerustutkinto =
-    AmmatillinenPerustutkinto(UUID.randomUUID(), nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
+    AmmatillinenPerustutkinto(UUID.randomUUID(), nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, aloitusPaivamaara, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
   }

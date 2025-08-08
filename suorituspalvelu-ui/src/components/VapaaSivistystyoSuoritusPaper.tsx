@@ -10,11 +10,12 @@ export const VapaaSivistystyoSuoritusPaper = ({
 }: {
   suoritus: VapaaSivistystyoSuoritus;
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
+
   return (
     <SuoritusInfoPaper
-      key={suoritus.oppilaitos.oid}
-      suorituksenNimi={suoritus.nimi}
+      key={suoritus.tunniste}
+      suorituksenNimi={translateKielistetty(suoritus.nimi)}
       valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.cyan1}
     >

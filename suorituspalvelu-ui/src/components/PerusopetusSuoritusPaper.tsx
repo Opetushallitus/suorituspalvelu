@@ -10,9 +10,10 @@ import {
   TableRow,
 } from '@mui/material';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { useTranslate } from '@tolgee/react';
+import { useTranslations } from '@/hooks/useTranslations';
 import { useMemo } from 'react';
 import { StripedTable } from './StripedTable';
+import { isKielistetty } from '@/lib/translation-utils';
 
 const Luokkatiedot = ({
   oppimaara,
@@ -23,7 +24,7 @@ const Luokkatiedot = ({
     yksilollistetty?: boolean;
   };
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslations();
   return (
     <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
       {oppimaara.koulusivistyskieli && (
@@ -46,7 +47,7 @@ const PerusopetusOppiaineetTable = ({
 }: {
   oppiaineet: Array<PerusopetuksenOppiaine>;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
 
   const hasArvosana = oppiaineet.some((oppiaine) => oppiaine.arvosana);
   const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine?.valinnainen);
@@ -90,10 +91,15 @@ const PerusopetusOppiaineetTable = ({
       </TableHead>
       <TableBody>
         {oppiaineet.map((oppiaine) => (
-          <TableRow key={oppiaine.nimi}>
-            {columns.map((column) => (
-              <TableCell key={column.key}>{oppiaine[column.key]}</TableCell>
-            ))}
+          <TableRow key={oppiaine.tunniste}>
+            {columns.map((column) => {
+              const value = oppiaine[column.key];
+              return (
+                <TableCell key={column.key}>
+                  {isKielistetty(value) ? translateKielistetty(value) : value}
+                </TableCell>
+              );
+            })}
           </TableRow>
         ))}
       </TableBody>
@@ -106,10 +112,12 @@ export const PerusopetusSuoritusPaper = ({
 }: {
   suoritus: PerusopetusSuoritus;
 }) => {
+  const { translateKielistetty } = useTranslations();
+
   return (
     <SuoritusInfoPaper
       key={suoritus.oppilaitos.oid}
-      suorituksenNimi={suoritus.nimi}
+      suorituksenNimi={translateKielistetty(suoritus.nimi)}
       valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.cyan2}
     >

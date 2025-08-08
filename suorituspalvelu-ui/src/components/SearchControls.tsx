@@ -7,7 +7,7 @@ import {
   OphInputFormField,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
-import { useTranslate } from '@tolgee/react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 const OppilaitosSelectField = ({
   value,
@@ -16,14 +16,14 @@ const OppilaitosSelectField = ({
   React.ComponentProps<typeof OphSelectFormField>,
   'value' | 'onChange'
 >) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
 
   const { data: oppilaitoksetOptions } = useApiSuspenseQuery({
     ...queryOptionsGetOppilaitokset(),
     select: (data) =>
       data?.oppilaitokset?.map(($) => ({
         value: $.oid,
-        label: $.nimi,
+        label: translateKielistetty($.nimi),
       })) ?? [],
   });
 
@@ -42,7 +42,7 @@ const OppilaitosSelectField = ({
 };
 
 export function SearchControls() {
-  const { t } = useTranslate();
+  const { t } = useTranslations();
 
   const { oppijaSearchTerm, setOppijaSearchTerm, oppilaitos, setOppilaitos } =
     useOppijatSearchParamsState();

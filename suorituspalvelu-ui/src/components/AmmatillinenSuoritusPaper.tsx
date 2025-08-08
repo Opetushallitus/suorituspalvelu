@@ -3,17 +3,17 @@ import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { AmmatillinenSuoritus } from '@/types/ui-types';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { useTranslate } from '@tolgee/react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export const AmmatillinenSuoritusPaper = ({
   suoritus,
 }: {
   suoritus: AmmatillinenSuoritus;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
   return (
     <SuoritusInfoPaper
-      suorituksenNimi={suoritus.nimi}
+      suorituksenNimi={translateKielistetty(suoritus.nimi)}
       valmistumispaiva={suoritus.valmistumispaiva}
       topColor={ophColors.green2}
     >

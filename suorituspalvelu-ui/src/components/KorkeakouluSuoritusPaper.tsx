@@ -2,7 +2,7 @@ import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { useTranslate } from '@tolgee/react';
+import { useTranslations } from '@/hooks/useTranslations';
 import { KorkeakouluSuoritus } from '@/types/ui-types';
 
 export const KorkeakouluSuoritusPaper = ({
@@ -10,19 +10,20 @@ export const KorkeakouluSuoritusPaper = ({
 }: {
   suoritus?: KorkeakouluSuoritus | undefined;
 }) => {
-  const { t } = useTranslate();
+  const { t, translateKielistetty } = useTranslations();
+
   return (
     suoritus && (
       <SuoritusInfoPaper
-        key={suoritus.tutkinto}
-        suorituksenNimi={suoritus.tutkinto}
+        key={suoritus.tunniste}
+        suorituksenNimi={translateKielistetty(suoritus.nimi)}
         valmistumispaiva={suoritus.valmistumispaiva}
         topColor={ophColors.red1}
       >
         <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
         <LabeledInfoItem
           label={t('oppija.hakukohde')}
-          value={suoritus.hakukohde.nimi}
+          value={translateKielistetty(suoritus.hakukohde.nimi)}
         />
       </SuoritusInfoPaper>
     )

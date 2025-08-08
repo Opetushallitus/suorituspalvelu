@@ -1,5 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
+import java.time.LocalDate
+
 object ApiConstants {
 
   /**
@@ -81,5 +83,8 @@ object ApiConstants {
   final val EXAMPLE_HAKUKOHDE_OID                           = "1.2.246.562.20.00000000000000044758"
   final val EXAMPLE_SUORITUSKIELI                           = "fi"
   final val EXAMPLE_OPPIJANUMERO                            = "1.2.246.562.24.40483869857"
+  final val EXAMPLE_OPPIJANIMI                              = "Olli Oppija"
+  final val EXAMPLE_HETU                                    = "010296-1230"
+  final val EXAMPLE_SYNTYMAIKA                              = "2030-01-01"
 
 }

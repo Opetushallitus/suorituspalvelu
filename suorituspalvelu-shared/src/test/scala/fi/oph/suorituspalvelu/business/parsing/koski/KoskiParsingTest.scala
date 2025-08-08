@@ -156,6 +156,13 @@ class KoskiParsingTest {
         |            "en": "Stadin ammattiopisto en"
         |          }
         |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-06-06"
+        |            }
+        |          ]
+        |        },
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -202,6 +209,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("351301", "koulutus", Some(12)), tutkinto.koodi)
     Assertions.assertEquals(Kielistetty(Some("Ajoneuvoalan perustutkinto"), None, None), tutkinto.nimi)
     Assertions.assertEquals(Some(BigDecimal.valueOf(1.0)), tutkinto.keskiarvo)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", Some(1)), tutkinto.suoritustapa)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
@@ -371,6 +379,13 @@ class KoskiParsingTest {
         |            "fi": "Pirkanmaan urheiluhierojakoulu"
         |          }
         |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-06-06"
+        |            }
+        |          ]
+        |        },
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -411,6 +426,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("437109", "koulutus", Some(12)), tutkinto.koodi)
     Assertions.assertEquals(Kielistetty(Some("Hieronnan ammattitutkinto"), None, None), tutkinto.nimi)
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Pirkanmaan urheiluhierojakoulu"), None, None), "1.2.246.562.10.41945921983"), tutkinto.oppilaitos)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
 
@@ -427,6 +443,13 @@ class KoskiParsingTest {
         |          "nimi": {
         |            "fi": "HAUS kehittämiskeskus Oy"
         |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-06-06"
+        |            }
+        |          ]
         |        },
         |        "suoritukset": [
         |          {
@@ -468,6 +491,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("437109", "koulutus", Some(12)), tutkinto.koodi)
     Assertions.assertEquals(Kielistetty(Some("Talous- ja henkilöstöhallinnon erikoisammattitutkinto"), None, None), tutkinto.nimi)
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("HAUS kehittämiskeskus Oy"), None, None), "1.2.246.562.10.54019331674"), tutkinto.oppilaitos)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
   
@@ -479,6 +503,16 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-06-06",
+        |              "tila": {
+        |                "koodiarvo": "mitatoity"
+        |              }
+        |            }
+        |          ]
+        |        },
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -515,6 +549,7 @@ class KoskiParsingTest {
     Assertions.assertNotNull(telma.tunniste)
     Assertions.assertEquals(Koodi("999903", "koulutus", Some(12)), telma.koodi)
     Assertions.assertEquals(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), telma.nimi)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), telma.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
 
@@ -632,6 +667,7 @@ class KoskiParsingTest {
     Assertions.assertNotNull(oppimaara.tunniste)
     Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
+    Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
     Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), oppimaara.koulusivistyskieli)
@@ -749,6 +785,13 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-05-01"
+        |            }
+        |          ]
+        |        },
         |        "suoritukset": [
         |          {
         |            "koulutusmoduuli": {
@@ -796,6 +839,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Matematiikka"), None, None), oppimaara.nimi)
     Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.koodi)
     Assertions.assertEquals(Koodi("8", "arviointiasteikkoyleissivistava", Some(1)), oppimaara.arvosana)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-05-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2022-05-18")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
 
@@ -899,6 +943,7 @@ class KoskiParsingTest {
 
     Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
+    Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2022-04-16")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
 
@@ -952,6 +997,13 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-08-01"
+        |            }
+        |          ]
+        |        },
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -979,6 +1031,7 @@ class KoskiParsingTest {
 
     Assertions.assertNotNull(tuva.tunniste)
     Assertions.assertEquals(Koodi("999908", "koulutus", Some(12)), tuva.koodi)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-08-01")), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {

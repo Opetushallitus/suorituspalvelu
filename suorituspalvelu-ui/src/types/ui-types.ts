@@ -12,10 +12,10 @@ import {
   IEBTutkinto,
   IIBTutkinto,
   IPreIB,
-  IAmmatillinenTutkinto,
+  IAmmatillinentutkinto,
   IAmmattitutkinto,
   IErikoisammattitutkinto,
-  IVapaanSivistysTyonKoulutus,
+  IVapaanSivistystyonKoulutus,
   ITuva,
   IPerusopetuksenOppiaineenOppimaara,
   IPerusopetuksenOppimaara78Luokkalaiset,
@@ -33,7 +33,7 @@ export type SuorituksenTila = SuoritusTila;
 
 export type SuorituksenPerustiedot = {
   oppilaitos: {
-    nimi: string | Kielistetty;
+    nimi: Kielistetty;
     oid: string;
   };
   tila: SuorituksenTila;
@@ -64,18 +64,15 @@ export type EBOppiaine = IEBOppiaine;
 export type KorkeakouluSuoritus = IKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';
   key: string;
-  nimi: string;
 };
 
 export type EBSuoritus = IEBTutkinto & {
   koulutustyyppi: 'eb';
-  nimi: string;
   key: string;
 };
 
 export type IBSuoritus = IIBTutkinto & {
   koulutustyyppi: 'ib';
-  nimi: string;
   key: string;
 };
 
@@ -92,7 +89,7 @@ export type LukioSuoritus =
     ) & { koulutustyyppi: 'lukio'; nimi: string; key: string });
 
 export type AmmatillinenSuoritus = (
-  | IAmmatillinenTutkinto
+  | IAmmatillinentutkinto
   | IAmmattitutkinto
   | IErikoisammattitutkinto
 ) & { koulutustyyppi: 'ammatillinen'; key: string; nimi: string };
@@ -100,18 +97,15 @@ export type AmmatillinenSuoritus = (
 export type TUVASuoritus = ITuva & {
   koulutustyyppi: 'tuva';
   key: string;
-  nimi: string;
 };
 export type TelmaSuoritus = ITelma & {
   koulutustyyppi: 'telma';
   key: string;
-  nimi: string;
 };
 
-export type VapaaSivistystyoSuoritus = IVapaanSivistysTyonKoulutus & {
+export type VapaaSivistystyoSuoritus = IVapaanSivistystyonKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
   key: string;
-  nimi: string;
 };
 
 export type PerusopetusSuoritus = (
