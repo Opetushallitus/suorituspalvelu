@@ -21,13 +21,13 @@ Lokaalin ympäristön käyttöönotto
 
 Koko sovelluksen ajaminen yhdessä on toteutettu docker composella.
 
-Docker-compose.sh on kääreskripti, joka mahdollistaa `docker compose`-komennon ajamisen samalla UID:GID-yhdistelmällä kuin host-käyttäjällä, jotta konttien luomien tiedostojen oikeudet ovat vastaavat kuin host-koneella. Voit antaa skriptille samoja komentoriviparametreja kuin `docker compose`-komennolle. 
+Docker-compose.sh on kääreskripti, joka mahdollistaa `docker compose`-komennon ajamisen samalla UID:GID-yhdistelmällä kuin host-käyttäjällä, jotta konttien luomien tiedostojen oikeudet ovat vastaavat kuin host-koneella. Voit antaa skriptille samoja komentoriviparametreja kuin `docker compose`-komennolle.
 
 Ensimmäisellä käynnistyskerralla täytyy asentaa tarvittavat paketit Mavenilla ja NPM:llä. Docker-compose.sh-tiedostossa on toteutettu myös Maven ja NPM pakettien asentaminen annettaessa `--build`-optio `up`-komennolle:
 
 ./docker-compose.sh up --build
 
-Vaihtoehtoisesti voit myös asentaa paketit erikseen Mavenilla ja NPM:llä (suorituspalvelu-ui-hakemistossa). 
+Vaihtoehtoisesti voit myös asentaa paketit erikseen Mavenilla ja NPM:llä (suorituspalvelu-ui-hakemistossa).
 
 Jos riippuvuuksia ei ole tarpeen asentaa uudelleen, sovelluksen voi käynnistää nopeammin komennolla:
 
@@ -35,4 +35,22 @@ Jos riippuvuuksia ei ole tarpeen asentaa uudelleen, sovelluksen voi käynnistä�
 
 Komento käynnistää backendin, käyttöliittymän, postgreSQL-tietokannan ja nginx-proxyn. Ympäristömuuttujat luetaan `.env.docker` ja `.env.docker.local`-tiedostosta. Kopioi itsellesi `.env.docker` tiedosto `.env.docker.local`-tiedostoon ja ylikirjoita haluamasi ympäristömuuttujat (jos esim. haluat ajaa sovellusta jotakin toista ympäristöä vasten).
 
-Sovelluksen käyttöliittymä löytyy käynnistyksen jälkeen osoitteesta http:/localhost/suorituspalvelu. 
+Sovelluksen käyttöliittymä löytyy käynnistyksen jälkeen osoitteesta http:/localhost/suorituspalvelu.
+
+### Käyttöliittymäkehitys
+
+#### TS-tyyppien generointi
+
+UI-endpointtien käyttämien tyyppien Typescript-vastineet generoidaan automaattisesti `suorituspalvelu-ui/scripts/generate-backend-types.sh` -komennolla. Tämä pitää ajaa kun UIResponses-luokassa olevia tyyppejä on muutettu.
+
+#### Playwright-testien ajaminen lokaalisti
+
+Playwright-testejä voi ajaa lokaalisti komennolla:
+
+`npx playwright test --ui --project=chromium`
+
+Tätä ennen täytyy käynnistää ui komennolla:
+
+`npm run dev:test`
+
+Komennot ajetaan suorituspalvelu-ui -hakemistossa. Testien käyttämä mock-data löytyy `suorituspalvelu-ui/playwright/fixtures` -hakemistosta.
