@@ -19,6 +19,9 @@ case class YtlHetuPostData(ssn: String,
 
 class YtrClient(username: String, password: String, environmentBaseUrl: String) {
 
+  val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
+
+
   private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build);
 
   val mapper: ObjectMapper = new ObjectMapper()
@@ -62,7 +65,8 @@ class YtrClient(username: String, password: String, environmentBaseUrl: String) 
       .preparePost(url)
       .setRealm(realm)
       .setHeader("Authorization", encodeBasicAuth(username, password))
-      .setHeader("Content-Type", "application/json")
+      .setHeader("Content-Type", "application/json; charset=UTF-8")
+      .setHeader("Caller-Id", CALLER_ID)
       .setBody(payloadString)
       .build()
     LOG.info(s"About to execute request $request")
