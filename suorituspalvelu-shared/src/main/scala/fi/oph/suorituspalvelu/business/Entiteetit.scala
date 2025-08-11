@@ -28,7 +28,7 @@ sealed trait Opiskeluoikeus extends TallennettavaEntiteetti
 
 case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
-case class Laajuus(arvo: Int, yksikko: Koodi)
+case class Laajuus(arvo: Int, yksikko: Koodi, nimi: Option[Kielistetty], lyhytNimi: Option[Kielistetty])
 
 case class Arvosana(arvosana: String, koodi: String)
 

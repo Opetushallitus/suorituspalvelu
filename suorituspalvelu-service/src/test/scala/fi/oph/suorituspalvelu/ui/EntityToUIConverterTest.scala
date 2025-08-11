@@ -34,7 +34,7 @@ class EntityToUIConverterTest {
           Koodi("106915", "tutkinnonosat", None),
           false,
           Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
-          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
         ),
         AmmatillisenTutkinnonOsa(
@@ -43,7 +43,7 @@ class EntityToUIConverterTest {
           Koodi("106727", "tutkinnonosat", None),
           true,
           Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None)),
-          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
         )
       )
@@ -107,7 +107,7 @@ class EntityToUIConverterTest {
           Koodi("", "tutkinnonosat", None),
           false,
           None,
-          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
         )
       )
@@ -160,7 +160,7 @@ class EntityToUIConverterTest {
           Koodi("106915", "tutkinnonosat", None),
           false,
           None,
-          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
         )
       )
@@ -324,7 +324,7 @@ class EntityToUIConverterTest {
       Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
-      Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1))))
+      Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None))))
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Tuva(
@@ -345,7 +345,11 @@ class EntityToUIConverterTest {
       Tila.VALMIS,
       tuva.aloitusPaivamaara.toJava,
       tuva.vahvistusPaivamaara.toJava,
-      tuva.laajuus.map(l => l.arvo).toJava
+      tuva.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
+        l.lyhytNimi.get.fi.toJava,
+        l.lyhytNimi.get.sv.toJava,
+        l.lyhytNimi.get.en.toJava
+      ))).toJava,
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None))).get.tuvat)
   }
 }

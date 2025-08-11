@@ -56,7 +56,8 @@ case class SuoritusTapa(koodiarvo: String,
 case class Yksikko(koodiarvo: String,
                    koodistoUri: String,
                    koodistoVersio: Option[Int],
-                   nimi: Kielistetty) extends VersioituTunniste
+                   nimi: Kielistetty,
+                   lyhytNimi: Kielistetty) extends VersioituTunniste
 
 case class KoulutusModuuliTunniste(koodiarvo: String,
                                    koodistoUri: String,

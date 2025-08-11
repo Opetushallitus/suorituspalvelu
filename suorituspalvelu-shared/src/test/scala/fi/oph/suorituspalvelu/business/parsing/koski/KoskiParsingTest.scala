@@ -281,7 +281,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None), osaSuoritus.nimi)
     Assertions.assertEquals(true, osaSuoritus.yto) // koodi 106727 kuuluu yleisiin tutkinnon osiin
     Assertions.assertEquals(Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", Some(1))), osaSuoritus.arvosana)
-    Assertions.assertEquals(Some(Laajuus(20, Koodi("6", "opintojenlaajuusyksikko", Some(1)))), osaSuoritus.laajuus)
+    Assertions.assertEquals(Some(Laajuus(20, Koodi("6", "opintojenlaajuusyksikko", Some(1)), None, None)), osaSuoritus.laajuus)
 
   @Test def testAmmatillisenTutkinnonOsaAlueet(): Unit =
     val tutkinto = getFirstSuoritusFromJson("""
@@ -361,7 +361,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", Some(1)), osaAlue.koodi)
     Assertions.assertEquals(Kielistetty(Some("Viestintä ja vuorovaikutus äidinkielellä"), None, None), osaAlue.nimi)
     Assertions.assertEquals(Some(Koodi("3", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
-    Assertions.assertEquals(Some(Laajuus(4, Koodi("6", "opintojenlaajuusyksikko", Some(1)))), osaAlue.laajuus)
+    Assertions.assertEquals(Some(Laajuus(4, Koodi("6", "opintojenlaajuusyksikko", Some(1)), None, None)), osaAlue.laajuus)
 
   @Test def testAmmattiTutkinto(): Unit =
     val tutkinto = getFirstSuoritusFromJson(
@@ -1059,7 +1059,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tuva.tila)
     Assertions.assertEquals(Some(LocalDate.parse("2022-08-01")), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
-    Assertions.assertEquals(Some(Laajuus(30, Koodi("8", "opintojenlaajuusyksikko", Some(1)))), tuva.laajuus)
+    Assertions.assertEquals(Some(Laajuus(30, Koodi("8", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("viikkoa"), None, None)), None)), tuva.laajuus)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {
     val arvioinnit = Set(
