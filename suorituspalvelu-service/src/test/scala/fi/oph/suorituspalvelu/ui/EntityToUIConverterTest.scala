@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -34,8 +34,7 @@ class EntityToUIConverterTest {
           Koodi("106915", "tutkinnonosat", None),
           false,
           Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
-          Some(10),
-          None,
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
           Set.empty
         ),
         AmmatillisenTutkinnonOsa(
@@ -44,8 +43,7 @@ class EntityToUIConverterTest {
           Koodi("106727", "tutkinnonosat", None),
           true,
           Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None)),
-          Some(10),
-          None,
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
           Set.empty
         )
       )
@@ -80,7 +78,7 @@ class EntityToUIConverterTest {
             osa.nimi.sv.toJava,
             osa.nimi.en.toJava
           ),
-          osa.laajuus.toJava,
+          osa.laajuus.map(l => l.arvo).toJava,
           osa.arvosana.map(_.arvo).toJava
         ))
         .toList.asJava,
@@ -109,8 +107,7 @@ class EntityToUIConverterTest {
           Koodi("", "tutkinnonosat", None),
           false,
           None,
-          Some(10),
-          None,
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
           Set.empty
         )
       )
@@ -163,8 +160,7 @@ class EntityToUIConverterTest {
           Koodi("106915", "tutkinnonosat", None),
           false,
           None,
-          Some(10),
-          None,
+          Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)))),
           Set.empty
         )
       )
@@ -200,7 +196,7 @@ class EntityToUIConverterTest {
             osa.nimi.sv.toJava,
             osa.nimi.en.toJava
           ),
-          osa.laajuus.toJava,
+          osa.laajuus.map(l => l.arvo).toJava,
           osa.arvosana.map(_.arvo).toJava
         ))
         .toList.asJava,
@@ -328,8 +324,7 @@ class EntityToUIConverterTest {
       Koodi("valmistunut", "", None),
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
-      Some(11),
-      Some(Koodi("8", "opintojenlaajuusyksikko", Some(1)))
+      Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1))))
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Tuva(
@@ -350,7 +345,7 @@ class EntityToUIConverterTest {
       Tila.VALMIS,
       tuva.aloitusPaivamaara.toJava,
       tuva.vahvistusPaivamaara.toJava,
-      tuva.laajuus.toJava
+      tuva.laajuus.map(l => l.arvo).toJava
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None))).get.tuvat)
   }
 }

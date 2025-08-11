@@ -558,7 +558,7 @@ object EntityToUIConverter {
                 sv = o.nimi.sv.toJava,
                 en = o.nimi.en.toJava
               ),
-              laajuus = o.laajuus.toJava,
+              laajuus = o.laajuus.map(l => l.arvo).toJava,
               arvosana = o.arvosana.map(a => a.arvo).toJava
             )).toList.asJava,
           ammatillisenTutkinnonOsat = if(t.suoritustapa.arvo!="ops") java.util.List.of() else t.osat
@@ -570,7 +570,7 @@ object EntityToUIConverter {
                 o.nimi.sv.toJava,
                 o.nimi.en.toJava
               ),
-              laajuus = o.laajuus.toJava,
+              laajuus = o.laajuus.map(l => l.arvo).toJava,
               arvosana = o.arvosana.map(a => a.arvo).toJava
             )).toList.asJava,
           suoritustapa = if (nayttoTutkinto) Optional.of(NAYTTOTUTKINTO) else Optional.empty()
@@ -698,7 +698,7 @@ object EntityToUIConverter {
             tila = convertTila(t.tila),
             aloituspaiva = t.aloitusPaivamaara.toJava,
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
-            laajuus = t.laajuus.toJava,
+            laajuus = t.laajuus.map(l => l.arvo).toJava,
           )
         }).toList
 
