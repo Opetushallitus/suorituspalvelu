@@ -747,10 +747,8 @@ case class Tuva(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
-  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
   @(Schema @field)(description = "Suoritettujen opintojen laajuus viikkoina", example = "38", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Int
+  @BeanProperty laajuus: Optional[Int]
 )
 
 case class VapaanSivistystyonKoulutusNimi(

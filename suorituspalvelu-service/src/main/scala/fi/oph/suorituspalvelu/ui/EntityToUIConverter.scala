@@ -639,7 +639,7 @@ object EntityToUIConverter {
         )
       }).toList
 
-  def getTelmat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Telma] =
+  def getTelmat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Telma] = {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
@@ -669,51 +669,60 @@ object EntityToUIConverter {
           suorituskieli = t.suoritusKieli.arvo,
         )
       }).toList
+    }
 
-  def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Tuva] =
-    List(Tuva(
-      tunniste = UUID.randomUUID(),
-      nimi = TuvaNimi(
-        fi = Optional.of("Tutkintokoulutukseen valmentava koulutus"),
-        sv = Optional.of("Utbildning som handleder för examensutbildning"),
-        en = Optional.of("Preparatory education for an upper secondary qualification")
-      ),
-      oppilaitos = AmmatillinenOppilaitos(
-        nimi = AmmatillinenOppilaitosNimi(
-          fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
-          sv = Optional.empty(),
-          en = Optional.empty()
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
-      suorituskieli = "suomi",
-      laajuus = 38
-    ))
+    def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Tuva] =
+      opiskeluoikeudet
+        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+        .map(o => o.suoritukset)
+        .flatten
+        .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
+        .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
+        .map(t => {
+          Tuva(
+            t.tunniste,
+            nimi = TuvaNimi(
+              t.nimi.fi.toJava,
+              t.nimi.sv.toJava,
+              t.nimi.en.toJava
+            ),
+            oppilaitos = AmmatillinenOppilaitos(
+              AmmatillinenOppilaitosNimi(
+                t.oppilaitos.nimi.fi.toJava,
+                t.oppilaitos.nimi.sv.toJava,
+                t.oppilaitos.nimi.en.toJava
+              ),
+              t.oppilaitos.oid,
+            ),
+            tila = convertTila(t.tila),
+            aloituspaiva = t.aloitusPaivamaara.toJava,
+            valmistumispaiva = t.vahvistusPaivamaara.toJava,
+            laajuus = t.laajuus.toJava,
+          )
+        }).toList
 
-  def getVapaanSivistystyonKoulutukset(opiskeluoikeudet: Set[Opiskeluoikeus]): List[VapaanSivistystyonKoulutus] =
-    List(VapaanSivistystyonKoulutus(
-      tunniste = UUID.randomUUID(),
-      nimi = VapaanSivistystyonKoulutusNimi(
-        fi = Optional.of("Vapaan sivistystyön koulutus"),
-        sv = Optional.of("Fritt bildningsarbete"),
-        en = Optional.of("Liberal adult education")
-      ),
-      oppilaitos = AmmatillinenOppilaitos(
-        nimi = AmmatillinenOppilaitosNimi(
-          fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
-          sv = Optional.empty(),
-          en = Optional.empty()
+    def getVapaanSivistystyonKoulutukset(opiskeluoikeudet: Set[Opiskeluoikeus]): List[VapaanSivistystyonKoulutus] =
+      List(VapaanSivistystyonKoulutus(
+        tunniste = UUID.randomUUID(),
+        nimi = VapaanSivistystyonKoulutusNimi(
+          fi = Optional.of("Vapaan sivistystyön koulutus"),
+          sv = Optional.of("Fritt bildningsarbete"),
+          en = Optional.of("Liberal adult education")
         ),
-        oid = "1.2.3.4"
-      ),
-      tila = KESKEYTYNYT,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.empty(),
-      suorituskieli = "suomi",
-      laajuus = 38))
+        oppilaitos = AmmatillinenOppilaitos(
+          nimi = AmmatillinenOppilaitosNimi(
+            fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
+            sv = Optional.empty(),
+            en = Optional.empty()
+          ),
+          oid = "1.2.3.4"
+        ),
+        tila = KESKEYTYNYT,
+        aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
+        valmistumispaiva = Optional.empty(),
+        suorituskieli = "suomi",
+        laajuus = 38))
 
   def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppimaara] =
     List(PerusopetuksenOppimaara(

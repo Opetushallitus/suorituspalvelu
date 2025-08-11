@@ -701,8 +701,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
-      suorituskieli = "suomi",
-      laajuus = 38
+      laajuus = Optional.of(38)
     ))
 
   def getVapaanSivistystyonKoulutukset(): List[VapaanSivistystyonKoulutus] =

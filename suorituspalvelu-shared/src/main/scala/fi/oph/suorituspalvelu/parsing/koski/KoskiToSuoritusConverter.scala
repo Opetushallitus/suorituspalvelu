@@ -207,10 +207,30 @@ object KoskiToSuoritusConverter {
             o.nimi.en
           ),
           o.oid)).getOrElse(dummy()),
-      tila.map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
+    )
+
+  def toTuva(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Tuva =
+    Tuva(
+      UUID.randomUUID(),
+      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
+      opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          Kielistetty(
+            o.nimi.fi,
+            o.nimi.sv,
+            o.nimi.en
+          ),
+          o.oid)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseAloitus(opiskeluoikeus),
+      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+      laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(_.arvo)),
+      laajuusKoodi = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(_.yksikkö).map(y => asKoodiObject(y.get)))
     )
 
   def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine = {
@@ -283,14 +303,6 @@ object KoskiToSuoritusConverter {
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       suoritus.alkamispäivä.map(p => LocalDate.parse(p)),
       suoritus.`jääLuokalle`.getOrElse(false)
-    )
-
-  def toTuva(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Tuva =
-    Tuva(
-      UUID.randomUUID(),
-      suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
-      parseAloitus(opiskeluoikeus),
-      suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
   def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] = {

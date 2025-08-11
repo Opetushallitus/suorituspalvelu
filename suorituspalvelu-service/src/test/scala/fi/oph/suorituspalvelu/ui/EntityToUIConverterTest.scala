@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos, Telma}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Opiskeluoikeus, Oppilaitos, Telma, Tuva}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -315,5 +315,42 @@ class EntityToUIConverterTest {
       telma.vahvistusPaivamaara.toJava,
       telma.suoritusKieli.arvo
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(telma), None))).get.telmat)
+  }
+
+  @Test def testConvertTuva(): Unit = {
+    val OPPIJANUMERO = "1.2.3"
+
+    val tuva = Tuva(
+      UUID.randomUUID(),
+      Kielistetty(Some("Tutkintokoulutukseen valmentava koulutus (TUVA)"), None, None),
+      Koodi("999907", "koulutus", Some(12)),
+      Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
+      Koodi("valmistunut", "", None),
+      Some(LocalDate.parse("2020-01-01")),
+      Some(LocalDate.parse("2020-01-01")),
+      Some(11),
+      Some(Koodi("8", "opintojenlaajuusyksikko", Some(1)))
+    )
+
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Tuva(
+      tuva.tunniste,
+      TuvaNimi(
+        tuva.nimi.fi.toJava,
+        tuva.nimi.sv.toJava,
+        tuva.nimi.en.toJava,
+      ),
+      AmmatillinenOppilaitos(
+        AmmatillinenOppilaitosNimi(
+          tuva.oppilaitos.nimi.fi.toJava,
+          tuva.oppilaitos.nimi.sv.toJava,
+          tuva.oppilaitos.nimi.en.toJava
+        ),
+        tuva.oppilaitos.oid
+      ),
+      Tila.VALMIS,
+      tuva.aloitusPaivamaara.toJava,
+      tuva.vahvistusPaivamaara.toJava,
+      tuva.laajuus.toJava
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None))).get.tuvat)
   }
 }

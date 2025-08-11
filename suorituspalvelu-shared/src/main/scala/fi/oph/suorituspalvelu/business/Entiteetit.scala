@@ -42,7 +42,7 @@ case class AmmatillisenTutkinnonOsaAlue(tunniste: UUID, nimi: Kielistetty, koodi
 
 case class AmmatillisenTutkinnonOsa(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, yto: Boolean, arvosana: Option[Koodi], laajuus: Option[Int], laajuusKoodi: Option[Koodi], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
-case class Tuva(tunniste: UUID, koodi: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class Tuva(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], laajuus: Option[Int], laajuusKoodi: Option[Koodi]) extends Suoritus, Tyypitetty
 
 case class Telma(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 

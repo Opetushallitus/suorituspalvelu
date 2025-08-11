@@ -997,10 +997,21 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.41945921983",
+        |          "nimi": {
+        |            "fi": "Stadin ammattiopisto"
+        |          }
+        |        },
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
-        |              "alku": "2022-08-01"
+        |              "alku": "2022-08-01",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
         |            }
         |          ]
         |        },
@@ -1017,8 +1028,22 @@ class KoskiParsingTest {
         |            "koulutusmoduuli": {
         |              "tunniste": {
         |                "koodiarvo": "999908",
+        |                "nimi": {
+        |                  "fi": "Tutkintokoulutukseen valmentava koulutuksen suoritus"
+        |                },
         |                "koodistoUri": "koulutus",
         |                "koodistoVersio": 12
+        |              },
+        |              "laajuus": {
+        |                "arvo": 30.0,
+        |                "yksikkö": {
+        |                  "koodiarvo": "8",
+        |                  "nimi": {
+        |                    "fi": "viikkoa"
+        |                  },
+        |                  "koodistoUri": "opintojenlaajuusyksikko",
+        |                  "koodistoVersio": 1
+        |                }
         |              }
         |            }
         |          }
@@ -1030,9 +1055,14 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[Tuva]
 
     Assertions.assertNotNull(tuva.tunniste)
+    Assertions.assertEquals(Some("Tutkintokoulutukseen valmentava koulutuksen suoritus"), tuva.nimi.fi)
+    Assertions.assertEquals(Some("Stadin ammattiopisto"), tuva.oppilaitos.nimi.fi)
     Assertions.assertEquals(Koodi("999908", "koulutus", Some(12)), tuva.koodi)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tuva.tila)
     Assertions.assertEquals(Some(LocalDate.parse("2022-08-01")), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
+    Assertions.assertEquals(Some(30), tuva.laajuus)
+    Assertions.assertEquals(Some(Koodi("8", "opintojenlaajuusyksikko", Some(1))), tuva.laajuusKoodi)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {
     val arvioinnit = Set(
