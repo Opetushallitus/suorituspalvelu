@@ -10,6 +10,18 @@ import java.util.{Optional, UUID}
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
 
+trait KayttajaResponse()
+
+case class KayttajaSuccessResponse(
+  @(Schema @field)(example = "fi", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty asiointiKieli: String
+) extends KayttajaResponse
+
+case class KayttajaFailureResponse(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends KayttajaResponse
+
 case class OppilaitosNimi(
   @(Schema @field)(example = UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI, requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],

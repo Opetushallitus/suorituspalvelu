@@ -32,6 +32,8 @@ trait OnrIntegration {
   def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases]
 
   def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]]
+
+  def getAsiointikieli(oid: String): Future[String]
 }
 
 class OnrIntegrationImpl extends OnrIntegration {
@@ -69,4 +71,7 @@ class OnrIntegrationImpl extends OnrIntegration {
   override def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]] = {
     onrClient.getMasterHenkilosForPersonOids(personOids)
   }
+
+  override def getAsiointikieli(oid: String): Future[String] =
+    onrClient.getAsiointikieli(oid)
 }
