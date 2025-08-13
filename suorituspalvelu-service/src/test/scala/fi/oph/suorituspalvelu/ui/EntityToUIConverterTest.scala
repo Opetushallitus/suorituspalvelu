@@ -12,6 +12,8 @@ import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
 /**
+ * Testit sisäinen tietomallin konvertoinnille UI:n käyttämään tietomalliin. Mallinnus on pääosin hyvin yksinkertaista,
+ * joten ei ole täysin selvää kannattaako näitä testejä ylläpitää erillisinä.
  */
 class EntityToUIConverterTest {
 
@@ -181,7 +183,13 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           None,
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty
+          Set(AmmatillisenTutkinnonOsaAlue(
+            UUID.randomUUID(),
+            Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
+            Koodi("106915", "ammatillisenoppiaineet", None),
+            Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
+            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+          ))
         )
       )
     )
@@ -217,7 +225,16 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.arvo).toJava
+          osa.arvosana.map(_.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
+            AmmatillisenTutkinnonOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava
+          )).toList.asJava
         ))
         .toList.asJava,
       Optional.of(NAYTTOTUTKINTO)

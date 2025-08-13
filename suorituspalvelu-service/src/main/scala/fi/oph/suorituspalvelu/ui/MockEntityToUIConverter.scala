@@ -611,6 +611,26 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of("4"),
+            osaAlueet = java.util.List.of(
+              AmmatillisenTutkinnonOsaAlue(
+                nimi = AmmatillisenTutkinnonOsaAlueNimi(
+                  fi = Optional.of("Audiovisuaalisen kulttuurin perusteet 1"),
+                  sv = Optional.of("Audiovisuaalisen kulttuurin perusteet 1 sv"),
+                  en = Optional.of("Audiovisuaalisen kulttuurin perusteet 1 en")
+                ),
+                laajuus = Optional.of(2),
+                arvosana = Optional.of("1")
+              ),
+              AmmatillisenTutkinnonOsaAlue(
+                nimi = AmmatillisenTutkinnonOsaAlueNimi(
+                  fi = Optional.of("Audiovisuaalisen kulttuurin perusteet 2"),
+                  sv = Optional.of("Audiovisuaalisen kulttuurin perusteet 2 sv"),
+                  en = Optional.of("Audiovisuaalisen kulttuurin perusteet 2 en")
+                ),
+                laajuus = Optional.of(3),
+                arvosana = Optional.of("1")
+              )
+            )
           ),
           AmmatillisenTutkinnonOsa(
             tunniste = UUID.randomUUID(),
@@ -621,6 +641,7 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of("4"),
+            osaAlueet = java.util.List.of()
           )
         ),
         suoritustapa = Optional.empty()

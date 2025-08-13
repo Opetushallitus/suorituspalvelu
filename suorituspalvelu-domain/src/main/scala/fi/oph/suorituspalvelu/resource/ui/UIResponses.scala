@@ -578,6 +578,24 @@ case class YTO(
   @BeanProperty osaAlueet: java.util.List[YTOOsaAlue]
 )
 
+case class AmmatillisenTutkinnonOsaAlueNimi(
+  @(Schema @field)(example = "Toimiminen ajoneuvoalan liiketoimintaympäristössä 1", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Arbete i en affärsmiljö inom fordonsbranschen 1", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
+case class AmmatillisenTutkinnonOsaAlue(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: AmmatillisenTutkinnonOsaAlueNimi,
+  @(Schema @field)(description = "Tutkinnon osa-alueen laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty laajuus: Optional[Int],
+  @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[String]
+)
+
 case class AmmatillisenTutkinnonOsaNimi(
   @(Schema @field)(example = "Toimiminen ajoneuvoalan liiketoimintaympäristössä", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -595,7 +613,9 @@ case class AmmatillisenTutkinnonOsa(
   @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[Int],
   @(Schema @field)(example = "4", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String]
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty osaAlueet: java.util.List[AmmatillisenTutkinnonOsaAlue]
 )
 
 case class AmmatillinenOppilaitosNimi(
