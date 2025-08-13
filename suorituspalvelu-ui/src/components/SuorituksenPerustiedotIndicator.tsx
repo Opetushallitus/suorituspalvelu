@@ -66,6 +66,7 @@ export const SuorituksenPerustiedotIndicator = ({
         label={t('oppija.oppilaitos')}
         value={
           <OphLink
+            component="a"
             href={getOppilaitosLinkUrl(config, perustiedot.oppilaitos.oid)}
           >
             {isKielistetty(perustiedot.oppilaitos.nimi)
