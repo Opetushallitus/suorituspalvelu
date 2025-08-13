@@ -3,12 +3,13 @@ package fi.oph.suorituspalvelu.configuration
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.vm.sade.java_utils.security.OpintopolkuCasAuthenticationFilter
 import fi.vm.sade.javautils.kayttooikeusclient.OphUserDetailsServiceImpl
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.{FilterChain, ServletRequest, ServletResponse}
 import org.apereo.cas.client.validation.{Cas20ProxyTicketValidator, TicketValidator}
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.{Bean, Configuration, Profile}
+import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
-import org.springframework.http.{HttpMethod, HttpStatus}
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.cas.ServiceProperties
 import org.springframework.security.cas.authentication.CasAuthenticationProvider
@@ -19,9 +20,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession
 import org.springframework.session.web.http.{CookieSerializer, DefaultCookieSerializer}
+import jakarta.servlet.Filter
+import jakarta.servlet.FilterConfig
+import org.springframework.http.HttpMethod
 
 /**
  *
@@ -32,10 +35,37 @@ import org.springframework.session.web.http.{CookieSerializer, DefaultCookieSeri
 class SecurityConfiguration {
 
   @Bean
+  def spaResourceFilter: Filter = new Filter {
+    override def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Unit = {
+      val path = request.asInstanceOf[HttpServletRequest].getRequestURI
+      val isApiResource = path.startsWith("/error") || path.startsWith("/api") || path == "/actuator/health" || path.startsWith("/openapi/v3/api-docs")
+      val isStaticResource = path.matches(".*\\.(js|css|ico|html|json|png|svg)") || path.startsWith("/static")
+      if (isApiResource || isStaticResource) {
+        chain.doFilter(request, response)
+      }
+      else {
+        // SPA resource
+        request.getRequestDispatcher("/index.html").forward(request, response)
+      }
+    }
+    override def init(filterConfig: FilterConfig): Unit = {}
+    override def destroy(): Unit = {}
+  }
+
+  @Bean
+  @Order(2)
+  def spaFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
+    http
+      .addFilterBefore(spaResourceFilter, classOf[CasAuthenticationFilter])
+      .build()
+
+  @Bean
+  @Order(1)
   def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
     http
+      .securityMatcher("/api/**")
       .authorizeHttpRequests(requests => requests
-        .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH, "/static/**", "/actuator/health", "/openapi/v3/api-docs/**")
+        .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH)
         .permitAll()
         .anyRequest
         .fullyAuthenticated)
@@ -44,11 +74,12 @@ class SecurityConfiguration {
       .addFilter(authenticationFilter)
       .build()
 
+
   @Bean
   def cookieSerializer(): CookieSerializer =
-    val serializer = new DefaultCookieSerializer();
-    serializer.setCookieName("JSESSIONID");
-    serializer;
+    val serializer = new DefaultCookieSerializer()
+    serializer.setCookieName("JSESSIONID")
+    serializer
 
   @Bean
   def serviceProperties(@Value("${cas-service.service}") service: String, @Value("${cas-service.sendRenew}") sendRenew: Boolean): ServiceProperties =
