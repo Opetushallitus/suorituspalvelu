@@ -43,3 +43,6 @@ cdk.out
 
 ### docker ###
 .env.docker.local
+
+## Frontend bundle
+/suorituspalvelu-service/src/main/resources/static/
