@@ -3,12 +3,11 @@ package fi.oph.suorituspalvelu.configuration
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.vm.sade.java_utils.security.OpintopolkuCasAuthenticationFilter
 import fi.vm.sade.javautils.kayttooikeusclient.OphUserDetailsServiceImpl
-import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
 import jakarta.servlet.{FilterChain, ServletRequest, ServletResponse}
 import org.apereo.cas.client.validation.{Cas20ProxyTicketValidator, TicketValidator}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
-import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.cas.ServiceProperties
@@ -23,7 +22,6 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession
 import org.springframework.session.web.http.{CookieSerializer, DefaultCookieSerializer}
 import jakarta.servlet.Filter
-import jakarta.servlet.FilterConfig
 import org.springframework.http.HttpMethod
 
 /**
@@ -33,37 +31,39 @@ import org.springframework.http.HttpMethod
 @EnableWebSecurity
 @EnableJdbcHttpSession
 class SecurityConfiguration {
+  private val SPA_ROUTES: Map[String, String] = Map(
+    "/" -> "/index.html",
+  )
 
   @Bean
-  def spaResourceFilter: Filter = new Filter {
-    override def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Unit = {
-      val path = request.asInstanceOf[HttpServletRequest].getServletPath
-      val isApiResource = path.startsWith("/error") || path.startsWith("/api") || path == "/actuator/health" || path.startsWith("/openapi/v3/api-docs") || path.startsWith("/swagger")
-      val isStaticResource = path.matches(".*\\.(js|css|ico|html|json|png|svg)") || path.startsWith("/static") || path.startsWith("/_next/static")
-      if (isApiResource || isStaticResource) {
-        chain.doFilter(request, response)
-      }
-      else {
-        // SPA resource
-        request.getRequestDispatcher("/index.html").forward(request, response)
+  def spaResourceFilter: Filter = (request: ServletRequest, response: ServletResponse, chain: FilterChain) => {
+    val req = request.asInstanceOf[HttpServletRequest]
+    val res = response.asInstanceOf[HttpServletResponse]
+    val contextPath = req.getContextPath
+    val path = req.getRequestURI.stripPrefix(contextPath)
+
+    val isForwarded = req.getAttribute("custom.forwarded") != null
+    val SPA_TARGETS = SPA_ROUTES.values.toSet
+    if (!isForwarded && SPA_TARGETS.contains(path)) {
+      val newPath = path.stripSuffix("/index.html")
+      val query = Option(req.getQueryString).map(q => s"?$q").getOrElse("").replaceAll("[?&]continue", "")
+      res.sendRedirect(contextPath + newPath + query)
+    } else {
+      SPA_ROUTES.get(path) match {
+        case Some(route) => {
+          request.setAttribute("custom.forwarded", true)
+          request.getRequestDispatcher(route).forward(request, response)
+        }
+        case None => chain.doFilter(request, response)
       }
     }
-    override def init(filterConfig: FilterConfig): Unit = {}
-    override def destroy(): Unit = {}
   }
 
   @Bean
-  @Order(2)
-  def spaFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
+  def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint,
+    authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
     http
-      .addFilterBefore(spaResourceFilter, classOf[CasAuthenticationFilter])
-      .build()
-
-  @Bean
-  @Order(1)
-  def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
-    http
-      .securityMatcher("/api/**")
+      .securityMatcher(List("/api/**").concat(SPA_ROUTES.keys.toSet).concat(SPA_ROUTES.values.toSet): _*)
       .authorizeHttpRequests(requests => requests
         .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH)
         .permitAll()
@@ -72,8 +72,8 @@ class SecurityConfiguration {
       .csrf(c => c.disable())
       .exceptionHandling(c => c.authenticationEntryPoint(casAuthenticationEntryPoint))
       .addFilter(authenticationFilter)
+      .addFilterAfter(spaResourceFilter, classOf[CasAuthenticationFilter])
       .build()
-
 
   @Bean
   def cookieSerializer(): CookieSerializer =
