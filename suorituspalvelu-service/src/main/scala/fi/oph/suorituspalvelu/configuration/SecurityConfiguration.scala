@@ -38,7 +38,7 @@ class SecurityConfiguration {
   def spaResourceFilter: Filter = new Filter {
     override def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Unit = {
       val path = request.asInstanceOf[HttpServletRequest].getServletPath
-      val isApiResource = path.startsWith("/error") || path.startsWith("/api") || path == "/actuator/health" || path.startsWith("/openapi/v3/api-docs")
+      val isApiResource = path.startsWith("/error") || path.startsWith("/api") || path == "/actuator/health" || path.startsWith("/openapi/v3/api-docs") || path.startsWith("/swagger")
       val isStaticResource = path.matches(".*\\.(js|css|ico|html|json|png|svg)") || path.startsWith("/static")
       if (isApiResource || isStaticResource) {
         chain.doFilter(request, response)
