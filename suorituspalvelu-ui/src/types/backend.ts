@@ -527,8 +527,18 @@ export interface ITuva {
   tila: SuoritusTila;
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
-  suorituskieli: string;
-  laajuus: number;
+  laajuus?: ITuvaLaajuus;
+}
+
+export interface ITuvaLaajuus {
+  arvo: number;
+  yksikko: ITuvaLaajuusYksikko;
+}
+
+export interface ITuvaLaajuusYksikko {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
 export interface ITuvaNimi {

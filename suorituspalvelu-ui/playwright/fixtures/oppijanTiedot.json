@@ -441,6 +441,9 @@
   "tuvat": [
     {
       "tunniste": "92bba988-2738-4f7a-9440-428e475f7f61",
+      "nimi": {
+        "fi": "Tutkintokoulutukseen valmentava koulutus"
+      },
       "oppilaitos": {
         "nimi": {
           "fi": "Hämeen ammatti-instituutti, Lepaa",
@@ -452,7 +455,12 @@
       "tila": "VALMIS",
       "valmistumispaiva": "2017-06-01",
       "suorituskieli": "suomi",
-      "laajuus": 38
+      "laajuus": {
+        "arvo": 38,
+        "yksikko": {
+          "fi": "vk"
+        }
+      }
     }
   ],
   "vapaanSivistystyonKoulutukset": [

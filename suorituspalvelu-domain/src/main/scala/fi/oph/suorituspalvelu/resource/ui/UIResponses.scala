@@ -746,6 +746,22 @@ case class TuvaNimi(
   @BeanProperty en: Optional[String],
 )
 
+case class TuvaLaajuusYksikko(
+  @(Schema @field)(example = "vk", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "v", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "w", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
+case class TuvaLaajuus(
+  @(Schema @field)(example = "38", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvo: Int,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty yksikko: TuvaLaajuusYksikko,
+)
+
 case class Tuva(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
@@ -759,10 +775,9 @@ case class Tuva(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
-  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
-  @(Schema @field)(description = "Suoritettujen opintojen laajuus viikkoina", example = "38", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Int
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty laajuus: Optional[TuvaLaajuus],
+  // TODO: jos halutaan näyttää suorituskieli niin tarvitaan tieto Kosken massaluovutusrajapinnasta
 )
 
 case class VapaanSivistystyonKoulutusNimi(

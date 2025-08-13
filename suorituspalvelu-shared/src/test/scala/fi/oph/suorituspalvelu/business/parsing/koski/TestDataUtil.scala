@@ -11,16 +11,6 @@ object TestDataUtil {
   def getTestKoodi(arvo: String = "arvo", koodisto: String = "koodisto", versio: Option[Int] = Some(1)): Koodi =
     Koodi(arvo, koodisto, versio)
 
-  def getTestAmmatillisenTutkinnonOsa(nimi: Kielistetty = Kielistetty(Some("tutkinnonOsa"), None, None),
-                                      koodi: Koodi = getTestKoodi(),
-                                      yto: Boolean = false,
-                                      arvosana: Option[Koodi] = Some(getTestKoodi()),
-                                      laajuus: Option[Int] = Some(2),
-                                      laajuusKoodi: Option[Koodi] = Some(getTestKoodi()),
-                                      osaAlueet: Set[AmmatillisenTutkinnonOsaAlue] = Set.empty) = {
-    AmmatillisenTutkinnonOsa(UUID.randomUUID(), nimi, koodi, yto, arvosana, laajuus, laajuusKoodi, osaAlueet)
-  }
-
   def getTestAmmatillinenTutkinto(nimi: Kielistetty = Kielistetty(Some("tutkinnonNimi"), None, None),
                                   koodi: Koodi = getTestKoodi(),
                                   oppilaitos: Oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.246.562.10.95136889433"),
