@@ -67,6 +67,9 @@ object ApiConstants {
 
   final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
 
+  final val UI_KAYTTAJAN_TIEDOT_PATH                        = UI_API_PREFIX + "/kayttaja"
+  final val UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI            = "Kayttajan tietojen haku epäonnistui"
+
   /**
    * Swagger-kuvauksiin liittyvät vakiot
    */

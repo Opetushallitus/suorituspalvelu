@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -31,6 +31,32 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockBean
   val onrIntegration: OnrIntegration = null
+
+  @WithAnonymousUser
+  @Test def testHaeKayttajanTiedotAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeKayttajanTiedotAllowed(): Unit =
+    // mockataan onr-vastaus
+    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful("fi"))
+
+    // haetaan käyttäjän tiedot
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // asiointikieli on "fi"
+    Assertions.assertEquals(KayttajaSuccessResponse("fi"),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
+
+  /*
+   * Integraatiotestit oppilaitoslistauksen haulle
+   */
 
   @WithAnonymousUser
   @Test def testHaeOppilaitoksetAnonymous(): Unit =
