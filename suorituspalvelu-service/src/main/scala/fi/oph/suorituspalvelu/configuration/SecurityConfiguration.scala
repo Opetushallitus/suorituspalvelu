@@ -23,6 +23,7 @@ import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHtt
 import org.springframework.session.web.http.{CookieSerializer, DefaultCookieSerializer}
 import jakarta.servlet.Filter
 import org.springframework.http.HttpMethod
+import org.springframework.security.web.access.intercept.AuthorizationFilter
 
 /**
  *
@@ -31,27 +32,30 @@ import org.springframework.http.HttpMethod
 @EnableWebSecurity
 @EnableJdbcHttpSession
 class SecurityConfiguration {
-  private val SPA_ROUTES: Map[String, String] = Map(
+  private val FRONTEND_ROUTES: Map[String, String] = Map(
     "/" -> "/index.html",
   )
 
   @Bean
-  def spaResourceFilter: Filter = (request: ServletRequest, response: ServletResponse, chain: FilterChain) => {
+  def frontendResourceFilter: Filter = (request: ServletRequest, response: ServletResponse, chain: FilterChain) => {
     val req = request.asInstanceOf[HttpServletRequest]
     val res = response.asInstanceOf[HttpServletResponse]
     val contextPath = req.getContextPath
     val path = req.getRequestURI.stripPrefix(contextPath)
+    val queryString = Option(req.getQueryString).map(q => s"?$q").getOrElse("")
 
     val isForwarded = req.getAttribute("custom.forwarded") != null
-    val SPA_TARGETS = SPA_ROUTES.values.toSet
-    if (!isForwarded && SPA_TARGETS.contains(path)) {
+    if (!isForwarded && FRONTEND_ROUTES.flatMap(_.toList).toSet.contains(path) && queryString.matches("[?&]continue")) {
+      // Poistetaan index.html osoitteesta
       val newPath = path.stripSuffix("/index.html")
-      val query = Option(req.getQueryString).map(q => s"?$q").getOrElse("").replaceAll("[?&]continue", "")
-      res.sendRedirect(contextPath + newPath + query)
+      // Poistetaan "continue" query-parametri
+      res.sendRedirect(contextPath + newPath + queryString.replaceAll("[?&]continue", ""))
     } else {
-      SPA_ROUTES.get(path) match {
+      FRONTEND_ROUTES.get(path) match {
         case Some(route) => {
+          // Lisätään attribuutti, jotta voidaan välttää uudelleenohjauslooppi
           request.setAttribute("custom.forwarded", true)
+          // Ohjataan frontend-pyyntö html-tiedostoon
           request.getRequestDispatcher(route).forward(request, response)
         }
         case None => chain.doFilter(request, response)
@@ -60,19 +64,22 @@ class SecurityConfiguration {
   }
 
   @Bean
-  def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint,
-    authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
+  def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
     http
-      .securityMatcher(List("/api/**").concat(SPA_ROUTES.keys.toSet).concat(SPA_ROUTES.values.toSet): _*)
       .authorizeHttpRequests(requests => requests
-        .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH)
+        .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH, "/static/**", "/actuator/health", "/openapi/v3/api-docs/**")
         .permitAll()
         .anyRequest
         .fullyAuthenticated)
       .csrf(c => c.disable())
       .exceptionHandling(c => c.authenticationEntryPoint(casAuthenticationEntryPoint))
       .addFilter(authenticationFilter)
-      .addFilterAfter(spaResourceFilter, classOf[CasAuthenticationFilter])
+      /* Tehdään ohjaukset käyttöliittymään vasta koko CAS-autentikaation (ja mahdollisen login-uudellenohjauksen) jälkeen.
+       * Huom! classOf[CasAuthenticationFilter] ei toimi integraatiotesteissä, koska silloin frontendResourceFilter
+       * ajetaan ennen kuin koko CAS-autentikaatiota on tehty, ja koska MockMvc ei aja forwardointeja
+       * filter chainin läpi.
+       */
+      .addFilterAfter(frontendResourceFilter, classOf[AuthorizationFilter])
       .build()
 
   @Bean
