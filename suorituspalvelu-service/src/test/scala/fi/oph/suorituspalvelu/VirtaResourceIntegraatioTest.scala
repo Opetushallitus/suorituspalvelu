@@ -181,9 +181,9 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
       //Virheeseen päätyneen hakijan tietoja ei löydy kannasta.
       if (oppijaNumero != failingHakijaOid) {
          val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-        Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-        Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-        Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+         Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
+         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
+         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
       }
     })
 

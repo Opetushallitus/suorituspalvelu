@@ -182,8 +182,7 @@ class VirtaRefresh {
       val virtaResults: Seq[VirtaResultForHenkilo] = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, {
         if (hetu.isBlank) None else Some(hetu)
       }), TIMEOUT)
-      val syncResults = virtaResults.map(persist)
-      syncResults
+      virtaResults.map(persist)
     } catch {
       case e: Exception => LOG.error(s"Virhe päivettäessä Virta-tietoja oppijanumerolle ${oppijaNumero}", e)
     }
