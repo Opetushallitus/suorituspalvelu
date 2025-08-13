@@ -39,7 +39,7 @@ class SecurityConfiguration {
     override def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Unit = {
       val path = request.asInstanceOf[HttpServletRequest].getServletPath
       val isApiResource = path.startsWith("/error") || path.startsWith("/api") || path == "/actuator/health" || path.startsWith("/openapi/v3/api-docs") || path.startsWith("/swagger")
-      val isStaticResource = path.matches(".*\\.(js|css|ico|html|json|png|svg)") || path.startsWith("/static")
+      val isStaticResource = path.matches(".*\\.(js|css|ico|html|json|png|svg)") || path.startsWith("/static") || path.startsWith("/_next/static")
       if (isApiResource || isStaticResource) {
         chain.doFilter(request, response)
       }
