@@ -11,6 +11,9 @@ server:
     key-store-password: password
     key-alias: viestinvalitys
     enabled: true
+  servlet:
+    context-path: /suorituspalvelu
+  forward-headers-strategy: framework
 
 spring:
   profiles:
