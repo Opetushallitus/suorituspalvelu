@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import com.scalatsi.*
 import com.scalatsi.TypescriptType.TSUnion
 import com.scalatsi.output.{OutputOptions, StyleOptions, WriteTSToFiles}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, Telma, Tila, Tuva, TuvaLaajuus, VapaanSivistystyonKoulutus, YOTutkinto}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, Telma, Tila, Tuva, TuvaLaajuus, VapaaSivistystyoLaajuus, VapaaSivistystyoKoulutus, YOTutkinto}
 
 import java.io.File
 import java.time.LocalDate
@@ -38,12 +38,13 @@ object TypeScriptGenerator extends App {
   implicit val oppimaaranOppiaineTSType: TSType[OppimaaranOppiaine] = TSType.fromCaseClass
   implicit val perusopetuksenOppiaineenOppimaaraTSType: TSType[PerusopetuksenOppiaineenOppimaara] = TSType.fromCaseClass
   implicit val aikuistenPerusopetuksenOppimaaraTSType: TSType[AikuistenPerusopetuksenOppimaara] = TSType.fromCaseClass
-  implicit val vapaanSivistysTyonKoulutusTSType: TSType[VapaanSivistystyonKoulutus] = TSType.fromCaseClass
   implicit val perusopetuksenOppimaaraTSType: TSType[PerusopetuksenOppimaara] = TSType.fromCaseClass
   implicit val nuortenPerusopetuksenOppiaineenOppimaaraTSType: TSType[NuortenPerusopetuksenOppiaineenOppimaara] = TSType.fromCaseClass
   implicit val lukionOppiaineenOppimaaraTSType: TSType[LukionOppiaineenOppimaara] = TSType.fromCaseClass
   implicit val optionalTuvaLaajuus: TSType[Optional[TuvaLaajuus]] = TSType.sameAs[Optional[TuvaLaajuus], Option[TuvaLaajuus]]
+  implicit val optionalVSTLaajuus: TSType[Optional[VapaaSivistystyoLaajuus]] = TSType.sameAs[Optional[VapaaSivistystyoLaajuus], Option[VapaaSivistystyoLaajuus]]
   implicit val tuvaTSType: TSType[Tuva] = TSType.fromCaseClass
+  implicit val vapaaSivistysTyoKoulutusTSType: TSType[VapaaSivistystyoKoulutus] = TSType.fromCaseClass
   implicit val telmaTSType: TSType[Telma] = TSType.fromCaseClass
   implicit val ammattitutkintoTSType: TSType[Ammattitutkinto] = TSType.fromCaseClass
   implicit val erikoisAmmattitutkintoTSType: TSType[Erikoisammattitutkinto] = TSType.fromCaseClass

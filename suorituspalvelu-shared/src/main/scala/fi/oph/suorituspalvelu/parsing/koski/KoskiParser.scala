@@ -37,7 +37,7 @@ case class Arviointi(arvosana: KoskiKoodi,
                      `päivä`: Option[String],
                      hyväksytty: Boolean)
 
-case class Laajuus(arvo: Int,
+case class Laajuus(arvo: BigDecimal,
                    yksikkö: Option[Yksikko])
 
 case class OsaSuoritus(tyyppi: SuoritusTyyppi,

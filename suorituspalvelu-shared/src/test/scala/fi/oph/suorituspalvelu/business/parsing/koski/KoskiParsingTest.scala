@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -1059,6 +1059,147 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2022-08-01")), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
     Assertions.assertEquals(Some(Laajuus(30, Koodi("8", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("viikkoa"), None, None)), None)), tuva.laajuus)
+
+  @Test def testVapaaSivistysTyoOpiskeluoikeus(): Unit =
+    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.75291104630",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "tyyppi": {
+        |          "koodiarvo": "vapaansivistystyonkoulutus",
+        |          "koodistoUri": "opiskeluoikeudentyyppi",
+        |          "koodistoVersio": 1
+        |        },
+        |        "oid": "1.2.246.562.15.87456579967",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.63029756333"
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2024-05-25",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": []
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[GeneerinenOpiskeluoikeus]
+
+    Assertions.assertNotNull(opiskeluoikeus.tunniste)
+    Assertions.assertEquals(Koodi("vapaansivistystyonkoulutus", "opiskeluoikeudentyyppi", Some(1)), opiskeluoikeus.tyyppi)
+    Assertions.assertEquals("1.2.246.562.15.87456579967", opiskeluoikeus.oid)
+    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-05-25"), OpiskeluoikeusJaksoTila("valmistunut", "koskiopiskeluoikeudentila", Some(1)))))), opiskeluoikeus.tila)
+    Assertions.assertEquals("1.2.246.562.10.63029756333", opiskeluoikeus.oppilaitosOid)
+
+  @Test def testVapaaSivistysTyoSuoritus(): Unit =
+    val vst = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.75291104630",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.63029756333",
+        |          "nimi": {
+        |            "fi": "Lahden kansanopisto"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2024-05-25",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "vstoppivelvollisillesuunnattukoulutus",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2025-04-16"
+        |            },
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "999909",
+        |                "nimi": {
+        |                  "fi": "Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille"
+        |                },
+        |                "koodistoUri": "koulutus",
+        |                "koodistoVersio": 12
+        |              }
+        |            },
+        |            "suorituskieli": {
+        |              "koodiarvo": "FI",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": [
+        |              {
+        |                "tyyppi": {
+        |                  "koodiarvo": "vstosaamiskokonaisuus",
+        |                  "nimi": {
+        |                    "fi": "Oppivelvollisille suunnattu vapaan sivistystyön osaamiskokonaisuus",
+        |                    "sv": "Kompetenshelhet inom fritt bildningsarbete som riktar sig till läropliktiga",
+        |                    "en": "Oppivelvollisille suunnattu vapaan sivistystyön osaamiskokonaisuus"
+        |                  },
+        |                  "koodistoUri": "suorituksentyyppi",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "koulutusmoduuli": {
+        |                  "laajuus": {
+        |                    "arvo": 4.5,
+        |                    "yksikkö": {
+        |                      "koodiarvo": "2",
+        |                      "nimi": {
+        |                        "fi": "opintopistettä"
+        |                      },
+        |                      "lyhytNimi": {
+        |                        "fi": "op"
+        |                      },
+        |                      "koodistoUri": "opintojenlaajuusyksikko",
+        |                      "koodistoVersio": 1
+        |                    }
+        |                  }
+        |                }
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[VapaaSivistystyo]
+
+    Assertions.assertNotNull(vst.tunniste)
+    Assertions.assertEquals(Some("Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille"), vst.nimi.fi)
+    Assertions.assertEquals(Some("Lahden kansanopisto"), vst.oppilaitos.nimi.fi)
+    Assertions.assertEquals(Koodi("999909", "koulutus", Some(12)), vst.koodi)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), vst.tila)
+    Assertions.assertEquals(Some(LocalDate.parse("2024-05-25")), vst.aloitusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), vst.vahvistusPaivamaara)
+    Assertions.assertEquals(Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.laajuus)
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), vst.suoritusKieli)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {
     val arvioinnit = Set(

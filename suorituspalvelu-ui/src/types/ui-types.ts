@@ -15,7 +15,7 @@ import {
   IAmmatillinentutkinto,
   IAmmattitutkinto,
   IErikoisammattitutkinto,
-  IVapaanSivistystyonKoulutus,
+  IVapaaSivistystyoKoulutus,
   ITuva,
   IPerusopetuksenOppiaineenOppimaara,
   IPerusopetuksenOppimaara78Luokkalaiset,
@@ -103,7 +103,7 @@ export type TelmaSuoritus = ITelma & {
   key: string;
 };
 
-export type VapaaSivistystyoSuoritus = IVapaanSivistystyonKoulutus & {
+export type VapaaSivistystyoSuoritus = IVapaaSivistystyoKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
   key: string;
 };

@@ -370,7 +370,7 @@ export interface IOppijanTiedotSuccessResponse {
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
   telmat: ITelma[];
   tuvat: ITuva[];
-  vapaanSivistystyonKoulutukset: IVapaanSivistystyonKoulutus[];
+  vapaaSivistystyoKoulutukset: IVapaaSivistystyoKoulutus[];
   perusopetuksenOppimaarat: IPerusopetuksenOppimaara[];
   perusopetuksenOppimaara78Luokkalaiset?: IPerusopetuksenOppimaara78Luokkalaiset;
   nuortenPerusopetuksenOppiaineenOppimaarat: INuortenPerusopetuksenOppiaineenOppimaara[];
@@ -561,18 +561,40 @@ export interface IUIOpiskeluoikeusNimi {
   en?: string;
 }
 
-export interface IVapaanSivistystyonKoulutus {
+export interface IVapaaSivistystyoKoulutus {
   tunniste: string;
-  nimi: IVapaanSivistystyonKoulutusNimi;
-  oppilaitos: IAmmatillinenOppilaitos;
+  nimi: IVapaaSivistystyoKoulutusNimi;
+  oppilaitos: IVapaaSivistystyoOppilaitos;
   tila: SuoritusTila;
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
   suorituskieli: string;
-  laajuus: number;
+  laajuus?: IVapaaSivistystyoLaajuus;
 }
 
-export interface IVapaanSivistystyonKoulutusNimi {
+export interface IVapaaSivistystyoKoulutusNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IVapaaSivistystyoLaajuus {
+  arvo: number;
+  yksikko: IVapaaSivistystyoLaajuusYksikko;
+}
+
+export interface IVapaaSivistystyoLaajuusYksikko {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IVapaaSivistystyoOppilaitos {
+  nimi: IVapaaSivistystyoOppilaitosNimi;
+  oid: string;
+}
+
+export interface IVapaaSivistystyoOppilaitosNimi {
   fi?: string;
   sv?: string;
   en?: string;

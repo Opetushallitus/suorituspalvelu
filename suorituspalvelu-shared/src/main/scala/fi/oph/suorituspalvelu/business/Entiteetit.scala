@@ -28,7 +28,7 @@ sealed trait Opiskeluoikeus extends TallennettavaEntiteetti
 
 case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
-case class Laajuus(arvo: Int, yksikko: Koodi, nimi: Option[Kielistetty], lyhytNimi: Option[Kielistetty])
+case class Laajuus(arvo: BigDecimal, yksikko: Koodi, nimi: Option[Kielistetty], lyhytNimi: Option[Kielistetty])
 
 case class Arvosana(arvosana: String, koodi: String)
 
@@ -44,9 +44,11 @@ case class AmmatillisenTutkinnonOsaAlue(tunniste: UUID, nimi: Kielistetty, koodi
 
 case class AmmatillisenTutkinnonOsa(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, yto: Boolean, arviointiPaiva: Option[LocalDate], arvosana: Option[Koodi], laajuus: Option[Laajuus], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
+case class Telma(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+
 case class Tuva(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], laajuus: Option[Laajuus]) extends Suoritus, Tyypitetty
 
-case class Telma(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
+case class VapaaSivistystyo(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], laajuus: Option[Laajuus], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
 case class NuortenPerusopetuksenOppiaineenOppimaara(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, arvosana: Koodi, suoritusKieli: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
