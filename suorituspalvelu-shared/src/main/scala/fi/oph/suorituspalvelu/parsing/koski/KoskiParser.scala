@@ -34,6 +34,7 @@ case class KoskiKoodi(koodiarvo: String,
                       koodistoVersio: Option[Int]) extends VersioituTunniste
 
 case class Arviointi(arvosana: KoskiKoodi,
+                     `päivä`: Option[String],
                      hyväksytty: Boolean)
 
 case class Laajuus(arvo: Int,

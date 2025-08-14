@@ -543,11 +543,41 @@ object MockEntityToUIConverter {
           tunniste = UUID.randomUUID(),
           nimi = YTONimi(
             fi = Optional.of("Viestintä- ja vuorovaikutusosaaminen"),
-            sv = Optional.of("Viestintä- ja vuorovaikutusosaaminen sv"),
-            en = Optional.of("Viestintä- ja vuorovaikutusosaaminen en"),
+            sv = Optional.of("Kunnande i kommunikation och interaktion"),
+            en = Optional.of("Communication and interaction competence"),
           ),
+          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
-          arvosana = Optional.of("HYVAKSYTTY")
+          arvosana = Optional.of("HYVAKSYTTY"),
+          java.util.List.of(
+            YTOOsaAlue(
+              nimi = YTOOsaAlueNimi(
+                fi = Optional.of("Viestintä ja vuorovaikutus äidinkielellä"),
+                sv = Optional.of("Kommunikation och interaktion på modersmålet"),
+                en = Optional.of("Communication and interaction in mother tongue")
+              ),
+              laajuus = Optional.of(4),
+              arvosana = Optional.of("1")
+            ),
+            YTOOsaAlue(
+              nimi = YTOOsaAlueNimi(
+                fi = Optional.of("Viestintä ja vuorovaikutus toisella kotimaisella kielellä"),
+                sv = Optional.of("Kommunikation och interaktion på det andra inhemska språket"),
+                en = Optional.of("Communication and interaction in the second national language")
+              ),
+              laajuus = Optional.of(1),
+              arvosana = Optional.of("1")
+            ),
+            YTOOsaAlue(
+              nimi = YTOOsaAlueNimi(
+                fi = Optional.of("Toiminta digitaalisessa ympäristössä"),
+                sv = Optional.of("Verksamhet i den digitala miljön"),
+                en = Optional.of("Operating in a digital environment")
+              ),
+              laajuus = Optional.of(1),
+              arvosana = Optional.of("1")
+            )
+          )
         ), YTO(
           tunniste = UUID.randomUUID(),
           nimi = YTONimi(
@@ -555,8 +585,10 @@ object MockEntityToUIConverter {
             sv = Optional.of("Matemaattis-luonnontiellinen osaaminen sv"),
             en = Optional.of("Matemaattis-luonnontiellinen osaaminen en")
           ),
+          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
-          arvosana = Optional.of("HYVAKSYTTY")
+          arvosana = Optional.of("HYVAKSYTTY"),
+          java.util.List.of()
         ), YTO(
           tunniste = UUID.randomUUID(),
           nimi = YTONimi(
@@ -564,8 +596,10 @@ object MockEntityToUIConverter {
             sv = Optional.of("Yhteiskunta- ja työelämäosaaminen sv"),
             en = Optional.of("Yhteiskunta- ja työelämäosaaminen en")
           ),
+          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
-          arvosana = Optional.of("HYVAKSYTTY")
+          arvosana = Optional.of("HYVAKSYTTY"),
+          java.util.List.of()
         )),
         ammatillisenTutkinnonOsat = java.util.List.of(
           AmmatillisenTutkinnonOsa(
@@ -577,6 +611,26 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of("4"),
+            osaAlueet = java.util.List.of(
+              AmmatillisenTutkinnonOsaAlue(
+                nimi = AmmatillisenTutkinnonOsaAlueNimi(
+                  fi = Optional.of("Audiovisuaalisen kulttuurin perusteet 1"),
+                  sv = Optional.of("Audiovisuaalisen kulttuurin perusteet 1 sv"),
+                  en = Optional.of("Audiovisuaalisen kulttuurin perusteet 1 en")
+                ),
+                laajuus = Optional.of(2),
+                arvosana = Optional.of("1")
+              ),
+              AmmatillisenTutkinnonOsaAlue(
+                nimi = AmmatillisenTutkinnonOsaAlueNimi(
+                  fi = Optional.of("Audiovisuaalisen kulttuurin perusteet 2"),
+                  sv = Optional.of("Audiovisuaalisen kulttuurin perusteet 2 sv"),
+                  en = Optional.of("Audiovisuaalisen kulttuurin perusteet 2 en")
+                ),
+                laajuus = Optional.of(3),
+                arvosana = Optional.of("1")
+              )
+            )
           ),
           AmmatillisenTutkinnonOsa(
             tunniste = UUID.randomUUID(),
@@ -587,6 +641,7 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of("4"),
+            osaAlueet = java.util.List.of()
           )
         ),
         suoritustapa = Optional.empty()

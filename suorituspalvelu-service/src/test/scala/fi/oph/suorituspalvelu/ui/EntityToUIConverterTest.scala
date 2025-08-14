@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -12,6 +12,8 @@ import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
 /**
+ * Testit sisäinen tietomallin konvertoinnille UI:n käyttämään tietomalliin. Mallinnus on pääosin hyvin yksinkertaista,
+ * joten ei ole täysin selvää kannattaako näitä testejä ylläpitää erillisinä.
  */
 class EntityToUIConverterTest {
 
@@ -33,15 +35,23 @@ class EntityToUIConverterTest {
           Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen"), None, None),
           Koodi("106915", "tutkinnonosat", None),
           false,
+          Some(LocalDate.parse("2022-01-01")),
           Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty
+          Set(AmmatillisenTutkinnonOsaAlue(
+            UUID.randomUUID(),
+            Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
+            Koodi("106915", "ammatillisenoppiaineet", None),
+            Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
+            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+          ))
         ),
         AmmatillisenTutkinnonOsa(
           UUID.randomUUID(),
           Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None),
           Koodi("106727", "tutkinnonosat", None),
           true,
+          Some(LocalDate.parse("2022-01-01")),
           Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None)),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
@@ -78,8 +88,18 @@ class EntityToUIConverterTest {
             osa.nimi.sv.toJava,
             osa.nimi.en.toJava
           ),
+          osa.arviointiPaiva.toJava,
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.arvo).toJava
+          osa.arvosana.map(_.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.YTOOsaAlue(
+            YTOOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava
+          )).toList.asJava
         ))
         .toList.asJava,
       java.util.List.of(),
@@ -106,6 +126,7 @@ class EntityToUIConverterTest {
           Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None),
           Koodi("", "tutkinnonosat", None),
           false,
+          Some(LocalDate.parse("2022-01-01")),
           None,
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
@@ -159,9 +180,16 @@ class EntityToUIConverterTest {
           Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen"), None, None),
           Koodi("106915", "tutkinnonosat", None),
           false,
+          Some(LocalDate.parse("2022-01-01")),
           None,
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty
+          Set(AmmatillisenTutkinnonOsaAlue(
+            UUID.randomUUID(),
+            Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
+            Koodi("106915", "ammatillisenoppiaineet", None),
+            Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
+            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+          ))
         )
       )
     )
@@ -197,7 +225,16 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.arvo).toJava
+          osa.arvosana.map(_.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
+            AmmatillisenTutkinnonOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava
+          )).toList.asJava
         ))
         .toList.asJava,
       Optional.of(NAYTTOTUTKINTO)
