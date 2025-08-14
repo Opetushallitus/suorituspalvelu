@@ -21,7 +21,7 @@ export const AmmatillinenSuoritusPaper = ({
       {'suoritustapa' in suoritus && suoritus.suoritustapa && (
         <LabeledInfoItem
           label={t('oppija.suoritustapa')}
-          value={suoritus.suoritustapa}
+          value={t(`suoritustapa.${suoritus.suoritustapa}`)}
         />
       )}
     </SuoritusInfoPaper>
