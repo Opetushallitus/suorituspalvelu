@@ -61,7 +61,7 @@ export const SuorituksenPerustiedotIndicator = ({
   const config = use(configPromise);
 
   return (
-    <Stack spacing={1} direction="row">
+    <Stack direction="row">
       <LabeledInfoItem
         label={t('oppija.oppilaitos')}
         value={

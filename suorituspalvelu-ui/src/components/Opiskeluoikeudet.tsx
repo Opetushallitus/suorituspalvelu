@@ -77,7 +77,7 @@ export const Opiskeluoikeudet = ({
                 <OphTypography variant="label" sx={{ marginBottom: 1 }}>
                   {translateKielistetty(oo.nimi)}
                 </OphTypography>
-                <Stack direction="row" spacing={1}>
+                <Stack direction="row">
                   <LabeledInfoItem
                     label={t('oppija.oppilaitos')}
                     sx={{ flexBasis: '50%' }}
