@@ -35,6 +35,7 @@ class SecurityConfiguration {
   private val FRONTEND_ROUTES: Map[String, String] = Map(
     "/" -> "/index.html",
   )
+  private val UI_PATHS = FRONTEND_ROUTES.flatMap(_.toList).toSet
 
   @Bean
   def frontendResourceFilter: Filter = (request: ServletRequest, response: ServletResponse, chain: FilterChain) => {
@@ -43,23 +44,20 @@ class SecurityConfiguration {
     val contextPath = req.getContextPath
     val path = req.getRequestURI.stripPrefix(contextPath)
     val queryString = Option(req.getQueryString).map(q => s"?$q").getOrElse("")
+    val isForwarded = request.getAttribute("custom.forwarded") != null
+    val fullPathWithQuery = contextPath + path + queryString
+    val strippedPathWithQuery = contextPath + path.stripSuffix("index.html") + queryString.replaceAll("[?&]continue", "")
 
-    val isForwarded = req.getAttribute("custom.forwarded") != null
-    if (!isForwarded && FRONTEND_ROUTES.flatMap(_.toList).toSet.contains(path) && queryString.matches("[?&]continue")) {
-      // Poistetaan index.html osoitteesta
-      val newPath = path.stripSuffix("/index.html")
-      // Poistetaan "continue" query-parametri
-      res.sendRedirect(contextPath + newPath + queryString.replaceAll("[?&]continue", ""))
+    // Karsitaan URL:sta pois tarpeettomat osat ennen forwardia
+    if (!isForwarded && UI_PATHS.contains(path) && !fullPathWithQuery.equals(strippedPathWithQuery)) {
+      res.sendRedirect(strippedPathWithQuery)
+    } else if (!isForwarded && FRONTEND_ROUTES.contains(path)) {
+      // Lisätään attribuutti, jotta voidaan välttää redirect-looppi edellisessä haarassa
+      request.setAttribute("custom.forwarded", true)
+      // Forwardoidaan frontend-pyyntö html-tiedostoon
+      request.getRequestDispatcher(FRONTEND_ROUTES(path)).forward(request, response)
     } else {
-      FRONTEND_ROUTES.get(path) match {
-        case Some(route) => {
-          // Lisätään attribuutti, jotta voidaan välttää uudelleenohjauslooppi
-          request.setAttribute("custom.forwarded", true)
-          // Ohjataan frontend-pyyntö html-tiedostoon
-          request.getRequestDispatcher(route).forward(request, response)
-        }
-        case None => chain.doFilter(request, response)
-      }
+      chain.doFilter(request, response)
     }
   }
 

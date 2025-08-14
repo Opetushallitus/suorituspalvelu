@@ -11,22 +11,34 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
  */
 class FrontendIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
-  @Test def testSpaAnonymous(): Unit =
+  @Test def testFrontendAnonymous(): Unit =
     // Tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders.get("/"))
       .andExpect(status().is3xxRedirection())
       .andExpect(MockMvcResultMatchers.redirectedUrlPattern("DUMMY_CAS_LOGIN*"))
 
   @WithMockUser(value = "kayttaja", authorities = Array())
-  @Test def testSpaIndexRedirect(): Unit =
+  @Test def testFrontendStripIndex(): Unit =
     // Poistetaan index.html ja continue query-parametri
-    mvc.perform(MockMvcRequestBuilders.get("/index.html?continue"))
-      .andExpect(status().is3xxRedirection()).andExpect(MockMvcResultMatchers.redirectedUrl(""))
+    mvc.perform(MockMvcRequestBuilders.get("/index.html"))
+      .andExpect(status().is3xxRedirection()).andExpect(MockMvcResultMatchers.redirectedUrl("/"))
 
   @WithMockUser(value = "kayttaja", authorities = Array())
-  @Test def testSpaUser(): Unit =
+  @Test def testFrontendStripContinueParam(): Unit =
+    // Poistetaan index.html ja continue query-parametri
+    mvc.perform(MockMvcRequestBuilders.get("/?continue"))
+      .andExpect(status().is3xxRedirection()).andExpect(MockMvcResultMatchers.redirectedUrl("/"))
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testFrontendStripIndexAndContinueParam(): Unit =
+    // Poistetaan index.html ja continue query-parametri
+    mvc.perform(MockMvcRequestBuilders.get("/index.html?myparam&continue"))
+      .andExpect(status().is3xxRedirection()).andExpect(MockMvcResultMatchers.redirectedUrl("/?myparam"))
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testFrontendForwardToIndex(): Unit =
     // Tunnistettu käyttäjä -> näytetään käyttöliittymä
     mvc.perform(MockMvcRequestBuilders.get("/"))
-      .andExpect(status().isOk()).andExpect(MockMvcResultMatchers.forwardedUrl("/index.html"))
+      .andExpect(status().isOk).andExpect(MockMvcResultMatchers.forwardedUrl("/index.html"))
 
 }
