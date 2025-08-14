@@ -84,7 +84,7 @@ class BaseIntegraatioTesti {
     System.setProperty("cas-service.sendRenew", "false")
     System.setProperty("cas-service.key", "DUMMY")
     System.setProperty("web.url.cas", "DUMMY")
-    System.setProperty("web.url.cas-login", "DUMMY")
+    System.setProperty("web.url.cas-login", "DUMMY_CAS_LOGIN")
     System.setProperty("host.virkailija", "DUMMY")
 
     val database = Database.forDataSource(getDatasource(), None)

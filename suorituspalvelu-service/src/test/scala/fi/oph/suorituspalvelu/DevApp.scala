@@ -30,7 +30,7 @@ object DevApp {
     System.setProperty("integrations.virta.base-url", "http://virtawstesti.csc.fi:8084")
 
     // cas-configuraatio
-    System.setProperty("cas-service.service", sys.env.getOrElse("CAS_SERVICE_URL", "https://localhost:8443"))
+    System.setProperty("cas-service.service", sys.env.getOrElse("CAS_SERVICE_URL", "https://localhost:8443/suorituspalvelu"))
     System.setProperty("cas-service.sendRenew", "false")
     System.setProperty("cas-service.key", "suorituspalvelu")
 

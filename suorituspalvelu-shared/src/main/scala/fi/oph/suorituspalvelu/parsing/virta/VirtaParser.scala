@@ -1,11 +1,9 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.{DeserializationContext, DeserializationFeature, JsonDeserializer, MapperFeature, ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.databind.{DeserializationContext, DeserializationFeature, JsonDeserializer, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.dataformat.xml.annotation.{JacksonXmlElementWrapper, JacksonXmlProperty, JacksonXmlText}
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -88,7 +86,10 @@ class NimiDeserializer extends JsonDeserializer[Nimi] {
       // jos tullaan tähän haaraan, nimiä on vain yksi ja sillä ei ole kieliattribuuttia
       case nimi: String => Nimi(None, nimi)
       // jos tullaan tähän haaraan kieliä on useita ja niillä pitäisi olla kieliattribuutit, jos ei ole niin räjähdetään
-      case nimi: Map[String, String] => Nimi(Some(nimi.get("kieli").get), nimi.get("").get)
+      case nimi: Map[_, _] =>
+        val nimiMap = nimi.asInstanceOf[Map[String, String]]
+        Nimi(Some(nimiMap("kieli")), nimiMap(""))
+
 }
 
 class ArvosanaDeserializer extends JsonDeserializer[Arvosana] {

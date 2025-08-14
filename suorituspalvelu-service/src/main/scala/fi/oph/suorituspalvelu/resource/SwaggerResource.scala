@@ -17,5 +17,5 @@ class SwaggerResource {
   def redirect(response: HttpServletResponse): Unit =
     LogContext(path = "/swagger")(() =>
       LOG.info("uudelleenohjaus swaggeriin")
-      response.sendRedirect("/static/swagger-ui/index.html"))
+      response.sendRedirect("/suorituspalvelu/static/swagger-ui/index.html"))
 }

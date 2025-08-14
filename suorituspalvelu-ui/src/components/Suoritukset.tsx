@@ -37,6 +37,9 @@ export function Suoritukset({
           value={suoritusOrder}
           exclusive
           onChange={(_event, newValue) => {
+            if (!newValue) {
+              return;
+            }
             setSuoritusOrder(newValue);
           }}
         >

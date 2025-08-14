@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   output: 'export',
   basePath: '/suorituspalvelu',
   distDir: 'out/suorituspalvelu',
+  trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
   },

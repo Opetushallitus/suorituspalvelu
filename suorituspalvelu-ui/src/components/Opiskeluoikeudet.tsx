@@ -84,6 +84,7 @@ export const Opiskeluoikeudet = ({
                     value={
                       <OphLink
                         href={getOppilaitosLinkUrl(config, oo.oppilaitos.oid)}
+                        component="a"
                       >
                         {translateKielistetty(oo.oppilaitos.nimi)}
                       </OphLink>
