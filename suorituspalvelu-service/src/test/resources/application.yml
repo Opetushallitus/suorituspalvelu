@@ -13,7 +13,6 @@ server:
     enabled: true
   servlet:
     context-path: /suorituspalvelu
-  forward-headers-strategy: framework
 
 spring:
   profiles:
