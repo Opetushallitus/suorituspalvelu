@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -389,4 +389,47 @@ class EntityToUIConverterTest {
       ))).toJava,
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None))).get.tuvat)
   }
+
+  @Test def testConvertVapaaSivistystyoKoulutus(): Unit = {
+    val OPPIJANUMERO = "1.2.3"
+
+    val vst = VapaaSivistystyo(
+      UUID.randomUUID(),
+      Kielistetty(Some("Tutkintokoulutukseen valmentava koulutus (TUVA)"), None, None),
+      Koodi("999907", "koulutus", Some(12)),
+      Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
+      Koodi("valmistunut", "", None),
+      Some(LocalDate.parse("2020-01-01")),
+      Some(LocalDate.parse("2020-01-01")),
+      Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
+      Koodi("FI", "kieli", Some(1))
+    )
+
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.VapaaSivistystyoKoulutus(
+      vst.tunniste,
+      VapaaSivistystyoKoulutusNimi(
+        vst.nimi.fi.toJava,
+        vst.nimi.sv.toJava,
+        vst.nimi.en.toJava,
+      ),
+      VapaaSivistystyoOppilaitos(
+        VapaaSivistystyoOppilaitosNimi(
+          vst.oppilaitos.nimi.fi.toJava,
+          vst.oppilaitos.nimi.sv.toJava,
+          vst.oppilaitos.nimi.en.toJava
+        ),
+        vst.oppilaitos.oid
+      ),
+      Tila.VALMIS,
+      vst.aloitusPaivamaara.toJava,
+      vst.vahvistusPaivamaara.toJava,
+      vst.suoritusKieli.arvo,
+      vst.laajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
+        l.lyhytNimi.get.fi.toJava,
+        l.lyhytNimi.get.sv.toJava,
+        l.lyhytNimi.get.en.toJava
+      ))).toJava,
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("", "", None), "", Set(vst), None))).get.vapaaSivistystyoKoulutukset)
+  }
+
 }

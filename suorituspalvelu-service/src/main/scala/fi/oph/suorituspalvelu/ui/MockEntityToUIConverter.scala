@@ -759,16 +759,16 @@ object MockEntityToUIConverter {
       laajuus = Optional.of(TuvaLaajuus(38, TuvaLaajuusYksikko(Optional.of("vk"), Optional.empty(), Optional.empty())))
     ))
 
-  def getVapaanSivistystyonKoulutukset(): List[VapaanSivistystyonKoulutus] =
-    List(VapaanSivistystyonKoulutus(
+  def getVapaaSivistystyoKoulutukset(): List[VapaaSivistystyoKoulutus] =
+    List(VapaaSivistystyoKoulutus(
       tunniste = UUID.randomUUID(),
-      nimi = VapaanSivistystyonKoulutusNimi(
+      nimi = VapaaSivistystyoKoulutusNimi(
         fi = Optional.of("Vapaan sivistystyön koulutus"),
         sv = Optional.of("Fritt bildningsarbete"),
         en = Optional.of("Liberal adult education")
       ),
-      oppilaitos = AmmatillinenOppilaitos(
-        nimi = AmmatillinenOppilaitosNimi(
+      oppilaitos = VapaaSivistystyoOppilaitos(
+        nimi = VapaaSivistystyoOppilaitosNimi(
           fi = Optional.of("Hämeen ammatti-instituutti, Lepaa"),
           sv = Optional.empty(),
           en = Optional.empty()
@@ -779,7 +779,8 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.empty(),
       suorituskieli = "suomi",
-      laajuus = 38))
+      laajuus = Optional.of(VapaaSivistystyoLaajuus(38, VapaaSivistystyoLaajuusYksikko(Optional.of("op"), Optional.empty(), Optional.empty())))
+    ))
 
   def getPerusopetuksenOppimaarat(): List[PerusopetuksenOppimaara] =
     List(PerusopetuksenOppimaara(
@@ -1122,7 +1123,7 @@ object MockEntityToUIConverter {
       erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot().asJava,
       telmat =                                    getTelmat().asJava,
       tuvat =                                     getTuvat().asJava,
-      vapaanSivistystyonKoulutukset =             getVapaanSivistystyonKoulutukset().asJava,
+      vapaaSivistystyoKoulutukset =               getVapaaSivistystyoKoulutukset().asJava,
       perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat().asJava,
       perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset().toJava,
       nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat().asJava,

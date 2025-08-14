@@ -47,7 +47,7 @@ export function useSuorituksetFlattened(
 
     addValue(suoritusTiedot.telmat, 'ammatillinen');
     addValue(suoritusTiedot.tuvat, 'tuva');
-    addValue(suoritusTiedot.vapaanSivistystyonKoulutukset, 'vapaa-sivistystyo');
+    addValue(suoritusTiedot.vapaaSivistystyoKoulutukset, 'vapaa-sivistystyo');
     addValue(suoritusTiedot.perusopetuksenOppimaarat, 'perusopetus');
     addValue(
       suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset,
