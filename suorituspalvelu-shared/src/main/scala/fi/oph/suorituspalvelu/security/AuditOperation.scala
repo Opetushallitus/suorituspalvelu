@@ -24,4 +24,8 @@ object AuditOperation {
   case object PaivitaKoskiTiedotHaunHakijoille extends AuditOperation("KOSKITIETOJEN PÄIVITYS HAUN HAKIJOILLE")
 
   case object PaivitaVirtaTiedotHaunHakijoille extends AuditOperation("VIRTATIETOJEN PÄIVITYS HAUN HAKIJOILLE")
+
+  case object PaivitaYtrTiedotHaunHakijoille extends AuditOperation("YLIOPPILASTUTKINTOREKISTERITIETOJEN PÄIVITYS HAUN HAKIJOILLE")
+
+  case object PaivitaYtrTiedotHenkiloille extends AuditOperation("YLIOPPILASTUTKINTOREKISTERITIETOJEN PÄIVITYS HENKILÖILLE")
 }

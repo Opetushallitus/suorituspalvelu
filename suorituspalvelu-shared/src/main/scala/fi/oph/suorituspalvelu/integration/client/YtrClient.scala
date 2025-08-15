@@ -2,14 +2,12 @@ package fi.oph.suorituspalvelu.integration.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.integration.ytr.Student
-import fi.oph.suorituspalvelu.integration.{KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
 import org.asynchttpclient.Dsl.asyncHttpClient
-import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Realm, Request, Response}
+import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Request, Response}
 import org.slf4j.LoggerFactory
 
 import java.util.Base64
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import java.time.Duration
 
@@ -17,12 +15,16 @@ import java.time.Duration
 case class YtlHetuPostData(ssn: String,
                            previousSsns: Option[Seq[String]])
 
-class YtrClient(username: String, password: String, environmentBaseUrl: String) {
+class YtrClient(username: String, password: String, baseUrl: String) {
 
   val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
 
+  val config = new DefaultAsyncHttpClientConfig.Builder()
+    .setMaxRedirects(5)
+    .setConnectTimeout(Duration.ofMillis(10 * 1000))
+    .build
 
-  private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build);
+  private val client: AsyncHttpClient = asyncHttpClient(config);
 
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
@@ -31,19 +33,16 @@ class YtrClient(username: String, password: String, environmentBaseUrl: String) 
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiClient])
 
-  def fetchOne(hetu: YtlHetuPostData): Future[Option[String]] = {
-    val base = "https://registry.integration.yo-test.ylioppilastutkinto.fi"
-    val url = base + "/api/oph-transfer/student"
-
-    val resultF: Future[Option[String]] = postWithBasicAuth(url, hetu).map(result => {
+  def fetchOne(data: YtlHetuPostData): Future[Option[String]] = {
+    //val url = baseUrl + "/api/oph-transfer/student"
+    val url = "https://registry.integration.yo-test.ylioppilastutkinto.fi:28090/api/oph-transfer/student"
+    val resultF: Future[Option[String]] = postWithBasicAuth(url, data).map(result => {
       if (result.isEmpty) {
-        LOG.info(s"Ei löytynyt ytr-tietoja parametreille $hetu")
+        LOG.info(s"Ei löytynyt ytr-tietoja parametreille $data")
         result
       } else {
         LOG.info(s"Saatiin vastaus ytr: ${result}")
-        //val parsittu = mapper.readValue[Student](result.get, classOf[Student])
-        //LOG.info(s"Parsittiin ytr: ${parsittu}")
-        //Some(parsittu)
+        //Todo, parsitaan vastaus sopivaksi case classiksi
         result
       }
     })
@@ -52,27 +51,22 @@ class YtrClient(username: String, password: String, environmentBaseUrl: String) 
   }
 
   private def encodeBasicAuth(username: String, password: String) = {
+    //LOG.info(s"Basic auth username: $username, password: $password")
     "Basic " + Base64.getEncoder.encodeToString((username + ":" + password).getBytes)
   }
 
   def postWithBasicAuth(url: String, payload: Object): Future[Option[String]] = {
     val payloadString = mapper.writeValueAsString(payload)
-    val realm = new Realm.Builder(username, password)
-      .setUsePreemptiveAuth(true)
-      //.setScheme(Realm.AuthScheme.NTLM)
-      .build
+    LOG.info(s"Payload string: $payloadString")
     val request = client
       .preparePost(url)
-      .setRealm(realm)
       .setHeader("Authorization", encodeBasicAuth(username, password))
-      .setHeader("Content-Type", "application/json; charset=UTF-8")
-      .setHeader("Caller-Id", CALLER_ID)
+      .setHeader("Content-Type", "application/json")
       .setBody(payloadString)
       .build()
-    LOG.info(s"About to execute request $request")
+    //LOG.info(s"About to execute request $request, data ${request.getStringData}")
     executeRequest(request)
   }
-
 
   /**
    * Execute the HTTP request and handle the response asynchronously.
