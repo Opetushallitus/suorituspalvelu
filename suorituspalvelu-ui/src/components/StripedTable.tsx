@@ -11,7 +11,7 @@ const StyledTable = styled(Table, {
     },
   },
   '& .MuiTableCell-root': {
-    padding: theme.spacing(0, 0, 0, 2),
+    padding: theme.spacing(0, 0, 0, 1.5),
     textAlign: 'left',
     whiteSpace: 'pre-wrap',
     height: '42px',

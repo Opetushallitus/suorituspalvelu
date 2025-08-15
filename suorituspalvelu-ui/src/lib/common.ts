@@ -17,3 +17,6 @@ export function castToArray<T>(args: T) {
 }
 
 export type ValueOf<T> = T[keyof T];
+
+export const pointToComma = (val?: string | number): string | undefined =>
+  val?.toString().replace('.', ',');

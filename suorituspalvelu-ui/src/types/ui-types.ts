@@ -27,6 +27,8 @@ import {
   ITelma,
   IEBOppiaine,
   IIBOppiaine,
+  IAmmatillisenTutkinnonOsa,
+  IYTO,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -126,6 +128,8 @@ export type Suoritus =
   | PerusopetusSuoritus;
 
 export type Language = 'fi' | 'sv' | 'en';
+
+export type AmmatillinenTutkinnonOsa = IAmmatillisenTutkinnonOsa | IYTO;
 
 export type TutkinnonOsanOsaAlue = {
   nimi: Kielistetty;
