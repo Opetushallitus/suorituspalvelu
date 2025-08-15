@@ -1,8 +1,8 @@
 'use client';
 
-import { configPromise } from '@/configuration';
+import { useConfig } from '@/configuration';
 import { useTranslate } from '@tolgee/react';
-import React, { use } from 'react';
+import React from 'react';
 
 const LoginLink = ({ url }: { url: string }) => {
   const { t } = useTranslate();
@@ -14,7 +14,7 @@ const LoginLink = ({ url }: { url: string }) => {
 };
 
 export function SessionExpired() {
-  const config = use(configPromise);
+  const config = useConfig();
   const { t } = useTranslate();
 
   return (

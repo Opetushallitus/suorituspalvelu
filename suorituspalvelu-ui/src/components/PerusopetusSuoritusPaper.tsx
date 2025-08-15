@@ -2,18 +2,13 @@ import { PerusopetuksenOppiaine, PerusopetusSuoritus } from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-import {
-  Stack,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-} from '@mui/material';
+import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useMemo } from 'react';
 import { StripedTable } from './StripedTable';
 import { isKielistetty } from '@/lib/translation-utils';
+import { InfoItemRow } from './InfoItemRow';
 
 const Luokkatiedot = ({
   oppimaara,
@@ -26,7 +21,7 @@ const Luokkatiedot = ({
 }) => {
   const { t } = useTranslations();
   return (
-    <Stack direction="row">
+    <InfoItemRow slotAmount={4}>
       {oppimaara.koulusivistyskieli && (
         <LabeledInfoItem
           label={t('oppija.koulusivistyskieli')}
@@ -38,7 +33,7 @@ const Luokkatiedot = ({
         label={t('oppija.yksilollistetty')}
         value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
       />
-    </Stack>
+    </InfoItemRow>
   );
 };
 

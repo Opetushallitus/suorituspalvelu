@@ -1,3 +1,5 @@
+import { use } from 'react';
+
 export const isTest = process.env.NEXT_PUBLIC_TEST === 'true';
 
 export const localTranslations =
@@ -15,6 +17,7 @@ export const getConfiguration = async () => {
         casLoginUrl: `${DOMAIN}/cas/login`,
         lokalisointiUrl: `${DOMAIN}/lokalisointi/tolgee`,
         organisaatioLinkUrl: `${DOMAIN}/organisaatio-service/lomake`,
+        oppijaNumeroLinkUrl: `${DOMAIN}/henkilo-ui/virkailija/`,
       },
       suorituspalvelu: {
         oppijanTiedotUrl: `${suorituspalveluBackendUrl}/ui/tiedot`,
@@ -26,3 +29,5 @@ export const getConfiguration = async () => {
 };
 
 export const configPromise = getConfiguration();
+
+export const useConfig = () => use(configPromise);
