@@ -14,12 +14,7 @@ export const KorkeakouluSuoritusPaper = ({
 
   return (
     suoritus && (
-      <SuoritusInfoPaper
-        key={suoritus.tunniste}
-        suorituksenNimi={translateKielistetty(suoritus.nimi)}
-        valmistumispaiva={suoritus.valmistumispaiva}
-        topColor={ophColors.red1}
-      >
+      <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.red1}>
         <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
         <LabeledInfoItem
           label={t('oppija.hakukohde')}

@@ -6,6 +6,7 @@
   "ladataan": "Ladataan...",
   "kylla": "Kyllä",
   "ei": "Ei",
+  "suoritus": "Suoritus",
   "select": {
     "valitse": "Valitse..."
   },
@@ -98,9 +99,12 @@
     "henkiloOid": "Henkilö-OID"
   },
   "suorituksen-tila": {
-    "VALMIS": "Suoritus valmis",
-    "KESKEN": "Suoritus kesken",
-    "KESKEYTYNYT": "Suoritus keskeytynyt"
+    "VALMIS": "valmis",
+    "KESKEN": "kesken",
+    "KESKEYTYNYT": "keskeytynyt",
+    "MITATOITY": "mitätöity",
+    "PERUUTETTU": "peruutettu",
+    "PAATTYNYT": "päättynyt"
   },
   "suoritustapa": {
     "NAYTTOTUTKINTO": "Näyttötutkinto"

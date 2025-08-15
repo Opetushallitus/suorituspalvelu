@@ -8,12 +8,7 @@ import { LabeledInfoItem } from './LabeledInfoItem';
 export const TuvaSuoritusPaper = ({ suoritus }: { suoritus: TUVASuoritus }) => {
   const { t, translateKielistetty } = useTranslations();
   return (
-    <SuoritusInfoPaper
-      key={suoritus.tunniste}
-      suorituksenNimi={translateKielistetty(suoritus.nimi)}
-      valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.yellow1}
-    >
+    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.yellow1}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LabeledInfoItem
         label={t('oppija.suoritettu')}
