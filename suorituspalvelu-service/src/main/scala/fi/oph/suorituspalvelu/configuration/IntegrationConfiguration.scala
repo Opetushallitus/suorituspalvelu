@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
+import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -22,6 +23,11 @@ class IntegrationConfiguration {
   @Bean
   def getOnrIntegration(): OnrIntegrationImpl =
     new OnrIntegrationImpl
+
+  @Bean
+  def getYtrIntegration(): YtrIntegration =
+    new YtrIntegration
+
 
   @Bean
   def getKoskiClient(@Value("${integrations.koski.username}") user: String,

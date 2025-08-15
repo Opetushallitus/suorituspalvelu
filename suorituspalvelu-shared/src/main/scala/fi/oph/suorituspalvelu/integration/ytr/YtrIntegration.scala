@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.integration.ytr
 
-import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegration, OnrMasterHenkilo}
-import fi.oph.suorituspalvelu.integration.client.{YtlHetuPostData, YtrClient}
+import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegration, OnrMasterHenkilo, SyncResultForHenkilo}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, YtlHetuPostData, YtrClient}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -33,9 +33,24 @@ class YtrIntegration {
   private val LOG: Logger = LoggerFactory.getLogger(classOf[KoskiIntegration])
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
+  private val HENKILO_TIMEOUT = 5.minutes
+
+
   @Autowired val ytrClient: YtrClient = null
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+
+
+  @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  def syncYtrForHaku(hakuOid: String): Seq[Option[String]] = {
+    val personOids =
+      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
+        .flatMap(_.personOid).toSet
+    fetchRawForStudents(personOids)
+  }
+
 
   def fetchRawForStudents(personOids: Set[String]): Seq[Option[String]] = {
     val useHenkilot = personOids.take(10)
@@ -44,7 +59,7 @@ class YtrIntegration {
     //Todo, käytetään massahakutoiminnallisuutta vähänkin suuremmille erille (10+? 100+? 500+?)
     val resultF = henkilot.map((henkiloResult: Map[String, OnrMasterHenkilo]) => {
       LOG.info(s"Saatiin oppijanumerorekisteristä ${henkiloResult.size} henkilön tiedot ${useHenkilot.size} haetulle henkilölle")
-      val ytrParams = henkiloResult.values.filter(_.hetu.isDefined).map(h => YtlHetuPostData(h.hetu.get, h.kaikkiHetut))
+      val ytrParams = henkiloResult.values.filter(_.hetu.isDefined).map(h => YtlHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty))))
       LOG.info(s"Haetuista henkilöistä ${ytrParams.size} henkilölle löytyi hetu, eli haetaan ytr-tiedot")
       val k = ytrParams.map(ytrParam => {
         val resultF = ytrClient.fetchOne(ytrParam)
@@ -54,7 +69,6 @@ class YtrIntegration {
       k
     })
     Await.result(resultF, 5.minutes)
-
   }
 
   //Dataa ei välttämättä löydy ytr:stä
