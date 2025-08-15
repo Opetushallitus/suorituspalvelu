@@ -126,3 +126,9 @@ export type Suoritus =
   | PerusopetusSuoritus;
 
 export type Language = 'fi' | 'sv' | 'en';
+
+export type TutkinnonOsanOsaAlue = {
+  nimi: Kielistetty;
+  laajuus?: number;
+  arvosana?: string;
+};
