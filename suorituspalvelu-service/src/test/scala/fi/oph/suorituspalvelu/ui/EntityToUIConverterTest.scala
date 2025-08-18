@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
@@ -36,7 +36,7 @@ class EntityToUIConverterTest {
           Koodi("106915", "tutkinnonosat", None),
           false,
           Some(LocalDate.parse("2022-01-01")),
-          Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
+          Some(Arvosana(Koodi("1", "arviointiasteikkoammatillinen15", None), Kielistetty(None, None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set(AmmatillisenTutkinnonOsaAlue(
             UUID.randomUUID(),
@@ -52,7 +52,7 @@ class EntityToUIConverterTest {
           Koodi("106727", "tutkinnonosat", None),
           true,
           Some(LocalDate.parse("2022-01-01")),
-          Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None)),
+          Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None), Kielistetty(Some("Hyväksytty"), None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set.empty
         )
@@ -90,7 +90,13 @@ class EntityToUIConverterTest {
           ),
           osa.arviointiPaiva.toJava,
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.arvo).toJava,
+          osa.arvosana.map(a =>
+            YTOArvosana(
+              a.nimi.fi.toJava,
+              a.nimi.sv.toJava,
+              a.nimi.en.toJava
+            )
+          ).toJava,
           osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.YTOOsaAlue(
             YTOOsaAlueNimi(
               oa.nimi.fi.toJava,
@@ -225,7 +231,7 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.arvo).toJava,
+          osa.arvosana.map(_.koodi.arvo).toJava,
           osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
             AmmatillisenTutkinnonOsaAlueNimi(
               oa.nimi.fi.toJava,

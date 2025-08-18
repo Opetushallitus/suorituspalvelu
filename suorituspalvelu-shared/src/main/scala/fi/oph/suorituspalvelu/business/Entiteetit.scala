@@ -30,7 +30,7 @@ case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
 case class Laajuus(arvo: BigDecimal, yksikko: Koodi, nimi: Option[Kielistetty], lyhytNimi: Option[Kielistetty])
 
-case class Arvosana(arvosana: String, koodi: String)
+case class Arvosana(koodi: Koodi, nimi: Kielistetty)
 
 case class Oppilaitos(nimi: Kielistetty, oid: String)
 
@@ -42,7 +42,7 @@ case class AmmatillinenPerustutkinto(tunniste: UUID, nimi: Kielistetty, koodi: K
 
 case class AmmatillisenTutkinnonOsaAlue(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, arvosana: Option[Koodi], laajuus: Option[Laajuus]) extends Tyypitetty
 
-case class AmmatillisenTutkinnonOsa(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, yto: Boolean, arviointiPaiva: Option[LocalDate], arvosana: Option[Koodi], laajuus: Option[Laajuus], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
+case class AmmatillisenTutkinnonOsa(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, yto: Boolean, arviointiPaiva: Option[LocalDate], arvosana: Option[Arvosana], laajuus: Option[Laajuus], osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]) extends Tyypitetty
 
 case class Telma(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, oppilaitos: Oppilaitos, tila: Koodi, aloitusPaivamaara: Option[LocalDate], vahvistusPaivamaara: Option[LocalDate], suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 

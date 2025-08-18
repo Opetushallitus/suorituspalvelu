@@ -53,6 +53,19 @@ export interface IAmmatillisenTutkinnonOsa {
   nimi: IAmmatillisenTutkinnonOsaNimi;
   laajuus?: number;
   arvosana?: string;
+  osaAlueet: IAmmatillisenTutkinnonOsaAlue[];
+}
+
+export interface IAmmatillisenTutkinnonOsaAlue {
+  nimi: IAmmatillisenTutkinnonOsaAlueNimi;
+  laajuus?: number;
+  arvosana?: string;
+}
+
+export interface IAmmatillisenTutkinnonOsaAlueNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
 export interface IAmmatillisenTutkinnonOsaNimi {
@@ -639,11 +652,31 @@ export interface IYOTutkintoNimi {
 export interface IYTO {
   tunniste: string;
   nimi: IYTONimi;
+  vahvistuspaiva?: Date;
+  laajuus?: number;
+  arvosana?: IYTOArvosana;
+  osaAlueet: IYTOOsaAlue[];
+}
+
+export interface IYTOArvosana {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IYTONimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IYTOOsaAlue {
+  nimi: IYTOOsaAlueNimi;
   laajuus?: number;
   arvosana?: string;
 }
 
-export interface IYTONimi {
+export interface IYTOOsaAlueNimi {
   fi?: string;
   sv?: string;
   en?: string;
