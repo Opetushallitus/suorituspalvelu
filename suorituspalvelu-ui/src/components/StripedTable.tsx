@@ -45,6 +45,6 @@ type StripedTableProps = TableProps & {
   stripeGroup?: 'row' | 'body';
 };
 
-export const StripedTable = (props: StripedTableProps) => {
-  return <StyledTable {...props} />;
-};
+export const StripedTable = (props: StripedTableProps) => (
+  <StyledTable {...props} />
+);

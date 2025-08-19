@@ -60,10 +60,8 @@ export default function HenkiloPage({
   oppijaNumero: string;
 }) {
   return (
-    <div>
-      <Suspense fallback={<FullSpinner />}>
-        <OppijaContent oppijaNumero={oppijaNumero} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<FullSpinner />}>
+      <OppijaContent oppijaNumero={oppijaNumero} />
+    </Suspense>
   );
 }

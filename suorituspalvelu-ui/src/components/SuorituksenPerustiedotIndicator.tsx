@@ -6,7 +6,7 @@ import { LabeledInfoItem } from './LabeledInfoItem';
 import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
-import { OppilaitosInfoItem } from '@/app/OppilaitosInfoItem';
+import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
 import { formatFinnishDate } from '@/lib/common';
 
 const SuorituksenTilaIcon = ({ tila }: { tila: SuorituksenTila }) => {

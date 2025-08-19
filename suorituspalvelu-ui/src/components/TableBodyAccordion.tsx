@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { TableBody, TableCell, TableRow } from '@mui/material';
+import { Box, TableBody, TableCell, TableRow } from '@mui/material';
 import { OphButton, ophColors } from '@opetushallitus/oph-design-system';
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import { ExpandMore } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
-import { isTruthy } from 'remeda';
-import { toId } from '@/lib/common';
+import { truthyReactChildren, toId } from '@/lib/common';
 
 const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   ...theme.typography.h5,
@@ -16,23 +15,28 @@ const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: 0,
 }));
 
-function hasNonEmptyChildren(children: React.ReactNode) {
-  const filteredChildren = React.Children.toArray(children).filter((child) =>
-    isTruthy(child),
-  );
-  return filteredChildren.length > 0;
-}
-
-export const AccordionTableItem = ({
+/**
+ * TableBodyAccordion yhdistää taulukon rivin ja Accordion-komponentin toiminnallisuutta.
+ * Komponentti näyttää taulukkorivin, jonka ensimmäinen solu on accordion-otsikko, jota klikkaamalla
+ * voidaan avata tai sulkea accordionin sisältö. Semanttisesti komponentissa on kaksi tbody-elementtiä:
+ * yksi accordion-otsikkoriville ja toinen accordionin sisällölle.
+ * Avattava sisältö näytetään yhdessä solussa, joka on koko taulukon levyinen.
+ *
+ * @param title Otsikko, joka näytetään accordion-otsikkorivin ensimmäisessä solussa.
+ * @param otherCells Accordion-otsikkorivin muut solut, jotka näytetään otsikkosolun jälkeen.
+ * @param children Sisältö, joka näytetään avattavassa osiossa. Jos tyhjä, ei näytetä accordionia lainkaan.
+ * @param contentCellStyle Tyylimäärittelyt avattavan sisällön solulle.
+ */
+export const TableBodyAccordion = ({
   title,
   children,
-  headingCells,
-  cellStyle,
+  otherCells,
+  contentCellStyle,
 }: {
   title: string;
-  headingCells: Array<React.ReactNode>;
+  otherCells: Array<React.ReactNode>;
   children: React.ReactNode;
-  cellStyle?: React.CSSProperties;
+  contentCellStyle?: React.CSSProperties;
 }) => {
   const { t } = useTranslations();
 
@@ -45,9 +49,9 @@ export const AccordionTableItem = ({
     ? `${t('oppija.nayta')} ${title}`
     : `${t('oppija.piilota')} ${title}`;
 
-  const columnCount = (headingCells?.length ?? 0) + 1;
+  const columnCount = (otherCells?.length ?? 0) + 1;
 
-  const hasChildren = hasNonEmptyChildren(children);
+  const hasChildren = truthyReactChildren(children).length > 0;
 
   return (
     <>
@@ -82,7 +86,7 @@ export const AccordionTableItem = ({
           ) : (
             <TableCell>{title}</TableCell>
           )}
-          {headingCells}
+          {otherCells}
         </TableRow>
       </TableBody>
       {hasChildren && (
@@ -93,14 +97,10 @@ export const AccordionTableItem = ({
           }}
         >
           <TableRow>
-            <TableCell
-              id={contentId}
-              role="region"
-              colSpan={columnCount}
-              sx={cellStyle}
-              aria-labelledby={headerId}
-            >
-              {children}
+            <TableCell colSpan={columnCount} sx={contentCellStyle}>
+              <Box id={contentId} role="region" aria-labelledby={headerId}>
+                {children}
+              </Box>
             </TableCell>
           </TableRow>
         </TableBody>

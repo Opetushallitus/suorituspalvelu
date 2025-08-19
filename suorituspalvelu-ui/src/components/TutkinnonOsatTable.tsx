@@ -14,7 +14,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { isEmpty, sumBy } from 'remeda';
-import { AccordionTableItem } from './AccordionTable';
+import { TableBodyAccordion } from './TableBodyAccordion';
 import { StripedTable } from './StripedTable';
 import { styled } from '@/lib/theme';
 import { isKielistetty } from '@/lib/translation-utils';
@@ -148,11 +148,11 @@ export function TutkinnonOsatTable({
           const vahvistusPvmId = `vahvistuspvm-${tutkinnonOsa.tunniste}`;
           const arvosana = tutkinnonOsa.arvosana;
           return (
-            <AccordionTableItem
+            <TableBodyAccordion
               key={tutkinnonOsa.tunniste}
-              cellStyle={{ paddingLeft: '46px' }}
+              contentCellStyle={{ paddingLeft: '46px' }}
               title={translateKielistetty(tutkinnonOsa.nimi)}
-              headingCells={[
+              otherCells={[
                 <TableCell key="laajuus">{tutkinnonOsa.laajuus}</TableCell>,
                 <TableCell key="arvosana">
                   {isKielistetty(arvosana)
@@ -175,7 +175,7 @@ export function TutkinnonOsatTable({
               {!isEmpty(tutkinnonOsa.osaAlueet) && (
                 <OsaAlueetTable osaAlueet={tutkinnonOsa.osaAlueet} />
               )}
-            </AccordionTableItem>
+            </TableBodyAccordion>
           );
         })}
         <KokonaislaajuusRow

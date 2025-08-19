@@ -1,4 +1,6 @@
 import { formatDate } from 'date-fns';
+import React from 'react';
+import { isTruthy } from 'remeda';
 
 export const DEFAULT_NUQS_OPTIONS = {
   history: 'push',
@@ -42,3 +44,7 @@ export const removeAccents = (text?: string | null): string => {
 export const toId = (text?: string | null): string => {
   return removeAccents(removeWhiteSpace(text)).toLowerCase();
 };
+
+export function truthyReactChildren(children: React.ReactNode) {
+  return React.Children.toArray(children).filter((child) => isTruthy(child));
+}
