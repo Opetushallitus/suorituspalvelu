@@ -26,7 +26,7 @@ const Luokkatiedot = ({
 }) => {
   const { t } = useTranslations();
   return (
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+    <Stack direction="row">
       {oppimaara.koulusivistyskieli && (
         <LabeledInfoItem
           label={t('oppija.koulusivistyskieli')}
