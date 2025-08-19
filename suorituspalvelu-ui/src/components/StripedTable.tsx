@@ -1,9 +1,9 @@
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
-import { Box, Table, TableProps } from '@mui/material';
+import { Table, TableProps } from '@mui/material';
 
 const StyledTable = styled(Table, {
   shouldForwardProp: (prop) => prop !== 'stripeGroup',
-})<{ stripeGroup: 'row' | 'body' }>(({ theme, stripeGroup = 'row' }) => ({
+})<{ stripeGroup?: 'row' | 'body' }>(({ theme, stripeGroup = 'row' }) => ({
   width: '100%',
   '& .MuiTableHead-root': {
     '& .MuiTableRow-root': {
@@ -36,18 +36,15 @@ const StyledTable = styled(Table, {
   },
 }));
 
-export const TableWrapper = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  display: 'block',
-  overflowX: 'auto',
-  rowGap: theme.spacing(1),
-  alignSelf: 'stretch',
-}));
+type StripedTableProps = TableProps & {
+  /**
+   * Määrittää, miten taulukon rivit raidoitetaan.
+   * - row: Raidoitus taulukon rivien mukaan.
+   * - body: Raidoitus tbody-elementtien mukaan.
+   **/
+  stripeGroup?: 'row' | 'body';
+};
 
-export const StripedTable = (
-  props: TableProps & { stripeGroup?: 'row' | 'body' },
-) => (
-  <TableWrapper tabIndex={0}>
-    <StyledTable {...props} stripeGroup={props.stripeGroup ?? 'row'} />
-  </TableWrapper>
-);
+export const StripedTable = (props: StripedTableProps) => {
+  return <StyledTable {...props} />;
+};

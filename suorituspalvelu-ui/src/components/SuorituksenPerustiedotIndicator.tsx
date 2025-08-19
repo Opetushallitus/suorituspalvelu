@@ -33,7 +33,7 @@ const SuorituksenTilaIndicator = ({ tila }: { tila: SuorituksenTila }) => {
   const { t } = useTranslate();
 
   return (
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
       <SuorituksenTilaIcon tila={tila} />
       <OphTypography>{t(`suorituksen-tila.${tila}`)}</OphTypography>
     </Stack>
