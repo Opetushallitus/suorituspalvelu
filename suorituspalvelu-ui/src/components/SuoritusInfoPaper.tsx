@@ -1,11 +1,10 @@
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { PaperWithTopColor } from './PaperWithTopColor';
-import { formatDate } from 'date-fns';
 import { Stack } from '@mui/material';
 import { SuoritusOtsikkoTiedot } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isNonNullish } from 'remeda';
-import { NDASH } from '@/lib/common';
+import { formatYear, NDASH } from '@/lib/common';
 
 const Vuodet = ({ suoritus }: { suoritus: SuoritusOtsikkoTiedot }) => {
   const { t } = useTranslations();
@@ -14,13 +13,13 @@ const Vuodet = ({ suoritus }: { suoritus: SuoritusOtsikkoTiedot }) => {
     case isNonNullish(suoritus.valmistumispaiva):
       return (
         <OphTypography variant="body1" component="span">
-          ({formatDate(suoritus.valmistumispaiva, 'y')})
+          ({formatYear(suoritus.valmistumispaiva)})
         </OphTypography>
       );
     case isNonNullish(suoritus.aloituspaiva):
       return (
         <OphTypography variant="body1" component="span">
-          {`(${formatDate(suoritus.aloituspaiva, 'y')} ${NDASH} ${t(`suorituksen-tila.${suoritus.tila}`)})`}
+          {`(${formatYear(suoritus.aloituspaiva)} ${NDASH} ${t(`suorituksen-tila.${suoritus.tila}`)})`}
         </OphTypography>
       );
   }

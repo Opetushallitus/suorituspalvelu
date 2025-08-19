@@ -7,10 +7,10 @@ import { Opiskeluoikeudet } from './Opiskeluoikeudet';
 import { Suoritukset } from './Suoritukset';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
-import { formatDate } from 'date-fns';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { ExternalLink } from './ExternalLink';
 import { useConfig } from '@/configuration';
+import { formatFinnishDate } from '@/lib/common';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -36,7 +36,7 @@ const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
         <Stack direction="row">
           <LabeledInfoItem
             label={t('oppija.syntymaaika')}
-            value={formatDate(tiedot?.syntymaAika, 'd.M.y')}
+            value={formatFinnishDate(tiedot?.syntymaAika)}
           />
           <LabeledInfoItem
             label={t('oppija.oppijanumero')}

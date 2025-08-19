@@ -11,10 +11,10 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { useTranslations } from '@/hooks/useTranslations';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { styled } from '@/lib/theme';
-import { formatDate } from 'date-fns';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { StripedTable } from './StripedTable';
 import { isEmpty } from 'remeda';
+import { formatFinnishDate } from '@/lib/common';
 
 const UnorderedList = styled('ul')(({ theme }) => ({
   margin: 0,
@@ -235,7 +235,7 @@ const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
             <TableCell>{row.taso}</TableCell>
             <TableCell>{row.arvosana}</TableCell>
             <TableCell>{row.yhteispistemaara.toString()}</TableCell>
-            <TableCell>{formatDate(row.tutkintokerta, 'd.M.y')}</TableCell>
+            <TableCell>{formatFinnishDate(row.tutkintokerta)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

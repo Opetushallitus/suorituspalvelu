@@ -17,8 +17,8 @@ import { isEmpty, sumBy } from 'remeda';
 import { AccordionTableItem } from './AccordionTable';
 import { StripedTable } from './StripedTable';
 import { styled } from '@/lib/theme';
-import { formatDate } from 'date-fns';
 import { isKielistetty } from '@/lib/translation-utils';
+import { formatFinnishDate } from '@/lib/common';
 
 const FIXED_COLUMN_WIDTH = '190px';
 
@@ -166,7 +166,7 @@ export function TutkinnonOsatTable({
                       {t('oppija.vahvistuspvm')}
                     </OphTypography>
                     <OphTypography aria-labelledby={vahvistusPvmId}>
-                      {formatDate(tutkinnonOsa.vahvistuspaiva, 'd.M.y')}
+                      {formatFinnishDate(tutkinnonOsa.vahvistuspaiva)}
                     </OphTypography>
                   </Stack>
                 )}

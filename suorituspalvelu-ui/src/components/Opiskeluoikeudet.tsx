@@ -1,10 +1,9 @@
-import { NDASH } from '@/lib/common';
+import { formatFinnishDate, NDASH } from '@/lib/common';
 import { currentFinnishDate, isInRange } from '@/lib/time-utils';
 import { Circle } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
-import { formatDate } from 'date-fns';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { Opiskeluoikeus } from '@/types/ui-types';
@@ -28,9 +27,9 @@ const VoimassaoloIndicator = ({
   return (
     <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 2 }}>
       <Box>
-        {voimassaolonAlku ? formatDate(voimassaolonAlku, 'd.M.y') : ''}
+        {formatFinnishDate(voimassaolonAlku)}
         {` ${NDASH} `}
-        {voimassaolonLoppu ? formatDate(voimassaolonLoppu, 'd.M.y') : ''}
+        {formatFinnishDate(voimassaolonLoppu)}
       </Box>
       <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 0.5 }}>
         <Circle
@@ -67,7 +66,11 @@ export const Opiskeluoikeudet = ({
                 spacing={1}
                 data-test-id="opiskeluoikeus-paper"
               >
-                <OphTypography variant="label" sx={{ marginBottom: 1 }}>
+                <OphTypography
+                  variant="label"
+                  component="h3"
+                  sx={{ marginBottom: 1 }}
+                >
                   {translateKielistetty(oo.nimi)}
                 </OphTypography>
                 <Stack direction="row">

@@ -5,9 +5,9 @@ import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
-import { formatDate } from 'date-fns';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OppilaitosInfoItem } from '@/app/OppilaitosInfoItem';
+import { formatFinnishDate } from '@/lib/common';
 
 const SuorituksenTilaIcon = ({ tila }: { tila: SuorituksenTila }) => {
   switch (tila) {
@@ -42,7 +42,7 @@ const ValmistumispaivaIndicator = ({
 }) => {
   return (
     <OphTypography>
-      {valmistumispaiva ? formatDate(valmistumispaiva, 'd.M.y') : '-'}
+      {valmistumispaiva ? formatFinnishDate(valmistumispaiva) : '-'}
     </OphTypography>
   );
 };
