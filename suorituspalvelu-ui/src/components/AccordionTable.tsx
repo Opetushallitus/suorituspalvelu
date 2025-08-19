@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { TableBody, TableCell, TableRow } from '@mui/material';
 import { OphButton, ophColors } from '@opetushallitus/oph-design-system';
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
-import { ChevronRight } from '@mui/icons-material';
+import { ExpandMore } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
+import { isTruthy } from 'remeda';
 
 const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   ...theme.typography.h5,
@@ -14,14 +15,23 @@ const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: 0,
 }));
 
+function hasNonEmptyChildren(children: React.ReactNode) {
+  const filteredChildren = React.Children.toArray(children).filter((child) =>
+    isTruthy(child),
+  );
+  return filteredChildren.length > 0;
+}
+
 export const AccordionTableItem = ({
   title,
   children,
   headingCells,
+  cellStyle,
 }: {
   title: string;
   headingCells: Array<React.ReactNode>;
   children: React.ReactNode;
+  cellStyle?: React.CSSProperties;
 }) => {
   const { t } = useTranslations();
 
@@ -36,6 +46,8 @@ export const AccordionTableItem = ({
 
   const columnCount = (headingCells?.length ?? 0) + 1;
 
+  const hasChildren = hasNonEmptyChildren(children);
+
   return (
     <>
       <TableBody>
@@ -45,43 +57,51 @@ export const AccordionTableItem = ({
             borderTop: DEFAULT_BOX_BORDER,
           }}
         >
-          <AccordionHeaderCell>
-            <OphButton
-              id={headerId}
-              variant="text"
-              aria-label={toggleButtonTitle}
-              sx={{ color: ophColors.black }}
-              startIcon={
-                <ChevronRight
-                  sx={{
-                    transform: isOpen ? 'rotate(90deg)' : 'none',
-                    transition: 'transform 0.15s ease-in-out',
-                  }}
-                />
-              }
-              onClick={() => setIsOpen((open) => !open)}
-              aria-controls={contentId}
-              aria-expanded={isOpen ? 'true' : 'false'}
-            >
-              {title}
-            </OphButton>
-          </AccordionHeaderCell>
+          {hasChildren ? (
+            <AccordionHeaderCell>
+              <OphButton
+                id={headerId}
+                variant="text"
+                aria-label={toggleButtonTitle}
+                sx={{ fontWeight: 400 }}
+                startIcon={
+                  <ExpandMore
+                    sx={{
+                      transform: isOpen ? 'rotate(180deg)' : 'none',
+                      color: ophColors.grey900,
+                    }}
+                  />
+                }
+                onClick={() => setIsOpen((open) => !open)}
+                aria-controls={contentId}
+                aria-expanded={isOpen ? 'true' : 'false'}
+              >
+                {title}
+              </OphButton>
+            </AccordionHeaderCell>
+          ) : (
+            <TableCell>{title}</TableCell>
+          )}
           {headingCells}
         </TableRow>
       </TableBody>
-      <TableBody
-        role="region"
-        id={contentId}
-        aria-labelledby={headerId}
-        sx={{
-          minHeight: 0,
-          display: isOpen ? 'table-row-group' : 'none',
-        }}
-      >
-        <TableRow>
-          <TableCell colSpan={columnCount}>{children}</TableCell>
-        </TableRow>
-      </TableBody>
+      {hasChildren && (
+        <TableBody
+          role="region"
+          id={contentId}
+          aria-labelledby={headerId}
+          sx={{
+            minHeight: 0,
+            display: isOpen ? 'table-row-group' : 'none',
+          }}
+        >
+          <TableRow>
+            <TableCell colSpan={columnCount} sx={cellStyle}>
+              {children}
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      )}
     </>
   );
 };

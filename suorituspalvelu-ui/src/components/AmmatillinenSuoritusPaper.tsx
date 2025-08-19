@@ -5,7 +5,8 @@ import { AmmatillinenSuoritus } from '@/types/ui-types';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { NonEmptyStack } from './NonEmptyStack';
-import { YhteisetTutkinnonOsatTable } from './YhteisetTutkinnonOsatTable';
+import { TutkinnonOsatTable } from './TutkinnonOsatTable';
+import { pointToComma } from '@/lib/common';
 
 export const AmmatillinenSuoritusPaper = ({
   suoritus,
@@ -30,11 +31,24 @@ export const AmmatillinenSuoritusPaper = ({
         {'painotettuKeskiarvo' in suoritus && suoritus.painotettuKeskiarvo && (
           <LabeledInfoItem
             label={t('oppija.painotettu-keskiarvo')}
-            value={suoritus.painotettuKeskiarvo}
+            value={pointToComma(suoritus.painotettuKeskiarvo)}
           />
         )}
       </NonEmptyStack>
-      <YhteisetTutkinnonOsatTable suoritus={suoritus} />
+      {'ytot' in suoritus && (
+        <TutkinnonOsatTable
+          tutkinnonOsat={suoritus.ytot}
+          title={t('oppija.yhteiset-tutkinnon-osat')}
+          maxKokonaislaajuus={35}
+        />
+      )}
+      {'ammatillisenTutkinnonOsat' in suoritus && (
+        <TutkinnonOsatTable
+          tutkinnonOsat={suoritus.ammatillisenTutkinnonOsat}
+          title={t('oppija.ammatilliset-tutkinnon-osat')}
+          maxKokonaislaajuus={145}
+        />
+      )}
     </SuoritusInfoPaper>
   );
 };
