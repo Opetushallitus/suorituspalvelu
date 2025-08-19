@@ -62,3 +62,10 @@ export const checkTable = async (
     await checkRow(row, expectedRow);
   }
 };
+
+export const expectList = async (list: Locator, items: Array<string>) => {
+  await expect(list).toHaveCount(items.length);
+  for (let i = 0; i < items.length; i++) {
+    await expect(list.nth(i)).toHaveText(items[i] as string);
+  }
+};

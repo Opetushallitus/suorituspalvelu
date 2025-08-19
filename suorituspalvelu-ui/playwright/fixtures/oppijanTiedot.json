@@ -547,7 +547,7 @@
           },
           "vahvistuspaiva": "2024-12-31",
           "laajuus": 11,
-          "arvosana": "HYVAKSYTTY",
+          "arvosana": { "fi": "Hyväksytty", "sv": "Godkänd", "en": "Pass" },
           "osaAlueet": [
             {
               "nimi": {
@@ -587,7 +587,7 @@
           },
           "vahvistuspaiva": "2024-12-31",
           "laajuus": 11,
-          "arvosana": "HYVAKSYTTY",
+          "arvosana": { "fi": "Hyväksytty", "sv": "Godkänd", "en": "Pass" },
           "osaAlueet": []
         },
         {
@@ -599,7 +599,7 @@
           },
           "vahvistuspaiva": "2024-12-31",
           "laajuus": 11,
-          "arvosana": "HYVAKSYTTY",
+          "arvosana": { "fi": "Hyväksytty", "sv": "Godkänd", "en": "Pass" },
           "osaAlueet": []
         }
       ],
@@ -768,7 +768,7 @@
       }
     }
   ],
-  "vapaanSivistystyonKoulutukset": [
+  "vapaaSivistystyoKoulutukset": [
     {
       "tunniste": "95d3f1e8-0239-4189-b18d-6694ecfeb313",
       "nimi": {

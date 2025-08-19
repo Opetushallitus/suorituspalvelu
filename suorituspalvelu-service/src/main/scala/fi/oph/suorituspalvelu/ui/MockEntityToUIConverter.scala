@@ -145,9 +145,9 @@ object MockEntityToUIConverter {
     Some(LukionOppimaara(
       tunniste = UUID.randomUUID(),
       nimi = LukionOppimaaraNimi(
-        fi = Optional.of("Lukion oppimaara"),
-        sv = Optional.of("Lukion oppimaara sv"),
-        en = Optional.of("Lukion oppimaara en")
+        fi = Optional.of("Lukion oppimäärä"),
+        sv = Optional.of("Lukion oppimäärä sv"),
+        en = Optional.of("Lukion oppimäärä en")
       ),
       oppilaitos = YOOppilaitos(
         nimi = YOOppilaitosNimi(
