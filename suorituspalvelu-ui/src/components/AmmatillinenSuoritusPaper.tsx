@@ -4,9 +4,9 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { AmmatillinenSuoritus } from '@/types/ui-types';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
-import { NonEmptyStack } from './NonEmptyStack';
 import { TutkinnonOsatTable } from './TutkinnonOsatTable';
 import { pointToComma } from '@/lib/common';
+import { InfoItemRow } from './InfoItemRow';
 
 export const AmmatillinenSuoritusPaper = ({
   suoritus,
@@ -21,7 +21,7 @@ export const AmmatillinenSuoritusPaper = ({
       topColor={ophColors.green2}
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
-      <NonEmptyStack direction="row">
+      <InfoItemRow slotAmount={4}>
         {'suoritustapa' in suoritus && suoritus.suoritustapa && (
           <LabeledInfoItem
             label={t('oppija.suoritustapa')}
@@ -34,7 +34,7 @@ export const AmmatillinenSuoritusPaper = ({
             value={pointToComma(suoritus.painotettuKeskiarvo)}
           />
         )}
-      </NonEmptyStack>
+      </InfoItemRow>
       {'ytot' in suoritus && (
         <TutkinnonOsatTable
           tutkinnonOsat={suoritus.ytot}

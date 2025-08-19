@@ -1,12 +1,11 @@
 'use client';
 
 import { Providers } from '@/components/Providers';
-import { configPromise, isTest } from '@/configuration';
+import { isTest, useConfig } from '@/configuration';
 import Script from 'next/script';
-import { use } from 'react';
 
 function Layout({ children }: { children: React.ReactNode }) {
-  const config = use(configPromise);
+  const config = useConfig();
 
   return (
     <html lang="fi">
