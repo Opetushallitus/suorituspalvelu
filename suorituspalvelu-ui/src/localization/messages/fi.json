@@ -89,5 +89,8 @@
     "VALMIS": "Suoritus valmis",
     "KESKEN": "Suoritus kesken",
     "KESKEYTYNYT": "Suoritus keskeytynyt"
+  },
+  "suoritustapa": {
+    "NAYTTOTUTKINTO": "Näyttötutkinto"
   }
 }
