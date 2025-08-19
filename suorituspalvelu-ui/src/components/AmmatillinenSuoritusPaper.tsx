@@ -4,6 +4,7 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { AmmatillinenSuoritus } from '@/types/ui-types';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
+import { Stack } from '@mui/material';
 
 export const AmmatillinenSuoritusPaper = ({
   suoritus,
@@ -18,12 +19,20 @@ export const AmmatillinenSuoritusPaper = ({
       topColor={ophColors.green2}
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
-      {'suoritustapa' in suoritus && suoritus.suoritustapa && (
-        <LabeledInfoItem
-          label={t('oppija.suoritustapa')}
-          value={t(`suoritustapa.${suoritus.suoritustapa}`)}
-        />
-      )}
+      <Stack direction="row">
+        {'suoritustapa' in suoritus && suoritus.suoritustapa && (
+          <LabeledInfoItem
+            label={t('oppija.suoritustapa')}
+            value={t(`suoritustapa.${suoritus.suoritustapa}`)}
+          />
+        )}
+        {'painotettuKeskiarvo' in suoritus && (
+          <LabeledInfoItem
+            label={t('oppija.painotettu-keskiarvo')}
+            value={suoritus.painotettuKeskiarvo}
+          />
+        )}
+      </Stack>
     </SuoritusInfoPaper>
   );
 };
