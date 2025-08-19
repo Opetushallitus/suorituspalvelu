@@ -248,14 +248,8 @@ export const LukioSuoritusPaper = ({
 }: {
   suoritus: LukioSuoritus;
 }) => {
-  const { translateKielistetty } = useTranslations();
-
   return (
-    <SuoritusInfoPaper
-      suorituksenNimi={translateKielistetty(suoritus.nimi)}
-      valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.blue2}
-    >
+    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.blue2}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LukionOppiaineet suoritus={suoritus} />
       {'yoKokeet' in suoritus && <YoKokeetTable yoKokeet={suoritus.yoKokeet} />}

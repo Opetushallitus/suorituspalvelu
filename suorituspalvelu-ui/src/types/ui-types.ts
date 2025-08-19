@@ -43,6 +43,13 @@ export type SuorituksenPerustiedot = {
   valmistumispaiva?: Date;
 };
 
+export type SuoritusOtsikkoTiedot = {
+  nimi: Kielistetty;
+  tila: SuorituksenTila;
+  aloituspaiva?: Date;
+  valmistumispaiva?: Date;
+};
+
 export type Kielistetty = {
   fi?: string;
   sv?: string;

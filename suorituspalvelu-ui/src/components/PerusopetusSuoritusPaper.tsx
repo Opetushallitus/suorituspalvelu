@@ -107,15 +107,8 @@ export const PerusopetusSuoritusPaper = ({
 }: {
   suoritus: PerusopetusSuoritus;
 }) => {
-  const { translateKielistetty } = useTranslations();
-
   return (
-    <SuoritusInfoPaper
-      key={suoritus.oppilaitos.oid}
-      suorituksenNimi={translateKielistetty(suoritus.nimi)}
-      valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.cyan2}
-    >
+    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.cyan2}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       {'luokka' in suoritus && <Luokkatiedot oppimaara={suoritus} />}
       {'oppiaineet' in suoritus && (

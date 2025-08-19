@@ -28,7 +28,9 @@ const SuorituksenTilaIndicator = ({ tila }: { tila: SuorituksenTila }) => {
   return (
     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
       <SuorituksenTilaIcon tila={tila} />
-      <OphTypography>{t(`suorituksen-tila.${tila}`)}</OphTypography>
+      <OphTypography>
+        {t('suoritus')} {t(`suorituksen-tila.${tila}`)}
+      </OphTypography>
     </Stack>
   );
 };
