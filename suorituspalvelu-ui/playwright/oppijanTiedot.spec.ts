@@ -49,6 +49,20 @@ test.describe('Oppijan tiedot', () => {
     await page.goto(`?oppijaNumero=${OPPIJANUMERO}`);
   });
 
+  test('Henkilötiedot', async ({ page }) => {
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    await expect(page.getByLabel('Syntymäaika')).toHaveText('1.1.2030');
+
+    const henkiloOid = '1.2.246.562.24.40483869857';
+
+    const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
+    await expect(oppijaNumeroLink).toHaveText(henkiloOid);
+    await expect(page.getByLabel('Henkilö-OID')).toHaveText(henkiloOid);
+  });
+
   test('Opiskeluoikeudet', async ({ page }) => {
     await expect(
       page.getByRole('heading', { name: 'Opiskeluoikeudet' }),
