@@ -43,7 +43,7 @@ export function SuorituksetAikajarjestyksessa({
   return (
     <Stack spacing={4}>
       {suoritukset.map((suoritus) => (
-        <SuoritusPaper key={suoritus.key} suoritus={suoritus} />
+        <SuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
       ))}
     </Stack>
   );

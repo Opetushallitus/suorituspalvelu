@@ -46,7 +46,10 @@ export function SuorituksetKoulutustyypeittain({
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'korkeakoulutus')
           ?.map((suoritus) => (
-            <KorkeakouluSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <KorkeakouluSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
           ))}
       </SuoritusSection>
       <SuoritusSection heading={t('oppija.lukiokoulutus')}>
@@ -58,21 +61,24 @@ export function SuorituksetKoulutustyypeittain({
               s.koulutustyyppi === 'ib',
           )
           ?.map((suoritus) => (
-            <LukioSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <LukioSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
           ))}
       </SuoritusSection>
       <SuoritusSection heading={t('oppija.ammatillinen-koulutus')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'ammatillinen')
           ?.map((suoritus) => (
-            <AmmatillinenSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <AmmatillinenSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
           ))}
       </SuoritusSection>
       <SuoritusSection heading={t('oppija.tuva')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'tuva')
           ?.map((suoritus) => (
-            <TuvaSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <TuvaSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
           ))}
       </SuoritusSection>
       <SuoritusSection heading={t('oppija.vapaa-sivistystyo')}>
@@ -80,7 +86,7 @@ export function SuorituksetKoulutustyypeittain({
           .filter((s) => s.koulutustyyppi === 'vapaa-sivistystyo')
           ?.map((suoritus) => (
             <VapaaSivistystyoSuoritusPaper
-              key={suoritus.key}
+              key={suoritus.tunniste}
               suoritus={suoritus}
             />
           ))}
@@ -89,7 +95,10 @@ export function SuorituksetKoulutustyypeittain({
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'perusopetus')
           ?.map((suoritus) => (
-            <PerusopetusSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <PerusopetusSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
           ))}
       </SuoritusSection>
     </Stack>
