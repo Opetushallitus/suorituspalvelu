@@ -14,7 +14,7 @@ import { styled } from '@/lib/theme';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { StripedTable } from './StripedTable';
 import { isEmpty } from 'remeda';
-import { formatFinnishDate } from '@/lib/common';
+import { pointToComma, formatFinnishDate } from '@/lib/common';
 
 const UnorderedList = styled('ul')(({ theme }) => ({
   margin: 0,
@@ -78,15 +78,15 @@ const EBOppiaineetTable = ({
           </TableRow>
           <TableRow>
             <IndentedCell colSpan={3}>{t('oppija.eb-written')}</IndentedCell>
-            <TableCell>{row.written?.arvosana}</TableCell>
+            <TableCell>{pointToComma(row.written?.arvosana)}</TableCell>
           </TableRow>
           <TableRow>
             <IndentedCell colSpan={3}>{t('oppija.eb-oral')}</IndentedCell>
-            <TableCell>{row.oral?.arvosana}</TableCell>
+            <TableCell>{pointToComma(row.oral?.arvosana)}</TableCell>
           </TableRow>
           <TableRow>
             <IndentedCell colSpan={3}>{t('oppija.eb-final')}</IndentedCell>
-            <TableCell>{row.final?.arvosana}</TableCell>
+            <TableCell>{pointToComma(row.final?.arvosana)}</TableCell>
           </TableRow>
         </TableBody>
       ))}
@@ -170,7 +170,7 @@ function DiaVastaavuusTodistusOppiaineet({
                   {translateKielistetty(oppiaine.nimi)}
                 </IndentedCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{oppiaine.keskiarvo}</TableCell>
+                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -188,7 +188,7 @@ function DiaVastaavuusTodistusOppiaineet({
                   {translateKielistetty(oppiaine.nimi)}
                 </IndentedCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{oppiaine.keskiarvo}</TableCell>
+                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
