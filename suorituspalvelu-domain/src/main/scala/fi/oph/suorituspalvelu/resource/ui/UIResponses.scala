@@ -563,6 +563,15 @@ case class YTONimi(
   @BeanProperty en: Optional[String]
 )
 
+case class YTOArvosana(
+  @(Schema @field)(example = "Hyväksytty", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Godkänd", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Pass", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
+)
+
 case class YTO(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
@@ -572,8 +581,8 @@ case class YTO(
   @BeanProperty vahvistuspaiva: Optional[LocalDate],
   @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[BigDecimal],
-  @(Schema @field)(example = "HYVAKSYTTY", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[YTOArvosana],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty osaAlueet: java.util.List[YTOOsaAlue]
 )

@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusJaksoTila, OpiskeluoikeusTila}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -281,7 +281,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("106727", "tutkinnonosat", Some(2)), osaSuoritus.koodi)
     Assertions.assertEquals(Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None), osaSuoritus.nimi)
     Assertions.assertEquals(true, osaSuoritus.yto) // koodi 106727 kuuluu yleisiin tutkinnon osiin
-    Assertions.assertEquals(Some(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", Some(1))), osaSuoritus.arvosana)
+    Assertions.assertEquals(Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", Some(1)), Kielistetty(Some("Hyväksytty"), None, None))), osaSuoritus.arvosana)
     Assertions.assertEquals(Some(Laajuus(20, Koodi("6", "opintojenlaajuusyksikko", Some(1)), None, None)), osaSuoritus.laajuus)
 
   @Test def testAmmatillisenTutkinnonOsaAlueet(): Unit =

@@ -548,7 +548,13 @@ object MockEntityToUIConverter {
           ),
           vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
-          arvosana = Optional.of("HYVAKSYTTY"),
+          arvosana = Optional.of(
+            YTOArvosana(
+              fi = Optional.of("Hyväksytty"),
+              sv = Optional.of("Godkänd"),
+              en = Optional.of("Pass")
+            )
+          ),
           java.util.List.of(
             YTOOsaAlue(
               nimi = YTOOsaAlueNimi(
@@ -587,7 +593,13 @@ object MockEntityToUIConverter {
           ),
           vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
-          arvosana = Optional.of("HYVAKSYTTY"),
+          arvosana = Optional.of(
+            YTOArvosana(
+              fi = Optional.of("Hyväksytty"),
+              sv = Optional.of("Godkänd"),
+              en = Optional.of("Pass")
+            )
+          ),
           java.util.List.of()
         ), YTO(
           tunniste = UUID.randomUUID(),
@@ -598,7 +610,13 @@ object MockEntityToUIConverter {
           ),
           vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
-          arvosana = Optional.of("HYVAKSYTTY"),
+          arvosana = Optional.of(
+            YTOArvosana(
+              fi = Optional.of("Hyväksytty"),
+              sv = Optional.of("Godkänd"),
+              en = Optional.of("Pass")
+            )
+          ),
           java.util.List.of()
         )),
         ammatillisenTutkinnonOsat = java.util.List.of(
