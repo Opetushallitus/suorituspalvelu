@@ -191,6 +191,96 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
     valmistusmipaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
+  additionalChecks: async (paper) => {
+    const ytoTable = paper.getByTestId('yhteiset-tutkinnon-osat-table');
+    await checkTable(ytoTable, [
+      ['Yhteiset tutkinnon osat', 'Laajuus (osp)', 'Arvosana'],
+      ['Viestintä- ja vuorovaikutusosaaminen', '11', 'Hyväksytty'],
+      ['Matemaattis-luonnontieteellinen osaaminen', '11', 'Hyväksytty'],
+      ['Yhteiskunta- ja työelämäosaaminen', '11', 'Hyväksytty'],
+      ['', 'Yht. 33 / 35 osp', ''],
+    ]);
+    await ytoTable
+      .getByRole('button', { name: 'Viestintä- ja vuorovaikutusosaaminen' })
+      .click();
+    const viestintaRegion = paper.getByRole('region', {
+      name: 'Viestintä- ja vuorovaikutusosaaminen',
+    });
+    await expect(viestintaRegion).toBeVisible();
+    await expect(viestintaRegion.getByLabel('Vahvistuspäivämäärä')).toHaveText(
+      '31.12.2024',
+    );
+    const viestintaOsaAlueetTable = viestintaRegion.getByRole('table');
+    await checkTable(viestintaOsaAlueetTable, [
+      ['Osa-alue', 'Laajuus (osp)', 'Arvosana'],
+      ['Viestintä ja vuorovaikutus äidinkielellä', '4', '1'],
+      ['Viestintä ja vuorovaikutus toisella kotimaisella kielellä', '1', '1'],
+      ['Toiminta digitaalisessa ympäristössä', '1', '1'],
+    ]);
+
+    await ytoTable
+      .getByRole('button', {
+        name: 'Matemaattis-luonnontieteellinen osaaminen',
+      })
+      .click();
+    const matemaattisLuonnontieteellinenRegion = paper.getByRole('region', {
+      name: 'Matemaattis-luonnontieteellinen osaaminen',
+    });
+
+    await expect(matemaattisLuonnontieteellinenRegion).toBeVisible();
+    await expect(
+      matemaattisLuonnontieteellinenRegion.getByLabel('Vahvistuspäivämäärä'),
+    ).toHaveText('31.12.2024');
+
+    await ytoTable
+      .getByRole('button', { name: 'Yhteiskunta- ja työelämäosaaminen' })
+      .click();
+    const yhteiskuntaRegion = paper.getByRole('region', {
+      name: 'Yhteiskunta- ja työelämäosaaminen',
+    });
+    await expect(yhteiskuntaRegion).toBeVisible();
+    await expect(
+      yhteiskuntaRegion.getByLabel('Vahvistuspäivämäärä'),
+    ).toHaveText('31.12.2024');
+
+    const ammatillisetTutkinnonOsatTable = paper.getByTestId(
+      'ammatilliset-tutkinnon-osat-table',
+    );
+
+    await checkTable(ammatillisetTutkinnonOsatTable, [
+      ['Ammatilliset tutkinnon osat', 'Laajuus (osp)', 'Arvosana'],
+      ['Audiovisuaalisen kulttuurin perusteet', '11', '4'],
+      ['Äänimaailman suunnittelu', '11', '4'],
+      ['', 'Yht. 22 / 145 osp', ''],
+    ]);
+    await ammatillisetTutkinnonOsatTable
+      .getByRole('button', { name: 'Audiovisuaalisen kulttuurin perusteet' })
+      .click();
+    const audiovisuaalisenKulttuurinPerusteetRegion = paper.getByRole(
+      'region',
+      {
+        name: 'Audiovisuaalisen kulttuurin perusteet',
+      },
+    );
+
+    const audioVisuaalisenKulltuurinOsaAlueetTable =
+      audiovisuaalisenKulttuurinPerusteetRegion.getByRole('table');
+    await checkTable(audioVisuaalisenKulltuurinOsaAlueetTable, [
+      ['Osa-alue', 'Laajuus (osp)', 'Arvosana'],
+      ['Audiovisuaalisen kulttuurin perusteet 1', '2', '1'],
+      ['Audiovisuaalisen kulttuurin perusteet 2', '3', '1'],
+    ]);
+    await expect(
+      ammatillisetTutkinnonOsatTable.getByRole('cell', {
+        name: 'Äänimaailman suunnittelu',
+      }),
+    ).toBeVisible();
+    await expect(
+      ammatillisetTutkinnonOsatTable.getByRole('button', {
+        name: 'Äänimaailman suunnittelu',
+      }),
+    ).toBeHidden();
+  },
 };
 
 export const HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
@@ -203,6 +293,7 @@ export const HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     await expect(paper.getByLabel('Suoritustapa')).toHaveText('Näyttötutkinto');
+    await expect(paper.getByLabel('Painotettu keskiarvo')).toHaveText('4,34');
   },
 };
 

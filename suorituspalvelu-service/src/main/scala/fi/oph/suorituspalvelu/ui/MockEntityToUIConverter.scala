@@ -587,9 +587,9 @@ object MockEntityToUIConverter {
         ), YTO(
           tunniste = UUID.randomUUID(),
           nimi = YTONimi(
-            fi = Optional.of("Matemaattis-luonnontiellinen osaaminen"),
-            sv = Optional.of("Matemaattis-luonnontiellinen osaaminen sv"),
-            en = Optional.of("Matemaattis-luonnontiellinen osaaminen en")
+            fi = Optional.of("Matemaattis-luonnontieteellinen osaaminen"),
+            sv = Optional.of("Matemaattis-luonnontieteellinen osaaminen sv"),
+            en = Optional.of("Matemaattis-luonnontieteellinen osaaminen en")
           ),
           vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),

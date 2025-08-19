@@ -5,6 +5,7 @@ import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import { ExpandMore } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isTruthy } from 'remeda';
+import { toId } from '@/lib/common';
 
 const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   ...theme.typography.h5,
@@ -37,8 +38,8 @@ export const AccordionTableItem = ({
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const headerId = `accordion-table-header-${title}`;
-  const contentId = `accordion-table-content-${title}`;
+  const headerId = `accordion-table-header-${toId(title)}`;
+  const contentId = `accordion-table-content-${toId(title)}`;
 
   const toggleButtonTitle = isOpen
     ? `${t('oppija.nayta')} ${title}`
@@ -58,9 +59,8 @@ export const AccordionTableItem = ({
           }}
         >
           {hasChildren ? (
-            <AccordionHeaderCell>
+            <AccordionHeaderCell id={headerId}>
               <OphButton
-                id={headerId}
                 variant="text"
                 aria-label={toggleButtonTitle}
                 sx={{ fontWeight: 400 }}
@@ -87,16 +87,19 @@ export const AccordionTableItem = ({
       </TableBody>
       {hasChildren && (
         <TableBody
-          role="region"
-          id={contentId}
-          aria-labelledby={headerId}
           sx={{
             minHeight: 0,
             display: isOpen ? 'table-row-group' : 'none',
           }}
         >
           <TableRow>
-            <TableCell colSpan={columnCount} sx={cellStyle}>
+            <TableCell
+              id={contentId}
+              role="region"
+              colSpan={columnCount}
+              sx={cellStyle}
+              aria-labelledby={headerId}
+            >
               {children}
             </TableCell>
           </TableRow>

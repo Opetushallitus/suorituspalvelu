@@ -36,6 +36,7 @@ export const AmmatillinenSuoritusPaper = ({
           tutkinnonOsat={suoritus.ytot}
           title={t('oppija.yhteiset-tutkinnon-osat')}
           maxKokonaislaajuus={35}
+          testId="yhteiset-tutkinnon-osat-table"
         />
       )}
       {'ammatillisenTutkinnonOsat' in suoritus && (
@@ -43,6 +44,7 @@ export const AmmatillinenSuoritusPaper = ({
           tutkinnonOsat={suoritus.ammatillisenTutkinnonOsat}
           title={t('oppija.ammatilliset-tutkinnon-osat')}
           maxKokonaislaajuus={145}
+          testId="ammatilliset-tutkinnon-osat-table"
         />
       )}
     </SuoritusInfoPaper>

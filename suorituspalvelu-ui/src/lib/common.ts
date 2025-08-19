@@ -30,3 +30,15 @@ export const formatFinnishDate = (date?: Date | string | null): string => {
 export const formatYear = (date?: Date | string | null): string | undefined => {
   return date ? formatDate(date, 'y') : '';
 };
+
+export const removeWhiteSpace = (text?: string | null): string => {
+  return text ? text.replace(/\s+/g, '-').trim() : '';
+};
+
+export const removeAccents = (text?: string | null): string => {
+  return text ? text.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+};
+
+export const toId = (text?: string | null): string => {
+  return removeAccents(removeWhiteSpace(text)).toLowerCase();
+};

@@ -54,7 +54,7 @@ export const checkTable = async (
   table: Locator,
   expectedValues: Array<Array<string | ((cell: Locator) => Promise<void>)>>,
 ) => {
-  const rows = table.locator('tr');
+  const rows = table.getByRole('row');
   await expect(rows).toHaveCount(expectedValues.length);
 
   for (const [rowIndex, expectedRow] of expectedValues.entries()) {

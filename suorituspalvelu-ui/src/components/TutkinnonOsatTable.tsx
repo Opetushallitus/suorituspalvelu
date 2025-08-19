@@ -121,16 +121,18 @@ export function TutkinnonOsatTable({
   tutkinnonOsat,
   maxKokonaislaajuus,
   title,
+  testId,
 }: {
   title: string;
   maxKokonaislaajuus: number;
   tutkinnonOsat: Array<AmmatillinenTutkinnonOsa>;
+  testId?: string;
 }) {
   const { t, translateKielistetty } = useTranslations();
 
   return (
     !isEmpty(tutkinnonOsat) && (
-      <StyledOsatTable className="tutkinnon-osat-table">
+      <StyledOsatTable className="tutkinnon-osat-table" data-test-id={testId}>
         <TableHead>
           <TableRow>
             <TableCell>{title}</TableCell>
