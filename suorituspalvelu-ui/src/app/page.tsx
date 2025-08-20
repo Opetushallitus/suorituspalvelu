@@ -4,12 +4,14 @@ import HenkiloPage from '@/components/HenkiloPage';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
 import { PageLayout } from '@/components/PageLayout';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
+import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { SearchControls } from '@/components/SearchControls';
 import {
   SessionExpired,
   useIsSessionExpired,
 } from '@/components/SessionExpired';
 import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
+import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 
 const useDocumentTitle = () => {
@@ -33,16 +35,16 @@ const HomePage = () => {
         {/* Set the document title */}
         <title>{useDocumentTitle()}</title>
         <SearchControls />
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <Stack direction="row">
           <HenkilotSidebar />
           <main style={{ flexGrow: 1 }}>
             {oppijaNumero ? (
               <HenkiloPage oppijaNumero={oppijaNumero} />
             ) : (
-              <div>{t('valitse-oppija')}</div>
+              <ResultPlaceholder text={t('valitse-henkilo')} />
             )}
           </main>
-        </div>
+        </Stack>
         {isSessionExpired && <SessionExpired />}
       </PageLayout>
     </QuerySuspenseBoundary>
