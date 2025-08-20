@@ -1,18 +1,24 @@
-import { BackendFetch, DevTools, Tolgee } from '@tolgee/react';
+import { BackendFetch, DevTools, Tolgee, TolgeeInstance } from '@tolgee/react';
 import { FormatIcu } from '@tolgee/format-icu';
 import { configPromise, isTest, localTranslations } from '@/configuration';
 
 const NAMESPACE = 'suorituspalvelu';
-
 const REVALIDATE_TIME_SECONDS = 10 * 60;
 
-export async function tolgeeBase() {
+let tolgeeInstance: TolgeeInstance | null = null;
+
+export async function initTolgee(
+  defaultLanguage?: string,
+): Promise<TolgeeInstance> {
   const config = await configPromise;
+  if (tolgeeInstance) {
+    return tolgeeInstance;
+  }
   let tg = Tolgee()
     .use(FormatIcu())
     .updateDefaults({
       availableLanguages: ['fi', 'sv', 'en'],
-      defaultLanguage: 'fi',
+      defaultLanguage: defaultLanguage ?? 'fi',
     });
 
   if (isTest || localTranslations) {
@@ -41,11 +47,9 @@ export async function tolgeeBase() {
       });
   }
 
-  const instance = tg.init();
-  instance.on('error', (error) => {
+  tolgeeInstance = tg.init();
+  tolgeeInstance.on('error', (error) => {
     console.error(error);
   });
-  return instance;
+  return tolgeeInstance;
 }
-
-export const tolgeePromise = tolgeeBase();

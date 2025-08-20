@@ -137,3 +137,7 @@ export type TutkinnonOsanOsaAlue = {
   laajuus?: number;
   arvosana?: string;
 };
+
+export type KayttajaTiedot = {
+  asiointiKieli: Language;
+};

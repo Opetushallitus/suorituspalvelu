@@ -20,6 +20,7 @@ export const getConfiguration = async () => {
         oppijaNumeroLinkUrl: `${DOMAIN}/henkilo-ui/virkailija/`,
       },
       suorituspalvelu: {
+        kayttajanTiedotUrl: `${suorituspalveluBackendUrl}/ui/kayttaja`,
         oppijanTiedotUrl: `${suorituspalveluBackendUrl}/ui/tiedot`,
         oppijatSearchUrl: `${suorituspalveluBackendUrl}/ui/oppijat`,
         oppilaitoksetUrl: `${suorituspalveluBackendUrl}/ui/oppilaitokset`,

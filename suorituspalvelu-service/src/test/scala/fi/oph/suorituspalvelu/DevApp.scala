@@ -35,10 +35,14 @@ object DevApp {
     System.setProperty("cas-service.key", "suorituspalvelu")
 
     val virkailijaDomain = sys.env.getOrElse("VIRKAILIJA_DOMAIN", "virkailija.hahtuvaopintopolku.fi")
-    val virkailijaCasUrl = s"https://$virkailijaDomain/cas"
+    val virkailijaBaseUrl = s"https://$virkailijaDomain"
+    val virkailijaCasUrl = s"$virkailijaBaseUrl/cas"
     System.setProperty("web.url.cas-login", sys.env.getOrElse("CAS_LOGIN_URL", s"$virkailijaCasUrl/login"))
     System.setProperty("web.url.cas", virkailijaCasUrl)
-    System.setProperty("host.virkailija", sys.env.getOrElse("VIRKAILIJA_DOMAIN", "virkailija.hahtuvaopintopolku.fi"))
+    System.setProperty("host.virkailija", virkailijaDomain)
+    System.setProperty("integrations.koski.base-url", virkailijaBaseUrl)
+    System.setProperty("integrations.koski.username", sys.env.getOrElse("CAS_USERNAME", ""))
+    System.setProperty("integrations.koski.password", sys.env.getOrElse("CAS_PASSWORD", ""))
 
     App.main(args)
 }
