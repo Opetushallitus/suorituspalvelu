@@ -1,20 +1,13 @@
 'use client';
 import { Stack } from '@mui/material';
-import { use } from 'react';
 import { useTranslate } from '@tolgee/react';
-import {
-  ophColors,
-  OphLink,
-  OphTypography,
-} from '@opetushallitus/oph-design-system';
+import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
-import { configPromise } from '@/configuration';
 import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
-import { formatDate } from 'date-fns';
 import { useTranslations } from '@/hooks/useTranslations';
-import { isKielistetty } from '@/lib/translation-utils';
+import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
+import { formatFinnishDate } from '@/lib/common';
 
 const SuorituksenTilaIcon = ({ tila }: { tila: SuorituksenTila }) => {
   switch (tila) {
@@ -33,9 +26,11 @@ const SuorituksenTilaIndicator = ({ tila }: { tila: SuorituksenTila }) => {
   const { t } = useTranslate();
 
   return (
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
       <SuorituksenTilaIcon tila={tila} />
-      <OphTypography>{t(`suorituksen-tila.${tila}`)}</OphTypography>
+      <OphTypography>
+        {t('suoritus')} {t(`suorituksen-tila.${tila}`)}
+      </OphTypography>
     </Stack>
   );
 };
@@ -47,7 +42,7 @@ const ValmistumispaivaIndicator = ({
 }) => {
   return (
     <OphTypography>
-      {valmistumispaiva ? formatDate(valmistumispaiva, 'd.M.y') : '-'}
+      {valmistumispaiva ? formatFinnishDate(valmistumispaiva) : '-'}
     </OphTypography>
   );
 };
@@ -57,24 +52,11 @@ export const SuorituksenPerustiedotIndicator = ({
 }: {
   perustiedot: SuorituksenPerustiedot;
 }) => {
-  const { t, translateKielistetty } = useTranslations();
-  const config = use(configPromise);
+  const { t } = useTranslations();
 
   return (
-    <Stack spacing={1} direction="row">
-      <LabeledInfoItem
-        label={t('oppija.oppilaitos')}
-        value={
-          <OphLink
-            component="a"
-            href={getOppilaitosLinkUrl(config, perustiedot.oppilaitos.oid)}
-          >
-            {isKielistetty(perustiedot.oppilaitos.nimi)
-              ? translateKielistetty(perustiedot.oppilaitos.nimi)
-              : perustiedot.oppilaitos.nimi}
-          </OphLink>
-        }
-      />
+    <Stack direction="row">
+      <OppilaitosInfoItem oppilaitos={perustiedot.oppilaitos} />
       <LabeledInfoItem
         label={t('oppija.tila')}
         value={<SuorituksenTilaIndicator tila={perustiedot.tila} />}

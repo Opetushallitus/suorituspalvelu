@@ -2,18 +2,13 @@ import { PerusopetuksenOppiaine, PerusopetusSuoritus } from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-import {
-  Stack,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-} from '@mui/material';
+import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useMemo } from 'react';
 import { StripedTable } from './StripedTable';
 import { isKielistetty } from '@/lib/translation-utils';
+import { InfoItemRow } from './InfoItemRow';
 
 const Luokkatiedot = ({
   oppimaara,
@@ -26,7 +21,7 @@ const Luokkatiedot = ({
 }) => {
   const { t } = useTranslations();
   return (
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+    <InfoItemRow slotAmount={4}>
       {oppimaara.koulusivistyskieli && (
         <LabeledInfoItem
           label={t('oppija.koulusivistyskieli')}
@@ -38,7 +33,7 @@ const Luokkatiedot = ({
         label={t('oppija.yksilollistetty')}
         value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
       />
-    </Stack>
+    </InfoItemRow>
   );
 };
 
@@ -112,15 +107,8 @@ export const PerusopetusSuoritusPaper = ({
 }: {
   suoritus: PerusopetusSuoritus;
 }) => {
-  const { translateKielistetty } = useTranslations();
-
   return (
-    <SuoritusInfoPaper
-      key={suoritus.oppilaitos.oid}
-      suorituksenNimi={translateKielistetty(suoritus.nimi)}
-      valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.cyan2}
-    >
+    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.cyan2}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       {'luokka' in suoritus && <Luokkatiedot oppimaara={suoritus} />}
       {'oppiaineet' in suoritus && (

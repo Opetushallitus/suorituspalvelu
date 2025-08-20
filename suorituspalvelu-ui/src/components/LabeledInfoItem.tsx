@@ -17,7 +17,7 @@ export const LabeledInfoItem = ({
 }) => {
   const labelId = useId();
   return (
-    <Box sx={{ flex: '0 1 25%', ...sx }}>
+    <Box sx={{ flex: '1 0 0', marginRight: 1, ...sx }}>
       <InfoLabel id={labelId}>{label}</InfoLabel>
       <Box aria-labelledby={labelId}>{value}</Box>
     </Box>

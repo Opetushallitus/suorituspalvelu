@@ -28,7 +28,6 @@ export function useSuorituksetFlattened(
         return result.push({
           ...suoritus,
           koulutustyyppi,
-          key: suoritus?.tunniste,
         } as Suoritus);
       });
     };

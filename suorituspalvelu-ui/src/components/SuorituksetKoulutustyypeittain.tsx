@@ -12,18 +12,18 @@ import { OppijanTiedot } from '@/types/ui-types';
 import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
 import React from 'react';
 
-function LabeledSuoritusSection({
-  label,
+function SuoritusSection({
+  heading,
   children,
 }: {
-  label: string;
+  heading: string;
   children: React.ReactNode;
 }) {
   return (
     React.Children.count(children) > 0 && (
       <Box sx={{ marginBottom: 4 }}>
         <OphTypography variant="h4" component="h3" sx={{ marginBottom: 2 }}>
-          {label}
+          {heading}
         </OphTypography>
         <Stack spacing={4}>{children}</Stack>
       </Box>
@@ -42,14 +42,17 @@ export function SuorituksetKoulutustyypeittain({
 
   return (
     <Stack spacing={4}>
-      <LabeledSuoritusSection label={t('oppija.korkeakoulutus')}>
+      <SuoritusSection heading={t('oppija.korkeakoulutus')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'korkeakoulutus')
           ?.map((suoritus) => (
-            <KorkeakouluSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <KorkeakouluSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
           ))}
-      </LabeledSuoritusSection>
-      <LabeledSuoritusSection label={t('oppija.lukiokoulutus')}>
+      </SuoritusSection>
+      <SuoritusSection heading={t('oppija.lukiokoulutus')}>
         {suoritukset
           .filter(
             (s) =>
@@ -58,40 +61,46 @@ export function SuorituksetKoulutustyypeittain({
               s.koulutustyyppi === 'ib',
           )
           ?.map((suoritus) => (
-            <LukioSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <LukioSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
           ))}
-      </LabeledSuoritusSection>
-      <LabeledSuoritusSection label={t('oppija.ammatillinen-koulutus')}>
+      </SuoritusSection>
+      <SuoritusSection heading={t('oppija.ammatillinen-koulutus')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'ammatillinen')
           ?.map((suoritus) => (
-            <AmmatillinenSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <AmmatillinenSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
           ))}
-      </LabeledSuoritusSection>
-      <LabeledSuoritusSection label={t('oppija.tuva')}>
+      </SuoritusSection>
+      <SuoritusSection heading={t('oppija.tuva')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'tuva')
           ?.map((suoritus) => (
-            <TuvaSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <TuvaSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
           ))}
-      </LabeledSuoritusSection>
-      <LabeledSuoritusSection label={t('oppija.vapaa-sivistystyo')}>
+      </SuoritusSection>
+      <SuoritusSection heading={t('oppija.vapaa-sivistystyo')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'vapaa-sivistystyo')
           ?.map((suoritus) => (
             <VapaaSivistystyoSuoritusPaper
-              key={suoritus.key}
+              key={suoritus.tunniste}
               suoritus={suoritus}
             />
           ))}
-      </LabeledSuoritusSection>
-      <LabeledSuoritusSection label={t('oppija.perusopetus')}>
+      </SuoritusSection>
+      <SuoritusSection heading={t('oppija.perusopetus')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'perusopetus')
           ?.map((suoritus) => (
-            <PerusopetusSuoritusPaper key={suoritus.key} suoritus={suoritus} />
+            <PerusopetusSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
           ))}
-      </LabeledSuoritusSection>
+      </SuoritusSection>
     </Stack>
   );
 }

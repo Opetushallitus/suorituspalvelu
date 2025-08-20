@@ -11,10 +11,10 @@ import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicat
 import { useTranslations } from '@/hooks/useTranslations';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { styled } from '@/lib/theme';
-import { formatDate } from 'date-fns';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { StripedTable } from './StripedTable';
 import { isEmpty } from 'remeda';
+import { pointToComma, formatFinnishDate } from '@/lib/common';
 
 const UnorderedList = styled('ul')(({ theme }) => ({
   margin: 0,
@@ -78,15 +78,15 @@ const EBOppiaineetTable = ({
           </TableRow>
           <TableRow>
             <IndentedCell colSpan={3}>{t('oppija.eb-written')}</IndentedCell>
-            <TableCell>{row.written?.arvosana}</TableCell>
+            <TableCell>{pointToComma(row.written?.arvosana)}</TableCell>
           </TableRow>
           <TableRow>
             <IndentedCell colSpan={3}>{t('oppija.eb-oral')}</IndentedCell>
-            <TableCell>{row.oral?.arvosana}</TableCell>
+            <TableCell>{pointToComma(row.oral?.arvosana)}</TableCell>
           </TableRow>
           <TableRow>
             <IndentedCell colSpan={3}>{t('oppija.eb-final')}</IndentedCell>
-            <TableCell>{row.final?.arvosana}</TableCell>
+            <TableCell>{pointToComma(row.final?.arvosana)}</TableCell>
           </TableRow>
         </TableBody>
       ))}
@@ -170,7 +170,7 @@ function DiaVastaavuusTodistusOppiaineet({
                   {translateKielistetty(oppiaine.nimi)}
                 </IndentedCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{oppiaine.keskiarvo}</TableCell>
+                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -188,7 +188,7 @@ function DiaVastaavuusTodistusOppiaineet({
                   {translateKielistetty(oppiaine.nimi)}
                 </IndentedCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{oppiaine.keskiarvo}</TableCell>
+                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -235,7 +235,7 @@ const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
             <TableCell>{row.taso}</TableCell>
             <TableCell>{row.arvosana}</TableCell>
             <TableCell>{row.yhteispistemaara.toString()}</TableCell>
-            <TableCell>{formatDate(row.tutkintokerta, 'd.M.y')}</TableCell>
+            <TableCell>{formatFinnishDate(row.tutkintokerta)}</TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -248,14 +248,8 @@ export const LukioSuoritusPaper = ({
 }: {
   suoritus: LukioSuoritus;
 }) => {
-  const { translateKielistetty } = useTranslations();
-
   return (
-    <SuoritusInfoPaper
-      suorituksenNimi={translateKielistetty(suoritus.nimi)}
-      valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.blue2}
-    >
+    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.blue2}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LukionOppiaineet suoritus={suoritus} />
       {'yoKokeet' in suoritus && <YoKokeetTable yoKokeet={suoritus.yoKokeet} />}

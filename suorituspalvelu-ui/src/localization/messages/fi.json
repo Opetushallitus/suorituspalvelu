@@ -6,6 +6,7 @@
   "ladataan": "Ladataan...",
   "kylla": "Kyllä",
   "ei": "Ei",
+  "suoritus": "Suoritus",
   "select": {
     "valitse": "Valitse..."
   },
@@ -83,11 +84,29 @@
     "koulusivistyskieli": "Koulusivistyskieli",
     "lyhenne-opintopiste": "op",
     "lyhenne-viikko": "vk",
-    "lyhenne-vuosiviikkotunti": "vvt"
+    "lyhenne-vuosiviikkotunti": "vvt",
+    "lyhenne-osaamispiste": "osp",
+    "painotettu-keskiarvo": "Painotettu keskiarvo",
+    "yhteiset-tutkinnon-osat": "Yhteiset tutkinnon osat",
+    "ammatilliset-tutkinnon-osat": "Ammatilliset tutkinnon osat",
+    "osa-alue": "Osa-alue",
+    "vahvistuspvm": "Vahvistuspäivämäärä",
+    "nayta": "Näytä",
+    "piilota": "Piilota",
+    "lyhenne-yhteensa": "Yht.",
+    "syntymaaika": "Syntymäaika",
+    "oppijanumero": "Oppijanumero",
+    "henkiloOid": "Henkilö-OID"
   },
   "suorituksen-tila": {
-    "VALMIS": "Suoritus valmis",
-    "KESKEN": "Suoritus kesken",
-    "KESKEYTYNYT": "Suoritus keskeytynyt"
+    "VALMIS": "valmis",
+    "KESKEN": "kesken",
+    "KESKEYTYNYT": "keskeytynyt",
+    "MITATOITY": "mitätöity",
+    "PERUUTETTU": "peruutettu",
+    "PAATTYNYT": "päättynyt"
+  },
+  "suoritustapa": {
+    "NAYTTOTUTKINTO": "Näyttötutkinto"
   }
 }

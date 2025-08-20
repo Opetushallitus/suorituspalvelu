@@ -1,20 +1,13 @@
-import { NDASH } from '@/lib/common';
+import { formatFinnishDate, NDASH } from '@/lib/common';
 import { currentFinnishDate, isInRange } from '@/lib/time-utils';
 import { Circle } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
-import {
-  ophColors,
-  OphLink,
-  OphTypography,
-} from '@opetushallitus/oph-design-system';
+import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
-import { formatDate } from 'date-fns';
 import { PaperWithTopColor } from './PaperWithTopColor';
-import { use } from 'react';
-import { configPromise } from '@/configuration';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
 import { Opiskeluoikeus } from '@/types/ui-types';
+import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
 
 const VoimassaoloIndicator = ({
   voimassaolonAlku,
@@ -34,9 +27,9 @@ const VoimassaoloIndicator = ({
   return (
     <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 2 }}>
       <Box>
-        {voimassaolonAlku ? formatDate(voimassaolonAlku, 'd.M.y') : ''}
+        {formatFinnishDate(voimassaolonAlku)}
         {` ${NDASH} `}
-        {voimassaolonLoppu ? formatDate(voimassaolonLoppu, 'd.M.y') : ''}
+        {formatFinnishDate(voimassaolonLoppu)}
       </Box>
       <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 0.5 }}>
         <Circle
@@ -59,7 +52,6 @@ export const Opiskeluoikeudet = ({
   opiskeluoikeudet: Array<Opiskeluoikeus>;
 }) => {
   const { t, translateKielistetty } = useTranslations();
-  const config = use(configPromise);
   return (
     <Box data-test-id="opiskeluoikeudet">
       <OphTypography variant="h3" component="h2" sx={{ marginBottom: 2 }}>
@@ -74,25 +66,17 @@ export const Opiskeluoikeudet = ({
                 spacing={1}
                 data-test-id="opiskeluoikeus-paper"
               >
-                <OphTypography variant="label" sx={{ marginBottom: 1 }}>
+                <OphTypography
+                  variant="label"
+                  component="h3"
+                  sx={{ marginBottom: 1 }}
+                >
                   {translateKielistetty(oo.nimi)}
                 </OphTypography>
-                <Stack direction="row" spacing={1}>
-                  <LabeledInfoItem
-                    label={t('oppija.oppilaitos')}
-                    sx={{ flexBasis: '50%' }}
-                    value={
-                      <OphLink
-                        href={getOppilaitosLinkUrl(config, oo.oppilaitos.oid)}
-                        component="a"
-                      >
-                        {translateKielistetty(oo.oppilaitos.nimi)}
-                      </OphLink>
-                    }
-                  />
+                <Stack direction="row">
+                  <OppilaitosInfoItem oppilaitos={oo.oppilaitos} />
                   <LabeledInfoItem
                     label={t('oppija.voimassaolo')}
-                    sx={{ flexBasis: '50%' }}
                     value={
                       <VoimassaoloIndicator
                         voimassaolonAlku={oo.voimassaolonAlku}

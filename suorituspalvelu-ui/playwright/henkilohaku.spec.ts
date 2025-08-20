@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
-import { test } from './fixtures';
-import { selectOption } from './playwright-utils';
+import { test } from './lib/fixtures';
+import { selectOption } from './lib/playwrightUtils';
 
 const OPPIJAT = [
   {

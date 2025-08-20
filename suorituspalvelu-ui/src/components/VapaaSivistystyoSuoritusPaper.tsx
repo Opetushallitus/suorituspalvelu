@@ -10,15 +10,10 @@ export const VapaaSivistystyoSuoritusPaper = ({
 }: {
   suoritus: VapaaSivistystyoSuoritus;
 }) => {
-  const { t, translateKielistetty } = useTranslations();
+  const { t } = useTranslations();
 
   return (
-    <SuoritusInfoPaper
-      key={suoritus.tunniste}
-      suorituksenNimi={translateKielistetty(suoritus.nimi)}
-      valmistumispaiva={suoritus.valmistumispaiva}
-      topColor={ophColors.cyan1}
-    >
+    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.cyan1}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LabeledInfoItem
         label={t('oppija.suoritettu')}

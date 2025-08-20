@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from './fixtures';
+import { test } from './lib/fixtures';
 
 test.describe('Savutestit', () => {
   test.beforeEach(async ({ page }) => {
