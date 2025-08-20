@@ -7,6 +7,7 @@ import { OphNextJsThemeProvider } from '@opetushallitus/oph-design-system/next/t
 import { UntranslatedFullSpinner } from './FullSpinner';
 import { getAsiointiKieli } from '@/api';
 import { Language } from '@/types/ui-types';
+import { THEME_OVERRIDES } from '@/lib/theme';
 
 export function LocalizationProvider({
   children,
@@ -41,7 +42,11 @@ export function LocalizationProvider({
 
   return lang && tolgee ? (
     <TolgeeProvider tolgee={tolgee} fallback={<UntranslatedFullSpinner />}>
-      <OphNextJsThemeProvider variant="oph" lang={lang}>
+      <OphNextJsThemeProvider
+        variant="oph"
+        lang={lang}
+        overrides={THEME_OVERRIDES}
+      >
         {children}
       </OphNextJsThemeProvider>
     </TolgeeProvider>
