@@ -301,25 +301,25 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
         .flatMap(_ =>
           // validoidaan parametri
           val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
           if (virheet.isEmpty)
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaYtrTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Ytr-tiedot haun $hakuOid henkilöille")
 
           //Todo, fix type
-          val result: Seq[Option[String]] = ytrIntegration.syncYtrForHaku(hakuOid.get)
+          val result: Seq[SyncResultForHenkilo] = ytrIntegration.syncYtrForHaku(hakuOid.get)
           //val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
           val responseStr = s"Tallennettiin haulle $hakuOid ytr-tiedot."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
-          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+          ResponseEntity.status(HttpStatus.OK).body(YtrSyncSuccessResponse(responseStr))
 
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
