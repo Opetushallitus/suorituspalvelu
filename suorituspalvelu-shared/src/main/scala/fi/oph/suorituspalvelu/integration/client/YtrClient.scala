@@ -105,7 +105,19 @@ class YtrClient(username: String, password: String, baseUrl: String) {
     executeRequestAsByteArray(request)
   }
 
-  // Execute request and return byte array response
+  def postWithBasicAuth(url: String, payload: Object): Future[Option[String]] = {
+    val payloadString = mapper.writeValueAsString(payload)
+    //LOG.info(s"Payload string: $payloadString")
+    val request = client
+      .preparePost(url)
+      .setHeader("Authorization", encodeBasicAuth(username, password))
+      .setHeader("Content-Type", "application/json")
+      .setBody(payloadString)
+      .build()
+    //LOG.info(s"About to execute request $request, data ${request.getStringData}")
+    executeRequestAsByteArray(request).map(result => result.map(r => new String(r, "UTF-8")))
+  }
+
   private def executeRequestAsByteArray(request: Request): Future[Option[Array[Byte]]] = {
     val promise = Promise[Option[Array[Byte]]]()
     val listenableFuture = client.executeRequest(request)
@@ -125,50 +137,6 @@ class YtrClient(username: String, password: String, baseUrl: String) {
           promise.failure(exception)
       }
     }, ec.execute(_))
-
-    promise.future
-  }
-
-  def postWithBasicAuth(url: String, payload: Object): Future[Option[String]] = {
-    val payloadString = mapper.writeValueAsString(payload)
-    //LOG.info(s"Payload string: $payloadString")
-    val request = client
-      .preparePost(url)
-      .setHeader("Authorization", encodeBasicAuth(username, password))
-      .setHeader("Content-Type", "application/json")
-      .setBody(payloadString)
-      .build()
-    //LOG.info(s"About to execute request $request, data ${request.getStringData}")
-    //Todo, voidaan varmaan käyttää kaikkeen ByteArrayn palauttavaa executea
-    executeRequest(request)
-  }
-
-  /**
-   * Execute the HTTP request and handle the response asynchronously.
-   *
-   * @param request The constructed request to execute.
-   * @return A `Future[String]` containing the response body.
-   */
-  private def executeRequest(request: Request): Future[Option[String]] = {
-    val promise = Promise[Option[String]]()
-    val listenableFuture = client.executeRequest(request)
-
-    listenableFuture.addListener(() => {
-      Try(listenableFuture.get()) match {
-        case Success(response) if response.getStatusCode >= 200 && response.getStatusCode < 300 =>
-          promise.success(Some(response.getResponseBody))
-        case Success(response) if response.getStatusCode == 404 => promise.success(None)
-        case Success(response) =>
-          promise.failure(
-            new RuntimeException(
-              s"HTTP Error: ${response.getStatusCode} - ${response.getResponseBody}"
-            )
-          )
-        case Failure(exception) =>
-          promise.failure(exception)
-      }
-    }, ec.execute(_))
-
     promise.future
   }
 }
