@@ -8,6 +8,7 @@ import { UntranslatedFullSpinner } from './FullSpinner';
 import { getAsiointiKieli } from '@/api';
 import { Language } from '@/types/ui-types';
 import { THEME_OVERRIDES } from '@/lib/theme';
+import { Box } from '@mui/material';
 
 export function LocalizationProvider({
   children,
@@ -16,6 +17,7 @@ export function LocalizationProvider({
 }) {
   const [lang, setLang] = useState<Language | null>(null);
   const [tolgee, setTolgee] = useState<TolgeeInstance | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   // Prerender epäonnistuu, jos asiointikieli noudetaan server-puolella, koska URL:t on pelkkiä polkuja.
   // Kääritään asiointikielen noutaminen useEffectiin, jolloin se suoritetaan pelkästään client-puolella.
@@ -34,11 +36,14 @@ export function LocalizationProvider({
       try {
         setTolgee(await initTolgee(k));
       } catch (e) {
-        console.error(e);
-        throw Error('Tolgee-käännöspalvelun alustaminen epäonnistui!');
+        setError(e as Error);
       }
     })();
   }, []);
+
+  if (error) {
+    return <Box>Tolgee-käännöspalvelun alustaminen epäonnistui!</Box>;
+  }
 
   return lang && tolgee ? (
     <TolgeeProvider tolgee={tolgee} fallback={<UntranslatedFullSpinner />}>
