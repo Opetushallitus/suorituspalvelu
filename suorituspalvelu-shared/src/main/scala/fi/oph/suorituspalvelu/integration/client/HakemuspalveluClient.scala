@@ -69,7 +69,7 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
       body.offset.map("offset" -> _)
     ).flatten.toMap
 
-    LOG.info(s"fetch, $url $body ${mapper.writeValueAsString(body)} ${mapper.writeValueAsString(bodyMap)}")
+    //LOG.info(s"fetch, $url $body ${mapper.writeValueAsString(body)} ${mapper.writeValueAsString(bodyMap)}")
     val req = new RequestBuilder()
       .setMethod("POST")
       .setHeader("Content-Type", "application/json")
