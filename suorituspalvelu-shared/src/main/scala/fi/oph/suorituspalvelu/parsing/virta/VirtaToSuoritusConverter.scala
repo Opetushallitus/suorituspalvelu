@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.{Opintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 
 import java.util.UUID
 
@@ -8,6 +9,9 @@ import java.util.UUID
  * Muuntaa Kosken suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
  */
 object VirtaToSuoritusConverter {
+
+  var VIRTA_TUTKINTO_LAJI = 1
+  var VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
 
   val allowMissingFields = new ThreadLocal[Boolean]
 
@@ -24,40 +28,45 @@ object VirtaToSuoritusConverter {
     nimet.find(n => n.kieli.exists(k => kieli.equals(k))).map(n => n.nimi)
 
   def toOpiskeluoikeudet(virtaSuoritukset: VirtaSuoritukset): Seq[VirtaOpiskeluoikeus] = {
-    val suoritukset = toSuoritukset(virtaSuoritukset)
-    val suorituksetByOpiskeluoikeusTunniste: Map[String, Seq[Suoritus]] = suoritukset.groupBy {
-      case t: VirtaTutkinto => t.opiskeluoikeusAvain
-      case o: Opintosuoritus => o.opiskeluoikeusAvain
-      case _ => ??? //Tuleeko Virrasta muitakin tyyppejä?
-    }
+    val suorituksetByOpiskeluoikeusTunniste = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o => o.Opintosuoritukset).flatten.groupBy(_.opiskeluoikeusAvain)
 
     val oikeudet = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o =>
       o.Opiskeluoikeudet.map(oo => {
-      val oikeudenSuoritukset: Set[Suoritus] = suorituksetByOpiskeluoikeusTunniste.getOrElse(oo.avain, Set.empty).toSet
-      VirtaOpiskeluoikeus(UUID.randomUUID(), oo.avain, oikeudenSuoritukset)
-    }))
+        val oikeudenSuoritukset: Set[Suoritus] = toSuoritukset(oo, suorituksetByOpiskeluoikeusTunniste.getOrElse(oo.avain, Seq.empty)).toSet
+        VirtaOpiskeluoikeus(
+          UUID.randomUUID(),
+          oo.avain,
+          oo.Jakso.Koulutuskoodi,
+          oo.AlkuPvm,
+          oo.LoppuPvm,
+          fi.oph.suorituspalvelu.business.Koodi(oo.Tila.maxBy(t => t.AlkuPvm).Koodi, VIRTA_OO_TILA_KOODISTO, None), // otetaan viimeisin opiskeluoikeuden tila
+          oo.Myontaja,
+          oikeudenSuoritukset
+        )
+      }))
     oikeudet
   }
 
-  def toSuoritukset(virtaSuoritukset: VirtaSuoritukset, allowMissingFieldsForTests: Boolean = false): Seq[Suoritus] =
+  def toSuoritukset(opiskeluoikeus: Opiskeluoikeus, opintosuoritukset: Seq[fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus], allowMissingFieldsForTests: Boolean = false): Seq[Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
-      virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o => o.Opintosuoritukset.map(o => o.flatMap(suoritus => {
+      opintosuoritukset.flatMap(suoritus => {
         suoritus.Laji match
-          case 1 => Seq(VirtaTutkinto(
+          case 1 => Some(VirtaTutkinto(
             UUID.randomUUID(),
             getDefaultNimi(suoritus.Nimi),
             getNimi(suoritus.Nimi, "sv"),
             getNimi(suoritus.Nimi, "en"),
             suoritus.koulutusmoduulitunniste,
             suoritus.Laajuus.Opintopiste,
+            opiskeluoikeus.AlkuPvm,
             suoritus.SuoritusPvm,
             suoritus.Myontaja,
             suoritus.Kieli,
             suoritus.Koulutuskoodi.get,
             suoritus.opiskeluoikeusAvain
           ))
-          case 2 => Seq(Opintosuoritus(
+          case 2 => Some(Opintosuoritus(
             UUID.randomUUID(),
             getDefaultNimi(suoritus.Nimi),
             getNimi(suoritus.Nimi, "sv"),
@@ -79,8 +88,8 @@ object VirtaToSuoritusConverter {
             suoritus.Opinnaytetyo.map(o => "1".equals(o)).getOrElse(false),
             suoritus.opiskeluoikeusAvain
           ))
-          case default => Seq.empty
-      })).getOrElse(Seq.empty))
+          case default => None
+      })
     finally
       allowMissingFields.set(false)
 }

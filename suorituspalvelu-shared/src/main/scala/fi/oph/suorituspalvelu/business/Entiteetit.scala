@@ -94,7 +94,12 @@ case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant,
 case class VirtaOpiskeluoikeus(
                                 tunniste: UUID,
                                 virtaTunniste: String,
-                                @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type") 
+                                koulutusKoodi: String,
+                                alkuPvm: LocalDate,
+                                loppuPvm: LocalDate,
+                                tila: Koodi,
+                                myontaja: String,
+                                @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                 suoritukset: Set[Suoritus]
                               ) extends Opiskeluoikeus, Tyypitetty
 
@@ -105,6 +110,7 @@ case class VirtaTutkinto(
                           nimiEn: Option[String],
                           komoTunniste: String,
                           opintoPisteet: BigDecimal,
+                          aloitusPvm: LocalDate,
                           suoritusPvm: LocalDate,
                           myontaja: String,
                           kieli: String,

@@ -22,7 +22,7 @@ case class Laajuus(Opintopiste: BigDecimal)
 
 case class Jakso(Rahoituslahde: String, Koulutuskieli: String, LoppuPvm: LocalDate, AlkuPvm: LocalDate, Koulutuskoodi: String, koulutusmoduulitunniste: String, Koulutuskunta: String)
 
-case class OpiskeluOikeus(Laajuus: Laajuus, LoppuPvm: LocalDate, Tila: Tila, Jakso: Jakso, Koulutusala: OpiskeluoikeusKoulutusala, Tyyppi: String, AlkuPvm: LocalDate, Myontaja: String, opiskelijaAvain: String, avain: String)
+case class Opiskeluoikeus(Laajuus: Laajuus, LoppuPvm: LocalDate, @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[Tila], Jakso: Jakso, Koulutusala: OpiskeluoikeusKoulutusala, Tyyppi: String, AlkuPvm: LocalDate, Myontaja: String, opiskelijaAvain: String, avain: String)
 
 case class LukukausiIlmoittautuminen(IlmoittautumisPvm: LocalDate, opiskelijaAvain: String, LoppuPvm: LocalDate, Tila: String, opiskeluoikeusAvain: String, AlkuPvm: LocalDate, Myontaja: String)
 
@@ -59,7 +59,7 @@ case class Opintosuoritus(
                            TKILaajuusHarjoittelu: Option[Laajuus]
                          )
 
-case class Opiskelija(Opiskeluoikeudet: Seq[OpiskeluOikeus], LukukausiIlmoittautumiset: Seq[LukukausiIlmoittautuminen], Opintosuoritukset: Option[Seq[Opintosuoritus]], Henkilotunnus: String, avain: String)
+case class Opiskelija(Opiskeluoikeudet: Seq[Opiskeluoikeus], LukukausiIlmoittautumiset: Seq[LukukausiIlmoittautuminen], Opintosuoritukset: Option[Seq[Opintosuoritus]], Henkilotunnus: String, avain: String)
 
 case class OpiskelijanKaikkiTiedotResponse(Virta: Seq[Opiskelija])
 

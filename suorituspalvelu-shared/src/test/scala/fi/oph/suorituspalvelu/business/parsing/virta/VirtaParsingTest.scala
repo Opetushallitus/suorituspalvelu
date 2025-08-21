@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenPerustutkinto, Koodi, Opintosuoritus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.business.{AmmatillinenPerustutkinto, Koodi, Opintosuoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -21,16 +21,70 @@ class VirtaParsingTest {
       "/1_2_246_562_24_21250967215.xml"
     ).foreach(fileName => {
       val suoritukset = VirtaParser.parseVirtaData(this.getClass.getResourceAsStream(fileName))
-      val opintosuoritukset = VirtaToSuoritusConverter.toSuoritukset(suoritukset)
+      val opiskeluoikeudet = VirtaToSuoritusConverter.toOpiskeluoikeudet(suoritukset)
     })
 
+  @Test def testVirtaOpiskeluoikeudenKentat(): Unit =
+    val opiskeluoikeus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
+      """
+        |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+        |  <SOAP-ENV:Body>
+        |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
+        |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
+        |        <virta:Opiskelija avain="C10">
+        |          <virta:Opiskeluoikeudet>
+        |            <virta:Opiskeluoikeus opiskelijaAvain="C102" avain="xxx002">
+        |              <virta:AlkuPvm>2018-01-01</virta:AlkuPvm>
+        |              <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>              
+        |              <virta:Tila>
+        |                <virta:AlkuPvm>2013-08-22</virta:AlkuPvm>
+        |                <virta:LoppuPvm>2017-05-31</virta:LoppuPvm>
+        |                <virta:Koodi>1</virta:Koodi>
+        |              </virta:Tila>
+        |              <virta:Tila>
+        |                <virta:AlkuPvm>2017-06-01</virta:AlkuPvm>
+        |                <virta:Koodi>3</virta:Koodi>
+        |              </virta:Tila>
+        |              <virta:Myontaja>01901</virta:Myontaja>
+        |              <virta:Jakso>
+        |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
+        |              </virta:Jakso>
+        |            </virta:Opiskeluoikeus>
+        |          </virta:Opiskeluoikeudet>
+        |        </virta:Opiskelija>
+        |      </virta:Virta>
+        |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
+        |  </SOAP-ENV:Body>
+        |</SOAP-ENV:Envelope>""".stripMargin)).head
+
+    Assertions.assertNotNull(opiskeluoikeus.tunniste)
+    Assertions.assertEquals("xxx002", opiskeluoikeus.virtaTunniste)
+    Assertions.assertEquals("726302", opiskeluoikeus.koulutusKoodi)
+    Assertions.assertEquals(LocalDate.parse("2018-01-01"), opiskeluoikeus.alkuPvm)
+    Assertions.assertEquals(LocalDate.parse("2019-01-01"), opiskeluoikeus.loppuPvm)
+    Assertions.assertEquals(Koodi("3", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), opiskeluoikeus.tila) // viimeiseksi alkanut tila on voimassa
+    Assertions.assertEquals("01901", opiskeluoikeus.myontaja)
+
   @Test def testVirtatutkinnonKentat(): Unit =
-    val suoritus = VirtaToSuoritusConverter.toSuoritukset(VirtaParser.parseVirtaData("""
+    val suoritus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData("""
           |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
           |  <SOAP-ENV:Body>
           |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
           |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
           |        <virta:Opiskelija avain="C10">
+          |          <virta:Opiskeluoikeudet>
+          |            <virta:Opiskeluoikeus opiskelijaAvain="C102" avain="xxx002">
+          |              <virta:AlkuPvm>2018-01-01</virta:AlkuPvm>
+          |              <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>              
+          |              <virta:Tila>
+          |                <virta:AlkuPvm>2017-06-01</virta:AlkuPvm>
+          |                <virta:Koodi>3</virta:Koodi>
+          |              </virta:Tila>
+          |              <virta:Jakso>
+          |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
+          |              </virta:Jakso>
+          |            </virta:Opiskeluoikeus>
+          |          </virta:Opiskeluoikeudet>
           |          <virta:Opintosuoritukset>
           |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx002" opiskelijaAvain="C10" koulutusmoduulitunniste="532" avain="cxxc7_532_R702T_TH00">
           |              <virta:SuoritusPvm>2017-05-31</virta:SuoritusPvm>
@@ -52,7 +106,7 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaTutkinto]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset.head.asInstanceOf[VirtaTutkinto]
 
     Assertions.assertEquals("532", suoritus.komoTunniste)
     Assertions.assertEquals(LocalDate.parse("2017-05-31"), suoritus.suoritusPvm)
@@ -63,14 +117,26 @@ class VirtaParsingTest {
     Assertions.assertEquals("fi", suoritus.kieli)
     Assertions.assertEquals("671103", suoritus.koulutusKoodi)
 
-
   @Test def testVirtasuorituksenKentat(): Unit =
-    val suoritus = VirtaToSuoritusConverter.toSuoritukset(VirtaParser.parseVirtaData("""
+    val suoritus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData("""
           |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
           |  <SOAP-ENV:Body>
           |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
           |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
           |        <virta:Opiskelija avain="C10">
+          |          <virta:Opiskeluoikeudet>
+          |            <virta:Opiskeluoikeus opiskelijaAvain="C102" avain="xxx002">
+          |              <virta:AlkuPvm>2014-01-01</virta:AlkuPvm>
+          |              <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>              
+          |              <virta:Tila>
+          |                <virta:AlkuPvm>2017-06-01</virta:AlkuPvm>
+          |                <virta:Koodi>3</virta:Koodi>
+          |              </virta:Tila>
+          |              <virta:Jakso>
+          |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
+          |              </virta:Jakso>
+          |            </virta:Opiskeluoikeus>
+          |          </virta:Opiskeluoikeudet>
           |          <virta:Opintosuoritukset>
           |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx002" opiskelijaAvain="C10" koulutusmoduulitunniste="LOG13A 01SUO" avain="625422">
           |              <virta:SuoritusPvm>2015-05-31</virta:SuoritusPvm>
@@ -101,7 +167,7 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[Opintosuoritus]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset.head.asInstanceOf[Opintosuoritus]
 
     Assertions.assertEquals("LOG13A 01SUO", suoritus.komoTunniste)
     Assertions.assertEquals(LocalDate.parse("2015-05-31"), suoritus.suoritusPvm)
