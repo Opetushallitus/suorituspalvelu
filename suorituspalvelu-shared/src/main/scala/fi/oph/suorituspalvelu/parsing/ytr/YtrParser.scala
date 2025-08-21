@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import fi.oph.suorituspalvelu.integration.ytr.YtrDataForHenkilo
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.time.LocalDate
@@ -37,11 +38,11 @@ object YtrParser {
     mapper
   }
 
-  def parseYtrData(data: String, personOidByHetu: Map[String, String]): Iterator[(String, String)] = {
+  def parseYtrData(data: String, personOidByHetu: Map[String, String]): Iterator[YtrDataForHenkilo] = {
     splitYtrDataByOppija(new ByteArrayInputStream(data.getBytes("UTF-8")), personOidByHetu)
   }
 
-  def splitYtrDataByOppija(input: InputStream, personOidByHetu: Map[String, String] = Map.empty): Iterator[(String, String)] = {
+  def splitYtrDataByOppija(input: InputStream, personOidByHetu: Map[String, String] = Map.empty): Iterator[YtrDataForHenkilo] = {
     val jsonParser = MAPPER.getFactory().createParser(input)
     jsonParser.nextToken()
 
@@ -57,7 +58,8 @@ object YtrParser {
       .takeWhile(data => data.isDefined)
       .map(data => {
         val personOid = personOidByHetu.getOrElse(data.get.ssn, throw new RuntimeException(s"Missing personOid for ssn ${data.get.ssn}"))
-        (personOid, MAPPER.writeValueAsString(data.get.copy(ssn = ""))) //Pudotetaan hetu pois datasta, jotta ei päädy kantaan.
+        //Pudotetaan hetu pois datasta, jotta ei päädy kantaan.
+        YtrDataForHenkilo(personOid, Some(MAPPER.writeValueAsString(data.get.copy(ssn = ""))))
       })
   }
 
