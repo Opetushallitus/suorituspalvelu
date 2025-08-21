@@ -314,10 +314,8 @@ class DataSyncResource {
           AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaYtrTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Ytr-tiedot haun $hakuOid henkilöille")
 
-          //Todo, fix type
           val result: Seq[SyncResultForHenkilo] = ytrIntegration.syncYtrForHaku(hakuOid.get)
-          //val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
-          val responseStr = s"Tallennettiin haulle $hakuOid ytr-tiedot."
+          val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.size} henkilön ytr-tiedot."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
           ResponseEntity.status(HttpStatus.OK).body(YtrSyncSuccessResponse(responseStr))
 
