@@ -1,8 +1,6 @@
 'use client';
-import { FullSpinner } from '@/components/FullSpinner';
 import { useOppija } from '@/queries';
 import { Stack } from '@mui/material';
-import { Suspense } from 'react';
 import { Opiskeluoikeudet } from './Opiskeluoikeudet';
 import { Suoritukset } from './Suoritukset';
 import { LabeledInfoItem } from './LabeledInfoItem';
@@ -23,11 +21,12 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   );
 };
 
-const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
+export const HenkiloView = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const { data: tiedot } = useOppija(oppijaNumero);
   const { t } = useTranslations();
   return (
     <Stack spacing={6} sx={{ margin: 2 }}>
+      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${tiedot.nimi}`}</title>
       <Stack spacing={2}>
         <OphTypography variant="h3" component="h2">
           {tiedot.nimi}{' '}
@@ -53,15 +52,3 @@ const OppijaContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
     </Stack>
   );
 };
-
-export default function HenkiloPage({
-  oppijaNumero,
-}: {
-  oppijaNumero: string;
-}) {
-  return (
-    <Suspense fallback={<FullSpinner />}>
-      <OppijaContent oppijaNumero={oppijaNumero} />
-    </Suspense>
-  );
-}

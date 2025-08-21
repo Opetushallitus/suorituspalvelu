@@ -1,12 +1,10 @@
 'use client';
-import { use } from 'react';
+
 import '@/styles/global.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionExpiredProvider } from '@/components/SessionExpired';
-import { TolgeeProvider } from '@tolgee/react';
-import { tolgeePromise } from '@/localization/tolgee-config';
 import { NuqsAdapter } from 'nuqs/adapters/next';
-import { OphNextJsThemeProvider } from '@opetushallitus/oph-design-system/next/theme';
+import { LocalizationProvider } from './LocalizationProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,19 +18,13 @@ const queryClient = new QueryClient({
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const tolgee = use(tolgeePromise);
-
   return (
     <SessionExpiredProvider>
-      <OphNextJsThemeProvider variant="oph">
-      <TolgeeProvider tolgee={tolgee}>
-        <NuqsAdapter>
-          <QueryClientProvider client={queryClient}>
-            {children}
-          </QueryClientProvider>
-        </NuqsAdapter>
-      </TolgeeProvider>
-      </OphNextJsThemeProvider>
+      <NuqsAdapter>
+        <QueryClientProvider client={queryClient}>
+          <LocalizationProvider>{children}</LocalizationProvider>
+        </QueryClientProvider>
+      </NuqsAdapter>
     </SessionExpiredProvider>
   );
 }

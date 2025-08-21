@@ -74,10 +74,9 @@ const OsaAlueetTable = ({
 };
 
 const StyledOsatTable = styled(Table)({
-  // Tarvitaan table-elementille luokka, jotta tyylit ei valu sisäkkäiseen osa-alueiden taulukkoon
-  '&.tutkinnon-osat-table': {
-    tableLayout: 'fixed',
-    '& .MuiTableCell-root': {
+  tableLayout: 'fixed',
+  '& > thead, & > tbody': {
+    '& > tr > .MuiTableCell-root': {
       borderBottom: 'none',
       height: '48px',
       '&:nth-of-type(2), &:nth-of-type(3)': {
@@ -103,7 +102,7 @@ const KokonaislaajuusRow = ({
   return (
     <TableBody>
       <TableRow>
-        <TableCell></TableCell>
+        <TableCell />
         <TableCell>
           {t('oppija.lyhenne-yhteensa')}{' '}
           <SemiBold>
@@ -111,7 +110,7 @@ const KokonaislaajuusRow = ({
             {t('oppija.lyhenne-osaamispiste')}
           </SemiBold>
         </TableCell>
-        <TableCell></TableCell>
+        <TableCell />
       </TableRow>
     </TableBody>
   );
@@ -132,7 +131,7 @@ export function TutkinnonOsatTable({
 
   return (
     !isEmpty(tutkinnonOsat) && (
-      <StyledOsatTable className="tutkinnon-osat-table" data-test-id={testId}>
+      <StyledOsatTable data-test-id={testId}>
         <TableHead>
           <TableRow>
             <TableCell>{title}</TableCell>

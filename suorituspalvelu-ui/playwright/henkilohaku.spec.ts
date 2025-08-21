@@ -59,7 +59,7 @@ test.describe('Henkilö-haku', () => {
     });
 
     const henkiloNavi = page.getByRole('navigation', {
-      name: 'Oppijavalitsin',
+      name: 'Henkilövalitsin',
     });
 
     const henkiloLinks = henkiloNavi.getByRole('link');

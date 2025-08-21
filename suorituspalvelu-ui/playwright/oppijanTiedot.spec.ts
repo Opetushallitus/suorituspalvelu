@@ -50,6 +50,10 @@ test.describe('Oppijan tiedot', () => {
   });
 
   test('Henkilötiedot', async ({ page }) => {
+    await expect(page).toHaveTitle(
+      'Suorituspalvelu - Henkilön tiedot - Olli Oppija',
+    );
+
     await expect(
       page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
     ).toBeVisible();

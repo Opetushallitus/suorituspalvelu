@@ -6,6 +6,7 @@ import {
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
 } from './types/backend';
+import { KayttajaTiedot } from './types/ui-types';
 
 export type OppijatSearchParams = {
   oppija?: string;
@@ -47,7 +48,21 @@ export const getOppilaitokset = async () => {
   const config = await configPromise;
 
   const res = await client.get<IOppilaitosSuccessResponse>(
-    `${config.routes.suorituspalvelu.oppilaitoksetUrl}`,
+    config.routes.suorituspalvelu.oppilaitoksetUrl,
   );
   return res.data;
+};
+
+export const getKayttaja = async () => {
+  const config = await configPromise;
+
+  const res = await client.get<KayttajaTiedot>(
+    config.routes.suorituspalvelu.kayttajanTiedotUrl,
+  );
+  return res.data;
+};
+
+export const getAsiointiKieli = async () => {
+  const kayttaja = await getKayttaja();
+  return kayttaja.asiointiKieli;
 };

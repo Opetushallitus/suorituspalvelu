@@ -1,26 +1,18 @@
 'use client';
 import { Header } from '@/components/Header';
-import HenkiloPage from '@/components/HenkiloPage';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
+import { HenkiloView } from '@/components/HenkiloView';
 import { PageLayout } from '@/components/PageLayout';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
+import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { SearchControls } from '@/components/SearchControls';
 import {
   SessionExpired,
   useIsSessionExpired,
 } from '@/components/SessionExpired';
 import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
+import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
-
-const useDocumentTitle = () => {
-  const { t } = useTranslate();
-  const [oppijaNumero] = useSelectedOppijaNumero();
-  if (oppijaNumero) {
-    return `${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${oppijaNumero}`;
-  }
-
-  return t('suorituspalvelu');
-};
 
 const HomePage = () => {
   const { t } = useTranslate();
@@ -30,19 +22,20 @@ const HomePage = () => {
   return (
     <QuerySuspenseBoundary>
       <PageLayout header={<Header title={t('suorituspalvelu')} />}>
-        {/* Set the document title */}
-        <title>{useDocumentTitle()}</title>
+        <title>{t('suorituspalvelu')}</title>
         <SearchControls />
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <Stack direction="row">
           <HenkilotSidebar />
           <main style={{ flexGrow: 1 }}>
-            {oppijaNumero ? (
-              <HenkiloPage oppijaNumero={oppijaNumero} />
-            ) : (
-              <div>{t('valitse-oppija')}</div>
-            )}
+            <QuerySuspenseBoundary>
+              {oppijaNumero ? (
+                <HenkiloView oppijaNumero={oppijaNumero} />
+              ) : (
+                <ResultPlaceholder text={t('valitse-henkilo')} />
+              )}
+            </QuerySuspenseBoundary>
           </main>
-        </div>
+        </Stack>
         {isSessionExpired && <SessionExpired />}
       </PageLayout>
     </QuerySuspenseBoundary>

@@ -1,8 +1,12 @@
+'use client';
+import { useTranslations } from '@/hooks/useTranslations';
 import { CircularProgress } from '@mui/material';
-import { useTranslate } from '@tolgee/react';
 
-export const FullSpinner = ({ ariaLabel }: { ariaLabel?: string }) => {
-  const { t } = useTranslate();
+export const UntranslatedFullSpinner = ({
+  ariaLabel,
+}: {
+  ariaLabel?: string;
+}) => {
   return (
     <div
       aria-label={ariaLabel}
@@ -18,7 +22,12 @@ export const FullSpinner = ({ ariaLabel }: { ariaLabel?: string }) => {
         alignItems: 'center',
       }}
     >
-      <CircularProgress aria-label={ariaLabel ?? t('ladataan')} />
+      <CircularProgress aria-label={ariaLabel ?? 'Ladataan...'} />
     </div>
   );
+};
+
+export const FullSpinner = ({ ariaLabel }: { ariaLabel?: string }) => {
+  const { t } = useTranslations();
+  return <UntranslatedFullSpinner ariaLabel={ariaLabel ?? t('ladataan')} />;
 };

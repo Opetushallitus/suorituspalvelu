@@ -2,27 +2,41 @@
 
 import { useConfig } from '@/configuration';
 import { useTranslate } from '@tolgee/react';
-import React from 'react';
-
-const LoginLink = ({ url }: { url: string }) => {
-  const { t } = useTranslate();
-  const loginUrl = new URL(url, window.location.origin);
-  const serviceUrl = new URL(window.location.href);
-  serviceUrl.searchParams.delete('ticket');
-  loginUrl.searchParams.set('service', serviceUrl.toString());
-  return <a href={loginUrl.toString()}>{t('istunto.login-sivulle')}</a>;
-};
+import React, { useState } from 'react';
+import { OphModal } from './OphModal';
+import { OphButton } from '@opetushallitus/oph-design-system';
 
 export function SessionExpired() {
   const config = useConfig();
   const { t } = useTranslate();
 
+  const loginUrl = new URL(
+    config.routes.yleiset.casLoginUrl,
+    window.location.origin,
+  );
+  const serviceUrl = new URL(window.location.href);
+  serviceUrl.searchParams.delete('ticket');
+  loginUrl.searchParams.set('service', serviceUrl.toString());
+
+  const [isOpen, setIsOpen] = useState(true);
+
   return (
-    <div>
-      <h1>{t('istunto.virhe-otsikko')}</h1>
-      <p>{t('istunto.virhe-teksti')}</p>
-      <LoginLink url={config.routes.yleiset.casLoginUrl} />
-    </div>
+    <OphModal
+      title={t('istunto.virhe-otsikko')}
+      open={isOpen}
+      onClose={() => setIsOpen(false)}
+      actions={
+        <OphButton
+          variant="contained"
+          href={loginUrl.toString()}
+          target="_self"
+        >
+          {t('istunto.login-sivulle')}
+        </OphButton>
+      }
+    >
+      {t('istunto.virhe-teksti')}
+    </OphModal>
   );
 }
 
