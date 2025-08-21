@@ -9,14 +9,12 @@ import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import slick.jdbc.JdbcBackend
 
-import java.time.LocalDate
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
 import fi.oph.suorituspalvelu.business.Tietolahde.YTR
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 
-import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable
 
 case class Section(sectionId: String, sectionPoints: Option[String])
@@ -83,16 +81,14 @@ class YtrIntegration {
     Await.result(allResultsF, 4.hours)
   }
 
-
   def persistSingle(ytrResult: YtrDataForHenkilo): SyncResultForHenkilo = {
     LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}")
-
     try {
       val kantaOperaatiot = KantaOperaatiot(database)
       val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, YTR, ytrResult.resultJson.getOrElse("{}"))
       versio.foreach(v => {
         //Todo, parsitaan ytr-data ja tallennetaan parsitut suoritukset
-        LOG.info(s"Versio tallennettu $versio, tallennetaan (leikisti) YTR-suoritukset")
+        LOG.info(s"Versio $versio tallennettu, tallennetaan (leikisti) parsitut YTR-suoritukset")
       })
       SyncResultForHenkilo(ytrResult.personOid, versio, None)
     } catch {
@@ -110,14 +106,13 @@ class YtrIntegration {
         val dataByFileF: Future[Map[String, String]] = ytrClient.fetchAndDecompressZip(massOp.uuid)
         dataByFileF.map(dataByFile => {
           dataByFile.flatMap((filename, data) => {
-            LOG.info(s"Handling file: $filename")
+            LOG.info(s"Handling file: $filename, data $data")
             YtrParser.parseYtrData(data, personOidByHetu).toList
           }).toSeq
         })
       })
     })
   }
-
 
   def pollUntilReady(uuid: String): Future[YtrMassOperationQueryResponse] = {
     Thread.sleep(pollWaitMillis) //Todo, tarvitaanko fiksumpi odottelumekanismi
@@ -137,31 +132,23 @@ class YtrIntegration {
   }
 
   def fetchRawForStudents(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
-    val useHenkilot = personOids.take(10)
-    val henkilot = onrIntegration.getMasterHenkilosForPersonOids(useHenkilot)
+    if (personOids.size > 5) {
+      syncYtrInBatches(personOids)
+    } else {
+      val useHenkilot = personOids.take(10)
+      val henkilot = onrIntegration.getMasterHenkilosForPersonOids(useHenkilot)
 
-    val kantaOperaatiot = KantaOperaatiot(database)
-
-    //Todo, käytetään massahakutoiminnallisuutta vähänkin suuremmille erille (10+? 100+? 500+?)
-    val resultF: Future[Seq[SyncResultForHenkilo]] = henkilot.map((henkiloResult: Map[String, OnrMasterHenkilo]) => {
-      LOG.info(s"Saatiin oppijanumerorekisteristä ${henkiloResult.size} henkilön tiedot ${useHenkilot.size} haetulle henkilölle")
-      val ytrParams = henkiloResult.values.filter(_.hetu.isDefined).map(h => (h.oidHenkilo, YtlHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty)))))
-      LOG.info(s"Haetuista henkilöistä ${ytrParams.size} henkilölle löytyi hetu, eli haetaan ytr-tiedot")
-      val k: Seq[SyncResultForHenkilo] = ytrParams.map(ytrParam => {
-        val resultF = ytrClient.fetchOne(ytrParam._2)
-        val resultForHenkilo = Await.result(resultF, 1.minute)
-        persistSingle(YtrDataForHenkilo(ytrParam._1, resultForHenkilo))
-      }).toList
-      //Todo, persist jossain välissä
-      k
-    })
-    Await.result(resultF, 15.minutes)
+      val resultF: Future[Seq[SyncResultForHenkilo]] = henkilot.map((henkiloResult: Map[String, OnrMasterHenkilo]) => {
+        LOG.info(s"Saatiin oppijanumerorekisteristä ${henkiloResult.size} henkilön tiedot ${useHenkilot.size} haetulle henkilölle")
+        val ytrParams = henkiloResult.values.filter(_.hetu.isDefined).map(h => (h.oidHenkilo, YtlHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty)))))
+        LOG.info(s"Haetuista henkilöistä ${ytrParams.size} henkilölle löytyi hetu. Haetaan näille ytr-tiedot.")
+        ytrParams.map(ytrParam => {
+          val resultF = ytrClient.fetchOne(ytrParam._2)
+          val resultForHenkilo = Await.result(resultF, 1.minute)
+          persistSingle(YtrDataForHenkilo(ytrParam._1, resultForHenkilo))
+        }).toList
+      })
+      Await.result(resultF, 15.minutes)
+    }
   }
-
-  //Dataa ei välttämättä löydy ytr:stä
-  def fetchRawForStudent(ssn: String): Option[String] = {
-    val resultF = ytrClient.fetchOne(YtlHetuPostData(ssn, None))
-    Await.result(resultF, 1.minute)
-  }
-
 }
