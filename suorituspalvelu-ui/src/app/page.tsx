@@ -1,7 +1,7 @@
 'use client';
 import { Header } from '@/components/Header';
-import HenkiloPage from '@/components/HenkiloPage';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
+import { HenkiloView } from '@/components/HenkiloView';
 import { PageLayout } from '@/components/PageLayout';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
@@ -14,16 +14,6 @@ import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
 import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 
-const useDocumentTitle = () => {
-  const { t } = useTranslate();
-  const [oppijaNumero] = useSelectedOppijaNumero();
-  if (oppijaNumero) {
-    return `${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${oppijaNumero}`;
-  }
-
-  return t('suorituspalvelu');
-};
-
 const HomePage = () => {
   const { t } = useTranslate();
   const { isSessionExpired } = useIsSessionExpired();
@@ -32,17 +22,18 @@ const HomePage = () => {
   return (
     <QuerySuspenseBoundary>
       <PageLayout header={<Header title={t('suorituspalvelu')} />}>
-        {/* Set the document title */}
-        <title>{useDocumentTitle()}</title>
+        <title>{t('suorituspalvelu')}</title>
         <SearchControls />
         <Stack direction="row">
           <HenkilotSidebar />
           <main style={{ flexGrow: 1 }}>
-            {oppijaNumero ? (
-              <HenkiloPage oppijaNumero={oppijaNumero} />
-            ) : (
-              <ResultPlaceholder text={t('valitse-henkilo')} />
-            )}
+            <QuerySuspenseBoundary>
+              {oppijaNumero ? (
+                <HenkiloView oppijaNumero={oppijaNumero} />
+              ) : (
+                <ResultPlaceholder text={t('valitse-henkilo')} />
+              )}
+            </QuerySuspenseBoundary>
           </main>
         </Stack>
         {isSessionExpired && <SessionExpired />}
