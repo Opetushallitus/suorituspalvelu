@@ -131,7 +131,7 @@ class YtrClient(username: String, password: String, baseUrl: String) {
 
   def postWithBasicAuth(url: String, payload: Object): Future[Option[String]] = {
     val payloadString = mapper.writeValueAsString(payload)
-    LOG.info(s"Payload string: $payloadString")
+    //LOG.info(s"Payload string: $payloadString")
     val request = client
       .preparePost(url)
       .setHeader("Authorization", encodeBasicAuth(username, password))
