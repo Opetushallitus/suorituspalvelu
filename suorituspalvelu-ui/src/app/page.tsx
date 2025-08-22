@@ -2,6 +2,7 @@
 import { Header } from '@/components/Header';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
 import { HenkiloView } from '@/components/HenkiloView';
+import { MuokkausView } from '@/components/MuokkausView';
 import { PageLayout } from '@/components/PageLayout';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
@@ -11,13 +12,19 @@ import {
   useIsSessionExpired,
 } from '@/components/SessionExpired';
 import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
+import { DEFAULT_NUQS_OPTIONS } from '@/lib/common';
 import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 
 const HomePage = () => {
   const { t } = useTranslate();
   const { isSessionExpired } = useIsSessionExpired();
   const [oppijaNumero] = useSelectedOppijaNumero();
+  const [isMuokkaus] = useQueryState(
+    'muokkaus',
+    parseAsBoolean.withOptions(DEFAULT_NUQS_OPTIONS).withDefault(false),
+  );
 
   return (
     <QuerySuspenseBoundary>
@@ -29,7 +36,11 @@ const HomePage = () => {
           <main style={{ flexGrow: 1 }}>
             <QuerySuspenseBoundary>
               {oppijaNumero ? (
-                <HenkiloView oppijaNumero={oppijaNumero} />
+                isMuokkaus ? (
+                  <MuokkausView />
+                ) : (
+                  <HenkiloView oppijaNumero={oppijaNumero} />
+                )
               ) : (
                 <ResultPlaceholder text={t('valitse-henkilo')} />
               )}
