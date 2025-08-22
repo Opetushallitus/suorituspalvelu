@@ -2,7 +2,7 @@
 
 import {
   useOppijatSearch,
-  useOppijatSearchURLParams,
+  useOppijatSearchApiParams,
 } from '@/hooks/useSearchOppijat';
 import Link from 'next/link';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
@@ -14,7 +14,7 @@ import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
 
 const HenkilotSidebarContent = () => {
-  const params = useOppijatSearchURLParams();
+  const params = useOppijatSearchApiParams();
   const { result, hasEmptySearchParams } = useOppijatSearch();
 
   const { t } = useTranslate();

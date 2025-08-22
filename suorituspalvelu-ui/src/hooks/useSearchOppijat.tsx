@@ -4,12 +4,15 @@ import { useApiSuspenseQuery } from '@/http-client';
 import { queryOptionsSearchOppijat } from '@/queries';
 import { useQueryState } from 'nuqs';
 import { isEmpty, isNullish, omitBy, values } from 'remeda';
+import { useDebounce } from './useDebounce';
 
-export const useOppijatSearchURLParams = () => {
+export const useOppijatSearchApiParams = () => {
   const params = useOppijatSearchParamsState();
+  const debouncedSearchTerm = useDebounce(params.oppijaSearchTerm, 400);
+
   return omitBy(
     {
-      oppija: params.oppijaSearchTerm ?? undefined,
+      oppija: debouncedSearchTerm ?? undefined,
       oppilaitos: params.oppilaitos ?? undefined,
       luokka: params.luokka ?? undefined,
       vuosi: params.vuosi ?? undefined,
@@ -23,6 +26,7 @@ export const useOppijatSearchParamsState = () => {
     'oppija',
     DEFAULT_NUQS_OPTIONS,
   );
+
   const [oppilaitos, setOppilaitos] = useQueryState(
     'oppilaitos',
     DEFAULT_NUQS_OPTIONS,
@@ -56,10 +60,9 @@ const isEmptySearchParams = (searchParams: OppijatSearchParams) => {
 
 export const useOppijatSearch = () => {
   const params = useOppijatSearchParamsState();
+  const apiParams = useOppijatSearchApiParams();
 
-  const urlParams = useOppijatSearchURLParams();
-
-  const result = useApiSuspenseQuery(queryOptionsSearchOppijat(urlParams));
+  const result = useApiSuspenseQuery(queryOptionsSearchOppijat(apiParams));
 
   return {
     ...params,
