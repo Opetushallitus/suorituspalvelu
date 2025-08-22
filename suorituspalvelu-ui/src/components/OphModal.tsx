@@ -41,6 +41,7 @@ export const OphModal = ({
   const modalId = useId();
   const modalTitleId = `${modalId}-title`;
   const { t } = useTranslations();
+
   return (
     <Dialog
       fullWidth={fullWidth}
@@ -72,7 +73,13 @@ export const OphModal = ({
           />
         )}
       </DialogTitle>
-      <DialogContent sx={{ textAlign: contentAlign, position: 'relative' }}>
+      <DialogContent
+        sx={{
+          textAlign: contentAlign,
+          position: 'relative',
+          overflow: 'visible',
+        }}
+      >
         {children}
       </DialogContent>
       {actions && <DialogActions>{actions}</DialogActions>}

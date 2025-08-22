@@ -8,9 +8,20 @@
   "ei": "Ei",
   "sulje": "Sulje",
   "suoritus": "Suoritus",
-  "tallenna": "Tallenna",
   "select": {
     "valitse": "Valitse..."
+  },
+  "muokkaus": {
+    "tallenna": "Tallenna",
+    "lisaa-kentta": "Lisää kenttä",
+    "lisaa-kentta-otsikko": "Lisää uusi kenttä",
+    "lisaa-kentta-tunniste": "Kentän tunniste",
+    "lisaa-kentta-kuvaus": "Kentän kuvaus",
+    "lisaa-kentta-tyyppi": "Kentän tyyppi",
+    "lisaa-kentta-tyyppi-string": "Teksti",
+    "lisaa-kentta-tyyppi-number": "Numero",
+    "peruuta": "Peruuta",
+    "poista-kentta": "Poista kenttä"
   },
   "istunto": {
     "login-sivulle": "Siirry sisäänkirjautumissivulle",

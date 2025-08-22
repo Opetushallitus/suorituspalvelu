@@ -6,11 +6,15 @@ import {
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
 import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { OphModal } from './OphModal';
+import { Add, Remove } from '@mui/icons-material';
+import { FullSpinner } from './FullSpinner';
 
 type CommonEntries = {
   id: string;
-  label: string;
   description: string;
+  unsaved?: boolean;
 };
 
 type EditableFieldSpec =
@@ -26,30 +30,37 @@ type EditableFieldSpec =
 
 const EDITABLE_FIELDS: Array<EditableFieldSpec> = [
   {
-    id: 'hissa',
-    label: 'Hissa',
-    description: 'Historian arvosana',
-    type: 'number',
-    value: '10',
-  },
-  {
-    id: 'sanallinen',
-    label: 'Sanallinen arviointi',
-    description: 'Sanallinen arviointi',
-    type: 'string',
-    value: 'Esimerkki syy',
-  },
-  {
-    id: 'kieli',
-    label: 'Kieli',
-    description: 'Opetettava kieli',
+    id: 'POHJAKOULUTUS',
+    description: 'Pohjakoulutus',
     type: 'select',
+    value: '1',
     options: [
-      { label: 'Suomi', value: 'fi' },
-      { label: 'Ruotsi', value: 'sv' },
-      { label: 'Englanti', value: 'en' },
+      { value: '0', label: 'Ulkomainen tutkinto' },
+      { value: '1', label: 'Peruskoulu' },
+      { value: '2', label: 'Osittain yksilöllistetty' },
+      { value: '3', label: 'Alueittain yksilöllistetty' },
+      { value: '6', label: 'Yksilöllistetty' },
+      { value: '7', label: 'Keskeytynyt' },
+      { value: '9', label: 'Ylioppilas' },
     ],
-    value: 'fi',
+  },
+  {
+    id: 'valintatuloksen-julkaisulupa',
+    description: 'Valintatuloksen julkaisulupa',
+    type: 'string',
+    value: 'Kyllä',
+  },
+  {
+    id: 'PK_FY',
+    description: 'Peruskoulun fysiikan arvosana',
+    type: 'string',
+    value: '9',
+  },
+  {
+    id: 'yks_mat_ai',
+    description: 'Yksilöllistetty matematiikka',
+    type: 'string',
+    value: 'false',
   },
 ];
 
@@ -57,13 +68,86 @@ type EditableFieldsProps = {
   fields: Array<EditableFieldSpec>;
 };
 
-const EditableFields = ({ fields }: EditableFieldsProps) => {
+const INITIAL_FIELD_SPEC: EditableFieldSpec = {
+  id: '',
+  description: '',
+  type: 'string',
+  value: '',
+  unsaved: true,
+};
+
+const AddFieldModal = ({
+  isOpen,
+  onClose: onCloseProp,
+  onAdd,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (field: EditableFieldSpec) => void;
+}) => {
+  const { t } = useTranslations();
+  const [field, setField] = useState<EditableFieldSpec>(
+    () => INITIAL_FIELD_SPEC,
+  );
+
+  const onClose = () => {
+    onCloseProp();
+  };
+
+  return (
+    <OphModal
+      title={t('muokkaus.lisaa-kentta-otsikko')}
+      open={isOpen}
+      onClose={onClose}
+      actions={
+        <>
+          <OphButton variant="outlined" onClick={onClose}>
+            {t('muokkaus.peruuta')}
+          </OphButton>
+          <OphButton
+            variant="contained"
+            onClick={() => {
+              onAdd(field);
+              setField(INITIAL_FIELD_SPEC);
+            }}
+          >
+            {t('muokkaus.lisaa-kentta')}
+          </OphButton>
+        </>
+      }
+    >
+      <Stack spacing={2}>
+        <OphInputFormField
+          label={t('muokkaus.lisaa-kentta-tunniste')}
+          onChange={(event) =>
+            setField((f) => ({ ...f, id: event.target.value }))
+          }
+          value={field.id}
+        />
+        <OphInputFormField
+          label={t('muokkaus.lisaa-kentta-kuvaus')}
+          multiline={true}
+          maxRows={20}
+          onChange={(event) =>
+            setField((f) => ({ ...f, description: event.target.value }))
+          }
+          value={field.description}
+        />
+      </Stack>
+    </OphModal>
+  );
+};
+
+const EditableFields = ({ fields: fieldsProp }: EditableFieldsProps) => {
   const { t } = useTranslations();
 
-  const { mutate } = useMutation({
-    mutationFn: async (data: Record<string, string>) => {
-      console.log('saving data');
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: Record<string, string>) => {
+      console.log('Saving data');
       console.log({ data });
+      return new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
     },
     onSuccess: () => {
       alert('Data saved successfully');
@@ -72,12 +156,23 @@ const EditableFields = ({ fields }: EditableFieldsProps) => {
       alert('Error saving data');
     },
   });
-  return (
+
+  const [editableFields, setEditableFields] =
+    useState<Array<EditableFieldSpec>>(fieldsProp);
+  const [lisaaModalIsOpen, setLisaaModalIsOpen] = useState<boolean>(false);
+
+  const removeField = (id: string) => {
+    setEditableFields((fields) => fields.filter((field) => field.id !== id));
+  };
+
+  return isPending ? (
+    <FullSpinner />
+  ) : (
     <Box
       component="form"
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
-          event.preventDefault();
+          event.preventDefault(); // Don't trigger form submit
         }
       }}
       onSubmit={(event) => {
@@ -92,40 +187,74 @@ const EditableFields = ({ fields }: EditableFieldsProps) => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        flexWrap: 'wrap',
         padding: 2,
         gap: 2,
       }}
     >
-      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 2 }}>
-        {fields.map((field) =>
-          field.type === 'select' ? (
-            <OphSelectFormField
-              sx={{ minWidth: '250px' }}
-              label={field.label}
-              options={field.options}
+      <AddFieldModal
+        isOpen={lisaaModalIsOpen}
+        onClose={() => setLisaaModalIsOpen(false)}
+        onAdd={(field) => {
+          const hasFieldId = editableFields.some((f) => f.id === field.id);
+          if (hasFieldId) {
+            alert(`Kenttä tunnisteella ${field.id} on jo olemassa!`);
+            return;
+          }
+          setEditableFields([...editableFields, field]);
+          setLisaaModalIsOpen(false);
+        }}
+      />
+      <>
+        {editableFields.map((field) => {
+          return (
+            <Stack
               key={field.id}
-              inputProps={{ name: field.id }}
-              defaultValue={field.value}
-            />
-          ) : (
-            <OphInputFormField
-              sx={{ minWidth: '250px' }}
-              label={field.label}
-              key={field.id}
-              inputProps={{ name: field.id }}
-              defaultValue={field.value}
-            />
-          ),
-        )}
+              direction="row"
+              sx={{ gap: 2, justifyContent: 'stretch', alignItems: 'flex-end' }}
+            >
+              {field.type === 'select' ? (
+                <OphSelectFormField
+                  sx={{ minWidth: '250px', flex: 1 }}
+                  label={field.id}
+                  options={field.options}
+                  helperText={field.description}
+                  inputProps={{ name: field.id }}
+                  defaultValue={field.value}
+                />
+              ) : (
+                <OphInputFormField
+                  sx={{ minWidth: '250px', flex: 1 }}
+                  label={field.id}
+                  helperText={field.description}
+                  inputProps={{ name: field.id }}
+                  defaultValue={field.value}
+                />
+              )}
+              {field.unsaved && (
+                <OphButton
+                  startIcon={<Remove />}
+                  variant="outlined"
+                  onClick={() => removeField(field.id)}
+                >
+                  {t('muokkaus.poista-kentta')}
+                </OphButton>
+              )}
+            </Stack>
+          );
+        })}
+      </>
+      <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>
+        <OphButton
+          startIcon={<Add />}
+          variant="outlined"
+          onClick={() => setLisaaModalIsOpen(true)}
+        >
+          {t('muokkaus.lisaa-kentta')}
+        </OphButton>
+        <OphButton variant="contained" type="submit">
+          {t('muokkaus.tallenna')}
+        </OphButton>
       </Stack>
-      <OphButton
-        variant="contained"
-        type="submit"
-        sx={{ alignSelf: 'flex-end' }}
-      >
-        {t('tallenna')}
-      </OphButton>
     </Box>
   );
 };
