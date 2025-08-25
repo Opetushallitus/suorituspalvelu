@@ -23,6 +23,8 @@ case class YtrMassOperationQueryResponse(created: String, name: String, finished
 
 case class YtrMassOperationCreateResponse(operationUuid: String)
 
+case class YtrMassOperation(uuid: String)
+
 class YtrClient(username: String, password: String, baseUrl: String) {
 
   val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
@@ -41,7 +43,6 @@ class YtrClient(username: String, password: String, baseUrl: String) {
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiClient])
 
-  case class YtrMassOperation(uuid: String)
   def createYtrMassOperation(data: Seq[YtlHetuPostData]): Future[YtrMassOperation] = {
     LOG.info(s"Haetaan massahakuna yhteensä ${data.size} henkilön tiedot")
     val url = baseUrl + "/api/oph-transfer/bulk"
@@ -79,14 +80,6 @@ class YtrClient(username: String, password: String, baseUrl: String) {
         LOG.info(s"Saatiin vastaus ytr parametreille $data: ${result}")
         result
       }
-    })
-  }
-
-  def fetchAndDecompressZip(uuid: String): Future[Map[String, String]] = {
-    val url = baseUrl + "/api/oph-transfer/bulk/" + uuid
-    getWithBasicAuthAsByteArray(url).map((result: Option[Array[Byte]]) => {
-      LOG.info(s"Haettiin massa-zip, käsitellään. $uuid - ${result.map(_.length).getOrElse(0L)} bytes")
-      result.map(bytes => ZipUtil.unzipStreamByFile(new ByteArrayInputStream(bytes))).getOrElse(Map.empty)
     })
   }
 

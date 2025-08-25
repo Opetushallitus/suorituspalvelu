@@ -1,0 +1,82 @@
+[
+  {
+    "ssn": "150875-935M",
+    "lastname": "Testinen",
+    "firstnames": "Frank",
+    "graduationPeriod": "2015K",
+    "graduationDate": "2016-06-04",
+    "language": "fi",
+    "exams": [
+      {
+        "examId": "A",
+        "period": "2024K",
+        "grade": "M",
+        "points": 6
+      }
+    ]
+  },
+  {
+    "ssn": "080578-945T",
+    "lastname": "Testinen",
+    "firstnames": "Frank",
+    "graduationPeriod": "2015K",
+    "graduationDate": "2016-06-04",
+    "language": "fi",
+    "exams": [
+      {
+        "examId": "A",
+        "period": "2024K",
+        "grade": "M",
+        "points": 6
+      }
+    ]
+  },
+  {
+    "ssn": "040577-967N",
+    "lastname": "Testinen",
+    "firstnames": "Frank",
+    "graduationPeriod": "2015K",
+    "graduationDate": "2016-06-04",
+    "language": "fi",
+    "exams": [
+      {
+        "examId": "A",
+        "period": "2024K",
+        "grade": "M",
+        "points": 6
+      }
+    ]
+  },
+  {
+    "ssn": "080562-9273",
+    "lastname": "Testinen",
+    "firstnames": "Frank",
+    "graduationPeriod": "2015K",
+    "graduationDate": "2016-06-04",
+    "language": "fi",
+    "exams": [
+      {
+        "examId": "A",
+        "period": "2024K",
+        "grade": "M",
+        "points": 6
+      }
+    ]
+  },
+  {
+    "ssn": "060864-933X",
+    "lastname": "Testinen",
+    "firstnames": "Frank Armoton",
+    "graduationPeriod": "2015K",
+    "graduationDate": "2016-06-04",
+    "language": "fi",
+    "exams": [
+      {
+        "examId": "A",
+        "period": "2024K",
+        "grade": "M",
+        "points": 6
+      }
+    ]
+  }
+]

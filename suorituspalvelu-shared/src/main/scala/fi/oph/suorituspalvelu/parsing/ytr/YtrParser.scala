@@ -21,7 +21,7 @@ case class Student(
                     lastname: String,
                     firstnames: String,
                     graduationPeriod: Option[String] = None,
-                    graduationDate: Option[LocalDate] = None,
+                    graduationDate: Option[String] = None,
                     language: String,
                     exams: Seq[Exam]
                   )
@@ -38,8 +38,13 @@ object YtrParser {
     mapper
   }
 
-  def parseYtrData(data: String, personOidByHetu: Map[String, String]): Iterator[YtrDataForHenkilo] = {
+  def parseYtrMassData(data: String, personOidByHetu: Map[String, String]): Iterator[YtrDataForHenkilo] = {
     splitYtrDataByOppija(new ByteArrayInputStream(data.getBytes("UTF-8")), personOidByHetu)
+  }
+
+  def parseSingleAndRemoveHetu(data: String, personOid: String): YtrDataForHenkilo = {
+    val student = MAPPER.readValue(data, classOf[Student])
+    YtrDataForHenkilo(personOid, Some(MAPPER.writeValueAsString(student.copy(ssn = ""))))
   }
 
   def splitYtrDataByOppija(input: InputStream, personOidByHetu: Map[String, String] = Map.empty): Iterator[YtrDataForHenkilo] = {
