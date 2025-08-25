@@ -12,9 +12,11 @@ import slick.jdbc.JdbcBackend
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
-import fi.oph.suorituspalvelu.business.Tietolahde.YTR
+import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
+import fi.oph.suorituspalvelu.util.ZipUtil
 
+import java.io.ByteArrayInputStream
 import scala.collection.immutable
 
 case class Section(sectionId: String, sectionPoints: Option[String])
@@ -82,13 +84,13 @@ class YtrIntegration {
   }
 
   def persistSingle(ytrResult: YtrDataForHenkilo): SyncResultForHenkilo = {
-    LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}")
+    LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
     try {
       val kantaOperaatiot = KantaOperaatiot(database)
       val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, YTR, ytrResult.resultJson.getOrElse("{}"))
       versio.foreach(v => {
         //Todo, parsitaan ytr-data ja tallennetaan parsitut suoritukset
-        LOG.info(s"Versio $versio tallennettu, tallennetaan (leikisti) parsitut YTR-suoritukset")
+        LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
       })
       SyncResultForHenkilo(ytrResult.personOid, versio, None)
     } catch {
@@ -103,11 +105,13 @@ class YtrIntegration {
       LOG.info(s"Luotiin massaoperaatio: $massOp, pollataan")
       pollUntilReady(massOp.uuid).flatMap(finishedQuery => {
         LOG.info(s"Query is now finished, handling result zip.")
-        val dataByFileF: Future[Map[String, String]] = ytrClient.fetchAndDecompressZip(massOp.uuid)
-        dataByFileF.map(dataByFile => {
+        ytrClient.getWithBasicAuthAsByteArray(massOp.uuid).map((result: Option[Array[Byte]]) => {
+          LOG.info(s"Haettiin massa-zip, käsitellään. ${massOp.uuid} - ${result.map(_.length).getOrElse(0L)} bytes")
+          result.map(bytes => ZipUtil.unzipStreamByFile(new ByteArrayInputStream(bytes))).getOrElse(Map.empty)
+        }).map(dataByFile => {
           dataByFile.flatMap((filename, data) => {
-            LOG.info(s"Handling file: $filename, data $data")
-            YtrParser.parseYtrData(data, personOidByHetu).toList
+            //LOG.info(s"Handling file: $filename, data $data")
+            YtrParser.parseYtrMassData(data, personOidByHetu).toList
           }).toSeq
         })
       })
@@ -143,9 +147,11 @@ class YtrIntegration {
         val ytrParams = henkiloResult.values.filter(_.hetu.isDefined).map(h => (h.oidHenkilo, YtlHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty)))))
         LOG.info(s"Haetuista henkilöistä ${ytrParams.size} henkilölle löytyi hetu. Haetaan näille ytr-tiedot.")
         ytrParams.map(ytrParam => {
+          LOG.info(s"Haetaan $ytrParam")
           val resultF = ytrClient.fetchOne(ytrParam._2)
           val resultForHenkilo = Await.result(resultF, 1.minute)
-          persistSingle(YtrDataForHenkilo(ytrParam._1, resultForHenkilo))
+          val parsed = resultForHenkilo.map(r => YtrParser.parseSingleAndRemoveHetu(r, ytrParam._1)).getOrElse(YtrDataForHenkilo(ytrParam._1, None))
+          persistSingle(parsed)
         }).toList
       })
       Await.result(resultF, 15.minutes)

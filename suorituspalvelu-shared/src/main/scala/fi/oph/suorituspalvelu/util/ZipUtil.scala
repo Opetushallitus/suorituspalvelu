@@ -5,7 +5,7 @@ import java.util.zip.ZipInputStream
 
 object ZipUtil {
 
-  //filename -> content
+  //Paluuarvo-map filename -> content
   def unzipStreamByFile(inputStream: InputStream, encoding: String = "UTF-8"): Map[String, String] = {
     val zipInputStream = new ZipInputStream(inputStream)
     try {

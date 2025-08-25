@@ -114,6 +114,20 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       })
     Await.result(db.run(insertVersioIfNewDataAction.transactionally), DB_TIMEOUT)
 
+  def haeOppijanVersiot(oppijaNumero: String) = {
+    Await.result(db.run(
+        sql"""
+        SELECT jsonb_build_object(
+          'tunniste', versiot.tunniste,
+          'oppijaNumero', versiot.oppijanumero,
+          'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+          'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+          'tietolahde', versiot.lahde
+        )::text AS versio
+        FROM versiot where oppijanumero = $oppijaNumero""".as[String]), DB_TIMEOUT)
+      .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
+  }
+
   def haeUusimmatMuuttuneetVersiot(alkaen: Instant): Seq[VersioEntiteetti] =
     Await.result(db.run(
       sql"""
