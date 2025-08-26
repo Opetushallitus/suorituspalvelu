@@ -91,7 +91,6 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
   }
 
   private def doPost(url: String, body: Object): Future[String] = {
-    //LOG.info(s"fetch, $url")
     val req = new RequestBuilder()
       .setMethod("POST")
       .setHeader("Content-Type", "application/json")

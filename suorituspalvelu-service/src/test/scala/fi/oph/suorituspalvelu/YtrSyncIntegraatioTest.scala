@@ -3,7 +3,7 @@
 package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, YtlHetuPostData, YtrClient, YtrMassOperation, YtrMassOperationQueryResponse}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, YtrHetuPostData, YtrClient, YtrMassOperation, YtrMassOperationQueryResponse}
 import fi.oph.suorituspalvelu.integration.ytr.YtrDataForHenkilo
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 import fi.oph.suorituspalvelu.util.ZipUtil
@@ -90,7 +90,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     })
   }
 
-  // Refresh for oppija
+  // Testataan yksittäisen oppijan tietojen päivitys YTR:stä
 
   @WithAnonymousUser
   @Test def testRefreshYtrOppijaAnonymous(): Unit =
@@ -110,7 +110,6 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, Set("1.2.246.562.25.01000000000000056245")))
       .andExpect(status().isBadRequest).andReturn()
 
-
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshKoskiForOppijaAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.91423219111"
@@ -128,7 +127,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
       .thenReturn(Future.successful(onrData))
-    Mockito.when(ytrClient.fetchOne(YtlHetuPostData(hetuToPersonOid.keySet.head, Some(List.empty))))
+    Mockito.when(ytrClient.fetchOne(YtrHetuPostData(hetuToPersonOid.keySet.head, Some(List.empty))))
       .thenReturn(Future.successful(Some(personJson)))
 
     val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, Set(oppijaNumero)))
@@ -147,7 +146,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
   }
 
 
-  // Refresh for haku
+  // Testataan yksittäisen haun oppijoiden tietojen päivitys YTR:stä
 
   @WithAnonymousUser
   @Test def testRefreshYtrHakuAnonymous(): Unit =
