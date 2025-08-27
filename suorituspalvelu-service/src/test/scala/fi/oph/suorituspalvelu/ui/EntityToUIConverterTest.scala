@@ -99,7 +99,6 @@ class EntityToUIConverterTest {
             osa.nimi.sv.toJava,
             osa.nimi.en.toJava
           ),
-          osa.arviointiPaiva.toJava,
           osa.laajuus.map(l => l.arvo).toJava,
           osa.arvosana.map(a =>
             YTOArvosana(

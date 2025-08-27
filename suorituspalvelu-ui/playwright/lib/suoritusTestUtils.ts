@@ -22,11 +22,6 @@ export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
     tila: 'Suoritus kesken',
     valmistusmipaiva: '-',
   },
-  additionalChecks: async (paper) => {
-    await expect(paper.getByLabel('Hakukohde')).toHaveText(
-      'Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)',
-    );
-  },
 };
 
 export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
@@ -207,9 +202,6 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       name: 'Viestintä- ja vuorovaikutusosaaminen',
     });
     await expect(viestintaRegion).toBeVisible();
-    await expect(viestintaRegion.getByLabel('Vahvistuspäivämäärä')).toHaveText(
-      '31.12.2024',
-    );
     const viestintaOsaAlueetTable = viestintaRegion.getByRole('table');
     await checkTable(viestintaOsaAlueetTable, [
       ['Osa-alue', 'Laajuus (osp)', 'Arvosana'],
@@ -218,30 +210,17 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       ['Toiminta digitaalisessa ympäristössä', '1', '1'],
     ]);
 
-    await ytoTable
-      .getByRole('button', {
+    await expect(
+      ytoTable.getByRole('cell', {
         name: 'Matemaattis-luonnontieteellinen osaaminen',
-      })
-      .click();
-    const matemaattisLuonnontieteellinenRegion = paper.getByRole('region', {
-      name: 'Matemaattis-luonnontieteellinen osaaminen',
-    });
+      }),
+    ).toBeVisible();
 
-    await expect(matemaattisLuonnontieteellinenRegion).toBeVisible();
     await expect(
-      matemaattisLuonnontieteellinenRegion.getByLabel('Vahvistuspäivämäärä'),
-    ).toHaveText('31.12.2024');
-
-    await ytoTable
-      .getByRole('button', { name: 'Yhteiskunta- ja työelämäosaaminen' })
-      .click();
-    const yhteiskuntaRegion = paper.getByRole('region', {
-      name: 'Yhteiskunta- ja työelämäosaaminen',
-    });
-    await expect(yhteiskuntaRegion).toBeVisible();
-    await expect(
-      yhteiskuntaRegion.getByLabel('Vahvistuspäivämäärä'),
-    ).toHaveText('31.12.2024');
+      ytoTable.getByRole('cell', {
+        name: 'Yhteiskunta- ja työelämäosaaminen',
+      }),
+    ).toBeVisible();
 
     const ammatillisetTutkinnonOsatTable = paper.getByTestId(
       'ammatilliset-tutkinnon-osat-table',

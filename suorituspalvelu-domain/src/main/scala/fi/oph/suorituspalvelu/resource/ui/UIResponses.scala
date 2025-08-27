@@ -559,8 +559,6 @@ case class YTO(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: YTONimi,
-  @(Schema @field)(example = "2024-12-31")
-  @BeanProperty vahvistuspaiva: Optional[LocalDate],
   @(Schema @field)(description = "Tutkinnon osan laajuus (osaamispistettä)", example = "11", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)

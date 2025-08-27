@@ -582,7 +582,6 @@ object EntityToUIConverter {
                 sv = o.nimi.sv.toJava,
                 en = o.nimi.en.toJava
               ),
-              vahvistuspaiva = o.arviointiPaiva.toJava,
               laajuus = o.laajuus.map(l => l.arvo).toJava,
               arvosana = o.arvosana.map(a => YTOArvosana(
                 a.nimi.fi.toJava,

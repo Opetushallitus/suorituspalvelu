@@ -642,7 +642,6 @@ export interface IYOTutkintoNimi {
 export interface IYTO {
   tunniste: string;
   nimi: IYTONimi;
-  vahvistuspaiva?: Date;
   laajuus?: number;
   arvosana?: IYTOArvosana;
   osaAlueet: IYTOOsaAlue[];

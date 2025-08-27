@@ -526,7 +526,6 @@ object MockEntityToUIConverter {
             sv = Optional.of("Kunnande i kommunikation och interaktion"),
             en = Optional.of("Communication and interaction competence"),
           ),
-          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
           arvosana = Optional.of(
             YTOArvosana(
@@ -571,7 +570,6 @@ object MockEntityToUIConverter {
             sv = Optional.of("Matemaattis-luonnontieteellinen osaaminen sv"),
             en = Optional.of("Matemaattis-luonnontieteellinen osaaminen en")
           ),
-          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
           arvosana = Optional.of(
             YTOArvosana(
@@ -588,7 +586,6 @@ object MockEntityToUIConverter {
             sv = Optional.of("Yhteiskunta- ja työelämäosaaminen sv"),
             en = Optional.of("Yhteiskunta- ja työelämäosaaminen en")
           ),
-          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
           arvosana = Optional.of(
             YTOArvosana(
