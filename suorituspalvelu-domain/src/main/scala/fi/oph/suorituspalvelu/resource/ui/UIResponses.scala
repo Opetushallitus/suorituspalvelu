@@ -75,9 +75,6 @@ enum Tila:
   case VALMIS
   case KESKEN
   case KESKEYTYNYT
-  case MITATOITY
-  case PERUUTETTU
-  case PAATTYNYT
 
 enum SuoritusTapa:
   case NAYTTOTUTKINTO
@@ -117,7 +114,9 @@ case class UIOpiskeluoikeus(
   @(Schema @field)(example = "2020-01-01", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty voimassaolonAlku: LocalDate,
   @(Schema @field)(example = "2024-12-31", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty voimassaolonLoppu: LocalDate
+  @BeanProperty voimassaolonLoppu: LocalDate,
+  @(Schema @field)(example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tila: Tila
 )
 
 case class HakukohdeNimi(
@@ -127,12 +126,6 @@ case class HakukohdeNimi(
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) en", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
-)
-
-// TODO: ei ole mitenkään selvää miten kouta-tiedon voi yhdistää järkevästi kk-suorituksiin, käytävä läpi
-case class Hakukohde(
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: HakukohdeNimi
 )
 
 case class KKOppilaitosNimi(
@@ -173,8 +166,6 @@ case class KKSuoritus(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty hakukohde: Hakukohde,
 )
 
 case class YOKoe(

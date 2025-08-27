@@ -14,20 +14,6 @@ import scala.jdk.OptionConverters.*
 
 object MockEntityToUIConverter {
 
-  def convertTila(koodi: Koodi): Tila =
-    koodi.arvo match
-      case "hyvaksytystisuoritettu"     => Tila.VALMIS
-      case "valmistunut"                => Tila.VALMIS
-      case "loma"                       => Tila.KESKEN
-      case "lasna"                      => Tila.KESKEN
-      case "eronnut"                    => Tila.KESKEYTYNYT
-      case "katsotaaneronneeksi"        => Tila.KESKEYTYNYT
-      case "keskeytynyt"                => Tila.KESKEYTYNYT
-      case "valiaikaisestikeskeytynyt"  => Tila.KESKEYTYNYT
-      case "mitatoity"                  => Tila.MITATOITY
-      case "peruutettu"                 => Tila.PERUUTETTU
-      case "paattynyt"                  => Tila.PAATTYNYT
-
   def getOpiskeluoikeudet(): List[UIOpiskeluoikeus] =
     List(
       UIOpiskeluoikeus(
@@ -46,7 +32,8 @@ object MockEntityToUIConverter {
           oid = "1.2.3.4"
         ),
         voimassaolonAlku = LocalDate.parse("2001-08-01"),
-        voimassaolonLoppu = LocalDate.parse("2025-12-11")
+        voimassaolonLoppu = LocalDate.parse("2025-12-11"),
+        Tila.KESKEN
       ))
 
   def getKKTutkinnot(): List[KKSuoritus] =
@@ -67,14 +54,7 @@ object MockEntityToUIConverter {
       ),
       tila = KESKEN,
       aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
-      valmistumispaiva = Optional.empty(),
-      hakukohde = Hakukohde(
-        nimi = HakukohdeNimi(
-          fi = Optional.of("Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)"),
-          sv = Optional.of("Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) sv"),
-          en = Optional.of("Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) en")
-        )
-      ),
+      valmistumispaiva = Optional.empty()
     ))
 
   def getYOTutkinto(): Option[YOTutkinto] =

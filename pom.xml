@@ -162,6 +162,11 @@
                 <version>0.8.3</version>
             </dependency>
             <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>3.2.2</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
                 <version>10.1.31</version>
@@ -175,6 +180,13 @@
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-catalina</artifactId>
                 <version>10.1.31</version>
+            </dependency>
+
+            <!-- Lisätty enforcer-pluginin takia -->
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.40.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
