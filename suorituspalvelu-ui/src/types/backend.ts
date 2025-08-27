@@ -191,16 +191,6 @@ export interface IErikoisammattitutkintoNimi {
   en?: string;
 }
 
-export interface IHakukohde {
-  nimi: IHakukohdeNimi;
-}
-
-export interface IHakukohdeNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IIBOppiaine {
   tunniste: string;
   nimi: IIBOppiaineNimi;
@@ -262,7 +252,6 @@ export interface IKKSuoritus {
   tila: SuoritusTila;
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
-  hakukohde: IHakukohde;
 }
 
 export interface IKKSuoritusNimi {
@@ -566,6 +555,7 @@ export interface IUIOpiskeluoikeus {
   oppilaitos: IOOOppilaitos;
   voimassaolonAlku: Date;
   voimassaolonLoppu: Date;
+  tila: SuoritusTila;
 }
 
 export interface IUIOpiskeluoikeusNimi {
@@ -682,12 +672,6 @@ export interface IYTOOsaAlueNimi {
   en?: string;
 }
 
-export type SuoritusTila =
-  | 'VALMIS'
-  | 'KESKEN'
-  | 'KESKEYTYNYT'
-  | 'MITATOITY'
-  | 'PERUUTETTU'
-  | 'PAATTYNYT';
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
 export type Suoritustapa = 'NAYTTOTUTKINTO';

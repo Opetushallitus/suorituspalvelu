@@ -119,15 +119,6 @@ case class UIOpiskeluoikeus(
   @BeanProperty tila: Tila
 )
 
-case class HakukohdeNimi(
-  @(Schema @field)(example = "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) sv", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String],
-)
-
 case class KKOppilaitosNimi(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
