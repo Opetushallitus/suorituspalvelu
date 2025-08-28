@@ -15,20 +15,6 @@ import scala.jdk.OptionConverters.*
 
 object EntityToUIConverter {
 
-  def convertKoskiTila(koodi: Koodi): SuoritusTila =
-    koodi.arvo match
-      case "hyvaksytystisuoritettu"     => SuoritusTila.VALMIS
-      case "valmistunut"                => SuoritusTila.VALMIS
-      case "loma"                       => SuoritusTila.KESKEN
-      case "lasna"                      => SuoritusTila.KESKEN
-      case "valiaikaisestikeskeytynyt"  => SuoritusTila.KESKEN
-      case "eronnut"                    => SuoritusTila.KESKEYTYNYT
-      case "katsotaaneronneeksi"        => SuoritusTila.KESKEYTYNYT
-      case "keskeytynyt"                => SuoritusTila.KESKEYTYNYT
-      case "mitatoity"                  => SuoritusTila.KESKEYTYNYT
-      case "peruutettu"                 => SuoritusTila.KESKEYTYNYT
-      case "paattynyt"                  => SuoritusTila.KESKEYTYNYT
-
   def getOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koulutusProvider: KoulutusProvider): List[UIOpiskeluoikeus] =
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[VirtaOpiskeluoikeus])
@@ -542,7 +528,6 @@ object EntityToUIConverter {
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(t => {
         // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
-        // 
         val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
         Ammatillinentutkinto(
           t.tunniste,
@@ -559,7 +544,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = convertKoskiTila(t.tila),
+          tila = SuoritusTila.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
@@ -638,7 +623,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = convertKoskiTila(t.tila),
+          tila = SuoritusTila.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo
@@ -669,7 +654,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = convertKoskiTila(t.tila),
+          tila = SuoritusTila.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
@@ -700,7 +685,7 @@ object EntityToUIConverter {
             ),
             t.oppilaitos.oid,
           ),
-          tila = convertKoskiTila(t.tila),
+          tila = SuoritusTila.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
@@ -732,7 +717,7 @@ object EntityToUIConverter {
               ),
               t.oppilaitos.oid,
             ),
-            tila = convertKoskiTila(t.tila),
+            tila = SuoritusTila.valueOf(t.supaTila.toString),
             aloituspaiva = t.aloitusPaivamaara.toJava,
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
             laajuus = t.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
@@ -767,7 +752,7 @@ object EntityToUIConverter {
               ),
               t.oppilaitos.oid,
             ),
-            tila = convertKoskiTila(t.tila),
+            tila = SuoritusTila.valueOf(t.supaTila.toString),
             aloituspaiva = t.aloitusPaivamaara.toJava,
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
             laajuus = t.laajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(

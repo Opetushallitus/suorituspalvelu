@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 
 import java.time.LocalDate
 import java.util.UUID
@@ -35,6 +35,21 @@ object KoskiToSuoritusConverter {
       case "106729" => true // yhteiskunta- ja työelämäosaaminen
       case default => false
   }
+
+  def convertKoskiTila(koodiArvo: String): SuoritusTila =
+    koodiArvo match
+      case "hyvaksytystisuoritettu"     => SuoritusTila.VALMIS
+      case "valmistunut"                => SuoritusTila.VALMIS
+      case "loma"                       => SuoritusTila.KESKEN
+      case "lasna"                      => SuoritusTila.KESKEN
+      case "valiaikaisestikeskeytynyt"  => SuoritusTila.KESKEN
+      case "eronnut"                    => SuoritusTila.KESKEYTYNYT
+      case "katsotaaneronneeksi"        => SuoritusTila.KESKEYTYNYT
+      case "keskeytynyt"                => SuoritusTila.KESKEYTYNYT
+      case "mitatoity"                  => SuoritusTila.KESKEYTYNYT
+      case "peruutettu"                 => SuoritusTila.KESKEYTYNYT
+      case "paattynyt"                  => SuoritusTila.KESKEYTYNYT
+
 
   def parseTila(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Option[VersioituTunniste] =
     if(suoritus.vahvistus.isDefined)
@@ -136,6 +151,7 @@ object KoskiToSuoritusConverter {
           ),
           o.oid)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.keskiarvo,
@@ -158,6 +174,7 @@ object KoskiToSuoritusConverter {
           ),
           o.oid)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suoritustapa.map(suoritusTapa => asKoodiObject(suoritusTapa)).getOrElse(dummy()),
@@ -178,6 +195,7 @@ object KoskiToSuoritusConverter {
           ),
           o.oid)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy())
@@ -207,6 +225,7 @@ object KoskiToSuoritusConverter {
           ),
           o.oid)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
@@ -226,6 +245,7 @@ object KoskiToSuoritusConverter {
           ),
           o.oid)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => Laajuus(l.arvo, asKoodiObject(l.yksikkö.get), Option.apply(l.yksikkö.get.nimi), Option.apply(l.yksikkö.get.lyhytNimi))))
@@ -245,6 +265,7 @@ object KoskiToSuoritusConverter {
           ),
           o.oid)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.osasuoritukset.map(ost => Laajuus(
@@ -298,6 +319,7 @@ object KoskiToSuoritusConverter {
       UUID.randomUUID(),
       opiskeluoikeus.oppilaitos.get.oid,
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
       parseAloitus(opiskeluoikeus),
@@ -311,6 +333,7 @@ object KoskiToSuoritusConverter {
       UUID.randomUUID(),
       opiskeluoikeus.oppilaitos.get.oid,
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       Set.empty,
       parseAloitus(opiskeluoikeus),

@@ -139,7 +139,7 @@ class KoskiParsingTest {
         |  }
         |]
         |""".stripMargin).asInstanceOf[AmmatillinenPerustutkinto]
-    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.tila)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.koskiTila)
 
   @Test def testAmmatillisenTutkinnonKentat(): Unit =
     val tutkinto = getFirstSuoritusFromJson("""
@@ -665,7 +665,7 @@ class KoskiParsingTest {
 
     Assertions.assertNotNull(oppimaara.tunniste)
     Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
-    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
@@ -939,7 +939,7 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
 
     Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
-    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.tila)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2022-04-16")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
@@ -1055,7 +1055,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some("Tutkintokoulutukseen valmentava koulutuksen suoritus"), tuva.nimi.fi)
     Assertions.assertEquals(Some("Stadin ammattiopisto"), tuva.oppilaitos.nimi.fi)
     Assertions.assertEquals(Koodi("999908", "koulutus", Some(12)), tuva.koodi)
-    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tuva.tila)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tuva.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2022-08-01")), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), tuva.vahvistusPaivamaara)
     Assertions.assertEquals(Some(Laajuus(30, Koodi("8", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("viikkoa"), None, None)), None)), tuva.laajuus)
@@ -1195,7 +1195,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some("Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille"), vst.nimi.fi)
     Assertions.assertEquals(Some("Lahden kansanopisto"), vst.oppilaitos.nimi.fi)
     Assertions.assertEquals(Koodi("999909", "koulutus", Some(12)), vst.koodi)
-    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), vst.tila)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), vst.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-05-25")), vst.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), vst.vahvistusPaivamaara)
     Assertions.assertEquals(Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.laajuus)
