@@ -109,6 +109,15 @@ case class UIOpiskeluoikeusNimi(
   @BeanProperty en: Optional[String]
 )
 
+case class UIOpiskeluoikeusVirtaTila(
+  @(Schema @field)(example = "optio", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "option", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "option", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
+)
+
 case class UIOpiskeluoikeus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
@@ -121,7 +130,9 @@ case class UIOpiskeluoikeus(
   @(Schema @field)(example = "2024-12-31", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty voimassaolonLoppu: LocalDate,
   @(Schema @field)(example = "VOIMASSA", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: OpiskeluoikeusTila
+  @BeanProperty supaTila: OpiskeluoikeusTila,
+  @(Schema @field)(example = "optio", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virtaTila: UIOpiskeluoikeusVirtaTila
 )
 
 case class KKOppilaitosNimi(

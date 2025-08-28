@@ -33,7 +33,12 @@ object MockEntityToUIConverter {
         ),
         voimassaolonAlku = LocalDate.parse("2001-08-01"),
         voimassaolonLoppu = LocalDate.parse("2025-12-11"),
-        OpiskeluoikeusTila.VOIMASSA
+        OpiskeluoikeusTila.VOIMASSA,
+        UIOpiskeluoikeusVirtaTila(
+          Optional.of("aktiivinen"),
+          Optional.of("aktiv"),
+          Optional.of("active")
+        )
       ))
 
   def getKKTutkinnot(): List[KKSuoritus] =

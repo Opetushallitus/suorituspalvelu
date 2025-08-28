@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.configuration.{KoulutusProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.configuration.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -24,8 +24,8 @@ class EntityToUIConverterTest {
     override def haeOrganisaationTiedot(koodiArvo: String): Organisaatio = Organisaatio("1.2.3", OrganisaatioNimi("", "", ""))
   }
 
-  val DUMMY_KOULUTUSPROVIDER = new KoulutusProvider {
-    override def haeKoulutus(koodiArvo: String): Option[fi.oph.suorituspalvelu.integration.client.Koodi] = None
+  val DUMMY_KOULUTUSPROVIDER = new KoodistoProvider {
+    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
   }
 
   @Test def testConvertAmmatillinenTutkinto(): Unit = {
@@ -482,15 +482,27 @@ class EntityToUIConverterTest {
 
     val KOULUTUKSEN_NIMI_FI = "Sosiaali- ja terveysalan ammattikorkeakoulututkinto"
     val KOULUTUKSEN_NIMI_EN = "Bachelor of Health Care"
-    val koulutusProvider = new KoulutusProvider {
-      override def haeKoulutus(koodiArvo: String): Option[fi.oph.suorituspalvelu.integration.client.Koodi] = Some(fi.oph.suorituspalvelu.integration.client.Koodi(
-        "671103",
-        Koodisto("koulutus"),
-        List(
-          KoodiMetadata("FI", KOULUTUKSEN_NIMI_FI),
-          KoodiMetadata("EN", KOULUTUKSEN_NIMI_EN),
+    val KOULUTUKSEN_TILA_FI = "aktiivinen"
+    val KOULUTUKSEN_TILA_EN = "active"
+    val koulutusProvider = new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
+        "671103" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+          "671103",
+          Koodisto("koulutus"),
+          List(
+            KoodiMetadata("FI", KOULUTUKSEN_NIMI_FI),
+            KoodiMetadata("EN", KOULUTUKSEN_NIMI_EN),
+          )
+        ),
+        "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+          "1",
+          Koodisto("virtaopintooikeudentila"),
+          List(
+            KoodiMetadata("FI", KOULUTUKSEN_TILA_FI),
+            KoodiMetadata("EN", KOULUTUKSEN_TILA_EN),
+          )
         )
-      ))
+      )
     }
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.UIOpiskeluoikeus(
@@ -510,7 +522,12 @@ class EntityToUIConverterTest {
       ),
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
-      OpiskeluoikeusTila.VOIMASSA
+      OpiskeluoikeusTila.VOIMASSA,
+      UIOpiskeluoikeusVirtaTila(
+        Optional.of(KOULUTUKSEN_TILA_FI),
+        Optional.empty(),
+        Optional.of(KOULUTUKSEN_TILA_EN)
+      )
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).get.opiskeluoikeudet)
   }
 
