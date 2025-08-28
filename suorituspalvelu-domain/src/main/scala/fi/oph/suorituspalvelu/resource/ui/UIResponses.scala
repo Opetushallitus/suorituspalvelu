@@ -71,7 +71,12 @@ case class OppijanHakuFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppijanHakuResponse
 
-enum Tila:
+enum OpiskeluoikeusTila:
+  case VOIMASSA
+  case EI_VOIMASSA
+  case PAATTYNYT
+
+enum SuoritusTila:
   case VALMIS
   case KESKEN
   case KESKEYTYNYT
@@ -115,8 +120,8 @@ case class UIOpiskeluoikeus(
   @BeanProperty voimassaolonAlku: LocalDate,
   @(Schema @field)(example = "2024-12-31", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty voimassaolonLoppu: LocalDate,
-  @(Schema @field)(example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila
+  @(Schema @field)(example = "VOIMASSA", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tila: OpiskeluoikeusTila
 )
 
 case class KKOppilaitosNimi(
@@ -152,7 +157,7 @@ case class KKSuoritus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: KKOppilaitos,
   @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -207,7 +212,7 @@ case class YOTutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
@@ -249,7 +254,7 @@ case class LukionOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -277,7 +282,7 @@ case class LukionOppiaineenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -305,7 +310,7 @@ case class DIATutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -351,7 +356,7 @@ case class DIAVastaavuusTodistus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -413,7 +418,7 @@ case class EBTutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -481,7 +486,7 @@ case class IBTutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -509,7 +514,7 @@ case class PreIB(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -640,7 +645,7 @@ case class Ammatillinentutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -679,7 +684,7 @@ case class Ammattitutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2017-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2017-06-01")
@@ -705,7 +710,7 @@ case class Erikoisammattitutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2017-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2017-06-01")
@@ -731,7 +736,7 @@ case class Telma(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2017-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2017-06-01")
@@ -757,7 +762,7 @@ case class OsittainenAmmatillinenTutkinto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -801,7 +806,7 @@ case class Tuva(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "KESKEYTYNYT", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -860,7 +865,7 @@ case class VapaaSivistystyoKoulutus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: VapaaSivistystyoOppilaitos,
   @(Schema @field)(example = "KESKEYTYNYT", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
@@ -924,7 +929,7 @@ case class PerusopetuksenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
@@ -956,7 +961,7 @@ case class AikuistenPerusopetuksenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
@@ -984,7 +989,7 @@ case class PerusopetuksenOppimaara78Luokkalaiset(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
@@ -1034,7 +1039,7 @@ case class NuortenPerusopetuksenOppiaineenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
@@ -1062,7 +1067,7 @@ case class PerusopetuksenOppiaineenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: Tila,
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")

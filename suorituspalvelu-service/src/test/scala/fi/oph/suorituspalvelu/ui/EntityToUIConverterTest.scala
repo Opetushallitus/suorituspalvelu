@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
 import fi.oph.suorituspalvelu.configuration.{KoulutusProvider, OrganisaatioProvider}
-import fi.oph.suorituspalvelu.integration.client.{Koodisto, KoodiMetadata, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
@@ -85,7 +85,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -165,7 +165,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -225,7 +225,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -287,7 +287,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -323,7 +323,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo
@@ -359,7 +359,7 @@ class EntityToUIConverterTest {
         ),
         telma.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       telma.aloitusPaivamaara.toJava,
       telma.vahvistusPaivamaara.toJava,
       telma.suoritusKieli.arvo
@@ -395,7 +395,7 @@ class EntityToUIConverterTest {
         ),
         tuva.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tuva.aloitusPaivamaara.toJava,
       tuva.vahvistusPaivamaara.toJava,
       tuva.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
@@ -436,7 +436,7 @@ class EntityToUIConverterTest {
         ),
         vst.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       vst.aloitusPaivamaara.toJava,
       vst.vahvistusPaivamaara.toJava,
       vst.suoritusKieli.arvo,
@@ -457,7 +457,8 @@ class EntityToUIConverterTest {
       koulutusKoodi = "671103",
       alkuPvm = LocalDate.parse("2020-01-01"),
       loppuPvm = LocalDate.parse("2021-01-01"),
-      tila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
+      virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
+      supaTila = KKOpiskeluoikeusTila.VOIMASSA,
       myontaja = "",
       suoritukset = Set.empty
     )
@@ -501,7 +502,7 @@ class EntityToUIConverterTest {
       ),
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
-      Tila.KESKEN
+      OpiskeluoikeusTila.VOIMASSA
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).get.opiskeluoikeudet)
   }
 
@@ -547,10 +548,10 @@ class EntityToUIConverterTest {
         ),
         organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       Optional.of(virtaTutkinto.aloitusPvm),
       Optional.of(virtaTutkinto.suoritusPvm)
-    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOULUTUSPROVIDER).get.kkTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOULUTUSPROVIDER).get.kkTutkinnot)
   }
 
 }

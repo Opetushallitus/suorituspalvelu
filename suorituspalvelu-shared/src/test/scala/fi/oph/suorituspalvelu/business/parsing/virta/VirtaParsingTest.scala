@@ -62,7 +62,7 @@ class VirtaParsingTest {
     Assertions.assertEquals("726302", opiskeluoikeus.koulutusKoodi)
     Assertions.assertEquals(LocalDate.parse("2018-01-01"), opiskeluoikeus.alkuPvm)
     Assertions.assertEquals(LocalDate.parse("2019-01-01"), opiskeluoikeus.loppuPvm)
-    Assertions.assertEquals(Koodi("3", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), opiskeluoikeus.tila) // viimeiseksi alkanut tila on voimassa
+    Assertions.assertEquals(Koodi("3", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), opiskeluoikeus.virtaTila) // viimeiseksi alkanut tila on voimassa
     Assertions.assertEquals("01901", opiskeluoikeus.myontaja)
 
   @Test def testVirtatutkinnonKentat(): Unit =

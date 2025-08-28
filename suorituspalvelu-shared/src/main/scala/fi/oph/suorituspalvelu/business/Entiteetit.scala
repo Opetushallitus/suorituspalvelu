@@ -91,13 +91,19 @@ case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi) extends Suoritus
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
 
+enum KKOpiskeluoikeusTila:
+  case VOIMASSA
+  case EI_VOIMASSA
+  case PAATTYNYT
+
 case class VirtaOpiskeluoikeus(
                                 tunniste: UUID,
                                 virtaTunniste: String,
                                 koulutusKoodi: String,
                                 alkuPvm: LocalDate,
                                 loppuPvm: LocalDate,
-                                tila: Koodi,
+                                virtaTila: Koodi,
+                                supaTila: KKOpiskeluoikeusTila,
                                 myontaja: String,
                                 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                 suoritukset: Set[Suoritus]

@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{Opintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, Opintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 
 import java.util.UUID
@@ -27,19 +27,30 @@ object VirtaToSuoritusConverter {
   def getNimi(nimet: Seq[Nimi], kieli: String): Option[String] =
     nimet.find(n => n.kieli.exists(k => kieli.equals(k))).map(n => n.nimi)
 
+  def convertVirtaTila(koodiArvo: String): KKOpiskeluoikeusTila =
+    koodiArvo match
+      case "1" => KKOpiskeluoikeusTila.VOIMASSA   // aktiivinen
+      case "2" => KKOpiskeluoikeusTila.VOIMASSA   // optio
+      case "3" => KKOpiskeluoikeusTila.PAATTYNYT  // valmistunut
+      case "4" => KKOpiskeluoikeusTila.PAATTYNYT  // passivoitu
+      case "5" => KKOpiskeluoikeusTila.PAATTYNYT  // luopunut
+      case "6" => KKOpiskeluoikeusTila.PAATTYNYT  // päättynyt
+
   def toOpiskeluoikeudet(virtaSuoritukset: VirtaSuoritukset): Seq[VirtaOpiskeluoikeus] = {
     val suorituksetByOpiskeluoikeusTunniste = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o => o.Opintosuoritukset).flatten.groupBy(_.opiskeluoikeusAvain)
 
     val oikeudet = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o =>
       o.Opiskeluoikeudet.map(oo => {
         val oikeudenSuoritukset: Set[Suoritus] = toSuoritukset(oo, suorituksetByOpiskeluoikeusTunniste.getOrElse(oo.avain, Seq.empty)).toSet
+        val virtaTila = oo.Tila.maxBy(t => t.AlkuPvm).Koodi
         VirtaOpiskeluoikeus(
           UUID.randomUUID(),
           oo.avain,
           oo.Jakso.Koulutuskoodi,
           oo.AlkuPvm,
           oo.LoppuPvm,
-          fi.oph.suorituspalvelu.business.Koodi(oo.Tila.maxBy(t => t.AlkuPvm).Koodi, VIRTA_OO_TILA_KOODISTO, None), // otetaan viimeisin opiskeluoikeuden tila
+          fi.oph.suorituspalvelu.business.Koodi(virtaTila, VIRTA_OO_TILA_KOODISTO, None), // otetaan viimeisin opiskeluoikeuden tila
+          convertVirtaTila(virtaTila),
           oo.Myontaja,
           oikeudenSuoritukset
         )
