@@ -175,6 +175,10 @@ export interface IEBTutkintoNimi {
   en?: string;
 }
 
+export interface IEI_VOIMASSA {
+  type: 'EI_VOIMASSA';
+}
+
 export interface IErikoisammattitutkinto {
   tunniste: string;
   nimi: IErikoisammattitutkintoNimi;
@@ -411,6 +415,10 @@ export interface IOppimaaranOppiaineNimi {
   en?: string;
 }
 
+export interface IPAATTYNYT {
+  type: 'PAATTYNYT';
+}
+
 export interface IPKOppilaitos {
   nimi: IPKOppilaitosNimi;
   oid: string;
@@ -555,13 +563,24 @@ export interface IUIOpiskeluoikeus {
   oppilaitos: IOOOppilaitos;
   voimassaolonAlku: Date;
   voimassaolonLoppu: Date;
-  tila: SuoritusTila;
+  supaTila: OpiskeluoikeusTila;
+  virtaTila: IUIOpiskeluoikeusVirtaTila;
 }
 
 export interface IUIOpiskeluoikeusNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IUIOpiskeluoikeusVirtaTila {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IVOIMASSA {
+  type: 'VOIMASSA';
 }
 
 export interface IVapaaSivistystyoKoulutus {
@@ -670,6 +689,8 @@ export interface IYTOOsaAlueNimi {
   sv?: string;
   en?: string;
 }
+
+export type OpiskeluoikeusTila = IVOIMASSA | IEI_VOIMASSA | IPAATTYNYT;
 
 export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 

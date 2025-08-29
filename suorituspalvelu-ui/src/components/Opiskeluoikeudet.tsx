@@ -1,5 +1,4 @@
 import { formatFinnishDate, NDASH } from '@/lib/common';
-import { currentFinnishDate, isInRange } from '@/lib/time-utils';
 import { Circle } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
@@ -10,36 +9,53 @@ import { Opiskeluoikeus } from '@/types/ui-types';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
 
 const VoimassaoloIndicator = ({
-  voimassaolonAlku,
-  voimassaolonLoppu,
+  opiskeluoikeus,
 }: {
-  voimassaolonAlku?: Date;
-  voimassaolonLoppu?: Date;
+  opiskeluoikeus: Opiskeluoikeus;
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
 
-  const isVoimassa = isInRange(
-    currentFinnishDate(),
-    voimassaolonAlku,
-    voimassaolonLoppu,
-  );
+  const tilaIndicatorColor = () => {
+    switch (opiskeluoikeus.supaTila.toString()) {
+      case 'VOIMASSA':
+        return ophColors.green3;
+      case 'EI_VOIMASSA':
+        return ophColors.orange3;
+      case 'PAATTYNYT':
+        return ophColors.red2;
+    }
+  };
+
+  const tilaTranslationKey = () => {
+    switch (opiskeluoikeus.supaTila.toString()) {
+      case 'VOIMASSA':
+        return 'oppija.voimassa';
+      case 'EI_VOIMASSA':
+        return 'oppija.ei-voimassa';
+      case 'PAATTYNYT':
+        return 'oppija.paattynyt';
+      default:
+        throw new Error('Tuntematon SUPA-tila');
+    }
+  };
 
   return (
     <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 2 }}>
       <Box>
-        {formatFinnishDate(voimassaolonAlku)}
+        {formatFinnishDate(opiskeluoikeus.voimassaolonAlku)}
         {` ${NDASH} `}
-        {formatFinnishDate(voimassaolonLoppu)}
+        {formatFinnishDate(opiskeluoikeus.voimassaolonLoppu)}
       </Box>
       <Stack sx={{ alignItems: 'center', flexDirection: 'row', gap: 0.5 }}>
         <Circle
           sx={{
             fontSize: '18px',
-            color: isVoimassa ? ophColors.green3 : ophColors.orange3,
+            color: tilaIndicatorColor(),
           }}
         />
+        <OphTypography>{t(tilaTranslationKey())}</OphTypography>
         <OphTypography>
-          {isVoimassa ? t('oppija.voimassa') : t('oppija.ei-voimassa')}
+          ({translateKielistetty(opiskeluoikeus.virtaTila)})
         </OphTypography>
       </Stack>
     </Stack>
@@ -77,12 +93,7 @@ export const Opiskeluoikeudet = ({
                   <OppilaitosInfoItem oppilaitos={oo.oppilaitos} />
                   <LabeledInfoItem
                     label={t('oppija.voimassaolo')}
-                    value={
-                      <VoimassaoloIndicator
-                        voimassaolonAlku={oo.voimassaolonAlku}
-                        voimassaolonLoppu={oo.voimassaolonLoppu}
-                      />
-                    }
+                    value={<VoimassaoloIndicator opiskeluoikeus={oo} />}
                   />
                 </Stack>
               </Stack>
