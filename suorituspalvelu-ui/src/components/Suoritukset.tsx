@@ -3,7 +3,7 @@ import { OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslate } from '@tolgee/react';
 import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain';
 import { useState } from 'react';
-import { OppijanTiedot } from '@/types/ui-types';
+import { type OppijanTiedot } from '@/types/ui-types';
 import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';

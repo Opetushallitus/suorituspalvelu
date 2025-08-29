@@ -1,4 +1,3 @@
-'use client';
 import { Box, Typography } from '@mui/material';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';

@@ -2,11 +2,11 @@ import { isEmpty, isNullish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client } from './http-client';
 import {
-  IOppijanHakuSuccessResponse,
-  IOppijanTiedotSuccessResponse,
-  IOppilaitosSuccessResponse,
+  type IOppijanHakuSuccessResponse,
+  type IOppijanTiedotSuccessResponse,
+  type IOppilaitosSuccessResponse,
 } from './types/backend';
-import { KayttajaTiedot } from './types/ui-types';
+import { type KayttajaTiedot } from './types/ui-types';
 
 export type OppijatSearchParams = {
   oppija?: string;

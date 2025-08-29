@@ -1,7 +1,7 @@
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import {
-  AmmatillinenTutkinnonOsa,
-  TutkinnonOsanOsaAlue,
+  type AmmatillinenTutkinnonOsa,
+  type TutkinnonOsanOsaAlue,
 } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
 import {

@@ -1,5 +1,3 @@
-'use client';
-
 import { Button, Stack } from '@mui/material';
 import {
   KeyboardDoubleArrowRight as KeyboardDoubleArrowRightIcon,

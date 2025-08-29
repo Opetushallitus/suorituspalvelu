@@ -3,7 +3,7 @@ import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
-import { KorkeakouluSuoritus } from '@/types/ui-types';
+import { type KorkeakouluSuoritus } from '@/types/ui-types';
 
 export const KorkeakouluSuoritusPaper = ({
   suoritus,

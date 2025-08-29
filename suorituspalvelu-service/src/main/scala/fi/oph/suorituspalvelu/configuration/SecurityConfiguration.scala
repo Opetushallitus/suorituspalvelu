@@ -32,10 +32,8 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter
 @EnableWebSecurity
 @EnableJdbcHttpSession
 class SecurityConfiguration {
-  private val FRONTEND_ROUTES: Map[String, String] = Map(
-    "/" -> "/index.html",
-  )
-  private val UI_PATHS = FRONTEND_ROUTES.flatMap(_.toList).toSet
+  private def  isFrontEndRoute: String => Boolean = path =>
+    path.equals("/index.html") || path.equals("/") || path.startsWith("/henkilo/")
 
   @Bean
   def frontendResourceFilter: Filter = (request: ServletRequest, response: ServletResponse, chain: FilterChain) => {
@@ -49,13 +47,13 @@ class SecurityConfiguration {
     val strippedPathWithQuery = contextPath + path.stripSuffix("index.html") + queryString.replaceAll("[?&]continue", "")
 
     // Karsitaan URL:sta pois tarpeettomat osat ennen forwardia
-    if (!isForwarded && UI_PATHS.contains(path) && !fullPathWithQuery.equals(strippedPathWithQuery)) {
+    if (!isForwarded && isFrontEndRoute(path) && !fullPathWithQuery.equals(strippedPathWithQuery)) {
       res.sendRedirect(strippedPathWithQuery)
-    } else if (!isForwarded && FRONTEND_ROUTES.contains(path)) {
+    } else if (!isForwarded && isFrontEndRoute(path)) {
       // Lisätään attribuutti, jotta voidaan välttää redirect-looppi edellisessä haarassa
       request.setAttribute("custom.forwarded", true)
       // Forwardoidaan frontend-pyyntö html-tiedostoon
-      request.getRequestDispatcher(FRONTEND_ROUTES(path)).forward(request, response)
+      request.getRequestDispatcher("/index.html").forward(request, response)
     } else {
       chain.doFilter(request, response)
     }

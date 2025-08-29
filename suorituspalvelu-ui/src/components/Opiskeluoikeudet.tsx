@@ -6,7 +6,7 @@ import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { Opiskeluoikeus } from '@/types/ui-types';
+import { type Opiskeluoikeus } from '@/types/ui-types';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
 
 const VoimassaoloIndicator = ({

@@ -1,4 +1,4 @@
-import { OppijatSearchParams } from '@/api';
+import { type OppijatSearchParams } from '@/api';
 import { DEFAULT_NUQS_OPTIONS } from '@/lib/common';
 import { useApiSuspenseQuery } from '@/http-client';
 import { queryOptionsSearchOppijat } from '@/queries';
