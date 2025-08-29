@@ -268,7 +268,7 @@ class DataSyncResource {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaYtrTiedotHenkiloille, None)
           LOG.info(s"Haetaan Ytr-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
-          val result = ytrIntegration.fetchRawForStudents(personOids.toSet)
+          val result = ytrIntegration.fetchAndPersistStudents(personOids.toSet)
           LOG.info(s"Palautetaan rajapintavastaus, $result")
           ResponseEntity.status(HttpStatus.OK).body(YtrSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
         })
