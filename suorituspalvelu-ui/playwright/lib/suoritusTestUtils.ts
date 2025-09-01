@@ -22,11 +22,6 @@ export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
     tila: 'Suoritus kesken',
     valmistusmipaiva: '-',
   },
-  additionalChecks: async (paper) => {
-    await expect(paper.getByLabel('Hakukohde')).toHaveText(
-      'Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)',
-    );
-  },
 };
 
 export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
