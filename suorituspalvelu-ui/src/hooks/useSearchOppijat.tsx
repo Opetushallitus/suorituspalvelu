@@ -1,7 +1,7 @@
-import { OppijatSearchParams } from '@/api';
+import { OppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { DEFAULT_NUQS_OPTIONS } from '@/lib/common';
-import { useApiSuspenseQuery } from '@/http-client';
-import { queryOptionsSearchOppijat } from '@/queries';
+import { useApiSuspenseQuery } from '@/lib/http-client';
+import { queryOptionsSearchOppijat } from '@/lib/suorituspalvelu-queries';
 import { useQueryState } from 'nuqs';
 import { isEmpty, isNullish, omitBy, values } from 'remeda';
 

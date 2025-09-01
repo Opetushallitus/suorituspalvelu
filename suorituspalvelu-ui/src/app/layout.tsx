@@ -1,7 +1,7 @@
 'use client';
 
 import { Providers } from '@/components/Providers';
-import { isTest, useConfig } from '@/configuration';
+import { isTest, useConfig } from '@/lib/configuration';
 import Script from 'next/script';
 
 function Layout({ children }: { children: React.ReactNode }) {

@@ -5,7 +5,7 @@ import { TolgeeInstance, TolgeeProvider } from '@tolgee/react';
 import { initTolgee } from '@/localization/tolgee-config';
 import { OphNextJsThemeProvider } from '@opetushallitus/oph-design-system/next/theme';
 import { UntranslatedFullSpinner } from './FullSpinner';
-import { getAsiointiKieli } from '@/api';
+import { getAsiointiKieli } from '@/lib/suorituspalvelu-service';
 import { Language } from '@/types/ui-types';
 import { THEME_OVERRIDES } from '@/lib/theme';
 import { Box } from '@mui/material';

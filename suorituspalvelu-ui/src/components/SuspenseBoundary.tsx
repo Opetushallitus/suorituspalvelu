@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { FullSpinner } from './FullSpinner';
 import { ErrorBoundaryPropsWithRender } from 'react-error-boundary';
 import { SessionExpired } from './SessionExpired';
-import { SessionExpiredError } from '@/http-client';
+import { SessionExpiredError } from '@/lib/http-client';
 import { ErrorView } from './ErrorView';
 
 type FallbackRenderType = ErrorBoundaryPropsWithRender['fallbackRender'];

@@ -1,5 +1,5 @@
 'use client';
-import { useOppija } from '@/queries';
+import { useOppija } from '@/lib/suorituspalvelu-queries';
 import { Stack } from '@mui/material';
 import { Opiskeluoikeudet } from './Opiskeluoikeudet';
 import { Suoritukset } from './Suoritukset';
@@ -7,7 +7,7 @@ import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { ExternalLink } from './ExternalLink';
-import { useConfig } from '@/configuration';
+import { useConfig } from '@/lib/configuration';
 import { formatFinnishDate } from '@/lib/common';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {

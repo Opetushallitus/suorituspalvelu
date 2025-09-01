@@ -1,6 +1,6 @@
 'use client';
 
-import { useConfig } from '@/configuration';
+import { useConfig } from '@/lib/configuration';
 import { useTranslate } from '@tolgee/react';
 import React, { useState } from 'react';
 import { OphModal } from './OphModal';
