@@ -24,7 +24,7 @@
         <scala.version>3.3.3</scala.version>
         <spring.boot.version>3.3.5</spring.boot.version>
         <jackson.version>2.18.1</jackson.version>
-        <java.cas.version>1.2.2-SNAPSHOT</java.cas.version>
+        <java.cas.version>1.2.4-SNAPSHOT</java.cas.version>
     </properties>
 
     <dependencyManagement>
@@ -75,9 +75,9 @@
                 <version>0.5.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>fi.vm.sade.java-utils</groupId>
+                <groupId>opiskelijavalinnat-utils</groupId>
                 <artifactId>java-cas</artifactId>
-                <version>${java.cas.version}</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
