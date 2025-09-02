@@ -1,11 +1,11 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.configuration.{KoodistoProvider, OrganisaatioProvider}
+import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Tietolahde}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
-import fi.oph.suorituspalvelu.integration.client.OnrClient
-import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_EPAONNISTUI, UI_HAKU_ESIMERKKI_LUOKKA, UI_HAKU_ESIMERKKI_OPPIJA, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VUOSI, UI_HAKU_KRITEERI_PAKOLLINEN, UI_HAKU_LUOKKA_PARAM_NAME, UI_HAKU_OPPIJA_PARAM_NAME, UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN, UI_HAKU_OPPILAITOS_PAKOLLINEN, UI_HAKU_OPPILAITOS_PARAM_NAME, UI_HAKU_PATH, UI_HAKU_VUOSI_PAKOLLINEN, UI_HAKU_VUOSI_PARAM_NAME, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_PATH, UI_OPPILAITOKSET_PATH, UI_TIEDOT_400_DESCRIPTION, UI_TIEDOT_403_DESCRIPTION, UI_TIEDOT_HAKU_EPAONNISTUI, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_EI_OIKEUKSIA, UI_HAKU_EPAONNISTUI, UI_HAKU_ESIMERKKI_LUOKKA, UI_HAKU_ESIMERKKI_OPPIJA, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VUOSI, UI_HAKU_KRITEERI_PAKOLLINEN, UI_HAKU_LUOKKA_PARAM_NAME, UI_HAKU_OPPIJA_PARAM_NAME, UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN, UI_HAKU_OPPILAITOS_PAKOLLINEN, UI_HAKU_OPPILAITOS_PARAM_NAME, UI_HAKU_PATH, UI_HAKU_VUOSI_PAKOLLINEN, UI_HAKU_VUOSI_PARAM_NAME, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUO_PERUSKOULUN_OPPIMAARA_EI_OIKEUKSIA, UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE, UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, UI_LUO_PERUSKOULUN_OPPIMAARA_TALLENNUS_VIRHE, UI_OPPILAITOKSET_EI_OIKEUKSIA, UI_OPPILAITOKSET_PATH, UI_TIEDOT_400_DESCRIPTION, UI_TIEDOT_403_DESCRIPTION, UI_TIEDOT_EI_OIKEUKSIA, UI_TIEDOT_HAKU_EPAONNISTUI, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPeruskoulunOppimaaraFailureResponse, LuoPeruskoulunOppimaaraResponse, LuoPeruskoulunOppimaaraSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PeruskoulunOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
@@ -46,6 +46,8 @@ class UIResource {
   @Autowired val uiService: UIService = null
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
+
+  @Autowired var objectMapper: ObjectMapper = null
 
   private def getAliases(oppijaNumero: String): Set[String] =
     try
@@ -94,7 +96,7 @@ class UIResource {
   @Operation(
     summary = "Hakee oppilaitokset joiden opiskelijatietoihin käyttäjällä on oikeus käyttöliittymän oppijahakua varten",
     description = "Huomioita:\n" +
-      "- Huomio 1",
+      "- Huomio 1", // TODO: päivitä
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää oppilaitokset joihin opiskelijatietoihin käyttäjällä on oikeus", content = Array(new Content(schema = new Schema(implementation = classOf[OppilaitosSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_TIEDOT_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[OppijanHakuFailureResponse])))),
@@ -111,7 +113,7 @@ class UIResource {
             if(securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanHakuFailureResponse(java.util.Set.of(s"Käyttäjällä ei oikeuksia hakea listaa oppilaitoksista")))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanHakuFailureResponse(java.util.Set.of(UI_OPPILAITOKSET_EI_OIKEUKSIA)))))
           .flatMap(_ =>
             val user = AuditLog.getUser(request)
 
@@ -134,7 +136,7 @@ class UIResource {
   @Operation(
     summary = "Hakee oppijat käyttöliittymälle hakukriteerien perusteella",
     description = "Huomioita:\n" +
-      "- Huomio 1",
+      "- Huomio 1", // TODO: päivitä
     parameters = Array(
       new Parameter(name = UI_HAKU_OPPIJA_PARAM_NAME, in = ParameterIn.QUERY),
       new Parameter(name = UI_HAKU_OPPILAITOS_PARAM_NAME, in = ParameterIn.QUERY),
@@ -154,7 +156,7 @@ class UIResource {
                   request: HttpServletRequest): ResponseEntity[OppijanHakuResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
-      LogContext(path = UI_TIEDOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      LogContext(path = UI_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
@@ -162,9 +164,9 @@ class UIResource {
             if(securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanHakuFailureResponse(java.util.Set.of(s"Käyttäjällä ei oikeuksia hakea listaa oppijoista")))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanHakuFailureResponse(java.util.Set.of(UI_HAKU_EI_OIKEUKSIA)))))
           .flatMap(_ =>
-            val virheet: Set[String] = Set(Set((oppija.toScala, oppilaitos.toScala, vuosi.toScala, luokka.toScala) match 
+            val virheet: Set[String] = Set(Set((oppija.toScala, oppilaitos.toScala, vuosi.toScala, luokka.toScala) match
               case (None, None, None, None) => Some(UI_HAKU_KRITEERI_PAKOLLINEN)
               case (None, Some(oppilaitos), None, _) => Some(UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN)
               case (_, None, Some(vuosi), _) => Some(UI_HAKU_OPPILAITOS_PAKOLLINEN)
@@ -206,7 +208,7 @@ class UIResource {
   @Operation(
     summary = "Palauttaa yksittäisen oppijan tiedot käyttöliittymälle",
     description = "Huomioita:\n" +
-      "- Huomio 1",
+      "- Huomio 1", // TODO: päivitä
     parameters = Array(new Parameter(name = UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää yksittäisen oppijan tiedot", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotSuccessResponse])))),
@@ -225,7 +227,7 @@ class UIResource {
             if(securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanTiedotFailureResponse(java.util.Set.of(s"Käyttäjällä ei oikeuksia hakea käyttöliittymälle tietoja oppijasta")))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanTiedotFailureResponse(java.util.Set.of(UI_TIEDOT_EI_OIKEUKSIA)))))
           .flatMap(_ =>
             val virheet = Validator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true)
             if(virheet.isEmpty)
@@ -250,5 +252,65 @@ class UIResource {
       case e: Exception =>
         LOG.error("Oppijan tietojen haku käyttöliitymälle epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(OppijanTiedotFailureResponse(java.util.Set.of(UI_TIEDOT_HAKU_EPAONNISTUI)))
+
+  @PostMapping(
+    path = Array(UI_LUO_PERUSKOULUN_OPPIMAARA_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Luo peruskoulun oppimäärän suorituksen yksittäiselle oppijalle",
+    description = "Huomioita:\n" +
+      "- Huomio 1", // TODO: päivitä
+    requestBody =
+      new io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = Array(new Content(schema = new Schema(implementation = classOf[PeruskoulunOppimaaranSuoritus])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description="Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[LuoPeruskoulunOppimaaraSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = UI_TIEDOT_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LuoPeruskoulunOppimaaraFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = UI_TIEDOT_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def luoPeruskoulunOppimaaraSuoritus(
+                                       @RequestBody @Parameter(description = "Oppijanumero", example = EXAMPLE_OPPIJANUMERO, required = true) suoritusBytes: Array[Byte],
+                                       request: HttpServletRequest): ResponseEntity[LuoPeruskoulunOppimaaraResponse] =
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            // tarkastetaan oikeudet
+            if(securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanTiedotFailureResponse(java.util.Set.of(UI_LUO_PERUSKOULUN_OPPIMAARA_EI_OIKEUKSIA)))))
+          .flatMap(_ =>
+            // deserialisoidaan
+            try
+              Right(objectMapper.readValue(suoritusBytes, classOf[PeruskoulunOppimaaranSuoritus]))
+            catch
+              case e: Exception =>
+                LOG.error("Peruskoulun oppimaaran suorituksen deserialisointi epäonnistui")
+                Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE)))))
+          .flatMap(suoritus =>
+            val virheet = Validator.validatePeruskoulunOppimaaranSuoritus(suoritus)
+            if(virheet.isEmpty)
+              Right(suoritus)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(virheet.asJava))))
+          .flatMap(suoritus =>
+            val user = AuditLog.getUser(request)
+
+            LOG.info(s"Tallennetaan peruskoulun oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
+            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid), AuditOperation.TallennaPeruskoulunOppimaaranSuoritus, Some(suoritus))
+
+            this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid, Tietolahde.VIRKAILIJA, objectMapper.writeValueAsString(suoritus))
+            // TODO: "konvertoi sisäiseen formaattiin"
+
+            Right(ResponseEntity.status(HttpStatus.OK).body(LuoPeruskoulunOppimaaraSuccessResponse())))
+          )
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuoPeruskoulunOppimaaraResponse]]
+    catch
+      case e: Exception =>
+        LOG.error("Peruskoulun oppimaaran tallentaminen oppijalle epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(UI_LUO_PERUSKOULUN_OPPIMAARA_TALLENNUS_VIRHE)))
 
 }
