@@ -46,6 +46,7 @@ object ApiConstants {
   final val UI_TIEDOT_400_DESCRIPTION                       = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val UI_TIEDOT_403_DESCRIPTION                       = "Käyttäjällä ei ole oikeuksia nähdä pyydetyn henkilön suorituksia"
   final val UI_TIEDOT_ESIMERKKI_VIRHE                       = "oppijaNumero ei ole validi oid"
+  final val UI_TIEDOT_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea oppijan tietoja"
   final val UI_TIEDOT_HAKU_EPAONNISTUI                      = "Oppijan tietojen haku epäonnistui"
 
   final val UI_HAKU_PATH                                    = UI_API_PREFIX + "/oppijat"
@@ -66,12 +67,20 @@ object ApiConstants {
   final val UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN             = "Oppija tai vuosi on pakollinen jos oppilaitos määritelty"
   final val UI_HAKU_OPPILAITOS_PAKOLLINEN                   = "Oppilaitos on pakollinen jos vuosi määritelty"
   final val UI_HAKU_VUOSI_PAKOLLINEN                        = "Vuosi on pakollinen jos luokka määritelty"
+  final val UI_HAKU_EI_OIKEUKSIA                            = "Käyttäjällä ei ole oikeuksia hakea listaa oppijoista"
   final val UI_HAKU_EPAONNISTUI                             = "Oppijoiden haku epäonnistui"
 
   final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
+  final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
 
   final val UI_KAYTTAJAN_TIEDOT_PATH                        = UI_API_PREFIX + "/kayttaja"
-  final val UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI            = "Kayttajan tietojen haku epäonnistui"
+  final val UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI            = "Käyttäjän tietojen haku epäonnistui"
+
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_PATH               = UI_API_PREFIX + "/peruskoulunoppimaara"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_VIRHE    = "oppijaNumero ei ole validi oid"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_EI_OIKEUKSIA       = "Käyttäjällä ei ole oikeuksia lisätä oppijalle peruskoulun oppimäärän suoritusta"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE         = "Peruskoulun oppimäärän suorituksen json-deserialisointi epäonnistui"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_TALLENNUS_VIRHE    = "Peruskoulun oppimäärän suorituksen tallennus epäonnistui"
 
   /**
    * Swagger-kuvauksiin liittyvät vakiot

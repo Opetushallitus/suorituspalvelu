@@ -1,5 +1,7 @@
 package fi.oph.suorituspalvelu.validation
 
+import fi.oph.suorituspalvelu.resource.ui.PeruskoulunOppimaaranSuoritus
+
 import java.time.Instant
 import java.util.Optional
 import scala.util.matching.Regex
@@ -115,5 +117,8 @@ object Validator {
     else
       Set.empty
   }
+
+  def validatePeruskoulunOppimaaranSuoritus(suoritus: PeruskoulunOppimaaranSuoritus): Set[String] =
+    Set.empty
 
 }
