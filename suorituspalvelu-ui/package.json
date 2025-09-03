@@ -63,7 +63,6 @@
     "jsdom": "^26.1.0",
     "lint-staged": "^16.1.5",
     "prettier": "^3.6.2",
-    "serve": "^14.2.4",
     "start-server-and-test": "^2.0.13",
     "tsx": "^4.20.5",
     "typescript": "^5",
