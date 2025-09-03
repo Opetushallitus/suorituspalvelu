@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import nextConfig from './next.config';
+import reactRouterConfig from './react-router.config';
 
 export default defineConfig({
   testDir: './playwright',
@@ -18,7 +18,7 @@ export default defineConfig({
   use: {
     testIdAttribute: 'data-test-id',
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: `http://localhost:3000${nextConfig.basePath}`,
+    baseURL: `http://localhost:3000${reactRouterConfig.basename}`,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,

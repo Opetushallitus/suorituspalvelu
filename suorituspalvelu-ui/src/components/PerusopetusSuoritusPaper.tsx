@@ -1,4 +1,7 @@
-import { PerusopetuksenOppiaine, PerusopetusSuoritus } from '@/types/ui-types';
+import {
+  type PerusopetuksenOppiaine,
+  type PerusopetusSuoritus,
+} from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';

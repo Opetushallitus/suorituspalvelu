@@ -1,10 +1,10 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import { Suspense } from 'react';
-import { FullSpinner } from './FullSpinner';
-import { ErrorBoundaryPropsWithRender } from 'react-error-boundary';
+import { type ErrorBoundaryPropsWithRender } from 'react-error-boundary';
 import { SessionExpired } from './SessionExpired';
 import { SessionExpiredError } from '@/http-client';
 import { ErrorView } from './ErrorView';
+import { FullSpinner } from './FullSpinner';
 
 type FallbackRenderType = ErrorBoundaryPropsWithRender['fallbackRender'];
 
@@ -20,7 +20,7 @@ const errorFallbackRender: FallbackRenderType = ({
 
 export const SuspenseBoundary = ({
   children,
-  suspenseFallback = <FullSpinner />,
+  suspenseFallback,
   onResetErrorBoundary,
 }: {
   children: React.ReactNode;
@@ -32,7 +32,9 @@ export const SuspenseBoundary = ({
       fallbackRender={errorFallbackRender}
       onReset={onResetErrorBoundary}
     >
-      <Suspense fallback={suspenseFallback}>{children}</Suspense>
+      <Suspense fallback={suspenseFallback ?? <FullSpinner />}>
+        {children}
+      </Suspense>
     </ErrorBoundary>
   );
 };

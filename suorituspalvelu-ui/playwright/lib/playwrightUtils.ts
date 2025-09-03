@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { isFunction } from 'remeda';
 
 export async function selectOption({

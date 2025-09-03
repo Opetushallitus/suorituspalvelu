@@ -8,8 +8,8 @@
  *
  * @returns Flexbox-rivi lapsikomponenteille tai null, jos lapsia ei ole.
  */
-import { truthyReactChildren } from '@/lib/common';
-import { Box, Stack, StackProps } from '@mui/material';
+import { truthyReactNodes } from '@/lib/common';
+import { Box, Stack, type StackProps } from '@mui/material';
 import React from 'react';
 import { range } from 'remeda';
 
@@ -18,7 +18,8 @@ export const InfoItemRow = ({
   slotAmount,
   ...props
 }: Omit<StackProps, 'direction'> & { slotAmount?: number }) => {
-  const filteredChildren = truthyReactChildren(children);
+  // eslint-disable-next-line @eslint-react/no-children-to-array
+  const filteredChildren = truthyReactNodes(React.Children.toArray(children));
 
   return filteredChildren.length > 0 ? (
     <Stack {...props} direction="row">

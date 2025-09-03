@@ -1,9 +1,9 @@
 import {
-  EBOppiaine,
-  IBOppiaine,
-  LukionOppiaine,
-  LukioSuoritus,
-  YOKoe,
+  type EBOppiaine,
+  type IBOppiaine,
+  type LukionOppiaine,
+  type LukioSuoritus,
+  type YOKoe,
 } from '@/types/ui-types';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { ophColors } from '@opetushallitus/oph-design-system';

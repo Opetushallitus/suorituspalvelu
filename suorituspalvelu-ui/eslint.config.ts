@@ -1,41 +1,38 @@
-// @ts-check
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
 import ts from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintReact from '@eslint-react/eslint-plugin';
 import playwright from 'eslint-plugin-playwright';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
-
 const config = ts.config(
+  js.configs.recommended,
+  ts.configs.strict,
+  ts.configs.stylistic,
+  eslintConfigPrettier,
   {
     ignores: [
-      '.next/*',
+      'node_modules',
+      '.next',
       'out',
+      '.react-router',
+      'build',
       '.lintstagedrc.js',
       'coverage',
       '**/*/types/backend.ts',
     ],
   },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
-  eslintConfigPrettier,
   {
     languageOptions: {
+      parser: ts.parser,
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {
-      'no-shadow': ['error'],
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/no-inferrable-types': 'off',
+      'no-shadow': 'error',
       'no-restricted-imports': [
         'error',
         {
@@ -59,10 +56,13 @@ const config = ts.config(
     },
   },
   {
-    ...playwright.configs['flat/recommended'],
+    extends: [eslintReact.configs['recommended-typescript']],
+    files: ['src/**/*.{ts,tsx}'],
+  },
+  {
+    extends: [playwright.configs['flat/recommended']],
     files: ['playwright/**/*.ts'],
     rules: {
-      ...playwright.configs['flat/recommended'].rules,
       '@typescript-eslint/no-floating-promises': 'error',
       'playwright/expect-expect': 'off',
     },

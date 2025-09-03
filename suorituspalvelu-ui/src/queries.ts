@@ -3,7 +3,7 @@ import {
   getOppija,
   getOppilaitokset,
   searchOppijat,
-  OppijatSearchParams,
+  type OppijatSearchParams,
 } from './api';
 import { useApiSuspenseQuery } from './http-client';
 

@@ -1,17 +1,14 @@
-'use client';
-
 import {
   useOppijatSearch,
   useOppijatSearchURLParams,
 } from '@/hooks/useSearchOppijat';
-import Link from 'next/link';
+import { Link, useParams } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
 import { useState } from 'react';
 import { NAV_LIST_SELECTED_ITEM_CLASS, NavigationList } from './NavigationList';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
-import { useSelectedOppijaNumero } from '@/hooks/useSelectedOppijaNumero';
 
 const HenkilotSidebarContent = () => {
   const params = useOppijatSearchURLParams();
@@ -19,7 +16,7 @@ const HenkilotSidebarContent = () => {
 
   const { t } = useTranslate();
 
-  const [selectedOppijaNumero] = useSelectedOppijaNumero();
+  const { oppijaNumero } = useParams();
 
   return hasEmptySearchParams ? (
     <div></div>
@@ -35,15 +32,15 @@ const HenkilotSidebarContent = () => {
           <Link
             key={oppija.oppijaNumero}
             className={
-              selectedOppijaNumero === oppija.oppijaNumero
+              oppijaNumero === oppija.oppijaNumero
                 ? NAV_LIST_SELECTED_ITEM_CLASS
                 : ''
             }
-            href={{
-              query: {
-                oppijaNumero: oppija.oppijaNumero,
+            to={{
+              pathname: `/henkilo/${oppija.oppijaNumero}`,
+              search: new URLSearchParams({
                 ...params,
-              },
+              }).toString(),
             }}
           >
             <OphTypography variant="label" color="inherit">

@@ -1,16 +1,20 @@
-import { BackendFetch, DevTools, Tolgee, TolgeeInstance } from '@tolgee/react';
+import {
+  BackendFetch,
+  DevTools,
+  Tolgee,
+  type TolgeeInstance,
+} from '@tolgee/react';
 import { FormatIcu } from '@tolgee/format-icu';
 import { configPromise, isTest, localTranslations } from '@/configuration';
 
 const NAMESPACE = 'suorituspalvelu';
-const REVALIDATE_TIME_SECONDS = 10 * 60;
 
 let tolgeeInstance: TolgeeInstance | null = null;
-
 export async function initTolgee(
   defaultLanguage?: string,
 ): Promise<TolgeeInstance> {
   const config = await configPromise;
+
   if (tolgeeInstance) {
     return tolgeeInstance;
   }
@@ -24,9 +28,9 @@ export async function initTolgee(
   if (isTest || localTranslations) {
     tg = tg.updateDefaults({
       staticData: {
-        fi: () => import('./messages/fi.json'),
-        sv: () => import('./messages/sv.json'),
-        en: () => import('./messages/en.json'),
+        fi: () => import('./messages/fi.json').then((mod) => mod.default),
+        sv: () => import('./messages/sv.json').then((mod) => mod.default),
+        en: () => import('./messages/en.json').then((mod) => mod.default),
       },
     });
   } else {
@@ -34,9 +38,6 @@ export async function initTolgee(
       .use(
         BackendFetch({
           prefix: config.routes.yleiset.lokalisointiUrl,
-          next: {
-            revalidate: REVALIDATE_TIME_SECONDS,
-          },
         }),
       )
       .use(DevTools())

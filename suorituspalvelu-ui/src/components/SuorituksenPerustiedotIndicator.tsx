@@ -1,9 +1,11 @@
-'use client';
 import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { LabeledInfoItem } from './LabeledInfoItem';
-import { SuorituksenPerustiedot, SuorituksenTila } from '@/types/ui-types';
+import {
+  type SuorituksenPerustiedot,
+  type SuorituksenTila,
+} from '@/types/ui-types';
 import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';

@@ -1,4 +1,3 @@
-'use client';
 import { useEffect } from 'react';
 import { OphButton, OphTypography } from '@opetushallitus/oph-design-system';
 import { Stack } from '@mui/material';

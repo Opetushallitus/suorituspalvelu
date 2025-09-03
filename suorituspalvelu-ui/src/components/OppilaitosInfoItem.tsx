@@ -3,7 +3,7 @@ import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import { useConfig } from '@/configuration';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
-import { SuorituksenPerustiedot } from '@/types/ui-types';
+import { type SuorituksenPerustiedot } from '@/types/ui-types';
 
 export function OppilaitosInfoItem({
   oppilaitos,

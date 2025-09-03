@@ -1,4 +1,3 @@
-'use client';
 import { Box, Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { OphTypography } from '@opetushallitus/oph-design-system';
@@ -8,7 +7,7 @@ import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';
 import { TuvaSuoritusPaper } from './TuvaSuoritusPaper';
 import { PerusopetusSuoritusPaper } from './PerusopetusSuoritusPaper';
-import { OppijanTiedot } from '@/types/ui-types';
+import { type OppijanTiedot } from '@/types/ui-types';
 import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
 import React from 'react';
 
@@ -20,6 +19,7 @@ function SuoritusSection({
   children: React.ReactNode;
 }) {
   return (
+    // eslint-disable-next-line @eslint-react/no-children-count
     React.Children.count(children) > 0 && (
       <Box sx={{ marginBottom: 4 }}>
         <OphTypography variant="h4" component="h3" sx={{ marginBottom: 2 }}>

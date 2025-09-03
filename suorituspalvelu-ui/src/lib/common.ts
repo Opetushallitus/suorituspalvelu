@@ -45,6 +45,6 @@ export const toId = (text?: string | null): string => {
   return removeAccents(removeWhiteSpace(text)).toLowerCase();
 };
 
-export function truthyReactChildren(children: React.ReactNode) {
-  return React.Children.toArray(children).filter((child) => isTruthy(child));
+export function truthyReactNodes(children: Array<React.ReactNode>) {
+  return children.filter((child) => isTruthy(child));
 }

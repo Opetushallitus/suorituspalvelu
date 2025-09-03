@@ -4,7 +4,7 @@ import { OphButton, ophColors } from '@opetushallitus/oph-design-system';
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import { ExpandMore } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
-import { truthyReactChildren, toId } from '@/lib/common';
+import { truthyReactNodes, toId } from '@/lib/common';
 
 const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   ...theme.typography.h5,
@@ -51,7 +51,9 @@ export const TableBodyAccordion = ({
 
   const columnCount = (otherCells?.length ?? 0) + 1;
 
-  const hasChildren = truthyReactChildren(children).length > 0;
+  const hasChildren =
+    // eslint-disable-next-line @eslint-react/no-children-to-array
+    truthyReactNodes(React.Children.toArray(children)).length > 0;
 
   return (
     <>

@@ -4,7 +4,7 @@ import { SuspenseBoundary } from './SuspenseBoundary';
 
 export function QuerySuspenseBoundary({
   children,
-  suspenseFallback = <FullSpinner />,
+  suspenseFallback,
 }: {
   children: React.ReactNode;
   suspenseFallback?: React.ReactNode;
@@ -13,7 +13,7 @@ export function QuerySuspenseBoundary({
   return (
     <SuspenseBoundary
       onResetErrorBoundary={reset}
-      suspenseFallback={suspenseFallback}
+      suspenseFallback={suspenseFallback ?? <FullSpinner />}
     >
       {children}
     </SuspenseBoundary>

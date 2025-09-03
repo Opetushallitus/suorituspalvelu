@@ -1,4 +1,4 @@
-import { Kielistetty, Language } from '@/types/ui-types';
+import { type Kielistetty, type Language } from '@/types/ui-types';
 import { isPlainObject } from 'remeda';
 
 export function translateKielistetty(

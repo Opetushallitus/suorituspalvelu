@@ -1,4 +1,3 @@
-'use client';
 import { Box, Stack } from '@mui/material';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { DEFAULT_BOX_BORDER, notLarge, styled } from '@/lib/theme';

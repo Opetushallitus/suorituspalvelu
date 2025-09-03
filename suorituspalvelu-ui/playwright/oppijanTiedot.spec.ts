@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from './lib/fixtures';
-import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json';
+import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 import { NDASH } from '@/lib/common';
 import {
   AIKUISTEN_PERUSOPETUKSEN_OPPIMAARA_SUORITUS,
@@ -46,7 +46,7 @@ test.describe('Oppijan tiedot', () => {
       });
     });
 
-    await page.goto(`?oppijaNumero=${OPPIJANUMERO}`);
+    await page.goto(`/suorituspalvelu/henkilo/${OPPIJANUMERO}`);
   });
 
   test('Henkilötiedot', async ({ page }) => {
@@ -60,11 +60,9 @@ test.describe('Oppijan tiedot', () => {
 
     await expect(page.getByLabel('Syntymäaika')).toHaveText('1.1.2030');
 
-    const henkiloOid = '1.2.246.562.24.40483869857';
-
     const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
-    await expect(oppijaNumeroLink).toHaveText(henkiloOid);
-    await expect(page.getByLabel('Henkilö-OID')).toHaveText(henkiloOid);
+    await expect(oppijaNumeroLink).toHaveText(OPPIJANUMERO);
+    await expect(page.getByLabel('Henkilö-OID')).toHaveText(OPPIJANUMERO);
   });
 
   test('Opiskeluoikeudet', async ({ page }) => {

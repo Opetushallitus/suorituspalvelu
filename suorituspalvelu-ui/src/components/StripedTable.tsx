@@ -1,5 +1,5 @@
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
-import { Table, TableProps } from '@mui/material';
+import { Table, type TableProps } from '@mui/material';
 
 const StyledTable = styled(Table, {
   shouldForwardProp: (prop) => prop !== 'stripeGroup',

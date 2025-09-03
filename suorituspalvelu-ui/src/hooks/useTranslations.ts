@@ -1,8 +1,7 @@
-'use client';
 import { useCallback } from 'react';
 import { translateKielistetty } from '@/lib/translation-utils';
-import { TFnType, useTolgee, useTranslate } from '@tolgee/react';
-import { Kielistetty, Language } from '@/types/ui-types';
+import { type TFnType, useTolgee, useTranslate } from '@tolgee/react';
+import { type Kielistetty, type Language } from '@/types/ui-types';
 
 export type TFunction = TFnType;
 

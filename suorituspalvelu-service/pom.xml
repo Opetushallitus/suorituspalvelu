@@ -132,6 +132,7 @@
                         <configuration>
                             <mainClass>fi.oph.suorituspalvelu.ui.TypeScriptGenerator</mainClass>
                             <classpathScope>compile</classpathScope>
+                            <skip>${maven.test.skip}</skip>
                         </configuration>
                     </execution>
                 </executions>

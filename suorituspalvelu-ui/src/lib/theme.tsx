@@ -1,6 +1,9 @@
-'use client';
 import { ophColors } from '@opetushallitus/oph-design-system';
-import { styled as muiStyled, Theme, ThemeOptions } from '@mui/material/styles';
+import {
+  styled as muiStyled,
+  type Theme,
+  type ThemeOptions,
+} from '@mui/material/styles';
 import { shouldForwardProp } from '@mui/system/createStyled';
 
 export { ophColors } from '@opetushallitus/oph-design-system';
