@@ -20,7 +20,7 @@ case class Henkiloviite(henkiloOid: String, masterOid: String) {
 trait OnrClient {
   def getHenkiloviitteetForHenkilot(personOids: Set[String]): Future[Set[Henkiloviite]]
   def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]]
-  def getAsiointikieli(personOids: String): Future[String]
+  def getAsiointikieli(personOid: String): Future[Option[String]]
 }
 
 class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends OnrClient {
@@ -86,7 +86,7 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
     allResults
   }
 
-  override def getAsiointikieli(personOid: String): Future[String] = {
+  override def getAsiointikieli(personOid: String): Future[Option[String]] = {
     doGet(s"$environmentBaseUrl/oppijanumerorekisteri-service/henkilo/$personOid/asiointiKieli")
   }
 
@@ -117,7 +117,7 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
     }
   }
 
-  private def doGet(url: String): Future[String] = {
+  private def doGet(url: String): Future[Option[String]] = {
 
     LOG.info(s"haetaan, $url")
     val req = new RequestBuilder()
@@ -127,7 +127,9 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
     try {
       asScala(casClient.execute(req)).map {
         case r if r.getStatusCode == 200 =>
-          r.getResponseBody()
+          Some(r.getResponseBody())
+        case r if r.getStatusCode == 404 =>
+          None
         case r =>
           val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
           LOG.error(
