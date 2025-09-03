@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.ui
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_HETU, EXAMPLE_OPPIJANIMI, EXAMPLE_OPPIJANUMERO, EXAMPLE_SYNTYMAIKA, UI_HAKU_ESIMERKKI_HETU, UI_HAKU_ESIMERKKI_NIMI, UI_HAKU_ESIMERKKI_OPPIJANUMERO, UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_HETU, EXAMPLE_OPPIJANIMI, EXAMPLE_OPPIJANUMERO, EXAMPLE_SYNTYMAIKA, UI_HAKU_ESIMERKKI_HETU, UI_HAKU_ESIMERKKI_NIMI, UI_HAKU_ESIMERKKI_OPPIJANUMERO, UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIJANUMERO, UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE}
 import fi.oph.suorituspalvelu.resource.*
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
@@ -1139,4 +1139,9 @@ case class LuoPeruskoulunOppimaaraFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuoPeruskoulunOppimaaraResponse
 
-case class PeruskoulunOppimaaranSuoritus(oppijaOid: String)
+case class PeruskoulunOppimaaranSuoritus(
+  @(Schema @field)(example = UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIJANUMERO)
+  @BeanProperty oppijaOid: Optional[String],
+  @(Schema @field)(example = "")
+  @BeanProperty a1kieliArvosana: Optional[Int]
+)

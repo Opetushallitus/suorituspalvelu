@@ -119,6 +119,6 @@ object Validator {
   }
 
   def validatePeruskoulunOppimaaranSuoritus(suoritus: PeruskoulunOppimaaranSuoritus): Set[String] =
-    Set.empty
+    validateOppijanumero(suoritus.oppijaOid.toScala, true)
 
 }
