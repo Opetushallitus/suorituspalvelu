@@ -9,8 +9,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
-import fi.oph.suorituspalvelu.business.Tietolahde.KOSKI
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti, SuoritusJoukko}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
 import slick.jdbc.JdbcBackend
 
@@ -101,7 +100,7 @@ class KoskiIntegration {
         LOG.info(s"Saatiin tulokset tiedostolle $fileUrl: käsitellään yhteensä ${splitted.size} henkilön Koski-tiedot.")
         val kantaResults: Seq[SyncResultForHenkilo] = splitted.map(henkilonTiedot => {
           try {
-            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, KOSKI, henkilonTiedot._2)
+            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, SuoritusJoukko.KOSKI, henkilonTiedot._2)
             versio.foreach(v => {
               LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
               val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
