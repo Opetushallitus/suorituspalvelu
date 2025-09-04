@@ -1,13 +1,28 @@
 package fi.oph.suorituspalvelu.business
 
-import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonTypeName}
+import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonCreator, JsonValue}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, OpiskeluoikeusTila}
 
 import java.util.UUID
 import java.time.{Instant, LocalDate}
 
-enum Tietolahde:
-  case KOSKI, YTR, VIRTA, VIRKAILIJA
+case class SuoritusJoukko(nimi: String) {
+  @JsonValue
+  def toJson: String = nimi
+}
+
+object SuoritusJoukko {
+  final val KOSKI = SuoritusJoukko("KOSKI")
+  final val VIRTA = SuoritusJoukko("VIRTA")
+  final val YTR   = SuoritusJoukko("YTR")
+  final val PERUSOPETUS = SuoritusJoukko("PERUSOPETUS")
+
+  @JsonCreator
+  def fromString(value: String): SuoritusJoukko = SuoritusJoukko(value)
+
+  def oppiaineenOppimaara(nimi: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${nimi.toUpperCase()}")
+  def kieliOppiaineenOppimaara(kieli: String, laajuus: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${kieli.toUpperCase()}_${laajuus.toUpperCase}")
+}
 
 enum SuoritusTila:
   case VALMIS
@@ -94,7 +109,7 @@ case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opis
 
 case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi) extends Suoritus
 
-case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], tietolahde: Tietolahde)
+case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko)
 
 enum KKOpiskeluoikeusTila:
   case VOIMASSA

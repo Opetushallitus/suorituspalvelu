@@ -1,7 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
-CREATE TYPE lahde AS ENUM ('KOSKI', 'YTR', 'VIRTA', 'VIRKAILIJA');
-
 -- taulu lisätty jotta voidaa lukita yksittäinen oppija
 CREATE TABLE IF NOT EXISTS oppijat (
     oppijanumero                VARCHAR PRIMARY KEY
@@ -12,15 +10,13 @@ CREATE TABLE IF NOT EXISTS versiot (
     use_versio_tunniste         UUID REFERENCES versiot (tunniste),
     oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
     voimassaolo                 TSTZRANGE NOT NULL,
-    lahde                       lahde NOT NULL,
+    suoritusjoukko              VARCHAR NOT NULL,
     data_json                   JSONB,
     data_xml                    XML,
     data_parseroitu             JSONB,
-    EXCLUDE USING gist (oppijanumero WITH =, lahde WITH =, voimassaolo WITH &&),
-    CHECK ((lahde='KOSKI'       AND data_json IS NOT NULL   AND data_xml IS NULL) OR
-           (lahde='YTR'         AND data_json IS NOT NULL   AND data_xml IS NULL) OR
-           (lahde='VIRTA'       AND data_json IS NULL       AND data_xml IS NOT NULL) OR
-           (lahde='VIRKAILIJA'  AND data_json IS NOT NULL   AND data_xml IS NULL)),
+    EXCLUDE USING gist (oppijanumero WITH =, suoritusjoukko WITH =, voimassaolo WITH &&),
+    CHECK ((suoritusjoukko='VIRTA' AND data_json IS NULL       AND data_xml IS NOT NULL) OR
+                                      (data_json IS NOT NULL   AND data_xml IS NULL)),
     CHECK ((use_versio_tunniste IS NOT NULL AND data_parseroitu IS NULL) OR
            (use_versio_tunniste IS NULL AND data_parseroitu IS NOT NULL))
 );

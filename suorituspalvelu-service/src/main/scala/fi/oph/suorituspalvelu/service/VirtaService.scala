@@ -3,8 +3,7 @@ package fi.oph.suorituspalvelu.service
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.suorituspalvelu.business.Tietolahde.VIRTA
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, Tietolahde, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenkilo}
@@ -92,7 +91,7 @@ class VirtaRefresh {
     val kantaResult: SyncResultForHenkilo =
       try {
         val kantaOperaatiot = KantaOperaatiot(database)
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, VIRTA, hetulessXml)
+        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, SuoritusJoukko.VIRTA, hetulessXml)
 
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
