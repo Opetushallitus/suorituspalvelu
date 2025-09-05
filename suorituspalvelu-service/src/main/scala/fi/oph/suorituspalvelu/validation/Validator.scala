@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.resource.ui.PeruskoulunOppimaaranSuoritus
+import fi.oph.suorituspalvelu.resource.ui.SyotettyPeruskoulunOppimaaranSuoritus
 
 import java.time.Instant
 import java.util.Optional
@@ -118,7 +118,7 @@ object Validator {
       Set.empty
   }
 
-  def validatePeruskoulunOppimaaranSuoritus(suoritus: PeruskoulunOppimaaranSuoritus): Set[String] =
+  def validatePeruskoulunOppimaaranSuoritus(suoritus: SyotettyPeruskoulunOppimaaranSuoritus): Set[String] =
     validateOppijanumero(suoritus.oppijaOid.toScala, true)
 
 }

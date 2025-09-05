@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, SuoritusTila, SuoritusJoukko}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PeruskoulunOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, SuoritusTila, SyotettyPeruskoulunOppiaine, SyotettyPeruskoulunOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.nio.charset.Charset
 import java.time.LocalDate
+import java.util
 import java.util.{Optional, UUID}
 import scala.concurrent.Future
 
@@ -248,7 +249,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
-    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
     ), Set.empty)
@@ -289,7 +290,16 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(PeruskoulunOppimaaranSuoritus(Optional.of(""), Optional.of(9)))))
+        .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
+          Optional.of(""),
+          Optional.of("1.2.3.4"),
+          Optional.of(SuoritusTila.VALMIS),
+          Optional.of(LocalDate.now()),
+          Optional.of("suomi"),
+          Optional.of("suomi"),
+          Optional.of(true),
+          Optional.of(new util.HashSet[SyotettyPeruskoulunOppiaine]())
+        ))))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -312,7 +322,16 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(PeruskoulunOppimaaranSuoritus(Optional.of("tämä ei ole validi oid"), Optional.of(9)))))
+        .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
+          Optional.of("tämä ei ole validi oid"),
+          Optional.of("1.2.3.4"),
+          Optional.of(SuoritusTila.VALMIS),
+          Optional.of(LocalDate.now()),
+          Optional.of("suomi"),
+          Optional.of("suomi"),
+          Optional.of(true),
+          Optional.of(new util.HashSet[SyotettyPeruskoulunOppiaine]())
+        ))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -331,7 +350,16 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(PeruskoulunOppimaaranSuoritus(Optional.of(oppijaNumero), Optional.of(9)))))
+        .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
+          Optional.of(oppijaNumero),
+          Optional.of("1.2.3.4"),
+          Optional.of(SuoritusTila.VALMIS),
+          Optional.of(LocalDate.now()),
+          Optional.of("suomi"),
+          Optional.of("suomi"),
+          Optional.of(true),
+          Optional.of(new util.HashSet[SyotettyPeruskoulunOppiaine]())
+        ))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
