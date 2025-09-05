@@ -1139,9 +1139,79 @@ case class LuoPeruskoulunOppimaaraFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuoPeruskoulunOppimaaraResponse
 
-case class PeruskoulunOppimaaranSuoritus(
+enum SyotettyOppiaine:
+  case AIDINKIELI
+  case A1KIELI
+  case A2KIELI
+  case B1KIELI
+  case B2KIELI
+  case MATEMATIIKKA
+  case BIOLOGIA
+  case MAANTIETO
+  case FYSIIKKA
+  case KEMIA
+  case TERVEYSTIETO
+  case USKONTO_TAI_ELAMANKATSOMUSTIETO
+  case HISTORIA
+  case YHTEISKUNTAOPPI
+  case MUSIIKKI
+  case KUVATAIDE
+  case KASITYO
+  case LIIKUNTA
+  case KOTITALOUS
+  case TIETOKONEEN_HYOTYKAYTTO
+
+enum SyotettyAidinkielenOppimaara:
+  case MUU_OPPILAAN_AIDINKIELI
+  case ROMANI_AIDINKIELENA
+  case RUOTSI_TOISENA_KIELENA
+  case RUOTSI_VIITTOMAKIELISILLE
+  case RUOTSI_AIDINKIELENA
+  case SAAME_AIDINKIELENA
+  case SUOMI_SAAMENKIELISILLE
+  case SUOMI_TOISENA_KIELENA
+  case SUOMI_VIITTOMAKIELISILLE
+  case SUOMI_AIDINKIELENA
+  case VIITTOMAKIELI_AIDINKIELENA
+
+enum SyotettyArvosana:
+  case NUMEERINEN_4
+  case NUMEERINEN_5
+  case NUMEERINEN_6
+  case NUMEERINEN_7
+  case NUMEERINEN_8
+  case NUMEERINEN_9
+  case NUMEERINEN_10
+  case HYVAKSYTTY
+
+case class SyotettyPeruskoulunOppiaine(
+  @(Schema @field)(example = "HISTORIA", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty aine: Optional[SyotettyOppiaine],
+  @(Schema @field)(example = "SUOMI_AIDINKIELENA", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty aidinkielenOppimaara: Optional[SyotettyAidinkielenOppimaara],
+  @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty kieli: Optional[String],
+  @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[SyotettyArvosana],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty valinnainen: Optional[Boolean]
+)
+
+case class SyotettyPeruskoulunOppimaaranSuoritus(
   @(Schema @field)(example = UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIJANUMERO)
   @BeanProperty oppijaOid: Optional[String],
+  @(Schema @field)(example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppilaitosOid: Optional[String],
+  @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tila: Optional[SuoritusTila],
+  @(Schema @field)(example = "2016-06-01")
+  @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty suorituskieli: Optional[String],
+  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty koulusivistyskieli: Optional[String],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty yksilollistetty: Optional[Boolean],
   @(Schema @field)(example = "")
-  @BeanProperty a1kieliArvosana: Optional[Int]
+  @BeanProperty oppiaineet: Optional[java.util.Set[SyotettyPeruskoulunOppiaine]]
 )

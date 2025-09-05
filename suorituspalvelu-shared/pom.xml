@@ -18,6 +18,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>fi.oph.suorituspalvelu</groupId>
+            <artifactId>suorituspalvelu-domain</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-xml_3</artifactId>
         </dependency>
