@@ -1,11 +1,14 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.resource.ui.SyotettyPeruskoulunOppimaaranSuoritus
+import fi.oph.suorituspalvelu.resource.ui.{SyotettyPeruskoulunOppiaine, SyotettyPeruskoulunOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.ui.{SYOTETYN_OPPIAINEEN_KOODIT, SYOTETYN_OPPIMAARAN_SUORITUSKIELET}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.Optional
 import scala.util.matching.Regex
 import scala.jdk.OptionConverters.*
+import scala.jdk.CollectionConverters.*
 
 /**
  * Validoi järjestelmään syötetyn suorituksen kentät. Validaattorin virheilmoitukset eivät saa sisältää sensitiivistä
@@ -27,7 +30,24 @@ object Validator {
   final val VALIDATION_LUOKKA_EI_VALIDI           = "luokka ei ole validi: "
   final val VALIDATION_EI_VALIDIT_OIDIT           = "Seuraavat oppijanumerot eivät ole valideja: "
   final val VALIDATION_MUOKATTUJALKEEN_TYHJA      = "muokattuJalkeen: Kenttä on pakollinen"
-  final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muokattuJalkeen: muokattuJalkeen ei oli validi aikaleima"
+  final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muokattuJalkeen: muokattuJalkeen ei ole validi aikaleima"
+  final val VALIDATION_VALMISTUMISPAIVA_TYHJA     = "valmistumisPaiva: Kenttä on pakollinen"
+  final val VALIDATION_VALMISTUMISPAIVA_EI_VALIDI = "valmistumisPaiva: valmistumisPaiva ei ole validi päivämäärä: "
+  final val VALIDATION_YKSILOLLISTETTY_TYHJA      = "yksilollistetty: Kenttä on pakollinen"
+  final val VALIDATION_SUORITUSKIELI_TYHJA        = "suoritusKieli: Kenttä on pakollinen"
+  final val VALIDATION_SUORITUSKIELI_EI_VALIDI    = "suoritusKieli: arvo ei ole validi syötettävän oppimäärän kielikoodi: "
+  final val VALIDATION_OPPIAINEET_TYHJA           = "oppiaineet: Kenttä on pakollinen"
+  final val VALIDATION_KOODI_TYHJA                = "Koodi on pakollinen"
+  final val VALIDATION_KOODI_EI_VALIDI            = "Koodi ei ole validi syotettävän oppimäärän oppiainekoodi: "
+  final val VALIDATION_KIELI_MAARITELTY           = "Kieli on sallittu kenttä vain kieliaineissa"
+  final val VALIDATION_KIELI_EI_MAARITELTY        = "Kieli on pakollinen kenttä kieliaineissa"
+  final val VALIDATION_KIELI_INVALID              = "Kieli ei ole validi kielivalikoima-koodiston arvo"
+  final val VALIDATION_VALINNAINEN_EI_MAARITELTY  = "Valinnaisuus-kenttä on pakollinen"
+  final val VALIDATION_AI_OPPIMAARA_MAARITELTY    = "Äidinkielen oppimäärä on sallittu vain äidinkielessä"
+  final val VALIDATION_AI_OPPIMAARA_EI_MAARITELTY = "Äidinkielen oppimäärä on pakollinen äidinkielelle"
+  final val VALIDATION_AI_OPPIMAARA_EI_VALIDI     = "Äidinkielen oppimäärä ei ole validi oppiaineaidinkielijakirjallisuus-koodiston koodi"
+  final val VALIDATION_ARVOSANA_TYHJA             = "Arvosana on pakollinen"
+  final val VALIDATION_ARVOSANA_EI_VALIDI         = "Arvosana ei ole validi numeerinen arviointi (4-10)"
 
   val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.24\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
@@ -36,6 +56,19 @@ object Validator {
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
+
+  val KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS = "oppiaineaidinkielijakirjallisuus"
+  val KOODISTO_KIELIVALIKOIMA = "kielivalikoima"
+
+  enum SyotetynOppimaaranKieliAineKoodit:
+    case A
+    case A1
+    case A2
+    case B1
+    case B2
+    case B3
+
+  val SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT = SyotetynOppimaaranKieliAineKoodit.values.map(v => v.toString).toSet
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
     if (oppijaNumero.isEmpty || oppijaNumero.get.length == 0)
@@ -61,18 +94,6 @@ object Validator {
       catch
         case default => Set(VALIDATION_MUOKATTUJALKEEN_EI_VALIDI)
     
-  def validatePersonOids(personOids: Set[String]): Set[String] = {
-    if (personOids.isEmpty)
-      Set(VALIDATION_OPPIJANUMERO_TYHJA)
-    else {
-      val nonValid = personOids.filter(!oppijaOidPattern.matches(_))
-      if (nonValid.nonEmpty)
-        Set(VALIDATION_EI_VALIDIT_OIDIT + nonValid)
-      else
-        Set.empty
-    }
-  }
-
   def validateHakuOid(hakuOid: Option[String], pakollinen: Boolean): Set[String] = {
     if (pakollinen && (hakuOid.isEmpty || hakuOid.get.isEmpty))
       Set(VALIDATION_HAKUOID_TYHJA)
@@ -118,7 +139,114 @@ object Validator {
       Set.empty
   }
 
-  def validatePeruskoulunOppimaaranSuoritus(suoritus: SyotettyPeruskoulunOppimaaranSuoritus): Set[String] =
-    validateOppijanumero(suoritus.oppijaOid.toScala, true)
+  def validateValmistumisPaiva(valmistumisPaiva: Option[String]): Set[String] = {
+    if (valmistumisPaiva.isEmpty || valmistumisPaiva.get.isEmpty)
+      Set(VALIDATION_VALMISTUMISPAIVA_TYHJA)
+    else
+      try
+        LocalDate.parse(valmistumisPaiva.get)
+        Set.empty
+      catch
+        case default => Set(VALIDATION_VALMISTUMISPAIVA_EI_VALIDI + valmistumisPaiva.get)
+  }
+
+  def validatePeruskoulunOppimaaranSuorituskieli(suorituskieli: Option[String]): Set[String] = {
+    if(suorituskieli.isEmpty || suorituskieli.get.isEmpty)
+      Set(VALIDATION_SUORITUSKIELI_TYHJA)
+    else if(!SYOTETYN_OPPIMAARAN_SUORITUSKIELET.contains(suorituskieli.get))
+      Set(VALIDATION_SUORITUSKIELI_EI_VALIDI + suorituskieli.get)
+    else
+      Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranYksilollistaminen(yksilollistetty: Option[Boolean]): Set[String] = {
+    if(yksilollistetty.isEmpty)
+      Set(VALIDATION_YKSILOLLISTETTY_TYHJA)
+    else
+      Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranOppiaineenKoodi(koodi: Option[String]): Set[String] = {
+    if(koodi.isEmpty || koodi.get.isEmpty)
+      Set(VALIDATION_KOODI_TYHJA)
+    else if(!SYOTETYN_OPPIAINEEN_KOODIT.contains(koodi.get))
+      Set(VALIDATION_KOODI_EI_VALIDI + koodi.get)
+    else
+      Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranOppiaineenArvosana(arvosana: Option[Int]): Set[String] = {
+    if(arvosana.isEmpty)
+      Set(VALIDATION_ARVOSANA_TYHJA)
+    else if(arvosana.get>10 || arvosana.get<4)
+      Set(VALIDATION_ARVOSANA_EI_VALIDI)
+    else
+      Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranOppiaineenKieli(oppiaine: SyotettyPeruskoulunOppiaine, koodistoProvider: KoodistoProvider): Set[String] = {
+    if(oppiaine.kieli.isPresent)
+      if(oppiaine.koodi.isEmpty || !SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()))
+        Set(VALIDATION_KIELI_MAARITELTY)
+      else if(koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA).get(oppiaine.kieli.get()).isEmpty)
+        Set(VALIDATION_KIELI_INVALID)
+      else
+        Set.empty
+    else
+      if(oppiaine.koodi.isPresent && SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()))
+        Set(VALIDATION_KIELI_EI_MAARITELTY)
+      else
+        Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranOppiaineenValinnainen(valinnainen: Option[Boolean]): Set[String] = {
+    if(valinnainen.isEmpty)
+      Set(VALIDATION_VALINNAINEN_EI_MAARITELTY)
+    else
+      Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranOppiaineenAidinkielenOppimaara(oppiaine: SyotettyPeruskoulunOppiaine, koodistoProvider: KoodistoProvider): Set[String] = {
+    if(oppiaine.aidinkielenOppimaara.isPresent)
+      if(oppiaine.koodi.isEmpty || !"AI".equals(oppiaine.koodi.get()))
+        Set(VALIDATION_AI_OPPIMAARA_MAARITELTY)
+      else if(koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(oppiaine.aidinkielenOppimaara.get()).isEmpty)
+        Set(VALIDATION_AI_OPPIMAARA_EI_VALIDI)
+      else
+        Set.empty
+    else
+      if(oppiaine.koodi.isPresent && "AI".equals(oppiaine.koodi.get()))
+        Set(VALIDATION_AI_OPPIMAARA_EI_MAARITELTY)
+      else
+        Set.empty
+  }
+
+  def validatePeruskoulunOppimaaranOppiaine(oppiaine: SyotettyPeruskoulunOppiaine, indeksi: Int, koodistoProvider: KoodistoProvider): Set[String] = {
+    Set(
+      validatePeruskoulunOppimaaranOppiaineenKoodi(oppiaine.koodi.toScala),
+      validatePeruskoulunOppimaaranOppiaineenArvosana(oppiaine.arvosana.toScala),
+      validatePeruskoulunOppimaaranOppiaineenKieli(oppiaine, koodistoProvider),
+      validatePeruskoulunOppimaaranOppiaineenValinnainen(oppiaine.valinnainen.toScala),
+      validatePeruskoulunOppimaaranOppiaineenAidinkielenOppimaara(oppiaine, koodistoProvider)
+    ).flatten.map(virhe => s"oppiaineet[$indeksi]: $virhe")
+  }
+
+  def validatePeruskoulunOppimaaranOppiaineet(oppiaineet: Optional[java.util.List[SyotettyPeruskoulunOppiaine]], koodistoProvider: KoodistoProvider): Set[String] = {
+    if(oppiaineet.isEmpty)
+      Set(VALIDATION_OPPIAINEET_TYHJA)
+    else
+      oppiaineet.get.asScala.toList.zipWithIndex.map((o, indeksi) => validatePeruskoulunOppimaaranOppiaine(o, indeksi, koodistoProvider)).flatten.toSet
+  }
+
+  def validatePeruskoulunOppimaaranSuoritus(suoritus: SyotettyPeruskoulunOppimaaranSuoritus, koodistoProvider: KoodistoProvider): Set[String] = {
+    Set(
+      validateOppijanumero(suoritus.oppijaOid.toScala, true),
+      validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
+      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala),
+      validatePeruskoulunOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
+      validatePeruskoulunOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),
+      validatePeruskoulunOppimaaranOppiaineet(suoritus.oppiaineet, koodistoProvider)
+    ).flatten
+  }
 
 }

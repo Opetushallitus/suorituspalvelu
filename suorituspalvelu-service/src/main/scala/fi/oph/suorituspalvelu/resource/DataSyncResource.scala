@@ -72,7 +72,7 @@ class DataSyncResource {
           if (personOids.toSet.size > 5000) {
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of("Korkeintaan 5000 henkilöä kerrallaan"))))
           } else {
-            val virheet: Set[String] = Validator.validatePersonOids(personOids.toSet)
+            val virheet: Set[String] = personOids.map(o => Validator.validateOppijanumero(Some(o), true)).flatten.toSet
             if (virheet.isEmpty)
               Right(None)
             else
@@ -258,7 +258,7 @@ class DataSyncResource {
           if (personOids.toSet.size > 5000) {
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of("Korkeintaan 5000 henkilöä kerrallaan"))))
           } else {
-            val virheet: Set[String] = Validator.validatePersonOids(personOids.toSet)
+            val virheet: Set[String] = personOids.map(oid => Validator.validateOppijanumero(Some(oid), true)).flatten.toSet
             if (virheet.isEmpty)
               Right(None)
             else

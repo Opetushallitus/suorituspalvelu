@@ -1,12 +1,13 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.configuration.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.configuration.OrganisaatioProvider
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.*
 
 import java.time.LocalDate

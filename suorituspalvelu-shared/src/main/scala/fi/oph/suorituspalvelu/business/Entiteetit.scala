@@ -81,7 +81,7 @@ case class PerusopetuksenVuosiluokka(tunniste: UUID, nimi: Kielistetty, koodi: K
 
 case class PerusopetuksenOpiskeluoikeus(
                                          tunniste: UUID,
-                                         oid: String,
+                                         oid: Option[String],
                                          oppilaitosOid: String,
                                          @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                          suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],

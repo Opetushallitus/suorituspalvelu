@@ -118,7 +118,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           'oppijaNumero', versiot.oppijanumero,
           'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
           'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-          'tietolahde', versiot.lahde
+          'suoritusJoukko', versiot.suoritusjoukko
         )::text AS versio
         FROM versiot where oppijanumero = $oppijaNumero""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))

@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.integration.ytr
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, SyncResultForHenkilo}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
 import org.slf4j.{Logger, LoggerFactory}
@@ -12,7 +12,6 @@ import slick.jdbc.JdbcBackend
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, DurationInt}
-import fi.oph.suorituspalvelu.business.Tietolahde.YTR
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 import fi.oph.suorituspalvelu.util.ZipUtil
 
@@ -64,7 +63,7 @@ class YtrIntegration {
     LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
     try {
       val kantaOperaatiot = KantaOperaatiot(database)
-      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, YTR, ytrResult.resultJson.getOrElse("{}"))
+      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, ytrResult.resultJson.getOrElse("{}"))
       versio.foreach(v => {
         //Todo, parsitaan ytr-data ja tallennetaan parsitut suoritukset
         LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")

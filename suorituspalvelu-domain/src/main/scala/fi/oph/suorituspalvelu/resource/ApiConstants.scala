@@ -83,7 +83,11 @@ object ApiConstants {
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE         = "Peruskoulun oppimäärän suorituksen json-deserialisointi epäonnistui"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_TUNTEMATON_OPPIJA  = "Peruskoulun oppimäärän suorituksen oppijatunnistetta vastaavaa henkilöä ei löydy"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_TALLENNUS_VIRHE    = "Peruskoulun oppimäärän suorituksen tallennus epäonnistui"
+
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIJANUMERO = "1.2.246.562.24.40483869857"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_VALMISTUMISPAIVA = "2016-06-01"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_SUORITUSKIELI = "FI"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIAINEKOODI = "HI"
 
   /**
    * Swagger-kuvauksiin liittyvät vakiot

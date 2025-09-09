@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
@@ -128,8 +129,4 @@ class IntegrationConfiguration {
 
 trait OrganisaatioProvider {
   def haeOrganisaationTiedot(koodiArvo: String): Organisaatio
-}
-
-trait KoodistoProvider {
-  def haeKoodisto(koodisto: String): Map[String, Koodi]
 }

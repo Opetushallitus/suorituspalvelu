@@ -356,7 +356,7 @@ object KoskiToSuoritusConverter {
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         PerusopetuksenOpiskeluoikeus(
           UUID.randomUUID(),
-          opiskeluoikeus.oid,
+          Some(opiskeluoikeus.oid),
           opiskeluoikeus.oppilaitos.get.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.lisätiedot,
