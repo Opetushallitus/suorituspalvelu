@@ -4,7 +4,8 @@ import scala.concurrent.duration.DurationInt
 import com.github.benmanes.caffeine.cache.Caffeine
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, OnrClientImpl, Organisaatio, OrganisaatioClient}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -116,8 +117,4 @@ class IntegrationConfiguration {
 
 trait OrganisaatioProvider {
   def haeOrganisaationTiedot(koodiArvo: String): Organisaatio
-}
-
-trait KoodistoProvider {
-  def haeKoodisto(koodisto: String): Map[String, Koodi]
 }

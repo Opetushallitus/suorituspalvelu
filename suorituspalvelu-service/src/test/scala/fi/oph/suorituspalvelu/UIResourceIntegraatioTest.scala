@@ -22,6 +22,7 @@ import java.time.LocalDate
 import java.util
 import java.util.{Optional, UUID}
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters.*
 
 /**
  * UI-apin integraatiotestit. Testeissä on pyritty kattamaan kaikkien endpointtien kaikki eri paluuarvoihin
@@ -293,12 +294,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
           Optional.of(""),
           Optional.of("1.2.3.4"),
-          Optional.of(SuoritusTila.VALMIS),
-          Optional.of(LocalDate.now()),
-          Optional.of("suomi"),
+          Optional.of(LocalDate.now().toString),
           Optional.of("suomi"),
           Optional.of(true),
-          Optional.of(new util.HashSet[SyotettyPeruskoulunOppiaine]())
+          Optional.of(new util.ArrayList[SyotettyPeruskoulunOppiaine]())
         ))))
       .andExpect(status().isForbidden())
 
@@ -324,13 +323,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
           Optional.of("tämä ei ole validi oid"),
-          Optional.of("1.2.3.4"),
-          Optional.of(SuoritusTila.VALMIS),
-          Optional.of(LocalDate.now()),
-          Optional.of("suomi"),
-          Optional.of("suomi"),
+          Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
+          Optional.of(LocalDate.now().toString),
+          Optional.of("FI"),
           Optional.of(true),
-          Optional.of(new util.HashSet[SyotettyPeruskoulunOppiaine]())
+          Optional.of(new util.ArrayList[SyotettyPeruskoulunOppiaine]())
         ))))
       .andExpect(status().isBadRequest)
       .andReturn()
@@ -341,7 +338,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaNotFound(): Unit =
-    val oppijaNumero = "1.2.246.562.24.21250967216"
+    val oppijaNumero = "1.2.246.562.24.21250967214"
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(false))
@@ -352,13 +349,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
           Optional.of(oppijaNumero),
-          Optional.of("1.2.3.4"),
-          Optional.of(SuoritusTila.VALMIS),
-          Optional.of(LocalDate.now()),
-          Optional.of("suomi"),
-          Optional.of("suomi"),
+          Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
+          Optional.of(LocalDate.now().toString),
+          Optional.of("FI"),
           Optional.of(true),
-          Optional.of(new util.HashSet[SyotettyPeruskoulunOppiaine]())
+          Optional.of(new util.ArrayList[SyotettyPeruskoulunOppiaine]())
         ))))
       .andExpect(status().isBadRequest)
       .andReturn()
@@ -366,4 +361,36 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tarkistetaan että virhe täsmää
     Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_TUNTEMATON_OPPIJA)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaAllowed(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967213"
+
+    // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+
+    // validin suorituksen tallentaminen tunnetulle henkilölle ok
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
+          Optional.of(oppijaNumero),
+          Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
+          Optional.of(LocalDate.now().toString),
+          Optional.of("FI"),
+          Optional.of(true),
+          Optional.of(List(SyotettyPeruskoulunOppiaine(
+            Optional.of("MA"),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.of(9),
+            Optional.of(false)
+          )).asJava)
+        ))))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    Assertions.assertEquals(1, suoritukset.size)
+
 }

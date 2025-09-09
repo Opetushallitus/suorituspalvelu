@@ -602,7 +602,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
 
-    Assertions.assertEquals("1.2.246.562.15.77661702355", opiskeluoikeus.oid)
+    Assertions.assertEquals(Some("1.2.246.562.15.77661702355"), opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.19666365424", opiskeluoikeus.oppilaitosOid)
     Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
       LocalDate.parse("2022-05-01"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1)))))), opiskeluoikeus.tila)
@@ -885,7 +885,7 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
 
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
-    Assertions.assertEquals("1.2.246.562.15.50478693398", opiskeluoikeus.oid)
+    Assertions.assertEquals(Some("1.2.246.562.15.50478693398"), opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.42923230215", opiskeluoikeus.oppilaitosOid)
     Assertions.assertEquals(Some(OpiskeluoikeusTila(List(
       OpiskeluoikeusJakso(LocalDate.parse("2021-04-16"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1))),

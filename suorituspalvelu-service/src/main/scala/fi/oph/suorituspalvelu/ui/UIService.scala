@@ -21,6 +21,49 @@ object UIService {
   val EXAMPLE_OPPILAITOS_NIMI = "Esimerkki oppilaitos"
 }
 
+// TODO: tähän tarvitaan lopullinen lista Sadulta
+enum SyotetynOppiaineenKoodi:
+  case A
+  case A1
+  case A2
+  case B1
+  case B2
+  case B3
+  case BI
+  case XX
+  case FI
+  case FY
+  case HI
+  case KE
+  case KO
+  case KU
+  case KS
+  case LI
+  case GE
+  case MA
+  case MU
+  case OP
+  case OPA
+  case PS
+  case TE
+  case ET
+  case KT
+  case YH
+  case YL
+  case AOM
+  case AI
+
+val SYOTETYN_OPPIAINEEN_KOODIT = SyotetynOppiaineenKoodi.values.map(_.toString).toSet
+
+enum SyotetynOppimaaranSuorituskieli:
+  case FI
+  case SV
+  case EN
+  case SE
+  case DE
+
+val SYOTETYN_OPPIMAARAN_SUORITUSKIELET = SyotetynOppimaaranSuorituskieli.values.map(_.toString).toSet
+
 @Component
 class UIService {
 
