@@ -23,35 +23,24 @@ object UIService {
 
 // TODO: tähän tarvitaan lopullinen lista Sadulta
 enum SyotetynOppiaineenKoodi:
-  case A
+  case AI
   case A1
   case A2
   case B1
-  case B2
-  case B3
+  case MA
   case BI
-  case XX
-  case FI
+  case GE
   case FY
-  case HI
   case KE
-  case KO
+  case TE
+  case KT
+  case HI
+  case YH
+  case MU
   case KU
   case KS
   case LI
-  case GE
-  case MA
-  case MU
-  case OP
-  case OPA
-  case PS
-  case TE
-  case ET
-  case KT
-  case YH
-  case YL
-  case AOM
-  case AI
+  case KO
 
 val SYOTETYN_OPPIAINEEN_KOODIT = SyotetynOppiaineenKoodi.values.map(_.toString).toSet
 
