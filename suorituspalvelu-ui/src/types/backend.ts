@@ -175,6 +175,10 @@ export interface IEBTutkintoNimi {
   en?: string;
 }
 
+export interface IEI_VOIMASSA {
+  type: 'EI_VOIMASSA';
+}
+
 export interface IErikoisammattitutkinto {
   tunniste: string;
   nimi: IErikoisammattitutkintoNimi;
@@ -186,16 +190,6 @@ export interface IErikoisammattitutkinto {
 }
 
 export interface IErikoisammattitutkintoNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface IHakukohde {
-  nimi: IHakukohdeNimi;
-}
-
-export interface IHakukohdeNimi {
   fi?: string;
   sv?: string;
   en?: string;
@@ -262,7 +256,6 @@ export interface IKKSuoritus {
   tila: SuoritusTila;
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
-  hakukohde: IHakukohde;
 }
 
 export interface IKKSuoritusNimi {
@@ -422,6 +415,10 @@ export interface IOppimaaranOppiaineNimi {
   en?: string;
 }
 
+export interface IPAATTYNYT {
+  type: 'PAATTYNYT';
+}
+
 export interface IPKOppilaitos {
   nimi: IPKOppilaitosNimi;
   oid: string;
@@ -566,12 +563,24 @@ export interface IUIOpiskeluoikeus {
   oppilaitos: IOOOppilaitos;
   voimassaolonAlku: Date;
   voimassaolonLoppu: Date;
+  supaTila: OpiskeluoikeusTila;
+  virtaTila: IUIOpiskeluoikeusVirtaTila;
 }
 
 export interface IUIOpiskeluoikeusNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IUIOpiskeluoikeusVirtaTila {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IVOIMASSA {
+  type: 'VOIMASSA';
 }
 
 export interface IVapaaSivistystyoKoulutus {
@@ -652,7 +661,6 @@ export interface IYOTutkintoNimi {
 export interface IYTO {
   tunniste: string;
   nimi: IYTONimi;
-  vahvistuspaiva?: Date;
   laajuus?: number;
   arvosana?: IYTOArvosana;
   osaAlueet: IYTOOsaAlue[];
@@ -682,12 +690,8 @@ export interface IYTOOsaAlueNimi {
   en?: string;
 }
 
-export type SuoritusTila =
-  | 'VALMIS'
-  | 'KESKEN'
-  | 'KESKEYTYNYT'
-  | 'MITATOITY'
-  | 'PERUUTETTU'
-  | 'PAATTYNYT';
+export type OpiskeluoikeusTila = IVOIMASSA | IEI_VOIMASSA | IPAATTYNYT;
+
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
 export type Suoritustapa = 'NAYTTOTUTKINTO';

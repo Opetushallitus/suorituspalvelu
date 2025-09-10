@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.configuration.{KoulutusProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.configuration.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
 import fi.oph.suorituspalvelu.integration.client.OnrClient
 import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_OPPIJANUMERO, UI_HAKU_EPAONNISTUI, UI_HAKU_ESIMERKKI_LUOKKA, UI_HAKU_ESIMERKKI_OPPIJA, UI_HAKU_ESIMERKKI_OPPILAITOS_OID, UI_HAKU_ESIMERKKI_VUOSI, UI_HAKU_KRITEERI_PAKOLLINEN, UI_HAKU_LUOKKA_PARAM_NAME, UI_HAKU_OPPIJA_PARAM_NAME, UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN, UI_HAKU_OPPILAITOS_PAKOLLINEN, UI_HAKU_OPPILAITOS_PARAM_NAME, UI_HAKU_PATH, UI_HAKU_VUOSI_PAKOLLINEN, UI_HAKU_VUOSI_PARAM_NAME, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_PATH, UI_OPPILAITOKSET_PATH, UI_TIEDOT_400_DESCRIPTION, UI_TIEDOT_403_DESCRIPTION, UI_TIEDOT_HAKU_EPAONNISTUI, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH}
@@ -41,7 +41,7 @@ class UIResource {
 
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
-  @Autowired val koulutusProvider: KoulutusProvider = null
+  @Autowired val koodistoProvider: KoodistoProvider = null
 
   @Autowired val uiService: UIService = null
 
@@ -238,7 +238,7 @@ class UIResource {
             LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero.get}")
             AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.orElse(null)), AuditOperation.HaeOppijaTiedotUI, None)
             val suoritukset = this.getAliases(oppijaNumero.get).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero.get()).values.toSet.flatten)
-            val oppijanTiedot = EntityToUIConverter.getOppijanTiedot(oppijaNumero.get(), suoritukset, organisaatioProvider, koulutusProvider)
+            val oppijanTiedot = EntityToUIConverter.getOppijanTiedot(oppijaNumero.get(), suoritukset, organisaatioProvider, koodistoProvider)
 
             if(oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))

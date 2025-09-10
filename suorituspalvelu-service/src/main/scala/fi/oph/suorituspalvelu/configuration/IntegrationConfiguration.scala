@@ -98,30 +98,26 @@ class IntegrationConfiguration {
     }
   }
 
-  private val KOODISTO_TIMEOUT = 120.seconds
-
   @Bean
-  def getKoulutusProvider(@Value("${integrations.koski.base-url}") envBaseUrl: String): KoulutusProvider = {
-    new KoulutusProvider {
+  def getKoodistoProvider(@Value("${integrations.koski.base-url}") envBaseUrl: String): KoodistoProvider = {
+    val KOODISTO_TIMEOUT = 120.seconds
+    val koodistoClient = KoodistoClient(envBaseUrl)
 
-      val koodistoClient = KoodistoClient(envBaseUrl)
-
+    (koodisto: String) =>
       val cache = Caffeine.newBuilder()
         .maximumSize(10000)
         .expireAfterWrite(Duration.ofHours(24))
         .refreshAfterWrite(Duration.ofHours(12))
-        .build(koodiArvo => Await.result(koodistoClient.haeKoodisto("koulutus"), KOODISTO_TIMEOUT))
+        .build(koodisto => Await.result(koodistoClient.haeKoodisto(koodisto.toString), KOODISTO_TIMEOUT))
 
-      override def haeKoulutus(koodiArvo: String): Option[Koodi] = cache.get(koodiArvo).get(koodiArvo)
-    }
+      cache.get(koodisto)
   }
-
 }
 
 trait OrganisaatioProvider {
   def haeOrganisaationTiedot(koodiArvo: String): Organisaatio
 }
 
-trait KoulutusProvider {
-  def haeKoulutus(koodiArvo: String): Option[Koodi]
+trait KoodistoProvider {
+  def haeKoodisto(koodisto: String): Map[String, Koodi]
 }

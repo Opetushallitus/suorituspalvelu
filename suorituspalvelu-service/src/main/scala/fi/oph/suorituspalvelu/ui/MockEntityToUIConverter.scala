@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ApiConstants.EXAMPLE_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
-import fi.oph.suorituspalvelu.resource.ui.Tila.{KESKEN, KESKEYTYNYT, VALMIS}
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID}
 
@@ -33,7 +33,12 @@ object MockEntityToUIConverter {
         ),
         voimassaolonAlku = LocalDate.parse("2001-08-01"),
         voimassaolonLoppu = LocalDate.parse("2025-12-11"),
-        Tila.KESKEN
+        OpiskeluoikeusTila.VOIMASSA,
+        UIOpiskeluoikeusVirtaTila(
+          Optional.of("aktiivinen"),
+          Optional.of("aktiv"),
+          Optional.of("active")
+        )
       ))
 
   def getKKTutkinnot(): List[KKSuoritus] =
@@ -526,7 +531,6 @@ object MockEntityToUIConverter {
             sv = Optional.of("Kunnande i kommunikation och interaktion"),
             en = Optional.of("Communication and interaction competence"),
           ),
-          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
           arvosana = Optional.of(
             YTOArvosana(
@@ -571,7 +575,6 @@ object MockEntityToUIConverter {
             sv = Optional.of("Matemaattis-luonnontieteellinen osaaminen sv"),
             en = Optional.of("Matemaattis-luonnontieteellinen osaaminen en")
           ),
-          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
           arvosana = Optional.of(
             YTOArvosana(
@@ -588,7 +591,6 @@ object MockEntityToUIConverter {
             sv = Optional.of("Yhteiskunta- ja työelämäosaaminen sv"),
             en = Optional.of("Yhteiskunta- ja työelämäosaaminen en")
           ),
-          vahvistuspaiva = Optional.of(LocalDate.parse("2024-12-31")),
           laajuus = Optional.of(11),
           arvosana = Optional.of(
             YTOArvosana(

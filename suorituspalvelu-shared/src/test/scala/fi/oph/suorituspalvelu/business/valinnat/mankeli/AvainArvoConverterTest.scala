@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, Opiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, Opiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -77,7 +77,7 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kotitalous, osallistuminen"), None, None), Koodi("BI", "koodisto", None), Koodi("O", "koodisto", None), None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta"), None, None), Koodi("LI", "koodisto", None), Koodi("9", "koodisto", None), None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None))
-    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), "1.2.3", Koodi("arvo", "koodisto", Some(1)), Koodi("arvo", "koodisto", Some(1)), Set.empty, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet)
+    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), "1.2.3", Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet)
 
     val korkeimmatArvosanat: Map[String, String] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty).toMap
 

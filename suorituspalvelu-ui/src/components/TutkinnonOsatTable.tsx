@@ -1,11 +1,9 @@
-import { OphTypography } from '@opetushallitus/oph-design-system';
 import {
   AmmatillinenTutkinnonOsa,
   TutkinnonOsanOsaAlue,
 } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -18,7 +16,6 @@ import { TableBodyAccordion } from './TableBodyAccordion';
 import { StripedTable } from './StripedTable';
 import { styled } from '@/lib/theme';
 import { isKielistetty } from '@/lib/translation-utils';
-import { formatFinnishDate } from '@/lib/common';
 
 const FIXED_COLUMN_WIDTH = '190px';
 
@@ -144,7 +141,6 @@ export function TutkinnonOsatTable({
           </TableRow>
         </TableHead>
         {tutkinnonOsat.map((tutkinnonOsa) => {
-          const vahvistusPvmId = `vahvistuspvm-${tutkinnonOsa.tunniste}`;
           const arvosana = tutkinnonOsa.arvosana;
           return (
             <TableBodyAccordion
@@ -160,17 +156,6 @@ export function TutkinnonOsatTable({
                 </TableCell>,
               ]}
             >
-              {'vahvistuspaiva' in tutkinnonOsa &&
-                tutkinnonOsa.vahvistuspaiva && (
-                  <Stack direction="row" spacing={2} sx={{ marginBottom: 1 }}>
-                    <OphTypography variant="label" id={vahvistusPvmId}>
-                      {t('oppija.vahvistuspvm')}
-                    </OphTypography>
-                    <OphTypography aria-labelledby={vahvistusPvmId}>
-                      {formatFinnishDate(tutkinnonOsa.vahvistuspaiva)}
-                    </OphTypography>
-                  </Stack>
-                )}
               {!isEmpty(tutkinnonOsa.osaAlueet) && (
                 <OsaAlueetTable osaAlueet={tutkinnonOsa.osaAlueet} />
               )}

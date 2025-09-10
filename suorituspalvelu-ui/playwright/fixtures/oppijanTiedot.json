@@ -21,7 +21,11 @@
         "oid": "1.2.3.4"
       },
       "voimassaolonAlku": "2001-08-01",
-      "voimassaolonLoppu": "2025-12-11"
+      "voimassaolonLoppu": "2025-12-11",
+      "supaTila": "VOIMASSA",
+      "virtaTila": {
+        "fi": "aktiivinen"
+      }
     }
   ],
   "kkTutkinnot": [

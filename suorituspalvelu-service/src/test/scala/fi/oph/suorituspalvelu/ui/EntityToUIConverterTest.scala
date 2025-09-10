@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.configuration.{KoulutusProvider, OrganisaatioProvider}
-import fi.oph.suorituspalvelu.integration.client.{Koodisto, KoodiMetadata, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.configuration.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
@@ -24,8 +24,8 @@ class EntityToUIConverterTest {
     override def haeOrganisaationTiedot(koodiArvo: String): Organisaatio = Organisaatio("1.2.3", OrganisaatioNimi("", "", ""))
   }
 
-  val DUMMY_KOULUTUSPROVIDER = new KoulutusProvider {
-    override def haeKoulutus(koodiArvo: String): Option[fi.oph.suorituspalvelu.integration.client.Koodi] = None
+  val DUMMY_KOULUTUSPROVIDER = new KoodistoProvider {
+    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
   }
 
   @Test def testConvertAmmatillinenTutkinto(): Unit = {
@@ -35,6 +35,7 @@ class EntityToUIConverterTest {
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Some(3.4),
@@ -85,7 +86,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -99,7 +100,6 @@ class EntityToUIConverterTest {
             osa.nimi.sv.toJava,
             osa.nimi.en.toJava
           ),
-          osa.arviointiPaiva.toJava,
           osa.laajuus.map(l => l.arvo).toJava,
           osa.arvosana.map(a =>
             YTOArvosana(
@@ -132,6 +132,7 @@ class EntityToUIConverterTest {
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       None,
@@ -166,7 +167,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -186,6 +187,7 @@ class EntityToUIConverterTest {
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Some(3.4),
@@ -226,7 +228,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -267,6 +269,7 @@ class EntityToUIConverterTest {
       Koodi("351301", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Pirkanmaan urheiluhierojakoulu"), Some("Pirkanmaan urheiluhierojakoulu sv"), Some("Pirkanmaan urheiluhierojakoulu en")), "1.2.246.562.10.41945921983"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
@@ -288,7 +291,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -304,6 +307,7 @@ class EntityToUIConverterTest {
       Koodi("437109", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("HAUS kehittämiskeskus Oy"), Some("HAUS kehittämiskeskus Oy sv"), Some("HAUS kehittämiskeskus Oy en")), "1.2.246.562.10.54019331674"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Koodi("FI", "kieli", Some(1))
@@ -324,7 +328,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo
@@ -340,6 +344,7 @@ class EntityToUIConverterTest {
       Koodi("999903", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Koodi("FI", "kieli", Some(1))
@@ -360,7 +365,7 @@ class EntityToUIConverterTest {
         ),
         telma.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       telma.aloitusPaivamaara.toJava,
       telma.vahvistusPaivamaara.toJava,
       telma.suoritusKieli.arvo
@@ -376,6 +381,7 @@ class EntityToUIConverterTest {
       Koodi("999907", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None))))
@@ -396,7 +402,7 @@ class EntityToUIConverterTest {
         ),
         tuva.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       tuva.aloitusPaivamaara.toJava,
       tuva.vahvistusPaivamaara.toJava,
       tuva.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
@@ -416,6 +422,7 @@ class EntityToUIConverterTest {
       Koodi("999907", "koulutus", Some(12)),
       Oppilaitos(Kielistetty(Some("Savon ammattiopisto"), Some("Savon ammattiopisto sv"), Some("Savon ammattiopisto en")), "1.2.246.562.10.11168857016"),
       Koodi("valmistunut", "", None),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
@@ -437,7 +444,7 @@ class EntityToUIConverterTest {
         ),
         vst.oppilaitos.oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       vst.aloitusPaivamaara.toJava,
       vst.vahvistusPaivamaara.toJava,
       vst.suoritusKieli.arvo,
@@ -458,7 +465,8 @@ class EntityToUIConverterTest {
       koulutusKoodi = "671103",
       alkuPvm = LocalDate.parse("2020-01-01"),
       loppuPvm = LocalDate.parse("2021-01-01"),
-      tila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
+      virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
+      supaTila = KKOpiskeluoikeusTila.VOIMASSA,
       myontaja = "",
       suoritukset = Set.empty
     )
@@ -474,15 +482,27 @@ class EntityToUIConverterTest {
 
     val KOULUTUKSEN_NIMI_FI = "Sosiaali- ja terveysalan ammattikorkeakoulututkinto"
     val KOULUTUKSEN_NIMI_EN = "Bachelor of Health Care"
-    val koulutusProvider = new KoulutusProvider {
-      override def haeKoulutus(koodiArvo: String): Option[fi.oph.suorituspalvelu.integration.client.Koodi] = Some(fi.oph.suorituspalvelu.integration.client.Koodi(
-        "671103",
-        Koodisto("koulutus"),
-        List(
-          KoodiMetadata("FI", KOULUTUKSEN_NIMI_FI),
-          KoodiMetadata("EN", KOULUTUKSEN_NIMI_EN),
+    val KOULUTUKSEN_TILA_FI = "aktiivinen"
+    val KOULUTUKSEN_TILA_EN = "active"
+    val koulutusProvider = new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
+        "671103" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+          "671103",
+          Koodisto("koulutus"),
+          List(
+            KoodiMetadata("FI", KOULUTUKSEN_NIMI_FI),
+            KoodiMetadata("EN", KOULUTUKSEN_NIMI_EN),
+          )
+        ),
+        "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+          "1",
+          Koodisto("virtaopintooikeudentila"),
+          List(
+            KoodiMetadata("FI", KOULUTUKSEN_TILA_FI),
+            KoodiMetadata("EN", KOULUTUKSEN_TILA_EN),
+          )
         )
-      ))
+      )
     }
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.UIOpiskeluoikeus(
@@ -502,7 +522,12 @@ class EntityToUIConverterTest {
       ),
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
-      Tila.KESKEN
+      OpiskeluoikeusTila.VOIMASSA,
+      UIOpiskeluoikeusVirtaTila(
+        Optional.of(KOULUTUKSEN_TILA_FI),
+        Optional.empty(),
+        Optional.of(KOULUTUKSEN_TILA_EN)
+      )
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).get.opiskeluoikeudet)
   }
 
@@ -548,10 +573,10 @@ class EntityToUIConverterTest {
         ),
         organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).oid
       ),
-      Tila.VALMIS,
+      SuoritusTila.VALMIS,
       Optional.of(virtaTutkinto.aloitusPvm),
       Optional.of(virtaTutkinto.suoritusPvm)
-    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOULUTUSPROVIDER).get.kkTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOULUTUSPROVIDER).get.kkTutkinnot)
   }
 
 }

@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import com.scalatsi.*
 import com.scalatsi.TypescriptType.TSUnion
 import com.scalatsi.output.{OutputOptions, StyleOptions, WriteTSToFiles}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, Telma, Tila, Tuva, TuvaLaajuus, VapaaSivistystyoKoulutus, VapaaSivistystyoLaajuus, YOTutkinto, YTO, YTOArvosana}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, Telma, SuoritusTila, Tuva, TuvaLaajuus, VapaaSivistystyoKoulutus, VapaaSivistystyoLaajuus, YOTutkinto, YTO, YTOArvosana}
 
 import java.io.File
 import java.time.LocalDate
@@ -12,8 +12,8 @@ import java.util.Optional
 object TypeScriptGenerator extends App {
 
   // Scala-TSI ei osaa oletuksena muuntaa Scala-enumeja oikein
-  implicit val suoritusTilaTSType: TSType[Tila] =
-    TSType.alias("SuoritusTila", TSUnion(Tila.values.map(v => TypescriptType.TSLiteralString(v.toString))))
+  implicit val suoritusTilaTSType: TSType[SuoritusTila] =
+    TSType.alias("SuoritusTila", TSUnion(SuoritusTila.values.map(v => TypescriptType.TSLiteralString(v.toString))))
 
   implicit val suoritusTapaTSType: TSType[SuoritusTapa] =
     TSType.alias("Suoritustapa", TSUnion(SuoritusTapa.values.map(v => TypescriptType.TSLiteralString(v.toString))))

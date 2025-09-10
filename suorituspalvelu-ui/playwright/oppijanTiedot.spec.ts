@@ -87,7 +87,7 @@ test.describe('Oppijan tiedot', () => {
       'Tampereen yliopisto',
     );
     await expect(opiskeluoikeusPaper.getByLabel('Voimassaolo')).toHaveText(
-      `1.8.2001 ${NDASH} 11.12.2025Voimassa`,
+      `1.8.2001 ${NDASH} 11.12.2025Voimassa(aktiivinen)`,
     );
   });
 
