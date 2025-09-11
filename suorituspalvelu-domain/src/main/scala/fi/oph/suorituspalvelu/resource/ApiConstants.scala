@@ -20,6 +20,9 @@ object ApiConstants {
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
   final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
 
+  final val YTR_DATASYNC_PATH = DATASYNC_PATH + "/ytr"
+  final val YTR_DATASYNC_HAKU_PATH = YTR_DATASYNC_PATH + "/haku"
+
   final val VIRTA_DATASYNC_PARAM_NAME                       = "oppijaNumero"
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
   final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta" + "/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER

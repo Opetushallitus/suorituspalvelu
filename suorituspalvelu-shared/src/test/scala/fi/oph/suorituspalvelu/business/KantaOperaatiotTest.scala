@@ -404,4 +404,24 @@ class KantaOperaatiotTest {
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(OPPIJANUMERO1)
     Assertions.assertEquals(Map(versio -> Set(opiskeluoikeus)), haetutSuoritukset)
 
+  @Test def testHaeOppijanVersiot(): Unit =
+    val oppijanumero1 = "1.2.246.562.24.00000000123"
+    val oppijanumero2 = "1.2.246.562.24.00000000234"
+    val oppijanumeroJollaEiDataa = "1.2.246.562.24.00000000987"
+
+    val oppijan1Versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero1, YTR, "{\"attr\": \"value1\"}").get
+    val oppijan1Versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero1, YTR, "{\"attr\": \"value2\"}").get
+    val oppijan2Versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero2, KOSKI, "{\"attr\": \"value1\"}").get
+
+    val oppijan1Versiot = this.kantaOperaatiot.haeOppijanVersiot(oppijanumero1)
+    Assertions.assertTrue(oppijan1Versiot.exists(v => v.tunniste == oppijan1Versio.tunniste))
+    Assertions.assertTrue(oppijan1Versiot.exists(v => v.tunniste == oppijan1Versio2.tunniste))
+    Assertions.assertEquals(oppijan1Versiot.size, 2)
+
+    val oppijan2Versiot = this.kantaOperaatiot.haeOppijanVersiot(oppijanumero2)
+    Assertions.assertTrue(oppijan2Versiot.exists(_.tunniste == oppijan2Versio.tunniste))
+    Assertions.assertEquals(oppijan2Versiot.size, 1)
+
+    val oppijanJollaEiDataaVersiot = this.kantaOperaatiot.haeOppijanVersiot(oppijanumeroJollaEiDataa)
+    Assertions.assertTrue(oppijanJollaEiDataaVersiot.isEmpty)
 }
