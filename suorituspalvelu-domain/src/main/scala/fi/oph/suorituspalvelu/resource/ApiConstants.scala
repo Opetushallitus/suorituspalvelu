@@ -77,7 +77,7 @@ object ApiConstants {
   final val UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT                = "Käyttäjän tunnisteella ei löydy tietoja"
   final val UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI            = "Käyttäjän tietojen haku epäonnistui"
 
-  final val UI_LUO_PERUSKOULUN_OPPIMAARA_PATH               = UI_API_PREFIX + "/peruskoulunoppimaara"
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_PATH               = UI_API_PREFIX + "/peruskoulusuoritukset"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_VIRHE    = "oppijaNumero ei ole validi oid"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_EI_OIKEUKSIA       = "Käyttäjällä ei ole oikeuksia lisätä oppijalle peruskoulun oppimäärän suoritusta"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE         = "Peruskoulun oppimäärän suorituksen json-deserialisointi epäonnistui"
@@ -88,6 +88,8 @@ object ApiConstants {
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_VALMISTUMISPAIVA = "2016-06-01"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_SUORITUSKIELI = "FI"
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIAINEKOODI = "HI"
+
+  final val UI_LUO_PERUSKOULUN_OPPIMAARA_VAIHTOEHDOT_PATH   = UI_LUO_PERUSKOULUN_OPPIMAARA_PATH + "/vaihtoehdot"
 
   /**
    * Swagger-kuvauksiin liittyvät vakiot
