@@ -80,6 +80,7 @@ case class PerusopetuksenOppiaine(tunniste: UUID, nimi: Kielistetty, koodi: Kood
 case class PerusopetuksenVuosiluokka(tunniste: UUID, nimi: Kielistetty, koodi: Koodi, alkamisPaiva: Option[LocalDate], jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOpiskeluoikeus(
+                                         versioTunniste: Option[UUID],
                                          tunniste: UUID,
                                          oid: Option[String],
                                          oppilaitosOid: String,

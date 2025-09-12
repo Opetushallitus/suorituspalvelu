@@ -45,8 +45,9 @@ object VirkailijaToSuoritusConverter {
     Kielistetty(getNimi("fi", koodistoProvider), getNimi("sv", koodistoProvider), getNimi("en", koodistoProvider))
   }
 
-  def toPerusopetuksenOppimaara(suoritus: SyotettyPeruskoulunOppimaaranSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOpiskeluoikeus =
+  def toPerusopetuksenOppimaara(versioTunniste: UUID, suoritus: SyotettyPeruskoulunOppimaaranSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOpiskeluoikeus =
     PerusopetuksenOpiskeluoikeus(
+      Some(versioTunniste),
       UUID.randomUUID(),
       None,
       suoritus.oppilaitosOid.get,

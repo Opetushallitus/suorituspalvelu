@@ -934,6 +934,8 @@ case class PerusopetuksenOppimaaraNimi(
 
 case class PerusopetuksenOppimaara(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty versioTunniste: Optional[UUID],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: PerusopetuksenOppimaaraNimi,

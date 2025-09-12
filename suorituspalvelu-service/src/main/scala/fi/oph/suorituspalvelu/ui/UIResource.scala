@@ -420,11 +420,14 @@ class UIResource {
             val user = AuditLog.getUser(request)
 
             LOG.info(s"Tallennetaan peruskoulun oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
-            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPeruskoulunOppimaaranSuoritus, Some(suoritus))
-
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.PERUSOPETUS, objectMapper.writeValueAsString(suoritus))
-            this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(suoritus, koodistoProvider)), Set.empty)
-            
+
+            if(versio.isDefined)
+              AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPeruskoulunOppimaaranSuoritus, Some(suoritus))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.get.tunniste, suoritus, koodistoProvider)), Set.empty)
+            else
+              LOG.info(s"Tallennettava peruskoulun oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
+
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPeruskoulunOppimaaraSuccessResponse())))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuoPeruskoulunOppimaaraResponse]]

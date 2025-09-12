@@ -778,6 +778,7 @@ object EntityToUIConverter {
 
   def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppimaara] =
     List(PerusopetuksenOppimaara(
+      versioTunniste = Optional.of(UUID.randomUUID()),
       tunniste = UUID.randomUUID(),
       nimi = PerusopetuksenOppimaaraNimi(
         fi = Optional.of("Perusopetuksen oppimäärä"),

@@ -102,8 +102,8 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(telma), None),
-      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppimaara), None, None),
-      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus(None, UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus(None, UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
       YOOpiskeluoikeus(UUID.randomUUID(), yoTutkinto)
     ), Set.empty)
 

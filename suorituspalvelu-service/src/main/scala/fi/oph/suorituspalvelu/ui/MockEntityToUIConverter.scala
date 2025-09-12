@@ -784,6 +784,7 @@ object MockEntityToUIConverter {
 
   def getPerusopetuksenOppimaarat(): List[PerusopetuksenOppimaara] =
     List(PerusopetuksenOppimaara(
+      versioTunniste = Optional.of(UUID.randomUUID()),
       tunniste = UUID.randomUUID(),
       nimi = PerusopetuksenOppimaaraNimi(
         fi = Optional.of("Perusopetuksen oppimäärä"),
