@@ -1,15 +1,12 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus}
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
+import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID, EXAMPLE_OPPILAITOS_NIMI, EXAMPLE_OPPILAITOS_OID}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-import java.time.LocalDate
 import java.util.Optional
-import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
 object UIService {
@@ -19,39 +16,66 @@ object UIService {
 
   val EXAMPLE_OPPILAITOS_OID = "1.2.246.562.10.56753942459"
   val EXAMPLE_OPPILAITOS_NIMI = "Esimerkki oppilaitos"
+
+  val KOODISTO_SUORITUKSENTYYPIT = "suorituksentyyppi"
+  val SYOTETTAVAT_SUORITUSTYYPIT = List(
+    "perusopetuksenoppimaara",
+    "perusopetuksenoppiaineenoppimaara"
+  )
+
+  val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
+  val SYOTETTAVAT_OPPIAINEET = List(
+    "AI",
+    "A1",
+    "A2",
+    "B1",
+    "MA",
+    "BI",
+    "GE",
+    "FY",
+    "KE",
+    "TE",
+    "KT",
+    "HI",
+    "YH",
+    "MU",
+    "KU",
+    "KS",
+    "LI",
+    "KO"
+  )
+
+  val SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT = List(
+    "A",
+    "A1",
+    "A2",
+    "B1",
+    "B2",
+    "B3"
+  )
+
+  val KOODISTO_SUORITUSKIELET = "kieli"
+  val SYOTETYN_OPPIMAARAN_SUORITUSKIELET = List(
+    "FI",
+    "SV",
+    "EN",
+    "SE",
+    "DE"
+  )
+
+  val KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS = "oppiaineaidinkielijakirjallisuus"
+  val KOODISTO_KIELIVALIKOIMA = "kielivalikoima"
+
+  val KOODISTO_POHJAKOULUTUS = "2asteenpohjakoulutus2021"
+  val SYOTETYN_OPPIMAARAN_YKSILOLLISTAMINEN = List(
+    1, // Perusopetuksen oppimäärä
+    2, // Perusopetuksen osittain yksilöllistetty oppimäärä
+    3, // Perusopetuksen yksilöllistetty oppimäärä, opetus järjestetty toiminta-alueittain
+    6, // Perusopetuksen pääosin tai kokonaan yksilöllistetty oppimäärä
+    8, // Perusopetuksen osittain rajattu oppimäärä
+    9  // Perusopetuksen pääosin tai kokonaan rajattu oppimäärä
+  )
 }
-
-// TODO: tähän tarvitaan lopullinen lista Sadulta
-enum SyotetynOppiaineenKoodi:
-  case AI
-  case A1
-  case A2
-  case B1
-  case MA
-  case BI
-  case GE
-  case FY
-  case KE
-  case TE
-  case KT
-  case HI
-  case YH
-  case MU
-  case KU
-  case KS
-  case LI
-  case KO
-
-val SYOTETYN_OPPIAINEEN_KOODIT = SyotetynOppiaineenKoodi.values.map(_.toString).toSet
-
-enum SyotetynOppimaaranSuorituskieli:
-  case FI
-  case SV
-  case EN
-  case SE
-  case DE
-
-val SYOTETYN_OPPIMAARAN_SUORITUSKIELET = SyotetynOppimaaranSuorituskieli.values.map(_.toString).toSet
 
 @Component
 class UIService {

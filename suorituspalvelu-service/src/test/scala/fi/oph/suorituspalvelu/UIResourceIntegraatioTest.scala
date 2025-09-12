@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, SuoritusTila, SyotettyPeruskoulunOppiaine, SyotettyPeruskoulunOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPeruskoulunOppimaaraFailureResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, SuoritusTila, SyotettyPeruskoulunOppiaine, SyotettyPeruskoulunOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -296,7 +296,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           Optional.of("1.2.3.4"),
           Optional.of(LocalDate.now().toString),
           Optional.of("suomi"),
-          Optional.of(true),
+          Optional.of(1),
           Optional.of(new util.ArrayList[SyotettyPeruskoulunOppiaine]())
         ))))
       .andExpect(status().isForbidden())
@@ -312,8 +312,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
+    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE), List.empty.asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusInvalidSuoritus(): Unit =
@@ -326,15 +326,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
           Optional.of(LocalDate.now().toString),
           Optional.of("FI"),
-          Optional.of(true),
+          Optional.of(1),
           Optional.of(new util.ArrayList[SyotettyPeruskoulunOppiaine]())
         ))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
+    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI), List.empty.asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaNotFound(): Unit =
@@ -352,15 +352,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
           Optional.of(LocalDate.now().toString),
           Optional.of("FI"),
-          Optional.of(true),
+          Optional.of(1),
           Optional.of(new util.ArrayList[SyotettyPeruskoulunOppiaine]())
         ))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_TUNTEMATON_OPPIJA)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
+    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_TUNTEMATON_OPPIJA), List.empty.asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaAllowed(): Unit =
@@ -370,26 +370,36 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
 
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
+    val suoritusPayload = objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
+      Optional.of(oppijaNumero),
+      Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
+      Optional.of(LocalDate.now().toString),
+      Optional.of("FI"),
+      Optional.of(1),
+      Optional.of(List(SyotettyPeruskoulunOppiaine(
+        Optional.of("MA"),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.of(9),
+        Optional.of(false)
+      )).asJava))
+    )
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(SyotettyPeruskoulunOppimaaranSuoritus(
-          Optional.of(oppijaNumero),
-          Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
-          Optional.of(LocalDate.now().toString),
-          Optional.of("FI"),
-          Optional.of(true),
-          Optional.of(List(SyotettyPeruskoulunOppiaine(
-            Optional.of("MA"),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.of(9),
-            Optional.of(false)
-          )).asJava)
-        ))))
+        .content(suoritusPayload))
       .andExpect(status().isOk)
       .andReturn()
 
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.TallennaPeruskoulunOppimaaranSuoritus.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "oppijaNumero" -> oppijaNumero,
+    ), auditLogEntry.target)
+    Assertions.assertEquals(List(objectMapper.readValue(suoritusPayload, classOf[Map[Any, Any]])), auditLogEntry.changes)
+
+    // ja suoritus tallentuu kantaan
     val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(1, suoritukset.size)
 

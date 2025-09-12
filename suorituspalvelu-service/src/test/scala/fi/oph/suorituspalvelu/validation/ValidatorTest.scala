@@ -141,22 +141,27 @@ class ValidatorTest {
     Assertions.assertEquals(Set(Validator.VALIDATION_YKSILOLLISTETTY_TYHJA), Validator.validatePeruskoulunOppimaaranYksilollistaminen(None))
   }
 
+  @Test def testValidateYksilollistaminenInvalid(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_YKSILOLLISTETTY_EI_VALIDI + 0), Validator.validatePeruskoulunOppimaaranYksilollistaminen(Some(0)))
+  }
+
   @Test def testValidateYksilollistaminenValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validatePeruskoulunOppimaaranYksilollistaminen(Some(true)))
+    Assertions.assertEquals(Set.empty, Validator.validatePeruskoulunOppimaaranYksilollistaminen(Some(6)))
   }
 
-  // koodi
-  @Test def testValidateOppiaineKoodiRequiredMissing(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_KOODI_TYHJA), Validator.validatePeruskoulunOppimaaranOppiaineenKoodi(None))
+  // oppiaineet
+  @Test def testValidateOppiaineetRequiredMissin(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_OPPIAINEET_TYHJA), Validator.validatePeruskoulunOppimaaranOppiaineet(None))
   }
 
-  @Test def testValidateOppiaineKoodiInvalid(): Unit = {
-    val koodi = "tämä ei ole validi oppiainekoodi"
-    Assertions.assertEquals(Set(Validator.VALIDATION_KOODI_EI_VALIDI + koodi), Validator.validatePeruskoulunOppimaaranOppiaineenKoodi(Some(koodi)))
-  }
-
-  @Test def testValidateOppiaineKoodiValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validatePeruskoulunOppimaaranOppiaineenKoodi(Some(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_ESIMERKKI_OPPIAINEKOODI)))
+  @Test def testValidateOppiaineetKoodiRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_OPPIAINEET_KOODI_TYHJA), Validator.validatePeruskoulunOppimaaranOppiaineet(Some(List(SyotettyPeruskoulunOppiaine(
+      koodi = Optional.empty(),
+      Optional.empty(),
+      Optional.empty(),
+      Optional.empty(),
+      Optional.empty()
+    )))))
   }
 
   // arvosana
