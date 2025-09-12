@@ -62,47 +62,4 @@ class ValidatorTest {
   @Test def testValidateHakukohdeOidValid(): Unit = {
     Assertions.assertEquals(Set.empty, Validator.validateHakukohdeOid(Some(ApiConstants.EXAMPLE_HAKUKOHDE_OID), true))
   }
-
-  // oppilaitosoid
-  @Test def testValidateOppilaitosOidRequiredMissing(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_OPPILAITOSOID_TYHJA), Validator.validateOppilaitosOid(None, true))
-  }
-
-  @Test def testValidateOppilaitosOidInvalid(): Unit = {
-    val oppilaitosOid = "tämä ei ole validi oppilaitosOid"
-    Assertions.assertEquals(Set(Validator.VALIDATION_OPPILAITOSOID_EI_VALIDI + oppilaitosOid), Validator.validateOppilaitosOid(Some(oppilaitosOid), true))
-  }
-
-  @Test def testValidateOppilaitosOidValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateOppilaitosOid(Some(ApiConstants.UI_HAKU_ESIMERKKI_OPPILAITOS_OID), true))
-  }
-
-  // oppilaitosoid
-  @Test def testValidateVuosiRequiredMissing(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_VUOSI_TYHJA), Validator.validateVuosi(None, true))
-  }
-
-  @Test def testValidateVuosiInvalid(): Unit = {
-    val vuosi = "tämä ei ole validi vuosi"
-    Assertions.assertEquals(Set(Validator.VALIDATION_VUOSI_EI_VALIDI + vuosi), Validator.validateVuosi(Some(vuosi), true))
-  }
-
-  @Test def testValidateVuosiValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateVuosi(Some(ApiConstants.UI_HAKU_ESIMERKKI_VUOSI), true))
-  }
-
-  // luokka
-  @Test def testValidateLuokkaRequiredMissing(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_LUOKKA_TYHJA), Validator.validateLuokka(None, true))
-  }
-
-  @Test def testValidateLuokkaInvalid(): Unit = {
-    val luokka = "tämä ei ole validi luokka"
-    Assertions.assertEquals(Set(Validator.VALIDATION_LUOKKA_EI_VALIDI + luokka), Validator.validateLuokka(Some(luokka), true))
-  }
-
-  @Test def testValidateLuokkaValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateLuokka(Some(ApiConstants.UI_HAKU_ESIMERKKI_LUOKKA), true))
-  }
-
 }

@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSucc
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
-import fi.oph.suorituspalvelu.validation.Validator
+import fi.oph.suorituspalvelu.validation.UIValidator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -168,9 +168,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Assertions.assertEquals(OppijanHakuFailureResponse(
       java.util.Set.of(
-        Validator.VALIDATION_OPPILAITOSOID_EI_VALIDI + "ei validi oppilaitos",
-        Validator.VALIDATION_LUOKKA_EI_VALIDI + "ei validi luokka",
-        Validator.VALIDATION_VUOSI_EI_VALIDI + "ei validi vuosi"
+        UIValidator.VALIDATION_OPPILAITOSOID_EI_VALIDI,
+        UIValidator.VALIDATION_LUOKKA_EI_VALIDI,
+        UIValidator.VALIDATION_VUOSI_EI_VALIDI
       )),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
@@ -221,7 +221,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -333,7 +333,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI), List.empty.asJava),
+    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI), List.empty.asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))

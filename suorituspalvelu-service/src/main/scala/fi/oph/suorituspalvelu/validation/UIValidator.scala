@@ -16,36 +16,33 @@ import scala.util.matching.Regex
  */
 object UIValidator {
 
-  final val VALIDATION_OPPIJANUMERO_TYHJA         = "oppijaNumero: Kenttä on pakollinen"
-  final val VALIDATION_OPPIJANUMERO_EI_VALIDI     = "oppijaNumero: Oppijanumero ei ole validi oppija oid"
-  final val VALIDATION_OPPILAITOSOID_TYHJA        = "oppilaitosOid: Kenttä on pakollinen"
-  final val VALIDATION_OPPILAITOSOID_EI_VALIDI    = "oppilaitosOid ei ole validi: "
-  final val VALIDATION_VUOSI_TYHJA                = "vuosi: Kenttä on pakollinen"
-  final val VALIDATION_VUOSI_EI_VALIDI            = "vuosi ei ole validi: "
-  final val VALIDATION_LUOKKA_TYHJA               = "luokka: Kenttä on pakollinen"
-  final val VALIDATION_LUOKKA_EI_VALIDI           = "luokka ei ole validi: "
-  final val VALIDATION_VALMISTUMISPAIVA_TYHJA     = "valmistumisPaiva: Kenttä on pakollinen"
-  final val VALIDATION_VALMISTUMISPAIVA_EI_VALIDI = "valmistumisPaiva: valmistumisPaiva ei ole validi päivämäärä: "
-  final val VALIDATION_YKSILOLLISTETTY_TYHJA      = "yksilollistetty: Kenttä on pakollinen"
-  final val VALIDATION_YKSILOLLISTETTY_EI_VALIDI  = "yksilollistetty: Kenttä ei ole sallittu 2asteenpohjakoulutus2021-koodiston koodi: "
-  final val VALIDATION_SUORITUSKIELI_TYHJA        = "suoritusKieli: Kenttä on pakollinen"
-  final val VALIDATION_SUORITUSKIELI_EI_VALIDI    = "suoritusKieli: arvo ei ole validi syötettävän oppimäärän kielikoodi: "
-  final val VALIDATION_OPPIAINEET_TYHJA           = "oppiaineet: Kenttä on pakollinen"
-  final val VALIDATION_OPPIAINEET_KOODI_TYHJA     = "oppiaineet: Osalla oppiaineista koodi on tyhjä"
-  final val VALIDATION_KOODI_EI_VALIDI            = "Koodi ei ole validi syotettävän oppimäärän oppiainekoodi: "
-  final val VALIDATION_KIELI_MAARITELTY           = "Kieli on sallittu kenttä vain kieliaineissa"
-  final val VALIDATION_KIELI_EI_MAARITELTY        = "Kieli on pakollinen kenttä kieliaineissa"
-  final val VALIDATION_KIELI_INVALID              = "Kieli ei ole validi kielivalikoima-koodiston arvo"
-  final val VALIDATION_VALINNAINEN_EI_MAARITELTY  = "Valinnaisuus-kenttä on pakollinen"
-  final val VALIDATION_AI_OPPIMAARA_MAARITELTY    = "Äidinkielen oppimäärä on sallittu vain äidinkielessä"
-  final val VALIDATION_AI_OPPIMAARA_EI_MAARITELTY = "Äidinkielen oppimäärä on pakollinen äidinkielelle"
-  final val VALIDATION_AI_OPPIMAARA_EI_VALIDI     = "Äidinkielen oppimäärä ei ole validi oppiaineaidinkielijakirjallisuus-koodiston koodi"
-  final val VALIDATION_ARVOSANA_TYHJA             = "Arvosana on pakollinen"
-  final val VALIDATION_ARVOSANA_EI_VALIDI         = "Arvosana ei ole validi numeerinen arviointi (4-10)"
+  final val VALIDATION_OPPIJANUMERO_TYHJA         = "backend-virhe.oppijanumero.tyhja"
+  final val VALIDATION_OPPIJANUMERO_EI_VALIDI     = "backend-virhe.oppijanumero.ei_validi"
+  final val VALIDATION_OPPILAITOSOID_TYHJA        = "backend-virhe.oppilaitosoid.tyhja"
+  final val VALIDATION_OPPILAITOSOID_EI_VALIDI    = "backend-virhe.oppilaitosoid.ei_validi"
+  final val VALIDATION_VUOSI_TYHJA                = "backend-virhe.vuosi.tyhja"
+  final val VALIDATION_VUOSI_EI_VALIDI            = "backend-virhe.vuosi.ei_validi"
+  final val VALIDATION_LUOKKA_TYHJA               = "backend-virhe.luokka.tyhja"
+  final val VALIDATION_LUOKKA_EI_VALIDI           = "backend-virhe.luokka.ei_validi"
+  final val VALIDATION_VALMISTUMISPAIVA_TYHJA     = "backend-virhe.valmistumispaiva.tyhja"
+  final val VALIDATION_VALMISTUMISPAIVA_EI_VALIDI = "backend-virhe.valmistumispaiva.ei_validi"
+  final val VALIDATION_YKSILOLLISTETTY_TYHJA      = "backend-virhe.yksilollistetty.tyhja"
+  final val VALIDATION_YKSILOLLISTETTY_EI_VALIDI  = "backend-virhe.yksilollistetty.ei_validi"
+  final val VALIDATION_SUORITUSKIELI_TYHJA        = "backend-virhe.suorituskieli.tyhja"
+  final val VALIDATION_SUORITUSKIELI_EI_VALIDI    = "backend-virhe.suorituskieli.ei_validi"
+  final val VALIDATION_OPPIAINEET_TYHJA           = "backend-virhe.oppiaineet.tyhja"
+  final val VALIDATION_OPPIAINEET_KOODI_TYHJA     = "backend-virhe.oppiaineet.koodi_tyhja"
+  final val VALIDATION_KOODI_EI_VALIDI            = "backend-virhe.koodi.ei_validi"
+  final val VALIDATION_KIELI_MAARITELTY           = "backend-virhe.kieli.maaritelty"
+  final val VALIDATION_KIELI_EI_MAARITELTY        = "backend-virhe.kieli.ei_maaritelty"
+  final val VALIDATION_KIELI_EI_VALIDI            = "backend-virhe.kieli.ei_validi"
+  final val VALIDATION_VALINNAINEN_EI_MAARITELTY  = "backend-virhe.valinnaisuus.ei_maaritelty"
+  final val VALIDATION_AI_OPPIMAARA_MAARITELTY    = "backend-virhe.ai_oppimaara.maaritelty"
+  final val VALIDATION_AI_OPPIMAARA_EI_MAARITELTY = "backend-virhe.ai_oppimaara.ei_maaritelty"
+  final val VALIDATION_AI_OPPIMAARA_EI_VALIDI     = "backend-virhe.ai_oppimaara.ei_validi"
+  final val VALIDATION_ARVOSANA_TYHJA             = "backend-virhe.arvosana.tyhja"
+  final val VALIDATION_ARVOSANA_EI_VALIDI         = "backend-virhe.arvosana.ei_validi"
 
-  val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.24\\.\\d+$".r
-  val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
-  val hakukohdeOidPattern: Regex = "^1\\.2\\.246\\.562\\.20\\.\\d+$".r
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
@@ -57,7 +54,7 @@ object UIValidator {
         Set(VALIDATION_OPPIJANUMERO_TYHJA)
       else
         Set.empty
-    else if(!oppijaOidPattern.matches(oppijaNumero.get))
+    else if(!Validator.oppijaOidPattern.matches(oppijaNumero.get))
       Set(VALIDATION_OPPIJANUMERO_EI_VALIDI)
     else
       Set.empty
@@ -66,7 +63,7 @@ object UIValidator {
     if (pakollinen && (oppilaitosOid.isEmpty || oppilaitosOid.get.isEmpty))
       Set(VALIDATION_OPPILAITOSOID_TYHJA)
     else if (oppilaitosOid.isDefined && !oppilaitosOidPattern.matches(oppilaitosOid.get))
-      Set(VALIDATION_OPPILAITOSOID_EI_VALIDI+oppilaitosOid.get)
+      Set(VALIDATION_OPPILAITOSOID_EI_VALIDI)
     else
       Set.empty
   }
@@ -75,7 +72,7 @@ object UIValidator {
     if (pakollinen && (vuosi.isEmpty || vuosi.get.isEmpty))
       Set(VALIDATION_VUOSI_TYHJA)
     else if (vuosi.isDefined && !vuosiPattern.matches(vuosi.get))
-      Set(VALIDATION_VUOSI_EI_VALIDI+vuosi.get)
+      Set(VALIDATION_VUOSI_EI_VALIDI)
     else
       Set.empty
   }
@@ -84,7 +81,7 @@ object UIValidator {
     if (pakollinen && (luokka.isEmpty || luokka.get.isEmpty))
       Set(VALIDATION_LUOKKA_TYHJA)
     else if (luokka.isDefined && !luokkaPattern.matches(luokka.get))
-      Set(VALIDATION_LUOKKA_EI_VALIDI+luokka.get)
+      Set(VALIDATION_LUOKKA_EI_VALIDI)
     else
       Set.empty
   }
@@ -97,14 +94,14 @@ object UIValidator {
         LocalDate.parse(valmistumisPaiva.get)
         Set.empty
       catch
-        case default => Set(VALIDATION_VALMISTUMISPAIVA_EI_VALIDI + valmistumisPaiva.get)
+        case default => Set(VALIDATION_VALMISTUMISPAIVA_EI_VALIDI)
   }
 
   def validatePeruskoulunOppimaaranSuorituskieli(suorituskieli: Option[String]): Set[String] = {
     if(suorituskieli.isEmpty || suorituskieli.get.isEmpty)
       Set(VALIDATION_SUORITUSKIELI_TYHJA)
     else if(!SYOTETYN_OPPIMAARAN_SUORITUSKIELET.contains(suorituskieli.get))
-      Set(VALIDATION_SUORITUSKIELI_EI_VALIDI + suorituskieli.get)
+      Set(VALIDATION_SUORITUSKIELI_EI_VALIDI)
     else
       Set.empty
   }
@@ -113,7 +110,7 @@ object UIValidator {
     if(yksilollistetty.isEmpty)
       Set(VALIDATION_YKSILOLLISTETTY_TYHJA)
     else if(!SYOTETYN_OPPIMAARAN_YKSILOLLISTAMINEN.contains(yksilollistetty.get))
-      Set(VALIDATION_YKSILOLLISTETTY_EI_VALIDI + yksilollistetty.get)
+      Set(VALIDATION_YKSILOLLISTETTY_EI_VALIDI)
     else
       Set.empty
   }
@@ -159,7 +156,7 @@ object UIValidator {
       if(oppiaine.koodi.isEmpty || !SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()))
         Set(VALIDATION_KIELI_MAARITELTY)
       else if(koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA).get(oppiaine.kieli.get()).isEmpty)
-        Set(VALIDATION_KIELI_INVALID)
+        Set(VALIDATION_KIELI_EI_VALIDI)
       else
         Set.empty
     else
@@ -211,6 +208,4 @@ object UIValidator {
         .filter(oa => oa._2.nonEmpty)
         .toMap
   }
-
-
 }
