@@ -10,7 +10,7 @@ import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResp
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.ui.UIService.{KOODISTO_KIELIVALIKOIMA, KOODISTO_OPPIAINEET, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUKSENTYYPIT, KOODISTO_SUORITUSKIELET, SYOTETTAVAT_OPPIAINEET, SYOTETTAVAT_SUORITUSTYYPIT, SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT, SYOTETYN_OPPIMAARAN_SUORITUSKIELET, SYOTETYN_OPPIMAARAN_YKSILOLLISTAMINEN}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, LogContext}
-import fi.oph.suorituspalvelu.validation.Validator
+import fi.oph.suorituspalvelu.validation.UIValidator
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -177,9 +177,9 @@ class UIResource {
               case (_, None, Some(vuosi), _) => Some(UI_HAKU_OPPILAITOS_PAKOLLINEN)
               case (_, _, None, Some(luokka)) => Some(UI_HAKU_VUOSI_PAKOLLINEN)
               case default => None).flatten,
-              Validator.validateOppilaitosOid(oppilaitos.toScala, pakollinen = false),
-              Validator.validateVuosi(vuosi.toScala, pakollinen = false),
-              Validator.validateLuokka(luokka.toScala, pakollinen = false)
+              UIValidator.validateOppilaitosOid(oppilaitos.toScala, pakollinen = false),
+              UIValidator.validateVuosi(vuosi.toScala, pakollinen = false),
+              UIValidator.validateLuokka(luokka.toScala, pakollinen = false)
             ).flatten
 
             if(virheet.isEmpty)
@@ -234,7 +234,7 @@ class UIResource {
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanTiedotFailureResponse(java.util.Set.of(UI_TIEDOT_EI_OIKEUKSIA)))))
           .flatMap(_ =>
-            val virheet = Validator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true)
+            val virheet = UIValidator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true)
             if(virheet.isEmpty)
               Right(None)
             else
@@ -309,7 +309,7 @@ class UIResource {
                   ),
                   isKieli = SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oa),
                   isAidinkieli = "AI".equals(oa)
-              )}).toList.asJava,
+              )}).asJava,
               SYOTETYN_OPPIMAARAN_SUORITUSKIELET.map(k => {
                 val suorituskieliKoodi = suorituskielet.get(k).get
                 SyotettavaSuoritusKieliVaihtoehto(
@@ -400,8 +400,8 @@ class UIResource {
                 LOG.error("Peruskoulun oppimaaran suorituksen deserialisointi epäonnistui")
                 Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE), List.empty.asJava))))
           .flatMap(suoritus =>
-            val yleisetVirheet = Validator.validatePeruskoulunOppimaaranYleisetKentat(suoritus, koodistoProvider)
-            val oppiaineKohtaisetVirheet = Validator.validatePeruskoulunOppimaaranYksittaisetOppiaineet(suoritus.oppiaineet, koodistoProvider)
+            val yleisetVirheet = UIValidator.validatePeruskoulunOppimaaranYleisetKentat(suoritus, koodistoProvider)
+            val oppiaineKohtaisetVirheet = UIValidator.validatePeruskoulunOppimaaranYksittaisetOppiaineet(suoritus.oppiaineet, koodistoProvider)
 
             if(yleisetVirheet.isEmpty && oppiaineKohtaisetVirheet.isEmpty)
               Right(suoritus)
