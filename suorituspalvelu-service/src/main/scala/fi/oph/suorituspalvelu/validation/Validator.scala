@@ -28,10 +28,6 @@ object Validator {
   val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.24\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
   val hakukohdeOidPattern: Regex = "^1\\.2\\.246\\.562\\.20\\.\\d+$".r
-  val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
-
-  val vuosiPattern: Regex = "^20[0-9][0-9]$".r
-  val luokkaPattern: Regex = "^[0-9][A-Z]$".r
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
     if (oppijaNumero.isEmpty || oppijaNumero.get.length == 0)
@@ -71,33 +67,6 @@ object Validator {
       Set(VALIDATION_HAKUKOHDEOID_TYHJA)
     else if (hakukohdeOid.isDefined && !hakukohdeOidPattern.matches(hakukohdeOid.get))
       Set(VALIDATION_HAKUKOHDEOID_EI_VALIDI+hakukohdeOid.get)
-    else
-      Set.empty
-  }
-
-  def validateOppilaitosOid(oppilaitosOid: Option[String], pakollinen: Boolean): Set[String] = {
-    if (pakollinen && (oppilaitosOid.isEmpty || oppilaitosOid.get.isEmpty))
-      Set(VALIDATION_OPPILAITOSOID_TYHJA)
-    else if (oppilaitosOid.isDefined && !oppilaitosOidPattern.matches(oppilaitosOid.get))
-      Set(VALIDATION_OPPILAITOSOID_EI_VALIDI+oppilaitosOid.get)
-    else
-      Set.empty
-  }
-
-  def validateVuosi(vuosi: Option[String], pakollinen: Boolean): Set[String] = {
-    if (pakollinen && (vuosi.isEmpty || vuosi.get.isEmpty))
-      Set(VALIDATION_VUOSI_TYHJA)
-    else if (vuosi.isDefined && !vuosiPattern.matches(vuosi.get))
-      Set(VALIDATION_VUOSI_EI_VALIDI+vuosi.get)
-    else
-      Set.empty
-  }
-
-  def validateLuokka(luokka: Option[String], pakollinen: Boolean): Set[String] = {
-    if (pakollinen && (luokka.isEmpty || luokka.get.isEmpty))
-      Set(VALIDATION_LUOKKA_TYHJA)
-    else if (luokka.isDefined && !luokkaPattern.matches(luokka.get))
-      Set(VALIDATION_LUOKKA_EI_VALIDI+luokka.get)
     else
       Set.empty
   }

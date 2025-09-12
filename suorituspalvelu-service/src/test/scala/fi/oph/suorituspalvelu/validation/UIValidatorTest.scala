@@ -32,7 +32,7 @@ class UIValidatorTest {
 
   @Test def testValidateOppilaitosOidInvalid(): Unit = {
     val oppilaitosOid = "tämä ei ole validi oppilaitosOid"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_OPPILAITOSOID_EI_VALIDI + oppilaitosOid), UIValidator.validateOppilaitosOid(Some(oppilaitosOid), true))
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_OPPILAITOSOID_EI_VALIDI), UIValidator.validateOppilaitosOid(Some(oppilaitosOid), true))
   }
 
   @Test def testValidateOppilaitosOidValid(): Unit = {
@@ -46,7 +46,7 @@ class UIValidatorTest {
 
   @Test def testValidateVuosiInvalid(): Unit = {
     val vuosi = "tämä ei ole validi vuosi"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_VUOSI_EI_VALIDI + vuosi), UIValidator.validateVuosi(Some(vuosi), true))
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_VUOSI_EI_VALIDI), UIValidator.validateVuosi(Some(vuosi), true))
   }
 
   @Test def testValidateVuosiValid(): Unit = {
@@ -60,7 +60,7 @@ class UIValidatorTest {
 
   @Test def testValidateLuokkaInvalid(): Unit = {
     val luokka = "tämä ei ole validi luokka"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI + luokka), UIValidator.validateLuokka(Some(luokka), true))
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI), UIValidator.validateLuokka(Some(luokka), true))
   }
 
   @Test def testValidateLuokkaValid(): Unit = {
@@ -74,7 +74,7 @@ class UIValidatorTest {
 
   @Test def testValidateValmistumispaivaInvalid(): Unit = {
     val valmistumispaiva = "tämä ei ole validi valmistumispaiva"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_VALMISTUMISPAIVA_EI_VALIDI + valmistumispaiva), UIValidator.validateValmistumisPaiva(Some(valmistumispaiva)))
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_VALMISTUMISPAIVA_EI_VALIDI), UIValidator.validateValmistumisPaiva(Some(valmistumispaiva)))
   }
 
   @Test def testValidateValmistumispaivaValid(): Unit = {
@@ -88,7 +88,7 @@ class UIValidatorTest {
 
   @Test def testValidateSuorituskieliInvalid(): Unit = {
     val suorituskieli = "tämä ei ole validi suorituskieli"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_SUORITUSKIELI_EI_VALIDI + suorituskieli), UIValidator.validatePeruskoulunOppimaaranSuorituskieli(Some(suorituskieli)))
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_SUORITUSKIELI_EI_VALIDI), UIValidator.validatePeruskoulunOppimaaranSuorituskieli(Some(suorituskieli)))
   }
 
   @Test def testValidateSuorituskieliValid(): Unit = {
@@ -101,7 +101,7 @@ class UIValidatorTest {
   }
 
   @Test def testValidateYksilollistaminenInvalid(): Unit = {
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_YKSILOLLISTETTY_EI_VALIDI + 0), UIValidator.validatePeruskoulunOppimaaranYksilollistaminen(Some(0)))
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_YKSILOLLISTETTY_EI_VALIDI), UIValidator.validatePeruskoulunOppimaaranYksilollistaminen(Some(0)))
   }
 
   @Test def testValidateYksilollistaminenValid(): Unit = {
@@ -171,7 +171,7 @@ class UIValidatorTest {
   }
 
   @Test def testValidateOppiaineenKieliMaariteltyInvalid(): Unit = {
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_INVALID), UIValidator.validatePeruskoulunOppimaaranOppiaineenKieli(SyotettyPeruskoulunOppiaine(
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_EI_VALIDI), UIValidator.validatePeruskoulunOppimaaranOppiaineenKieli(SyotettyPeruskoulunOppiaine(
       Optional.of("A1"),
       Optional.empty(),
       Optional.of("tämä ei ole validi kieli"), // kieli ei löydy koodistosta
