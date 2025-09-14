@@ -31,4 +31,6 @@ object AuditOperation {
 
   case object TallennaPeruskoulunOppimaaranSuoritus extends AuditOperation("TALLENNA PERUSKOULUN OPPIMAARAN SUORITUS UI")
 
+  case object PoistaPeruskoulunOppimaaranSuoritus extends AuditOperation("POISTA PERUSKOULUN OPPIMAARAN SUORITUS UI")
+
 }

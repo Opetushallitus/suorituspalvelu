@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.ui.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
 import java.time.{Instant, LocalDate}
-import java.util.Optional
+import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import scala.util.matching.Regex
@@ -42,11 +42,23 @@ object UIValidator {
   final val VALIDATION_AI_OPPIMAARA_EI_VALIDI     = "backend-virhe.ai_oppimaara.ei_validi"
   final val VALIDATION_ARVOSANA_TYHJA             = "backend-virhe.arvosana.tyhja"
   final val VALIDATION_ARVOSANA_EI_VALIDI         = "backend-virhe.arvosana.ei_validi"
+  final val VALIDATION_VERSIOTUNNISTE_TYHJA       = "backend-virhe.versiotunniste.tyhja"
+  final val VALIDATION_VERSIOTUNNISTE_EI_VALIDI   = "backend-virhe.versiotunniste.ei_validi"
 
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
+
+  def validateVersioTunniste(tunniste: Option[String]): Set[String] =
+    if (tunniste.isEmpty)
+      Set(VALIDATION_VERSIOTUNNISTE_TYHJA)
+    else
+      try
+        UUID.fromString(tunniste.get)
+        Set.empty
+      catch
+        case default => Set(VALIDATION_VERSIOTUNNISTE_EI_VALIDI)
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
     if (oppijaNumero.isEmpty || oppijaNumero.get.length == 0)

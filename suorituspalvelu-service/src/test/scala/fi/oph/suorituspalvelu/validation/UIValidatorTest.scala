@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.resource.ui.SyotettyPeruskoulunOppiaine
 import org.junit.jupiter.api.*
 
 import java.time.Instant
-import java.util.Optional
+import java.util.{Optional, UUID}
 
 /**
  */
@@ -240,7 +240,17 @@ class UIValidatorTest {
     ), koodisto => Map("AI1" -> Koodi("", Koodisto(""), List()))))
   }
 
+  // versiotunniste
+  @Test def testValidateVersioTunnisteRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_VERSIOTUNNISTE_TYHJA), UIValidator.validateVersioTunniste(None))
+  }
 
+  @Test def testValidateVersioTunnisteInvalid(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_VERSIOTUNNISTE_EI_VALIDI), UIValidator.validateVersioTunniste(Some("tämä ei ole validi versiotunniste")))
+  }
 
+  @Test def testValidateVersioTunnisteValid(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validateVersioTunniste(Some(UUID.randomUUID().toString)))
+  }
 
 }

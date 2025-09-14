@@ -91,11 +91,21 @@ object ApiConstants {
 
   final val UI_LUO_PERUSKOULUN_OPPIMAARA_VAIHTOEHDOT_PATH   = UI_LUO_PERUSKOULUN_OPPIMAARA_PATH + "/vaihtoehdot"
 
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_NAME      = "versioTunniste"
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER = "{" + UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_NAME + "}"
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH            = UI_LUO_PERUSKOULUN_OPPIMAARA_PATH + "/" + UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_EI_OIKEUKSIA    = "Käyttäjällä ei ole oikeuksia poistaa oppijalta peruskoulun oppimäärän suoritusta"
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_SUORITUSTA_EI_LOYTYNYT = "Peruskoulun oppimäärän suoritusta ei löytynyt"
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_SUORITUSTA_EI_POISTETTAVISSA = "Suoritusta ei voi poistaa koska se ei ole peruskoulun oppimäärän suoritus"
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_SUORITUS_EI_VOIMASSA = "Peruskoulun oppimäärän suoritusta ei voi poistaa koska se ei ole voimassa"
+  final val UI_POISTA_PERUSKOULUN_OPPIMAARA_TALLENNUS_VIRHE = "Peruskoulun oppimäärän suorituksen poiston tallennus epäonnistui"
+
   /**
    * Swagger-kuvauksiin liittyvät vakiot
    */
   final val SUORITUS_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole suorituksen luomiseen tarvittavia oikeuksia"
   final val ESIMERKKI_SUORITUSTUNNISTE                      = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
+  final val ESIMERKKI_VERSIOTUNNISTE                        = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
   final val EXAMPLE_OPPIJANUMERO_VALIDOINTIVIRHE            = "[ \"oppijanumero: Kenttä on pakollinen\" ]"
 
   final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"

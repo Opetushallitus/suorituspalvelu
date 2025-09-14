@@ -418,4 +418,38 @@ class KantaOperaatiotTest {
 
     val oppijanJollaEiDataaVersiot = this.kantaOperaatiot.haeOppijanVersiot(oppijanumeroJollaEiDataa)
     Assertions.assertTrue(oppijanJollaEiDataaVersiot.isEmpty)
+
+  @Test def testTallennaVersio(): Unit =
+    val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, SuoritusJoukko.YTR, "{}")
+
+    val haettuVersio = this.kantaOperaatiot.haeVersio(versio.get.tunniste)
+    Assertions.assertEquals(versio, haettuVersio)
+
+  @Test def testPaataversionVoimassaolo(): Unit =
+    val OPPIJANUMERO1 = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, SuoritusJoukko.YTR, "{}")
+
+    Thread.sleep(100)
+
+    Assertions.assertTrue(this.kantaOperaatiot.paataVersionVoimassaolo(versio.get.tunniste))
+    val loppu = this.kantaOperaatiot.haeVersio(versio.get.tunniste).get.loppu
+    Assertions.assertTrue(loppu.isDefined)
+    Assertions.assertTrue(loppu.get.isBefore(Instant.now()))
+    Assertions.assertTrue(loppu.get.isAfter(Instant.now().minusMillis(1000)))
+
+  @Test def testPaataversionVoimassaoloEiVaikutustaJoPaatettyyn(): Unit =
+    val OPPIJANUMERO = "1.2.246.562.24.99988877766"
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, SuoritusJoukko.YTR, "{}")
+
+    Thread.sleep(100)
+
+    Assertions.assertTrue(this.kantaOperaatiot.paataVersionVoimassaolo(versio.get.tunniste))
+    val loppu1 = this.kantaOperaatiot.haeVersio(versio.get.tunniste).get.loppu
+
+    Assertions.assertFalse(this.kantaOperaatiot.paataVersionVoimassaolo(versio.get.tunniste))
+    val loppu2 = this.kantaOperaatiot.haeVersio(versio.get.tunniste).get.loppu
+
+    Assertions.assertEquals(loppu1, loppu2)
+
 }

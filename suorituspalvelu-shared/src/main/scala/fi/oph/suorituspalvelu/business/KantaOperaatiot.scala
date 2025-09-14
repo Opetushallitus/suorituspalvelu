@@ -213,4 +213,21 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def haeSuoritukset(oppijaNumero: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE oppijanumero=${oppijaNumero} AND upper(voimassaolo)='infinity'::timestamptz""")
+
+  def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
+    Await.result(db.run(
+        sql"""SELECT jsonb_build_object('tunniste', tunniste,
+                  'oppijaNumero', oppijanumero,
+                  'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+                  'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+                  'suoritusJoukko', suoritusjoukko
+                )::text AS versio
+                FROM versiot
+                WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
+      .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
+
+  def paataVersionVoimassaolo(tunniste: UUID): Boolean =
+    LOG.info(s"päätetään version $tunniste voimassaolo")
+    val voimassaolo = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), now()) WHERE tunniste=${tunniste.toString}::uuid AND upper(voimassaolo)='infinity'::timestamptz"""
+    Await.result(db.run(voimassaolo), DB_TIMEOUT)>0
 }

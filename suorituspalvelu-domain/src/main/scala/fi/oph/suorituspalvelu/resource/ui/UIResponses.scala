@@ -1299,3 +1299,12 @@ case class SyotettyPeruskoulunOppimaaranSuoritus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineet: Optional[java.util.List[SyotettyPeruskoulunOppiaine]]
 )
+
+trait PoistaPeruskoulunOppimaaraResponse()
+
+case class PoistaPeruskoulunOppimaaraSuccessResponse() extends PoistaPeruskoulunOppimaaraResponse
+
+case class PoistaPeruskoulunOppimaaraFailureResponse(
+  @(Schema @field)(example = "TODO: lisää virhe")
+  @BeanProperty virheAvaimet: java.util.Set[String],
+) extends PoistaPeruskoulunOppimaaraResponse
