@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, 
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYYPPI_AMMATILLINENTUTKINTO
-import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_HAKU_OID, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME}
 import fi.oph.suorituspalvelu.resource.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.Komot
@@ -80,7 +80,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     // hakukohdeOidin pitää olla validi hakuOid
     val invalidHakukohdeOid = "1.2.3.4"
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_OPPIJAT_PATH + "?" +
-        ApiConstants.LEGACY_OPPIJAT_HAKU_PARAM_NAME + "=" + EXAMPLE_HAKU_OID + "&" + ApiConstants.LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME + "=" + invalidHakukohdeOid))
+        ApiConstants.LEGACY_OPPIJAT_HAKU_PARAM_NAME + "=" + ESIMERKKI_HAKU_OID + "&" + ApiConstants.LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME + "=" + invalidHakukohdeOid))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_HAKUKOHDEOID_EI_VALIDI + invalidHakukohdeOid)),
@@ -88,7 +88,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetHenkilolleAllowed(): Unit =
-    val hakuOid = ApiConstants.EXAMPLE_HAKU_OID
+    val hakuOid = ApiConstants.ESIMERKKI_HAKU_OID
     val tutkintoKoodi = "123456"
     val suoritusKieli = Koodi("fi", "kieli", Some(1))
 

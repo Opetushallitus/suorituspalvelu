@@ -19,7 +19,7 @@ class ValidatorTest {
   }
 
   @Test def testValidateOppijanumeroValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateOppijanumero(Some(ApiConstants.EXAMPLE_OPPIJANUMERO), true))
+    Assertions.assertEquals(Set.empty, Validator.validateOppijanumero(Some(ApiConstants.ESIMERKKI_OPPIJANUMERO), true))
   }
 
   // muokattuJalkeen
@@ -46,7 +46,7 @@ class ValidatorTest {
   }
 
   @Test def testValidateHakuOidValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateHakuOid(Some(ApiConstants.EXAMPLE_HAKU_OID), true))
+    Assertions.assertEquals(Set.empty, Validator.validateHakuOid(Some(ApiConstants.ESIMERKKI_HAKU_OID), true))
   }
 
   // hakukohdeoid
@@ -60,6 +60,6 @@ class ValidatorTest {
   }
 
   @Test def testValidateHakukohdeOidValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateHakukohdeOid(Some(ApiConstants.EXAMPLE_HAKUKOHDE_OID), true))
+    Assertions.assertEquals(Set.empty, Validator.validateHakukohdeOid(Some(ApiConstants.ESIMERKKI_HAKUKOHDE_OID), true))
   }
 }

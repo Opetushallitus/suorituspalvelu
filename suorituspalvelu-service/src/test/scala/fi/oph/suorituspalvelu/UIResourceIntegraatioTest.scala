@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPeruskoulunOppimaaraFailureResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaPeruskoulunOppimaaraFailureResponse, SuoritusTila, SyotettyPeruskoulunOppiaine, SyotettyPeruskoulunOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -53,7 +53,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // virhe on kuten pitää
-    Assertions.assertEquals(KayttajaFailureResponse(java.util.Set.of(ApiConstants.UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT)),
+    Assertions.assertEquals(KayttajaFailureResponse(java.util.Set.of(UIVirheet.UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array())
@@ -124,7 +124,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_KRITEERI_PAKOLLINEN)),
+    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIVirheet.UI_HAKU_KRITEERI_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -134,7 +134,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN)),
+    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIVirheet.UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -144,7 +144,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_OPPILAITOS_PAKOLLINEN)),
+    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIVirheet.UI_HAKU_OPPILAITOS_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -155,7 +155,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(ApiConstants.UI_HAKU_VUOSI_PAKOLLINEN)),
+    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIVirheet.UI_HAKU_VUOSI_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -276,14 +276,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
    * Integraatiotestit peruskoulun oppimäärän suorituksen tallennukselle
    */
 
-  def getSyotettyPeruskoulunOppimaaranSuoritus(): SyotettyPeruskoulunOppimaaranSuoritus =
-    SyotettyPeruskoulunOppimaaranSuoritus(
+  def getSyotettyPeruskoulunOppimaaranSuoritus(): SyotettyPerusopetuksenOppimaaranSuoritus =
+    SyotettyPerusopetuksenOppimaaranSuoritus(
       Optional.of("1.2.246.562.24.21250967214"),
       Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
       Optional.of(LocalDate.now().toString),
       Optional.of("FI"),
       Optional.of(1),
-      Optional.of(List(SyotettyPeruskoulunOppiaine(
+      Optional.of(List(SyotettyPerusopetuksenOppiaine(
         Optional.of("MA"),
         Optional.empty(),
         Optional.empty(),
@@ -295,7 +295,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPeruskoulunOppimaaranSuoritusAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus())))
       .andExpect(status().is3xxRedirection())
@@ -304,7 +304,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPeruskoulunOppimaaranSuoritusNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus())))
       .andExpect(status().isForbidden())
@@ -313,29 +313,29 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPeruskoulunOppimaaranSuoritusInvalidJson(): Unit =
     // ei validi json ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content("tämä ei ole validia jsonia"))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_JSON_VIRHE), List.empty.asJava),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
+    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE), List.empty.asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusInvalidSuoritus(): Unit =
     // ei validi oid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus().copy(oppijaOid = Optional.of("tämä ei ole validi oid")))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI), List.empty.asJava),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
+    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI), List.empty.asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaNotFound(): Unit =
@@ -346,15 +346,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tuntematon henkilöoid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_TUNTEMATON_OPPIJA), List.empty.asJava),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPeruskoulunOppimaaraFailureResponse]))
+    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA), List.empty.asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaAllowed(): Unit =
@@ -366,7 +366,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
     val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_PERUSKOULUN_OPPIMAARA_PATH, "")
+        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(suoritusPayload))
       .andExpect(status().isOk)
@@ -394,7 +394,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testPoistaPeruskoulunOppimaaranSuoritusAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
-        .delete(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH.replace(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().is3xxRedirection())
 
@@ -402,7 +402,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testPoistaPeruskoulunOppimaaranSuoritusNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
-        .delete(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH.replace(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().isForbidden())
 
@@ -412,14 +412,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // versio joka ei olemassa aiheuttaa virheen
     val result = mvc.perform(MockMvcRequestBuilders
-        .delete(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH.replace(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER, tunniste), "")
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, tunniste), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().isGone)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(PoistaPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_SUORITUSTA_EI_LOYTYNYT)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaPeruskoulunOppimaaraFailureResponse]))
+    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusEiVoimassa(): Unit =
@@ -429,14 +429,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // versio joka jo poistettu aiheuttaa virheen
     val result = mvc.perform(MockMvcRequestBuilders
-        .delete(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH.replace(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(PoistaPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_SUORITUS_EI_VOIMASSA)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaPeruskoulunOppimaaraFailureResponse]))
+    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusEiPoistettavissa(): Unit =
@@ -445,14 +445,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // versio joka ei poistettavissa aiheuttaa virheen
     val result = mvc.perform(MockMvcRequestBuilders
-        .delete(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH.replace(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(PoistaPeruskoulunOppimaaraFailureResponse(java.util.Set.of(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_SUORITUSTA_EI_POISTETTAVISSA)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaPeruskoulunOppimaaraFailureResponse]))
+    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusAllowed(): Unit =
@@ -462,7 +462,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // poistetaan versio
     val result = mvc.perform(MockMvcRequestBuilders
-        .delete(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PATH.replace(ApiConstants.UI_POISTA_PERUSKOULUN_OPPIMAARA_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().isOk)
       .andReturn()

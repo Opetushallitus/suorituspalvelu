@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.parsing.virkailija
 import fi.oph.suorituspalvelu.business.{Koodi, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.allowMissingFields
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, OpiskeluoikeusJaksoTila}
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPeruskoulunOppiaine, SyotettyPeruskoulunOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
 import java.time.LocalDate
@@ -36,7 +36,7 @@ object VirkailijaToSuoritusConverter {
     )
 */
 
-  def toOppiaineenNimi(oppiaine: SyotettyPeruskoulunOppiaine, koodistoProvider: KoodistoProvider): Kielistetty = {
+  def toOppiaineenNimi(oppiaine: SyotettyPerusopetuksenOppiaine, koodistoProvider: KoodistoProvider): Kielistetty = {
     def getNimi(kieli: String, koodistoProvider: KoodistoProvider): Option[String] =
       koodistoProvider.haeKoodisto("koskioppiaineetyleissivistava")
         .get(oppiaine.koodi.get)
@@ -45,7 +45,7 @@ object VirkailijaToSuoritusConverter {
     Kielistetty(getNimi("fi", koodistoProvider), getNimi("sv", koodistoProvider), getNimi("en", koodistoProvider))
   }
 
-  def toPerusopetuksenOppimaara(versioTunniste: UUID, suoritus: SyotettyPeruskoulunOppimaaranSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOpiskeluoikeus =
+  def toPerusopetuksenOppimaara(versioTunniste: UUID, suoritus: SyotettyPerusopetuksenOppimaaranSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOpiskeluoikeus =
     PerusopetuksenOpiskeluoikeus(
       Some(versioTunniste),
       UUID.randomUUID(),
