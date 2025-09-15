@@ -31,6 +31,11 @@ object AuditOperation {
 
   case object TallennaPeruskoulunOppimaaranSuoritus extends AuditOperation("TALLENNA PERUSKOULUN OPPIMAARAN SUORITUS UI")
 
-  case object PoistaPeruskoulunOppimaaranSuoritus extends AuditOperation("POISTA PERUSKOULUN OPPIMAARAN SUORITUS UI")
+  case object TallennaPerusopetuksenOppimaaranSuoritus extends AuditOperation("TALLENNA PERUSOPETUKSEN OPPIMAARAN SUORITUS UI")
 
+  case object TallennaPerusopetuksenOppiaineenOppimaaranSuoritus extends AuditOperation("TALLENNA PERUSOPETUKSEN OPPIAINEEN OPPIMAARAN SUORITUS UI")
+
+  case object PoistaPerusopetuksenOppimaaranSuoritus extends AuditOperation("POISTA PERUSOPETUKSEN OPPIMAARAN SUORITUS UI")
+
+  case object PoistaPerusopetuksenOppiaineenOppimaaranSuoritus extends AuditOperation("POISTA PERUSOPETUKSEN OPPIAINEEN OPPIMAARAN SUORITUS UI")
 }

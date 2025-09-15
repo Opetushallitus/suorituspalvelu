@@ -26,6 +26,12 @@ object UIVirheet {
   final val UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA   = "backend-virhe.luo_perusopetuksen_oppimaara.oppijanumerolla_ei_loydy_henkiloa"
   final val UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_VIRHE     = "backend-virhe.luo_perusopetuksen_oppimaara.tallennus_epaonnistui"
 
+  final val UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE        = "backend-virhe.oppijanumero.ei_validi"
+  final val UI_LUO_SUORITUS_OPPIAINE_EI_OIKEUKSIA           = "backend-virhe.luo_perusopetuksen_oppimaara.ei_oikeuksia"
+  final val UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE             = "backend-virhe.luo_perusopetuksen_oppimaara.json_ei_validi"
+  final val UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA      = "backend-virhe.luo_perusopetuksen_oppimaara.oppijanumerolla_ei_loydy_henkiloa"
+  final val UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_VIRHE        = "backend-virhe.luo_perusopetuksen_oppimaara.tallennus_epaonnistui"
+
   final val UI_POISTA_SUORITUS_EI_OIKEUKSIA                 = "backend-virhe.poista_suoritus.ei_oikeuksia"
   final val UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT       = "backend-virhe.poista_suoritus.suoritusta_ei_loytynyt"
   final val UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA = "backend-virhe.poista_suoritus.suoritus_ei_poistettavissa"

@@ -16,6 +16,7 @@ object SuoritusJoukko {
   final val VIRTA = SuoritusJoukko("VIRTA")
   final val YTR   = SuoritusJoukko("YTR")
   final val PERUSOPETUS = SuoritusJoukko("PERUSOPETUS")
+  final val OPPIAINE = SuoritusJoukko("OPPIAINE")
 
   @JsonCreator
   def fromString(value: String): SuoritusJoukko = SuoritusJoukko(value)

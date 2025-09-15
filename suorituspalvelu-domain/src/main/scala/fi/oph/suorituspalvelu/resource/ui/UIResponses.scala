@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.resource.ui
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIDINKIELEN_OPPIMAARA, ESIMERKKI_HETU, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN}
 import fi.oph.suorituspalvelu.resource.*
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -1255,9 +1255,9 @@ case class LuoSuoritusDropdownDataFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuoSuoritusDropdownDataResponse
 
-trait LuoPerusopetuksetOppimaaraResponse()
+trait LuoPerusopetuksenOppimaaraResponse()
 
-case class LuoPerusopetuksenOppimaaraSuccessResponse() extends LuoPerusopetuksetOppimaaraResponse
+case class LuoPerusopetuksenOppimaaraSuccessResponse() extends LuoPerusopetuksenOppimaaraResponse
 
 case class LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe(
   @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, requiredMode = RequiredMode.REQUIRED)
@@ -1271,7 +1271,7 @@ case class LuoPerusopetuksenOppimaaraFailureResponse(
   @BeanProperty yleisetVirheAvaimet: java.util.Set[String],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineKohtaisetVirheet: java.util.List[LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe]
-) extends LuoPerusopetuksetOppimaaraResponse
+) extends LuoPerusopetuksenOppimaaraResponse
 
 case class SyotettyPerusopetuksenOppiaine(
   @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, description="koskioppiaineetyleissivistävä-koodiston koodi", requiredMode = RequiredMode.REQUIRED)
@@ -1299,6 +1299,30 @@ case class SyotettyPerusopetuksenOppimaaranSuoritus(
   @BeanProperty yksilollistetty: Optional[Int],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineet: Optional[java.util.List[SyotettyPerusopetuksenOppiaine]]
+)
+
+trait LuoPerusopetuksenOppiaineenOppimaaraResponse()
+
+case class LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse() extends LuoPerusopetuksenOppiaineenOppimaaraResponse
+
+case class LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(
+  @(Schema @field)(example = UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheAvaimet: java.util.Set[String],
+) extends LuoPerusopetuksenOppiaineenOppimaaraResponse
+
+case class SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus(
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO)
+  @BeanProperty oppijaOid: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppilaitosOid: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_VALMISTUMISPAIVA)
+  @BeanProperty valmistumispaiva: Optional[String], // tämä on merkkijono tarkoituksella, näin päästään tarvittaessa validaattoriin asti ja saadaan ymmärrettävä virhe
+  @(Schema @field)(example = ESIMERKKI_SUORITUSKIELI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty suorituskieli: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_YKSILOLLISTAMINEN, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty yksilollistetty: Optional[Int],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppiaine: Optional[SyotettyPerusopetuksenOppiaine]
 )
 
 trait PoistaSuoritusResponse()

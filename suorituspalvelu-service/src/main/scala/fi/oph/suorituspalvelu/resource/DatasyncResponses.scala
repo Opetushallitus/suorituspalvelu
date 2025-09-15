@@ -42,5 +42,5 @@ case class YtrSyncSuccessResponse(
 
 @Schema(name = "YtrSyncFailureResponse")
 case class YtrSyncFailureResponse(
-                                     @(Schema@field)(example = DATASYNC_VIRTA_ESIMERKKI_VIRHE)
+                                     @(Schema@field)(example = VIRTA_DATASYNC_ESIMERKKI_VIRHE)
                                      @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}

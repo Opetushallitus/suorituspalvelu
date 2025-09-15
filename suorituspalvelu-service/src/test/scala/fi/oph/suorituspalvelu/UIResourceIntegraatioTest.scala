@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -273,10 +273,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
   /*
-   * Integraatiotestit peruskoulun oppimäärän suorituksen tallennukselle
+   * Integraatiotestit perusopetuksen oppimäärän suorituksen tallennukselle
    */
 
-  def getSyotettyPeruskoulunOppimaaranSuoritus(): SyotettyPerusopetuksenOppimaaranSuoritus =
+  def getSyotettyPerusopetuksenOppimaaranSuoritus(): SyotettyPerusopetuksenOppimaaranSuoritus =
     SyotettyPerusopetuksenOppimaaranSuoritus(
       Optional.of("1.2.246.562.24.21250967214"),
       Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
@@ -292,25 +292,25 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       )).asJava))
 
   @WithAnonymousUser
-  @Test def testTallennaPeruskoulunOppimaaranSuoritusAnonymous(): Unit =
+  @Test def testTallennaPerusopetuksenOppimaaranSuoritusAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus())))
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus())))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
-  @Test def testTallennaPeruskoulunOppimaaranSuoritusNotAllowed(): Unit =
+  @Test def testTallennaPerusopetuksenOppimaaranSuoritusNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus())))
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus())))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testTallennaPeruskoulunOppimaaranSuoritusInvalidJson(): Unit =
+  @Test def testTallennaPerusopetuksenOppimaaranSuoritusInvalidJson(): Unit =
     // ei validi json ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
@@ -324,12 +324,12 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testTallennaPeruskoulunOppimaaranSuoritusInvalidSuoritus(): Unit =
+  @Test def testTallennaPerusopetuksenOppimaaranSuoritusInvalidSuoritus(): Unit =
     // ei validi oid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus().copy(oppijaOid = Optional.of("tämä ei ole validi oid")))))
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of("tämä ei ole validi oid")))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -338,7 +338,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaNotFound(): Unit =
+  @Test def testTallennaPerusopetuksenOppimaaranSuoritusOppijaNotFound(): Unit =
     val oppijaNumero = "1.2.246.562.24.21250967214"
 
     // mockataan ONR-vastaus
@@ -348,7 +348,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -357,14 +357,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testTallennaPeruskoulunOppimaaranSuoritusOppijaAllowed(): Unit =
+  @Test def testTallennaPerusopetuksenOppimaaranSuoritusOppijaAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21250967213"
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
 
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
-    val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPeruskoulunOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))
+    val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -374,7 +374,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
     val auditLogEntry = getLatestAuditLogEntry()
-    Assertions.assertEquals(AuditOperation.TallennaPeruskoulunOppimaaranSuoritus.name, auditLogEntry.operation)
+    Assertions.assertEquals(AuditOperation.TallennaPerusopetuksenOppimaaranSuoritus.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
       "oppijaNumero" -> oppijaNumero,
     ), auditLogEntry.target)
@@ -385,13 +385,123 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(1, suoritukset.size)
 
   /*
-   * Integraatiotestit peruskoulun oppimäärän suorituksen poistolle
+   * Integraatiotestit perusopetuksen oppimäärän suorituksen tallennukselle
    */
 
-  // TODO: tässähän poistetaan versioita eikä oppijanumeroa!!!!
+  def getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus(): SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus =
+    SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus(
+      Optional.of("1.2.246.562.24.21250967212"),
+      Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
+      Optional.of(LocalDate.now().toString),
+      Optional.of("FI"),
+      Optional.of(1),
+      Optional.of(SyotettyPerusopetuksenOppiaine(
+        Optional.of("MA"),
+        Optional.empty(),
+        Optional.empty(),
+        Optional.of(9),
+        Optional.of(false)
+      )))
 
   @WithAnonymousUser
-  @Test def testPoistaPeruskoulunOppimaaranSuoritusAnonymous(): Unit =
+  @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus())))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus())))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusInvalidJson(): Unit =
+    // ei validi json ei sallittu
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content("tämä ei ole validia jsonia"))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    // tarkistetaan että virhe täsmää
+    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppiaineenOppimaaraFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusInvalidSuoritus(): Unit =
+    // ei validi oid ei sallittu
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of("tämä ei ole validi oid")))))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    // tarkistetaan että virhe täsmää
+    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppiaineenOppimaaraFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusOppijaNotFound(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967211"
+
+    // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(false))
+
+    // tuntematon henkilöoid ei sallittu
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    // tarkistetaan että virhe täsmää
+    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppiaineenOppimaaraFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusOppijaAllowed(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967210"
+
+    // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+
+    // validin suorituksen tallentaminen tunnetulle henkilölle ok
+    val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(suoritusPayload))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.TallennaPerusopetuksenOppiaineenOppimaaranSuoritus.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "oppijaNumero" -> oppijaNumero,
+    ), auditLogEntry.target)
+    Assertions.assertEquals(List(objectMapper.readValue(suoritusPayload, classOf[Map[Any, Any]])), auditLogEntry.changes)
+
+    // ja suoritus tallentuu kantaan
+    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    Assertions.assertEquals(1, suoritukset.size)
+
+  /*
+   * Integraatiotestit perusopetuksen oppimäärän suorituksen poistolle
+   */
+
+  @WithAnonymousUser
+  @Test def testPoistaPerusopetuksenOppimaaranSuoritusAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
         .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
@@ -399,7 +509,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
-  @Test def testPoistaPeruskoulunOppimaaranSuoritusNotAllowed(): Unit =
+  @Test def testPoistaPerusopetuksenOppimaaranSuoritusNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
         .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
@@ -407,7 +517,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusNotFound(): Unit =
+  @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusNotFound(): Unit =
     val tunniste = UUID.randomUUID().toString
 
     // versio joka ei olemassa aiheuttaa virheen
@@ -422,7 +532,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusEiVoimassa(): Unit =
+  @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusEiVoimassa(): Unit =
     // tallennetaan versio ja päätetään voimassaolo
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.PERUSOPETUS, "{}")
     kantaOperaatiot.paataVersionVoimassaolo(versio.get.tunniste)
@@ -439,7 +549,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusEiPoistettavissa(): Unit =
+  @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusEiPoistettavissa(): Unit =
     // tallennetaan versio ja päätetään voimassaolo
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.KOSKI, "{}")
 
@@ -455,7 +565,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testPoistaPeruskoulunOppimaaranSuoritusSuoritusAllowed(): Unit =
+  @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusAllowed(): Unit =
     // tallennetaan versio
     val oppijaNumero = "1.2.246.562.24.21250967211"
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.PERUSOPETUS, "{}")
@@ -469,7 +579,31 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
     val auditLogEntry = getLatestAuditLogEntry()
-    Assertions.assertEquals(AuditOperation.PoistaPeruskoulunOppimaaranSuoritus.name, auditLogEntry.operation)
+    Assertions.assertEquals(AuditOperation.PoistaPerusopetuksenOppimaaranSuoritus.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "versioTunniste" -> versio.get.tunniste.toString,
+    ), auditLogEntry.target)
+
+    // ja suoritus tallentuu kantaan
+    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    Assertions.assertEquals(0, suoritukset.size)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testPoistaPerusopetuksenOppiaineenOppimaaranSuoritusSuoritusAllowed(): Unit =
+    // tallennetaan versio
+    val oppijaNumero = "1.2.246.562.24.21250967211"
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.OPPIAINE, "{}")
+
+    // poistetaan versio
+    val result = mvc.perform(MockMvcRequestBuilders
+        .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, versio.get.tunniste.toString), "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PoistaPerusopetuksenOppiaineenOppimaaranSuoritus.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
       "versioTunniste" -> versio.get.tunniste.toString,
     ), auditLogEntry.target)
