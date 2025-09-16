@@ -7,11 +7,13 @@ import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
+import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
 
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.{Await, Future}
 
 @Configuration
@@ -99,15 +101,31 @@ class IntegrationConfiguration {
   @Bean
   def getOrganisaatioProvider(@Value("${integrations.koski.base-url}") envBaseUrl: String): OrganisaatioProvider = {
     new OrganisaatioProvider {
+      val organisaatioClient = new OrganisaatioClient(envBaseUrl)
 
-      val organisaatioClient = OrganisaatioClient(envBaseUrl)
+      private case class AllOrgsFlat(data: Map[String, Organisaatio], timestamp: Long)
+      private val hierarchyCache = new AtomicReference[Option[AllOrgsFlat]](None)
 
-      val cache = Caffeine.newBuilder()
-        .maximumSize(10000)
-        .expireAfterWrite(Duration.ofHours(12))
-        .build(koodiArvo => Await.result(organisaatioClient.haeOrganisaationTiedot(koodiArvo.toString), ORGANISAATIO_TIMEOUT))
+      //Todo, tätä voisi ehkä taustaraikastaa myös ennen lopullista hapantumista niin, että kakussa on aina jotain.
+      private val hierarchyCacheDuration = Duration.ofHours(6).toMillis
 
-      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = cache.get(koodiArvo)
+      private def getHierarchyData(): Map[String, Organisaatio] = {
+        val currentTime = System.currentTimeMillis()
+
+        hierarchyCache.get() match {
+          case Some(AllOrgsFlat(allOrgsFlat, timestamp)) if (currentTime - timestamp) < hierarchyCacheDuration =>
+            allOrgsFlat
+          case _ =>
+            val tuoreHierarkia = Await.result(organisaatioClient.haeHierarkia(), ORGANISAATIO_TIMEOUT)
+            val allOrgsFlat = OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
+            hierarchyCache.set(Some(AllOrgsFlat(allOrgsFlat, currentTime)))
+            allOrgsFlat
+        }
+      }
+
+      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
+        getHierarchyData().get(organisaatioOid)
+      }
     }
   }
 

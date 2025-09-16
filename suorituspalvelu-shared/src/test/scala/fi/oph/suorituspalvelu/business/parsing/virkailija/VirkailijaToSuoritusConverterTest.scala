@@ -42,7 +42,9 @@ class VirkailijaToSuoritusConverterTest {
         "Oppilaitos",
         "Oppilaitos",
         "Oppilaitos"
-      )
+      ),
+      None,
+      Seq.empty
     )
     val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))), organisaatioOid => Some(organisaatio))
 
@@ -111,7 +113,9 @@ class VirkailijaToSuoritusConverterTest {
         "Oppilaitos",
         "Oppilaitos",
         "Oppilaitos"
-      )
+      ),
+      None,
+      Seq.empty
     )
     val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))), organisaatioOid => Some(organisaatio))
 

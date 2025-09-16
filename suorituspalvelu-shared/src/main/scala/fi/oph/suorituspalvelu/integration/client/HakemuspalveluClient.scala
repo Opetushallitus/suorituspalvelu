@@ -22,9 +22,9 @@ case class AtaruHakemuksenHenkilotiedot(oid: String, //hakemuksen oid
 case class AtaruResponseHenkilot(applications: List[AtaruHakemuksenHenkilotiedot],
                                  offset: Option[String])
 
-case class AtaruPermissionRequest(personOidsForSamePerson: Seq[String],
-                                  organisationOids: Seq[String],
-                                  loggedInUserRoles: Seq[String])
+case class AtaruPermissionRequest(personOidsForSamePerson: Set[String],
+                                  organisationOids: Set[String],
+                                  loggedInUserRoles: Set[String])
 
 case class AtaruPermissionResponse(accessAllowed: Option[Boolean] = None,
                                    errorMessage: Option[String] = None)

@@ -2,6 +2,8 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -134,7 +136,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIVirheet.UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN)),
+    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIVirheet.UI_HAKU_HAKUSANA_TAI_VUOSI_PAKOLLINEN)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -176,12 +178,19 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijatAllowed(): Unit =
-    val hakuKriteeri = "Olli"
+    val hakusanaOppijanumero = "1.2.246.562.24.21583363331"
+    val onrPerustiedot = OnrHenkiloPerustiedot(oidHenkilo = hakusanaOppijanumero,
+      etunimet = "Teppo Hemmo",
+      sukunimi = "Testinen")
+
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_HAKU_PATH + "?oppija={oppija}", hakuKriteeri))
+        .get(ApiConstants.UI_HAKU_PATH + "?hakusana={hakusana}", hakusanaOppijanumero))
       .andExpect(status().isOk)
       .andReturn()
 
+    //case Some(h) if Validator.oppijaOidPattern.matches(h) => onrIntegration.getPerustiedotByPersonOids(Set(h))
+    Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(hakusanaOppijanumero)))
+      .thenReturn(Future.successful(Seq(onrPerustiedot)))
     Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(UIService.EXAMPLE_OPPIJA_OID, Optional.of(UIService.EXAMPLE_HETU), UIService.EXAMPLE_NIMI))),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
@@ -189,7 +198,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijatUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      ApiConstants.UI_HAKU_OPPIJA_PARAM_NAME -> hakuKriteeri,
+      ApiConstants.UI_HAKU_HAKUSANA_PARAM_NAME -> hakusanaOppijanumero,
       ApiConstants.UI_HAKU_OPPILAITOS_PARAM_NAME -> null,
       ApiConstants.UI_HAKU_VUOSI_PARAM_NAME -> null,
       ApiConstants.UI_HAKU_LUOKKA_PARAM_NAME -> null,

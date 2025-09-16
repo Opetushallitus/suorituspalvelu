@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.integration.client
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.integration.OnrMasterHenkilo
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrMasterHenkilo}
 import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
@@ -21,6 +21,8 @@ trait OnrClient {
   def getHenkiloviitteetForHenkilot(personOids: Set[String]): Future[Set[Henkiloviite]]
   def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]]
   def getAsiointikieli(personOid: String): Future[Option[String]]
+  def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
+  def getPerustiedotByHetus(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
 }
 
 class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends OnrClient {
@@ -58,6 +60,22 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
           chunkResult.map(cr => rs ++ cr)
         })
     }
+  }
+
+  override def getPerustiedotByHetus(hetus: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
+    doPost(environmentBaseUrl + "/oppijanumerorekisteri-service/henkilo/henkiloPerustietosByHenkiloHetuList", hetus)
+      .map(result => {
+        val typeRef = new TypeReference[Seq[OnrHenkiloPerustiedot]] {}
+        mapper.readValue(result, typeRef)
+      })
+  }
+
+  override def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
+    doPost(environmentBaseUrl + "/oppijanumerorekisteri-service/henkilo/henkiloPerustietosByHenkiloOidList", personOids)
+      .map(result => {
+        val typeRef = new TypeReference[Seq[OnrHenkiloPerustiedot]] {}
+        mapper.readValue(result, typeRef)
+      })
   }
 
   override def getHenkiloviitteetForHenkilot(henkiloOids: Set[String]): Future[Set[Henkiloviite]] = {

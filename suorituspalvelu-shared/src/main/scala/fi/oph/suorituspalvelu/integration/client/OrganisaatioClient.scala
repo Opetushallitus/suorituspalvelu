@@ -12,8 +12,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class OrganisaatioNimi(fi: String, sv: String, en: String)
 
-case class Organisaatio(oid: String, nimi: OrganisaatioNimi)
+case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String]) {
+  def getOidsForAuthorization() = {
+    allDescendantOids ++ Seq(oid)
+  }
+}
 
+case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio])
+
+case class HierarkiaResponse(numHits: Int, organisaatiot: Seq[HierarkiaOrganisaatio])
 // TODO: tämä pitää evaluoida uudelleen kun ruvetaan miettimään käyttöoikeuksia. Jos organisaatiohierarkia haetaan
 //  kokonaisuudessaan niin tämä haku voi olla turha
 class OrganisaatioClient(environmentBaseUrl: String) {
@@ -25,6 +32,14 @@ class OrganisaatioClient(environmentBaseUrl: String) {
   mapper.registerModule(DefaultScalaModule)
 
   val asyncHttpClient = Dsl.asyncHttpClient()
+
+  //Todo, mahdollisesti tarkistettava lakkautetut & suunnitellut-parametrit käyttötarkoituksen mukaan. Luultavasti muita kuin aktiivisia ei kuitenkaan haluta?
+  def haeHierarkia(): Future[Seq[HierarkiaOrganisaatio]] = {
+    fetch(environmentBaseUrl + "/organisaatio-service/rest/organisaatio/v4/hierarkia/hae?aktiiviset=true&lakkautetut=false&suunnitellut=false")
+      .map(data => data.map(d => mapper.readValue(d, classOf[HierarkiaResponse])).getOrElse(HierarkiaResponse(0, Seq.empty)))
+      .map(_.organisaatiot)
+      .map(_.toSeq)
+  }
 
   def haeOrganisaationTiedot(koodiArvo: String): Future[Option[Organisaatio]] =
     fetch(environmentBaseUrl + s"/organisaatio-service/api/${koodiArvo}?includeImage=false")

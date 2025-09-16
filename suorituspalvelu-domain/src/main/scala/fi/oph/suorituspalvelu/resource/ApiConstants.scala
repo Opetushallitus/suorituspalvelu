@@ -47,7 +47,7 @@ object ApiConstants {
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot/" + UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER
 
   final val UI_HAKU_PATH                                    = UI_API_PREFIX + "/oppijat"
-  final val UI_HAKU_OPPIJA_PARAM_NAME                       = "oppija"
+  final val UI_HAKU_HAKUSANA_PARAM_NAME                     = "hakusana"
   final val UI_HAKU_OPPILAITOS_PARAM_NAME                   = "oppilaitos"
   final val UI_HAKU_VUOSI_PARAM_NAME                        = "vuosi"
   final val UI_HAKU_LUOKKA_PARAM_NAME                       = "luokka"

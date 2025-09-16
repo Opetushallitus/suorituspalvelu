@@ -28,6 +28,12 @@ case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
   }
 }
 
+case class OnrHenkiloPerustiedot(oidHenkilo: String,
+                                 etunimet: String,
+                                 sukunimi: String) {
+  def getNimi = etunimet + " " + sukunimi
+}
+
 trait OnrIntegration {
   def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases]
 
@@ -36,6 +42,10 @@ trait OnrIntegration {
   def getAsiointikieli(oid: String): Future[Option[String]]
 
   def henkiloExists(oid: String): Future[Boolean]
+
+  def getPerustiedotByHetus(hetus: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
+
+  def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
 }
 
 class OnrIntegrationImpl extends OnrIntegration {
@@ -79,4 +89,12 @@ class OnrIntegrationImpl extends OnrIntegration {
 
   override def henkiloExists(oid: String): Future[Boolean] =
     this.getAsiointikieli(oid).map(optKieli => optKieli.isDefined)
+
+  override def getPerustiedotByHetus(hetus: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
+    onrClient.getPerustiedotByHetus(hetus)
+  }
+
+  override def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
+    onrClient.getPerustiedotByPersonOids(personOids)
+  }
 }
