@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
-import fi.oph.suorituspalvelu.util.KoodistoProvider
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
@@ -107,7 +107,7 @@ class IntegrationConfiguration {
         .expireAfterWrite(Duration.ofHours(12))
         .build(koodiArvo => Await.result(organisaatioClient.haeOrganisaationTiedot(koodiArvo.toString), ORGANISAATIO_TIMEOUT))
 
-      override def haeOrganisaationTiedot(koodiArvo: String): Organisaatio = cache.get(koodiArvo)
+      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = cache.get(koodiArvo)
     }
   }
 
@@ -125,8 +125,4 @@ class IntegrationConfiguration {
 
       cache.get(koodisto)
   }
-}
-
-trait OrganisaatioProvider {
-  def haeOrganisaationTiedot(koodiArvo: String): Organisaatio
 }

@@ -43,6 +43,8 @@ case class Laajuus(arvo: BigDecimal,
 case class OsaSuoritus(tyyppi: SuoritusTyyppi,
                        koulutusmoduuli: Option[KoulutusModuuli],
                        arviointi: Option[Set[Arviointi]],
+                       `yksilöllistettyOppimäärä`: Option[Boolean],
+                       `rajattuOppimäärä`: Option[Boolean],
                        osasuoritukset: Option[Set[OsaSuoritus]])
 
 case class SuoritusKieli(koodiarvo: String,
@@ -73,7 +75,8 @@ case class KoulutusTyyppi(koodiarvo: String,
 case class KoulutusModuuli(tunniste: Option[KoulutusModuuliTunniste],
                            koulutustyyppi: Option[KoulutusTyyppi],
                            laajuus: Option[Laajuus],
-                           kieli: Option[KoskiKoodi])
+                           kieli: Option[KoskiKoodi],
+                           pakollinen: Option[Boolean])
 
 case class SuoritusTyyppi(koodiarvo: String,
                           koodistoUri: String,

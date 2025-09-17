@@ -919,9 +919,9 @@ case class PerusopetuksenOppiaine(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: PerusopetuksenOppiaineNimi,
   @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[Int],
-  @(Schema @field)(example = "S", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty valinnainen: Optional[String],
+  @BeanProperty arvosana: String,
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty valinnainen: Boolean,
 )
 
 case class PerusopetuksenOppimaaraNimi(
@@ -931,6 +931,22 @@ case class PerusopetuksenOppimaaraNimi(
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "Basic education syllabus", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
+)
+
+case class YksilollistamisNimi(
+  @(Schema @field)(example = "Perusopetuksen osittain yksilöllistetty oppimäärä", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Delvis individualiserad lärokurs inom den grundläggande utbildningen", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Partially individualized basic education syllabus", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
+case class Yksilollistaminen(
+  @(Schema @field)(example = "2", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty arvo: Int,
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty nimi: YksilollistamisNimi
 )
 
 case class PerusopetuksenOppimaara(
@@ -951,9 +967,9 @@ case class PerusopetuksenOppimaara(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty luokka: String,
+  @BeanProperty luokka: Optional[String],
   @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty yksilollistetty: Boolean,
+  @BeanProperty yksilollistaminen: Yksilollistaminen,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
 )

@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.*
-import fi.oph.suorituspalvelu.integration.client.KoodiMetadata
+import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter.{dummy, toOppiaineenNimi}
@@ -36,21 +36,38 @@ class VirkailijaToSuoritusConverterTest {
         Optional.of(false)
       )).asJava))
 
-    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))))
+    val organisaatio = Organisaatio(
+      ApiConstants.ESIMERKKI_OPPILAITOS_OID,
+      OrganisaatioNimi(
+        "Oppilaitos",
+        "Oppilaitos",
+        "Oppilaitos"
+      )
+    )
+    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))), organisaatioOid => Some(organisaatio))
 
     val expected = PerusopetuksenOpiskeluoikeus(
-      Some(versioTunniste),
       converted.tunniste,
       None,
       suoritus.oppilaitosOid.get,
       Set(
         PerusopetuksenOppimaara(
           converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara].tunniste,
-          suoritus.oppilaitosOid.toScala.getOrElse(dummy()),
+          Some(versioTunniste),
+          Oppilaitos(
+            Kielistetty(
+              Some("Oppilaitos"),
+              Some("Oppilaitos"),
+              Some("Oppilaitos")
+            ),
+            suoritus.oppilaitosOid.get
+          ),
+          None,
           Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), // syötetään vain valmistuneita suorituksia
           SuoritusTila.VALMIS,
           Koodi(suoritus.suorituskieli.get, "kieli", None),
           Set.empty,
+          Some(1),
           None,
           suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
@@ -58,7 +75,10 @@ class VirkailijaToSuoritusConverterTest {
             Kielistetty(Some("matematiikka"), None, None),
             oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
             oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-            suoritus.suorituskieli.toScala.map(k => Koodi(k, "kieli", None))
+            suoritus.suorituskieli.toScala.map(k => Koodi(k, "kieli", None)),
+            oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
+            None,
+            None
           ))).getOrElse(Set.empty)
         )
       ),
@@ -85,16 +105,32 @@ class VirkailijaToSuoritusConverterTest {
           Optional.of(false)
         )))
 
-    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))))
+    val organisaatio = Organisaatio(
+      ApiConstants.ESIMERKKI_OPPILAITOS_OID,
+      OrganisaatioNimi(
+        "Oppilaitos",
+        "Oppilaitos",
+        "Oppilaitos"
+      )
+    )
+    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))), organisaatioOid => Some(organisaatio))
 
     val expected = PerusopetuksenOpiskeluoikeus(
-      Some(versioTunniste),
       converted.tunniste,
       None,
       suoritus.oppilaitosOid.get,
       Set(
         NuortenPerusopetuksenOppiaineenOppimaara(
           converted.suoritukset.head.asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara].tunniste,
+          Some(versioTunniste),
+          Oppilaitos(
+            Kielistetty(
+              Some("Oppilaitos"),
+              Some("Oppilaitos"),
+              Some("Oppilaitos")
+            ),
+            suoritus.oppilaitosOid.get
+          ),
           Kielistetty(Some("matematiikka"), None, None),
           Koodi(suoritus.suorituskieli.get, "kieli", None),
           suoritus.oppiaine.get().arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),

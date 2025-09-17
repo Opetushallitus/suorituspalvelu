@@ -1,13 +1,12 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.configuration.OrganisaatioProvider
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
-import fi.oph.suorituspalvelu.util.KoodistoProvider
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.junit.jupiter.api.*
 
 import java.time.LocalDate
@@ -22,7 +21,7 @@ import scala.jdk.OptionConverters.*
 class EntityToUIConverterTest {
 
   val DUMMY_ORGANISAATIOPROVIDER = new OrganisaatioProvider {
-    override def haeOrganisaationTiedot(koodiArvo: String): Organisaatio = Organisaatio("1.2.3", OrganisaatioNimi("", "", ""))
+    override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = Some(Organisaatio("1.2.3", OrganisaatioNimi("", "", "")))
   }
 
   val DUMMY_KOULUTUSPROVIDER = new KoodistoProvider {
@@ -468,7 +467,7 @@ class EntityToUIConverterTest {
       loppuPvm = LocalDate.parse("2021-01-01"),
       virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
       supaTila = KKOpiskeluoikeusTila.VOIMASSA,
-      myontaja = "",
+      myontaja = "2.3.4",
       suoritukset = Set.empty
     )
 
@@ -476,8 +475,8 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_SV = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeOrganisaationTiedot(koodiArvo: String): Organisaatio = {
-        Organisaatio("1.2.3", OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN))
+      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = {
+        Some(Organisaatio("2.3.4", OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN)))
       }
     }
 
@@ -519,7 +518,7 @@ class EntityToUIConverterTest {
           Optional.of(ORGANISAATION_NIMI_SV),
           Optional.of(ORGANISAATION_NIMI_EN)
         ),
-        organisaatioProvider.haeOrganisaationTiedot("").oid
+        organisaatioProvider.haeOrganisaationTiedot("2.3.4").get.oid
       ),
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
@@ -551,9 +550,9 @@ class EntityToUIConverterTest {
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeOrganisaationTiedot(koodiArvo: String): Organisaatio = {
+      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = {
         if(koodiArvo == virtaTutkinto.myontaja)
-          Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"))
+          Some(Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en")))
         else
           throw new RuntimeException()
       }
@@ -568,11 +567,11 @@ class EntityToUIConverterTest {
       ),
       KKOppilaitos(
         KKOppilaitosNimi(
-          Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).nimi.fi),
-          Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).nimi.sv),
-          Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).nimi.en)
+          Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.fi),
+          Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.sv),
+          Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.en)
         ),
-        organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).oid
+        virtaTutkinto.myontaja
       ),
       SuoritusTila.VALMIS,
       Optional.of(virtaTutkinto.aloitusPvm),

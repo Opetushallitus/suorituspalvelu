@@ -1,13 +1,12 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, VirtaOpiskeluoikeus}
-import fi.oph.suorituspalvelu.configuration.OrganisaatioProvider
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, VirtaOpiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaine, EBOppiaineNimi, EBSuoritus, EBTutkinto, EBTutkintoNimi, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOppilaitos, KKOppilaitosNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaara, LukionOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaara, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OOOppilaitos, OOOppilaitosNimi, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppimaaranOppiaine, OppimaaranOppiaineNimi, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaine, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaine, EBOppiaineNimi, EBSuoritus, EBTutkinto, EBTutkintoNimi, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOppilaitos, KKOppilaitosNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaara, LukionOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaara, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OOOppilaitos, OOOppilaitosNimi, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppimaaranOppiaine, OppimaaranOppiaineNimi, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaine, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID}
-import fi.oph.suorituspalvelu.util.KoodistoProvider
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -37,11 +36,11 @@ object EntityToUIConverter {
           val organisaatio = organisaatioProvider.haeOrganisaationTiedot(o.myontaja)
           OOOppilaitos(
             nimi = OOOppilaitosNimi(
-              fi = Optional.of(organisaatio.nimi.fi),
-              sv = Optional.of(organisaatio.nimi.sv),
-              en = Optional.of(organisaatio.nimi.en)
+              fi = organisaatio.map(o => o.nimi.fi).toJava,
+              sv = organisaatio.map(o => o.nimi.sv).toJava,
+              en = organisaatio.map(o => o.nimi.en).toJava,
             ),
-            oid = organisaatio.oid
+            oid = o.myontaja
           )
         },
         o.alkuPvm,
@@ -77,11 +76,11 @@ object EntityToUIConverter {
             val organisaatio = organisaatioProvider.haeOrganisaationTiedot(t.myontaja)
             KKOppilaitos(
               nimi = KKOppilaitosNimi(
-                fi = Optional.of(organisaatio.nimi.fi),
-                sv = Optional.of(organisaatio.nimi.sv),
-                en = Optional.of(organisaatio.nimi.en)
+                fi = organisaatio.map(o => o.nimi.fi).toJava,
+                sv = organisaatio.map(o => o.nimi.sv).toJava,
+                en = organisaatio.map(o => o.nimi.en).toJava,
               ),
-              oid = organisaatio.oid
+              oid = t.myontaja
             )
           },
           tila = VALMIS,
@@ -776,132 +775,56 @@ object EntityToUIConverter {
           )
         }).toList
 
-  def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppimaara] =
-    List(PerusopetuksenOppimaara(
-      versioTunniste = Optional.of(UUID.randomUUID()),
-      tunniste = UUID.randomUUID(),
-      nimi = PerusopetuksenOppimaaraNimi(
-        fi = Optional.of("Perusopetuksen oppimäärä"),
-        sv = Optional.of("Grundläggande utbildningens lärokurs"),
-        en = Optional.of("Basic education syllabus")
-      ),
-      oppilaitos = PKOppilaitos(
-        nimi = PKOppilaitosNimi(
-          fi = Optional.of("Keltinmäen koulu"),
-          sv = Optional.of("Keltinmäen koulu sv"),
-          en = Optional.of("Keltinmäen koulu en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
-      suorituskieli = "suomi",
-      luokka = "9A",
-      yksilollistetty = false,
-      oppiaineet = java.util.List.of(
-        PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus"),
-            sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
-            en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
+  def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[PerusopetuksenOppimaara] =
+    opiskeluoikeudet
+      .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
+      .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
+      .map(o => o.suoritukset)
+      .flatten
+      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
+      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
+      .map(om => {
+        PerusopetuksenOppimaara(
+          versioTunniste = om.versioTunniste.toJava,
+          tunniste = om.tunniste,
+          nimi = PerusopetuksenOppimaaraNimi(
+            fi = Optional.of("Perusopetuksen oppimäärä"),
+            sv = Optional.of("Grundläggande utbildningens lärokurs"),
+            en = Optional.of("Basic education syllabus")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("A1-kieli, englanti"),
-            sv = Optional.of("A1-kieli, englanti sv"),
-            en = Optional.of("A1-kieli, englanti en")
+          oppilaitos = PKOppilaitos(
+            nimi = PKOppilaitosNimi(
+              fi = om.oppilaitos.nimi.fi.toJava,
+              sv = om.oppilaitos.nimi.sv.toJava,
+              en = om.oppilaitos.nimi.en.toJava
+            ),
+            oid = om.oppilaitos.oid
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("B1-kieli, ruotsi"),
-            sv = Optional.of("B1-kieli, ruotsi sv"),
-            en = Optional.of("B1-kieli, ruotsi en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.of("S"),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("B2-kieli, saksa"),
-            sv = Optional.of("B2-kieli, saksa sv"),
-            en = Optional.of("B2-kieli, saksa en")
-          ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("S"),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Matematiikka"),
-            sv = Optional.of("Matematiikka sv"),
-            en = Optional.of("Matematiikka en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Biologia"),
-            sv = Optional.of("Biologia sv"),
-            en = Optional.of("Biologia en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Maantieto"),
-            sv = Optional.of("Maantieto sv"),
-            en = Optional.of("Maantieto en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Fysiikka"),
-            sv = Optional.of("Fysiikka sv"),
-            en = Optional.of("Fysiikka en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Kemia"),
-            sv = Optional.of("Kemia sv"),
-            en = Optional.of("Fysiikka en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Terveystieto"),
-            sv = Optional.of("Terveystieto sv"),
-            en = Optional.of("Terveystieto en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Uskonto tai elämänkatsomustieto"),
-            sv = Optional.of("Uskonto tai elämänkatsomustieto sv"),
-            en = Optional.of("Uskonto tai elämänkatsomustieto en")
-          ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          tila = SuoritusTila.valueOf(om.supaTila.toString),
+          aloituspaiva = om.aloitusPaivamaara.toJava,
+          valmistumispaiva = om.vahvistusPaivamaara.toJava,
+          suorituskieli = om.suoritusKieli.arvo,
+          luokka = om.luokka.toJava,
+          yksilollistaminen = om.yksilollistaminen.map(y => Yksilollistaminen(
+            y,
+            koodistoProvider.haeKoodisto(UIService.KOODISTO_POHJAKOULUTUS).get(y.toString).map(ya => YksilollistamisNimi(
+              ya.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
+              ya.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
+              ya.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
+            )).get
+          )).get,
+          oppiaineet = om.aineet.map(a => PerusopetuksenOppiaine(
+            tunniste = a.tunniste,
+            nimi = PerusopetuksenOppiaineNimi(
+              fi = a.nimi.fi.toJava,
+              sv = a.nimi.sv.toJava,
+              en = a.nimi.en.toJava
+            ),
+            arvosana = a.arvosana.arvo,
+            valinnainen = !a.pakollinen,
+          )).toList.asJava
         )
-      )
-    ))
+      }).toList
 
   def getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PerusopetuksenOppimaara78Luokkalaiset] =
     Some(PerusopetuksenOppimaara78Luokkalaiset(
@@ -1026,8 +949,8 @@ object EntityToUIConverter {
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1035,8 +958,8 @@ object EntityToUIConverter {
             sv = Optional.of("A1-kieli, englanti sv"),
             en = Optional.of("A1-kieli, englanti en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1044,8 +967,8 @@ object EntityToUIConverter {
             sv = Optional.of("B1-kieli, ruotsi sv"),
             en = Optional.of("B1-kieli, ruotsi en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1053,8 +976,8 @@ object EntityToUIConverter {
             sv = Optional.of("B2-kieli, saksa sv"),
             en = Optional.of("B2-kieli, saksa en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1062,8 +985,8 @@ object EntityToUIConverter {
             sv = Optional.of("Matematiikka sv"),
             en = Optional.of("Matematiikka en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("10"),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1071,8 +994,8 @@ object EntityToUIConverter {
             sv = Optional.of("Biologia sv"),
             en = Optional.of("Biologia en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("9"),
+          arvosana = "8",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1080,8 +1003,8 @@ object EntityToUIConverter {
             sv = Optional.of("Maantieto sv"),
             en = Optional.of("Maantieto en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("8"),
+          arvosana = "8",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1089,8 +1012,8 @@ object EntityToUIConverter {
             sv = Optional.of("Fysiikka sv"),
             en = Optional.of("Fysiikka en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("9"),
+          arvosana = "8",
+          valinnainen = false,
         )
       )
     ))
@@ -1124,7 +1047,7 @@ object EntityToUIConverter {
         telmat =                                    getTelmat(opiskeluoikeudet).asJava,
         tuvat =                                     getTuvat(opiskeluoikeudet).asJava,
         vapaaSivistystyoKoulutukset =               getVapaaSivistystyoKoulutukset(opiskeluoikeudet).asJava,
-        perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat(opiskeluoikeudet).asJava,
+        perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat(opiskeluoikeudet, koodistoProvider).asJava,
         perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet).toJava,
         nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
         perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava,
