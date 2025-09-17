@@ -537,6 +537,7 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
+      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
         val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
@@ -618,6 +619,7 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
+      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         Ammattitutkinto(
           t.tunniste,
@@ -649,6 +651,7 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
+      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         Erikoisammattitutkinto(
           t.tunniste,
@@ -680,6 +683,7 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Telma])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Telma])
+      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         Telma(
           t.tunniste,
@@ -712,6 +716,7 @@ object EntityToUIConverter {
         .flatten
         .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
         .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
+        .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
         .map(t => {
           Tuva(
             t.tunniste,
@@ -747,6 +752,7 @@ object EntityToUIConverter {
         .flatten
         .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
         .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
+        .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
         .map(t => {
           VapaaSivistystyoKoulutus(
             t.tunniste,
@@ -783,6 +789,7 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
+      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(om => {
         PerusopetuksenOppimaara(
           versioTunniste = om.versioTunniste.toJava,

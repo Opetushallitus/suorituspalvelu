@@ -46,9 +46,9 @@ object KoskiToSuoritusConverter {
       case "eronnut"                    => SuoritusTila.KESKEYTYNYT
       case "katsotaaneronneeksi"        => SuoritusTila.KESKEYTYNYT
       case "keskeytynyt"                => SuoritusTila.KESKEYTYNYT
-      case "mitatoity"                  => SuoritusTila.KESKEYTYNYT
       case "peruutettu"                 => SuoritusTila.KESKEYTYNYT
       case "paattynyt"                  => SuoritusTila.KESKEYTYNYT
+      case "mitatoity"                  => SuoritusTila.MITATOITY
 
 
   def parseTila(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Option[VersioituTunniste] =

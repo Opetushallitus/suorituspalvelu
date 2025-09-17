@@ -29,6 +29,7 @@ enum SuoritusTila:
   case VALMIS
   case KESKEN
   case KESKEYTYNYT
+  case MITATOITY
 
 case class Container(
                       @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
