@@ -550,7 +550,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusEiPoistettavissa(): Unit =
-    // tallennetaan versio ja päätetään voimassaolo
+    // tallennetaan versio lähdejärjestelmälle jonka suorituksia ei voi poistaa
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.KOSKI, "{}")
 
     // versio joka ei poistettavissa aiheuttaa virheen
