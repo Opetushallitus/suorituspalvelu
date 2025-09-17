@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.security
 
-import fi.oph.suorituspalvelu.configuration.OrganisaatioProvider
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.springframework.security.core.context.SecurityContextHolder
 
 import scala.jdk.CollectionConverters.*
@@ -43,7 +43,7 @@ class SecurityOperaatiot(
   def getAuthorization(organisaatioProvider: OrganisaatioProvider): VirkailijaAuthorization = {
     val rekPit = onRekisterinpitaja()
     val organisaatiotOikeuksista = if (!rekPit) getOrganisaatiot() else Set.empty
-    val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).allDescendantOids)
+    val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
     VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista, aliorganisaatiot)
   }
 
