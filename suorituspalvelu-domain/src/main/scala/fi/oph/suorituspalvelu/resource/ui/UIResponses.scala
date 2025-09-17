@@ -1034,24 +1034,6 @@ case class PerusopetuksenOppimaara78Luokkalaiset(
   @BeanProperty yksilollistetty: Boolean
 )
 
-case class OppimaaranOppiaineNimi(
-  @(Schema @field)(example = "matematiikka", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "matematiikka sv", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "matematiikka en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String],
-)
-
-case class OppimaaranOppiaine(
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: UUID,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: OppimaaranOppiaineNimi,
-  @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Int
-)
-
 case class NuortenPerusopetuksenOppiaineenOppimaaraNimi(
   @(Schema @field)(example = "Nuorten perusopetuksen oppiaineen oppimäärä", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -1077,7 +1059,7 @@ case class NuortenPerusopetuksenOppiaineenOppimaara(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[OppimaaranOppiaine]
+  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
 )
 
 case class PerusopetuksenOppiaineenOppimaaraNimi(
@@ -1105,7 +1087,7 @@ case class PerusopetuksenOppiaineenOppimaara(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[OppimaaranOppiaine]
+  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
 )
 
 trait OppijanTiedotResponse()

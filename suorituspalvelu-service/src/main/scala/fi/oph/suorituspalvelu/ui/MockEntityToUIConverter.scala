@@ -958,22 +958,24 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(OppimaaranOppiaine(
+      oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = OppimaaranOppiaineNimi(
+        nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("Biologia"),
           sv = Optional.of("Biologia sv"),
           en = Optional.of("Biologia en")
         ),
-        arvosana = 9
-      ),OppimaaranOppiaine(
+        arvosana = "9",
+        valinnainen = false
+      ),PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = OppimaaranOppiaineNimi(
+        nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("Historia"),
           sv = Optional.of("Historia sv"),
           en = Optional.of("Historia en")
         ),
-        arvosana = 8
+        arvosana = "8",
+        valinnainen = false
       ))
     ))
 
@@ -997,14 +999,15 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(OppimaaranOppiaine(
+      oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = OppimaaranOppiaineNimi(
+        nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("matematiikka"),
           sv = Optional.of("matematiikka sv"),
           en = Optional.of("matematiikka en")
         ),
-        arvosana = 9
+        arvosana = "9",
+        valinnainen = false
       ))
     ))
 
