@@ -172,7 +172,7 @@ class UIResource {
           .flatMap(_ =>
             // tarkastetaan oikeudet
             // TODO: muutetaan tulevaisuudessa perustumaan myös siihen minkä oppilaitosten oppijoita käyttäjälle on oikeus nähdä
-            if(securityOperaatiot.onRekisterinpitaja())
+            if(securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.getOrganisaatiot().nonEmpty)
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(OppijanHakuFailureResponse(java.util.Set.of(UI_HAKU_EI_OIKEUKSIA)))))
@@ -203,8 +203,8 @@ class UIResource {
               UI_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
               UI_HAKU_LUOKKA_PARAM_NAME -> luokka.orElse(null),
             ), AuditOperation.HaeOppijatUI, None)
-            val auth = securityOperaatiot.getAuthorization()
-            val oppijat = uiService.haeOppijat(hakusana.toScala, oppilaitos.toScala, vuosi.toScala, luokka.toScala, auth)
+            val virkailijaAuth = securityOperaatiot.getAuthorization(organisaatioProvider)
+            val oppijat = uiService.haeOppijat(hakusana.toScala, oppilaitos.toScala, vuosi.toScala, luokka.toScala, virkailijaAuth)
             Right(ResponseEntity.status(HttpStatus.OK).body(OppijanHakuSuccessResponse(oppijat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanHakuResponse]])

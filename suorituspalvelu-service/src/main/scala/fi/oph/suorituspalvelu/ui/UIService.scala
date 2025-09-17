@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.VirkailijaAuthorization
@@ -120,17 +120,53 @@ class UIService {
     }
   }
 
-  //Hakusanalla (hetu, oppijanumero) haetaan oppijanumerorekisteristä. Muilla parametreilla haetaan myöhemmin toteutettavasta indeksistä Supan kannassa.
-  //Paluuarvona leikkaus eri hakutavoista, jos molempia käytetty.
-  //Muut parametrit kuin hakusana eivät toistaiseksi vaikuta mihinkään. Korjataan asia kun Supan hakuindeksi on olemassa.
+  //Tämä ei oikeasti toimi kovin tehokkaasti suurille joukoille Oppijoita, koska Atarun permissioncheck-rajapinta käsittelee yhden henkilön kerrallaan.
+  def filtteroiHakemuspohjaisillaOikeuksilla(oppijat: Set[Oppija], authorization: VirkailijaAuthorization): Future[Set[Oppija]] = {
+    if (authorization.onRekisterinpitaja) {
+      Future.successful(oppijat)
+    } else {
+      LOG.info(s"Tarkistetaan käyttäjälle $authorization oikeudet Atarusta.")
+      val pCheckFutures = onrIntegration.getAliasesForPersonOids(oppijat.map(_.oppijaNumero)).flatMap(aliases => {
+        LOG.info(s"Saatiin aliakset ${oppijat.size} oppijalle.")
+        oppijat.foldLeft(Future.successful(Seq.empty[(Oppija, AtaruPermissionResponse)])) {
+          case (prevFuture, oppija) =>
+            prevFuture.flatMap(results => {
+              val pRequest = AtaruPermissionRequest(
+                aliases.allOidsByQueriedOids.getOrElse(oppija.oppijaNumero, throw new RuntimeException(s"Oppijan ${oppija.oppijaNumero} aliaksia ei löytynyt!")),
+                authorization.getOrgsForAuth(),
+                Set.empty)
+              LOG.info(s"Kutsutaan atarua, $pRequest")
+              hakemuspalveluClient.checkPermission(pRequest).map(p => results :+ (oppija, p))
+            })
+        }
+      })
+
+      val filteredF = pCheckFutures.flatMap((results: Seq[(Oppija, AtaruPermissionResponse)]) => {
+        val filtered = results.toSet.flatMap({
+          case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(true) =>
+            Some(o)
+          case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(false) =>
+            LOG.warn(s"Ei oikeuksia käyttäjälle $authorization oppijaan ${oppijat.head.oppijaNumero}. Filtteröidään oppija pois.")
+            None
+          case (o: Oppija, r: AtaruPermissionResponse) if r.errorMessage.isDefined =>
+            LOG.error(s"Virhe atarussa: ${r.errorMessage.get}")
+            throw new RuntimeException(s"Virhe atarussa: ${r.errorMessage.get}")
+          case _ => ???
+        })
+        Future.successful(filtered)
+      })
+      filteredF
+    }
+  }
+
+  // TODO: Muut parametrit kuin hakusana eivät toistaiseksi vaikuta mihinkään. Korjataan asia kun Supan hakuindeksi on olemassa.
   // TODO: implementaatiohuomio. Todennäköisesti halutaan purkaa olennainen tieto (oppilaitos, vuosi, luokka) erilliseen sopivasti GIN-indeksoituun tauluun KOSKI-hakujen yhteydessä josta sitten haetaan tässä
   def haeOppijat(hakusana: Option[String], oppilaitos: Option[String], vuosi: Option[String], luokka: Option[String], authorization: VirkailijaAuthorization): Set[Oppija] = {
     val resultF = suoritaOnrHaku(hakusana).flatMap(onrResult => {
       val onrOppijat: Set[Oppija] = onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet
-
-      if (onrOppijat.size > 1) {
-        throw new RuntimeException(s"Oppijanumerorekisteristä löytyi useita oppijoita annetulla hakusanalla. Tämän ei pitäisi olla nykyisellään mahdollista.")
-      } else if (onrOppijat.isEmpty) {
+      if (onrOppijat.nonEmpty) {
+        filtteroiHakemuspohjaisillaOikeuksilla(onrOppijat, authorization)
+      } else {
         //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
         val esimerkkiVastaus = Set(Oppija(
           EXAMPLE_OPPIJA_OID,
@@ -139,25 +175,6 @@ class UIService {
         ))
         LOG.info(s"Hakusanalla ei löytynyt oppijaa. Palautetaan esimerkkioppija. $esimerkkiVastaus")
         Future.successful(esimerkkiVastaus)
-      } else {
-        if (authorization.onRekisterinpitaja) {
-          LOG.info(s"Käyttäjä $authorization on rekisterinpitäjä. Ei tarkistella oikeuksia enempää.")
-          Future.successful(onrOppijat)
-        } else {
-          LOG.info(s"Tarkistetaan käyttäjälle $authorization oikeudet Atarusta.")
-          val pRequest = AtaruPermissionRequest(Set(onrOppijat.head.oppijaNumero), authorization.organisaatioOids, Set.empty)
-          val oikeusCheckF = hakemuspalveluClient.checkPermission(pRequest)
-            .flatMap(permissionResult => {
-              val hasAccess = permissionResult.accessAllowed.contains(true)
-              if (hasAccess)
-                Future.successful(onrOppijat)
-              else {
-                LOG.warn(s"Ei oikeuksia käyttäjälle $authorization oppijaan ${onrOppijat.head.oppijaNumero}. Palautetaan tyhjä vastaus.")
-                Future.successful(Set.empty)
-              }
-            })
-          oikeusCheckF
-        }
       }
     })
     Await.result(resultF, 30.seconds)
