@@ -102,31 +102,21 @@ class IntegrationConfiguration {
   def getOrganisaatioProvider(@Value("${integrations.koski.base-url}") envBaseUrl: String): OrganisaatioProvider = {
     new OrganisaatioProvider {
       val organisaatioClient = new OrganisaatioClient(envBaseUrl)
+      private val ORGANISAATIO_TIMEOUT = 120.seconds
 
-      private case class AllOrgsFlat(data: Map[String, Organisaatio], timestamp: Long)
-      private val hierarchyCache = new AtomicReference[Option[AllOrgsFlat]](None)
-
-      //Todo, tätä voisi ehkä taustaraikastaa myös ennen lopullista hapantumista niin, että kakussa on aina jotain.
-      private val hierarchyCacheDuration = Duration.ofHours(6).toMillis
-
-      private def getHierarchyData(): Map[String, Organisaatio] = {
-        val currentTime = System.currentTimeMillis()
-
-        hierarchyCache.get() match {
-          case Some(AllOrgsFlat(allOrgsFlat, timestamp)) if (currentTime - timestamp) < hierarchyCacheDuration =>
-            allOrgsFlat
-          case _ =>
-            val tuoreHierarkia = Await.result(organisaatioClient.haeHierarkia(), ORGANISAATIO_TIMEOUT)
-            val allOrgsFlat = OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
-            hierarchyCache.set(Some(AllOrgsFlat(allOrgsFlat, currentTime)))
-            allOrgsFlat
-        }
-      }
+      private val hierarkiaCache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofHours(6))
+        .refreshAfterWrite(Duration.ofHours(3))
+        .build[String, Map[String, Organisaatio]](_ => {
+          val tuoreHierarkia = Await.result(organisaatioClient.haeHierarkia(), ORGANISAATIO_TIMEOUT)
+          OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
+        })
 
       override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
-        getHierarchyData().get(organisaatioOid)
+        hierarkiaCache.get("hierarkia").get(organisaatioOid)
       }
     }
+
   }
 
   @Bean

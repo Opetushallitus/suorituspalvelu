@@ -557,7 +557,7 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
       override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
-        Some(Organisaatio("1.2.3", OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty))
+        Some(Organisaatio(organisaatioOid, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty))
       }
     }
 
