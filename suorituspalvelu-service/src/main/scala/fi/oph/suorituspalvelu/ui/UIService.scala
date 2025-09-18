@@ -133,7 +133,7 @@ class UIService {
             prevFuture.flatMap(results => {
               val pRequest = AtaruPermissionRequest(
                 aliases.allOidsByQueriedOids.getOrElse(oppija.oppijaNumero, throw new RuntimeException(s"Oppijan ${oppija.oppijaNumero} aliaksia ei löytynyt!")),
-                authorization.getOrgsForAuth(),
+                authorization.oikeudellisetOrganisaatiot,
                 Set.empty)
               LOG.info(s"Kutsutaan atarua, $pRequest")
               hakemuspalveluClient.checkPermission(pRequest).map(p => results :+ (oppija, p))

@@ -7,11 +7,7 @@ import scala.jdk.CollectionConverters.*
 
 //organisaatioOids on tyhjä rekisterinpitäjille (suorituskykysyyt + tarpeeton),
 // muille sisältää kaikki oikeudelliset organisaatiot sekä näiden aliorganisaatiot.
-case class VirkailijaAuthorization(username: String, onRekisterinpitaja: Boolean, oikeudellisetOrganisaatiot: Set[String], aliOrganisaatiot: Set[String]) {
-  def getOrgsForAuth(): Set[String] = {
-    oikeudellisetOrganisaatiot ++ aliOrganisaatiot
-  }
-}
+case class VirkailijaAuthorization(username: String, onRekisterinpitaja: Boolean, oikeudellisetOrganisaatiot: Set[String])
 
 class SecurityOperaatiot(
                           getOikeudet: () => Set[String] = () => SecurityContextHolder.getContext.getAuthentication.getAuthorities.asScala.map(a => a.getAuthority).toSet,
@@ -44,7 +40,7 @@ class SecurityOperaatiot(
     val rekPit = onRekisterinpitaja()
     val organisaatiotOikeuksista = if (!rekPit) getOrganisaatiot() else Set.empty
     val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
-    VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista, aliorganisaatiot)
+    VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot)
   }
 
 }
