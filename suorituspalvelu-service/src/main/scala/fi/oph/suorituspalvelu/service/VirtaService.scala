@@ -97,7 +97,7 @@ class VirtaRefresh {
           LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
           val versionParseroidut: VirtaSuoritukset = VirtaParser.parseVirtaData(new ByteArrayInputStream(hetulessXml.getBytes))
           val konvertoidut: Seq[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(versionParseroidut)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet, Set.empty)
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet)
           LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${virtaResult.oppijanumeroTaiHetu}, yhteensä ${konvertoidut.size} suoritusta.")
         })
         SyncResultForHenkilo(virtaResult.oppijanumeroTaiHetu, versio, None)

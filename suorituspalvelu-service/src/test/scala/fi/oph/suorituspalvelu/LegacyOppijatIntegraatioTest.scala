@@ -105,7 +105,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
       PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppimaara), None, None),
       PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
       YOOpiskeluoikeus(UUID.randomUUID(), yoTutkinto)
-    ), Set.empty)
+    ))
 
     // määritellään että hakemuspalvelun mukaan haun ainoa hakija
     Mockito.when(hakemuspalveluClient.getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(None, Some(hakuOid), None))).thenReturn(Future.successful(Seq(AtaruHakemuksenHenkilotiedot("", Some(OPPIJA_OID), None))))

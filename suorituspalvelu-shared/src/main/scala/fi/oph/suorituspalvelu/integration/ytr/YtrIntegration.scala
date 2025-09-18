@@ -65,8 +65,8 @@ class YtrIntegration {
       val kantaOperaatiot = KantaOperaatiot(database)
       val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, ytrResult.resultJson.getOrElse("{}"))
       versio.foreach(v => {
-        //Todo, parsitaan ytr-data ja tallennetaan parsitut suoritukset
         LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
+        //kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit()
       })
       SyncResultForHenkilo(ytrResult.personOid, versio, None)
     } catch {
