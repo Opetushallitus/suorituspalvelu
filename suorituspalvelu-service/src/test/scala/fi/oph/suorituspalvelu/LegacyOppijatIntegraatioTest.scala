@@ -98,7 +98,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     val telma = Telma(UUID.randomUUID(), Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), suoritusKieli)
     val perusopetuksenOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), None, Koodi("valmistunut", "koodisto", None), SuoritusTila.VALMIS, suoritusKieli, Set.empty, None, None, None, Set.empty)
     val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None, None)
-    val yoTutkinto = YOTutkinto(UUID.randomUUID(), suoritusKieli)
+    val yoTutkinto = YOTutkinto(UUID.randomUUID(), suoritusKieli, SuoritusTila.KESKEN, None, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(telma), None),

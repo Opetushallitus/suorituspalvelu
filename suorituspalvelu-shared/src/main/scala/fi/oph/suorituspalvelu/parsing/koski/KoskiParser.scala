@@ -143,6 +143,7 @@ object KoskiParser {
     mapper.registerModule(DefaultScalaModule)
     mapper.registerModule(new JavaTimeModule())
     mapper.registerModule(new Jdk8Module()) // tämä on java.util.Optional -kenttiä varten
+    // halutaan mahdollisimman tiukka validaatio ettei sanitointi suodata mitään dataa pois
     mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     mapper.configure(SerializationFeature.INDENT_OUTPUT, true)

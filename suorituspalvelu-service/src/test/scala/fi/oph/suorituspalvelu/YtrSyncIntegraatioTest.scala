@@ -78,14 +78,14 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     unz.map((filename, data) => {
       println(s"Processing file $filename")
-      val parsed: Seq[YtrDataForHenkilo] = YtrParser.parseYtrMassData(data, hetuToPersonOid).toList
+      val parsed: Seq[(String, String)] = YtrParser.splitAndSanitize(data).toList
       println(s"Parsed ${parsed.size} records: $parsed")
 
-      Assertions.assertTrue(parsed.find(_.personOid == "1.2.246.562.24.91423259222").isDefined)
-      Assertions.assertTrue(parsed.find(_.personOid == "1.2.246.562.24.91423259333").isDefined)
-      Assertions.assertTrue(parsed.find(_.personOid == "1.2.246.562.24.91423259444").isDefined)
-      Assertions.assertTrue(parsed.find(_.personOid == "1.2.246.562.24.91423259555").isDefined)
-      Assertions.assertTrue(parsed.find(_.personOid == "1.2.246.562.24.91423259666").isDefined)
+      Assertions.assertTrue(parsed.find(_._1 == "150875-935M").isDefined)
+      Assertions.assertTrue(parsed.find(_._1 == "080578-945T").isDefined)
+      Assertions.assertTrue(parsed.find(_._1 == "040577-967N").isDefined)
+      Assertions.assertTrue(parsed.find(_._1 == "080562-9273").isDefined)
+      Assertions.assertTrue(parsed.find(_._1 == "060864-933X").isDefined)
       parsed
     })
   }
@@ -111,7 +111,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testRefreshKoskiForOppijaAllowed(): Unit = {
+  @Test def testRefreshYtrForOppijaAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.91423219111"
 
     val sourceFile = "/ytr_single.json"
@@ -206,9 +206,9 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     val result = mvc.perform(jsonPostString(ApiConstants.YTR_DATASYNC_HAKU_PATH, hakuOid))
       .andExpect(status().isOk).andReturn()
-    val koskiSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
+    val ytrSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
 
-    //Tarkistetaan että kaikille oppijanumeroille on muodostunut yksi versio kantaan.
+    //Tarkistetaan että kaikille oppijanumeroille on muodostunut yksi versio kantaan, ja versio on parseroitu suorituksiksi
     hetuToPersonOid.values.foreach(personOid => {
       val versiot = kantaOperaatiot.haeOppijanVersiot(personOid)
       Assertions.assertTrue(versiot.size == 1)
@@ -216,6 +216,9 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       val data = kantaOperaatiot.haeData(versiot.head)
       val parsed: Student = objectMapper.readValue(data._2, classOf[Student])
       Assertions.assertTrue(parsed.ssn.isEmpty)
+      
+      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.oppijaNumero)
+      Assertions.assertFalse(suoritukset.isEmpty)
     })
   }
 

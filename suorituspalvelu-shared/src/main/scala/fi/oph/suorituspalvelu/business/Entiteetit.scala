@@ -109,7 +109,9 @@ case class GeneerinenOpiskeluoikeus(
 
 case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
 
-case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi) extends Suoritus
+case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi, supaTila: SuoritusTila, valmistumisPaiva: Option[LocalDate], aineet: Set[Koe]) extends Suoritus
+
+case class Koe(tunniste: UUID, koodi: Koodi, tutkintoKerta: LocalDate, arvosana: Koodi, pisteet: Option[Int])
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko)
 
