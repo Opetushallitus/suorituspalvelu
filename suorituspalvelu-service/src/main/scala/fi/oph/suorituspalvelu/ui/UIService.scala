@@ -89,6 +89,11 @@ object UIService {
 
   val YTL_ORGANISAATIO_OID = "1.2.246.562.10.43628088406"
 
+  val EXAMPLE_OPPIJAT: Set[Oppija] = Set(Oppija(
+    EXAMPLE_OPPIJA_OID,
+    Optional.of(EXAMPLE_HETU),
+    EXAMPLE_NIMI
+  ))
 }
 
 @Component
@@ -121,42 +126,32 @@ class UIService {
   }
 
   //Tämä ei oikeasti toimi kovin tehokkaasti suurille joukoille Oppijoita, koska Atarun permissioncheck-rajapinta käsittelee yhden henkilön kerrallaan.
-  def filtteroiHakemuspohjaisillaOikeuksilla(oppijat: Set[Oppija], authorization: VirkailijaAuthorization): Future[Set[Oppija]] = {
-    if (authorization.onRekisterinpitaja) {
-      Future.successful(oppijat)
-    } else {
-      LOG.info(s"Tarkistetaan käyttäjälle $authorization oikeudet Atarusta.")
-      val pCheckFutures = onrIntegration.getAliasesForPersonOids(oppijat.map(_.oppijaNumero)).flatMap(aliases => {
-        LOG.info(s"Saatiin aliakset ${oppijat.size} oppijalle.")
-        oppijat.foldLeft(Future.successful(Seq.empty[(Oppija, AtaruPermissionResponse)])) {
-          case (prevFuture, oppija) =>
-            prevFuture.flatMap(results => {
-              val pRequest = AtaruPermissionRequest(
-                aliases.allOidsByQueriedOids.getOrElse(oppija.oppijaNumero, throw new RuntimeException(s"Oppijan ${oppija.oppijaNumero} aliaksia ei löytynyt!")),
-                authorization.oikeudellisetOrganisaatiot,
-                Set.empty)
-              LOG.info(s"Kutsutaan atarua, $pRequest")
-              hakemuspalveluClient.checkPermission(pRequest).map(p => results :+ (oppija, p))
-            })
-        }
-      })
-
-      val filteredF = pCheckFutures.flatMap((results: Seq[(Oppija, AtaruPermissionResponse)]) => {
-        val filtered = results.toSet.flatMap({
-          case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(true) =>
-            Some(o)
-          case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(false) =>
-            LOG.warn(s"Ei oikeuksia käyttäjälle $authorization oppijaan ${oppijat.head.oppijaNumero}. Filtteröidään oppija pois.")
-            None
-          case (o: Oppija, r: AtaruPermissionResponse) if r.errorMessage.isDefined =>
-            LOG.error(s"Virhe atarussa: ${r.errorMessage.get}")
-            throw new RuntimeException(s"Virhe atarussa: ${r.errorMessage.get}")
-          case _ => ???
+  def filtteroiHakemuspohjaisillaOikeuksilla(oppijat: Set[Oppija], authorization: VirkailijaAuthorization, aliakset: Map[String, Set[String]]): Future[Set[Oppija]] = {
+    LOG.info(s"Tarkistetaan käyttäjälle $authorization oikeudet Atarusta.")
+    oppijat.foldLeft(Future.successful(Seq.empty[(Oppija, AtaruPermissionResponse)])) {
+      case (prevFuture, oppija) =>
+        prevFuture.flatMap(results => {
+          val pRequest = AtaruPermissionRequest(
+            aliakset.getOrElse(oppija.oppijaNumero, throw new RuntimeException(s"Oppijan ${oppija.oppijaNumero} aliaksia ei löytynyt!")),
+            authorization.oikeudellisetOrganisaatiot,
+            Set.empty)
+          LOG.info(s"Kutsutaan atarua, $pRequest")
+          hakemuspalveluClient.checkPermission(pRequest).map(p => results :+ (oppija, p))
         })
-        Future.successful(filtered)
+    }.flatMap((results: Seq[(Oppija, AtaruPermissionResponse)]) => {
+      val filtered = results.toSet.flatMap({
+        case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(true) =>
+          Some(o)
+        case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(false) =>
+          LOG.warn(s"Ei oikeuksia käyttäjälle $authorization oppijaan ${oppijat.head.oppijaNumero}. Filtteröidään oppija pois.")
+          None
+        case (o: Oppija, r: AtaruPermissionResponse) if r.errorMessage.isDefined =>
+          LOG.error(s"Virhe atarussa: ${r.errorMessage.get}")
+          throw new RuntimeException(s"Virhe atarussa: ${r.errorMessage.get}")
+        case _ => ???
       })
-      filteredF
-    }
+      Future.successful(filtered)
+    })
   }
 
   // TODO: Muut parametrit kuin hakusana eivät toistaiseksi vaikuta mihinkään. Korjataan asia kun Supan hakuindeksi on olemassa.
@@ -165,16 +160,16 @@ class UIService {
     val resultF = suoritaOnrHaku(hakusana).flatMap(onrResult => {
       val onrOppijat: Set[Oppija] = onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet
       if (onrOppijat.nonEmpty) {
-        filtteroiHakemuspohjaisillaOikeuksilla(onrOppijat, authorization)
+        if (authorization.onRekisterinpitaja) {
+          Future.successful(onrOppijat)
+        } else {
+          onrIntegration.getAliasesForPersonOids(onrOppijat.map(_.oppijaNumero)).map(_.allOidsByQueriedOids).flatMap(aliasResult => {
+            filtteroiHakemuspohjaisillaOikeuksilla(onrOppijat, authorization, aliasResult)
+          })
+        }
       } else {
         //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
-        val esimerkkiVastaus = Set(Oppija(
-          EXAMPLE_OPPIJA_OID,
-          Optional.of(EXAMPLE_HETU),
-          EXAMPLE_NIMI
-        ))
-        LOG.info(s"Hakusanalla ei löytynyt oppijaa. Palautetaan esimerkkioppija. $esimerkkiVastaus")
-        Future.successful(esimerkkiVastaus)
+        Future.successful(UIService.EXAMPLE_OPPIJAT)
       }
     })
     Await.result(resultF, 30.seconds)
