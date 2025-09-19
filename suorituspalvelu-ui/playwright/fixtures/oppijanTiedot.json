@@ -56,75 +56,83 @@
       }
     }
   ],
-  "yoTutkinto": {
-    "tunniste": "3f64fb88-d178-4803-b7e2-c21e887e3d05",
-    "nimi": {
-      "fi": "Ylioppilastutkinto",
-      "sv": "Ylioppilastutkinto sv",
-      "en": "Ylioppilastutkinto en"
-    },
-    "oppilaitos": {
+  "yoTutkinnot": [
+    {
+      "tunniste": "3f64fb88-d178-4803-b7e2-c21e887e3d05",
       "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
+        "fi": "Ylioppilastutkinto",
+        "sv": "Ylioppilastutkinto sv",
+        "en": "Ylioppilastutkinto en"
       },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "valmistumispaiva": "2019-06-01",
-    "suorituskieli": "suomi",
-    "yoKokeet": [
-      {
-        "tunniste": "1566e8e9-d7e4-40b6-937e-b6db469acc87",
-        "aine": "Psykologia",
-        "taso": "Ainemuotoinen reaali",
-        "arvosana": "E",
-        "yhteispistemaara": 28,
-        "tutkintokerta": "2018-12-21"
+      "oppilaitos": {
+        "nimi": {
+          "fi": "Ylioppilastutkintolautakunta",
+          "sv": "Ylioppilastutkintolautakunta sv",
+          "en": "Ylioppilastutkintolautakunta en"
+        },
+        "oid": "1.2.3.4"
       },
-      {
-        "tunniste": "d513dd57-ffbe-4ac7-872f-54c8992ab485",
-        "aine": "Englanti",
-        "taso": "Pitkä oppimäärä (KIELI)",
-        "arvosana": "E",
-        "yhteispistemaara": 259,
-        "tutkintokerta": "2019-06-01"
-      },
-      {
-        "tunniste": "f8a54d97-5e2f-41b9-9821-c3c136b2db7f",
-        "aine": "Matematiikka",
-        "taso": "Lyhyt oppimäärä (MA)",
-        "arvosana": "C",
-        "yhteispistemaara": 23,
-        "tutkintokerta": "2019-06-01"
-      },
-      {
-        "tunniste": "0e4dcdbe-b7b3-44ce-b237-989c139c7150",
-        "aine": "Suomi",
-        "taso": "Äidinkieli",
-        "arvosana": "C",
-        "yhteispistemaara": 49,
-        "tutkintokerta": "2019-06-01"
-      },
-      {
-        "tunniste": "5bc17c18-012f-4e99-bba8-24b770b0b616",
-        "aine": "Historia",
-        "taso": "Ainemuotoinen reaali",
-        "arvosana": "M",
-        "yhteispistemaara": 25,
-        "tutkintokerta": "2019-06-01"
-      },
-      {
-        "tunniste": "8717fdee-582c-4d5c-af62-ec7ef311c272",
-        "aine": "Yhteiskuntaoppi",
-        "taso": "Ainemuotoinen reaali",
-        "arvosana": "E",
-        "yhteispistemaara": 32,
-        "tutkintokerta": "2019-06-01"
-      }
-    ]
-  },
+      "tila": "VALMIS",
+      "valmistumispaiva": "2019-06-01",
+      "suorituskieli": "suomi",
+      "yoKokeet": [
+        {
+          "tunniste": "1566e8e9-d7e4-40b6-937e-b6db469acc87",
+          "nimi": {
+            "fi": "Psykologia"
+          },
+          "arvosana": "E",
+          "yhteispistemaara": 28,
+          "tutkintokerta": "2018-12-21"
+        },
+        {
+          "tunniste": "d513dd57-ffbe-4ac7-872f-54c8992ab485",
+          "nimi": {
+            "fi": "Englanti, pitkä oppimäärä"
+          },
+          "arvosana": "E",
+          "yhteispistemaara": 259,
+          "tutkintokerta": "2019-06-01"
+        },
+        {
+          "tunniste": "f8a54d97-5e2f-41b9-9821-c3c136b2db7f",
+          "nimi": {
+            "fi": "Matematiikan koe, lyhyt oppimäärä"
+          },
+          "arvosana": "C",
+          "yhteispistemaara": 23,
+          "tutkintokerta": "2019-06-01"
+        },
+        {
+          "tunniste": "0e4dcdbe-b7b3-44ce-b237-989c139c7150",
+          "nimi": {
+            "fi": "Äidinkielen koe, suomi"
+          },
+          "arvosana": "C",
+          "yhteispistemaara": 49,
+          "tutkintokerta": "2019-06-01"
+        },
+        {
+          "tunniste": "5bc17c18-012f-4e99-bba8-24b770b0b616",
+          "nimi": {
+            "fi": "Historia"
+          },
+          "arvosana": "M",
+          "yhteispistemaara": 25,
+          "tutkintokerta": "2019-06-01"
+        },
+        {
+          "tunniste": "8717fdee-582c-4d5c-af62-ec7ef311c272",
+          "nimi": {
+            "fi": "Yhteiskuntaoppi"
+          },
+          "arvosana": "E",
+          "yhteispistemaara": 32,
+          "tutkintokerta": "2019-06-01"
+        }
+      ]
+    }
+  ],
   "lukionOppimaara": {
     "tunniste": "1e0a4845-6f33-48ea-92e4-8e998d52e5bb",
     "nimi": {

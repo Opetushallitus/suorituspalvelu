@@ -34,13 +34,13 @@ export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
   additionalChecks: async (paper) => {
     const yoTable = paper.getByRole('table');
     await checkTable(yoTable, [
-      ['Aine', 'Taso', 'Arvosana', 'Yhteispistemäärä', 'Tutkintokerta'],
-      ['Psykologia', 'Ainemuotoinen reaali', 'E', '28', '21.12.2018'],
-      ['Englanti', 'Pitkä oppimäärä (KIELI)', 'E', '259', '1.6.2019'],
-      ['Matematiikka', 'Lyhyt oppimäärä (MA)', 'C', '23', '1.6.2019'],
-      ['Suomi', 'Äidinkieli', 'C', '49', '1.6.2019'],
-      ['Historia', 'Ainemuotoinen reaali', 'M', '25', '1.6.2019'],
-      ['Yhteiskuntaoppi', 'Ainemuotoinen reaali', 'E', '32', '1.6.2019'],
+      ['Aine', 'Arvosana', 'Yhteispistemäärä', 'Tutkintokerta'],
+      ['Psykologia', 'E', '28', '21.12.2018'],
+      ['Englanti, pitkä oppimäärä', 'E', '259', '1.6.2019'],
+      ['Matematiikan koe, lyhyt oppimäärä', 'C', '23', '1.6.2019'],
+      ['Äidinkielen koe, suomi', 'C', '49', '1.6.2019'],
+      ['Historia', 'M', '25', '1.6.2019'],
+      ['Yhteiskuntaoppi', 'E', '32', '1.6.2019'],
     ]);
   },
 };

@@ -363,7 +363,7 @@ export interface IOppijanTiedotSuccessResponse {
   henkiloOID: string;
   opiskeluoikeudet: IUIOpiskeluoikeus[];
   kkTutkinnot: IKKSuoritus[];
-  yoTutkinto?: IYOTutkinto;
+  yoTutkinnot: IYOTutkinto[];
   lukionOppimaara?: ILukionOppimaara;
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
   diaTutkinto?: IDIATutkinto;
@@ -613,11 +613,16 @@ export interface IVapaaSivistystyoOppilaitosNimi {
 
 export interface IYOKoe {
   tunniste: string;
-  aine: string;
-  taso: string;
+  nimi: IYOKoeNimi;
   arvosana: string;
-  yhteispistemaara: number;
+  yhteispistemaara?: number;
   tutkintokerta: Date;
+}
+
+export interface IYOKoeNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
 export interface IYOOppilaitos {

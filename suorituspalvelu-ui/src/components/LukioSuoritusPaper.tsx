@@ -215,14 +215,13 @@ function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
 }
 
 const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
 
   return (
     <StripedTable>
       <TableHead>
         <TableRow>
           <TableCell>{t('oppija.yo-kokeen-aine')}</TableCell>
-          <TableCell>{t('oppija.yo-kokeen-taso')}</TableCell>
           <TableCell>{t('oppija.arvosana')}</TableCell>
           <TableCell>{t('oppija.yo-kokeen-yhteispistemaara')}</TableCell>
           <TableCell>{t('oppija.yo-kokeen-tutkintokerta')}</TableCell>
@@ -230,11 +229,10 @@ const YoKokeetTable = ({ yoKokeet }: { yoKokeet: Array<YOKoe> }) => {
       </TableHead>
       <TableBody>
         {yoKokeet.map((row) => (
-          <TableRow key={row.aine}>
-            <TableCell>{row.aine}</TableCell>
-            <TableCell>{row.taso}</TableCell>
+          <TableRow key={row.tunniste}>
+            <TableCell>{translateKielistetty(row.nimi)}</TableCell>
             <TableCell>{row.arvosana}</TableCell>
-            <TableCell>{row.yhteispistemaara.toString()}</TableCell>
+            <TableCell>{row.yhteispistemaara?.toString()}</TableCell>
             <TableCell>{formatFinnishDate(row.tutkintokerta)}</TableCell>
           </TableRow>
         ))}

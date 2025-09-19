@@ -32,7 +32,7 @@ export function useSuorituksetFlattened(
       });
     };
     addValue(suoritusTiedot.kkTutkinnot, 'korkeakoulutus');
-    addValue(suoritusTiedot.yoTutkinto, 'lukio');
+    addValue(suoritusTiedot.yoTutkinnot, 'lukio');
     addValue(suoritusTiedot.lukionOppimaara, 'lukio');
     addValue(suoritusTiedot.lukionOppiaineenOppimaarat, 'lukio');
     addValue(suoritusTiedot.diaTutkinto, 'lukio');

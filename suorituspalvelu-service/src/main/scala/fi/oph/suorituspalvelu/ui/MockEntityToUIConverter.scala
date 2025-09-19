@@ -62,8 +62,8 @@ object MockEntityToUIConverter {
       valmistumispaiva = Optional.empty()
     ))
 
-  def getYOTutkinto(): Option[YOTutkinto] =
-    Some(YOTutkinto(
+  def getYOTutkinto(): List[YOTutkinto] =
+    List(YOTutkinto(
       tunniste = UUID.randomUUID(),
       nimi = YOTutkintoNimi(
         fi = Optional.of("Ylioppilastutkinto"),
@@ -83,45 +83,63 @@ object MockEntityToUIConverter {
       suorituskieli = "suomi",
       yoKokeet = java.util.List.of(YOKoe(
         tunniste = UUID.randomUUID(),
-        aine = "Psykologia",
-        taso = "Ainemuotoinen reaali",
+        nimi = YOKoeNimi(
+          Optional.of("Psykologia"),
+          Optional.empty(),
+          Optional.empty()
+        ),
         arvosana = "E",
-        yhteispistemaara = 28,
+        yhteispistemaara = Optional.of(28),
         tutkintokerta = LocalDate.parse("2018-12-21")
       ), YOKoe(
         tunniste = UUID.randomUUID(),
-        aine = "Englanti",
-        taso = "Pitkä oppimäärä (KIELI)",
+        nimi = YOKoeNimi(
+          Optional.of("Englanti"),
+          Optional.empty(),
+          Optional.empty()
+        ),
         arvosana = "E",
-        yhteispistemaara = 259,
+        yhteispistemaara = Optional.of(259),
         tutkintokerta = LocalDate.parse("2019-06-01")
       ), YOKoe(
         tunniste = UUID.randomUUID(),
-        aine = "Matematiikka",
-        taso = "Lyhyt oppimäärä (MA)",
+        nimi = YOKoeNimi(
+          Optional.of("Matematiikka"),
+          Optional.empty(),
+          Optional.empty()
+        ),
         arvosana = "C",
-        yhteispistemaara = 23,
+        yhteispistemaara = Optional.of(23),
         tutkintokerta = LocalDate.parse("2019-06-01")
       ), YOKoe(
         tunniste = UUID.randomUUID(),
-        aine = "Suomi",
-        taso = "Äidinkieli",
+        nimi = YOKoeNimi(
+          Optional.of("Suomi"),
+          Optional.empty(),
+          Optional.empty()
+        ),
         arvosana = "C",
-        yhteispistemaara = 49,
+        yhteispistemaara = Optional.of(49),
         tutkintokerta = LocalDate.parse("2019-06-01")
       ), YOKoe(
         tunniste = UUID.randomUUID(),
-        aine = "Historia",
-        taso = "Ainemuotoinen reaali",
+        nimi = YOKoeNimi(
+          Optional.of("Historia"),
+          Optional.empty(),
+          Optional.empty()
+        ),
         arvosana = "M",
-        yhteispistemaara = 25,
+        yhteispistemaara = Optional.of(25),
         tutkintokerta = LocalDate.parse("2019-06-01")
       ), YOKoe(
         tunniste = UUID.randomUUID(),
-        aine = "Yhteiskuntaoppi",
-        taso = "Ainemuotoinen reaali",
+        nimi = YOKoeNimi(
+          Optional.of("Yhteiskuntaoppi"),
+          Optional.empty(),
+          Optional.empty()
+        ),
         arvosana = "E",
-        yhteispistemaara = 32,
+        yhteispistemaara = Optional.of(32),
         tutkintokerta = LocalDate.parse("2019-06-01")
       ))
     ))
@@ -1118,7 +1136,7 @@ object MockEntityToUIConverter {
       henkiloOID =                                EXAMPLE_OPPIJA_OID,
       opiskeluoikeudet =                          getOpiskeluoikeudet().asJava,
       kkTutkinnot =                               getKKTutkinnot().asJava,
-      yoTutkinto =                                getYOTutkinto().toJava,
+      yoTutkinnot =                               getYOTutkinto().asJava,
       lukionOppimaara =                           getLukionOppimaara().toJava,
       lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat().asJava,
       diaTutkinto =                               getDiaTutkinto().toJava,
