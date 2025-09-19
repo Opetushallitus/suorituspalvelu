@@ -12,11 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class OrganisaatioNimi(fi: String, sv: String, en: String)
 
-case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String]) {
-  def getOidsForAuthorization() = {
-    allDescendantOids ++ Seq(oid)
-  }
-}
+case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String])
 
 case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio])
 
@@ -40,10 +36,6 @@ class OrganisaatioClient(environmentBaseUrl: String) {
       .map(_.organisaatiot)
       .map(_.toSeq)
   }
-
-  def haeOrganisaationTiedot(koodiArvo: String): Future[Option[Organisaatio]] =
-    fetch(environmentBaseUrl + s"/organisaatio-service/api/${koodiArvo}?includeImage=false")
-      .map(data => data.map(data => mapper.readValue(data, classOf[Organisaatio])))
 
   private def fetch(url: String): Future[Option[String]] =
     LOG.info(s"fetch, $url")
