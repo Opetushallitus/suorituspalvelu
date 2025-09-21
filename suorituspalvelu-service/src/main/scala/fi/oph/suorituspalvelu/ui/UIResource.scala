@@ -52,9 +52,11 @@ class UIResource {
 
   @Autowired var objectMapper: ObjectMapper = null
 
+  val ONR_TIMEOUT = 10.seconds;
+
   private def getAliases(oppijaNumero: String): Set[String] =
     try
-      Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)), 5.seconds).allOids).flatten
+      Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).allOids).flatten
     catch
       case e: Exception =>
         LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
@@ -82,7 +84,7 @@ class UIResource {
               Right(ResponseEntity.status(HttpStatus.OK).body(KayttajaSuccessResponse(storedKieli.get)))
             else
               val principal = SecurityContextHolder.getContext.getAuthentication.getPrincipal.asInstanceOf[UserDetails]
-              val kieli = Await.result(this.onrIntegration.getAsiointikieli(principal.getUsername), 5.seconds)
+              val kieli = Await.result(this.onrIntegration.getAsiointikieli(principal.getUsername), ONR_TIMEOUT)
               if(kieli.isEmpty)
                 Left(ResponseEntity.status(HttpStatus.NOT_FOUND).body(KayttajaFailureResponse(java.util.Set.of(UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT))))
               else
@@ -414,7 +416,7 @@ class UIResource {
               ))))
           .flatMap(suoritus =>
             // varmistetaan että henkilö löytyy
-            if(Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), 5.seconds))
+            if(Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), ONR_TIMEOUT))
               Right(suoritus)
             else
               LOG.error(s"Perusopetuksen oppimaaran suorituksen tallennus oppijalle ${suoritus.oppijaOid.get} epäonnistui, henkilöä ei löydy ONR:stä")
@@ -485,7 +487,7 @@ class UIResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(virheet.asJava))))
           .flatMap(suoritus =>
             // varmistetaan että henkilö löytyy
-            if(Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), 5.seconds))
+            if(Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), ONR_TIMEOUT))
               Right(suoritus)
             else
               LOG.error(s"Perusopetuksen oppiaineen oppimaaran suorituksen tallennus oppijalle ${suoritus.oppijaOid.get} epäonnistui, henkilöä ei löydy ONR:stä")
