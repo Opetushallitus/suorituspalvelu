@@ -534,7 +534,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusEiVoimassa(): Unit =
     // tallennetaan versio ja päätetään voimassaolo
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.PERUSOPETUS, "{}")
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.SYOTETTY_PERUSOPETUS, "{}")
     kantaOperaatiot.paataVersionVoimassaolo(versio.get.tunniste)
 
     // versio joka jo poistettu aiheuttaa virheen
@@ -568,7 +568,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusAllowed(): Unit =
     // tallennetaan versio
     val oppijaNumero = "1.2.246.562.24.21250967211"
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.PERUSOPETUS, "{}")
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETTY_PERUSOPETUS, "{}")
 
     // poistetaan versio
     val result = mvc.perform(MockMvcRequestBuilders
@@ -592,7 +592,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testPoistaPerusopetuksenOppiaineenOppimaaranSuoritusSuoritusAllowed(): Unit =
     // tallennetaan versio
     val oppijaNumero = "1.2.246.562.24.21250967211"
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.OPPIAINE, "{}")
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETTY_OPPIAINE, "{}")
 
     // poistetaan versio
     val result = mvc.perform(MockMvcRequestBuilders

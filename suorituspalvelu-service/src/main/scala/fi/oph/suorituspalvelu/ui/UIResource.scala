@@ -425,7 +425,7 @@ class UIResource {
             LOG.info(s"Tallennetaan perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppimaaranSuoritus, Some(suoritus))
-            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.PERUSOPETUS, objectMapper.writeValueAsString(suoritus))
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, objectMapper.writeValueAsString(suoritus))
 
             if(versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
@@ -496,7 +496,7 @@ class UIResource {
             LOG.info(s"Tallennetaan perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppiaineenOppimaaranSuoritus, Some(suoritus))
-            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.PERUSOPETUS, objectMapper.writeValueAsString(suoritus))
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, objectMapper.writeValueAsString(suoritus))
 
             if(versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
@@ -555,8 +555,8 @@ class UIResource {
             else
               versio.get.suoritusJoukko match
                 // ja että se on poistettavissa (ts. käsin syötetty)
-                case SuoritusJoukko.PERUSOPETUS => Right(versio.get)
-                case SuoritusJoukko.OPPIAINE => Right(versio.get)
+                case SuoritusJoukko.SYOTETTY_PERUSOPETUS => Right(versio.get)
+                case SuoritusJoukko.SYOTETTY_OPPIAINE => Right(versio.get)
                 case default =>
                   LOG.error(s"Yritettiin poistaa versiota ${versio.get.tunniste} joka joka ei ole perusopetuksen oppimäärän suoritus")
                   Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaSuoritusFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA)))))
@@ -564,8 +564,8 @@ class UIResource {
             LOG.info(s"Poistetaan uorituksen versio ${versio.tunniste} oppijalta ${versio.oppijaNumero}")
             val user = AuditLog.getUser(request)
             versio.suoritusJoukko match
-              case SuoritusJoukko.PERUSOPETUS => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppimaaranSuoritus, None)
-              case SuoritusJoukko.OPPIAINE => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppiaineenOppimaaranSuoritus, None)
+              case SuoritusJoukko.SYOTETTY_PERUSOPETUS => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppimaaranSuoritus, None)
+              case SuoritusJoukko.SYOTETTY_OPPIAINE => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppiaineenOppimaaranSuoritus, None)
             if(!this.kantaOperaatiot.paataVersionVoimassaolo(versio.tunniste)) {
               // versio oli jo poistettu
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaSuoritusFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA))))
