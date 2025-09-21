@@ -312,11 +312,7 @@ object KoskiToSuoritusConverter {
       None,
       opiskeluoikeus.oppilaitos.map(o =>
         fi.oph.suorituspalvelu.business.Oppilaitos(
-          Kielistetty(
-            o.nimi.fi,
-            o.nimi.sv,
-            o.nimi.en
-          ),
+          o.nimi,
           o.oid)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
@@ -332,11 +328,7 @@ object KoskiToSuoritusConverter {
       None,
       opiskeluoikeus.oppilaitos.map(o =>
         fi.oph.suorituspalvelu.business.Oppilaitos(
-          Kielistetty(
-            o.nimi.fi,
-            o.nimi.sv,
-            o.nimi.en
-          ),
+          o.nimi,
           o.oid)).getOrElse(dummy()),
       None, // TODO: tämä pitää kaivaa vuosiluokan suoritukselta jossain vaiheessa
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
@@ -356,11 +348,7 @@ object KoskiToSuoritusConverter {
       None,
       opiskeluoikeus.oppilaitos.map(o =>
         fi.oph.suorituspalvelu.business.Oppilaitos(
-          Kielistetty(
-            o.nimi.fi,
-            o.nimi.sv,
-            o.nimi.en
-          ),
+          o.nimi,
           o.oid)).getOrElse(dummy()),
       None, // TODO: onko tätä saatavissa?
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
