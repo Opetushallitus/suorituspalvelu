@@ -26,11 +26,11 @@ class OrganisaatioClient(environmentBaseUrl: String) {
 
   val asyncHttpClient = Dsl.asyncHttpClient()
 
-  def haeOrganisaationTiedot(koodiArvo: String): Future[Organisaatio] =
+  def haeOrganisaationTiedot(koodiArvo: String): Future[Option[Organisaatio]] =
     fetch(environmentBaseUrl + s"/organisaatio-service/api/${koodiArvo}?includeImage=false")
-      .map(data => mapper.readValue(data, classOf[Organisaatio]))
+      .map(data => data.map(data => mapper.readValue(data, classOf[Organisaatio])))
 
-  private def fetch(url: String): Future[String] =
+  private def fetch(url: String): Future[Option[String]] =
     LOG.info(s"fetch, $url")
     val req = new RequestBuilder()
       .setMethod("GET")
@@ -40,7 +40,10 @@ class OrganisaatioClient(environmentBaseUrl: String) {
     try {
       asScala(asyncHttpClient.executeRequest(req).toCompletableFuture).map {
         case r if r.getStatusCode == 200 =>
-          r.getResponseBody()
+          Some(r.getResponseBody())
+        case r if r.getStatusCode == 404 =>
+          LOG.warn(s"haettiin tuntematonta organisaatiota osoitteesta $url")
+          None
         case r =>
           val errorStr = s"Failed to fetch data from organisaatiopalvelu: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
           LOG.error(

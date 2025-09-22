@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus}
-import fi.oph.suorituspalvelu.resource.ApiConstants.EXAMPLE_SYNTYMAIKA
+import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.*
@@ -784,6 +784,7 @@ object MockEntityToUIConverter {
 
   def getPerusopetuksenOppimaarat(): List[PerusopetuksenOppimaara] =
     List(PerusopetuksenOppimaara(
+      versioTunniste = Optional.of(UUID.randomUUID()),
       tunniste = UUID.randomUUID(),
       nimi = PerusopetuksenOppimaaraNimi(
         fi = Optional.of("Perusopetuksen oppimäärä"),
@@ -802,8 +803,12 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
-      luokka = "9A",
-      yksilollistetty = false,
+      luokka = Optional.of("9A"),
+      yksilollistaminen = Yksilollistaminen(2, YksilollistamisNimi(
+        Optional.of("Perusopetuksen osittain yksilöllistetty oppimäärä"),
+        Optional.of("Delvis individualiserad lärokurs inom den grundläggande utbildningen"),
+        Optional.of("Partially individualized basic education syllabus")
+      )),
       oppiaineet = java.util.List.of(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
@@ -812,8 +817,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -821,8 +826,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("A1-kieli, englanti sv"),
             en = Optional.of("A1-kieli, englanti en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -830,8 +835,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("B1-kieli, ruotsi sv"),
             en = Optional.of("B1-kieli, ruotsi en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.of("S"),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -839,8 +844,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("B2-kieli, saksa sv"),
             en = Optional.of("B2-kieli, saksa en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("S"),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -848,8 +853,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Matematiikka sv"),
             en = Optional.of("Matematiikka en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -857,8 +862,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Biologia sv"),
             en = Optional.of("Biologia en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -866,8 +871,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Maantieto sv"),
             en = Optional.of("Maantieto en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -875,8 +880,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Fysiikka sv"),
             en = Optional.of("Fysiikka en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -884,8 +889,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Kemia sv"),
             en = Optional.of("Fysiikka en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -893,8 +898,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Terveystieto sv"),
             en = Optional.of("Terveystieto en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -902,8 +907,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Uskonto tai elämänkatsomustieto sv"),
             en = Optional.of("Uskonto tai elämänkatsomustieto en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         )
       )
     ))
@@ -953,22 +958,24 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(OppimaaranOppiaine(
+      oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = OppimaaranOppiaineNimi(
+        nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("Biologia"),
           sv = Optional.of("Biologia sv"),
           en = Optional.of("Biologia en")
         ),
-        arvosana = 9
-      ),OppimaaranOppiaine(
+        arvosana = "9",
+        valinnainen = false
+      ),PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = OppimaaranOppiaineNimi(
+        nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("Historia"),
           sv = Optional.of("Historia sv"),
           en = Optional.of("Historia en")
         ),
-        arvosana = 8
+        arvosana = "8",
+        valinnainen = false
       ))
     ))
 
@@ -992,14 +999,15 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(OppimaaranOppiaine(
+      oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = OppimaaranOppiaineNimi(
+        nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("matematiikka"),
           sv = Optional.of("matematiikka sv"),
           en = Optional.of("matematiikka en")
         ),
-        arvosana = 9
+        arvosana = "9",
+        valinnainen = false
       ))
     ))
 
@@ -1031,8 +1039,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1040,8 +1048,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("A1-kieli, englanti sv"),
             en = Optional.of("A1-kieli, englanti en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1049,8 +1057,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("B1-kieli, ruotsi sv"),
             en = Optional.of("B1-kieli, ruotsi en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1058,8 +1066,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("B2-kieli, saksa sv"),
             en = Optional.of("B2-kieli, saksa en")
           ),
-          arvosana = Optional.of(9),
-          valinnainen = Optional.empty(),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1067,8 +1075,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Matematiikka sv"),
             en = Optional.of("Matematiikka en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("10"),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1076,8 +1084,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Biologia sv"),
             en = Optional.of("Biologia en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("9"),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1085,8 +1093,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Maantieto sv"),
             en = Optional.of("Maantieto en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("8"),
+          arvosana = "9",
+          valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
@@ -1094,8 +1102,8 @@ object MockEntityToUIConverter {
             sv = Optional.of("Fysiikka sv"),
             en = Optional.of("Fysiikka en")
           ),
-          arvosana = Optional.empty(),
-          valinnainen = Optional.of("9"),
+          arvosana = "9",
+          valinnainen = false,
         )
       )
     ))
@@ -1105,7 +1113,7 @@ object MockEntityToUIConverter {
       // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
       nimi =                                      EXAMPLE_NIMI,
       henkiloTunnus =                             EXAMPLE_HETU,
-      syntymaAika =                               LocalDate.parse(EXAMPLE_SYNTYMAIKA),
+      syntymaAika =                               LocalDate.parse(ESIMERKKI_SYNTYMAIKA),
       oppijaNumero =                              EXAMPLE_OPPIJA_OID,
       henkiloOID =                                EXAMPLE_OPPIJA_OID,
       opiskeluoikeudet =                          getOpiskeluoikeudet().asJava,

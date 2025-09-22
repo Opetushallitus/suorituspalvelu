@@ -1,22 +1,23 @@
 package fi.oph.suorituspalvelu.resource
 
-import java.time.LocalDate
-
+/**
+ * API-endpointtien polkuihin ja Swagger-kuvauksiin liittyvät vakiot
+ */
 object ApiConstants {
 
-  /**
-   * Lähetys-API:n endpointtien polkuihin liittyvät vakiot
-   */
   final val API_PREFIX                                      = "/api"
   final val VERSIONED_API_PREFIX                            = API_PREFIX + "/v1"
-  final val UI_API_PREFIX                                   = "/api/ui"
+  final val UI_API_PREFIX                                   = API_PREFIX + "/ui"
 
   final val LOGIN_PATH                                      = API_PREFIX + "/login"
   final val CAS_TICKET_VALIDATION_PATH                      = LOGIN_PATH + "/j_spring_cas_security_check"
   final val HEALTHCHECK_PATH                                = VERSIONED_API_PREFIX + "/healthcheck"
 
-  final val SUORITUS_PATH                                   = VERSIONED_API_PREFIX + "/suoritus"
   final val DATASYNC_PATH                                   = VERSIONED_API_PREFIX + "/datasync"
+  final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
+  final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
+
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
   final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
 
@@ -27,6 +28,7 @@ object ApiConstants {
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
   final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta" + "/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
   final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta" + "/haku/"
+  final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
   final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
 
   final val LEGACY_SUORITUKSET_HENKILO_PARAM_NAME           = "henkilo"
@@ -43,54 +45,54 @@ object ApiConstants {
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_NAME               = "oppijaNumero"
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER        = "{" + UI_TIEDOT_OPPIJANUMERO_PARAM_NAME + "}"
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot/" + UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER
-  final val UI_TIEDOT_400_DESCRIPTION                       = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val UI_TIEDOT_403_DESCRIPTION                       = "Käyttäjällä ei ole oikeuksia nähdä pyydetyn henkilön suorituksia"
-  final val UI_TIEDOT_ESIMERKKI_VIRHE                       = "oppijaNumero ei ole validi oid"
-  final val UI_TIEDOT_HAKU_EPAONNISTUI                      = "Oppijan tietojen haku epäonnistui"
 
   final val UI_HAKU_PATH                                    = UI_API_PREFIX + "/oppijat"
   final val UI_HAKU_OPPIJA_PARAM_NAME                       = "oppija"
   final val UI_HAKU_OPPILAITOS_PARAM_NAME                   = "oppilaitos"
   final val UI_HAKU_VUOSI_PARAM_NAME                        = "vuosi"
   final val UI_HAKU_LUOKKA_PARAM_NAME                       = "luokka"
-  final val UI_HAKU_ESIMERKKI_OPPIJA                        = "Olli Op"
-  final val UI_HAKU_ESIMERKKI_OPPILAITOS_OID                = "1.2.246.562.10.95136889433"
-  final val UI_HAKU_ESIMERKKI_OPPILAITOS_NIMI               = "Pitäjänmäen peruskoulu"
-  final val UI_HAKU_ESIMERKKI_VUOSI                         = "2025"
-  final val UI_HAKU_ESIMERKKI_LUOKKA                        = "9B"
-  final val UI_HAKU_ESIMERKKI_VIRHE                         = "oppilaitoksen tunniste ei ole validi oid"
-  final val UI_HAKU_ESIMERKKI_OPPIJANUMERO                  = "1.2.246.562.24.40483869857"
-  final val UI_HAKU_ESIMERKKI_HETU                          = "010296-1230"
-  final val UI_HAKU_ESIMERKKI_NIMI                          = "Olli Oppija"
-  final val UI_HAKU_KRITEERI_PAKOLLINEN                     = "Jokin hakukriteeri on pakollinen"
-  final val UI_HAKU_OPPIJA_TAI_VUOSI_PAKOLLINEN             = "Oppija tai vuosi on pakollinen jos oppilaitos määritelty"
-  final val UI_HAKU_OPPILAITOS_PAKOLLINEN                   = "Oppilaitos on pakollinen jos vuosi määritelty"
-  final val UI_HAKU_VUOSI_PAKOLLINEN                        = "Vuosi on pakollinen jos luokka määritelty"
-  final val UI_HAKU_EPAONNISTUI                             = "Oppijoiden haku epäonnistui"
+  final val UI_HAKU_ESIMERKKI_HAKUKENTAN_ARVO               = "Olli Op"
 
   final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
+  final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
 
   final val UI_KAYTTAJAN_TIEDOT_PATH                        = UI_API_PREFIX + "/kayttaja"
-  final val UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI            = "Kayttajan tietojen haku epäonnistui"
+
+  final val UI_LUO_SUORITUS_PERUSOPETUS_PATH                = UI_API_PREFIX + "/perusopetuksenoppimaarat"
+
+  final val UI_LUO_SUORITUS_OPPIAINE_PATH                   = UI_API_PREFIX + "/perusopetuksenoppiaineenoppimaarat"
+
+  final val UI_LUO_SUORITUS_VAIHTOEHDOT_PATH                = UI_API_PREFIX + "/luosuoritusvaihtoehdot"
+
+  final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME    = "versioTunniste"
+  final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER = "{" + UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME + "}"
+  final val UI_POISTA_SUORITUS_PATH                         = UI_API_PREFIX + "/versiot/" + UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER
+
+  final val UI_400_DESCRIPTION                              = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val UI_403_DESCRIPTION                              = "Käyttäjällä ei ole suorittaa pyyntöä"
 
   /**
-   * Swagger-kuvauksiin liittyvät vakiot
+   * Swagger-kuvauksiin liittyvät esimerkkiarvot
    */
-  final val SUORITUS_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole suorituksen luomiseen tarvittavia oikeuksia"
-  final val ESIMERKKI_SUORITUSTUNNISTE                      = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
-  final val EXAMPLE_OPPIJANUMERO_VALIDOINTIVIRHE            = "[ \"oppijanumero: Kenttä on pakollinen\" ]"
 
-  final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
-  final val DATASYNC_VIRTA_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
-  final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
-
-  final val EXAMPLE_HAKU_OID                                = "1.2.246.562.29.00000000000000044639"
-  final val EXAMPLE_HAKUKOHDE_OID                           = "1.2.246.562.20.00000000000000044758"
-  final val EXAMPLE_SUORITUSKIELI                           = "fi"
-  final val EXAMPLE_OPPIJANUMERO                            = "1.2.246.562.24.40483869857"
-  final val EXAMPLE_OPPIJANIMI                              = "Olli Oppija"
-  final val EXAMPLE_HETU                                    = "010296-1230"
-  final val EXAMPLE_SYNTYMAIKA                              = "2030-01-01"
+  final val ESIMERKKI_VERSIOTUNNISTE                        = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
+  final val ESIMERKKI_HAKU_OID                              = "1.2.246.562.29.00000000000000044639"
+  final val ESIMERKKI_HAKUKOHDE_OID                         = "1.2.246.562.20.00000000000000044758"
+  final val ESIMERKKI_OPPILAITOS_OID                        = "1.2.246.562.10.95136889433"
+  final val ESIMERKKI_OPPILAITOS_NIMI                       = "Pitäjänmäen peruskoulu"
+  final val ESIMERKKI_OPPIJANUMERO                          = "1.2.246.562.24.40483869857"
+  final val ESIMERKKI_OPPIJANIMI                            = "Olli Oppija"
+  final val ESIMERKKI_HETU                                  = "010296-1230"
+  final val ESIMERKKI_SYNTYMAIKA                            = "2030-01-01"
+  final val ESIMERKKI_LEGACY_SUORITUSKIELI                  = "fi"
+  final val ESIMERKKI_SUORITUSKIELI                         = "FI"
+  final val ESIMERKKI_OPPIAINEKOODI                         = "HI"
+  final val ESIMERKKI_AIDINKIELEN_OPPIMAARA                 = "AI1" // Suomen kieli ja kirjallisuus
+  final val ESIMERKKI_YKSILOLLISTAMINEN                     = "1"
+  final val ESIMERKKI_VIERAS_KIELI_KIELIKOODI               = "DE"
+  final val ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA    = "9"
+  final val ESIMERKKI_VALMISTUMISPAIVA                      = "2016-06-01"
+  final val ESIMERKKI_VUOSI                                 = "2025"
+  final val ESIMERKKI_LUOKKA                                = "9B"
 
 }

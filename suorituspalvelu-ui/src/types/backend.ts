@@ -317,7 +317,7 @@ export interface INuortenPerusopetuksenOppiaineenOppimaara {
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
   suorituskieli: string;
-  oppiaineet: IOppimaaranOppiaine[];
+  oppiaineet: IPerusopetuksenOppiaine[];
 }
 
 export interface INuortenPerusopetuksenOppiaineenOppimaaraNimi {
@@ -403,18 +403,6 @@ export interface IOppilaitosSuccessResponse {
   oppilaitokset: IOppilaitos[];
 }
 
-export interface IOppimaaranOppiaine {
-  tunniste: string;
-  nimi: IOppimaaranOppiaineNimi;
-  arvosana: number;
-}
-
-export interface IOppimaaranOppiaineNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IPAATTYNYT {
   type: 'PAATTYNYT';
 }
@@ -433,8 +421,8 @@ export interface IPKOppilaitosNimi {
 export interface IPerusopetuksenOppiaine {
   tunniste: string;
   nimi: IPerusopetuksenOppiaineNimi;
-  arvosana?: number;
-  valinnainen?: string;
+  arvosana: string;
+  valinnainen: boolean;
 }
 
 export interface IPerusopetuksenOppiaineNimi {
@@ -451,7 +439,7 @@ export interface IPerusopetuksenOppiaineenOppimaara {
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
   suorituskieli: string;
-  oppiaineet: IOppimaaranOppiaine[];
+  oppiaineet: IPerusopetuksenOppiaine[];
 }
 
 export interface IPerusopetuksenOppiaineenOppimaaraNimi {
@@ -461,6 +449,7 @@ export interface IPerusopetuksenOppiaineenOppimaaraNimi {
 }
 
 export interface IPerusopetuksenOppimaara {
+  versioTunniste?: string;
   tunniste: string;
   nimi: IPerusopetuksenOppimaaraNimi;
   oppilaitos: IPKOppilaitos;
@@ -468,8 +457,8 @@ export interface IPerusopetuksenOppimaara {
   aloituspaiva?: Date;
   valmistumispaiva?: Date;
   suorituskieli: string;
-  luokka: string;
-  yksilollistetty: boolean;
+  luokka?: string;
+  yksilollistaminen: IYksilollistaminen;
   oppiaineet: IPerusopetuksenOppiaine[];
 }
 
@@ -685,6 +674,17 @@ export interface IYTOOsaAlue {
 }
 
 export interface IYTOOsaAlueNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IYksilollistaminen {
+  arvo: number;
+  nimi: IYksilollistamisNimi;
+}
+
+export interface IYksilollistamisNimi {
   fi?: string;
   sv?: string;
   en?: string;

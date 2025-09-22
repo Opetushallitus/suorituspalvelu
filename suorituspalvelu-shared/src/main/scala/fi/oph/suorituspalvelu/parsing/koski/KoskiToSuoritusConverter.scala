@@ -46,9 +46,9 @@ object KoskiToSuoritusConverter {
       case "eronnut"                    => SuoritusTila.KESKEYTYNYT
       case "katsotaaneronneeksi"        => SuoritusTila.KESKEYTYNYT
       case "keskeytynyt"                => SuoritusTila.KESKEYTYNYT
-      case "mitatoity"                  => SuoritusTila.KESKEYTYNYT
       case "peruutettu"                 => SuoritusTila.KESKEYTYNYT
       case "paattynyt"                  => SuoritusTila.KESKEYTYNYT
+      case "mitatoity"                  => SuoritusTila.MITATOITY
 
 
   def parseTila(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Option[VersioituTunniste] =
@@ -291,7 +291,10 @@ object KoskiToSuoritusConverter {
       osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
-      osaSuoritus.koulutusmoduuli.flatMap((k: KoulutusModuuli) => k.kieli.map(kieli => asKoodiObject(kieli)))
+      osaSuoritus.koulutusmoduuli.flatMap((k: KoulutusModuuli) => k.kieli.map(kieli => asKoodiObject(kieli))),
+      osaSuoritus.koulutusmoduuli.flatMap(k => k.pakollinen).getOrElse(dummy()),
+      osaSuoritus.`yksilöllistettyOppimäärä`,
+      osaSuoritus.`rajattuOppimäärä`,
     )
   }
 
@@ -306,6 +309,11 @@ object KoskiToSuoritusConverter {
 
     NuortenPerusopetuksenOppiaineenOppimaara(
       UUID.randomUUID(),
+      None,
+      opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          o.nimi,
+          o.oid)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
@@ -317,11 +325,17 @@ object KoskiToSuoritusConverter {
   def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
       UUID.randomUUID(),
-      opiskeluoikeus.oppilaitos.get.oid,
+      None,
+      opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          o.nimi,
+          o.oid)).getOrElse(dummy()),
+      None, // TODO: tämä pitää kaivaa vuosiluokan suoritukselta jossain vaiheessa
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
+      None,
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
@@ -331,11 +345,17 @@ object KoskiToSuoritusConverter {
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
       UUID.randomUUID(),
-      opiskeluoikeus.oppilaitos.get.oid,
+      None,
+      opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          o.nimi,
+          o.oid)).getOrElse(dummy()),
+      None, // TODO: onko tätä saatavissa?
       parseTila(opiskeluoikeus, suoritus).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, suoritus).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       Set.empty,
+      None,
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
@@ -356,7 +376,7 @@ object KoskiToSuoritusConverter {
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         PerusopetuksenOpiskeluoikeus(
           UUID.randomUUID(),
-          opiskeluoikeus.oid,
+          Some(opiskeluoikeus.oid),
           opiskeluoikeus.oppilaitos.get.oid,
           toSuoritukset(Seq(opiskeluoikeus)),
           opiskeluoikeus.lisätiedot,

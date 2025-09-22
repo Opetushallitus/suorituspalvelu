@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, Tietolahde, YOOpiskeluoikeus, YOTutkinto}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, EXAMPLE_HAKUKOHDE_OID, EXAMPLE_HAKU_OID, HEALTHCHECK_PATH, LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_OPPIJAT_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, HEALTHCHECK_PATH, LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_OPPIJAT_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{Komot, LegacyOppijatService}
 import fi.oph.suorituspalvelu.util.LogContext
@@ -26,7 +26,7 @@ import scala.jdk.OptionConverters.*
 
 @Schema(name = "Suoritus")
 case class LegacySuoritus(
-  @(Schema @field)(example = ApiConstants.EXAMPLE_SUORITUSKIELI)
+  @(Schema @field)(example = ApiConstants.ESIMERKKI_LEGACY_SUORITUSKIELI)
   @BeanProperty suoritusKieli: String,
   @(Schema @field)(example = Komot.perusopetus)
   @BeanProperty komo: String)
@@ -37,7 +37,7 @@ case class LegacySuoritusJaArvosanat(
 
 @Schema(name = "Oppija")
 case class LegacyOppija(
-  @(Schema @field)(example = ApiConstants.EXAMPLE_OPPIJANUMERO)
+  @(Schema @field)(example = ApiConstants.ESIMERKKI_OPPIJANUMERO)
   @BeanProperty oppijanumero: String,
   @BeanProperty suoritukset: java.util.Set[LegacySuoritusJaArvosanat])
 
@@ -69,10 +69,10 @@ class LegacyOppijatResource {
     new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
   ))
   def legacyOppijat(
-    @RequestParam(name = LEGACY_OPPIJAT_HAKU_PARAM_NAME, required = false) @Parameter(description = "haun oid", example = EXAMPLE_HAKU_OID, required = true) hakuOid: Optional[String],
-    @RequestParam(name = LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, required = false) @Parameter(description = "hakukohteen oid", example = EXAMPLE_HAKUKOHDE_OID) hakukohdeOid: Optional[String],
-    @RequestParam(name = LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, required = false) @Parameter(description = "haetaanko myös ensikertalaisuustiedot") ensikertalaisuudet: Optional[java.lang.Boolean],
-    request: HttpServletRequest
+                     @RequestParam(name = LEGACY_OPPIJAT_HAKU_PARAM_NAME, required = false) @Parameter(description = "haun oid", example = ESIMERKKI_HAKU_OID, required = true) hakuOid: Optional[String],
+                     @RequestParam(name = LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, required = false) @Parameter(description = "hakukohteen oid", example = ESIMERKKI_HAKUKOHDE_OID) hakukohdeOid: Optional[String],
+                     @RequestParam(name = LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, required = false) @Parameter(description = "haetaanko myös ensikertalaisuustiedot") ensikertalaisuudet: Optional[java.lang.Boolean],
+                     request: HttpServletRequest
   ): ResponseEntity[_] =
     try
       val securityOperaatiot = new SecurityOperaatiot

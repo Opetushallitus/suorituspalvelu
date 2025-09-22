@@ -3,11 +3,11 @@ package fi.oph.suorituspalvelu.ui
 import com.scalatsi.*
 import com.scalatsi.TypescriptType.TSUnion
 import com.scalatsi.output.{OutputOptions, StyleOptions, WriteTSToFiles}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, OppimaaranOppiaine, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, Telma, SuoritusTila, Tuva, TuvaLaajuus, VapaaSivistystyoKoulutus, VapaaSivistystyoLaajuus, YOTutkinto, YTO, YTOArvosana}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, SuoritusTila, Telma, Tuva, TuvaLaajuus, VapaaSivistystyoKoulutus, VapaaSivistystyoLaajuus, YOTutkinto, YTO, YTOArvosana}
 
 import java.io.File
 import java.time.LocalDate
-import java.util.Optional
+import java.util.{Optional, UUID}
 
 object TypeScriptGenerator extends App {
 
@@ -22,7 +22,9 @@ object TypeScriptGenerator extends App {
   implicit val optionalDate: TSType[Optional[LocalDate]] = TSType.sameAs[Optional[LocalDate], Option[LocalDate]]
   implicit val optionalString: TSType[Optional[String]] = TSType.sameAs[Optional[String], Option[String]]
   implicit val optionalInt: TSType[Optional[Int]] = TSType.sameAs[Optional[Int], Option[Int]]
+  implicit val optionalBoolean: TSType[Optional[Boolean]] = TSType.sameAs[Optional[Boolean], Option[Boolean]]
   implicit val optionalBigDecimal: TSType[Optional[BigDecimal]] = TSType.sameAs[Optional[BigDecimal], Option[BigDecimal]]
+  implicit val optionalUUID: TSType[Optional[UUID]] = TSType.sameAs[Optional[UUID], Option[UUID]]
   implicit val optionalYoTutkintoTSType: TSType[Optional[YOTutkinto]] = TSType.sameAs[Optional[YOTutkinto], Option[YOTutkinto]]
   implicit val optionalLukionOppimaara: TSType[Optional[LukionOppimaara]] = TSType.sameAs[Optional[LukionOppimaara], Option[LukionOppimaara]]
   implicit val optionalDIATutkinto: TSType[Optional[DIATutkinto]] = TSType.sameAs[Optional[DIATutkinto], Option[DIATutkinto]]
@@ -36,7 +38,6 @@ object TypeScriptGenerator extends App {
   implicit val ammatillisenTutkinnonOsaTSType: TSType[AmmatillisenTutkinnonOsa] = TSType.fromCaseClass
   implicit val perusopetuksenOppiaineTSType: TSType[PerusopetuksenOppiaine] = TSType.fromCaseClass
   implicit val optionalPerusopetuksenOppimaara78LuokkalaisetTSType: TSType[Optional[PerusopetuksenOppimaara78Luokkalaiset]] = TSType.sameAs[Optional[PerusopetuksenOppimaara78Luokkalaiset], Option[PerusopetuksenOppimaara78Luokkalaiset]]
-  implicit val oppimaaranOppiaineTSType: TSType[OppimaaranOppiaine] = TSType.fromCaseClass
   implicit val perusopetuksenOppiaineenOppimaaraTSType: TSType[PerusopetuksenOppiaineenOppimaara] = TSType.fromCaseClass
   implicit val aikuistenPerusopetuksenOppimaaraTSType: TSType[AikuistenPerusopetuksenOppimaara] = TSType.fromCaseClass
   implicit val perusopetuksenOppimaaraTSType: TSType[PerusopetuksenOppimaara] = TSType.fromCaseClass

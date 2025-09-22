@@ -2,13 +2,12 @@ package fi.oph.suorituspalvelu
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.Tietolahde.{KOSKI, YTR}
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.SUORITYSTYYPPI_AMMATILLINENTUTKINTO
-import fi.oph.suorituspalvelu.resource.ApiConstants.{EXAMPLE_HAKU_OID, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME}
 import fi.oph.suorituspalvelu.resource.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.Komot
@@ -81,7 +80,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     // hakukohdeOidin pitää olla validi hakuOid
     val invalidHakukohdeOid = "1.2.3.4"
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_OPPIJAT_PATH + "?" +
-        ApiConstants.LEGACY_OPPIJAT_HAKU_PARAM_NAME + "=" + EXAMPLE_HAKU_OID + "&" + ApiConstants.LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME + "=" + invalidHakukohdeOid))
+        ApiConstants.LEGACY_OPPIJAT_HAKU_PARAM_NAME + "=" + ESIMERKKI_HAKU_OID + "&" + ApiConstants.LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME + "=" + invalidHakukohdeOid))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(LegacySuorituksetFailureResponse(java.util.Set.of(VALIDATION_HAKUKOHDEOID_EI_VALIDI + invalidHakukohdeOid)),
@@ -89,22 +88,22 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetHenkilolleAllowed(): Unit =
-    val hakuOid = ApiConstants.EXAMPLE_HAKU_OID
+    val hakuOid = ApiConstants.ESIMERKKI_HAKU_OID
     val tutkintoKoodi = "123456"
     val suoritusKieli = Koodi("fi", "kieli", Some(1))
 
     // tallennetaan tutkinnot
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     val telma = Telma(UUID.randomUUID(), Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), suoritusKieli)
-    val perusopetuksenOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), "oid", Koodi("valmistunut", "koodisto", None), SuoritusTila.VALMIS, suoritusKieli, Set.empty, None, None, Set.empty)
-    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(UUID.randomUUID(), Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None, None)
+    val perusopetuksenOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), None, Koodi("valmistunut", "koodisto", None), SuoritusTila.VALMIS, suoritusKieli, Set.empty, None, None, None, Set.empty)
+    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None, None)
     val yoTutkinto = YOTutkinto(UUID.randomUUID(), suoritusKieli)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(telma), None),
-      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", "2.3.4", Set(perusopetuksenOppimaara), None, None),
-      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
       YOOpiskeluoikeus(UUID.randomUUID(), yoTutkinto)
     ), Set.empty)
 

@@ -3,7 +3,8 @@
 package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, YtrHetuPostData, YtrClient, YtrMassOperation, YtrMassOperationQueryResponse}
+import fi.oph.suorituspalvelu.business.SuoritusJoukko
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, YtrClient, YtrHetuPostData, YtrMassOperation, YtrMassOperationQueryResponse}
 import fi.oph.suorituspalvelu.integration.ytr.YtrDataForHenkilo
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 import fi.oph.suorituspalvelu.util.ZipUtil
@@ -14,7 +15,6 @@ import org.springframework.security.test.context.support.{WithAnonymousUser, Wit
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.mockito
 import org.mockito.Mockito
-import fi.oph.suorituspalvelu.business.Tietolahde
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.resource.{ApiConstants, YtrSyncSuccessResponse}
@@ -138,7 +138,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     //Tarkistetaan että kantaan on tallennettu oppijalle yksi versio
     Assertions.assertEquals(versiot.size, 1)
-    Assertions.assertEquals(versiot.head.tietolahde, Tietolahde.YTR)
+    Assertions.assertEquals(versiot.head.suoritusJoukko, SuoritusJoukko.YTR)
 
     val data = kantaOperaatiot.haeData(versiot.head)
     val parsed: Student = objectMapper.readValue(data._2, classOf[Student])
@@ -212,7 +212,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     hetuToPersonOid.values.foreach(personOid => {
       val versiot = kantaOperaatiot.haeOppijanVersiot(personOid)
       Assertions.assertTrue(versiot.size == 1)
-      Assertions.assertEquals(versiot.head.tietolahde, Tietolahde.YTR)
+      Assertions.assertEquals(versiot.head.suoritusJoukko, SuoritusJoukko.YTR)
       val data = kantaOperaatiot.haeData(versiot.head)
       val parsed: Student = objectMapper.readValue(data._2, classOf[Student])
       Assertions.assertTrue(parsed.ssn.isEmpty)

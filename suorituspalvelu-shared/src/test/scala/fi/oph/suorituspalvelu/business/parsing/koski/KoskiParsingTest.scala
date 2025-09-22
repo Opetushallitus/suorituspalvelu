@@ -602,7 +602,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
 
-    Assertions.assertEquals("1.2.246.562.15.77661702355", opiskeluoikeus.oid)
+    Assertions.assertEquals(Some("1.2.246.562.15.77661702355"), opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.19666365424", opiskeluoikeus.oppilaitosOid)
     Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
       LocalDate.parse("2022-05-01"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1)))))), opiskeluoikeus.tila)
@@ -617,7 +617,10 @@ class KoskiParsingTest {
         |    "opiskeluoikeudet": [
         |      {
         |        "oppilaitos": {
-        |          "oid": "1.2.246.562.10.32727448402"
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
         |        },
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
@@ -664,7 +667,9 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
 
     Assertions.assertNotNull(oppimaara.tunniste)
-    Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
+    Assertions.assertTrue(oppimaara.versioTunniste.isEmpty)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Hatsalan klassillinen koulu"), None, None), "1.2.246.562.10.32727448402"), oppimaara.oppilaitos)
+    Assertions.assertTrue(oppimaara.yksilollistaminen.isEmpty)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.vahvistusPaivamaara)
@@ -679,7 +684,10 @@ class KoskiParsingTest {
         |    "opiskeluoikeudet": [
         |      {
         |        "oppilaitos": {
-        |          "oid": "1.2.246.562.10.32727448402"
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
         |        },
         |        "suoritukset": [
         |          {
@@ -702,7 +710,8 @@ class KoskiParsingTest {
         |                    },
         |                    "koodistoUri": "koskioppiaineetyleissivistava",
         |                    "koodistoVersio": 1
-        |                  }
+        |                  },
+        |                  "pakollinen": true
         |                },
         |                "arviointi": [
         |                  {
@@ -712,7 +721,9 @@ class KoskiParsingTest {
         |                      "koodistoVersio": 1
         |                    }
         |                  }
-        |                ]
+        |                ],
+        |                "yksilöllistettyOppimäärä": true,
+        |                "rajattuOppimäärä": true
         |              }
         |            ]
         |          }
@@ -728,6 +739,9 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Äidinkieli ja kirjallisuus"), None, None), oppiaine.nimi)
     Assertions.assertEquals(Koodi("AI", "koskioppiaineetyleissivistava", Some(1)), oppiaine.koodi)
     Assertions.assertEquals(Koodi("10", "arviointiasteikkoyleissivistava", Some(1)), oppiaine.arvosana)
+    Assertions.assertEquals(true, oppiaine.pakollinen)
+    Assertions.assertEquals(Some(true), oppiaine.yksilollistetty)
+    Assertions.assertEquals(Some(true), oppiaine.rajattu)
 
   @Test def testPerusopetuksenVuosiluokat(): Unit =
     val vuosiluokka = getFirstSuoritusFromJson("""
@@ -790,6 +804,12 @@ class KoskiParsingTest {
         |            }
         |          ]
         |        },
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.42923230215",
+        |          "nimi": {
+        |            "fi": "oppilaitos"
+        |          }
+        |        },
         |        "suoritukset": [
         |          {
         |            "koulutusmoduuli": {
@@ -833,6 +853,8 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]
 
     Assertions.assertNotNull(oppimaara.tunniste)
+    Assertions.assertTrue(oppimaara.versioTunniste.isEmpty)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("oppilaitos"), None, None), "1.2.246.562.10.42923230215"), oppimaara.oppilaitos)
     Assertions.assertEquals(Kielistetty(Some("Matematiikka"), None, None), oppimaara.nimi)
     Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.koodi)
     Assertions.assertEquals(Koodi("8", "arviointiasteikkoyleissivistava", Some(1)), oppimaara.arvosana)
@@ -885,7 +907,7 @@ class KoskiParsingTest {
         |""".stripMargin).asInstanceOf[PerusopetuksenOpiskeluoikeus]
 
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
-    Assertions.assertEquals("1.2.246.562.15.50478693398", opiskeluoikeus.oid)
+    Assertions.assertEquals(Some("1.2.246.562.15.50478693398"), opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.42923230215", opiskeluoikeus.oppilaitosOid)
     Assertions.assertEquals(Some(OpiskeluoikeusTila(List(
       OpiskeluoikeusJakso(LocalDate.parse("2021-04-16"), OpiskeluoikeusJaksoTila("lasna", "koskiopiskeluoikeudentila", Some(1))),
@@ -901,7 +923,10 @@ class KoskiParsingTest {
         |    "opiskeluoikeudet": [
         |      {
         |        "oppilaitos": {
-        |          "oid": "1.2.246.562.10.32727448402"
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
         |        },
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
@@ -938,7 +963,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
 
-    Assertions.assertEquals("1.2.246.562.10.32727448402", oppimaara.organisaatioOid)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Hatsalan klassillinen koulu"), None, None), "1.2.246.562.10.32727448402"), oppimaara.oppilaitos)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2022-04-16")), oppimaara.vahvistusPaivamaara)
