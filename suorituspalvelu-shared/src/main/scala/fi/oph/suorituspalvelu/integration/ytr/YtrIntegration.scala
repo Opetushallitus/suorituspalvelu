@@ -12,7 +12,7 @@ import slick.jdbc.JdbcBackend
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, DurationInt}
-import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
+import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.ZipUtil
 
 import java.io.ByteArrayInputStream
@@ -65,8 +65,9 @@ class YtrIntegration {
       val kantaOperaatiot = KantaOperaatiot(database)
       val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, ytrResult.resultJson.getOrElse("{}"))
       versio.foreach(v => {
-        //Todo, parsitaan ytr-data ja tallennetaan parsitut suoritukset
         LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
+        val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
+        kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus))
       })
       SyncResultForHenkilo(ytrResult.personOid, versio, None)
     } catch {
@@ -76,7 +77,7 @@ class YtrIntegration {
     }
   }
 
-  def massFetchForStudents(hetuPostData: Seq[YtrHetuPostData], personOidByHetu: Map[String, String]): Future[Seq[YtrDataForHenkilo]] = {
+  def massFetchForStudents(hetuPostData: Seq[YtrHetuPostData]): Future[Seq[(String, String)]] = {
     ytrClient.createYtrMassOperation(hetuPostData).flatMap(massOp => {
       LOG.info(s"Luotiin massaoperaatio: $massOp, pollataan")
       pollUntilReady(massOp.uuid).flatMap(finishedQuery => {
@@ -86,7 +87,7 @@ class YtrIntegration {
           result.map(bytes => ZipUtil.unzipStreamByFile(new ByteArrayInputStream(bytes))).getOrElse(Map.empty)
         }).map(dataByFile => {
           dataByFile.flatMap((filename, data) => {
-            YtrParser.parseYtrMassData(data, personOidByHetu).toList
+            YtrParser.splitAndSanitize(data).toList
           }).toSeq
         })
       })
@@ -125,8 +126,9 @@ class YtrIntegration {
         } else {
           val ytrParams = withHetu.map { h => (h.oidHenkilo, YtrHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty)))) }.toSeq
           val ytrDataF = ytrParams.map(postData => {
+            val personOid = postData._1
             ytrClient.fetchOne(postData._2).map(ytrData => {
-              ytrData.map(data => YtrParser.parseSingleAndRemoveHetu(data, postData._1)).getOrElse(YtrDataForHenkilo(postData._1, None))
+              ytrData.map(data => YtrDataForHenkilo(personOid, Some(YtrParser.sanitize(data)))).getOrElse(YtrDataForHenkilo(postData._1, None))
             })
           })
           Future.sequence(ytrDataF).map(processFunction)
@@ -181,8 +183,8 @@ class YtrIntegration {
       case (accResultF, (batchData, batchIndex)) =>
         accResultF.flatMap { accResults =>
           LOG.info(s"Synkataan ${batchData.size} henkilön tiedot Ylioppilastutkintorekisteristä, erä ${batchIndex+1}/${batches.size}")
-          val batchResultF = massFetchForStudents(batchData.map(_._2).toSeq, personOidByHetu)
-            .map(fetchResult => processFunction(fetchResult))
+          val batchResultF = massFetchForStudents(batchData.map(_._2).toSeq)
+            .map(fetchResult => processFunction(fetchResult.map(r => YtrDataForHenkilo(personOidByHetu.getOrElse(r._1, throw new RuntimeException()), Some(r._2)))))
           batchResultF.map(batchResults => accResults ++ batchResults)
         }
     }

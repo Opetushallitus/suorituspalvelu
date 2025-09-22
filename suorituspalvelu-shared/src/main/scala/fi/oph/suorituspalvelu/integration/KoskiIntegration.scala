@@ -104,7 +104,7 @@ class KoskiIntegration {
             versio.foreach(v => {
               LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
               val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
-              kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, Set.empty)
+              kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet)
             })
             SyncResultForHenkilo(henkilonTiedot._1, versio, None)
           } catch {

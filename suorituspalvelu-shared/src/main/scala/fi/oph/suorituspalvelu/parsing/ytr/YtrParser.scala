@@ -17,7 +17,7 @@ case class Exam(
                )
 
 case class Student(
-                    ssn: String,
+                    ssn: Option[String],
                     lastname: String,
                     firstnames: String,
                     graduationPeriod: Option[String] = None,
@@ -38,34 +38,28 @@ object YtrParser {
     mapper
   }
 
-  def parseYtrMassData(data: String, personOidByHetu: Map[String, String]): Iterator[YtrDataForHenkilo] = {
-    splitYtrDataByOppija(new ByteArrayInputStream(data.getBytes("UTF-8")), personOidByHetu)
+  def sanitize(data: String): String = {
+    splitAndSanitize("[" + data + "]").next()._2
   }
 
-  def parseSingleAndRemoveHetu(data: String, personOid: String): YtrDataForHenkilo = {
-    val student = MAPPER.readValue(data, classOf[Student])
-    YtrDataForHenkilo(personOid, Some(MAPPER.writeValueAsString(student.copy(ssn = ""))))
-  }
-
-  def splitYtrDataByOppija(input: InputStream, personOidByHetu: Map[String, String] = Map.empty): Iterator[YtrDataForHenkilo] = {
-    val jsonParser = MAPPER.getFactory().createParser(input)
+  def splitAndSanitize(data: String): Iterator[(String, String)] = {
+    val jsonParser = MAPPER.getFactory().createParser(new ByteArrayInputStream(data.getBytes("UTF-8")))
     jsonParser.nextToken()
 
     Iterator.continually({
         val token = jsonParser.nextToken()
         if (token != JsonToken.END_ARRAY) {
-          //Fixme ehkä: Tämä on periaatteessa vähän outo hetki parsia data valmiiksi case classiksi,
-          // mutta hetun poimimisen takia joku parsinta täytyy tehdä jos data halutaan tallentaa oppijanumeron eikä hetun alle.
-          Some(jsonParser.readValueAs(classOf[Student]))
+          Some(jsonParser.readValueAs(classOf[Map[String, Any]]))
         } else
           None
       })
       .takeWhile(data => data.isDefined)
       .map(data => {
-        val personOid = personOidByHetu.getOrElse(data.get.ssn, throw new RuntimeException(s"Missing personOid for ssn ${data.get.ssn}"))
-        //Pudotetaan hetu pois datasta, jotta ei päädy kantaan.
-        YtrDataForHenkilo(personOid, Some(MAPPER.writeValueAsString(data.get.copy(ssn = ""))))
+        (data.get("ssn").toString, MAPPER.writeValueAsString(data.get + ("ssn" -> None)))
       })
   }
+
+  def parseYtrData(data: String): Student =
+    MAPPER.readValue(data, classOf[Student])
 
 }
