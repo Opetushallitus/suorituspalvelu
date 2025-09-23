@@ -62,18 +62,8 @@ case class Yksikko(koodiarvo: String,
                    nimi: Kielistetty,
                    lyhytNimi: Kielistetty) extends VersioituTunniste
 
-case class KoulutusModuuliTunniste(koodiarvo: String,
-                                   koodistoUri: String,
-                                   koodistoVersio: Option[Int],
-                                   nimi: Kielistetty) extends VersioituTunniste
-
-case class KoulutusTyyppi(koodiarvo: String,
-                          koodistoUri: String,
-                          koodistoVersio: Option[Int],
-                          nimi: Kielistetty) extends VersioituTunniste
-
-case class KoulutusModuuli(tunniste: Option[KoulutusModuuliTunniste],
-                           koulutustyyppi: Option[KoulutusTyyppi],
+case class KoulutusModuuli(tunniste: Option[KoskiKoodi],
+                           koulutustyyppi: Option[KoskiKoodi],
                            laajuus: Option[Laajuus],
                            kieli: Option[KoskiKoodi],
                            pakollinen: Option[Boolean])
