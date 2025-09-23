@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -658,6 +658,55 @@ class EntityToUIConverterTest {
       Optional.of(virtaTutkinto.aloitusPvm),
       Optional.of(virtaTutkinto.suoritusPvm)
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOODISTOPROVIDER).get.kkTutkinnot)
+  }
+
+  @Test def testConvertYlioppilasTutkinto(): Unit = {
+    val OPPIJANUMERO = "1.2.3"
+
+    val yoTutkinto = YOTutkinto(
+      tunniste = UUID.randomUUID(),
+      suoritusKieli = Koodi("FI", "kieli", Some(1)),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      valmistumisPaiva = Some(LocalDate.parse("2013-06-01")),
+      aineet = Set(Koe(
+        tunniste = UUID.randomUUID(),
+        koodi = Koodi("EA", "koskiyokokeet", Some(1)),
+        tutkintoKerta = LocalDate.parse("2012-06-01"),
+        arvosana = Koodi("M", "koskiyoarvosanat", Some(1)),
+        pisteet = Some(236)
+      ))
+    )
+
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.YOTutkinto(
+      tunniste = yoTutkinto.tunniste,
+      nimi = YOTutkintoNimi(
+        fi = Optional.of("Ylioppilastutkinto"),
+        sv = Optional.of("Studentexamen"),
+        en = Optional.of("Matriculation Examination")
+      ),
+      oppilaitos = YOOppilaitos(
+        nimi = YOOppilaitosNimi(
+          fi = Optional.of("Ylioppilastutkintolautakunta"),
+          sv = Optional.of("Studentexamensnämnden"),
+          en = Optional.of("The Matriculation Examination Board")
+        ),
+        oid = UIService.YTL_ORGANISAATIO_OID
+      ),
+      tila = SuoritusTila.valueOf(yoTutkinto.supaTila.toString()),
+      valmistumispaiva = yoTutkinto.valmistumisPaiva.toJava,
+      suorituskieli = "FI",
+      yoKokeet = yoTutkinto.aineet.map(a => YOKoe(
+        tunniste = a.tunniste,
+        nimi = YOKoeNimi(
+          Optional.empty(),
+          Optional.empty(),
+          Optional.empty()
+        ),
+        arvosana = a.arvosana.arvo,
+        yhteispistemaara = a.pisteet.toJava,
+        tutkintokerta = a.tutkintoKerta
+      )).toList.asJava
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(YOOpiskeluoikeus(null, yoTutkinto)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).get.yoTutkinnot)
   }
 
 }

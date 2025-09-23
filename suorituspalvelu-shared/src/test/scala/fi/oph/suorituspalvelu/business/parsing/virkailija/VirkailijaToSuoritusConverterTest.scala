@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
-import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter.{dummy, toOppiaineenNimi}
+import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter.dummy
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus}
 import org.junit.jupiter.api.TestInstance.Lifecycle

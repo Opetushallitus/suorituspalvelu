@@ -75,6 +75,11 @@ object UIService {
     8, // Perusopetuksen osittain rajattu oppimäärä
     9  // Perusopetuksen pääosin tai kokonaan rajattu oppimäärä
   )
+
+  val KOODISTO_YOKOKEET = "koskiyokokeet"
+
+  val YTL_ORGANISAATIO_OID = "1.2.246.562.10.43628088406"
+
 }
 
 @Component

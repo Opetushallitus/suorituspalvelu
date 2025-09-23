@@ -176,17 +176,24 @@ case class KKSuoritus(
   @BeanProperty valmistumispaiva: Optional[LocalDate],
 )
 
+case class YOKoeNimi(
+  @(Schema @field)(example = "Biologia", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Biologi", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Biology", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
+)
+
 case class YOKoe(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
-  @(Schema @field)(description = "Aine", example = "Matematiikka", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty aine: String,
-  @(Schema @field)(example = "Lyhyt oppimäärä (MA)", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty taso: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: YOKoeNimi,
   @(Schema @field)(example = "E", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: String,
   @(Schema @field)(example = "23", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty yhteispistemaara: Int,
+  @BeanProperty yhteispistemaara: Optional[Int],
   @(Schema @field)(example = "2019-06-01", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tutkintokerta: LocalDate
 )
@@ -197,7 +204,7 @@ case class YOOppilaitosNimi(
   @(Schema @field)(example = "Kalevan lukio sv", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "Kalevan lukio en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String],
+  @BeanProperty en: Optional[String]
 )
 
 case class YOOppilaitos(
@@ -1105,7 +1112,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty henkiloOID: String,
   @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
   @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],
-  @BeanProperty yoTutkinto: Optional[YOTutkinto],
+  @BeanProperty yoTutkinnot: java.util.List[YOTutkinto],
   @BeanProperty lukionOppimaara: Optional[LukionOppimaara],
   @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
   @BeanProperty diaTutkinto: Optional[DIATutkinto],
