@@ -39,6 +39,10 @@ integrations:
     tunnus: {{suoritusrekisteri_virta_tunnus}}
     avain: {{suoritusrekisteri_virta_avain}}
     base-url: {{suorituspalvelu_virta_base_url}}
+  ytr:
+    username: {{suoritusrekisteri_ytl_http_username}}
+    password: {{suoritusrekisteri_ytl_http_password}}
+    base-url: {{suoritusrekisteri_ytl_http_host}}
 
 db-scheduler:
   enabled: true
