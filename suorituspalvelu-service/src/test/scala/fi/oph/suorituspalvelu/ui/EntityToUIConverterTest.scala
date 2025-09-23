@@ -21,7 +21,7 @@ import scala.jdk.OptionConverters.*
 class EntityToUIConverterTest {
 
   val DUMMY_ORGANISAATIOPROVIDER = new OrganisaatioProvider {
-    override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = Some(Organisaatio("1.2.3", OrganisaatioNimi("", "", "")))
+    override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = Some(Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty))
   }
 
   val DUMMY_KOODISTOPROVIDER = new KoodistoProvider {
@@ -70,7 +70,7 @@ class EntityToUIConverterTest {
         )
       )
     )
-    
+
     Assertions.assertEquals(List(fi.oph.suorituspalvelu.resource.ui.Ammatillinentutkinto(
       tutkinto.tunniste,
       AmmatillinentutkintoNimi(
@@ -312,7 +312,7 @@ class EntityToUIConverterTest {
       Some(LocalDate.parse("2020-01-01")),
       Koodi("FI", "kieli", Some(1))
     )
-    
+
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Erikoisammattitutkinto(
       tutkinto.tunniste,
       ErikoisammattitutkintoNimi(
@@ -334,7 +334,7 @@ class EntityToUIConverterTest {
       tutkinto.suoritusKieli.arvo
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).get.erikoisammattitutkinnot)
   }
-  
+
   @Test def testConvertTelma(): Unit = {
     val OPPIJANUMERO = "1.2.3"
 
@@ -349,7 +349,7 @@ class EntityToUIConverterTest {
       Some(LocalDate.parse("2020-01-01")),
       Koodi("FI", "kieli", Some(1))
     )
-    
+
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Telma(
       telma.tunniste,
       TelmaNimi(
@@ -556,8 +556,8 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_SV = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = {
-        Some(Organisaatio("2.3.4", OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN)))
+      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
+        Some(Organisaatio(organisaatioOid, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty))
       }
     }
 
@@ -631,9 +631,9 @@ class EntityToUIConverterTest {
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = {
-        if(koodiArvo == virtaTutkinto.myontaja)
-          Some(Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en")))
+      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
+        if(organisaatioOid == virtaTutkinto.myontaja)
+          Some(Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty))
         else
           throw new RuntimeException()
       }

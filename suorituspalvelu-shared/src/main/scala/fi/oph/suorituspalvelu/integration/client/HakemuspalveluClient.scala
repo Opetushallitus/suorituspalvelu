@@ -2,14 +2,11 @@ package fi.oph.suorituspalvelu.integration.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
+import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 
-import java.util.concurrent.TimeUnit
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
+import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 
 //Todo, oma ec?
@@ -25,9 +22,17 @@ case class AtaruHakemuksenHenkilotiedot(oid: String, //hakemuksen oid
 case class AtaruResponseHenkilot(applications: List[AtaruHakemuksenHenkilotiedot],
                                  offset: Option[String])
 
+case class AtaruPermissionRequest(personOidsForSamePerson: Set[String],
+                                  organisationOids: Set[String],
+                                  loggedInUserRoles: Set[String])
+
+case class AtaruPermissionResponse(accessAllowed: Option[Boolean] = None,
+                                   errorMessage: Option[String] = None)
+
 trait HakemuspalveluClient {
   def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]]
   def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
+  def checkPermission(permissionRequest: AtaruPermissionRequest): Future[AtaruPermissionResponse]
 }
 
 class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
@@ -44,7 +49,12 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
 
   override def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
     def fetchAllRecursive(currentParams: AtaruHenkiloSearchParams, accResults: Seq[AtaruHakemuksenHenkilotiedot] = Seq.empty): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
-      fetch(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri/henkilot", currentParams)
+      val bodyMap = List(
+        currentParams.hakuOid.map("hakuOid" -> _),
+        currentParams.hakukohdeOids.map("hakukohdeOids" -> _),
+        currentParams.offset.map("offset" -> _)
+      ).flatten.toMap
+      doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri/henkilot", bodyMap)
         .flatMap(data => {
           val parsed: AtaruResponseHenkilot = mapper.readValue[AtaruResponseHenkilot](data, classOf[AtaruResponseHenkilot])
           val newResults = accResults ++ parsed.applications
@@ -62,17 +72,18 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
     fetchAllRecursive(params)
   }
 
-  private def fetch(url: String, body: AtaruHenkiloSearchParams): Future[String] = {
-    val bodyMap = List(
-      body.hakuOid.map("hakuOid" -> _),
-      body.hakukohdeOids.map("hakukohdeOids" -> _),
-      body.offset.map("offset" -> _)
-    ).flatten.toMap
+  override def checkPermission(permissionRequest: AtaruPermissionRequest): Future[AtaruPermissionResponse] = {
+    doPost(environmentBaseUrl + "/lomake-editori/api/checkpermission", permissionRequest).flatMap(responseString => {
+      val parsed: AtaruPermissionResponse = mapper.readValue[AtaruPermissionResponse](responseString, classOf[AtaruPermissionResponse])
+      Future.successful(parsed)
+    })
+  }
 
+  private def doPost(url: String, body: Object): Future[String] = {
     val req = new RequestBuilder()
       .setMethod("POST")
       .setHeader("Content-Type", "application/json")
-      .setBody(mapper.writeValueAsString(bodyMap))
+      .setBody(mapper.writeValueAsString(body))
       .setUrl(url)
       .build()
     try {

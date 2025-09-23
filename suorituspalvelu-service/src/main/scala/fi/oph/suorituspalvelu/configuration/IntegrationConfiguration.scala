@@ -7,11 +7,13 @@ import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
+import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.{Bean, Configuration}
 
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.{Await, Future}
 
 @Configuration
@@ -99,16 +101,22 @@ class IntegrationConfiguration {
   @Bean
   def getOrganisaatioProvider(@Value("${integrations.koski.base-url}") envBaseUrl: String): OrganisaatioProvider = {
     new OrganisaatioProvider {
+      val organisaatioClient = new OrganisaatioClient(envBaseUrl)
+      private val ORGANISAATIO_TIMEOUT = 120.seconds
 
-      val organisaatioClient = OrganisaatioClient(envBaseUrl)
+      private val hierarkiaCache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofHours(6))
+        .refreshAfterWrite(Duration.ofHours(3))
+        .build[String, Map[String, Organisaatio]](_ => {
+          val tuoreHierarkia = Await.result(organisaatioClient.haeHierarkia(), ORGANISAATIO_TIMEOUT)
+          OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
+        })
 
-      val cache = Caffeine.newBuilder()
-        .maximumSize(10000)
-        .expireAfterWrite(Duration.ofHours(12))
-        .build(koodiArvo => Await.result(organisaatioClient.haeOrganisaationTiedot(koodiArvo.toString), ORGANISAATIO_TIMEOUT))
-
-      override def haeOrganisaationTiedot(koodiArvo: String): Option[Organisaatio] = cache.get(koodiArvo)
+      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
+        hierarkiaCache.get("hierarkia").get(organisaatioOid)
+      }
     }
+
   }
 
   @Bean
