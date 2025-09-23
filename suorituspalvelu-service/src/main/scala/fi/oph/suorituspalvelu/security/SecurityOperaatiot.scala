@@ -10,10 +10,10 @@ import scala.jdk.CollectionConverters.*
 case class VirkailijaAuthorization(username: String, onRekisterinpitaja: Boolean, oikeudellisetOrganisaatiot: Set[String])
 
 class SecurityOperaatiot(
-                          getOikeudet: () => Set[String] = () => SecurityContextHolder.getContext.getAuthentication.getAuthorities.asScala.map(a => a.getAuthority).toSet,
+                          getKayttajanOikeudet: () => Set[String] = () => SecurityContextHolder.getContext.getAuthentication.getAuthorities.asScala.map(a => a.getAuthority).toSet,
                           getUserOid: () => String = () => SecurityContextHolder.getContext.getAuthentication.getName())  {
 
-  private lazy val kayttajanOikeudet = getOikeudet()
+  private lazy val kayttajanOikeudet = getKayttajanOikeudet()
 
   val identiteetti = getUserOid()
 
@@ -30,15 +30,15 @@ class SecurityOperaatiot(
   }
 
   //Filtteröidään käyttäjäoikeuksista sellaiset organisaatiot, joihin käyttäjällä on oikeus
-  def getOrganisaatiot() = {
+  def getOrganisaatiotOikeuksille(tarvittavatRoolit: Set[String]) = {
     //Todo, tarkat oikeudet kuntoon. Nyt varsinaisia Supa-oikeuksia ei edes ole. Pitää myös miettiä, mitä oikeuksia mihinkin operaatioon oikeasti halutaan tarkistella.
-    val supaOikeudet = getOikeudet().filter(oikeus => oikeus.startsWith("ROLE_APP_SUORITUSREKISTERI_CRUD_") || oikeus.startsWith("ROLE_APP_SUORITUSREKISTERI_READ_"))
-    getOrganisaatioOidsFromRoolit(supaOikeudet)
+    val riittavatOikeudet = getKayttajanOikeudet().filter(oikeus => tarvittavatRoolit.exists(rooli => oikeus.startsWith(rooli)))
+    getOrganisaatioOidsFromRoolit(riittavatOikeudet)
   }
 
-  def getAuthorization(organisaatioProvider: OrganisaatioProvider): VirkailijaAuthorization = {
+  def getAuthorization(tarvittavatRoolit: Set[String], organisaatioProvider: OrganisaatioProvider): VirkailijaAuthorization = {
     val rekPit = onRekisterinpitaja()
-    val organisaatiotOikeuksista = if (!rekPit) getOrganisaatiot() else Set.empty
+    val organisaatiotOikeuksista = if (!rekPit) getOrganisaatiotOikeuksille(tarvittavatRoolit) else Set.empty
     val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
     VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot)
   }
