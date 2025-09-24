@@ -10,6 +10,7 @@ import {
 import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { Outlet } from 'react-router';
+import { NavigationSpinner } from './NavigationSpinner';
 
 export default function HenkiloSearchLayout() {
   const { t } = useTranslate();
@@ -24,9 +25,11 @@ export default function HenkiloSearchLayout() {
         <Stack direction="row">
           <HenkilotSidebar />
           <main style={{ flexGrow: 1 }}>
-            <QuerySuspenseBoundary>
-              <Outlet />
-            </QuerySuspenseBoundary>
+            <NavigationSpinner>
+              <QuerySuspenseBoundary>
+                <Outlet />
+              </QuerySuspenseBoundary>
+            </NavigationSpinner>
           </main>
         </Stack>
       </PageLayout>
