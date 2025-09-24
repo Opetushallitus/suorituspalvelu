@@ -1,5 +1,5 @@
-import { castToArray, ValueOf } from '@/lib/common';
-import { OppijanTiedot, Suoritus } from '@/types/ui-types';
+import { castToArray, type ValueOf } from '@/lib/common';
+import type { OppijanTiedot, Suoritus } from '@/types/ui-types';
 import { useMemo } from 'react';
 import { omit } from 'remeda';
 

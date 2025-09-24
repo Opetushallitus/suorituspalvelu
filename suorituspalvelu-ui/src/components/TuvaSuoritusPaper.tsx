@@ -1,4 +1,4 @@
-import { TUVASuoritus } from '@/types/ui-types';
+import type { TUVASuoritus } from '@/types/ui-types';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { useTranslations } from '@/hooks/useTranslations';

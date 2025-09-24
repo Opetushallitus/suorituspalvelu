@@ -1,5 +1,3 @@
-'use client';
-
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { isPlainObject } from 'remeda';
 import { useIsSessionExpired } from './components/SessionExpired';
@@ -13,9 +11,7 @@ export function getCookies() {
       }
       return result;
     },
-    {} as {
-      [key: string]: string;
-    },
+    {} as Record<string, string>,
   );
 }
 
@@ -28,14 +24,14 @@ class OphCustomError extends Error {
 }
 
 export class SessionExpiredError extends OphCustomError {
-  constructor(message: string = 'Session expired') {
+  constructor(message = 'Session expired') {
     super(message);
   }
 }
 
 export class FetchError extends OphCustomError {
   response: Response;
-  constructor(response: Response, message: string = 'Fetch error') {
+  constructor(response: Response, message = 'Fetch error') {
     super(message);
     this.response = response;
   }

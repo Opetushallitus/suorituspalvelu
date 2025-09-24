@@ -1,7 +1,7 @@
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-import { AmmatillinenSuoritus } from '@/types/ui-types';
+import type { AmmatillinenSuoritus } from '@/types/ui-types';
 import { LabeledInfoItem } from './LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { TutkinnonOsatTable } from './TutkinnonOsatTable';

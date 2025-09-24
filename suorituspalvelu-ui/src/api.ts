@@ -1,12 +1,12 @@
 import { isEmpty, isNullish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client } from './http-client';
-import {
+import type {
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
 } from './types/backend';
-import { KayttajaTiedot } from './types/ui-types';
+import type { KayttajaTiedot } from './types/ui-types';
 
 export type OppijatSearchParams = {
   oppija?: string;

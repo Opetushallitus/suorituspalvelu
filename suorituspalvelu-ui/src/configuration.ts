@@ -1,9 +1,9 @@
 import { use } from 'react';
 
-export const isTest = process.env.NEXT_PUBLIC_TEST === 'true';
+export const isTest = import.meta.env.VITE_TEST === 'true';
 
 export const localTranslations =
-  process.env.NEXT_PUBLIC_LOCAL_TRANSLATIONS === 'true';
+  import.meta.env.VITE_LOCAL_TRANSLATIONS === 'true';
 
 export const getConfiguration = async () => {
   const DOMAIN = '';

@@ -1,12 +1,10 @@
-'use client';
-
 import { useEffect, useState } from 'react';
-import { TolgeeInstance, TolgeeProvider } from '@tolgee/react';
+import { type TolgeeInstance, TolgeeProvider } from '@tolgee/react';
 import { initTolgee } from '@/localization/tolgee-config';
-import { OphNextJsThemeProvider } from '@opetushallitus/oph-design-system/next/theme';
+import { OphThemeProvider } from '@opetushallitus/oph-design-system/theme';
 import { UntranslatedFullSpinner } from './FullSpinner';
 import { getAsiointiKieli } from '@/api';
-import { Language } from '@/types/ui-types';
+import type { Language } from '@/types/ui-types';
 import { THEME_OVERRIDES } from '@/lib/theme';
 import { Box } from '@mui/material';
 
@@ -47,13 +45,9 @@ export function LocalizationProvider({
 
   return lang && tolgee ? (
     <TolgeeProvider tolgee={tolgee} fallback={<UntranslatedFullSpinner />}>
-      <OphNextJsThemeProvider
-        variant="oph"
-        lang={lang}
-        overrides={THEME_OVERRIDES}
-      >
+      <OphThemeProvider variant="oph" lang={lang} overrides={THEME_OVERRIDES}>
         {children}
-      </OphNextJsThemeProvider>
+      </OphThemeProvider>
     </TolgeeProvider>
   ) : (
     <UntranslatedFullSpinner />

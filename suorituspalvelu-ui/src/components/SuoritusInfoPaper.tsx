@@ -1,7 +1,7 @@
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { PaperWithTopColor } from './PaperWithTopColor';
 import { Stack } from '@mui/material';
-import { SuoritusOtsikkoTiedot } from '@/types/ui-types';
+import type { SuoritusOtsikkoTiedot } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isNonNullish } from 'remeda';
 import { formatYear, NDASH } from '@/lib/common';
