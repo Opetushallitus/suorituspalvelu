@@ -9,15 +9,10 @@ export default defineConfig({
     tsConfigPaths(),
     vitePluginOptimizeNamedImports(['@mui/icons-material']),
   ],
-  // Jos buildataan tuotantoa varten, assetit täytyy noutaa /suorituspalvelu-polun alta.
-  // dev-serverillä assetit on löytyy juuresta
-  ...(process.env.BUILD === 'true'
-    ? {
-        build: {
-          assetsDir: 'suorituspalvelu/assets',
-        },
-      }
-    : {}),
+  build: {
+    // Jotta toimii myös Spring Bootissa, assetit täytyy noutaa /suorituspalvelu-polun alta eikä juuresta.
+    assetsDir: 'suorituspalvelu/assets',
+  },
   server: {
     port: 3000,
     host: 'localhost',

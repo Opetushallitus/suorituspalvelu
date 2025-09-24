@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "cd .. && husky",
     "dev": "react-router dev --port 3000 --host",
-    "build": "BUILD=true react-router build",
+    "build": "react-router build",
     "dev:test": "VITE_TEST=true npm run dev",
     "build:test": "VITE_TEST=true npm run build",
     "start": "npx tsx test-server.ts",
