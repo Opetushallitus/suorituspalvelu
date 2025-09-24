@@ -10,4 +10,5 @@ export default [
     index('./HenkiloNotSelectedPage.tsx'),
     route('/henkilo/:oppijaNumero', './HenkiloPage.tsx'),
   ]),
+  route('*', './NotFoundPage.tsx'),
 ] satisfies RouteConfig;
