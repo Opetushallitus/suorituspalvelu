@@ -24,12 +24,12 @@ class KoskiToSuoritusConverterTest {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
 
-      Assertions.assertEquals(7, oikeudet.size)
+      Assertions.assertEquals(4, oikeudet.size) // kolme mitätöityä opiskeluoikeutta
 
       val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
       Assertions.assertEquals(1, perusopetukset.size)
-      Assertions.assertEquals(5, ammatilliset.size)
-      Assertions.assertEquals(1, geneeriset.size)
+      Assertions.assertEquals(3, ammatilliset.size)
+      Assertions.assertEquals(0, geneeriset.size)
     })
 
   @Test def testKoskiParsingAndConversion2(): Unit =
@@ -39,10 +39,11 @@ class KoskiToSuoritusConverterTest {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
 
-      Assertions.assertEquals(8, oikeudet.size)
+      Assertions.assertEquals(2, oikeudet.size) // kuusi mitätöityä opiskeluoikeutta
+
       val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
-      Assertions.assertEquals(4, perusopetukset.size)
-      Assertions.assertEquals(3, ammatilliset.size)
+      Assertions.assertEquals(1, perusopetukset.size)
+      Assertions.assertEquals(0, ammatilliset.size)
       Assertions.assertEquals(1, geneeriset.size)
     })
 
