@@ -15,11 +15,19 @@ object ApiConstants {
 
   final val DATASYNC_PATH                                   = VERSIONED_API_PREFIX + "/datasync"
   final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
+  final val DATASYNC_EI_OIKEUKSIA                           = "Käyttäjällä ei ole oikeuksia käynnistää tietojen synkronointia"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
 
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
+
+  final val KOSKI_DATASYNC_HENKILOT_PATH                    = KOSKI_DATASYNC_PATH + "/henkilot"
+  final val KOSKI_DATASYNC_HENKILOT_MAX_MAARA_STR           = "5000"
+  final val KOSKI_DATASYNC_HENKILOT_MAX_MAARA               = KOSKI_DATASYNC_HENKILOT_MAX_MAARA_STR.toInt
+  final val KOSKI_DATASYNC_HENKILOT_LIIKAA                  = "Tiedot voi hakea korkeintaan 5000 henkilölle kerrallaan"
+
   final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
+  final val KOSKI_DATASYNC_MUUTTUNEET_PATH                  = KOSKI_DATASYNC_PATH + "/muuttuneet"
 
   final val YTR_DATASYNC_PATH = DATASYNC_PATH + "/ytr"
   final val YTR_DATASYNC_HAKU_PATH = YTR_DATASYNC_PATH + "/haku"
