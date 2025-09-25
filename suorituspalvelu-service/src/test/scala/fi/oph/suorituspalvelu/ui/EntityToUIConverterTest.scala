@@ -531,6 +531,7 @@ class EntityToUIConverterTest {
           aine.nimi.sv.toJava,
           aine.nimi.en.toJava
         ),
+        kieli = aine.kieli.map(_.arvo).toJava,
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
       )).toList.asJava

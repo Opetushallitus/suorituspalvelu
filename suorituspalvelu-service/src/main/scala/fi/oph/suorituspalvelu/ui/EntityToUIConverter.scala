@@ -805,6 +805,7 @@ object EntityToUIConverter {
               sv = a.nimi.sv.toJava,
               en = a.nimi.en.toJava
             ),
+            kieli = a.kieli.map(k => k.arvo).toJava,
             arvosana = a.arvosana.arvo,
             valinnainen = !a.pakollinen,
           )).toList.asJava
@@ -863,6 +864,7 @@ object EntityToUIConverter {
           sv = Optional.of("Biologia sv"),
           en = Optional.of("Biologia en")
         ),
+        kieli = Optional.empty(),
         arvosana = "9",
         valinnainen = false
       ),PerusopetuksenOppiaine(
@@ -872,6 +874,7 @@ object EntityToUIConverter {
           sv = Optional.of("Historia sv"),
           en = Optional.of("Historia en")
         ),
+        kieli = Optional.empty(),
         arvosana = "8",
         valinnainen = false
       ))
@@ -904,6 +907,7 @@ object EntityToUIConverter {
           sv = Optional.of("matematiikka sv"),
           en = Optional.of("matematiikka en")
         ),
+        kieli = Optional.empty(),
         arvosana = "9",
         valinnainen = false
       ))
@@ -937,6 +941,7 @@ object EntityToUIConverter {
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
+          kieli = Optional.of("AI1"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -946,6 +951,7 @@ object EntityToUIConverter {
             sv = Optional.of("A1-kieli, englanti sv"),
             en = Optional.of("A1-kieli, englanti en")
           ),
+          kieli = Optional.of("EN"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -955,6 +961,7 @@ object EntityToUIConverter {
             sv = Optional.of("B1-kieli, ruotsi sv"),
             en = Optional.of("B1-kieli, ruotsi en")
           ),
+          kieli = Optional.of("SV"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -964,6 +971,7 @@ object EntityToUIConverter {
             sv = Optional.of("B2-kieli, saksa sv"),
             en = Optional.of("B2-kieli, saksa en")
           ),
+          kieli = Optional.of("DE"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -973,6 +981,7 @@ object EntityToUIConverter {
             sv = Optional.of("Matematiikka sv"),
             en = Optional.of("Matematiikka en")
           ),
+          kieli = Optional.empty(),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -982,6 +991,7 @@ object EntityToUIConverter {
             sv = Optional.of("Biologia sv"),
             en = Optional.of("Biologia en")
           ),
+          kieli = Optional.empty(),
           arvosana = "8",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -991,6 +1001,7 @@ object EntityToUIConverter {
             sv = Optional.of("Maantieto sv"),
             en = Optional.of("Maantieto en")
           ),
+          kieli = Optional.empty(),
           arvosana = "8",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -1000,6 +1011,7 @@ object EntityToUIConverter {
             sv = Optional.of("Fysiikka sv"),
             en = Optional.of("Fysiikka en")
           ),
+          kieli = Optional.empty(),
           arvosana = "8",
           valinnainen = false,
         )

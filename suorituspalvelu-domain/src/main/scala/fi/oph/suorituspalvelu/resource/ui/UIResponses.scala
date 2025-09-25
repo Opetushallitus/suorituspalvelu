@@ -898,9 +898,9 @@ case class VapaaSivistystyoKoulutus(
 case class PKOppilaitosNimi(
   @(Schema @field)(example = "Keltinmäen koulu", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Keltinmäen koulu sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Keltinmäen koulu", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Keltinmäen koulu en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Keltinmäen koulu", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
 )
 
@@ -914,9 +914,9 @@ case class PKOppilaitos(
 case class PerusopetuksenOppiaineNimi(
   @(Schema @field)(example = "matematiikka", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "matematiikka sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "matematik", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "matematiikka en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Mathematics", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
 )
 
@@ -925,7 +925,9 @@ case class PerusopetuksenOppiaine(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: PerusopetuksenOppiaineNimi,
-  @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = ESIMERKKI_VIERAS_KIELI_KIELIKOODI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty kieli: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: String,
   @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty valinnainen: Boolean,
