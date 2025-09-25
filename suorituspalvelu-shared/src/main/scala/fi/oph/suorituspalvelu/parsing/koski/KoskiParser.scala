@@ -86,12 +86,8 @@ case class Suoritus(tyyppi: SuoritusTyyppi,
                     suoritustapa: Option[SuoritusTapa],
                     `jääLuokalle`: Option[Boolean])
 
-case class OpiskeluoikeusJaksoTila(koodiarvo: String,
-                                   koodistoUri: String,
-                                   koodistoVersio: Option[Int]) extends VersioituTunniste
-
 case class OpiskeluoikeusJakso(alku: LocalDate,
-                               tila: OpiskeluoikeusJaksoTila)
+                               tila: KoskiKoodi)
 
 case class OpiskeluoikeusTila(opiskeluoikeusjaksot: List[OpiskeluoikeusJakso])
 
