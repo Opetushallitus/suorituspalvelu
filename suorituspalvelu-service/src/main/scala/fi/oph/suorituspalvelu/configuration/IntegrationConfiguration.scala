@@ -1,10 +1,10 @@
 package fi.oph.suorituspalvelu.configuration
 
 import scala.concurrent.duration.DurationInt
-import com.github.benmanes.caffeine.cache.Caffeine
-import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl}
+import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
+import fi.oph.suorituspalvelu.integration.{KoskiIntegration, TarjontaIntegration, OnrIntegrationImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoodistoClient, KoskiClient, Koodi, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
@@ -31,12 +31,19 @@ class IntegrationConfiguration {
   def getYtrIntegration(): YtrIntegration =
     new YtrIntegration
 
+  @Bean
+  def getKoutaIntegration(): TarjontaIntegration =
+    new TarjontaIntegration
 
   @Bean
   def getKoskiClient(@Value("${integrations.koski.username}") user: String,
                      @Value("${integrations.koski.password}") password: String,
                      @Value("${integrations.koski.base-url}") envBaseUrl: String): KoskiClient =
     new KoskiClient(user, password, envBaseUrl)
+
+  @Bean
+  def getOhjausparametritClient(@Value("${integrations.koski.base-url}") envBaseUrl: String): OhjausparametritClient =
+    new OhjausparametritClient(envBaseUrl)
 
   @Bean
   def getVirtaClient(@Value("${integrations.virta.jarjestelma}") jarjestelma: String,
@@ -94,6 +101,27 @@ class IntegrationConfiguration {
     val casClient: CasClient = CasClientBuilder.build(casConfig)
 
     new OnrClientImpl(casClient, envBaseUrl)
+  }
+
+  @Bean
+  def getKoutaClient(@Value("${integrations.koski.username}") user: String,
+                     @Value("${integrations.koski.password}") password: String,
+                     @Value("${integrations.koski.base-url}") envBaseUrl: String): KoutaClient = {
+
+    val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
+    val casConfig: CasConfig = new CasConfig.CasConfigBuilder(
+      user,
+      password,
+      envBaseUrl + "/cas",
+      envBaseUrl + "/kouta-internal",
+      CALLER_ID,
+      CALLER_ID,
+      "/auth/login")
+      .setJsessionName("session").build
+
+    val casClient: CasClient = CasClientBuilder.build(casConfig)
+
+    new KoutaClient(casClient, envBaseUrl)
   }
 
   private val ORGANISAATIO_TIMEOUT = 30.seconds
