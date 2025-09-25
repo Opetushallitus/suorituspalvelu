@@ -30,15 +30,16 @@ case class Kielistetty(fi: Option[String],
 
 case class KoskiKoodi(koodiarvo: String,
                       koodistoUri: String,
+                      koodistoVersio: Option[Int],
                       nimi: Kielistetty,
-                      koodistoVersio: Option[Int]) extends VersioituTunniste
+                      lyhytNimi: Option[Kielistetty]) extends VersioituTunniste
 
 case class Arviointi(arvosana: KoskiKoodi,
                      `päivä`: Option[String],
                      hyväksytty: Boolean)
 
 case class Laajuus(arvo: BigDecimal,
-                   yksikkö: Option[Yksikko])
+                   yksikkö: Option[KoskiKoodi])
 
 case class OsaSuoritus(tyyppi: SuoritusTyyppi,
                        koulutusmoduuli: Option[KoulutusModuuli],
@@ -55,12 +56,6 @@ case class SuoritusTapa(koodiarvo: String,
                         koodistoUri: String,
                         koodistoVersio: Option[Int],
                         nimi: Kielistetty) extends VersioituTunniste
-
-case class Yksikko(koodiarvo: String,
-                   koodistoUri: String,
-                   koodistoVersio: Option[Int],
-                   nimi: Kielistetty,
-                   lyhytNimi: Kielistetty) extends VersioituTunniste
 
 case class KoulutusModuuli(tunniste: Option[KoskiKoodi],
                            koulutustyyppi: Option[KoskiKoodi],
