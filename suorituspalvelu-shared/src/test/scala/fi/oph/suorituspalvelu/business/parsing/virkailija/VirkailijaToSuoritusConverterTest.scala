@@ -66,8 +66,8 @@ class VirkailijaToSuoritusConverterTest {
           None,
           Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), // syötetään vain valmistuneita suorituksia
           SuoritusTila.VALMIS,
-          Koodi(suoritus.suorituskieli.get, "kieli", None),
-          Set.empty,
+          Koodi(suoritus.suorituskieli.get, "kieli", Some(1)),
+          Set(Koodi(suoritus.suorituskieli.get, "kieli", Some(1))),
           Some(1),
           None,
           suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
