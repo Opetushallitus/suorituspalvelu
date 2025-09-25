@@ -87,7 +87,6 @@ object ApiConstants {
   final val ESIMERKKI_LEGACY_SUORITUSKIELI                  = "fi"
   final val ESIMERKKI_SUORITUSKIELI                         = "FI"
   final val ESIMERKKI_OPPIAINEKOODI                         = "HI"
-  final val ESIMERKKI_AIDINKIELEN_OPPIMAARA                 = "AI1" // Suomen kieli ja kirjallisuus
   final val ESIMERKKI_YKSILOLLISTAMINEN                     = "1"
   final val ESIMERKKI_VIERAS_KIELI_KIELIKOODI               = "DE"
   final val ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA    = "9"
