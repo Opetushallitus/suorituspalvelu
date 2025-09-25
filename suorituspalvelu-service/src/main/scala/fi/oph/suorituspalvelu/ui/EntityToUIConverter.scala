@@ -515,7 +515,6 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
-      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
         val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
@@ -597,7 +596,6 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
-      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         Ammattitutkinto(
           t.tunniste,
@@ -629,7 +627,6 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
-      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         Erikoisammattitutkinto(
           t.tunniste,
@@ -661,7 +658,6 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Telma])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Telma])
-      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(t => {
         Telma(
           t.tunniste,
@@ -694,7 +690,6 @@ object EntityToUIConverter {
         .flatten
         .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
         .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
-        .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
         .map(t => {
           Tuva(
             t.tunniste,
@@ -730,7 +725,6 @@ object EntityToUIConverter {
         .flatten
         .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
         .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
-        .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
         .map(t => {
           VapaaSivistystyoKoulutus(
             t.tunniste,
@@ -767,7 +761,6 @@ object EntityToUIConverter {
       .flatten
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
-      .filter(s => s.supaTila!=fi.oph.suorituspalvelu.business.SuoritusTila.MITATOITY)
       .map(om => {
         PerusopetuksenOppimaara(
           versioTunniste = om.versioTunniste.toJava,
@@ -805,6 +798,7 @@ object EntityToUIConverter {
               sv = a.nimi.sv.toJava,
               en = a.nimi.en.toJava
             ),
+            kieli = a.kieli.map(k => k.arvo).toJava,
             arvosana = a.arvosana.arvo,
             valinnainen = !a.pakollinen,
           )).toList.asJava
@@ -863,6 +857,7 @@ object EntityToUIConverter {
           sv = Optional.of("Biologia sv"),
           en = Optional.of("Biologia en")
         ),
+        kieli = Optional.empty(),
         arvosana = "9",
         valinnainen = false
       ),PerusopetuksenOppiaine(
@@ -872,6 +867,7 @@ object EntityToUIConverter {
           sv = Optional.of("Historia sv"),
           en = Optional.of("Historia en")
         ),
+        kieli = Optional.empty(),
         arvosana = "8",
         valinnainen = false
       ))
@@ -904,6 +900,7 @@ object EntityToUIConverter {
           sv = Optional.of("matematiikka sv"),
           en = Optional.of("matematiikka en")
         ),
+        kieli = Optional.empty(),
         arvosana = "9",
         valinnainen = false
       ))
@@ -937,6 +934,7 @@ object EntityToUIConverter {
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
+          kieli = Optional.of("AI1"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -946,6 +944,7 @@ object EntityToUIConverter {
             sv = Optional.of("A1-kieli, englanti sv"),
             en = Optional.of("A1-kieli, englanti en")
           ),
+          kieli = Optional.of("EN"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -955,6 +954,7 @@ object EntityToUIConverter {
             sv = Optional.of("B1-kieli, ruotsi sv"),
             en = Optional.of("B1-kieli, ruotsi en")
           ),
+          kieli = Optional.of("SV"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -964,6 +964,7 @@ object EntityToUIConverter {
             sv = Optional.of("B2-kieli, saksa sv"),
             en = Optional.of("B2-kieli, saksa en")
           ),
+          kieli = Optional.of("DE"),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -973,6 +974,7 @@ object EntityToUIConverter {
             sv = Optional.of("Matematiikka sv"),
             en = Optional.of("Matematiikka en")
           ),
+          kieli = Optional.empty(),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -982,6 +984,7 @@ object EntityToUIConverter {
             sv = Optional.of("Biologia sv"),
             en = Optional.of("Biologia en")
           ),
+          kieli = Optional.empty(),
           arvosana = "8",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -991,6 +994,7 @@ object EntityToUIConverter {
             sv = Optional.of("Maantieto sv"),
             en = Optional.of("Maantieto en")
           ),
+          kieli = Optional.empty(),
           arvosana = "8",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
@@ -1000,6 +1004,7 @@ object EntityToUIConverter {
             sv = Optional.of("Fysiikka sv"),
             en = Optional.of("Fysiikka en")
           ),
+          kieli = Optional.empty(),
           arvosana = "8",
           valinnainen = false,
         )

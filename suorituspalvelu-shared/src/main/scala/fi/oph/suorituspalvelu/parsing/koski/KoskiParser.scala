@@ -30,15 +30,16 @@ case class Kielistetty(fi: Option[String],
 
 case class KoskiKoodi(koodiarvo: String,
                       koodistoUri: String,
+                      koodistoVersio: Option[Int],
                       nimi: Kielistetty,
-                      koodistoVersio: Option[Int]) extends VersioituTunniste
+                      lyhytNimi: Option[Kielistetty]) extends VersioituTunniste
 
 case class Arviointi(arvosana: KoskiKoodi,
                      `päivä`: Option[String],
                      hyväksytty: Boolean)
 
 case class Laajuus(arvo: BigDecimal,
-                   yksikkö: Option[Yksikko])
+                   yksikkö: Option[KoskiKoodi])
 
 case class OsaSuoritus(tyyppi: SuoritusTyyppi,
                        koulutusmoduuli: Option[KoulutusModuuli],
@@ -56,24 +57,8 @@ case class SuoritusTapa(koodiarvo: String,
                         koodistoVersio: Option[Int],
                         nimi: Kielistetty) extends VersioituTunniste
 
-case class Yksikko(koodiarvo: String,
-                   koodistoUri: String,
-                   koodistoVersio: Option[Int],
-                   nimi: Kielistetty,
-                   lyhytNimi: Kielistetty) extends VersioituTunniste
-
-case class KoulutusModuuliTunniste(koodiarvo: String,
-                                   koodistoUri: String,
-                                   koodistoVersio: Option[Int],
-                                   nimi: Kielistetty) extends VersioituTunniste
-
-case class KoulutusTyyppi(koodiarvo: String,
-                          koodistoUri: String,
-                          koodistoVersio: Option[Int],
-                          nimi: Kielistetty) extends VersioituTunniste
-
-case class KoulutusModuuli(tunniste: Option[KoulutusModuuliTunniste],
-                           koulutustyyppi: Option[KoulutusTyyppi],
+case class KoulutusModuuli(tunniste: Option[KoskiKoodi],
+                           koulutustyyppi: Option[KoskiKoodi],
                            laajuus: Option[Laajuus],
                            kieli: Option[KoskiKoodi],
                            pakollinen: Option[Boolean])
@@ -96,12 +81,8 @@ case class Suoritus(tyyppi: SuoritusTyyppi,
                     suoritustapa: Option[SuoritusTapa],
                     `jääLuokalle`: Option[Boolean])
 
-case class OpiskeluoikeusJaksoTila(koodiarvo: String,
-                                   koodistoUri: String,
-                                   koodistoVersio: Option[Int]) extends VersioituTunniste
-
 case class OpiskeluoikeusJakso(alku: LocalDate,
-                               tila: OpiskeluoikeusJaksoTila)
+                               tila: KoskiKoodi)
 
 case class OpiskeluoikeusTila(opiskeluoikeusjaksot: List[OpiskeluoikeusJakso])
 

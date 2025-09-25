@@ -123,7 +123,6 @@ class UIValidatorTest {
       koodi = Optional.empty(),
       Optional.empty(),
       Optional.empty(),
-      Optional.empty(),
       Optional.empty()
     )))))
   }
@@ -162,7 +161,6 @@ class UIValidatorTest {
   @Test def testValidateOppiaineenKieliRequiredMissing(): Unit = {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_EI_MAARITELTY), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
       Optional.of("A1"),
-      Optional.empty(),
       Optional.empty(), // kieli tyhjä vaikka pitäisi olla määritelty
       Optional.of(8),
       Optional.of(false)
@@ -172,7 +170,6 @@ class UIValidatorTest {
   @Test def testValidateOppiaineenKieliMaariteltyNotAllowed(): Unit = {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_MAARITELTY), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
       Optional.of("HI"),
-      Optional.empty(),
       Optional.of("DE"), // kieli määritelty vaikka pitäisi olla tyhjä
       Optional.of(8),
       Optional.of(false)
@@ -182,7 +179,6 @@ class UIValidatorTest {
   @Test def testValidateOppiaineenKieliMaariteltyInvalid(): Unit = {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_EI_VALIDI), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
       Optional.of("A1"),
-      Optional.empty(),
       Optional.of("tämä ei ole validi kieli"), // kieli ei löydy koodistosta
       Optional.of(8),
       Optional.of(false)
@@ -192,11 +188,47 @@ class UIValidatorTest {
   @Test def testValidateOppiaineenKieliMaariteltyValid(): Unit = {
     Assertions.assertEquals(Set(), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
       Optional.of("A1"),
-      Optional.empty(),
       Optional.of("DE"), // kieli löytyy koodistosta
       Optional.of(8),
       Optional.of(false)
     ), koodisto => Map("DE" -> Koodi("", Koodisto(""), List()))))
+  }
+
+  // äidinkielen oppimäärä
+  @Test def testValidateOppiaineenAidinkielenOppimaaraRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_EI_MAARITELTY), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
+      Optional.of("AI"),
+      Optional.empty(), // äidinkielen oppimäärä tyhjä vaikka pitäisi olla määritelty
+      Optional.of(8),
+      Optional.of(false)
+    ), koodisto => Map.empty))
+  }
+
+  @Test def testValidateOppiaineenAidinkielenOppimaaraMaariteltyNotAllowed(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_KIELI_MAARITELTY), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
+      Optional.of("HI"),
+      Optional.of("AI1"), // äidinkielen oppimäärä määritelty vaikka pitäisi olla tyhjä
+      Optional.of(8),
+      Optional.of(false)
+    ), koodisto => Map.empty))
+  }
+
+  @Test def testValidateOppiaineenAidinkielenOppimaaraMaariteltyInvalid(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_AI_OPPIMAARA_EI_VALIDI), UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
+      Optional.of("AI"),
+      Optional.of("XYZ"),
+      Optional.of(8),
+      Optional.of(false)
+    ), koodisto => Map.empty))
+  }
+
+  @Test def testValidateOppiaineenAidinkielenOppimaaraMaariteltyValid(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validatePerusopetuksenOppimaaranOppiaineenKieli(SyotettyPerusopetuksenOppiaine(
+      Optional.of("AI"),
+      Optional.of("AI1"), // Suomen kieli ja kirjallisuus -koodi
+      Optional.of(8),
+      Optional.of(false)
+    ), koodisto => Map("AI1" -> Koodi("", Koodisto(""), List()))))
   }
 
   // valinnaisuus
@@ -206,47 +238,6 @@ class UIValidatorTest {
 
   @Test def testValidateOppiaineValinnainenValid(): Unit = {
     Assertions.assertEquals(Set.empty, UIValidator.validatePerusopetuksenOppimaaranOppiaineenValinnainen(Some(false)))
-  }
-
-  // äidinkielen oppimäärä
-  @Test def testValidateOppiaineenAidinkielenOppimaaraRequiredMissing(): Unit = {
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_AI_OPPIMAARA_EI_MAARITELTY), UIValidator.validatePerusopetuksenOppimaaranOppiaineenAidinkielenOppimaara(SyotettyPerusopetuksenOppiaine(
-      Optional.of("AI"),
-      Optional.empty(), // äidinkielen oppimäärä tyhjä vaikka pitäisi olla määritelty
-      Optional.empty(),
-      Optional.of(8),
-      Optional.of(false)
-    ), koodisto => Map.empty))
-  }
-
-  @Test def testValidateOppiaineenAidinkielenOppimaaraMaariteltyNotAllowed(): Unit = {
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_AI_OPPIMAARA_MAARITELTY), UIValidator.validatePerusopetuksenOppimaaranOppiaineenAidinkielenOppimaara(SyotettyPerusopetuksenOppiaine(
-      Optional.of("HI"),
-      Optional.of("jeejee"), // äidinkielen oppimäärä määritelty vaikka pitäisi olla tyhjä
-      Optional.empty(),
-      Optional.of(8),
-      Optional.of(false)
-    ), koodisto => Map.empty))
-  }
-
-  @Test def testValidateOppiaineenAidinkielenOppimaaraMaariteltyInvalid(): Unit = {
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_AI_OPPIMAARA_EI_VALIDI), UIValidator.validatePerusopetuksenOppimaaranOppiaineenAidinkielenOppimaara(SyotettyPerusopetuksenOppiaine(
-      Optional.of("AI"),
-      Optional.of("XYZ"),
-      Optional.empty(),
-      Optional.of(8),
-      Optional.of(false)
-    ), koodisto => Map.empty))
-  }
-
-  @Test def testValidateOppiaineenAidinkielenOppimaaraMaariteltyValid(): Unit = {
-    Assertions.assertEquals(Set.empty, UIValidator.validatePerusopetuksenOppimaaranOppiaineenAidinkielenOppimaara(SyotettyPerusopetuksenOppiaine(
-      Optional.of("AI"),
-      Optional.of("AI1"), // Suomen kieli ja kirjallisuus -koodi
-      Optional.empty(),
-      Optional.of(8),
-      Optional.of(false)
-    ), koodisto => Map("AI1" -> Koodi("", Koodisto(""), List()))))
   }
 
   // versiotunniste

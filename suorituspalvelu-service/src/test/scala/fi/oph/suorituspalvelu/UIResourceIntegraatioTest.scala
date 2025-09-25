@@ -378,7 +378,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       Optional.of(List(SyotettyPerusopetuksenOppiaine(
         Optional.of("MA"),
         Optional.empty(),
-        Optional.empty(),
         Optional.of(9),
         Optional.of(false)
       )).asJava))
@@ -491,7 +490,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       Optional.of(1),
       Optional.of(SyotettyPerusopetuksenOppiaine(
         Optional.of("MA"),
-        Optional.empty(),
         Optional.empty(),
         Optional.of(9),
         Optional.of(false)
