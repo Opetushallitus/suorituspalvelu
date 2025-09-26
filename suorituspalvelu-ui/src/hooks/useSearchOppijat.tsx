@@ -9,7 +9,7 @@ export const useOppijatSearchURLParams = () => {
   const params = useOppijatSearchParamsState();
   return omitBy(
     {
-      oppija: params.oppijaSearchTerm ?? undefined,
+      hakusana: params.hakusana ?? undefined,
       oppilaitos: params.oppilaitos ?? undefined,
       luokka: params.luokka ?? undefined,
       vuosi: params.vuosi ?? undefined,
@@ -19,8 +19,8 @@ export const useOppijatSearchURLParams = () => {
 };
 
 export const useOppijatSearchParamsState = () => {
-  const [oppijaSearchTerm, setOppijaSearchTerm] = useQueryState(
-    'oppija',
+  const [hakusana, setHakusana] = useQueryState(
+    'hakusana',
     DEFAULT_NUQS_OPTIONS,
   );
   const [oppilaitos, setOppilaitos] = useQueryState(
@@ -31,8 +31,8 @@ export const useOppijatSearchParamsState = () => {
   const [vuosi, setVuosi] = useQueryState('vuosi', DEFAULT_NUQS_OPTIONS);
 
   return {
-    oppijaSearchTerm,
-    setOppijaSearchTerm,
+    setHakusana,
+    hakusana,
     oppilaitos,
     setOppilaitos,
     luokka,
@@ -40,7 +40,7 @@ export const useOppijatSearchParamsState = () => {
     vuosi,
     setVuosi,
     hasEmptySearchParams: isEmptySearchParams({
-      oppija: oppijaSearchTerm,
+      hakusana,
       oppilaitos,
       luokka,
       vuosi,
