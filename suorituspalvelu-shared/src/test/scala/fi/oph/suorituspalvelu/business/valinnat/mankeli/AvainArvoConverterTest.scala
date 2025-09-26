@@ -1,6 +1,7 @@
-package fi.oph.suorituspalvelu.business.parsing.koski
+package fi.oph.suorituspalvelu.business.valinnat.mankeli
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila}
+import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -15,7 +16,7 @@ class AvainArvoConverterTest {
 
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
@@ -38,7 +39,7 @@ class AvainArvoConverterTest {
 
   @Test def testAvainArvoConverterForPeruskouluArvosanatJaKielet(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)

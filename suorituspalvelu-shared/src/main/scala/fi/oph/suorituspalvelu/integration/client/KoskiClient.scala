@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.integration.client
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.integration.{KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
 import org.asynchttpclient.Dsl.asyncHttpClient
 import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Realm, Request, Response}
 import org.slf4j.LoggerFactory
@@ -10,6 +10,44 @@ import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import java.time.Duration
+
+object KoskiMassaluovutusQueryParams {
+  def forOids(oids: Set[String]): KoskiMassaluovutusQueryParams = {
+    KoskiMassaluovutusQueryParams("supa-oppijat", "application/json", Some(oids), None)
+  }
+}
+
+case class KoskiMassaluovutusQueryParams(`type`: String,
+                                         format: String,
+                                         oppijaOids: Option[Set[String]], //Käytännössä joko oppijaOids tai muuttuneetJälkeen on määritelty
+                                         muuttuneetJälkeen: Option[String])
+
+case class KoskiMassaluovutusQueryResponse(
+                                            queryId: String,
+                                            requestedBy: String,
+                                            query: KoskiMassaluovutusQueryParams,
+                                            createdAt: Option[String],
+                                            startedAt: Option[String],
+                                            finishedAt: Option[String],
+                                            files: Seq[String],
+                                            resultsUrl: Option[String],
+                                            progress: Option[Map[String, String]],
+                                            sourceDataUpdatedAt: Option[String],
+                                            status: String
+                                          ) {
+  def isFinished() = status.equals("complete") || isFailed()
+
+  def isComplete() = status.equals("complete")
+
+  def isFailed() = status.equals("failed")
+
+  def getTruncatedLoggable(): KoskiMassaluovutusQueryResponse = {
+    if (query.oppijaOids.exists(_.size > 10))
+      this.copy(query = query.copy(oppijaOids = query.oppijaOids.map(oids => Set(s"Total of ${oids.size} oppijaOids"))))
+    else
+      this
+  }
+}
 
 class KoskiClient(username: String, password: String, environmentBaseUrl: String) {
 

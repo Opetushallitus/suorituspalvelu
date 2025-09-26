@@ -112,9 +112,6 @@ case class Opiskeluoikeus(oid: String,
   def isAmmatillinen: Boolean = tyyppi.koodiarvo == "ammatillinenkoulutus"
 }
 
-case class SplitattavaKoskiData(oppijaOid: String,
-                                opiskeluoikeudet: Seq[Map[String, Any]])
-
 /**
  * Parseroi Kosken JSON-muotoisen opiskeluoikeus-suoritusdatan KOSKI-spesifiksi objektipuuksi
  */
@@ -135,18 +132,4 @@ object KoskiParser {
   def parseKoskiData(data: String): Seq[Opiskeluoikeus] =
     MAPPER.readValue(data, classOf[Array[Opiskeluoikeus]]).toSeq
 
-  def splitKoskiDataByOppija(input: InputStream): Iterator[(String, String)] =
-    val jsonParser = MAPPER.getFactory().createParser(input)
-    jsonParser.nextToken()
-
-    Iterator.continually({
-      val token = jsonParser.nextToken()
-      if(token != JsonToken.END_ARRAY)
-        Some(jsonParser.readValueAs(classOf[SplitattavaKoskiData]))
-      else
-        None})
-      .takeWhile(data => data.isDefined)
-      .map(data => {
-        (data.get.oppijaOid, MAPPER.writeValueAsString(data.get.opiskeluoikeudet))
-      })
 }
