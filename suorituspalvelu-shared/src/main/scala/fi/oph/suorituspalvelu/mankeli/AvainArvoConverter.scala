@@ -1,9 +1,11 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.resource.ui.{Ammatillinentutkinto, LukionOppimaara}
 import org.slf4j.LoggerFactory
 
+import java.time.LocalDate
 import scala.collection.immutable
 
 //Lisätään filtteröityihin suorituksiin kaikki sellaiset suoritukset, joilta on poimittu avainArvoja. Eli jos jossain kohtaa pudotetaan pois suorituksia syystä tai toisesta, ne eivät ole mukana filtteröidyissä suorituksissa.
@@ -13,11 +15,14 @@ case class ValintaData(personOid: String, keyValues: Map[String, String], opiske
 object AvainArvoConstants {
   //Sama tieto tallennetaan kahden avaimen alle: vanhan Valintalaskentakoostepalvelusta periytyvän,
   // johon kenties viitataan nykyisistä valintaperusteista, ja lisäksi uuden selkeämmän avaimen, jota käytetään jatkossa uusissa valintaperusteissa.
-  // Vanhat avaimet voi kenties jossain kohtaa pudottaa pois.
+  // Vanhat avaimet voi toivottavasti jossain kohtaa pudottaa pois.
   final val perusopetuksenKieliKeys = Set("perusopetuksen_kieli")
   final val peruskouluPaattotodistusvuosiKeys = Set("PK_PAATTOTODISTUSVUOSI", "PERUSKOULU_PAATTOTODISTUSVUOSI")
   final val peruskouluSuoritusvuosiKeys = Set("PK_SUORITUSVUOSI", "PERUSKOULU_SUORITUSVUOSI")
   final val peruskouluSuoritettuKeys = Set("PK_TILA", "PERUSKOULU_SUORITETTU")
+  final val lukioSuoritettuKeys = Set("LK_TILA", "lukio_suoritettu")
+  final val yoSuoritettuKeys = Set("YO_TILA", "yo-tutkinto_suoritettu")
+  final val ammSuoritettuKeys = Set("AM_TILA", "ammatillinen_suoritettu")
 
   final val peruskouluAineenArvosanaPrefixes = Set("PK_", "PERUSKOULU_ARVOSANA_")
 
@@ -52,13 +57,42 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): ValintaData = {
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], leikkuriPaiva: LocalDate): ValintaData = {
 
     val peruskouluSuoritus: Option[PerusopetuksenOppimaara] = filterForPeruskoulu(personOid, opiskeluoikeudet)
     val peruskouluArvot: Map[String, String] = convertPeruskouluArvot(personOid, peruskouluSuoritus, Seq.empty)
+    val suorituskohtaisetArvot: Map[String, String] = convertSuorituskohtaisetArvot(personOid, opiskeluoikeudet, leikkuriPaiva)
 
-    ValintaData(personOid, peruskouluArvot, opiskeluoikeudet, Seq.empty ++ peruskouluSuoritus)
+    ValintaData(personOid, peruskouluArvot ++ suorituskohtaisetArvot, opiskeluoikeudet, Seq.empty ++ peruskouluSuoritus)
   }
+
+  def filterByType[T](opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[T] = {
+    opiskeluoikeudet.collect { case o: T => o }
+  }
+
+  def convertSuorituskohtaisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], leikkuriPaiva: LocalDate) = {
+    val yo = opiskeluoikeudet.collect { case o: YOOpiskeluoikeus => o }
+    val amm = opiskeluoikeudet.collect { case o: AmmatillinenOpiskeluoikeus => o }
+    val lukio = opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }.filter(o => o.suoritukset.exists(_.isInstanceOf[LukionOppimaara]))
+
+    val hasYoSuoritus = yo.exists(_.yoTutkinto.valmistumisPaiva.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva)))
+    val hasAmmSuoritus = amm.exists(ammOikeus => {
+      ammOikeus.suoritukset.exists {
+        case s: AmmatillinenPerustutkinto => s.vahvistusPaivamaara.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva))
+        case s: AmmattiTutkinto => s.vahvistusPaivamaara.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva))
+        case s: ErikoisAmmattiTutkinto => s.vahvistusPaivamaara.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva))
+        case _ => false
+      }
+    })
+    //Todo, nämä pitää vielä parseroida Koski-datasta
+    val hasLukioSuoritus = false
+
+
+    (AvainArvoConstants.lukioSuoritettuKeys.map(key => (key, hasLukioSuoritus.toString)) ++
+      AvainArvoConstants.yoSuoritettuKeys.map(key => (key, hasYoSuoritus.toString)) ++
+      AvainArvoConstants.ammSuoritettuKeys.map(key => (key, hasAmmSuoritus.toString))).toMap
+  }
+
 
   def filterForPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Option[PerusopetuksenOppimaara] = {
     val perusopetuksenOpiskeluoikeudet: Seq[PerusopetuksenOpiskeluoikeus] = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
