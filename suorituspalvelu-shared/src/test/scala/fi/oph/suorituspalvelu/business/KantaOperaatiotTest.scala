@@ -18,6 +18,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
+import fi.oph.suorituspalvelu.integration.KoskiIntegration
 
 import java.util.UUID
 
@@ -229,7 +230,7 @@ class KantaOperaatiotTest {
     Seq(
       "/1_2_246_562_24_40483869857b.json"
     ).foreach(fileName => {
-      val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
+      val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
       val suoritukset = splitData.foreach((oppijaOid, data) => {
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, "{\"attr\": \"value\"}").get
 
@@ -254,7 +255,7 @@ class KantaOperaatiotTest {
       "/1_2_246_562_24_30563266636.json",
       "/1_2_246_562_15_94501385358.json"
     ).foreach(fileName => {
-      val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
+      val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
       val suoritukset = splitData.foreach((oppijaOid, data) => {
 
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, "{\"attr\": \"value\"}").get
@@ -321,7 +322,7 @@ class KantaOperaatiotTest {
     val iterations = 100
 
     val startSave = Instant.now()
-    val data = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
+    val data = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
     (1 to iterations).foreach(i => {
       val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO + i, SuoritusJoukko.KOSKI, "{\"attr\": \"value\"}").get
       val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data))
