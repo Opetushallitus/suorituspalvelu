@@ -1,4 +1,4 @@
-import {
+import type {
   AmmatillinenTutkinnonOsa,
   TutkinnonOsanOsaAlue,
 } from '@/types/ui-types';

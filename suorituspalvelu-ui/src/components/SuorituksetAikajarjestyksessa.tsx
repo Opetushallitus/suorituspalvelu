@@ -1,4 +1,4 @@
-import { OppijanTiedot } from '@/types/ui-types';
+import type { OppijanTiedot } from '@/types/ui-types';
 import { KorkeakouluSuoritusPaper } from './KorkeakouluSuoritusPaper';
 import { LukioSuoritusPaper } from './LukioSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';

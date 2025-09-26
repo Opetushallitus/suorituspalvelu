@@ -1,14 +1,14 @@
-'use client';
 import { useOppija } from '@/queries';
 import { Stack } from '@mui/material';
-import { Opiskeluoikeudet } from './Opiskeluoikeudet';
-import { Suoritukset } from './Suoritukset';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { Opiskeluoikeudet } from '@/components/Opiskeluoikeudet';
+import { Suoritukset } from '@/components/Suoritukset';
+import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';
-import { ExternalLink } from './ExternalLink';
 import { useConfig } from '@/configuration';
+import { ExternalLink } from '@/components/ExternalLink';
 import { formatFinnishDate } from '@/lib/common';
+import type { Route } from './+types/HenkiloPage';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -21,8 +21,8 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   );
 };
 
-export const HenkiloView = ({ oppijaNumero }: { oppijaNumero: string }) => {
-  const { data: tiedot } = useOppija(oppijaNumero);
+export default function HenkiloPage({ params }: Route.ComponentProps) {
+  const { data: tiedot } = useOppija(params.oppijaNumero);
   const { t } = useTranslations();
   return (
     <Stack spacing={6} sx={{ margin: 2 }}>
@@ -51,4 +51,4 @@ export const HenkiloView = ({ oppijaNumero }: { oppijaNumero: string }) => {
       <Suoritukset oppijanTiedot={tiedot} />
     </Stack>
   );
-};
+}

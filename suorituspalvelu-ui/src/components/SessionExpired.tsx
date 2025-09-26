@@ -1,8 +1,6 @@
-'use client';
-
 import { useConfig } from '@/configuration';
 import { useTranslate } from '@tolgee/react';
-import React, { useState } from 'react';
+import { createContext, use, useMemo, useState } from 'react';
 import { OphModal } from './OphModal';
 import { OphButton } from '@opetushallitus/oph-design-system';
 
@@ -40,7 +38,7 @@ export function SessionExpired() {
   );
 }
 
-export const SessionExpiredContext = React.createContext<
+export const SessionExpiredContext = createContext<
   | {
       isSessionExpired: boolean;
       setIsSessionExpired: React.Dispatch<React.SetStateAction<boolean>>;
@@ -53,17 +51,22 @@ export const SessionExpiredProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [isSessionExpired, setIsSessionExpired] = React.useState(false);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
+
+  const sessionExpiredState = useMemo(
+    () => ({ isSessionExpired, setIsSessionExpired }),
+    [isSessionExpired, setIsSessionExpired],
+  );
 
   return (
-    <SessionExpiredContext value={{ isSessionExpired, setIsSessionExpired }}>
+    <SessionExpiredContext value={sessionExpiredState}>
       {children}
     </SessionExpiredContext>
   );
 };
 
 export const useIsSessionExpired = () => {
-  const context = React.useContext(SessionExpiredContext);
+  const context = use(SessionExpiredContext);
   if (!context) {
     throw new Error(
       'useIsSessionExpired must be used within a SessionExpiredProvider',

@@ -5,7 +5,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogProps,
+  type DialogProps,
   DialogTitle,
 } from '@mui/material';
 import { OphButton, ophColors } from '@opetushallitus/oph-design-system';
