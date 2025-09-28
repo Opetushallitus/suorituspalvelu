@@ -235,7 +235,7 @@ class KantaOperaatiotTest {
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet).toSet
+        val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, koodisto => Map.empty).toSet
         this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo)
 
         val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
@@ -261,7 +261,7 @@ class KantaOperaatiotTest {
         val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, "{\"attr\": \"value\"}").get
 
         val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet).toSet
+        val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, koodisto => Map.empty).toSet
         this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo)
 
         val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(oppijaOid)
@@ -325,7 +325,7 @@ class KantaOperaatiotTest {
     val data = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
     (1 to iterations).foreach(i => {
       val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO + i, SuoritusJoukko.KOSKI, "{\"attr\": \"value\"}").get
-      val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data))
+      val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data), koodisto => Map.empty)
       this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo.toSet)
     })
     val saveDuration = Instant.now().toEpochMilli - startSave.toEpochMilli

@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 
 import java.time.LocalDate
 import java.util.UUID
@@ -279,25 +280,29 @@ object KoskiToSuoritusConverter {
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
     )
 
-  def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus): PerusopetuksenOppiaine = {
-    val parasArviointi = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoyleissivistava"))
-        .getOrElse(Set.empty)
-      valitseParasArviointi(arvioinnit)
-    }
+  def toPerusopetuksenOppiaine(osaSuoritus: OsaSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppiaine] = {
+    if(!KoskiDataFilter.includePerusopetuksenOppiaine(osaSuoritus, koodistoProvider))
+      //Käsitellään ainakin toistaiseksi vain sellaiset oppiaineet, joille löytyy arviointi. Halutaanko jatkossa näyttää oppiaineita joilla ei ole?
+      None
+    else
+      val parasArviointi = {
+        val arvioinnit = osaSuoritus.arviointi
+          .map(arviointi => arviointi
+            .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoyleissivistava"))
+          .getOrElse(Set.empty)
+        valitseParasArviointi(arvioinnit)
+      }
 
-    PerusopetuksenOppiaine(
-      UUID.randomUUID(),
-      osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
-      osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
-      parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
-      osaSuoritus.koulutusmoduuli.flatMap((k: KoulutusModuuli) => k.kieli.map(kieli => asKoodiObject(kieli))),
-      osaSuoritus.koulutusmoduuli.flatMap(k => k.pakollinen).getOrElse(dummy()),
-      osaSuoritus.`yksilöllistettyOppimäärä`,
-      osaSuoritus.`rajattuOppimäärä`,
-    )
+      Some(PerusopetuksenOppiaine(
+        UUID.randomUUID(),
+        osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
+        osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
+        parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
+        osaSuoritus.koulutusmoduuli.flatMap((k: KoulutusModuuli) => k.kieli.map(kieli => asKoodiObject(kieli))),
+        osaSuoritus.koulutusmoduuli.flatMap(k => k.pakollinen).getOrElse(dummy()),
+        osaSuoritus.`yksilöllistettyOppimäärä`,
+        osaSuoritus.`rajattuOppimäärä`,
+      ))
   }
 
   def toNuortenPerusopetuksenOppiaineenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): NuortenPerusopetuksenOppiaineenOppimaara =
@@ -324,7 +329,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )
 
-  def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
+  def toPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
       UUID.randomUUID(),
       None,
@@ -340,11 +345,10 @@ object KoskiToSuoritusConverter {
       None,
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
-      suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
+      suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
     )
 
-  def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenOppimaara =
+  def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
       UUID.randomUUID(),
       None,
@@ -360,8 +364,7 @@ object KoskiToSuoritusConverter {
       None,
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      //Käsitellään ainakin toistaiseksi vain sellaiset osasuoritukset, joille löytyy arviointi. Halutaanko jatkossa näyttää osasuorituksia joilla ei ole?
-      suoritus.osasuoritukset.map(os => os.filter(_.arviointi.nonEmpty).map(os => toPerusopetuksenOppiaine(os))).getOrElse(Set.empty)
+      suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
     )
 
   def toPerusopetuksenVuosiluokka(suoritus: Suoritus): PerusopetuksenVuosiluokka =
@@ -373,14 +376,14 @@ object KoskiToSuoritusConverter {
       suoritus.`jääLuokalle`.getOrElse(false)
     )
 
-  def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] = opiskeluoikeudet.flatMap {
+  def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] = opiskeluoikeudet.flatMap {
     case opiskeluoikeus if isMitatoitu(parseTila(opiskeluoikeus, None).get) => None
     case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
       Some(PerusopetuksenOpiskeluoikeus(
         UUID.randomUUID(),
         Some(opiskeluoikeus.oid),
         opiskeluoikeus.oppilaitos.get.oid,
-        toSuoritukset(Seq(opiskeluoikeus)),
+        toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
         opiskeluoikeus.lisätiedot,
         opiskeluoikeus.tila))
     case opiskeluoikeus if opiskeluoikeus.isAmmatillinen =>
@@ -395,7 +398,7 @@ object KoskiToSuoritusConverter {
               o.nimi.en,
             ),
             o.oid)).getOrElse(dummy()),
-        toSuoritukset(Seq(opiskeluoikeus)),
+        toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
         opiskeluoikeus.tila))
     case opiskeluoikeus =>
       Some(GeneerinenOpiskeluoikeus(
@@ -403,7 +406,7 @@ object KoskiToSuoritusConverter {
         opiskeluoikeus.oid,
         asKoodiObject(opiskeluoikeus.tyyppi),
         opiskeluoikeus.oppilaitos.get.oid,
-        toSuoritukset(Seq(opiskeluoikeus)),
+        toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
         opiskeluoikeus.tila))
   }
 
@@ -416,15 +419,15 @@ object KoskiToSuoritusConverter {
   val SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS                  = "tuvakoulutuksensuoritus"
   val SUORITYSTYYPPI_VAPAASIVISTYSTYOSUORITUS                 = "vstoppivelvollisillesuunnattukoulutus"
 
-  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] =
+  def toSuoritukset(opiskeluoikeudet: Seq[Opiskeluoikeus], koodistoProvider: KoodistoProvider, allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opiskeluoikeudet.flatMap(opiskeluoikeus =>
         opiskeluoikeus.suoritukset.flatMap(suoritus =>
           suoritus.tyyppi.koodiarvo match
             case SUORITYSTYYPPI_AMMATILLINENTUTKINTO              => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
-            case SUORITYSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIMAARA  => Some(toAikuistenPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
-            case SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA           => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIMAARA  => Some(toAikuistenPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider))
+            case SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA           => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider))
             case SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA         => Some(toPerusopetuksenVuosiluokka(suoritus))
             case SUORITYSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA
               if suoritus.arviointi.exists(_.nonEmpty)            => Some(toNuortenPerusopetuksenOppiaineenOppimaara(opiskeluoikeus, suoritus))

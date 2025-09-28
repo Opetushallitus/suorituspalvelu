@@ -2,7 +2,9 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
+import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
 
@@ -16,6 +18,8 @@ object KoskiParsing {
 @TestInstance(Lifecycle.PER_CLASS)
 class KoskiParsingTest {
 
+  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map("AI" -> fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty))
+
   @Test def testKoskiParsingAndConversion(): Unit =
     Seq(
       "/1_2_246_562_24_40483869857.json",
@@ -23,7 +27,7 @@ class KoskiParsingTest {
     ).foreach(fileName => {
       val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
       splitData.foreach((oppijaOid, data) => {
-        val koskiOpiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data))
+        val koskiOpiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data), DUMMY_KOODISTOPROVIDER)
       })
     })
 
@@ -39,14 +43,14 @@ class KoskiParsingTest {
     val splitData = KoskiIntegration.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
     splitData.map((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
+      KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
     }).next().headOption
 
   private def getFirstSuoritusFromJson(data: String): Suoritus =
     val splitData = KoskiIntegration.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
     splitData.map((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet, true)
+      KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER, true)
     }).next().head
 
   @Test def testAmmatillisetOpiskeluoikeudet(): Unit =
