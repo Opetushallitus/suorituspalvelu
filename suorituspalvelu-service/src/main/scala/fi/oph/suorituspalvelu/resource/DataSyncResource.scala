@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
 
+import java.time.Instant
 import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
@@ -131,6 +132,50 @@ class DataSyncResource {
           val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
           ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+        })
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+  }
+
+  @PostMapping(
+    path = Array(KOSKI_DATASYNC_MUUTTUNEET_PATH),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee muuttuneet tiedot Koskesta",
+    description = "Huomioita:\n" +
+      "- Huomio 1",
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = Array(new Content(schema = new Schema(implementation = classOf[Array[String]])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION)
+    ))
+  def paivitaKoskiTiedotMuuttuneet(@RequestBody timestamp: Optional[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = KOSKI_DATASYNC_MUUTTUNEET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      Right(None)
+        .flatMap(_ =>
+          // tarkastetaan oikeudet
+          if (securityOperaatiot.onRekisterinpitaja())
+            Right(None)
+          else
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+        .flatMap(_ =>
+          // validoidaan parametri
+          val virheet = Validator.validateMuokattujalkeen(timestamp.toScala, true)
+          if(virheet.isEmpty)
+            Right(Instant.parse(timestamp.get))
+          else
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
+        .map(timestamp => {
+          val user = AuditLog.getUser(request)
+          AuditLog.log(user, Map("timestamp" -> timestamp.toString), AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
+          LOG.info(s"Haetaan ${timestamp} jälkeen muuttuneet Koski-tiedot")
+          val result = koskiService.syncKoskiChangesSince(timestamp)
+          LOG.info(s"Palautetaan rajapintavastaus, $result")
+          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }

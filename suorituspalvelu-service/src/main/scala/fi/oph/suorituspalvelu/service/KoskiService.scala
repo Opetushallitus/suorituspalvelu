@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
 
+import java.time.Instant
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
@@ -27,11 +28,24 @@ class KoskiService {
   private val HENKILO_TIMEOUT = 5.minutes
 
   private val LOG: Logger = LoggerFactory.getLogger(classOf[KoskiService])
-  
+
+  def syncKoskiChangesSince(timestamp: Instant): Seq[SyncResultForHenkilo] =
+    processKoskiDataForOppijat(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(timestamp).iterator)
+
   def syncKoskiForOppijat(personOids: Set[String]): Seq[SyncResultForHenkilo] =
+    processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids))
+
+  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
+    val personOids =
+      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
+        .flatMap(_.personOid).toSet
+    syncKoskiForOppijat(personOids)
+  }
+
+  private def processKoskiDataForOppijat(data: Iterator[KoskiDataForOppija]): Seq[SyncResultForHenkilo] =
     val kantaOperaatiot = KantaOperaatiot(database)
-    
-    koskiIntegration.fetchKoskiTiedotForOppijat(personOids).map(oppija => {
+
+    data.map(oppija => {
       try {
         val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, oppija.data)
         versio.foreach(v => {
@@ -46,12 +60,5 @@ class KoskiService {
           SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
       }
     }).toSeq
-  
-  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
-    syncKoskiForOppijat(personOids)
-  }
 
 }
