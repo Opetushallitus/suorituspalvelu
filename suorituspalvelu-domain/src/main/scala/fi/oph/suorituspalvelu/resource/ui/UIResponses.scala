@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.ui
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIDINKIELEN_OPPIMAARA, ESIMERKKI_HETU, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HETU, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN}
 import fi.oph.suorituspalvelu.resource.*
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
@@ -898,9 +898,9 @@ case class VapaaSivistystyoKoulutus(
 case class PKOppilaitosNimi(
   @(Schema @field)(example = "Keltinmäen koulu", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Keltinmäen koulu sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Keltinmäen koulu", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Keltinmäen koulu en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Keltinmäen koulu", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
 )
 
@@ -914,9 +914,9 @@ case class PKOppilaitos(
 case class PerusopetuksenOppiaineNimi(
   @(Schema @field)(example = "matematiikka", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "matematiikka sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "matematik", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "matematiikka en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Mathematics", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
 )
 
@@ -925,7 +925,9 @@ case class PerusopetuksenOppiaine(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: PerusopetuksenOppiaineNimi,
-  @(Schema @field)(example = "9", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = ESIMERKKI_VIERAS_KIELI_KIELIKOODI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty kieli: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: String,
   @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty valinnainen: Boolean,
@@ -1281,8 +1283,6 @@ case class LuoPerusopetuksenOppimaaraFailureResponse(
 case class SyotettyPerusopetuksenOppiaine(
   @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, description="koskioppiaineetyleissivistävä-koodiston koodi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty koodi: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_AIDINKIELEN_OPPIMAARA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty aidinkielenOppimaara: Optional[String],
   @(Schema @field)(example = ESIMERKKI_VIERAS_KIELI_KIELIKOODI, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty kieli: Optional[String],
   @(Schema @field)(example = ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, requiredMode = RequiredMode.REQUIRED)

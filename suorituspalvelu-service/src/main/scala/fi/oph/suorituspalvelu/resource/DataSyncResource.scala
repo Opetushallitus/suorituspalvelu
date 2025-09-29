@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.VirtaService
+import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import fi.oph.suorituspalvelu.validation.Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI
@@ -35,7 +35,7 @@ class DataSyncResource {
 
   @Autowired var mapper: ObjectMapper = null
 
-  @Autowired var koskiIntegration: KoskiIntegration = null
+  @Autowired var koskiService: KoskiService = null
 
   @Autowired var virtaService: VirtaService = null
 
@@ -82,7 +82,7 @@ class DataSyncResource {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, None)
           LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
-          val result = koskiIntegration.syncKoskiInBatches(personOids.toSet)
+          val result = koskiService.syncKoskiForOppijat(personOids.toSet)
           LOG.info(s"Palautetaan rajapintavastaus, $result")
           ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
         })
@@ -127,7 +127,7 @@ class DataSyncResource {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
-          val result: Seq[SyncResultForHenkilo] = koskiIntegration.syncKoskiForHaku(hakuOid.get)
+          val result: Seq[SyncResultForHenkilo] = koskiService.syncKoskiForHaku(hakuOid.get)
           val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
           ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))

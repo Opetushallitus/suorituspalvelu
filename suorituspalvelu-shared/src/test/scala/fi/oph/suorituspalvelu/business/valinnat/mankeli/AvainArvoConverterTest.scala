@@ -1,8 +1,11 @@
-package fi.oph.suorituspalvelu.business.parsing.koski
+package fi.oph.suorituspalvelu.business.valinnat.mankeli
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila}
+import fi.oph.suorituspalvelu.integration.KoskiIntegration
+import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
@@ -13,12 +16,22 @@ import java.util.UUID
 @TestInstance(Lifecycle.PER_CLASS)
 class AvainArvoConverterTest {
 
+  val DEFAULT_OPPIAINEKOODI = fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty)
+  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map(
+    "HI" -> DEFAULT_OPPIAINEKOODI, "KO" -> DEFAULT_OPPIAINEKOODI, "BI" -> DEFAULT_OPPIAINEKOODI,
+    "B1" -> DEFAULT_OPPIAINEKOODI, "AOM" -> DEFAULT_OPPIAINEKOODI, "LI" -> DEFAULT_OPPIAINEKOODI,
+    "YH" -> DEFAULT_OPPIAINEKOODI, "KU" -> DEFAULT_OPPIAINEKOODI, "GE" -> DEFAULT_OPPIAINEKOODI,
+    "TH" -> DEFAULT_OPPIAINEKOODI, "MA" -> DEFAULT_OPPIAINEKOODI, "B2" -> DEFAULT_OPPIAINEKOODI,
+    "TE" -> DEFAULT_OPPIAINEKOODI, "KT" -> DEFAULT_OPPIAINEKOODI, "FY" -> DEFAULT_OPPIAINEKOODI,
+    "AI" -> DEFAULT_OPPIAINEKOODI, "MU" -> DEFAULT_OPPIAINEKOODI, "A1" -> DEFAULT_OPPIAINEKOODI,
+    "KE" -> DEFAULT_OPPIAINEKOODI)
+
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
+      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
 
       Assertions.assertEquals(1, oos.size)
 
@@ -38,17 +51,17 @@ class AvainArvoConverterTest {
 
   @Test def testAvainArvoConverterForPeruskouluArvosanatJaKielet(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
-    val splitData = KoskiParser.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet)
+      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
 
       Assertions.assertEquals(1, oos.size)
 
       val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos)
 
-      val tavoiteArvosanat = Map("HI" -> "8", "KO" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
-        "YH" -> "10", "KU" -> "8", "GE" -> "9", "TH" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
+      val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
+        "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
         "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
       val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE")
 

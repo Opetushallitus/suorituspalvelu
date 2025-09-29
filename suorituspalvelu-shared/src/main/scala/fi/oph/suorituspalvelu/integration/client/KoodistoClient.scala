@@ -18,7 +18,7 @@ case class Koodi(koodiArvo: String, koodisto: Koodisto, metadata: List[KoodiMeta
 
 class KoodistoClient(environmentBaseUrl: String) {
 
-  val LOG = LoggerFactory.getLogger(classOf[HakemuspalveluClientImpl]);
+  val LOG = LoggerFactory.getLogger(classOf[KoodistoClient]);
 
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)

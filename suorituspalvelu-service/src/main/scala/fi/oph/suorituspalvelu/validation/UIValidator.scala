@@ -41,8 +41,6 @@ object UIValidator {
   final val VALIDATION_KIELI_EI_MAARITELTY        = "backend-virhe.oppiaine.kieli.ei_maaritelty"
   final val VALIDATION_KIELI_EI_VALIDI            = "backend-virhe.oppiaine.kieli.ei_validi"
   final val VALIDATION_VALINNAINEN_EI_MAARITELTY  = "backend-virhe.oppiaine.valinnaisuus.ei_maaritelty"
-  final val VALIDATION_AI_OPPIMAARA_MAARITELTY    = "backend-virhe.oppiaine.ai_oppimaara.maaritelty"
-  final val VALIDATION_AI_OPPIMAARA_EI_MAARITELTY = "backend-virhe.oppiaine.ai_oppimaara.ei_maaritelty"
   final val VALIDATION_AI_OPPIMAARA_EI_VALIDI     = "backend-virhe.oppiaine.ai_oppimaara.ei_validi"
   final val VALIDATION_ARVOSANA_TYHJA             = "backend-virhe.oppiaine.arvosana.tyhja"
   final val VALIDATION_ARVOSANA_EI_VALIDI         = "backend-virhe.oppiaine.arvosana.ei_validi"
@@ -180,14 +178,16 @@ object UIValidator {
 
   def validatePerusopetuksenOppimaaranOppiaineenKieli(oppiaine: SyotettyPerusopetuksenOppiaine, koodistoProvider: KoodistoProvider): Set[String] = {
     if(oppiaine.kieli.isPresent)
-      if(oppiaine.koodi.isEmpty || !SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()))
+      if(oppiaine.koodi.isEmpty || (!SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()) && !"AI".equals(oppiaine.koodi.get())))
         Set(VALIDATION_KIELI_MAARITELTY)
-      else if(koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA).get(oppiaine.kieli.get()).isEmpty)
+      else if(SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()) && koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA).get(oppiaine.kieli.get()).isEmpty)
         Set(VALIDATION_KIELI_EI_VALIDI)
+      else if("AI".equals(oppiaine.koodi.get()) && koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(oppiaine.kieli.get()).isEmpty)
+        Set(VALIDATION_AI_OPPIMAARA_EI_VALIDI)
       else
         Set.empty
     else
-      if(oppiaine.koodi.isPresent && SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()))
+      if(oppiaine.koodi.isPresent && (SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()) || "AI".equals(oppiaine.koodi.get())))
         Set(VALIDATION_KIELI_EI_MAARITELTY)
       else
         Set.empty
@@ -200,21 +200,6 @@ object UIValidator {
       Set.empty
   }
 
-  def validatePerusopetuksenOppimaaranOppiaineenAidinkielenOppimaara(oppiaine: SyotettyPerusopetuksenOppiaine, koodistoProvider: KoodistoProvider): Set[String] = {
-    if(oppiaine.aidinkielenOppimaara.isPresent)
-      if(oppiaine.koodi.isEmpty || !"AI".equals(oppiaine.koodi.get()))
-        Set(VALIDATION_AI_OPPIMAARA_MAARITELTY)
-      else if(koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(oppiaine.aidinkielenOppimaara.get()).isEmpty)
-        Set(VALIDATION_AI_OPPIMAARA_EI_VALIDI)
-      else
-        Set.empty
-    else
-      if(oppiaine.koodi.isPresent && "AI".equals(oppiaine.koodi.get()))
-        Set(VALIDATION_AI_OPPIMAARA_EI_MAARITELTY)
-      else
-        Set.empty
-  }
-
   def validatePerusopetuksenOppimaaranOppiaine(oppiaine: Option[SyotettyPerusopetuksenOppiaine], koodistoProvider: KoodistoProvider): Set[String] = {
     if(oppiaine.isEmpty)
       Set(VALIDATION_OPPIAINE_TYHJA)
@@ -224,7 +209,6 @@ object UIValidator {
         validatePerusopetuksenOppimaaranOppiaineenArvosana(oppiaine.get.arvosana.toScala),
         validatePerusopetuksenOppimaaranOppiaineenKieli(oppiaine.get, koodistoProvider),
         validatePerusopetuksenOppimaaranOppiaineenValinnainen(oppiaine.get.valinnainen.toScala),
-        validatePerusopetuksenOppimaaranOppiaineenAidinkielenOppimaara(oppiaine.get, koodistoProvider)
       ).flatten
   }
 
