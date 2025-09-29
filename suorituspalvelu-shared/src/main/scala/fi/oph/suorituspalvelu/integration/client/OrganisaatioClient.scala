@@ -21,7 +21,7 @@ case class HierarkiaResponse(numHits: Int, organisaatiot: Seq[HierarkiaOrganisaa
 //  kokonaisuudessaan niin tämä haku voi olla turha
 class OrganisaatioClient(environmentBaseUrl: String) {
 
-  val LOG = LoggerFactory.getLogger(classOf[HakemuspalveluClientImpl]);
+  val LOG = LoggerFactory.getLogger(classOf[OrganisaatioClient]);
 
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)

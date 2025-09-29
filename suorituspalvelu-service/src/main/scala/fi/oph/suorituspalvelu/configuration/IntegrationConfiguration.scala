@@ -151,14 +151,13 @@ class IntegrationConfiguration {
   def getKoodistoProvider(@Value("${integrations.koski.base-url}") envBaseUrl: String): KoodistoProvider = {
     val KOODISTO_TIMEOUT = 120.seconds
     val koodistoClient = KoodistoClient(envBaseUrl)
+    val cache = Caffeine.newBuilder()
+      .maximumSize(10000)
+      .expireAfterWrite(Duration.ofHours(24))
+      .refreshAfterWrite(Duration.ofHours(12))
+      .build(koodisto => Await.result(koodistoClient.haeKoodisto(koodisto.toString), KOODISTO_TIMEOUT))
 
     (koodisto: String) =>
-      val cache = Caffeine.newBuilder()
-        .maximumSize(10000)
-        .expireAfterWrite(Duration.ofHours(24))
-        .refreshAfterWrite(Duration.ofHours(12))
-        .build(koodisto => Await.result(koodistoClient.haeKoodisto(koodisto.toString), KOODISTO_TIMEOUT))
-
       cache.get(koodisto)
   }
 }
