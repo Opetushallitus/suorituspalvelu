@@ -1,23 +1,55 @@
 package fi.oph.suorituspalvelu.integration
 
-import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient}
+import com.fasterxml.jackson.core.JsonToken
+import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti, SuoritusJoukko}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByOppija
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, Opiskeluoikeus}
 import slick.jdbc.JdbcBackend
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, InputStream}
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
-case class SyncResultForHenkilo(henkiloOid: String, versio: Option[VersioEntiteetti], exception: Option[Exception])
+case class SplitattavaKoskiData(oppijaOid: String, opiskeluoikeudet: Seq[Map[String, Any]])
+
+case class KoskiDataForOppija(oppijaOid: String, data: String)
+
+object KoskiIntegration {
+
+  val MAPPER: ObjectMapper = {
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+    mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
+    mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
+    mapper
+  }
+
+  def splitKoskiDataByOppija(input: InputStream): Iterator[(String, String)] =
+    val jsonParser = MAPPER.getFactory().createParser(input)
+    jsonParser.nextToken()
+
+    Iterator.continually({
+        val token = jsonParser.nextToken()
+        if(token != JsonToken.END_ARRAY)
+          Some(jsonParser.readValueAs(classOf[SplitattavaKoskiData]))
+        else
+          None})
+      .takeWhile(data => data.isDefined)
+      .map(data => {
+        (data.get.oppijaOid, MAPPER.writeValueAsString(data.get.opiskeluoikeudet))
+      })
+}
 
 class KoskiIntegration {
 
@@ -26,49 +58,32 @@ class KoskiIntegration {
 
   @Autowired val koskiClient: KoskiClient = null
 
-  @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
-
-  @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
-
-  val mapper: ObjectMapper = new ObjectMapper()
-  mapper.registerModule(DefaultScalaModule)
-
   private val KOSKI_BATCH_SIZE = 5000
-  private val HENKILO_TIMEOUT = 5.minutes
 
-
-  def syncKoskiInBatches(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
-    val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toList
+  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Iterator[KoskiDataForOppija] = {
+    val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
     val started = new AtomicInteger(0)
 
     grouped.flatMap(group => {
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
-      syncKoski(group)
+      fetchKoskiBatch(group)
     })
   }
 
-  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
-    syncKoskiInBatches(personOids)
-  }
-
-  def syncKoski(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+  private def fetchKoskiBatch(personOids: Set[String]): Iterator[KoskiDataForOppija] = {
     LOG.info(s"Synkataan Koski-data ${personOids.size} henkilölle")
     val query = KoskiMassaluovutusQueryParams.forOids(personOids)
 
     val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
       pollUntilReady(res.resultsUrl.get).flatMap(finishedQuery => {
-        LOG.info(s"Query is now finished, handling files.")
-        handleFiles(finishedQuery.files)
+        LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} Koski-tiedostoa.")
+        Future.sequence(finishedQuery.files.map(f => handleFile(f))).map(_.foldLeft(Iterator.empty[KoskiDataForOppija])(_ ++ _))
       })
     })
     Await.result(syncResultF, 2.hours)
   }
 
-
-  def pollUntilReady(pollUrl: String): Future[KoskiMassaluovutusQueryResponse] = {
+  private def pollUntilReady(pollUrl: String): Future[KoskiMassaluovutusQueryResponse] = {
     koskiClient.pollQuery(pollUrl).flatMap((pollResult: KoskiMassaluovutusQueryResponse) => {
       pollResult match {
         case response if response.isComplete() =>
@@ -85,38 +100,16 @@ class KoskiIntegration {
     })
   }
 
-  def handleFiles(fileUrls: Seq[String]): Future[Seq[SyncResultForHenkilo]] = {
-    LOG.info(s"Käsitellään ${fileUrls.size} Koski-tiedostoa.")
-    val handled = new AtomicInteger(0)
-
-    val kantaOperaatiot = KantaOperaatiot(database)
-
-    val futures = fileUrls.map(fileUrl => {
-      LOG.info(s"Käsitellään tiedosto ${handled.incrementAndGet()}/${fileUrls.size}: $fileUrl")
-      koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).flatMap(fileResult => {
-        LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
-        val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
-        val splitted = KoskiParser.splitKoskiDataByOppija(inputStream).toList
-        LOG.info(s"Saatiin tulokset tiedostolle $fileUrl: käsitellään yhteensä ${splitted.size} henkilön Koski-tiedot.")
-        val kantaResults: Seq[SyncResultForHenkilo] = splitted.map(henkilonTiedot => {
-          try {
-            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(henkilonTiedot._1, SuoritusJoukko.KOSKI, henkilonTiedot._2)
-            versio.foreach(v => {
-              LOG.info(s"Versio tallennettu henkilölle ${henkilonTiedot._1}")
-              val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(henkilonTiedot._2))
-              kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet)
-            })
-            SyncResultForHenkilo(henkilonTiedot._1, versio, None)
-          } catch {
-            case e: Exception =>
-              LOG.error(s"Henkilon ${henkilonTiedot._1} Koski-tietojen tallentaminen epäonnistui", e)
-              SyncResultForHenkilo(henkilonTiedot._1, None, Some(e))
-          }
-        })
-        LOG.info(s"Valmista! $kantaResults")
-        Future.successful(kantaResults)
+  private def handleFile(fileUrl: String): Future[Iterator[KoskiDataForOppija]] =
+    LOG.info(s"Käsitellään tiedosto: $fileUrl")
+    koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).flatMap(fileResult => {
+      LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
+      val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
+      val splitted = splitKoskiDataByOppija(inputStream)
+      LOG.info(s"Saatiin tulokset tiedostolle $fileUrl")
+      val kantaResults: Iterator[KoskiDataForOppija] = splitted.map(henkilonTiedot => {
+        KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)
       })
+      Future.successful(kantaResults)
     })
-    Future.sequence(futures).map(_.flatten) //Todo, rajoitetaanko rinnakkaisuutta jotenkin?
-  }
 }
