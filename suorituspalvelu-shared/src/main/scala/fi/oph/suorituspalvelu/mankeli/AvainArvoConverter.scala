@@ -1,8 +1,9 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, YOOpiskeluoikeus}
-import fi.oph.suorituspalvelu.resource.ui.{Ammatillinentutkinto, LukionOppimaara}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto,
+  ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus,
+  PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, YOOpiskeluoikeus}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
@@ -10,7 +11,7 @@ import scala.collection.immutable
 
 //Lisätään filtteröityihin suorituksiin kaikki sellaiset suoritukset, joilta on poimittu avainArvoja. Eli jos jossain kohtaa pudotetaan pois suorituksia syystä tai toisesta, ne eivät ole mukana filtteröidyissä suorituksissa.
 //Opiskeluoikeudet sisältävät kaiken lähdedatan.
-case class ValintaData(personOid: String, keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty, filtteroidytSuoritukset: Seq[Suoritus])
+case class ValintaData(personOid: String, avainArvot: Map[String, String], selitteet: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty, filtteroidytSuoritukset: Seq[Suoritus])
 
 object AvainArvoConstants {
   //Sama tieto tallennetaan kahden avaimen alle: vanhan Valintalaskentakoostepalvelusta periytyvän,
@@ -57,40 +58,79 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], leikkuriPaiva: LocalDate): ValintaData = {
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): ValintaData = {
 
     val peruskouluSuoritus: Option[PerusopetuksenOppimaara] = filterForPeruskoulu(personOid, opiskeluoikeudet)
     val peruskouluArvot: Map[String, String] = convertPeruskouluArvot(personOid, peruskouluSuoritus, Seq.empty)
-    val suorituskohtaisetArvot: Map[String, String] = convertSuorituskohtaisetArvot(personOid, opiskeluoikeudet, leikkuriPaiva)
+    val (ammatillisetArvot, ammatillisetSelitteet) = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val (lukioArvot, lukioSelitteet) = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val (yoArvot, yoSelitteet) = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
 
-    ValintaData(personOid, peruskouluArvot ++ suorituskohtaisetArvot, opiskeluoikeudet, Seq.empty ++ peruskouluSuoritus)
+    val avainArvot = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot
+    val selitteet = ammatillisetSelitteet ++ lukioSelitteet ++ yoSelitteet
+    ValintaData(personOid, avainArvot, selitteet, opiskeluoikeudet, Seq.empty ++ peruskouluSuoritus)
   }
 
-  def filterByType[T](opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[T] = {
-    opiskeluoikeudet.collect { case o: T => o }
-  }
+  def convertAmmatillisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): (Map[String, String], Map[String, String]) = {
+    val ammatillisetOpiskeluoikeudet = opiskeluoikeudet.collect { case o: AmmatillinenOpiskeluoikeus => o }
 
-  def convertSuorituskohtaisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], leikkuriPaiva: LocalDate) = {
-    val yo = opiskeluoikeudet.collect { case o: YOOpiskeluoikeus => o }
-    val amm = opiskeluoikeudet.collect { case o: AmmatillinenOpiskeluoikeus => o }
-    val lukio = opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }.filter(o => o.suoritukset.exists(_.isInstanceOf[LukionOppimaara]))
-
-    val hasYoSuoritus = yo.exists(_.yoTutkinto.valmistumisPaiva.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva)))
-    val hasAmmSuoritus = amm.exists(ammOikeus => {
-      ammOikeus.suoritukset.exists {
-        case s: AmmatillinenPerustutkinto => s.vahvistusPaivamaara.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva))
-        case s: AmmattiTutkinto => s.vahvistusPaivamaara.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva))
-        case s: ErikoisAmmattiTutkinto => s.vahvistusPaivamaara.exists(v => v.isBefore(leikkuriPaiva) || v.equals(leikkuriPaiva))
-        case _ => false
+    val allAmmSuoritukset: Seq[(Suoritus, Option[LocalDate])] = ammatillisetOpiskeluoikeudet.flatMap(ammOikeus => {
+      ammOikeus.suoritukset.collect {
+        case s: AmmatillinenPerustutkinto => (s, s.vahvistusPaivamaara)
+        case s: AmmattiTutkinto => (s, s.vahvistusPaivamaara)
+        case s: ErikoisAmmattiTutkinto => (s, s.vahvistusPaivamaara)
       }
     })
+
+    val validSuoritukset = allAmmSuoritukset.filter(
+      s => s._2.exists(v => v.isBefore(vahvistettuViimeistaan) || v.equals(vahvistettuViimeistaan))
+    )
+
+    val ammSelite = s"Löytyi yhteensä ${allAmmSuoritukset.size} ammatillista suoritusta. " +
+      s"Näistä ${validSuoritukset.size} oli vahvistettu viimeistään ${vahvistettuViimeistaan}. Vahvistuspäivät: ${allAmmSuoritukset.flatMap(_._2).distinct.mkString(", ")}"
+
+    val arvot = AvainArvoConstants.ammSuoritettuKeys.map(key => (key, validSuoritukset.nonEmpty.toString)).toMap
+    val selitteet = AvainArvoConstants.ammSuoritettuKeys.map(key => (key, ammSelite)).toMap
+    LOG.info(s"Ammatilliset arvot käsitelty henkilölle $personOid. $ammSelite")
+    (arvot, selitteet)
+  }
+
+  def convertYoArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate) = {
+    val yoOpiskeluoikeudet: Seq[(YOOpiskeluoikeus, Option[LocalDate])] = opiskeluoikeudet.collect { case o: YOOpiskeluoikeus => (o, o.yoTutkinto.valmistumisPaiva) }
+
+    val hasYoSuoritus = yoOpiskeluoikeudet.exists(_._2.exists(v => v.isBefore(vahvistettuViimeistaan) || v.equals(vahvistettuViimeistaan)))
+    val yoSelite = s"Löytyi yhteensä ${yoOpiskeluoikeudet.size} YO-opiskeluoikeutta. Valmistumispäivät: ${yoOpiskeluoikeudet.flatMap(_._2).distinct.mkString(", ")}."
+
+    val arvot = AvainArvoConstants.yoSuoritettuKeys.map(key => (key, hasYoSuoritus.toString)).toMap
+    val selitteet = AvainArvoConstants.yoSuoritettuKeys.map(key => (key, yoSelite)).toMap
+    LOG.info(s"Yo-arvot käsitelty henkilölle $personOid. $yoSelite")
+    (arvot, selitteet)
+  }
+
+  //TODO lukiosuorituksia ei ole vielä parseroitu eikä niitä saada Koskesta massaluovutusrajapinnan kautta. Tämä päättely ei siis vielä toimi.
+  def convertLukioArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): (Map[String, String], Map[String, String]) = {
+    //val lukioOpiskeluoikeudet = opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
+    val hasLukioSuoritus = false
+    val lukioSelite = s"Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
+    val arvot = AvainArvoConstants.lukioSuoritettuKeys.map(key => (key, hasLukioSuoritus.toString)).toMap
+    val selitteet = AvainArvoConstants.lukioSuoritettuKeys.map(key => (key, lukioSelite)).toMap
+    LOG.info(s"Lukioarvot käsitelty henkilölle $personOid. $lukioSelite")
+    (arvot, selitteet)
+  }
+
+  def convertTutkintojenSuoritusArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): (Map[String, String], Map[String, String]) = {
+    val (ammatillisetArvot, ammatillisetSelitteet) = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val (lukioArvot, lukioSelitteet) = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val (yoArvot, yoSelitteet) = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+
     //Todo, nämä pitää vielä parseroida Koski-datasta
     val hasLukioSuoritus = false
 
+    val arvot = lukioArvot ++ yoArvot ++ ammatillisetArvot
 
-    (AvainArvoConstants.lukioSuoritettuKeys.map(key => (key, hasLukioSuoritus.toString)) ++
-      AvainArvoConstants.yoSuoritettuKeys.map(key => (key, hasYoSuoritus.toString)) ++
-      AvainArvoConstants.ammSuoritettuKeys.map(key => (key, hasAmmSuoritus.toString))).toMap
+    val selitteet = ammatillisetSelitteet ++ lukioSelitteet ++ yoSelitteet
+
+    (arvot, selitteet)
   }
 
 
