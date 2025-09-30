@@ -1,4 +1,5 @@
 import {
+  type Kielistetty,
   type PerusopetuksenOppiaine,
   type PerusopetusSuoritus,
 } from '@/types/ui-types';
@@ -12,6 +13,7 @@ import { useMemo } from 'react';
 import { StripedTable } from './StripedTable';
 import { isKielistetty } from '@/lib/translation-utils';
 import { InfoItemRow } from './InfoItemRow';
+import { isBoolean } from 'remeda';
 
 const Luokkatiedot = ({
   oppimaara,
@@ -40,12 +42,28 @@ const Luokkatiedot = ({
   );
 };
 
+const OppiaineValue = ({
+  value,
+}: {
+  value: Kielistetty | string | number | boolean | undefined;
+}) => {
+  const { translateKielistetty } = useTranslations();
+  switch (true) {
+    case isKielistetty(value):
+      return translateKielistetty(value);
+    case isBoolean(value):
+      return value ? 'x' : '';
+    default:
+      return value;
+  }
+};
+
 const PerusopetusOppiaineetTable = ({
   oppiaineet,
 }: {
   oppiaineet: Array<PerusopetuksenOppiaine>;
 }) => {
-  const { t, translateKielistetty } = useTranslations();
+  const { t } = useTranslations();
 
   const hasArvosana = oppiaineet.some((oppiaine) => oppiaine.arvosana);
   const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine?.valinnainen);
@@ -54,6 +72,7 @@ const PerusopetusOppiaineetTable = ({
     const cols: Array<{
       key: keyof (typeof oppiaineet)[number];
       title: string;
+      style?: React.CSSProperties;
     }> = [
       {
         key: 'nimi',
@@ -65,6 +84,7 @@ const PerusopetusOppiaineetTable = ({
       cols.push({
         key: 'arvosana',
         title: t('oppija.arvosana'),
+        style: { textAlign: 'center' },
       });
     }
 
@@ -72,6 +92,7 @@ const PerusopetusOppiaineetTable = ({
       cols.push({
         key: 'valinnainen',
         title: t('oppija.valinnainen'),
+        style: { textAlign: 'center' },
       });
     }
 
@@ -83,7 +104,9 @@ const PerusopetusOppiaineetTable = ({
       <TableHead>
         <TableRow>
           {columns.map((column) => (
-            <TableCell key={column.key}>{column.title}</TableCell>
+            <TableCell key={column.key} style={column.style}>
+              {column.title}
+            </TableCell>
           ))}
         </TableRow>
       </TableHead>
@@ -93,8 +116,8 @@ const PerusopetusOppiaineetTable = ({
             {columns.map((column) => {
               const value = oppiaine[column.key];
               return (
-                <TableCell key={column.key}>
-                  {isKielistetty(value) ? translateKielistetty(value) : value}
+                <TableCell key={column.key} style={column.style}>
+                  <OppiaineValue value={value} />
                 </TableCell>
               );
             })}

@@ -6,7 +6,7 @@
   "henkiloOID": "1.2.246.562.24.40483869857",
   "opiskeluoikeudet": [
     {
-      "tunniste": "3997901a-d74f-4b56-8b30-1bb07fc0c8a4",
+      "tunniste": "82c81a00-d861-4d4c-b691-7f7dd39f1275",
       "nimi": {
         "fi": "Kasvatust. maist., kasvatustiede",
         "sv": "Kasvatust. maist., kasvatustiede sv",
@@ -24,13 +24,15 @@
       "voimassaolonLoppu": "2025-12-11",
       "supaTila": "VOIMASSA",
       "virtaTila": {
-        "fi": "aktiivinen"
+        "fi": "aktiivinen",
+        "sv": "aktiv",
+        "en": "active"
       }
     }
   ],
   "kkTutkinnot": [
     {
-      "tunniste": "f920ef63-3125-4f3a-8676-5688c29774e1",
+      "tunniste": "b07ffc01-1d92-4672-a078-82b34d62bf69",
       "nimi": {
         "fi": "Kasvatust. maist., kasvatustiede",
         "sv": "Kasvatust. maist., kasvatustiede sv",
@@ -46,19 +48,12 @@
       },
       "tila": "KESKEN",
       "aloituspaiva": "2025-12-11",
-      "valmistumispaiva": null,
-      "hakukohde": {
-        "nimi": {
-          "fi": "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v)",
-          "sv": "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) sv",
-          "en": "Maisterihaku, luokanopettaja (opetus suomeksi), kasvatustieteiden maisteriohjelma, kasvatustieteen maisteri (2v) en"
-        }
-      }
+      "valmistumispaiva": null
     }
   ],
   "yoTutkinnot": [
     {
-      "tunniste": "3f64fb88-d178-4803-b7e2-c21e887e3d05",
+      "tunniste": "df9ad690-92c0-4744-90d4-78801451be39",
       "nimi": {
         "fi": "Ylioppilastutkinto",
         "sv": "Ylioppilastutkinto sv",
@@ -77,54 +72,66 @@
       "suorituskieli": "suomi",
       "yoKokeet": [
         {
-          "tunniste": "1566e8e9-d7e4-40b6-937e-b6db469acc87",
+          "tunniste": "164aba2d-d7be-47dc-85fa-44ef3ce2a55a",
           "nimi": {
-            "fi": "Psykologia"
+            "fi": "Psykologia",
+            "sv": null,
+            "en": null
           },
           "arvosana": "E",
           "yhteispistemaara": 28,
           "tutkintokerta": "2018-12-21"
         },
         {
-          "tunniste": "d513dd57-ffbe-4ac7-872f-54c8992ab485",
+          "tunniste": "b24da55c-c4bf-4cd5-a4c2-1e81d7ccfb97",
           "nimi": {
-            "fi": "Englanti, pitkä oppimäärä"
+            "fi": "Englanti",
+            "sv": null,
+            "en": null
           },
           "arvosana": "E",
           "yhteispistemaara": 259,
           "tutkintokerta": "2019-06-01"
         },
         {
-          "tunniste": "f8a54d97-5e2f-41b9-9821-c3c136b2db7f",
+          "tunniste": "886e74af-0949-44c1-a553-f42c567d777f",
           "nimi": {
-            "fi": "Matematiikan koe, lyhyt oppimäärä"
+            "fi": "Matematiikka",
+            "sv": null,
+            "en": null
           },
           "arvosana": "C",
           "yhteispistemaara": 23,
           "tutkintokerta": "2019-06-01"
         },
         {
-          "tunniste": "0e4dcdbe-b7b3-44ce-b237-989c139c7150",
+          "tunniste": "bcbc5f79-3a4d-47e7-bb00-4121a878fa84",
           "nimi": {
-            "fi": "Äidinkielen koe, suomi"
+            "fi": "Suomi",
+            "sv": null,
+            "en": null
           },
           "arvosana": "C",
           "yhteispistemaara": 49,
           "tutkintokerta": "2019-06-01"
         },
         {
-          "tunniste": "5bc17c18-012f-4e99-bba8-24b770b0b616",
+          "tunniste": "396d08e0-d493-4e88-82f6-14b95347c7a9",
           "nimi": {
-            "fi": "Historia"
+            "fi": "Historia",
+            "sv": null,
+            "en": null
           },
           "arvosana": "M",
           "yhteispistemaara": 25,
           "tutkintokerta": "2019-06-01"
         },
         {
-          "tunniste": "8717fdee-582c-4d5c-af62-ec7ef311c272",
+          "tunniste": "bda9b800-4651-4b85-b95d-88fc05cbfc98",
           "nimi": {
-            "fi": "Yhteiskuntaoppi"
+            "fi": "Yhteiskuntaoppi",
+            "sv": null,
+            "en": null
           },
           "arvosana": "E",
           "yhteispistemaara": 32,
@@ -134,7 +141,7 @@
     }
   ],
   "lukionOppimaara": {
-    "tunniste": "1e0a4845-6f33-48ea-92e4-8e998d52e5bb",
+    "tunniste": "a263504a-696c-433d-ab26-0e36cb6d4e2e",
     "nimi": {
       "fi": "Lukion oppimäärä",
       "sv": "Lukion oppimäärä sv",
@@ -154,7 +161,7 @@
     "suorituskieli": "suomi",
     "oppiaineet": [
       {
-        "tunniste": "7405bf74-f644-436e-8c00-27e5c0aa6d39",
+        "tunniste": "fc8dc843-a2ff-4660-b6a0-9ebbfb3e2804",
         "nimi": {
           "fi": "Äidinkieli ja kirjallisuus",
           "sv": "Äidinkieli ja kirjallisuus sv",
@@ -162,7 +169,7 @@
         }
       },
       {
-        "tunniste": "043159df-e04d-42fa-953c-03625c3d8c1a",
+        "tunniste": "8e45e72e-c3c1-4bb0-956b-06fa1e2c97a7",
         "nimi": {
           "fi": "Uskonto/Elämänkatsomustieto",
           "sv": "Uskonto/Elämänkatsomustieto sv",
@@ -173,7 +180,7 @@
   },
   "lukionOppiaineenOppimaarat": [
     {
-      "tunniste": "a6d2739d-9dee-41a0-be4a-6f0567e0c7c5",
+      "tunniste": "ac4009c7-d6a8-4488-b32b-ecdebff041eb",
       "nimi": {
         "fi": "Lukion oppiaineen oppimäärä",
         "sv": "Lukion oppiaineen oppimäärä sv",
@@ -193,7 +200,7 @@
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
-          "tunniste": "05301523-e1e3-47e9-afe6-64158ded5e75",
+          "tunniste": "407c31e8-90c6-45c5-bb0e-f79f09cbdc93",
           "nimi": {
             "fi": "Äidinkieli ja kirjallisuus, suomi äidinkielenä",
             "sv": "Äidinkieli ja kirjallisuus, suomi äidinkielenä sv",
@@ -201,7 +208,7 @@
           }
         },
         {
-          "tunniste": "6a20c2bb-60c2-4659-8acc-5b2d3f9d5f6a",
+          "tunniste": "209d2f0f-915c-4dbf-9ba0-d577db796989",
           "nimi": {
             "fi": "Matematiikka, lyhyt oppimäärä, valinnainen",
             "sv": "Matematiikka, lyhyt oppimäärä, valinnainen sv",
@@ -212,7 +219,7 @@
     }
   ],
   "diaTutkinto": {
-    "tunniste": "2eaf519f-25f0-441b-a5e4-901b7d629c66",
+    "tunniste": "22ed4f28-d1f2-44a8-a557-9e0744c4696d",
     "nimi": {
       "fi": "DIA-tutkinto",
       "sv": "DIA-tutkinto sv",
@@ -232,7 +239,7 @@
     "suorituskieli": "suomi"
   },
   "diaVastaavuusTodistus": {
-    "tunniste": "fb2bea00-92d2-41fd-9f04-1c4725c89ace",
+    "tunniste": "44e053a4-74e6-4d3e-9b19-addb79d80393",
     "nimi": {
       "fi": "DIA-vastaavuustodistus",
       "sv": "DIA-vastaavuustodistus sv",
@@ -252,7 +259,7 @@
     "suorituskieli": "suomi",
     "kieletKirjallisuusTaide": [
       {
-        "tunniste": "eb58d428-9fc6-48df-af68-fdb805cae0fd",
+        "tunniste": "88867822-1eaa-4cdd-b6bd-a148b05c57ea",
         "nimi": {
           "fi": "A-kieli, englanti",
           "sv": "A-kieli, englanti sv",
@@ -262,7 +269,7 @@
         "keskiarvo": 8.5
       },
       {
-        "tunniste": "58af7473-ad66-450a-ab02-a93b3d1339c2",
+        "tunniste": "da3fb0ea-350b-478e-a383-8bc8c2d0b7ec",
         "nimi": {
           "fi": "Historia",
           "sv": "Historia sv",
@@ -274,7 +281,7 @@
     ],
     "matematiikkaLuonnontieteet": [
       {
-        "tunniste": "fbc34cbd-f535-4907-b796-8170c9f3ad30",
+        "tunniste": "79c5acd5-2eab-4cc0-bc35-fd63ab8094ba",
         "nimi": {
           "fi": "Matematiikka",
           "sv": "Matematiikka sv",
@@ -284,7 +291,7 @@
         "keskiarvo": 6
       },
       {
-        "tunniste": "7c05f1d6-2885-410a-aeea-d8cf3374c336",
+        "tunniste": "1a48c7cc-bcac-4201-8ffb-ba115e00d0bd",
         "nimi": {
           "fi": "Kuvataide",
           "sv": "Kuvataide sv",
@@ -296,7 +303,7 @@
     ]
   },
   "ebTutkinto": {
-    "tunniste": "9b25fc6e-6736-4bf9-a487-96ee953fb6e6",
+    "tunniste": "245190c3-ece1-4c9e-a222-2fa8d25c2fc9",
     "nimi": {
       "fi": "EB-tutkinto",
       "sv": "EB-tutkinto sv",
@@ -316,7 +323,7 @@
     "suorituskieli": "suomi",
     "oppiaineet": [
       {
-        "tunniste": "1eacc030-2ed5-4984-8b08-f1b365cf1bd2",
+        "tunniste": "cef65819-38a7-46aa-9057-8b392cafd39d",
         "nimi": {
           "fi": "Mathematics fi",
           "sv": "Mathematics sv",
@@ -325,17 +332,17 @@
         "suorituskieli": "englanti",
         "laajuus": 4,
         "written": {
-          "tunniste": "d4cc99f2-605c-4527-b9ca-d8e3a3799bc7",
+          "tunniste": "8fe93189-3607-4a5c-b64f-dc8f121d066f",
           "arvosana": 8.67
         },
         "oral": null,
         "final": {
-          "tunniste": "8bcb450a-c856-4b1b-86d3-ada7f9931615",
+          "tunniste": "a15d46cc-fab2-452f-862d-689f74e70e43",
           "arvosana": 8.67
         }
       },
       {
-        "tunniste": "e4d23363-3894-4eb6-b971-6444fc057d57",
+        "tunniste": "a75f55a3-a39b-4d9c-8144-67965f4ccf4c",
         "nimi": {
           "fi": "First language, ranska fi",
           "sv": "First language, ranska sv",
@@ -344,20 +351,20 @@
         "suorituskieli": "englanti",
         "laajuus": 3,
         "written": {
-          "tunniste": "64c853ec-cd08-4a8d-be7b-452d52280c34",
+          "tunniste": "d2d7df7a-60a7-4446-a9f8-900d8c1535e0",
           "arvosana": 8.67
         },
         "oral": {
-          "tunniste": "45d43407-dd0c-4165-bf47-c75451d7589f",
+          "tunniste": "45163238-164d-4f4a-acde-e4dfa8a9843f",
           "arvosana": 8.67
         },
         "final": {
-          "tunniste": "f4dfcc85-6bf9-4f7f-978c-64db7fb64426",
+          "tunniste": "924dbe08-9ba9-4ce4-a3f5-ff0cdbbcad8c",
           "arvosana": 8.67
         }
       },
       {
-        "tunniste": "5918fa7e-f5c8-48bc-9bc0-5c633e11e3c9",
+        "tunniste": "85be9bd1-3f53-42e0-ae10-5f1155d1d7e1",
         "nimi": {
           "fi": "Second language, saksa fi",
           "sv": "Second language, saksa sv",
@@ -366,22 +373,22 @@
         "suorituskieli": "englanti",
         "laajuus": 3,
         "written": {
-          "tunniste": "337ec8e2-5bc1-4dd9-97db-62d648660f0d",
+          "tunniste": "aaecfd8a-2583-4d67-ad89-d609f5b94459",
           "arvosana": 8.67
         },
         "oral": {
-          "tunniste": "e81dbc4c-027d-48fb-915a-f68284675c1b",
+          "tunniste": "986c3b79-42e8-4df7-8509-7ad99ad4f8d4",
           "arvosana": 8.67
         },
         "final": {
-          "tunniste": "f1678161-275e-40c1-8905-e7bca1abfb34",
+          "tunniste": "e07765e7-248e-4378-a57b-2ae5159b19d2",
           "arvosana": 8.67
         }
       }
     ]
   },
   "ibTutkinto": {
-    "tunniste": "9370cddc-d3ef-4580-bccf-5da7bb2d0ef7",
+    "tunniste": "95fbc2d6-3f22-49c6-935b-969e0da7126b",
     "nimi": {
       "fi": "IB-tutkinto",
       "sv": "IB-tutkinto sv",
@@ -401,7 +408,7 @@
     "suorituskieli": "suomi",
     "oppiaineet": [
       {
-        "tunniste": "1878598e-6315-426b-807c-58475225b150",
+        "tunniste": "7450dca1-276a-4eb5-958f-c9bf565f4bce",
         "nimi": {
           "fi": "Studies in language and literature fi",
           "sv": "Studies in language and literature sv",
@@ -409,7 +416,7 @@
         },
         "suoritukset": [
           {
-            "tunniste": "1a0ccac7-4316-4218-b3ab-f71af89d38cf",
+            "tunniste": "904f8708-db73-4404-ae5b-490e49523277",
             "nimi": {
               "fi": "Language A: literature, suomi fi",
               "sv": "Language A: literature, suomi sv",
@@ -420,7 +427,7 @@
             "arvosana": 7
           },
           {
-            "tunniste": "1aee93a1-8bf1-45b5-a5dc-32881341b735",
+            "tunniste": "b3c449bb-a169-42a9-b9ab-aa97e3653f72",
             "nimi": {
               "fi": "Language A: language and literature, englanti fi",
               "sv": "Language A: language and literature, englanti sv",
@@ -433,7 +440,7 @@
         ]
       },
       {
-        "tunniste": "46c4106f-3c5a-41a2-890a-3e6611bbf6e4",
+        "tunniste": "ece1afde-df7a-47eb-ba77-663fe8591e21",
         "nimi": {
           "fi": "Individuals and societies fi",
           "sv": "Individuals and societies sv",
@@ -441,7 +448,7 @@
         },
         "suoritukset": [
           {
-            "tunniste": "aca9aca7-3d53-4d67-a603-ee49c3943e7c",
+            "tunniste": "b0fe7991-224d-401f-9b98-96179a90792e",
             "nimi": {
               "fi": "History fi",
               "sv": "History sv",
@@ -452,7 +459,7 @@
             "arvosana": 7
           },
           {
-            "tunniste": "f92570c8-9c78-4714-b77d-986f5ddebce7",
+            "tunniste": "b451c471-bc5e-48f5-b492-cf13082b503b",
             "nimi": {
               "fi": "Psychology fi",
               "sv": "Psychology sv",
@@ -465,7 +472,7 @@
         ]
       },
       {
-        "tunniste": "4ed5124f-f0ea-48c6-996e-2242470c4b1b",
+        "tunniste": "c69b2254-6030-48b0-9042-19d7b5af2b7d",
         "nimi": {
           "fi": "Experimental sciences fi",
           "sv": "Experimental sciences sv",
@@ -473,7 +480,7 @@
         },
         "suoritukset": [
           {
-            "tunniste": "f0ce559f-54ab-4ecf-ac4f-bec59d030da5",
+            "tunniste": "1bfc3d61-e85e-43f2-8af4-7bf3e9d3c68b",
             "nimi": {
               "fi": "Biology fi",
               "sv": "Biology sv",
@@ -486,7 +493,7 @@
         ]
       },
       {
-        "tunniste": "f1ecfd22-cd35-4b42-b1ba-58cc18df752e",
+        "tunniste": "f12ef71a-52f7-4c39-aaa0-5abd82b6fffd",
         "nimi": {
           "fi": "Mathematics fi",
           "sv": "Mathematics sv",
@@ -494,7 +501,7 @@
         },
         "suoritukset": [
           {
-            "tunniste": "dc48666e-356c-46f2-885c-086064f68106",
+            "tunniste": "5094ebe5-889a-48d6-a712-1f3547dfc574",
             "nimi": {
               "fi": "Mathematical studies fi",
               "sv": "Mathematical studies sv",
@@ -509,7 +516,7 @@
     ]
   },
   "preIB": {
-    "tunniste": "35611534-74e1-403b-8f51-ff5a5975ba03",
+    "tunniste": "7d76d30a-d6c6-4476-95e5-a17f74b8c2d2",
     "nimi": {
       "fi": "Pre-IB",
       "sv": "Pre-IB sv",
@@ -530,7 +537,7 @@
   },
   "ammatillisetPerusTutkinnot": [
     {
-      "tunniste": "36ff17b9-eb16-47d7-95b3-adc282fade4d",
+      "tunniste": "648e5755-627b-4acc-b413-069c3b6ad2c0",
       "nimi": {
         "fi": "Puutarha-alan perustutkinto",
         "sv": "Puutarha-alan perustutkinto sv",
@@ -551,15 +558,18 @@
       "painotettuKeskiarvo": 4.34,
       "ytot": [
         {
-          "tunniste": "51a83b40-d309-456d-8901-4a382aa63df1",
+          "tunniste": "927a0f77-ee7d-4ecf-bd36-7afe115ea56f",
           "nimi": {
             "fi": "Viestintä- ja vuorovaikutusosaaminen",
             "sv": "Kunnande i kommunikation och interaktion",
             "en": "Communication and interaction competence"
           },
-          "vahvistuspaiva": "2024-12-31",
           "laajuus": 11,
-          "arvosana": { "fi": "Hyväksytty", "sv": "Godkänd", "en": "Pass" },
+          "arvosana": {
+            "fi": "Hyväksytty",
+            "sv": "Godkänd",
+            "en": "Pass"
+          },
           "osaAlueet": [
             {
               "nimi": {
@@ -591,33 +601,39 @@
           ]
         },
         {
-          "tunniste": "31dea5ba-83cf-48c0-b98c-1b3bcab964fc",
+          "tunniste": "16d7b960-9ef3-47ac-8a19-8b3d32cba508",
           "nimi": {
             "fi": "Matemaattis-luonnontieteellinen osaaminen",
             "sv": "Matemaattis-luonnontieteellinen osaaminen sv",
             "en": "Matemaattis-luonnontieteellinen osaaminen en"
           },
-          "vahvistuspaiva": "2024-12-31",
           "laajuus": 11,
-          "arvosana": { "fi": "Hyväksytty", "sv": "Godkänd", "en": "Pass" },
+          "arvosana": {
+            "fi": "Hyväksytty",
+            "sv": "Godkänd",
+            "en": "Pass"
+          },
           "osaAlueet": []
         },
         {
-          "tunniste": "79b88f06-e456-4a99-bdde-15cec1187ada",
+          "tunniste": "212c5aaf-8d33-4a81-970f-64d71d407103",
           "nimi": {
             "fi": "Yhteiskunta- ja työelämäosaaminen",
             "sv": "Yhteiskunta- ja työelämäosaaminen sv",
             "en": "Yhteiskunta- ja työelämäosaaminen en"
           },
-          "vahvistuspaiva": "2024-12-31",
           "laajuus": 11,
-          "arvosana": { "fi": "Hyväksytty", "sv": "Godkänd", "en": "Pass" },
+          "arvosana": {
+            "fi": "Hyväksytty",
+            "sv": "Godkänd",
+            "en": "Pass"
+          },
           "osaAlueet": []
         }
       ],
       "ammatillisenTutkinnonOsat": [
         {
-          "tunniste": "844aa28e-c86d-487b-8ccc-46cb9dbce87e",
+          "tunniste": "9a763ed5-3392-4f3c-92b9-8f9323ec6e5b",
           "nimi": {
             "fi": "Audiovisuaalisen kulttuurin perusteet",
             "sv": "Audiovisuaalisen kulttuurin perusteet sv",
@@ -647,7 +663,7 @@
           ]
         },
         {
-          "tunniste": "3288644d-5f00-47f7-b288-9f5f527cc270",
+          "tunniste": "eac00ded-8d84-4762-a905-f41b23ecb997",
           "nimi": {
             "fi": "Äänimaailman suunnittelu",
             "sv": "Äänimaailman suunnittelu sv",
@@ -661,7 +677,7 @@
       "suoritustapa": null
     },
     {
-      "tunniste": "d0997e56-2060-4ec9-8439-9f32221ede91",
+      "tunniste": "bf9ee35b-5041-4631-9ef3-4da1156ad3db",
       "nimi": {
         "fi": "Hevostalouden perustutkinto",
         "sv": "Hevostalouden perustutkinto sv",
@@ -687,7 +703,7 @@
   ],
   "ammattitutkinnot": [
     {
-      "tunniste": "ce3228a0-e950-4911-95a8-9d7a0cb5cd6f",
+      "tunniste": "6c37259e-0630-4940-967f-f3b43f852404",
       "nimi": {
         "fi": "Maanmittausalan ammattitutkinto",
         "sv": "Maanmittausalan ammattitutkinto sv",
@@ -709,7 +725,7 @@
   ],
   "erikoisammattitutkinnot": [
     {
-      "tunniste": "5b987c1a-4b1e-4ffc-9a8b-d41e2d6bc1ba",
+      "tunniste": "eae323de-2041-46e8-8884-73a49dcb58ad",
       "nimi": {
         "fi": "Talous- ja henkilöstöalan erikoisammattitutkinto",
         "sv": "Talous- ja henkilöstöalan erikoisammattitutkinto sv",
@@ -731,7 +747,7 @@
   ],
   "telmat": [
     {
-      "tunniste": "4b64f62c-3433-4045-b370-0cae76b38fca",
+      "tunniste": "678f44f5-23d1-4383-836b-343a2a940873",
       "nimi": {
         "fi": "Työhön ja itsenäiseen elämään valmentava koulutus",
         "sv": "Utbildning som handleder för arbete och ett självständigt liv",
@@ -753,7 +769,7 @@
   ],
   "tuvat": [
     {
-      "tunniste": "a0a61a9b-5a06-4699-9da3-77ead676e4b4",
+      "tunniste": "a1198edc-093c-40d3-a688-536eb8d8aa41",
       "nimi": {
         "fi": "Tutkintokoulutukseen valmentava koulutus",
         "sv": "Utbildning som handleder för examensutbildning",
@@ -782,7 +798,7 @@
   ],
   "vapaaSivistystyoKoulutukset": [
     {
-      "tunniste": "95d3f1e8-0239-4189-b18d-6694ecfeb313",
+      "tunniste": "65fb5aa8-f226-45e3-b46f-cc803b411643",
       "nimi": {
         "fi": "Vapaan sivistystyön koulutus",
         "sv": "Fritt bildningsarbete",
@@ -800,12 +816,20 @@
       "aloituspaiva": "2023-12-31",
       "valmistumispaiva": null,
       "suorituskieli": "suomi",
-      "laajuus": 38
+      "laajuus": {
+        "arvo": 38,
+        "yksikko": {
+          "fi": "op",
+          "sv": null,
+          "en": null
+        }
+      }
     }
   ],
   "perusopetuksenOppimaarat": [
     {
-      "tunniste": "70bc5e89-4b54-4db9-ab98-f7f60b8319cb",
+      "versioTunniste": "ccb9a427-889e-42e9-8c7b-a7f31012cb11",
+      "tunniste": "0179eb95-6af5-4152-bc5d-2fe0517b9901",
       "nimi": {
         "fi": "Perusopetuksen oppimäärä",
         "sv": "Grundläggande utbildningens lärokurs",
@@ -824,123 +848,141 @@
       "valmistumispaiva": "2016-06-01",
       "suorituskieli": "suomi",
       "luokka": "9A",
-      "yksilollistetty": false,
+      "yksilollistaminen": {
+        "arvo": 2,
+        "nimi": {
+          "fi": "Perusopetuksen osittain yksilöllistetty oppimäärä",
+          "sv": "Delvis individualiserad lärokurs inom den grundläggande utbildningen",
+          "en": "Partially individualized basic education syllabus"
+        }
+      },
       "oppiaineet": [
         {
-          "tunniste": "f03d8e12-d297-4dab-b373-0ed1873aa9a3",
+          "tunniste": "1f4ba586-c2a4-4775-804f-23447d048f32",
           "nimi": {
             "fi": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus",
             "sv": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv",
             "en": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": "AI1",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "24a7a19d-0dfb-4c6e-99d0-67233dc4672a",
+          "tunniste": "81569b69-e2e4-4585-bf2f-51fb355ade12",
           "nimi": {
             "fi": "A1-kieli, englanti",
             "sv": "A1-kieli, englanti sv",
             "en": "A1-kieli, englanti en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": "EN",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "a7367a3a-f465-41e4-8dd0-743f2f9d49ba",
+          "tunniste": "35b06f64-8686-4781-b4d0-98f667d0b8d5",
           "nimi": {
             "fi": "B1-kieli, ruotsi",
             "sv": "B1-kieli, ruotsi sv",
             "en": "B1-kieli, ruotsi en"
           },
-          "arvosana": 9,
-          "valinnainen": "S"
+          "kieli": "SV",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "61e2cfc3-8ebe-42ac-8ff4-047c9bd5869a",
+          "tunniste": "e800f2d2-66d9-44fa-9b3d-87a210bafd18",
           "nimi": {
             "fi": "B2-kieli, saksa",
             "sv": "B2-kieli, saksa sv",
             "en": "B2-kieli, saksa en"
           },
-          "arvosana": null,
-          "valinnainen": "S"
+          "kieli": "DE",
+          "arvosana": "9",
+          "valinnainen": true
         },
         {
-          "tunniste": "b7c9924c-1057-4b2a-9152-606ad70f0b8f",
+          "tunniste": "f954de38-7688-4246-9f26-334ff7d616bd",
           "nimi": {
             "fi": "Matematiikka",
             "sv": "Matematiikka sv",
             "en": "Matematiikka en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "22780369-7f89-4642-bc4b-40746c198fdc",
+          "tunniste": "e718fd89-0cb1-40e1-85ad-9c73c91ad7a0",
           "nimi": {
             "fi": "Biologia",
             "sv": "Biologia sv",
             "en": "Biologia en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "8a58e931-0695-4bf0-a4e6-b824dcb7418f",
+          "tunniste": "44b1701e-f2a9-48e8-9a10-aa5876f335d7",
           "nimi": {
             "fi": "Maantieto",
             "sv": "Maantieto sv",
             "en": "Maantieto en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "35f725d4-1786-4705-9f47-f0e9c5e65528",
+          "tunniste": "fdc7f065-e6cc-4b5c-b557-f64f0e1d2ee4",
           "nimi": {
             "fi": "Fysiikka",
             "sv": "Fysiikka sv",
             "en": "Fysiikka en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "257c0eab-3e0b-483e-bafe-4c805360f0f3",
+          "tunniste": "06abf19d-ecde-4fef-8797-25d850b6c108",
           "nimi": {
             "fi": "Kemia",
             "sv": "Kemia sv",
             "en": "Fysiikka en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "ba0ec529-5364-46c3-a957-117020066ee8",
+          "tunniste": "1469a5b0-39be-4cc7-947f-a83c53c4cd67",
           "nimi": {
             "fi": "Terveystieto",
             "sv": "Terveystieto sv",
             "en": "Terveystieto en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "38234a7a-e51a-49e0-9302-fc4de1c46dbe",
+          "tunniste": "ef3b9e8d-a4c9-47ae-ba2a-b228d450ec68",
           "nimi": {
             "fi": "Uskonto tai elämänkatsomustieto",
             "sv": "Uskonto tai elämänkatsomustieto sv",
             "en": "Uskonto tai elämänkatsomustieto en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         }
       ]
     }
   ],
   "perusopetuksenOppimaara78Luokkalaiset": {
-    "tunniste": "cf1789d6-a4ef-4dad-9cf4-14364a9f1bcd",
+    "tunniste": "7d863bfc-9a6a-4a5b-acd0-6e64f72e1415",
     "nimi": {
       "fi": "Perusopetuksen oppimäärä",
       "sv": "Grundläggande utbildningens lärokurs",
@@ -964,7 +1006,7 @@
   },
   "nuortenPerusopetuksenOppiaineenOppimaarat": [
     {
-      "tunniste": "7466a402-9aed-499e-a51f-c2a34418f065",
+      "tunniste": "36f8951a-8453-45f7-8ba4-5be2428aef55",
       "nimi": {
         "fi": "Nuorten perusopetuksen oppiaineen oppimäärä",
         "sv": "Lärokurs i ett läroämne i grundläggande utbildning sv",
@@ -984,29 +1026,33 @@
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
-          "tunniste": "430f4c6c-6bb3-4dd6-8170-c78bf43325f7",
+          "tunniste": "467279fd-b180-4018-bf11-1a2ef2629deb",
           "nimi": {
             "fi": "Biologia",
             "sv": "Biologia sv",
             "en": "Biologia en"
           },
-          "arvosana": 9
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "e9330e1c-55ca-4711-8723-ebe3b77d3d54",
+          "tunniste": "8becee92-bd5a-4e06-b000-9d7bbcd4374f",
           "nimi": {
             "fi": "Historia",
             "sv": "Historia sv",
             "en": "Historia en"
           },
-          "arvosana": 8
+          "kieli": null,
+          "arvosana": "8",
+          "valinnainen": false
         }
       ]
     }
   ],
   "perusopetuksenOppiaineenOppimaarat": [
     {
-      "tunniste": "31692618-52cf-4f4a-adb7-81a7ca6800ec",
+      "tunniste": "e166461c-f4ca-42d6-bf4a-58677a634acd",
       "nimi": {
         "fi": "Perusopetuksen oppiaineen oppimäärä",
         "sv": "Lärokurs i ett läroämne i grundläggande utbildning",
@@ -1026,20 +1072,22 @@
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
-          "tunniste": "a3306cdc-6dec-41e1-982b-5c95315a3445",
+          "tunniste": "621c0ee6-f38f-4a30-8182-52917f763179",
           "nimi": {
             "fi": "matematiikka",
             "sv": "matematiikka sv",
             "en": "matematiikka en"
           },
-          "arvosana": 9
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         }
       ]
     }
   ],
   "aikuistenPerusopetuksenOppimaarat": [
     {
-      "tunniste": "64c2141b-a2cf-46b9-974a-a7783e15aa80",
+      "tunniste": "8cf841c6-739f-4836-9acd-b594c57ef157",
       "nimi": {
         "fi": "Aikuisten perusopetuksen oppimäärä",
         "sv": "Lärokurs i den grundläggande utbildningen för vuxna",
@@ -1059,84 +1107,92 @@
       "suorituskieli": "suomi",
       "oppiaineet": [
         {
-          "tunniste": "53ad4a1e-de8b-4733-aab1-c6f48ad9a8d8",
+          "tunniste": "31b8b6d2-9897-47f0-b371-b8cd5ad83413",
           "nimi": {
             "fi": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus",
             "sv": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv",
             "en": "Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": "AI1",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "eb73394f-3c72-4c9f-8f5a-c51b8eeac062",
+          "tunniste": "4807e0e1-2978-4c94-ad8d-6980863483f8",
           "nimi": {
             "fi": "A1-kieli, englanti",
             "sv": "A1-kieli, englanti sv",
             "en": "A1-kieli, englanti en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": "EN",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "9f84dbc6-4f50-4d32-b6c3-92a850cb0576",
+          "tunniste": "dde43037-1db7-4927-ba3b-4aa10b117abd",
           "nimi": {
             "fi": "B1-kieli, ruotsi",
             "sv": "B1-kieli, ruotsi sv",
             "en": "B1-kieli, ruotsi en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": "SV",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "4eeb3702-e883-48c0-97b9-215ca1a3a761",
+          "tunniste": "bc490a0b-9a24-4a1d-9549-c72771fe4d3c",
           "nimi": {
             "fi": "B2-kieli, saksa",
             "sv": "B2-kieli, saksa sv",
             "en": "B2-kieli, saksa en"
           },
-          "arvosana": 9,
-          "valinnainen": null
+          "kieli": "DE",
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "8b058bd7-4be8-404e-9e1f-8d3c5675b2a1",
+          "tunniste": "68403cf1-04cd-45c9-b1d8-a70c81cf50a3",
           "nimi": {
             "fi": "Matematiikka",
             "sv": "Matematiikka sv",
             "en": "Matematiikka en"
           },
-          "arvosana": null,
-          "valinnainen": "10"
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "6449809a-e989-471d-b997-168d84a6d672",
+          "tunniste": "80127fc5-7b44-43a8-9785-ff8389b696cf",
           "nimi": {
             "fi": "Biologia",
             "sv": "Biologia sv",
             "en": "Biologia en"
           },
-          "arvosana": null,
-          "valinnainen": "9"
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "65050be8-2359-41df-a61c-c1cbff355211",
+          "tunniste": "57d78ffd-18d0-47c6-8658-04d61067391f",
           "nimi": {
             "fi": "Maantieto",
             "sv": "Maantieto sv",
             "en": "Maantieto en"
           },
-          "arvosana": null,
-          "valinnainen": "8"
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         },
         {
-          "tunniste": "e956d290-7000-48ea-ab16-565005d9d4a9",
+          "tunniste": "4fd39a22-152a-4892-9e0d-db9440e36268",
           "nimi": {
             "fi": "Fysiikka",
             "sv": "Fysiikka sv",
             "en": "Fysiikka en"
           },
-          "arvosana": null,
-          "valinnainen": "9"
+          "kieli": null,
+          "arvosana": "9",
+          "valinnainen": false
         }
       ]
     }
