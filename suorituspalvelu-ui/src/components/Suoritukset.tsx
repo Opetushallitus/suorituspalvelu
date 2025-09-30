@@ -29,19 +29,21 @@ import { InfoItemRow } from './InfoItemRow';
 import { StripedTable } from './StripedTable';
 import { styled } from '@/lib/theme';
 import { useKoodistoOptions } from '@/lib/koodisto-queries';
-import { range } from 'remeda';
 import { useOppilaitoksetOptions } from '@/lib/suorituspalvelu-queries';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
+import { Form } from 'react-router';
+import { DatePicker } from './DatePicker';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
 
 type EditableSuoritus = {
   tyyppi: string;
-  oppilaitos: string;
+  oppilaitos?: string;
   tila: string;
-  suoritusvuosi: string;
+  suorituskieli: string;
   koulusivistyskieli: string;
   yksilollistetty: string;
+  valmistumispaiva?: string;
 };
 
 type SelectOption = {
@@ -51,10 +53,9 @@ type SelectOption = {
 
 const EMPTY_SUORITUS: EditableSuoritus = {
   tyyppi: 'peruskoulu',
-  oppilaitos: '',
   tila: 'suorituksentila_kesken',
-  suoritusvuosi: new Date().getFullYear().toString(),
   koulusivistyskieli: '',
+  suorituskieli: '',
   yksilollistetty: 'yksilollistaminen_ei',
 };
 
@@ -62,7 +63,7 @@ const useAidinkieliOptions = () => {
   return useKoodistoOptions('aidinkielijakirjallisuus');
 };
 
-const useSuoritusTyyppiOptions = () => {
+const getSuoritusTyyppiOptions = () => {
   return [
     {
       label: 'Peruskoulu',
@@ -113,15 +114,6 @@ const ArvosanaRow = ({
 
 const useKieliOptions = () => {
   return useKoodistoOptions('kieli');
-};
-
-const useSuoritusVuosiOptions = () => {
-  return range(1990, new Date().getFullYear() + 1)
-    .reverse()
-    .map((year) => ({
-      label: year.toString(),
-      value: year.toString(),
-    }));
 };
 
 const ArvosanatTable = () => {
@@ -223,17 +215,15 @@ const EditSuoritusPaper = ({
 }) => {
   const { t } = useTranslations();
   const oppilaitoksetOptions = useOppilaitoksetOptions();
-  const suoritusvuosiOptions = useSuoritusVuosiOptions();
+
+  const [valmistumispaiva, setValmistumispaiva] = useState<Date | null>(() =>
+    suoritus?.valmistumispaiva ? new Date(suoritus.valmistumispaiva) : null,
+  );
   return (
     <PaperWithTopColor ref={ref}>
       <Stack
-        component="form"
+        component={Form}
         sx={{ gap: 1 }}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-          }
-        }}
         onSubmit={(event) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
@@ -241,20 +231,24 @@ const EditSuoritusPaper = ({
             tyyppi: formData.get('tyyppi') as string,
             oppilaitos: formData.get('oppilaitos') as string,
             tila: formData.get('tila') as string,
-            suoritusvuosi: formData.get('suoritusvuosi') as string,
+            valmistumispaiva: formData.get('valmistumispaiva') as string,
             koulusivistyskieli: formData.get('koulusivistyskieli') as string,
+            suorituskieli: formData.get('suorituskieli') as string,
             yksilollistetty: formData.get('yksilollistetty') as string,
           });
         }}
       >
-        <InfoItemRow slotAmount={3} spacing={2}>
+        <InfoItemRow slotAmount={1} spacing={2}>
           <OphSelectFormField
-            label={t('muokkaus.suoritus.tyyppi')}
-            options={useSuoritusTyyppiOptions()}
-            sx={{ flex: 1 }}
             name="tyyppi"
+            label={t('muokkaus.suoritus.tyyppi')}
+            options={getSuoritusTyyppiOptions()}
+            required={true}
+            sx={{ flex: 1 }}
             defaultValue={suoritus?.tyyppi}
           />
+        </InfoItemRow>
+        <InfoItemRow slotAmount={3} spacing={2}>
           <OphFormFieldWrapper
             label={t('muokkaus.suoritus.oppilaitos')}
             sx={{ flex: 1 }}
@@ -271,42 +265,45 @@ const EditSuoritusPaper = ({
             }}
           />
           <OphSelectFormField
+            name="tila"
             label={t('muokkaus.suoritus.tila')}
             options={useKoodistoOptions('suorituksentila')}
+            required={true}
             sx={{ flex: 1 }}
-            name="tila"
             defaultValue={suoritus?.tila}
+          />
+          <DatePicker
+            label={t('muokkaus.suoritus.valmistumispaiva')}
+            name="valmistumispaiva"
+            onChange={(date) => {
+              setValmistumispaiva(date);
+            }}
+            value={valmistumispaiva}
           />
         </InfoItemRow>
         <InfoItemRow slotAmount={3} spacing={2}>
-          <OphFormFieldWrapper
-            label={t('muokkaus.suoritus.suoritusvuosi')}
+          <OphSelectFormField
+            name="suorituskieli"
+            label={t('muokkaus.suoritus.suorituskieli')}
             sx={{ flex: 1 }}
-            defaultValue={suoritus?.suoritusvuosi}
-            renderInput={({ labelId }) => {
-              return (
-                <Autocomplete
-                  id={labelId}
-                  options={suoritusvuosiOptions}
-                  renderInput={(params) => (
-                    <TextField name="suoritusvuosi" {...params} />
-                  )}
-                />
-              );
-            }}
+            required={true}
+            defaultValue={suoritus?.suorituskieli}
+            options={useKoodistoOptions('oppilaitoksenopetuskieli')}
           />
           <OphSelectFormField
+            name="koulusivistyskieli"
             label={t('muokkaus.suoritus.koulusivistyskieli')}
             sx={{ flex: 1 }}
-            name="koulusivistyskieli"
+            required={true}
             defaultValue={suoritus?.koulusivistyskieli}
             options={useKoodistoOptions('oppilaitoksenopetuskieli')}
           />
           <OphSelectFormField
+            name="yksilollistetty"
             label={t('muokkaus.suoritus.yksilollistetty')}
             sx={{ flex: 1 }}
+            required={true}
             options={useKoodistoOptions('yksilollistaminen')}
-            name="yksilollistetty"
             defaultValue={suoritus?.yksilollistetty}
           />
         </InfoItemRow>
@@ -341,6 +338,7 @@ const EditableSuoritukset = ({
         {editableSuoritukset.map((suoritus, index) => {
           return (
             <EditSuoritusPaper
+              // eslint-disable-next-line @eslint-react/no-array-index-key
               key={index}
               suoritus={suoritus}
               onSave={(data) => {
@@ -371,7 +369,7 @@ export function Suoritukset({
 
   const [editableSuoritukset, setEditableSuoritukset] = useState<
     Array<EditableSuoritus>
-  >([EMPTY_SUORITUS]);
+  >([]);
 
   const lastEditableSuoritusRef = useRef<HTMLDivElement | null>(null);
 
@@ -407,11 +405,25 @@ export function Suoritukset({
           </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-      {suoritusOrder === 'koulutustyypeittain' ? (
-        <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
-      ) : (
-        <SuorituksetAikajarjestyksessa oppijanTiedot={oppijanTiedot} />
-      )}
+      <Stack
+        direction="row"
+        sx={{ justifyContent: 'flex-start', marginTop: 2, marginBottom: 2 }}
+      >
+        <OphButton
+          variant="outlined"
+          startIcon={<Add />}
+          onClick={() => {
+            setEditableSuoritukset((prev) => [...prev, EMPTY_SUORITUS]);
+            setTimeout(() => {
+              lastEditableSuoritusRef.current?.scrollIntoView({
+                behavior: 'smooth',
+              });
+            }, 50);
+          }}
+        >
+          {t('muokkaus.suoritus.lisaa')}
+        </OphButton>
+      </Stack>
       <EditableSuoritukset
         editableSuoritukset={editableSuoritukset}
         lastRef={lastEditableSuoritusRef}
@@ -428,22 +440,11 @@ export function Suoritukset({
           console.log('deleted suoritus', suoritus, i);
         }}
       />
-      <Stack direction="row" sx={{ justifyContent: 'flex-end', marginTop: 2 }}>
-        <OphButton
-          variant="outlined"
-          startIcon={<Add />}
-          onClick={() => {
-            setEditableSuoritukset((prev) => [...prev, EMPTY_SUORITUS]);
-            setTimeout(() => {
-              lastEditableSuoritusRef.current?.scrollIntoView({
-                behavior: 'smooth',
-              });
-            }, 50);
-          }}
-        >
-          {t('muokkaus.suoritus.lisaa')}
-        </OphButton>
-      </Stack>
+      {suoritusOrder === 'koulutustyypeittain' ? (
+        <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
+      ) : (
+        <SuorituksetAikajarjestyksessa oppijanTiedot={oppijanTiedot} />
+      )}
     </Box>
   );
 }
