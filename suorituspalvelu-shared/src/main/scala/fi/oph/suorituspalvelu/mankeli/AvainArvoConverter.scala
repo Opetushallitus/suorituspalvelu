@@ -69,8 +69,8 @@ object AvainArvoConverter {
     val peruskouluSuoritus: Option[PerusopetuksenOppimaara] = filterForPeruskoulu(personOid, opiskeluoikeudet)
     val peruskouluArvot = convertPeruskouluArvot(personOid, peruskouluSuoritus, Seq.empty, vahvistettuViimeistaan)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
-    val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
 
     val avainArvot = ammatillisetArvot ++ yoArvot ++ lukioArvot ++ peruskouluArvot
     //val selitteet = ammatillisetSelitteet ++ lukioSelitteet ++ yoSelitteet
