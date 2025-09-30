@@ -66,15 +66,13 @@ object AvainArvoConverter {
 
   def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): ValintaData = {
 
-    val peruskouluSuoritus: Option[PerusopetuksenOppimaara] = filterForPeruskoulu(personOid, opiskeluoikeudet)
-    val peruskouluArvot = convertPeruskouluArvot(personOid, peruskouluSuoritus, Seq.empty, vahvistettuViimeistaan)
+    val peruskouluArvot = convertPeruskouluArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
 
-    val avainArvot = ammatillisetArvot ++ yoArvot ++ lukioArvot ++ peruskouluArvot
-    //val selitteet = ammatillisetSelitteet ++ lukioSelitteet ++ yoSelitteet
-    ValintaData(personOid, avainArvot, opiskeluoikeudet, Seq.empty ++ peruskouluSuoritus)
+    val avainArvot = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot
+    ValintaData(personOid, avainArvot, opiskeluoikeudet, Seq.empty)
   }
 
   def convertAmmatillisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
@@ -124,23 +122,26 @@ object AvainArvoConverter {
     arvot
   }
 
-  def filterForPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Option[PerusopetuksenOppimaara] = {
+  //Mahdolliset oppiaineen oppimäärät palautetaan vain, jos perusopetuksen oppimäärä löytyi.
+  def filterForPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): (Option[PerusopetuksenOppimaara], Seq[NuortenPerusopetuksenOppiaineenOppimaara]) = {
     val perusopetuksenOpiskeluoikeudet: Seq[PerusopetuksenOpiskeluoikeus] = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
     val (vahvistetut, eiVahvistetut) = perusopetuksenOpiskeluoikeudet.flatMap(po => po.suoritukset.find(_.isInstanceOf[PerusopetuksenOppimaara]).map(_.asInstanceOf[PerusopetuksenOppimaara])).partition(o => o.vahvistusPaivamaara.isDefined)
+
+    val oppiaineeOppimaarat = perusopetuksenOpiskeluoikeudet.flatMap(po => po.suoritukset.find(_.isInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]).map(_.asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]))
 
     if (vahvistetut.size > 1) {
       LOG.error(s"Oppijalle $personOid enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
       throw new RuntimeException(s"Oppijalle $personOid löytyy enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
     }
 
-    //Todo, lisätään mahdollisesti ehto, että suorituksen vahvistuspäivämäärän on oltava ennen haun leikkuripäivämäärää
     val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.headOption
     //Todo, tämän käsittelyyn tarvitaan jotain päivämäärätietoa suorituksille, jotta voidaan poimia tuorein. Periaatteessa ei-vahvistettuja voisi olla useita.
     // Toisaalta voi olla että riittää tieto siitä, että jotain keskeneräistä löytyy. Halutaan ehkä filtteröidä selkeästi keskeytyneet (eronnut, erotettu jne) pois.
     val keskenOppimaara: Option[PerusopetuksenOppimaara] = eiVahvistetut.headOption
 
     val useOppimaara = valmisOppimaara.orElse(keskenOppimaara)
-    useOppimaara
+    val useOppiaineenOppimaarat = if (valmisOppimaara.isDefined) oppiaineeOppimaarat else Seq.empty
+    (useOppimaara, useOppiaineenOppimaarat)
   }
 
 
@@ -165,7 +166,9 @@ object AvainArvoConverter {
     avainArvot
   }
 
-  def convertPeruskouluArvot(personOid: String, perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+  def convertPeruskouluArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+    val (perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]) = filterForPeruskoulu(personOid, opiskeluoikeudet)
+
     val oppimaaraOnVahvistettu: Boolean = perusopetuksenOppimaara.exists(_.vahvistusPaivamaara.isDefined)
     val vahvistusPvm = perusopetuksenOppimaara.map(_.vahvistusPaivamaara)
     val vahvistettuAjoissa: Boolean = perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).exists(v => v.isBefore(vahvistettuViimeistaan) || v.equals(vahvistettuViimeistaan))
@@ -174,14 +177,19 @@ object AvainArvoConverter {
 
     val arvot = if (oppimaaraOnVahvistettu) {
       if (vahvistettuAjoissa) {
+        val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${vahvistusPvm.map(_.toString).get}"
         val arvosanaArvot: Set[AvainArvoContainer] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, Seq.empty)
-        val suoritusVuosiArvot: Set[AvainArvoContainer] = perusopetuksenOppimaara.flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear)).map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys.map(key => AvainArvoContainer(key, year.toString, Seq.empty))).getOrElse(Set.empty)
-        val suoritusArvoSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${vahvistusPvm.map(_.toString).get}"
-        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(suoritusArvoSelite)))
+        val suoritusVuosiArvot: Set[AvainArvoContainer] =
+          perusopetuksenOppimaara
+            .flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear))
+            .map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys
+              .map(key => AvainArvoContainer(key, year.toString, Seq(vahvistettuAjoissaSelite))))
+            .getOrElse(Set.empty)
+        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(vahvistettuAjoissaSelite)))
         arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvot ++ suoritusArvot
       } else {
-        val suoritusArvoSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.map(_.vahvistusPaivamaara)}"
-        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(suoritusArvoSelite)))
+        val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.map(_.vahvistusPaivamaara)}"
+        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(vahvistettuMyohassaSelite)))
         suoritusArvot ++ kieliArvot
       }
     } else {
