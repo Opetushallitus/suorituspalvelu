@@ -4,7 +4,7 @@ import {
   OphInput,
   OphFormFieldWrapper,
 } from '@opetushallitus/oph-design-system';
-import ReactDatePicker from 'react-datepicker';
+import ReactDatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { type ReactNode, useRef } from 'react';
 import {
@@ -15,6 +15,11 @@ import {
 import { capitalize } from 'remeda';
 import { styled } from '../lib/theme';
 import { useTranslations } from '@/hooks/useTranslations';
+import { fi, sv, enIE } from 'date-fns/locale';
+
+registerLocale('fi', fi);
+registerLocale('sv', sv);
+registerLocale('en', enIE);
 
 const CALENDAR_CLASSNAME = 'oph-calendar';
 
@@ -26,7 +31,7 @@ const CalendarStyles = styled(Box)(({ theme }) => ({
       '&__header': {
         backgroundColor: ophColors.white,
         borderBottom: 'none',
-        paddingTop: theme.spacing(1.3),
+        paddingTop: theme.spacing(2),
         'h2.react-datepicker__current-month, .react-datepicker-time__header': {
           ...theme.typography.label,
         },
@@ -37,7 +42,7 @@ const CalendarStyles = styled(Box)(({ theme }) => ({
         height: '2rem',
         lineHeight: '2rem',
         verticalAlign: 'bottom',
-        '&:focus': {
+        '&:focus-visible': {
           outline: `2px solid ${ophColors.black}`,
         },
       },
@@ -63,7 +68,7 @@ const CalendarStyles = styled(Box)(({ theme }) => ({
       {
         height: 'unset',
         marginBottom: theme.spacing(0.3),
-        '&:focus': {
+        '&:focus-visible': {
           outline: `2px solid ${ophColors.black}`,
         },
       },
@@ -82,7 +87,7 @@ const CalendarStyles = styled(Box)(({ theme }) => ({
       marginTop: theme.spacing(0.5),
       marginLeft: theme.spacing(1.3),
       marginRight: theme.spacing(1.3),
-      '&:focus': {
+      '&:focus-visible': {
         outline: `2px solid ${ophColors.black}`,
       },
       '&-icon': {
