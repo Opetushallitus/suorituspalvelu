@@ -175,10 +175,6 @@ export interface IEBTutkintoNimi {
   en?: string;
 }
 
-export interface IEI_VOIMASSA {
-  type: 'EI_VOIMASSA';
-}
-
 export interface IErikoisammattitutkinto {
   tunniste: string;
   nimi: IErikoisammattitutkintoNimi;
@@ -403,10 +399,6 @@ export interface IOppilaitosSuccessResponse {
   oppilaitokset: IOppilaitos[];
 }
 
-export interface IPAATTYNYT {
-  type: 'PAATTYNYT';
-}
-
 export interface IPKOppilaitos {
   nimi: IPKOppilaitosNimi;
   oid: string;
@@ -421,6 +413,7 @@ export interface IPKOppilaitosNimi {
 export interface IPerusopetuksenOppiaine {
   tunniste: string;
   nimi: IPerusopetuksenOppiaineNimi;
+  kieli?: string;
   arvosana: string;
   valinnainen: boolean;
 }
@@ -458,7 +451,7 @@ export interface IPerusopetuksenOppimaara {
   valmistumispaiva?: Date;
   suorituskieli: string;
   luokka?: string;
-  yksilollistaminen: IYksilollistaminen;
+  yksilollistaminen?: IYksilollistaminen;
   oppiaineet: IPerusopetuksenOppiaine[];
 }
 
@@ -566,10 +559,6 @@ export interface IUIOpiskeluoikeusVirtaTila {
   fi?: string;
   sv?: string;
   en?: string;
-}
-
-export interface IVOIMASSA {
-  type: 'VOIMASSA';
 }
 
 export interface IVapaaSivistystyoKoulutus {
@@ -695,7 +684,7 @@ export interface IYksilollistamisNimi {
   en?: string;
 }
 
-export type OpiskeluoikeusTila = IVOIMASSA | IEI_VOIMASSA | IPAATTYNYT;
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
 export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
