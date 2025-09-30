@@ -2,7 +2,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Suspense } from 'react';
 import { type ErrorBoundaryPropsWithRender } from 'react-error-boundary';
 import { SessionExpired } from './SessionExpired';
-import { SessionExpiredError } from '@/http-client';
+import { SessionExpiredError } from '@/lib/http-client';
 import { ErrorView } from './ErrorView';
 import { FullSpinner } from './FullSpinner';
 

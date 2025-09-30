@@ -1,4 +1,4 @@
-import { configPromise } from '@/configuration';
+import { configPromise } from '@/lib/configuration';
 
 export const getOppilaitosLinkUrl = (
   config: Awaited<typeof configPromise>,

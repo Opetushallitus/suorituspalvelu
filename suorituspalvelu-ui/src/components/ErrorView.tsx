@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { OphButton, OphTypography } from '@opetushallitus/oph-design-system';
 import { Stack } from '@mui/material';
-import { FetchError } from '@/http-client';
+import { FetchError } from '@/lib/http-client';
 import { useTranslate } from '@tolgee/react';
 
 const ErrorComponent = ({

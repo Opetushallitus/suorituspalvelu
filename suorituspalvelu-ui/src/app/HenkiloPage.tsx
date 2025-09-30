@@ -1,14 +1,14 @@
-import { useOppija } from '@/queries';
 import { Stack } from '@mui/material';
 import { Opiskeluoikeudet } from '@/components/Opiskeluoikeudet';
 import { Suoritukset } from '@/components/Suoritukset';
 import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';
-import { useConfig } from '@/configuration';
+import { useConfig } from '@/lib/configuration';
 import { ExternalLink } from '@/components/ExternalLink';
 import { formatFinnishDate } from '@/lib/common';
 import type { Route } from './+types/HenkiloPage';
+import { useOppija } from '@/lib/suorituspalvelu-queries';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();

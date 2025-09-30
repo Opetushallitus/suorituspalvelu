@@ -7,7 +7,7 @@ import { SessionExpiredProvider } from '@/components/SessionExpired';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import { LocalizationProvider } from './LocalizationProvider';
 import { use } from 'react';
-import { configPromise } from '@/configuration';
+import { configPromise } from '@/lib/configuration';
 
 const queryClient = new QueryClient({
   defaultOptions: {

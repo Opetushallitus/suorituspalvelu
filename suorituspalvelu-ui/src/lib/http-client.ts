@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { isPlainObject } from 'remeda';
-import { useIsSessionExpired } from './components/SessionExpired';
+import { useIsSessionExpired } from '../components/SessionExpired';
 
 export function getCookies() {
   return document.cookie.split('; ').reduce(
