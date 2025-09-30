@@ -36,9 +36,9 @@ export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
     await checkTable(yoTable, [
       ['Aine', 'Arvosana', 'Yhteispistemäärä', 'Tutkintokerta'],
       ['Psykologia', 'E', '28', '21.12.2018'],
-      ['Englanti, pitkä oppimäärä', 'E', '259', '1.6.2019'],
-      ['Matematiikan koe, lyhyt oppimäärä', 'C', '23', '1.6.2019'],
-      ['Äidinkielen koe, suomi', 'C', '49', '1.6.2019'],
+      ['Englanti', 'E', '259', '1.6.2019'],
+      ['Matematiikka', 'C', '23', '1.6.2019'],
+      ['Suomi', 'C', '49', '1.6.2019'],
       ['Historia', 'M', '25', '1.6.2019'],
       ['Yhteiskuntaoppi', 'E', '32', '1.6.2019'],
     ]);
@@ -349,8 +349,8 @@ export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
       ['Oppiaine', 'Arvosana', 'Valinnainen'],
       ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9', ''],
       ['A1-kieli, englanti', '9', ''],
-      ['B1-kieli, ruotsi', '9', 'S'],
-      ['B2-kieli, saksa', '', 'S'],
+      ['B1-kieli, ruotsi', '9', ''],
+      ['B2-kieli, saksa', '9', ''],
       ['Matematiikka', '9', ''],
       ['Biologia', '9', ''],
       ['Maantieto', '9', ''],
@@ -424,15 +424,15 @@ export const AIKUISTEN_PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   additionalChecks: async (paper) => {
     const oppiaineetTable = paper.getByRole('table');
     await checkTable(oppiaineetTable, [
-      ['Oppiaine', 'Arvosana', 'Valinnainen'],
-      ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9', ''],
-      ['A1-kieli, englanti', '9', ''],
-      ['B1-kieli, ruotsi', '9', ''],
-      ['B2-kieli, saksa', '9', ''],
-      ['Matematiikka', '', '10'],
-      ['Biologia', '', '9'],
-      ['Maantieto', '', '8'],
-      ['Fysiikka', '', '9'],
+      ['Oppiaine', 'Arvosana'],
+      ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9'],
+      ['A1-kieli, englanti', '9'],
+      ['B1-kieli, ruotsi', '9'],
+      ['B2-kieli, saksa', '9'],
+      ['Matematiikka', '9'],
+      ['Biologia', '9'],
+      ['Maantieto', '9'],
+      ['Fysiikka', '9'],
     ]);
   },
 };

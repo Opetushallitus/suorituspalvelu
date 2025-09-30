@@ -867,7 +867,7 @@ object MockEntityToUIConverter {
           ),
           kieli = Optional.of("DE"),
           arvosana = "9",
-          valinnainen = false,
+          valinnainen = true,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = PerusopetuksenOppiaineNimi(
