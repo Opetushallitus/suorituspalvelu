@@ -201,7 +201,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       .thenReturn(Future.successful(massOperation))
     Mockito.when(ytrClient.pollMassOperation(opUuid))
       .thenReturn(Future.successful(pollResponse))
-    Mockito.when(ytrClient.getWithBasicAuthAsByteArray(org.mockito.ArgumentMatchers.anyString()))
+    Mockito.when(ytrClient.fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString()))
       .thenReturn(Future.successful(Some(zippedBytes)))
 
     val result = mvc.perform(jsonPostString(ApiConstants.YTR_DATASYNC_HAKU_PATH, hakuOid))
@@ -216,7 +216,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       val data = kantaOperaatiot.haeData(versiot.head)
       val parsed: Student = objectMapper.readValue(data._2, classOf[Student])
       Assertions.assertTrue(parsed.ssn.isEmpty)
-      
+
       val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.oppijaNumero)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
