@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import {
   getOppija,
   getOppilaitokset,
+  getSuoritusvaihtoehdot,
   searchOppijat,
   type OppijatSearchParams,
 } from './suorituspalvelu-service';
@@ -39,3 +40,10 @@ export const useOppilaitoksetOptions = () => {
   });
   return oppilaitoksetOptions;
 };
+
+export const queryOptionsGetSuoritusvaihtoehdot = () =>
+  queryOptions({
+    queryKey: ['getSuoritusvaihtoehdot'],
+    queryFn: () => getSuoritusvaihtoehdot(),
+    staleTime: 10 * 60 * 1000,
+  });

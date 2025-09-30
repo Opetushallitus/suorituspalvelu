@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import com.scalatsi.*
 import com.scalatsi.TypescriptType.TSUnion
 import com.scalatsi.output.{OutputOptions, StyleOptions, WriteTSToFiles}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, Ammatillinentutkinto, AmmatillisenTutkinnonOsa, Ammattitutkinto, DIATutkinto, DIAVastaavuusTodistus, EBSuoritus, EBTutkinto, Erikoisammattitutkinto, IBTutkinto, LukionOppiaineenOppimaara, LukionOppimaara, NuortenPerusopetuksenOppiaineenOppimaara, OpiskeluoikeusTila, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppilaitosFailureResponse, OppilaitosSuccessResponse, PerusopetuksenOppiaine, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PreIB, SuoritusTapa, SuoritusTila, Telma, Tuva, TuvaLaajuus, VapaaSivistystyoKoulutus, VapaaSivistystyoLaajuus, YOTutkinto, YTO, YTOArvosana, Yksilollistaminen}
+import fi.oph.suorituspalvelu.resource.ui._
 
 import java.io.File
 import java.time.LocalDate
@@ -62,6 +62,8 @@ object TypeScriptGenerator extends App {
   implicit val oppijatFailureTSType: TSType[OppijanHakuFailureResponse] = TSType.fromCaseClass
   implicit val oppilaitosSuccessTSType: TSType[OppilaitosSuccessResponse] = TSType.fromCaseClass
   implicit val oppilaitosFailureTSType: TSType[OppilaitosFailureResponse] = TSType.fromCaseClass
+  implicit val luoSuoritusDropdownDataSuccessTsType: TSType[LuoSuoritusDropdownDataSuccessResponse] = TSType.fromCaseClass
+  implicit val luoSuoritusDropdownDataFailureTsType: TSType[LuoSuoritusDropdownDataFailureResponse] = TSType.fromCaseClass
 
   // Kirjoitetaan TS-tyypit tiedostoon, polku kannattaa muuttaa sopivammaksi kun fronttityö etenee
   val outputDir = new File("target/generated-sources/typescript/Interface.ts")
@@ -76,6 +78,8 @@ object TypeScriptGenerator extends App {
     "oppijaHakuFailure" -> oppijatFailureTSType.get,
     "oppilaitosSuccess" -> oppilaitosSuccessTSType.get,
     "oppilaitosFailure" -> oppilaitosFailureTSType.get,
+    "luoSuoritusDropdownDataSuccess" -> luoSuoritusDropdownDataSuccessTsType.get,
+    "luoSuoritusDropdownDataFailure" -> luoSuoritusDropdownDataFailureTsType.get
   ))
 
   println(s"TypeScript interfaces generated")
