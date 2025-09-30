@@ -1,0 +1,1 @@
+export { TutkinnonOsatTable } from './TutkinnonOsatTable';
