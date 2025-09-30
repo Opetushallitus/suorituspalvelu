@@ -10,14 +10,14 @@ export const VapaaSivistystyoSuoritusPaper = ({
 }: {
   suoritus: VapaaSivistystyoSuoritus;
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
 
   return (
     <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.cyan1}>
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LabeledInfoItem
         label={t('oppija.suoritettu')}
-        value={`${suoritus.laajuus} ${t('oppija.lyhenne-opintopiste')}`}
+        value={`${suoritus.laajuus?.arvo} ${translateKielistetty(suoritus.laajuus?.yksikko)}`}
       />
     </SuoritusInfoPaper>
   );
