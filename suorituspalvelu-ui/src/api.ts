@@ -9,7 +9,7 @@ import type {
 import type { KayttajaTiedot } from './types/ui-types';
 
 export type OppijatSearchParams = {
-  oppija?: string;
+  hakusana?: string;
   oppilaitos?: string;
   vuosi?: string;
   luokka?: string;
