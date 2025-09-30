@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.nio.charset.Charset
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -93,7 +93,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     val suoritusKieli = Koodi("fi", "kieli", Some(1))
 
     // tallennetaan tutkinnot
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}")
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}", Instant.now())
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     val telma = Telma(UUID.randomUUID(), Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), suoritusKieli)
     val perusopetuksenOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), None, Koodi("valmistunut", "koodisto", None), SuoritusTila.VALMIS, suoritusKieli, Set.empty, None, None, None, Set.empty)
@@ -102,8 +102,8 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(telma), None),
-      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppimaara), None, None),
-      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, None),
+      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppimaara), None, SuoritusTila.VALMIS),
+      PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "2.3.4", Set(perusopetuksenOppiaineenOppimaara), None, SuoritusTila.VALMIS),
       YOOpiskeluoikeus(UUID.randomUUID(), yoTutkinto)
     ))
 

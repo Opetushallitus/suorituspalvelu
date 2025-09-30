@@ -84,7 +84,7 @@ class VirkailijaToSuoritusConverterTest {
         )
       ),
       None,
-      None
+      SuoritusTila.VALMIS
     )
 
     Assertions.assertEquals(expected, converted)
@@ -142,7 +142,7 @@ class VirkailijaToSuoritusConverterTest {
         )
       ),
       None,
-      None
+      SuoritusTila.VALMIS
     )
 
     Assertions.assertEquals(expected, converted)

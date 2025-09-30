@@ -66,7 +66,8 @@ class VirtaRefresh {
 
   def safeFetchAndPersistPersonOid(personOid: String): Future[SyncResultForHenkilo] = {
     try {
-      virtaClient.haeTiedotOppijanumerolle(personOid).map(persist)
+      val fetchedAt = Instant.now()
+      virtaClient.haeTiedotOppijanumerolle(personOid).map(r => persist(r, fetchedAt))
     } catch {
       case exception: Exception =>
         LOG.error(s"Jotain meni pieleen VIRTA-tietojen käsittelyssä henkilölle $personOid", exception)
@@ -76,7 +77,8 @@ class VirtaRefresh {
 
   def safeFetchAndPersistHetu(hetu: String): Future[SyncResultForHenkilo] = {
     try {
-      virtaClient.haeTiedotHetulle(hetu).map(persist)
+      val fetchedAt = Instant.now()
+      virtaClient.haeTiedotHetulle(hetu).map(r => persist(r, fetchedAt))
     } catch {
       case exception: Exception =>
         LOG.error(s"Jotain meni pieleen VIRTA-tietojen käsittelyssä henkilölle (hetu xxxxxx-xxxx)", exception)
@@ -84,14 +86,14 @@ class VirtaRefresh {
     }
   }
 
-  def persist(virtaResult: VirtaResultForHenkilo): SyncResultForHenkilo = {
+  def persist(virtaResult: VirtaResultForHenkilo, fetchedAt: Instant): SyncResultForHenkilo = {
     val hetulessXml = VirtaUtil.replaceHetusWithPlaceholder(virtaResult.resultXml)
     LOG.info(s"Persistoidaan Virta-data henkilölle ${virtaResult.oppijanumeroTaiHetu}")
 
     val kantaResult: SyncResultForHenkilo =
       try {
         val kantaOperaatiot = KantaOperaatiot(database)
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, SuoritusJoukko.VIRTA, hetulessXml)
+        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, SuoritusJoukko.VIRTA, hetulessXml, fetchedAt)
 
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
@@ -178,10 +180,11 @@ class VirtaRefresh {
     val hetu = instance.getData.split(":").tail.headOption.getOrElse("")
     try {
       val kantaOperaatiot = KantaOperaatiot(database)
+      val fetchedAt = Instant.now()
       val virtaResults: Seq[VirtaResultForHenkilo] = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, {
         if (hetu.isBlank) None else Some(hetu)
       }), TIMEOUT)
-      virtaResults.map(persist)
+      virtaResults.map(r => persist(r, fetchedAt))
     } catch {
       case e: Exception => LOG.error(s"Virhe päivettäessä Virta-tietoja oppijanumerolle ${oppijaNumero}", e)
     }

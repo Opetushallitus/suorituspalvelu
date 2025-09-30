@@ -16,6 +16,7 @@ object ApiConstants {
   final val DATASYNC_PATH                                   = VERSIONED_API_PREFIX + "/datasync"
   final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
   final val DATASYNC_EI_OIKEUKSIA                           = "Käyttäjällä ei ole oikeuksia käynnistää tietojen synkronointia"
+  final val DATASYNC_JSON_VIRHE                             = "JSON-deserialisointi epäonnistui"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
 
@@ -101,5 +102,6 @@ object ApiConstants {
   final val ESIMERKKI_VALMISTUMISPAIVA                      = "2016-06-01"
   final val ESIMERKKI_VUOSI                                 = "2025"
   final val ESIMERKKI_LUOKKA                                = "9B"
+  final val ESIMERKKI_AIKALEIMA                             = "2025-09-28T10:15:30.00Z"
 
 }

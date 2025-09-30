@@ -87,7 +87,7 @@ case class PerusopetuksenOpiskeluoikeus(
                                          @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                          suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
                                          lisatiedot: Option[KoskiLisatiedot],
-                                         tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+                                         tila: SuoritusTila) extends Opiskeluoikeus, Tyypitetty
 
 case class AmmatillinenOpiskeluoikeus(
                                        tunniste: UUID,

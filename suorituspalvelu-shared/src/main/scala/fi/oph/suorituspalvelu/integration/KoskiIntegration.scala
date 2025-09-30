@@ -65,8 +65,8 @@ class KoskiIntegration {
     fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp))
   }
 
-  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Iterator[KoskiDataForOppija] = {
-    val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
+  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Seq[KoskiDataForOppija] = {
+    val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toSeq
     val started = new AtomicInteger(0)
 
     grouped.flatMap(group => {

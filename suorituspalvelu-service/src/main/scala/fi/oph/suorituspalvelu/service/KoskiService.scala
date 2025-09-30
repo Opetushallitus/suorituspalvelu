@@ -1,18 +1,42 @@
 package fi.oph.suorituspalvelu.service
 
+import com.github.kagkarlsson.scheduler.Scheduler
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor
+import com.github.kagkarlsson.scheduler.task.helper.{RecurringTask, Tasks}
+import com.github.kagkarlsson.scheduler.task.schedule.{FixedDelay, Schedules}
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SyncResultForHenkilo}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiOppijaFilter, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
 
 import java.time.Instant
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+
+@Configuration
+class KoskiConfiguration {
+
+  @Autowired var koskiService: KoskiService = null
+
+  val KOSKI_POLL_CHANGED_TASK: TaskDescriptor[Instant] = TaskDescriptor.of("koski-poll", classOf[Instant]);
+
+  @Bean
+  def koskiPollTask(koskiClient: KoskiClient) = Tasks.recurring(KOSKI_POLL_CHANGED_TASK, Schedules.cron("0 */2 * * * *")).executeStateful((inst, ctx) => {
+    val start = Instant.now()
+    val prevStart = Option.apply(inst.getData)
+    if(prevStart.isDefined) // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
+      koskiService.syncKoskiChangesSince(prevStart.get.minusSeconds(60))
+
+    start
+  })
+}
 
 @Component
 class KoskiService {
@@ -25,29 +49,36 @@ class KoskiService {
   
   @Autowired val koodistoProvider: KoodistoProvider = null
 
+  val LOG = LoggerFactory.getLogger(classOf[KoskiService])
+
   private val HENKILO_TIMEOUT = 5.minutes
 
-  private val LOG: Logger = LoggerFactory.getLogger(classOf[KoskiService])
+  def syncKoskiChangesSince(since: Instant): Seq[SyncResultForHenkilo] =
+    val fetchedAt = Instant.now()
+    val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
+    val filtteroity = tiedot.filter(r => {
+      val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(r.data), koodistoProvider).toSet
+      KoskiOppijaFilter.isYsiluokkalainen(opiskeluoikeudet)
+    })
+    processKoskiDataForOppijat(filtteroity, fetchedAt)
 
-  def syncKoskiChangesSince(timestamp: Instant): Seq[SyncResultForHenkilo] =
-    processKoskiDataForOppijat(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(timestamp).iterator)
+  def syncKoskiForOppijat(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+    val fetchedAt = Instant.now()
+    processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
+  }
 
-  def syncKoskiForOppijat(personOids: Set[String]): Seq[SyncResultForHenkilo] =
-    processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids))
-
-  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
+  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] =
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
     syncKoskiForOppijat(personOids)
-  }
 
-  private def processKoskiDataForOppijat(data: Iterator[KoskiDataForOppija]): Seq[SyncResultForHenkilo] =
+  private def processKoskiDataForOppijat(data: Seq[KoskiDataForOppija], fetchedAt: Instant): Seq[SyncResultForHenkilo] =
     val kantaOperaatiot = KantaOperaatiot(database)
 
     data.map(oppija => {
       try {
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, oppija.data)
+        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, oppija.data, fetchedAt)
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
           val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
@@ -59,6 +90,6 @@ class KoskiService {
           LOG.error(s"Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui", e)
           SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
       }
-    }).toSeq
+    })
 
 }

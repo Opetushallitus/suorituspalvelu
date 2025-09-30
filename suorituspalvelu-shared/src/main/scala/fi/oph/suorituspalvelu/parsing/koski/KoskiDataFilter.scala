@@ -1,5 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
+import fi.oph.suorituspalvelu.business.PerusopetuksenOpiskeluoikeus
+import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
 object KoskiDataFilter {
@@ -11,10 +13,10 @@ object KoskiDataFilter {
 
     val hasArviointi = osaSuoritus.arviointi.isDefined
     val isKoulukohtainen = !koodistoProvider.haeKoodisto(KOODISTO_OPPIAINEET).contains(oppiaineKoodi)
-    val aineTiedossa = !"XX".equals(oppiaineKoodi)   
+    val aineTiedossa = !"XX".equals(oppiaineKoodi)
     val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
     val laajuusYli2vvk = osaSuoritus.koulutusmoduuli.get.laajuus.exists(l => l.arvo > 2)
-    
+
     hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusYli2vvk)
   }
 }
