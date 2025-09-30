@@ -822,11 +822,11 @@ object MockEntityToUIConverter {
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
       suorituskieli = "suomi",
       luokka = Optional.of("9A"),
-      yksilollistaminen = Yksilollistaminen(2, YksilollistamisNimi(
+      yksilollistaminen = Optional.of(Yksilollistaminen(2, YksilollistamisNimi(
         Optional.of("Perusopetuksen osittain yksilöllistetty oppimäärä"),
         Optional.of("Delvis individualiserad lärokurs inom den grundläggande utbildningen"),
         Optional.of("Partially individualized basic education syllabus")
-      )),
+      ))),
       oppiaineet = java.util.List.of(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
