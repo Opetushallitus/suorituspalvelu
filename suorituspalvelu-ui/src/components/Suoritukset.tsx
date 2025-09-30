@@ -20,7 +20,11 @@ import {
 import { useTranslate } from '@tolgee/react';
 import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain';
 import { useRef, useState, type Ref } from 'react';
-import type { OppijanTiedot, Suoritusvaihtoehdot } from '@/types/ui-types';
+import type {
+  OppijanTiedot,
+  SuoritusFields,
+  Suoritusvaihtoehdot,
+} from '@/types/ui-types';
 import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 import { Add } from '@mui/icons-material';
 import { PaperWithTopColor } from './PaperWithTopColor';
@@ -37,30 +41,14 @@ import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { Form } from 'react-router';
 import { DatePicker } from './DatePicker';
 import { useApiSuspenseQuery } from '@/lib/http-client';
+import { useMutation } from '@tanstack/react-query';
+import { saveSuoritus } from '@/lib/suorituspalvelu-service';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
-
-type EditableSuoritus = {
-  tyyppi: string;
-  oppilaitos?: string;
-  tila: string;
-  suorituskieli: string;
-  koulusivistyskieli: string;
-  yksilollistetty: string;
-  valmistumispaiva?: string;
-};
 
 type SelectOption = {
   label: string;
   value: string;
-};
-
-const EMPTY_SUORITUS: EditableSuoritus = {
-  tyyppi: 'perusopetuksenoppimaara',
-  tila: 'suorituksentila_kesken',
-  koulusivistyskieli: '',
-  suorituskieli: '',
-  yksilollistetty: '1',
 };
 
 const StyledSelect = styled(OphSelect)({
@@ -153,14 +141,23 @@ const ArvosanatTable = ({
   );
 };
 
+const EMPTY_SUORITUS: SuoritusFields = {
+  oppijaOid: '',
+  oppilaitosOid: '',
+  tyyppi: '',
+  suorituskieli: '',
+  yksilollistetty: '1',
+  oppiaineet: [],
+};
+
 const EditSuoritusPaper = ({
   suoritus = EMPTY_SUORITUS,
   onSave,
   onDelete,
   ref,
 }: {
-  suoritus?: EditableSuoritus;
-  onSave: (suoritus: EditableSuoritus) => void;
+  suoritus?: SuoritusFields;
+  onSave: (suoritus: SuoritusFields) => void;
   onDelete: () => void;
   ref: Ref<HTMLDivElement> | null;
 }) => {
@@ -202,12 +199,14 @@ const EditSuoritusPaper = ({
           const formData = new FormData(event.currentTarget);
           onSave({
             tyyppi: formData.get('tyyppi') as string,
-            oppilaitos: formData.get('oppilaitos') as string,
+            oppilaitosOid: formData.get('oppilaitos') as string,
+            oppijaOid: suoritus?.oppijaOid || '',
             tila: formData.get('tila') as string,
-            valmistumispaiva: formData.get('valmistumispaiva') as string,
+            valmistumispaiva: valmistumispaiva ?? undefined,
             koulusivistyskieli: formData.get('koulusivistyskieli') as string,
             suorituskieli: formData.get('suorituskieli') as string,
             yksilollistetty: formData.get('yksilollistetty') as string,
+            oppiaineet: [],
           });
         }}
       >
@@ -300,9 +299,9 @@ const EditableSuoritukset = ({
   onDelete,
   lastRef,
 }: {
-  onSave: (suoditus: EditableSuoritus, index: number) => void;
-  onDelete: (suoritus: EditableSuoritus, index: number) => void;
-  editableSuoritukset: Array<EditableSuoritus>;
+  onSave: (suoditus: SuoritusFields, index: number) => void;
+  onDelete: (suoritus: SuoritusFields, index: number) => void;
+  editableSuoritukset: Array<SuoritusFields>;
   lastRef: Ref<HTMLDivElement> | null;
 }) => {
   return (
@@ -341,10 +340,28 @@ export function Suoritukset({
   );
 
   const [editableSuoritukset, setEditableSuoritukset] = useState<
-    Array<EditableSuoritus>
+    Array<SuoritusFields>
   >([]);
 
   const lastEditableSuoritusRef = useRef<HTMLDivElement | null>(null);
+
+  const suoritusMutation = useMutation({
+    mutationFn: async (suoritus: SuoritusFields) => {
+      console.log('Tallennetaan suoritus:', suoritus);
+      await saveSuoritus({
+        oppijaOid: oppijanTiedot.henkiloOID,
+        oppilaitosOid: suoritus.oppilaitosOid || '',
+        tyyppi: suoritus.tyyppi,
+        suorituskieli: suoritus.suorituskieli,
+        yksilollistetty: suoritus.yksilollistetty,
+        valmistumispaiva: suoritus.valmistumispaiva,
+        oppiaineet: [],
+      });
+    },
+    onError: (error) => {
+      console.error('Suorituksen tallennus epäonnistui:', error);
+    },
+  });
 
   return (
     <Box data-test-id="suoritukset">
@@ -400,9 +417,8 @@ export function Suoritukset({
       <EditableSuoritukset
         editableSuoritukset={editableSuoritukset}
         lastRef={lastEditableSuoritusRef}
-        onSave={(data, i) => {
-          alert('Tiedot tallennettu');
-          console.log('saved data', data, i);
+        onSave={(data) => {
+          suoritusMutation.mutate(data);
         }}
         onDelete={(suoritus, i) => {
           setEditableSuoritukset((prev) => {
