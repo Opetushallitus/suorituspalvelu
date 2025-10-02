@@ -80,6 +80,11 @@ class YtrClient(username: String, password: String, baseUrl: String) {
     "Basic " + Base64.getEncoder.encodeToString((username + ":" + password).getBytes)
   }
 
+  def fetchYtlMassResult(uuid: String): Future[Option[Array[Byte]]] = {
+    val url = baseUrl + "/api/oph-transfer/bulk/" + uuid
+    getWithBasicAuthAsByteArray(url)
+  }
+
   def getWithBasicAuthAsByteArray(url: String): Future[Option[Array[Byte]]] = {
     val request = client
       .prepareGet(url)

@@ -516,14 +516,14 @@ class EntityToUIConverterTest {
       valmistumispaiva = oppimaara.vahvistusPaivamaara.toJava,
       suorituskieli = oppimaara.suoritusKieli.arvo,
       luokka = oppimaara.luokka.toJava,
-      yksilollistaminen = Yksilollistaminen(
+      yksilollistaminen = Optional.of(Yksilollistaminen(
         arvo = oppimaara.yksilollistaminen.get,
         nimi = YksilollistamisNimi(
           Optional.of("Perusopetuksen oppimäärä"),
           Optional.empty,
           Optional.empty
         )
-      ),
+      )),
       oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaine(
         tunniste = aine.tunniste,
         nimi = PerusopetuksenOppiaineNimi(

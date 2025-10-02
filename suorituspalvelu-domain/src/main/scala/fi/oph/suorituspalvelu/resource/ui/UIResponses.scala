@@ -978,7 +978,7 @@ case class PerusopetuksenOppimaara(
   @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty luokka: Optional[String],
   @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty yksilollistaminen: Yksilollistaminen,
+  @BeanProperty yksilollistaminen: Optional[Yksilollistaminen],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
 )

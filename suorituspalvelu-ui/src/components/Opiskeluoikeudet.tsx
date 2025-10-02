@@ -16,7 +16,7 @@ const VoimassaoloIndicator = ({
   const { t, translateKielistetty } = useTranslations();
 
   const tilaIndicatorColor = () => {
-    switch (opiskeluoikeus.supaTila.toString()) {
+    switch (opiskeluoikeus.supaTila) {
       case 'VOIMASSA':
         return ophColors.green3;
       case 'EI_VOIMASSA':
@@ -27,7 +27,7 @@ const VoimassaoloIndicator = ({
   };
 
   const tilaTranslationKey = () => {
-    switch (opiskeluoikeus.supaTila.toString()) {
+    switch (opiskeluoikeus.supaTila) {
       case 'VOIMASSA':
         return 'oppija.voimassa';
       case 'EI_VOIMASSA':

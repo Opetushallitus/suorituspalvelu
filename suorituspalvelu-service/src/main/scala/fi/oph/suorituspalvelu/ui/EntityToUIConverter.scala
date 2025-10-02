@@ -790,7 +790,7 @@ object EntityToUIConverter {
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
             )).get
-          )).get,
+          )).toJava,
           oppiaineet = om.aineet.map(a => PerusopetuksenOppiaine(
             tunniste = a.tunniste,
             nimi = PerusopetuksenOppiaineNimi(

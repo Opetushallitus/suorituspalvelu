@@ -82,7 +82,7 @@ class YtrIntegration {
       LOG.info(s"Luotiin massaoperaatio: $massOp, pollataan")
       pollUntilReady(massOp.uuid).flatMap(finishedQuery => {
         LOG.info(s"Massaoperaatio ${massOp.uuid} valmis, haetaan ja käsitellään tulos-zip.")
-        ytrClient.getWithBasicAuthAsByteArray(massOp.uuid).map((result: Option[Array[Byte]]) => {
+        ytrClient.fetchYtlMassResult(massOp.uuid).map((result: Option[Array[Byte]]) => {
           LOG.info(s"Haettiin massa-zip, käsitellään. ${massOp.uuid} - ${result.map(_.length).getOrElse(0L)} bytes")
           result.map(bytes => ZipUtil.unzipStreamByFile(new ByteArrayInputStream(bytes))).getOrElse(Map.empty)
         }).map(dataByFile => {
