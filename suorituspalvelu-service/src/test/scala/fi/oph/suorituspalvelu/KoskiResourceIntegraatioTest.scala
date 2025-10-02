@@ -151,6 +151,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1_2_246_562_98_69863082363"
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
 
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
     Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima))).thenReturn(Seq(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2)))
 
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima))))

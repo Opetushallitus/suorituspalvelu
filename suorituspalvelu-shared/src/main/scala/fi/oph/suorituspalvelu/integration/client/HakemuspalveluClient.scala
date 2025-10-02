@@ -1,6 +1,8 @@
 package fi.oph.suorituspalvelu.integration.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
@@ -29,19 +31,30 @@ case class AtaruPermissionRequest(personOidsForSamePerson: Set[String],
 case class AtaruPermissionResponse(accessAllowed: Option[Boolean] = None,
                                    errorMessage: Option[String] = None)
 
+case class AtaruHautRequest(hakijaOids: Seq[String])
+
+case class AtaruHautResponseApplication(personOid: String, applicationSystemId: String)
+
+case class AtaruHautResponse(applications: Seq[AtaruHautResponseApplication])
+
 trait HakemuspalveluClient {
   def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]]
   def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
   def checkPermission(permissionRequest: AtaruPermissionRequest): Future[AtaruPermissionResponse]
+  def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]]
 }
 
 class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
-
 
   val LOG = LoggerFactory.getLogger(classOf[HakemuspalveluClientImpl]);
 
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
+  mapper.registerModule(new JavaTimeModule())
+  mapper.registerModule(new Jdk8Module())
+  mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+  mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+  mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
 
   override def getHaunHakijat(hakuOid: String): Future[Seq[AtaruHakemuksenHenkilotiedot]] = {
     getHakemustenHenkilotiedot(AtaruHenkiloSearchParams(None, Some(hakuOid)))
@@ -77,6 +90,19 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
       val parsed: AtaruPermissionResponse = mapper.readValue[AtaruPermissionResponse](responseString, classOf[AtaruPermissionResponse])
       Future.successful(parsed)
     })
+  }
+
+  override def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]] = {
+    if(oppijaOids.isEmpty)
+      Future.successful(Map.empty)
+    else {
+      // Atarun rajapinta on sivuttava, tällä hetkellä palauttaa 1000 kerrallaan. Laitetaan oma raja defensiivisesti
+      // neljäsosaan tästä.
+      val futures = oppijaOids.grouped(250).map(group =>
+        doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri", AtaruHautRequest(group)).map(data => mapper.readValue(data, classOf[AtaruHautResponse]))
+      )
+      Future.sequence(futures).map(r => r.flatMap(r => r.applications).toSeq.groupBy(_.personOid).map(a => a._1 -> a._2.map(_.applicationSystemId)))
+    }
   }
 
   private def doPost(url: String, body: Object): Future[String] = {
