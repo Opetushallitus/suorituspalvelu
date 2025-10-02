@@ -61,10 +61,12 @@ const OppiaineValue = ({
       return translateKielistetty(value);
     case isArray(value):
       return (
-        <Stack spacing={1}>
+        <Stack component="ul" spacing={1}>
           {value.map((v, i) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key
-            <Typography key={i}>{v}</Typography>
+            <Typography component="li" key={i} sx={{ lineHeight: '16px' }}>
+              {v}
+            </Typography>
           ))}
         </Stack>
       );
@@ -91,7 +93,7 @@ const PerusopetusOppiaineetTable = ({
     verticalAlign: 'top',
     paddingTop: theme.spacing(1.5),
     paddingBottom: theme.spacing(1.5),
-    lineHeight: theme.spacing(2),
+    lineHeight: '16px',
   };
 
   const columns = useMemo(() => {
