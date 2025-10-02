@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
 import java.time.LocalDate
@@ -91,6 +92,12 @@ object KoskiToSuoritusConverter {
                   arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
                     .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
                 }
+              }
+              parasArviointi
+            case "arviointiasteikkoammatillinenhyvaksyttyhylatty" =>
+              val parasArviointi: Option[Arviointi] = {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
               }
               parasArviointi
             case _ =>
@@ -203,7 +210,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy())
     )
-  
+
   def toAmmatillinenTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): fi.oph.suorituspalvelu.business.Suoritus = {
     suoritus.koulutusmoduuli.get.koulutustyyppi.get.koodiarvo match
       case "1" => toAmmatillinenPerustutkinto(opiskeluoikeus, suoritus)
@@ -212,7 +219,31 @@ object KoskiToSuoritusConverter {
       case "12" => toErikoisAmmattiTutkinto(opiskeluoikeus, suoritus)
   }
 
-  def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma =
+  def toTelmaOsasuoritus(osaSuoritus: OsaSuoritus): Option[TelmaOsasuoritus] = {
+    val arviointi: Option[Arviointi] = valitseParasArviointi(osaSuoritus.arviointi.getOrElse(Set.empty))
+    val laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(
+      l => Laajuus(
+        l.arvo,
+        asKoodiObject(l.yksikkö.get),
+        Option.apply(l.yksikkö.get.nimi),
+        Option.apply(l.yksikkö.get.lyhytNimi.getOrElse(l.yksikkö.get.nimi))
+      )
+    ))
+    if (arviointi.isDefined && laajuus.isDefined) {
+      Some(TelmaOsasuoritus(
+        nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
+        koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
+        TelmaArviointi(asKoodiObject(arviointi.get.arvosana), arviointi.get.hyväksytty),
+        laajuus.get
+      ))
+    } else None
+  }
+
+  def toTelmaOsasuoritukset(osasuoritukset: Set[OsaSuoritus]): Set[TelmaOsasuoritus] = {
+    osasuoritukset.map(osaSuoritus => toTelmaOsasuoritus(osaSuoritus)).filter(_.isDefined).map(_.get)
+  }
+
+  def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma = {
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
 
     Telma(
@@ -231,8 +262,10 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
+      toTelmaOsasuoritukset(suoritus.osasuoritukset.getOrElse(Set.empty))
     )
+  }
 
   def toTuva(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Tuva =
     Tuva(

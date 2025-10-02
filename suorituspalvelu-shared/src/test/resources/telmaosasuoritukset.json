@@ -1,0 +1,1004 @@
+[
+  {
+    "opiskeluoikeudet": [
+      {
+        "oid": "1.2.246.562.15.79490573304",
+        "versionumero": 1,
+        "aikaleima": "2023-05-10T15:40:39.569636",
+        "lähdejärjestelmänId": {
+          "id": "917",
+          "lähdejärjestelmä": {
+            "koodiarvo": "primus",
+            "nimi": {
+              "fi": "primus"
+            },
+            "koodistoUri": "lahdejarjestelma",
+            "koodistoVersio": 1
+          }
+        },
+        "oppilaitos": {
+          "oid": "1.2.246.562.10.17198733528",
+          "oppilaitosnumero": {
+            "koodiarvo": "00000",
+            "nimi": {
+              "fi": "Tuntematon",
+              "sv": "Okänd",
+              "en": "Unknown"
+            },
+            "lyhytNimi": {
+              "fi": "Tuntematon",
+              "sv": "Okänd",
+              "en": "Unknown"
+            },
+            "koodistoUri": "oppilaitosnumero",
+            "koodistoVersio": 1
+          },
+          "nimi": {
+            "fi": "Tuntematon",
+            "sv": "Okänd",
+            "en": "Unknown"
+          },
+          "kotipaikka": {
+            "koodiarvo": "091",
+            "nimi": {
+              "fi": "Helsinki",
+              "sv": "Helsingfors"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "koulutustoimija": {
+          "oid": "1.2.246.562.10.2013120314194853405792",
+          "nimi": {
+            "fi": "Tuntematon",
+            "sv": "Tuntematon",
+            "en": "Tuntematon"
+          },
+          "kotipaikka": {
+            "koodiarvo": "999",
+            "nimi": {
+              "fi": "Ei tiedossa (kunta)",
+              "sv": "Okänd kommun",
+              "en": "Not known"
+            },
+            "lyhytNimi": {
+              "fi": "Ei tiedossa (kunta)",
+              "sv": "Okänd kommun"
+            },
+            "koodistoUri": "kunta",
+            "koodistoVersio": 2
+          }
+        },
+        "arvioituPäättymispäivä": "2023-06-05",
+        "ostettu": false,
+        "tila": {
+          "opiskeluoikeusjaksot": [
+            {
+              "alku": "2022-08-10",
+              "tila": {
+                "koodiarvo": "lasna",
+                "nimi": {
+                  "fi": "Läsnä",
+                  "sv": "Närvarande",
+                  "en": "Present"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              },
+              "opintojenRahoitus": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Valtionosuusrahoitteinen koulutus",
+                  "sv": "Statsandelsfinansierad utbildning",
+                  "en": "Education funded by the state"
+                },
+                "koodistoUri": "opintojenrahoitus",
+                "koodistoVersio": 1
+              }
+            },
+            {
+              "alku": "2023-06-05",
+              "tila": {
+                "koodiarvo": "valmistunut",
+                "nimi": {
+                  "fi": "Valmistunut",
+                  "sv": "Utexaminerad",
+                  "en": "Graduated"
+                },
+                "koodistoUri": "koskiopiskeluoikeudentila",
+                "koodistoVersio": 1
+              },
+              "opintojenRahoitus": {
+                "koodiarvo": "1",
+                "nimi": {
+                  "fi": "Valtionosuusrahoitteinen koulutus",
+                  "sv": "Statsandelsfinansierad utbildning",
+                  "en": "Education funded by the state"
+                },
+                "koodistoUri": "opintojenrahoitus",
+                "koodistoVersio": 1
+              }
+            }
+          ]
+        },
+        "suoritukset": [
+          {
+            "koulutusmoduuli": {
+              "tunniste": {
+                "koodiarvo": "999903",
+                "nimi": {
+                  "fi": "Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)",
+                  "sv": "Utbildning som handleder för arbete och ett självständigt liv (TELMA)"
+                },
+                "lyhytNimi": {
+                  "fi": "TELMA",
+                  "sv": "Utbildning som handleder för arbete och ett självständigt liv (TELMA)"
+                },
+                "koodistoUri": "koulutus",
+                "koodistoVersio": 12
+              },
+              "perusteenDiaarinumero": "OPH-2659-2017",
+              "laajuus": {
+                "arvo": 60.0,
+                "yksikkö": {
+                  "koodiarvo": "6",
+                  "nimi": {
+                    "fi": "osaamispistettä",
+                    "sv": "kompetenspoäng",
+                    "en": "ECVET competence points"
+                  },
+                  "lyhytNimi": {
+                    "fi": "osp",
+                    "sv": "kp",
+                    "en": "competence points"
+                  },
+                  "koodistoUri": "opintojenlaajuusyksikko",
+                  "koodistoVersio": 1
+                }
+              },
+              "koulutustyyppi": {
+                "koodiarvo": "5",
+                "nimi": {
+                  "fi": "Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)",
+                  "sv": "Utbildning som förbereder för arbete och ett självständigt liv (TELMA)"
+                },
+                "lyhytNimi": {
+                  "fi": "TELMA",
+                  "sv": "TELMA"
+                },
+                "koodistoUri": "koulutustyyppi"
+              }
+            },
+            "toimipiste": {
+              "oid": "1.2.246.562.10.17198733528",
+              "oppilaitosnumero": {
+                "koodiarvo": "00000",
+                "nimi": {
+                  "fi": "Tuntematon",
+                  "sv": "Okänd",
+                  "en": "Unknown"
+                },
+                "lyhytNimi": {
+                  "fi": "Tuntematon",
+                  "sv": "Okänd",
+                  "en": "Unknown"
+                },
+                "koodistoUri": "oppilaitosnumero",
+                "koodistoVersio": 1
+              },
+              "nimi": {
+                "fi": "Tuntematon",
+                "sv": "Okänd",
+                "en": "Unknown"
+              },
+              "kotipaikka": {
+                "koodiarvo": "091",
+                "nimi": {
+                  "fi": "Helsinki",
+                  "sv": "Helsingfors"
+                },
+                "koodistoUri": "kunta",
+                "koodistoVersio": 2
+              }
+            },
+            "vahvistus": {
+              "päivä": "2023-06-05",
+              "paikkakunta": {
+                "koodiarvo": "905",
+                "nimi": {
+                  "fi": "Vaasa",
+                  "sv": "Vasa"
+                },
+                "koodistoUri": "kunta",
+                "koodistoVersio": 2
+              },
+              "myöntäjäOrganisaatio": {
+                "oid": "1.2.246.562.10.17198733528",
+                "oppilaitosnumero": {
+                  "koodiarvo": "00000",
+                  "nimi": {
+                    "fi": "Tuntematon",
+                    "sv": "Okänd",
+                    "en": "Unknown"
+                  },
+                  "lyhytNimi": {
+                    "fi": "Tuntematon",
+                    "sv": "Okänd",
+                    "en": "Unknown"
+                  },
+                  "koodistoUri": "oppilaitosnumero",
+                  "koodistoVersio": 1
+                },
+                "nimi": {
+                  "fi": "Tuntematon",
+                  "sv": "Okänd",
+                  "en": "Unknown"
+                },
+                "kotipaikka": {
+                  "koodiarvo": "091",
+                  "nimi": {
+                    "fi": "Helsinki",
+                    "sv": "Helsingfors"
+                  },
+                  "koodistoUri": "kunta",
+                  "koodistoVersio": 2
+                }
+              },
+              "myöntäjäHenkilöt": [
+                {
+                  "nimi": "Ammaope Aatami",
+                  "titteli": {
+                    "fi": "ryhmänohjaaja"
+                  },
+                  "organisaatio": {
+                    "oid": "1.2.246.562.10.17198733528",
+                    "oppilaitosnumero": {
+                      "koodiarvo": "00000",
+                      "nimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "koodistoUri": "oppilaitosnumero",
+                      "koodistoVersio": 1
+                    },
+                    "nimi": {
+                      "fi": "Tuntematon",
+                      "sv": "Okänd",
+                      "en": "Unknown"
+                    },
+                    "kotipaikka": {
+                      "koodiarvo": "091",
+                      "nimi": {
+                        "fi": "Helsinki",
+                        "sv": "Helsingfors"
+                      },
+                      "koodistoUri": "kunta",
+                      "koodistoVersio": 2
+                    }
+                  }
+                }
+              ]
+            },
+            "suorituskieli": {
+              "koodiarvo": "FI",
+              "nimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "lyhytNimi": {
+                "fi": "suomi",
+                "sv": "finska",
+                "en": "Finnish"
+              },
+              "koodistoUri": "kieli",
+              "koodistoVersio": 1
+            },
+            "osasuoritukset": [
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "400005",
+                    "nimi": {
+                      "fi": "Ammatillisen toimintakyvyn vahvistaminen",
+                      "sv": "Stärkande av den yrkesinriktade funktionsförmågan"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Ammatillisen toimintakyvyn vahvistaminen"
+                    },
+                    "koodistoUri": "tutkinnonosat",
+                    "koodistoVersio": 2
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 18.0,
+                    "yksikkö": {
+                      "koodiarvo": "6",
+                      "nimi": {
+                        "fi": "osaamispistettä",
+                        "sv": "kompetenspoäng",
+                        "en": "ECVET competence points"
+                      },
+                      "lyhytNimi": {
+                        "fi": "osp",
+                        "sv": "kp",
+                        "en": "competence points"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  },
+                  "kuvaus": {
+                    "fi": "Ammatillisen toimintakyvyn vahvistaminen"
+                  }
+                },
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "Hyväksytty",
+                      "nimi": {
+                        "fi": "Hyväksytty",
+                        "sv": "Godkänd",
+                        "en": "Pass"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Hyväksytty"
+                      },
+                      "koodistoUri": "arviointiasteikkoammatillinenhyvaksyttyhylatty",
+                      "koodistoVersio": 1
+                    },
+                    "päivä": "2023-05-10",
+                    "hyväksytty": true
+                  }
+                ],
+                "vahvistus": {
+                  "päivä": "2023-05-10",
+                  "paikkakunta": {
+                    "koodiarvo": "905",
+                    "nimi": {
+                      "fi": "Vaasa",
+                      "sv": "Vasa"
+                    },
+                    "koodistoUri": "kunta",
+                    "koodistoVersio": 2
+                  },
+                  "myöntäjäOrganisaatio": {
+                    "oid": "1.2.246.562.10.17198733528",
+                    "oppilaitosnumero": {
+                      "koodiarvo": "00000",
+                      "nimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "koodistoUri": "oppilaitosnumero",
+                      "koodistoVersio": 1
+                    },
+                    "nimi": {
+                      "fi": "Tuntematon",
+                      "sv": "Okänd",
+                      "en": "Unknown"
+                    },
+                    "kotipaikka": {
+                      "koodiarvo": "091",
+                      "nimi": {
+                        "fi": "Helsinki",
+                        "sv": "Helsingfors"
+                      },
+                      "koodistoUri": "kunta",
+                      "koodistoVersio": 2
+                    }
+                  },
+                  "myöntäjäHenkilöt": [
+                    {
+                      "nimi": "Ammaope Aatami",
+                      "titteli": {
+                        "fi": "ryhmänohjaaja"
+                      },
+                      "organisaatio": {
+                        "oid": "1.2.246.562.10.17198733528",
+                        "oppilaitosnumero": {
+                          "koodiarvo": "00000",
+                          "nimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "lyhytNimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "koodistoUri": "oppilaitosnumero",
+                          "koodistoVersio": 1
+                        },
+                        "nimi": {
+                          "fi": "Tuntematon",
+                          "sv": "Okänd",
+                          "en": "Unknown"
+                        },
+                        "kotipaikka": {
+                          "koodiarvo": "091",
+                          "nimi": {
+                            "fi": "Helsinki",
+                            "sv": "Helsingfors"
+                          },
+                          "koodistoUri": "kunta",
+                          "koodistoVersio": 2
+                        }
+                      }
+                    }
+                  ]
+                },
+                "suorituskieli": {
+                  "koodiarvo": "FI",
+                  "nimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "lyhytNimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "koodistoUri": "kieli",
+                  "koodistoVersio": 1
+                },
+                "tyyppi": {
+                  "koodiarvo": "telmakoulutuksenosa",
+                  "nimi": {
+                    "fi": "Työhön ja itsenäiseen elämään valmentavan koulutuksen osa",
+                    "sv": "Utbildningsdel som handleder för arbete och ett självständigt liv",
+                    "en": "Preparatory education for work and independent living unit"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "400006",
+                    "nimi": {
+                      "fi": "Opiskeluvalmiuksien vahvistaminen",
+                      "sv": "Stärkande av studiefärdigheter"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Opiskeluvalmiuksien vahvistaminen"
+                    },
+                    "koodistoUri": "tutkinnonosat",
+                    "koodistoVersio": 2
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 20.0,
+                    "yksikkö": {
+                      "koodiarvo": "6",
+                      "nimi": {
+                        "fi": "osaamispistettä",
+                        "sv": "kompetenspoäng",
+                        "en": "ECVET competence points"
+                      },
+                      "lyhytNimi": {
+                        "fi": "osp",
+                        "sv": "kp",
+                        "en": "competence points"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  },
+                  "kuvaus": {
+                    "fi": "Opiskeluvalmiuksien vahvistaminen"
+                  }
+                },
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "Hyväksytty",
+                      "nimi": {
+                        "fi": "Hyväksytty",
+                        "sv": "Godkänd",
+                        "en": "Pass"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Hyväksytty"
+                      },
+                      "koodistoUri": "arviointiasteikkoammatillinenhyvaksyttyhylatty",
+                      "koodistoVersio": 1
+                    },
+                    "päivä": "2023-05-10",
+                    "hyväksytty": true
+                  }
+                ],
+                "vahvistus": {
+                  "päivä": "2023-05-10",
+                  "paikkakunta": {
+                    "koodiarvo": "905",
+                    "nimi": {
+                      "fi": "Vaasa",
+                      "sv": "Vasa"
+                    },
+                    "koodistoUri": "kunta",
+                    "koodistoVersio": 2
+                  },
+                  "myöntäjäOrganisaatio": {
+                    "oid": "1.2.246.562.10.17198733528",
+                    "oppilaitosnumero": {
+                      "koodiarvo": "00000",
+                      "nimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "koodistoUri": "oppilaitosnumero",
+                      "koodistoVersio": 1
+                    },
+                    "nimi": {
+                      "fi": "Tuntematon",
+                      "sv": "Okänd",
+                      "en": "Unknown"
+                    },
+                    "kotipaikka": {
+                      "koodiarvo": "091",
+                      "nimi": {
+                        "fi": "Helsinki",
+                        "sv": "Helsingfors"
+                      },
+                      "koodistoUri": "kunta",
+                      "koodistoVersio": 2
+                    }
+                  },
+                  "myöntäjäHenkilöt": [
+                    {
+                      "nimi": "Ammaope Aatami",
+                      "titteli": {
+                        "fi": "ryhmänohjaaja"
+                      },
+                      "organisaatio": {
+                        "oid": "1.2.246.562.10.17198733528",
+                        "oppilaitosnumero": {
+                          "koodiarvo": "00000",
+                          "nimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "lyhytNimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "koodistoUri": "oppilaitosnumero",
+                          "koodistoVersio": 1
+                        },
+                        "nimi": {
+                          "fi": "Tuntematon",
+                          "sv": "Okänd",
+                          "en": "Unknown"
+                        },
+                        "kotipaikka": {
+                          "koodiarvo": "091",
+                          "nimi": {
+                            "fi": "Helsinki",
+                            "sv": "Helsingfors"
+                          },
+                          "koodistoUri": "kunta",
+                          "koodistoVersio": 2
+                        }
+                      }
+                    }
+                  ]
+                },
+                "suorituskieli": {
+                  "koodiarvo": "FI",
+                  "nimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "lyhytNimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "koodistoUri": "kieli",
+                  "koodistoVersio": 1
+                },
+                "tyyppi": {
+                  "koodiarvo": "telmakoulutuksenosa",
+                  "nimi": {
+                    "fi": "Työhön ja itsenäiseen elämään valmentavan koulutuksen osa",
+                    "sv": "Utbildningsdel som handleder för arbete och ett självständigt liv",
+                    "en": "Preparatory education for work and independent living unit"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "400007",
+                    "nimi": {
+                      "fi": "Työelämään valmentautuminen",
+                      "sv": "Förberedelse för arbetslivet"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Työelämään valmentautuminen"
+                    },
+                    "koodistoUri": "tutkinnonosat",
+                    "koodistoVersio": 2
+                  },
+                  "pakollinen": true,
+                  "laajuus": {
+                    "arvo": 10.0,
+                    "yksikkö": {
+                      "koodiarvo": "6",
+                      "nimi": {
+                        "fi": "osaamispistettä",
+                        "sv": "kompetenspoäng",
+                        "en": "ECVET competence points"
+                      },
+                      "lyhytNimi": {
+                        "fi": "osp",
+                        "sv": "kp",
+                        "en": "competence points"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  },
+                  "kuvaus": {
+                    "fi": "Työelämään valmentautuminen"
+                  }
+                },
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "Hyväksytty",
+                      "nimi": {
+                        "fi": "Hyväksytty",
+                        "sv": "Godkänd",
+                        "en": "Pass"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Hyväksytty"
+                      },
+                      "koodistoUri": "arviointiasteikkoammatillinenhyvaksyttyhylatty",
+                      "koodistoVersio": 1
+                    },
+                    "päivä": "2023-05-10",
+                    "hyväksytty": true
+                  }
+                ],
+                "vahvistus": {
+                  "päivä": "2023-05-10",
+                  "paikkakunta": {
+                    "koodiarvo": "905",
+                    "nimi": {
+                      "fi": "Vaasa",
+                      "sv": "Vasa"
+                    },
+                    "koodistoUri": "kunta",
+                    "koodistoVersio": 2
+                  },
+                  "myöntäjäOrganisaatio": {
+                    "oid": "1.2.246.562.10.17198733528",
+                    "oppilaitosnumero": {
+                      "koodiarvo": "00000",
+                      "nimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "koodistoUri": "oppilaitosnumero",
+                      "koodistoVersio": 1
+                    },
+                    "nimi": {
+                      "fi": "Tuntematon",
+                      "sv": "Okänd",
+                      "en": "Unknown"
+                    },
+                    "kotipaikka": {
+                      "koodiarvo": "091",
+                      "nimi": {
+                        "fi": "Helsinki",
+                        "sv": "Helsingfors"
+                      },
+                      "koodistoUri": "kunta",
+                      "koodistoVersio": 2
+                    }
+                  },
+                  "myöntäjäHenkilöt": [
+                    {
+                      "nimi": "Ammaope Aatami",
+                      "titteli": {
+                        "fi": "ryhmänohjaaja"
+                      },
+                      "organisaatio": {
+                        "oid": "1.2.246.562.10.17198733528",
+                        "oppilaitosnumero": {
+                          "koodiarvo": "00000",
+                          "nimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "lyhytNimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "koodistoUri": "oppilaitosnumero",
+                          "koodistoVersio": 1
+                        },
+                        "nimi": {
+                          "fi": "Tuntematon",
+                          "sv": "Okänd",
+                          "en": "Unknown"
+                        },
+                        "kotipaikka": {
+                          "koodiarvo": "091",
+                          "nimi": {
+                            "fi": "Helsinki",
+                            "sv": "Helsingfors"
+                          },
+                          "koodistoUri": "kunta",
+                          "koodistoVersio": 2
+                        }
+                      }
+                    }
+                  ]
+                },
+                "suorituskieli": {
+                  "koodiarvo": "FI",
+                  "nimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "lyhytNimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "koodistoUri": "kieli",
+                  "koodistoVersio": 1
+                },
+                "tyyppi": {
+                  "koodiarvo": "telmakoulutuksenosa",
+                  "nimi": {
+                    "fi": "Työhön ja itsenäiseen elämään valmentavan koulutuksen osa",
+                    "sv": "Utbildningsdel som handleder för arbete och ett självständigt liv",
+                    "en": "Preparatory education for work and independent living unit"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              },
+              {
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "oma1",
+                    "nimi": {
+                      "fi": "Paikallinen koulutuksen osa"
+                    }
+                  },
+                  "kuvaus": {
+                    "fi": "Paikallinen koulutuksen osa"
+                  },
+                  "laajuus": {
+                    "arvo": 12.0,
+                    "yksikkö": {
+                      "koodiarvo": "6",
+                      "nimi": {
+                        "fi": "osaamispistettä",
+                        "sv": "kompetenspoäng",
+                        "en": "ECVET competence points"
+                      },
+                      "lyhytNimi": {
+                        "fi": "osp",
+                        "sv": "kp",
+                        "en": "competence points"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  },
+                  "pakollinen": true
+                },
+                "arviointi": [
+                  {
+                    "arvosana": {
+                      "koodiarvo": "Hyväksytty",
+                      "nimi": {
+                        "fi": "Hyväksytty",
+                        "sv": "Godkänd",
+                        "en": "Pass"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Hyväksytty"
+                      },
+                      "koodistoUri": "arviointiasteikkoammatillinenhyvaksyttyhylatty",
+                      "koodistoVersio": 1
+                    },
+                    "päivä": "2023-05-10",
+                    "hyväksytty": true
+                  }
+                ],
+                "vahvistus": {
+                  "päivä": "2023-05-10",
+                  "paikkakunta": {
+                    "koodiarvo": "905",
+                    "nimi": {
+                      "fi": "Vaasa",
+                      "sv": "Vasa"
+                    },
+                    "koodistoUri": "kunta",
+                    "koodistoVersio": 2
+                  },
+                  "myöntäjäOrganisaatio": {
+                    "oid": "1.2.246.562.10.17198733528",
+                    "oppilaitosnumero": {
+                      "koodiarvo": "00000",
+                      "nimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "lyhytNimi": {
+                        "fi": "Tuntematon",
+                        "sv": "Okänd",
+                        "en": "Unknown"
+                      },
+                      "koodistoUri": "oppilaitosnumero",
+                      "koodistoVersio": 1
+                    },
+                    "nimi": {
+                      "fi": "Tuntematon",
+                      "sv": "Okänd",
+                      "en": "Unknown"
+                    },
+                    "kotipaikka": {
+                      "koodiarvo": "091",
+                      "nimi": {
+                        "fi": "Helsinki",
+                        "sv": "Helsingfors"
+                      },
+                      "koodistoUri": "kunta",
+                      "koodistoVersio": 2
+                    }
+                  },
+                  "myöntäjäHenkilöt": [
+                    {
+                      "nimi": "Ammaope Aatami",
+                      "titteli": {
+                        "fi": "ryhmänohjaaja"
+                      },
+                      "organisaatio": {
+                        "oid": "1.2.246.562.10.17198733528",
+                        "oppilaitosnumero": {
+                          "koodiarvo": "00000",
+                          "nimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "lyhytNimi": {
+                            "fi": "Tuntematon",
+                            "sv": "Okänd",
+                            "en": "Unknown"
+                          },
+                          "koodistoUri": "oppilaitosnumero",
+                          "koodistoVersio": 1
+                        },
+                        "nimi": {
+                          "fi": "Tuntematon",
+                          "sv": "Okänd",
+                          "en": "Unknown"
+                        },
+                        "kotipaikka": {
+                          "koodiarvo": "091",
+                          "nimi": {
+                            "fi": "Helsinki",
+                            "sv": "Helsingfors"
+                          },
+                          "koodistoUri": "kunta",
+                          "koodistoVersio": 2
+                        }
+                      }
+                    }
+                  ]
+                },
+                "suorituskieli": {
+                  "koodiarvo": "FI",
+                  "nimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "lyhytNimi": {
+                    "fi": "suomi",
+                    "sv": "finska",
+                    "en": "Finnish"
+                  },
+                  "koodistoUri": "kieli",
+                  "koodistoVersio": 1
+                },
+                "tyyppi": {
+                  "koodiarvo": "telmakoulutuksenosa",
+                  "nimi": {
+                    "fi": "Työhön ja itsenäiseen elämään valmentavan koulutuksen osa",
+                    "sv": "Utbildningsdel som handleder för arbete och ett självständigt liv",
+                    "en": "Preparatory education for work and independent living unit"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                }
+              }
+            ],
+            "tyyppi": {
+              "koodiarvo": "telma",
+              "nimi": {
+                "fi": "Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)",
+                "sv": "Utbildning som handleder för arbete och ett självständigt liv",
+                "en": "Preparatory education for work and independent living"
+              },
+              "koodistoUri": "suorituksentyyppi",
+              "koodistoVersio": 1
+            }
+          }
+        ],
+        "lisätiedot": {
+          "osaAikaisuusjaksot": [
+            {
+              "alku": "2022-08-10",
+              "osaAikaisuus": 0
+            }
+          ],
+          "henkilöstökoulutus": false,
+          "koulutusvienti": false
+        },
+        "tyyppi": {
+          "koodiarvo": "ammatillinenkoulutus",
+          "nimi": {
+            "fi": "Ammatillinen koulutus",
+            "sv": "Yrkesutbildning",
+            "en": "Vocational education and training"
+          },
+          "lyhytNimi": {
+            "fi": "Ammatillinen koulutus"
+          },
+          "koodistoUri": "opiskeluoikeudentyyppi",
+          "koodistoVersio": 1
+        },
+        "alkamispäivä": "2022-08-10",
+        "päättymispäivä": "2023-06-05"
+      }
+    ]
+  }
+]

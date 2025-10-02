@@ -347,7 +347,8 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
-      Koodi("FI", "kieli", Some(1))
+      Koodi("FI", "kieli", Some(1)),
+      Set.empty
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Telma(

@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
+import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -495,7 +496,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
-  
+
   @Test def testTelma(): Unit =
     val telma = getFirstSuoritusFromJson(
       """
@@ -553,6 +554,24 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), telma.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
+
+  @Test def testTelmaOsasuoritukset(): Unit = {
+    val fileName = "/telmaosasuoritukset.json"
+    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    splitData.foreach((oppijaOid, data) => {
+      val koskiOpiskeluoikeudet: Seq[koski.Opiskeluoikeus] = KoskiParser.parseKoskiData(data)
+      val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
+        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+
+      val telmaSuoritus = oikeudet.head.suoritukset.head.asInstanceOf[Telma]
+      val telmaLaajuus = telmaSuoritus.osaSuoritukset.map(_.laajuus.arvo).sum
+
+      Assertions.assertEquals(oikeudet.size, 1)
+      Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
+      Assertions.assertEquals(telmaLaajuus, 60)
+      })
+  }
 
   @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson("""
@@ -1265,7 +1284,7 @@ class KoskiParsingTest {
         |  }
         |]
         |""".stripMargin)
-    
+
     Assertions.assertTrue(opiskeluoikeus.isEmpty)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {
