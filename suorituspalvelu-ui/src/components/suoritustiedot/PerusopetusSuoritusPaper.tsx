@@ -61,10 +61,10 @@ const OppiaineValue = ({
       return translateKielistetty(value);
     case isArray(value):
       return (
-        <Stack component="ul" spacing={1}>
+        <Stack spacing={1}>
           {value.map((v, i) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key
-            <Typography component="li" key={i} sx={{ lineHeight: '16px' }}>
+            <Typography key={i} sx={{ lineHeight: '16px' }}>
               {v}
             </Typography>
           ))}

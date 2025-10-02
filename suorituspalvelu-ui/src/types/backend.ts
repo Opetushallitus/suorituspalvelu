@@ -425,6 +425,7 @@ export interface IPKOppilaitosNimi {
 
 export interface IPerusopetuksenOppiaine {
   tunniste: string;
+  koodi: string;
   nimi: IPerusopetuksenOppiaineNimi;
   kieli?: string;
   arvosana: string;
