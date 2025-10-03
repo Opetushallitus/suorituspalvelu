@@ -510,7 +510,7 @@ class KoskiParsingTest {
         |            {
         |              "alku": "2022-06-06",
         |              "tila": {
-        |                "koodiarvo": "mitatoity"
+        |                "koodiarvo": "lasna"
         |              }
         |            }
         |          ]
@@ -553,6 +553,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), telma.nimi)
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), telma.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
+    Assertions.assertEquals(2023, telma.suoritusVuosi)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
 
   @Test def testTelmaOsasuoritukset(): Unit = {

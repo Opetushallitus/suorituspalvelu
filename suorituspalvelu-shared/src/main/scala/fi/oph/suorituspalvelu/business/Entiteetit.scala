@@ -121,6 +121,7 @@ case class Telma(tunniste: UUID,
                  supaTila: SuoritusTila,
                  aloitusPaivamaara: Option[LocalDate],
                  vahvistusPaivamaara: Option[LocalDate],
+                 suoritusVuosi: Int,
                  suoritusKieli: Koodi,
                  osaSuoritukset: Set[TelmaOsasuoritus]) extends Suoritus, Tyypitetty
 

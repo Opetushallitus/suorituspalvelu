@@ -243,6 +243,13 @@ object KoskiToSuoritusConverter {
     osasuoritukset.map(osaSuoritus => toTelmaOsasuoritus(osaSuoritus)).filter(_.isDefined).map(_.get)
   }
 
+  //Vahvistuspäivän vuosi, tai kuluva vuosi jos ei vahvistettu
+  //Suunniteltu käyttöön suoritustyypeille Tuva, Telma, Opistovuosi
+  def getLisapistekoulutusSuoritusvuosi(suoritus: Suoritus): Int = {
+    suoritus.vahvistus.map(_.`päivä`).map(p => LocalDate.parse(p).getYear)
+      .getOrElse(java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate.getYear)
+  }
+
   def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma = {
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
 
@@ -262,6 +269,7 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+      getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       toTelmaOsasuoritukset(suoritus.osasuoritukset.getOrElse(Set.empty))
     )
