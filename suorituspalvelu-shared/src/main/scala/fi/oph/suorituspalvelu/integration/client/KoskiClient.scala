@@ -6,14 +6,22 @@ import org.asynchttpclient.Dsl.asyncHttpClient
 import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Realm, Request, Response}
 import org.slf4j.LoggerFactory
 
+import java.time.format.DateTimeFormatter
 import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
-import java.time.Duration
+import java.time.{Duration, Instant}
 
 object KoskiMassaluovutusQueryParams {
+
+  val TIMESTAMPSINCE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(java.time.ZoneId.of("Europe/Helsinki"))
+
   def forOids(oids: Set[String]): KoskiMassaluovutusQueryParams = {
     KoskiMassaluovutusQueryParams("supa-oppijat", "application/json", Some(oids), None)
+  }
+
+  def forTimestamp(timestamp: Instant): KoskiMassaluovutusQueryParams = {
+    KoskiMassaluovutusQueryParams("supa-muuttuneet", "application/json", None, Some(TIMESTAMPSINCE_FORMATTER.format(timestamp)))
   }
 }
 

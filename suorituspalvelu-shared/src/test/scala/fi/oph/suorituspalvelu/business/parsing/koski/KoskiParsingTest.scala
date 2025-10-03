@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
@@ -10,9 +10,6 @@ import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
 
 import java.io.ByteArrayInputStream
 import java.time.LocalDate
-
-object KoskiParsing {
-}
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -610,8 +607,7 @@ class KoskiParsingTest {
 
     Assertions.assertEquals(Some("1.2.246.562.15.77661702355"), opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.19666365424", opiskeluoikeus.oppilaitosOid)
-    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
-      LocalDate.parse("2022-05-01"), KoskiKoodi("lasna", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))))), opiskeluoikeus.tila)
+    Assertions.assertEquals(SuoritusTila.KESKEN, opiskeluoikeus.tila)
     Assertions.assertEquals(Some(KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(true)))), Some(false),
       Some(List(Kotiopetusjakso("2021-08-24", Some("2022-01-23")))))), opiskeluoikeus.lisatiedot)
 
@@ -917,10 +913,7 @@ class KoskiParsingTest {
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
     Assertions.assertEquals(Some("1.2.246.562.15.50478693398"), opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.42923230215", opiskeluoikeus.oppilaitosOid)
-    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(
-      OpiskeluoikeusJakso(LocalDate.parse("2021-04-16"), KoskiKoodi("lasna", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None)),
-      OpiskeluoikeusJakso(LocalDate.parse("2022-04-16"), KoskiKoodi("valmistunut", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))
-    ))), opiskeluoikeus.tila)
+    Assertions.assertEquals(SuoritusTila.VALMIS, opiskeluoikeus.tila)
     Assertions.assertEquals(None, opiskeluoikeus.lisatiedot)
 
   @Test def testAikuistenPerusopetuksenOppimaarat(): Unit =

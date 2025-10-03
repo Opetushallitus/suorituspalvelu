@@ -535,7 +535,7 @@ class EntityToUIConverterTest {
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
       )).toList.asJava
-    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, None)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).get.perusopetuksenOppimaarat)
+    )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).get.perusopetuksenOppimaarat)
   }
 
   @Test def testConvertOpiskeluoikeudet(): Unit = {

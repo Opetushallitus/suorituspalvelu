@@ -3,12 +3,14 @@ package fi.oph.suorituspalvelu.resource
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YtrSyncFailureResponse, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE
+import fi.oph.suorituspalvelu.resource.ui.{LuoPerusopetuksenOppimaaraFailureResponse, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
-import fi.oph.suorituspalvelu.validation.Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
 
+import java.time.Instant
 import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
@@ -41,36 +44,38 @@ class DataSyncResource {
 
   @Autowired var ytrIntegration: YtrIntegration = null
 
+  @Autowired var objectMapper: ObjectMapper = null
+
   @PostMapping(
-    path = Array(KOSKI_DATASYNC_PATH),
+    path = Array(KOSKI_DATASYNC_HENKILOT_PATH),
     consumes = Array(MediaType.APPLICATION_JSON_VALUE),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Hakee tiedot Koskesta",
+    summary = "Hakee yksittäisten hakijoiden tiedot Koskesta",
     description = "Huomioita:\n" +
       "- Huomio 1",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = Array(new Content(schema = new Schema(implementation = classOf[Array[String]])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
-      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
-      new ApiResponse(responseCode = "403", description = "addme")
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION)
     ))
   def paivitaKoskiTiedotHenkiloille(@RequestBody personOids: Array[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
-    LogContext(path = KOSKI_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+    LogContext(path = KOSKI_DATASYNC_HENKILOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
       Right(None)
         .flatMap(_ =>
           // tarkastetaan oikeudet
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
         .flatMap(_ =>
           // validoidaan parametri
-          if (personOids.toSet.size > 5000) {
-            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of("Korkeintaan 5000 henkilöä kerrallaan"))))
+          if (personOids.toSet.size > KOSKI_DATASYNC_HENKILOT_MAX_MAARA) {
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(KOSKI_DATASYNC_HENKILOT_LIIKAA))))
           } else {
             val virheet: Set[String] = personOids.map(o => Validator.validateOppijanumero(Some(o), true)).flatten.toSet
             if (virheet.isEmpty)
@@ -103,8 +108,8 @@ class DataSyncResource {
       content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
-      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
-      new ApiResponse(responseCode = "403", description = "addme")
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION)
     ))
   def paivitaKoskiTiedotHaulle(@RequestBody hakuOid: Optional[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -115,7 +120,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
         .flatMap(_ =>
           // validoidaan parametri
           val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
@@ -129,6 +134,59 @@ class DataSyncResource {
           LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
           val result: Seq[SyncResultForHenkilo] = koskiService.syncKoskiForHaku(hakuOid.get)
           val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
+          LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
+          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+        })
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+  }
+
+  @PostMapping(
+    path = Array(KOSKI_DATASYNC_MUUTTUNEET_PATH),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee muuttuneet tiedot Koskesta",
+    description = "Huomioita:\n" +
+      "- Huomio 1",
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = Array(new Content(schema = new Schema(implementation = classOf[KoskiHaeMuuttuneetJalkeenPayload])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION)
+    ))
+  def paivitaKoskiTiedotMuuttuneet(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = KOSKI_DATASYNC_MUUTTUNEET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      Right(None)
+        .flatMap(_ =>
+          // tarkastetaan oikeudet
+          if (securityOperaatiot.onRekisterinpitaja())
+            Right(None)
+          else
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+        .flatMap(_ =>
+          // deserialisoidaan
+          try
+            Right(objectMapper.readValue(bytes, classOf[KoskiHaeMuuttuneetJalkeenPayload]).aikaleima)
+          catch
+            case e: Exception =>
+              LOG.error("parametrin deserialisointi epäonnistui")
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
+        .flatMap(aikaleima =>
+          // validoidaan parametri
+          val virheet = Validator.validateMuokattujalkeen(aikaleima.toScala, true)
+          if(virheet.isEmpty)
+            Right(Instant.parse(aikaleima.get))
+          else
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
+        .map(timestamp => {
+          val user = AuditLog.getUser(request)
+          AuditLog.log(user, Map("timestamp" -> timestamp.toString), AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
+          LOG.info(s"Haetaan ${timestamp} jälkeen muuttuneet Koski-tiedot")
+          val result = koskiService.syncKoskiChangesSince(timestamp)
+          val responseStr = s"Tallennettiin yhteensä ${result.count(_.versio.isDefined)} muuttunutta versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
           ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
         })
@@ -160,14 +218,14 @@ class DataSyncResource {
             if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
           .flatMap(_ =>
             // validoidaan parametri
             val virheet = Validator.validateOppijanumero(Some(oppijaNumero), true)
             if (virheet.isEmpty)
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
           .map(_ =>
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, None)
@@ -196,8 +254,8 @@ class DataSyncResource {
       content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
-      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
-      new ApiResponse(responseCode = "403", description = "addme")
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaVirtaTiedotHaulle(@RequestBody hakuOid: Optional[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -208,7 +266,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
         .flatMap(_ =>
           // validoidaan parametri
           val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
@@ -240,8 +298,8 @@ class DataSyncResource {
       content = Array(new Content(schema = new Schema(implementation = classOf[Array[String]])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
-      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
-      new ApiResponse(responseCode = "403", description = "addme")
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaYtrTiedotHenkiloille(@RequestBody personOids: Array[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -252,7 +310,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
         .flatMap(_ =>
           // validoidaan parametri
           if (personOids.toSet.size > 5000) {
@@ -289,8 +347,8 @@ class DataSyncResource {
       content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
-      new ApiResponse(responseCode = "400", description = "Pyyntö on virheellinen"),
-      new ApiResponse(responseCode = "403", description = "addme")
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaYtrTiedotHaulle(@RequestBody hakuOid: Optional[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -301,7 +359,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of("ei oikeuksia")))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
         .flatMap(_ =>
           // validoidaan parametri
           val virheet = Validator.validateHakuOid(hakuOid.toScala, true)

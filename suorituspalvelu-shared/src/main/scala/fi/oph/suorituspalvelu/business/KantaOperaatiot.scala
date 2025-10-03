@@ -58,32 +58,40 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  def sameAsExistingData(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: String): DBIOAction[Boolean, NoStream, Effect] =
-    suoritusJoukko match
-      case SuoritusJoukko.VIRTA => sql"""SELECT 1""".as[String].map(_ => false) // TODO: ei toteutettu
-      case default =>
-        sql"""
-            SELECT data_json
+  def isNewVersion(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: String, fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
+    sql"""
+            SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json
             FROM versiot
             WHERE oppijanumero=${oppijaNumero} AND suoritusjoukko=${suoritusJoukko.nimi} AND upper(voimassaolo)='infinity'::timestamptz
-        """.as[String].map(existingData => {
-            if(existingData.isEmpty)
-              false
-            else
-              JSONCompare.compareJSON(existingData.head, data, JSONCompareMode.NON_EXTENSIBLE).passed()
-          })
+        """.as[(String, String)].map(result => {
+      if(result.isEmpty)
+        true
+      else
+        val (alku, existingData) = result.head
+        if(fetchedAt.toEpochMilli<=Instant.parse(alku).toEpochMilli)
+          LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska aikaisemmin tallennettu versio on uudempi.")
+          false
+        else
+          suoritusJoukko match
+            case SuoritusJoukko.VIRTA => true // TODO: ei toteutettu
+            case default =>
+              if(JSONCompare.compareJSON(existingData, data, JSONCompareMode.NON_EXTENSIBLE).passed())
+                LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+                false
+              else
+                true
+    })
 
-  def tallennaJarjestelmaVersio(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: String): Option[VersioEntiteetti] =
+  def tallennaJarjestelmaVersio(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: String, fetchedAt: Instant): Option[VersioEntiteetti] =
     val insertOppijaAction = sqlu"INSERT INTO oppijat(oppijanumero) VALUES (${oppijaNumero}) ON CONFLICT DO NOTHING"
     val lockOppijaAction = sql"""SELECT 1 FROM oppijat WHERE oppijanumero=${oppijaNumero} FOR UPDATE"""
     val insertVersioIfNewDataAction = DBIO.sequence(Seq(insertOppijaAction, lockOppijaAction.as[Int]))
-      .flatMap(_ => sameAsExistingData(oppijaNumero, suoritusJoukko, data)).flatMap(isSame => {
-        if (isSame)
-          LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+      .flatMap(_ => isNewVersion(oppijaNumero, suoritusJoukko, data, fetchedAt)).flatMap(isNewVersion => {
+        if (!isNewVersion)
           DBIO.sequence(Seq.empty).map(_ => None)
         else
           val tunniste = getUUID()
-          val timestamp = Instant.ofEpochMilli(Instant.now().toEpochMilli)
+          val timestamp = Instant.ofEpochMilli(fetchedAt.toEpochMilli)
           val discontinueOldVersionAction =
             sql"""
                  UPDATE versiot
@@ -132,13 +140,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               SELECT versiot.tunniste, versiot.use_versio_tunniste, upper(versiot.voimassaolo)
               FROM versiot
               WHERE use_versio_tunniste IS NOT NULL
-              OR (use_versio_tunniste IS NULL AND lower(voimassaolo)>=${alkaen.toString}::timestamptz)
+                  OR (use_versio_tunniste IS NULL AND lower(voimassaolo)>=${Instant.ofEpochMilli(alkaen.toEpochMilli).toString}::timestamptz)
             UNION
               SELECT versiot.tunniste, versiot.use_versio_tunniste, upper(versiot.voimassaolo)
               FROM w_versiot_in_use JOIN versiot ON w_versiot_in_use.use_versio_tunniste=versiot.tunniste
               WHERE w_versiot_in_use.loppu>upper(versiot.voimassaolo) -- estetään syklit
               AND w_versiot_in_use.tunniste<>versiot.tunniste -- estetään syklit
-              AND lower(voimassaolo)>=${alkaen.toString}::timestamptz
+              AND lower(voimassaolo)>=${Instant.ofEpochMilli(alkaen.toEpochMilli).toString}::timestamptz
           ),
           w_versiot AS (
             SELECT jsonb_build_object(

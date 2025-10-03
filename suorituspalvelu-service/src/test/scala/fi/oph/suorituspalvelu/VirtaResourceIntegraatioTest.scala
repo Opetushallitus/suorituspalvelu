@@ -4,7 +4,8 @@ import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, VirtaO
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenkilo}
-import fi.oph.suorituspalvelu.resource.{ApiConstants, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants
+import fi.oph.suorituspalvelu.resource.api.{VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator

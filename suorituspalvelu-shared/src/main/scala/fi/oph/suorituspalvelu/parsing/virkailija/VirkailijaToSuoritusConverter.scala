@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.virkailija
 
+import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.allowMissingFields
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -69,7 +70,7 @@ object VirkailijaToSuoritusConverter {
         )
       ),
       None,
-      None
+      VALMIS
     )
 
   def toPerusopetuksenOppiaineenOppimaara(versioTunniste: UUID, suoritus: SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, koodistoProvider: KoodistoProvider, organisaatioProvider: OrganisaatioProvider): PerusopetuksenOpiskeluoikeus =
@@ -98,7 +99,7 @@ object VirkailijaToSuoritusConverter {
         )
       ),
       None,
-      None
+      VALMIS
     )
 
 }

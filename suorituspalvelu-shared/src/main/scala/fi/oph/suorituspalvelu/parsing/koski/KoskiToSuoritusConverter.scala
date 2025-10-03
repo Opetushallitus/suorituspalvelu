@@ -385,7 +385,7 @@ object KoskiToSuoritusConverter {
         opiskeluoikeus.oppilaitos.get.oid,
         toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
         opiskeluoikeus.lisätiedot,
-        opiskeluoikeus.tila))
+        parseTila(opiskeluoikeus, None).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy())))
     case opiskeluoikeus if opiskeluoikeus.isAmmatillinen =>
       Some(AmmatillinenOpiskeluoikeus(
         UUID.randomUUID(),

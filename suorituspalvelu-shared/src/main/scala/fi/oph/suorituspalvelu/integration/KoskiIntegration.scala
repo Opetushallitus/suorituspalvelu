@@ -16,6 +16,7 @@ import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConvert
 import slick.jdbc.JdbcBackend
 
 import java.io.{ByteArrayInputStream, InputStream}
+import java.time.Instant
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -60,20 +61,21 @@ class KoskiIntegration {
 
   private val KOSKI_BATCH_SIZE = 5000
 
-  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Iterator[KoskiDataForOppija] = {
-    val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
+  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): Seq[KoskiDataForOppija] = {
+    fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp))
+  }
+
+  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Seq[KoskiDataForOppija] = {
+    val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toSeq
     val started = new AtomicInteger(0)
 
     grouped.flatMap(group => {
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
-      fetchKoskiBatch(group)
+      fetchKoskiBatch(KoskiMassaluovutusQueryParams.forOids(group))
     })
   }
 
-  private def fetchKoskiBatch(personOids: Set[String]): Seq[KoskiDataForOppija] = {
-    LOG.info(s"Synkataan Koski-data ${personOids.size} henkilölle")
-    val query = KoskiMassaluovutusQueryParams.forOids(personOids)
-
+  private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Seq[KoskiDataForOppija] = {
     val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
       pollUntilReady(res.resultsUrl.get).flatMap(finishedQuery => {
         LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} Koski-tiedostoa.")

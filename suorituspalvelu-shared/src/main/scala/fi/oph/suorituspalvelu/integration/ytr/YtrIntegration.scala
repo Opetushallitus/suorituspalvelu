@@ -16,6 +16,7 @@ import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.ZipUtil
 
 import java.io.ByteArrayInputStream
+import java.time.Instant
 import scala.collection.immutable
 
 case class Section(sectionId: String, sectionPoints: Option[String])
@@ -50,20 +51,21 @@ class YtrIntegration {
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
-    val syncResult = fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch))
+    val fetchedAt = Instant.now()
+    val syncResult = fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
     LOG.info(s"Ytr-sync haulle $hakuOid valmis. Tallennettiin yhteensä ${syncResult.size} henkilön tiedot.")
     syncResult
   }
 
-  def safePersistBatch(ytrResult: Seq[YtrDataForHenkilo]): Seq[SyncResultForHenkilo] = {
-    ytrResult.map(r => safePersistSingle(r))
+  def safePersistBatch(ytrResult: Seq[YtrDataForHenkilo], fetchedAt: Instant): Seq[SyncResultForHenkilo] = {
+    ytrResult.map(r => safePersistSingle(r, fetchedAt))
   }
 
-  def safePersistSingle(ytrResult: YtrDataForHenkilo): SyncResultForHenkilo = {
+  def safePersistSingle(ytrResult: YtrDataForHenkilo, fetchedAt: Instant): SyncResultForHenkilo = {
     LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
     try {
       val kantaOperaatiot = KantaOperaatiot(database)
-      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, ytrResult.resultJson.getOrElse("{}"))
+      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, ytrResult.resultJson.getOrElse("{}"), fetchedAt)
       versio.foreach(v => {
         LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
         val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
@@ -138,7 +140,8 @@ class YtrIntegration {
   }
 
   def fetchAndPersistStudents(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
-    fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch))
+    val fetchedAt = Instant.now()
+    fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
   }
 
   def fetchAndProcessStudents[R](personOids: Set[String], processFunction: Seq[YtrDataForHenkilo] => Seq[R]): Seq[R] = {

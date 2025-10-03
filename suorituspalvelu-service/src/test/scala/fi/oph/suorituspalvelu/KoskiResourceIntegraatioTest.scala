@@ -3,8 +3,10 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
-import fi.oph.suorituspalvelu.resource.{ApiConstants, KoskiSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.*
 import org.mockito
@@ -16,6 +18,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.nio.charset.Charset
+import java.time.Instant
+import java.util.Optional
 import scala.io.Source
 import scala.concurrent.Future
 
@@ -23,30 +27,30 @@ import scala.concurrent.Future
 @TestInstance(Lifecycle.PER_CLASS)
 class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
-  // -- Koski sync for oppijat --
-
   @MockBean
   var koskiIntegration: KoskiIntegration = null
 
   @MockBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
+  // -- Koski sync for oppijat --
+
   @WithAnonymousUser
   @Test def testRefreshKoskiOppijaAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_PATH, ""))
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, ""))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testRefreshKoskiOppijatNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_PATH, Set("1.2.3")))
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, Set("1.2.3")))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshKoskiOppijatMalformedOid(): Unit =
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_PATH, Set("1.2.246.562.25.01000000000000056245")))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, Set("1.2.246.562.25.01000000000000056245")))
       .andExpect(status().isBadRequest).andReturn()
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -54,9 +58,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.91423219238"
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_24_91423219238.json").mkString.getBytes())
 
-    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(Set(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2)).iterator)
+    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(Seq(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2)))
     
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_PATH, Set(oppijaNumero)))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, Set(oppijaNumero)))
       .andExpect(status().isOk).andReturn()
     val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse])
 
@@ -91,7 +95,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_24_91423219238.json").mkString.getBytes())
 
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid)).thenReturn(Future.successful(Set(AtaruHakemuksenHenkilotiedot("hakemusOid", Some(oppijaNumero), None))))
-    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(Set(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2)).iterator)
+    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(Seq(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2)))
 
     val result = mvc.perform(jsonPostString(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, hakuOid))
       .andExpect(status().isOk).andReturn()
@@ -109,5 +113,54 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPostString(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, "1.2.246.562.28.01000000000000056245"))
       .andExpect(status().isBadRequest).andReturn()
 
+  // -- Koski sync for muuttuneet --
+
+  @WithAnonymousUser
+  @Test def testRefreshKoskiMuuttuneetAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testRefreshKoskiMuuttuneetNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of("2025-09-28T10:15:30Z"))))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetMalformedJson(): Unit =
+    // ei validi aikaleima ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, "Tämä ei ole validia JSONia"))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(ApiConstants.DATASYNC_JSON_VIRHE)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
+  
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetMalformedTimestamp(): Unit =
+    // ei validi aikaleima ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of("tämä ei ole validi aikaleima"))))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_MUOKATTUJALKEEN_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetAllowed(): Unit = {
+    val aikaleima = "2025-09-28T10:15:30Z"
+    val oppijaNumero = "1_2_246_562_98_69863082363"
+    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
+
+    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima))).thenReturn(Seq(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2)))
+
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima))))
+      .andExpect(status().isOk).andReturn()
+    val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse])
+
+    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+
+    //Tarkistetaan että kantaan on tallennettu opiskeluoikeus
+    Assertions.assertEquals(haetut.head._2.size, 1)
+  }
 
 }

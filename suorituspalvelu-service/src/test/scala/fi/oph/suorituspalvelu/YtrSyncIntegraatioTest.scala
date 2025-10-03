@@ -17,7 +17,8 @@ import org.mockito
 import org.mockito.Mockito
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.security.SecurityConstants
-import fi.oph.suorituspalvelu.resource.{ApiConstants, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants
+import fi.oph.suorituspalvelu.resource.api.YtrSyncSuccessResponse
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import fi.oph.suorituspalvelu.parsing.ytr.Student
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser.MAPPER
