@@ -566,11 +566,11 @@ class KoskiParsingTest {
         .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
 
       val telmaSuoritus = oikeudet.head.suoritukset.head.asInstanceOf[Telma]
-      val telmaLaajuus = telmaSuoritus.osaSuoritukset.map(_.laajuus.arvo).sum
+      val telmaLaajuus = telmaSuoritus.hyvaksyttyLaajuus.map(_.arvo)
 
       Assertions.assertEquals(oikeudet.size, 1)
       Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
-      Assertions.assertEquals(telmaLaajuus, 60)
+      Assertions.assertEquals(telmaLaajuus.get, 60)
       })
   }
 
@@ -1246,7 +1246,9 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), vst.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-05-25")), vst.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), vst.vahvistusPaivamaara)
-    Assertions.assertEquals(Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.laajuus)
+    Assertions.assertEquals(
+      Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)),
+      Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.hyvaksyttyLaajuus)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), vst.suoritusKieli)
 
   @Test def testMitatoidutOpiskeluoikeudetFiltteroidaan(): Unit =

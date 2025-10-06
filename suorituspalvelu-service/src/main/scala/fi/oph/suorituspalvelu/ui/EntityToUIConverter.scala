@@ -744,7 +744,7 @@ object EntityToUIConverter {
             tila = SuoritusTila.valueOf(t.supaTila.toString),
             aloituspaiva = t.aloitusPaivamaara.toJava,
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
-            laajuus = t.laajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
+            laajuus = t.hyvaksyttyLaajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
               l.lyhytNimi.get.fi.toJava,
               l.lyhytNimi.get.sv.toJava,
               l.lyhytNimi.get.en.toJava

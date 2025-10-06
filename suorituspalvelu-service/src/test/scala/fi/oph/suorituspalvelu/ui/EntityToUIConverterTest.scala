@@ -347,8 +347,9 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      2020,
       Koodi("FI", "kieli", Some(1)),
-      Set.empty
+      Some(Laajuus(18, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None))))
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Telma(
@@ -426,6 +427,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
       Koodi("FI", "kieli", Some(1))
     )
@@ -449,7 +451,7 @@ class EntityToUIConverterTest {
       vst.aloitusPaivamaara.toJava,
       vst.vahvistusPaivamaara.toJava,
       vst.suoritusKieli.arvo,
-      vst.laajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
+      vst.hyvaksyttyLaajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
         l.lyhytNimi.get.fi.toJava,
         l.lyhytNimi.get.sv.toJava,
         l.lyhytNimi.get.en.toJava

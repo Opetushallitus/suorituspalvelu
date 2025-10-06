@@ -219,35 +219,21 @@ object KoskiToSuoritusConverter {
       case "12" => toErikoisAmmattiTutkinto(opiskeluoikeus, suoritus)
   }
 
-  def toTelmaOsasuoritus(osaSuoritus: OsaSuoritus): Option[TelmaOsasuoritus] = {
-    val arviointi: Option[Arviointi] = valitseParasArviointi(osaSuoritus.arviointi.getOrElse(Set.empty))
-    val laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(
-      l => Laajuus(
-        l.arvo,
-        asKoodiObject(l.yksikkö.get),
-        Option.apply(l.yksikkö.get.nimi),
-        Option.apply(l.yksikkö.get.lyhytNimi.getOrElse(l.yksikkö.get.nimi))
-      )
-    ))
-    if (arviointi.isDefined && laajuus.isDefined) {
-      Some(TelmaOsasuoritus(
-        nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
-        koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
-        TelmaArviointi(asKoodiObject(arviointi.get.arvosana), arviointi.get.hyväksytty),
-        laajuus.get
-      ))
-    } else None
-  }
-
-  def toTelmaOsasuoritukset(osasuoritukset: Set[OsaSuoritus]): Set[TelmaOsasuoritus] = {
-    osasuoritukset.map(osaSuoritus => toTelmaOsasuoritus(osaSuoritus)).filter(_.isDefined).map(_.get)
-  }
-
   //Vahvistuspäivän vuosi, tai kuluva vuosi jos ei vahvistettu
   //Suunniteltu käyttöön suoritustyypeille Tuva, Telma, Opistovuosi
   def getLisapistekoulutusSuoritusvuosi(suoritus: Suoritus): Int = {
     suoritus.vahvistus.map(_.`päivä`).map(p => LocalDate.parse(p).getYear)
       .getOrElse(java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate.getYear)
+  }
+
+  def getLisapistekoulutusHyvaksyttyLaajuus(suoritus: Suoritus): Option[Laajuus] = {
+    suoritus.osasuoritukset.map(ost => Laajuus(
+      ost.filter(_.arviointi.exists(a => a.exists(_.hyväksytty)))
+        .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
+      asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
+      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.map(y => y.nimi)))).headOption,
+      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.flatMap(y => y.lyhytNimi)))).headOption
+    ))
   }
 
   def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma = {
@@ -271,7 +257,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
-      toTelmaOsasuoritukset(suoritus.osasuoritukset.getOrElse(Set.empty))
+      getLisapistekoulutusHyvaksyttyLaajuus(suoritus)
     )
   }
 
@@ -292,7 +278,12 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => Laajuus(l.arvo, asKoodiObject(l.yksikkö.get), Option.apply(l.yksikkö.get.nimi), l.yksikkö.get.lyhytNimi)))
+      laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l =>
+        Laajuus(
+          l.arvo,
+          asKoodiObject(l.yksikkö.get),
+          Option.apply(l.yksikkö.get.nimi),
+          l.yksikkö.get.lyhytNimi)))
     )
 
   def toVapaaSivistystyoKoulutus(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): VapaaSivistystyo =
@@ -312,6 +303,7 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+      getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.osasuoritukset.map(ost => Laajuus(
         ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
         asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),

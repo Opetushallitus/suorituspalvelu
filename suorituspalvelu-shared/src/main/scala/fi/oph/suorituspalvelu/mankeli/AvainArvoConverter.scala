@@ -85,21 +85,17 @@ object AvainArvoConverter {
   }
 
   def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
-    val telmatJaHyvaksytytLaajuudet = opiskeluoikeudet.collect {
-      case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect {
-        case s: Telma =>
-          val laajuus = s.osaSuoritukset.filter(_.arviointi.hyvaksytty).map(_.laajuus.arvo).sum
-          (s, laajuus)
-      }
+    val telmat = opiskeluoikeudet.collect {
+      case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
     }.flatten
 
-    val riittavaLaajuus: Seq[(Telma, BigDecimal)] = telmatJaHyvaksytytLaajuudet.filter(_._2 >= AvainArvoConstants.telmaMinimiLaajuus)
-    val tuoreinRiittava: Option[(Telma, BigDecimal)] = riittavaLaajuus.maxByOption(_._1.suoritusVuosi)
+    val riittavaLaajuus: Seq[Telma] = telmat.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
+    val tuoreinRiittava: Option[Telma] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
 
-    val suoritusSelite = Seq(s"Telma-suorituksen laajuus on ${tuoreinRiittava.map(_._2).getOrElse(telmatJaHyvaksytytLaajuudet.map(_._2).max)}.")
+    val suoritusSelite = Seq(s"Telma-suorituksen laajuus on ${tuoreinRiittava.map(_.hyvaksyttyLaajuus.map(_.arvo)).getOrElse(telmat.map(_.hyvaksyttyLaajuus.map(_.arvo)).max)}.")
     val suoritusArvot = AvainArvoConstants.telmaSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
     val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
-      AvainArvoConstants.telmaSuoritusvuosiKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.get._1.suoritusVuosi.toString))
+      AvainArvoConstants.telmaSuoritusvuosiKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.get.suoritusVuosi.toString))
     } else Set.empty
 
     suoritusArvot ++ suoritusVuosiArvot

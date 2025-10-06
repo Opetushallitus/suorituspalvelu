@@ -123,7 +123,7 @@ case class Telma(tunniste: UUID,
                  vahvistusPaivamaara: Option[LocalDate],
                  suoritusVuosi: Int,
                  suoritusKieli: Koodi,
-                 osaSuoritukset: Set[TelmaOsasuoritus]) extends Suoritus, Tyypitetty
+                 hyvaksyttyLaajuus: Option[Laajuus]) extends Suoritus, Tyypitetty
 
 case class Tuva(tunniste: UUID,
                 nimi: Kielistetty,
@@ -135,6 +135,7 @@ case class Tuva(tunniste: UUID,
                 vahvistusPaivamaara: Option[LocalDate],
                 laajuus: Option[Laajuus]) extends Suoritus, Tyypitetty
 
+//Opistovuosi
 case class VapaaSivistystyo(tunniste: UUID,
                             nimi: Kielistetty,
                             koodi: Koodi,
@@ -143,7 +144,8 @@ case class VapaaSivistystyo(tunniste: UUID,
                             supaTila: SuoritusTila,
                             aloitusPaivamaara: Option[LocalDate],
                             vahvistusPaivamaara: Option[LocalDate],
-                            laajuus: Option[Laajuus],
+                            suoritusVuosi: Int,
+                            hyvaksyttyLaajuus: Option[Laajuus],
                             suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
 case class NuortenPerusopetuksenOppiaineenOppimaara(tunniste: UUID,
