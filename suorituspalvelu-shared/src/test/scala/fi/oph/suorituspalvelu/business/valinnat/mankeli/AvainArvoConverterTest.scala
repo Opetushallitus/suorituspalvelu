@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.business.valinnat.mankeli
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, Koodi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -199,4 +199,160 @@ class AvainArvoConverterTest {
     })
   }
 
+  @Test def testTelmaRiittavaLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val suoritusVuosi = 2022
+    val telmaTutkinto = Telma(
+      UUID.randomUUID(),
+      Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus"), None, None),
+      Koodi("999903", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2021-01-01")),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      Koodi("FI", "kieli", Some(1)),
+      Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+    )
+
+    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Oppilaitos(Kielistetty(None, None, None), ""),
+      Set(telmaTutkinto),
+      None
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
+
+    AvainArvoConstants.telmaSuoritettuKeys.foreach(key => {
+      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(key))
+    })
+    AvainArvoConstants.telmaSuoritusvuosiKeys.foreach(key => {
+      Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(key))
+    })
+  }
+
+  @Test def testTelmaRiittamatonLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val suoritusVuosi = 2022
+
+    val telmaTutkinto = Telma(
+      UUID.randomUUID(),
+      Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus"), None, None),
+      Koodi("999903", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2021-01-01")),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      Koodi("FI", "kieli", Some(1)),
+      Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+    )
+
+    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Oppilaitos(Kielistetty(None, None, None), ""),
+      Set(telmaTutkinto),
+      None
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
+
+    AvainArvoConstants.telmaSuoritettuKeys.foreach(key => {
+      Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(key))
+    })
+    //Jos Telmaa ei ole suoritettu riittävässä laajuudessa, suoritusvuodelle ei saa tulla avain-arvoa.
+    AvainArvoConstants.telmaSuoritusvuosiKeys.foreach(key => {
+      Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(key))
+    })
+
+  }
+
+  @Test def testOpistovuosiRiittavaLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val suoritusVuosi = 2022
+    val opistovuosiKoulutus = VapaaSivistystyo(
+      UUID.randomUUID(),
+      Kielistetty(Some("Kansanopiston opistovuosi"), None, None),
+      Koodi("999901", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2021-01-01")),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      Some(Laajuus(28, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Koodi("FI", "kieli", Some(1))
+    )
+
+    val oikeudet = Seq(GeneerinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Koodi("", "", None),
+      "oppilaitosOid",
+      Set(opistovuosiKoulutus),
+      None
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
+
+    AvainArvoConstants.opistovuosiSuoritettuKeys.foreach(key => {
+      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(key))
+    })
+    AvainArvoConstants.opistovuosiSuoritusvuosiKeys.foreach(key => {
+      Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(key))
+    })
+  }
+
+  @Test def testOpistovuosiRiittamatonLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+
+    val suoritusVuosi = 2022
+
+    val opistovuosiKoulutus = VapaaSivistystyo(
+      UUID.randomUUID(),
+      Kielistetty(Some("Kansanopiston opistovuosi"), None, None),
+      Koodi("999901", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2021-01-01")),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      Some(Laajuus(22, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Koodi("FI", "kieli", Some(1))
+    )
+
+    val oikeudet = Seq(GeneerinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Koodi("", "", None),
+      "oppilaitosOid",
+      Set(opistovuosiKoulutus),
+      None
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
+
+    AvainArvoConstants.opistovuosiSuoritettuKeys.foreach(key => {
+      Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(key))
+    })
+    //Jos Opistovuotta ei ole suoritettu riittävässä laajuudessa, suoritusvuodelle ei saa tulla avain-arvoa.
+    AvainArvoConstants.opistovuosiSuoritusvuosiKeys.foreach(key => {
+      Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(key))
+    })
+  }
 }
+
