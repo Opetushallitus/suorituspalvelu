@@ -5,7 +5,7 @@ import com.github.kagkarlsson.scheduler.task.TaskDescriptor
 import com.github.kagkarlsson.scheduler.task.helper.{RecurringTask, Tasks}
 import com.github.kagkarlsson.scheduler.task.schedule.{FixedDelay, Schedules}
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SyncResultForHenkilo, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SafeIterator, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiOppijaFilter, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
@@ -59,39 +59,41 @@ class KoskiService {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
-  def syncKoskiChangesSince(since: Instant): Seq[SyncResultForHenkilo] =
+  def syncKoskiChangesSince(since: Instant): Iterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
     val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
 
-    // haetaan relevantit aktiiviset haut
-    val oppijaOids = tiedot.map(_.oppijaOid)
-    val oppijanHaut = Await.result(hakemuspalveluClient.getHenkilonHaut(oppijaOids), HAKEMUKSET_TIMEOUT)
-    val aktiivisetHaut = oppijanHaut.values.flatten.toSet
-      .filter(h => tarjotanIntegration.tarkistaHaunAktiivisuus(h))
+    tiedot.grouped(100).flatMap(chunk => {
+      // haetaan relevantit aktiiviset haut
+      val oppijaOids = chunk.map(_.oppijaOid)
+      val oppijanHaut = Await.result(hakemuspalveluClient.getHenkilonHaut(oppijaOids), HAKEMUKSET_TIMEOUT)
+      val aktiivisetHaut = oppijanHaut.values.flatten.toSet
+        .filter(h => tarjotanIntegration.tarkistaHaunAktiivisuus(h))
 
-    def hasAktiivinenHaku(oppijaOid: String): Boolean =
-      oppijanHaut.get(oppijaOid)
-        .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
+      def hasAktiivinenHaku(oppijaOid: String): Boolean =
+        oppijanHaut.get(oppijaOid)
+          .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
 
-    def isYsiluokkalainen(koskiData: String): Boolean =
-      val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData), koodistoProvider).toSet
-      KoskiOppijaFilter.isYsiluokkalainen(opiskeluoikeudet)
+      def isYsiluokkalainen(koskiData: String): Boolean =
+        val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData), koodistoProvider).toSet
+        KoskiOppijaFilter.isYsiluokkalainen(opiskeluoikeudet)
 
-    val filtteroity = tiedot.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
-    processKoskiDataForOppijat(filtteroity, fetchedAt)
+      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
+      processKoskiDataForOppijat(filtteroity.iterator, fetchedAt)
+    })
 
-  def syncKoskiForOppijat(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+  def syncKoskiForOppijat(personOids: Set[String]): Iterator[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
     processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
   }
 
-  def syncKoskiForHaku(hakuOid: String): Seq[SyncResultForHenkilo] =
+  def syncKoskiForHaku(hakuOid: String): Iterator[SyncResultForHenkilo] =
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
     syncKoskiForOppijat(personOids)
 
-  private def processKoskiDataForOppijat(data: Seq[KoskiDataForOppija], fetchedAt: Instant): Seq[SyncResultForHenkilo] =
+  private def processKoskiDataForOppijat(data: Iterator[KoskiDataForOppija], fetchedAt: Instant): Iterator[SyncResultForHenkilo] =
     val kantaOperaatiot = KantaOperaatiot(database)
 
     data.map(oppija => {

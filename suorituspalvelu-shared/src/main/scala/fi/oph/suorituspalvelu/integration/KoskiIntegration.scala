@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, Hake
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -61,12 +61,12 @@ class KoskiIntegration {
 
   private val KOSKI_BATCH_SIZE = 5000
 
-  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): Seq[KoskiDataForOppija] = {
+  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): Iterator[KoskiDataForOppija] = {
     fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp))
   }
 
-  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Seq[KoskiDataForOppija] = {
-    val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toSeq
+  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Iterator[KoskiDataForOppija] = {
+    val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
     val started = new AtomicInteger(0)
 
     grouped.flatMap(group => {
@@ -75,18 +75,11 @@ class KoskiIntegration {
     })
   }
 
-  private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Seq[KoskiDataForOppija] = {
+  private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Iterator[KoskiDataForOppija] = {
     val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
-      pollUntilReady(res.resultsUrl.get).flatMap(finishedQuery => {
+      pollUntilReady(res.resultsUrl.get).map(finishedQuery => {
         LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} Koski-tiedostoa.")
-        // Jaetaan tiedostot neljään sekvenssiin, ja sekvenssit käsitellään rinnakkain. Kunkin yksittäisen sekvenssin
-        // sisällä tiedostot käsitellään peräkkäin
-        val grouped = finishedQuery.files.groupBy(_.hashCode % 4).values.toSeq
-        Future.sequence(grouped.map(files => {
-          val initial = Future.successful(Seq.empty[KoskiDataForOppija])
-          files.foldLeft(initial)((acc, fileUrl) => acc.flatMap(accData => handleFile(fileUrl).map(h => accData ++ h)))
-        }
-        )).map(dataSeqs => dataSeqs.flatten)
+        Util.toIterator(finishedQuery.files.iterator.map(f => handleFile(f)), 3, 1.minute).flatten
       })
     })
     Await.result(syncResultF, 2.hours)
@@ -109,12 +102,12 @@ class KoskiIntegration {
     })
   }
 
-  private def handleFile(fileUrl: String): Future[Seq[KoskiDataForOppija]] =
+  private def handleFile(fileUrl: String): Future[Iterator[KoskiDataForOppija]] =
     LOG.info(s"Käsitellään tiedosto: $fileUrl")
     koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).map(fileResult => {
       LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
       val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
-      val splitted = splitKoskiDataByOppija(inputStream).toSeq
+      val splitted = splitKoskiDataByOppija(inputStream)
       LOG.info(s"Saatiin tulokset tiedostolle $fileUrl")
       splitted.map(henkilonTiedot => {
         KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)

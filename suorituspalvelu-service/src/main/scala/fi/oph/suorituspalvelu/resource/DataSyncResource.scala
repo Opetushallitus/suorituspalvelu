@@ -132,8 +132,9 @@ class DataSyncResource {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
-          val result: Seq[SyncResultForHenkilo] = koskiService.syncKoskiForHaku(hakuOid.get)
-          val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${result.count(_.versio.isDefined)} versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
+          val (changed, exceptions) = koskiService.syncKoskiForHaku(hakuOid.get)
+            .foldLeft((0, 0))((counts, result) => (counts._1 + { if(result.versio.isDefined) 1 else 0 }, counts._2 + { if(result.exception.isDefined) 1 else 0 }))
+          val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${changed} versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
           ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
         })
@@ -185,8 +186,9 @@ class DataSyncResource {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("timestamp" -> timestamp.toString), AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
           LOG.info(s"Haetaan ${timestamp} jälkeen muuttuneet Koski-tiedot")
-          val result = koskiService.syncKoskiChangesSince(timestamp)
-          val responseStr = s"Tallennettiin yhteensä ${result.count(_.versio.isDefined)} muuttunutta versiotietoa. Yhteensä ${result.count(_.exception.isDefined)} henkilön tietojen tallennuksessa oli ongelmia."
+          val (changed, exceptions) = koskiService.syncKoskiChangesSince(timestamp)
+            .foldLeft((0, 0))((counts, result) => (counts._1 + { if(result.versio.isDefined) 1 else 0 }, counts._2 + { if(result.exception.isDefined) 1 else 0 }))
+          val responseStr = s"Tallennettiin yhteensä ${changed} muuttunutta versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia."
           LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
           ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
         })
