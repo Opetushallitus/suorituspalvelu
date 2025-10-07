@@ -5,7 +5,7 @@ import com.github.kagkarlsson.scheduler.task.TaskDescriptor
 import com.github.kagkarlsson.scheduler.task.helper.{RecurringTask, Tasks}
 import com.github.kagkarlsson.scheduler.task.schedule.{FixedDelay, Schedules}
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SafeIterator, SyncResultForHenkilo, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiOppijaFilter, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
@@ -59,7 +59,7 @@ class KoskiService {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
-  def syncKoskiChangesSince(since: Instant): Iterator[SyncResultForHenkilo] =
+  def syncKoskiChangesSince(since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
     val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
 
@@ -79,21 +79,21 @@ class KoskiService {
         KoskiOppijaFilter.isYsiluokkalainen(opiskeluoikeudet)
 
       val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
-      processKoskiDataForOppijat(filtteroity.iterator, fetchedAt)
+      processKoskiDataForOppijat(new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
-  def syncKoskiForOppijat(personOids: Set[String]): Iterator[SyncResultForHenkilo] = {
+  def syncKoskiForOppijat(personOids: Set[String]): SaferIterator[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
     processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
   }
 
-  def syncKoskiForHaku(hakuOid: String): Iterator[SyncResultForHenkilo] =
+  def syncKoskiForHaku(hakuOid: String): SaferIterator[SyncResultForHenkilo] =
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
     syncKoskiForOppijat(personOids)
 
-  private def processKoskiDataForOppijat(data: Iterator[KoskiDataForOppija], fetchedAt: Instant): Iterator[SyncResultForHenkilo] =
+  private def processKoskiDataForOppijat(data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
     val kantaOperaatiot = KantaOperaatiot(database)
 
     data.map(oppija => {

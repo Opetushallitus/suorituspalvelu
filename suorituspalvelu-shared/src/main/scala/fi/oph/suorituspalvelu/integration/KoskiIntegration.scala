@@ -61,18 +61,18 @@ class KoskiIntegration {
 
   private val KOSKI_BATCH_SIZE = 5000
 
-  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): Iterator[KoskiDataForOppija] = {
-    fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp))
+  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): SaferIterator[KoskiDataForOppija] = {
+    new SaferIterator(fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp)))
   }
 
-  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Iterator[KoskiDataForOppija] = {
+  def fetchKoskiTiedotForOppijat(personOids: Set[String]): SaferIterator[KoskiDataForOppija] = {
     val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
     val started = new AtomicInteger(0)
 
-    grouped.flatMap(group => {
+    new SaferIterator(grouped.flatMap(group => {
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
       fetchKoskiBatch(KoskiMassaluovutusQueryParams.forOids(group))
-    })
+    }))
   }
 
   private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Iterator[KoskiDataForOppija] = {

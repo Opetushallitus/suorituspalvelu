@@ -33,25 +33,27 @@ object Util {
 }
 
 /**
- * A safe wrapper around Iterator that removes methods that would consume the entire iterator.
- * Only allows controlled element-by-element access or safe batch operations.
+ * Hiukan turvallisempi wrapperi Iterator-luokan ympärille jossa ei .size() -metodia tai muita ilmeisimpiä
+ * footguneja.
  */
-class SafeIterator[T](val underlying: Iterator[T]) {
+class SaferIterator[T](val underlying: Iterator[T]) {
 
-  // Safe core methods - these don't consume more than requested
   def hasNext: Boolean = underlying.hasNext
   def next(): T = underlying.next()
 
-  def grouped(size: Int): SafeIterator[Seq[T]] = new SafeIterator(underlying.grouped(size))
+  def grouped(size: Int): SaferIterator[Seq[T]] = new SaferIterator(underlying.grouped(size))
 
-  // Safe transformations that preserve lazy evaluation
-  def map[U](f: T => U): SafeIterator[U] = new SafeIterator(underlying.map(f))
+  def map[U](f: T => U): SaferIterator[U] = new SaferIterator(underlying.map(f))
 
-  def filter(p: T => Boolean): SafeIterator[T] = new SafeIterator(underlying.filter(p))
+  def filter(p: T => Boolean): SaferIterator[T] = new SaferIterator(underlying.filter(p))
 
-  def flatMap[U](f: T => IterableOnce[U]): SafeIterator[U] = new SafeIterator(underlying.flatMap(f))
-  
-  // Safe peek operations
+  def flatMap[U](f: T => IterableOnce[U] | SaferIterator[U]): SaferIterator[U] = new SaferIterator(underlying.flatMap(p => {
+    f(p) match {
+      case value if value.isInstanceOf[SaferIterator[_]] => value.asInstanceOf[SaferIterator[U]].underlying
+      case value => value.asInstanceOf[IterableOnce[U]]
+    }
+  }))
+
   def foreach[U](f: T => U): Unit = underlying.foreach(f)
 
   def foldLeft[B](z: B)(op: (B, T) => B): B = underlying.foldLeft(z)(op)
