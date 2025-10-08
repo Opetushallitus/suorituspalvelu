@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.integration.client
 
+import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
 import org.slf4j.LoggerFactory
 import org.asynchttpclient.Dsl.asyncHttpClient
 import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Request, Response}
@@ -37,7 +37,19 @@ class OhjausparametritClient(environmentBaseUrl: String) {
       LOG.info(s"Parsitut ohjausparametrit: $parsedResult")
       parsedResult
     })
+  }
 
+  def haeKaikkiOhjausparametrit(): Future[Map[String, Ohjausparametrit]] = {
+    val url = environmentBaseUrl + "/ohjausparametrit-service/api/v1/rest/parametri/ALL"
+    val request = client
+      .prepareGet(url)
+      .build()
+    executeRequest(request).map(resultStr => {
+      val typeRef = new TypeReference[Map[String, Ohjausparametrit]] {}
+      val parsedResult: Map[String, Ohjausparametrit] = mapper.readValue(resultStr, typeRef)
+      LOG.info(s"Parsitut ohjausparametrit: $parsedResult")
+      parsedResult
+    })
   }
 
   /**

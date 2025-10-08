@@ -92,7 +92,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedot.name, auditLogEntry.operation)
-    Assertions.assertEquals(Map("henkiloOid" -> oppijaNumero), auditLogEntry.target)
+    Assertions.assertEquals(Map("oppijaNumero" -> oppijaNumero), auditLogEntry.target)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
