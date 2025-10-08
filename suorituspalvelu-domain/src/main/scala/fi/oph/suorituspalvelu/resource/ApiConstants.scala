@@ -36,8 +36,13 @@ object ApiConstants {
   final val YTR_DATASYNC_HENKILOT_PATH                      = YTR_DATASYNC_PATH + "/henkilot"
   final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
 
-  final val VIRTA_DATASYNC_HENKILO_PATH                     = DATASYNC_PATH + "/virta/henkilo"
-  final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta/haku"
+  final val VIRTA_DATASYNC_PARAM_NAME                       = "oppijaNumero"
+  final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
+  final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta"
+  final val VIRTA_DATASYNC_PATH_OPPIJA                      = VIRTA_DATASYNC_PATH + "/oppija/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
+  final val VIRTA_DATASYNC_HAKU_PATH                        = VIRTA_DATASYNC_PATH + "/haku/"
+  final val VIRTA_DATASYNC_HENKILO_PATH                     = VIRTA_DATASYNC_PATH + "/henkilo"
+  final val VIRTA_DATASYNC_AKTIIVISET_PATH                  = VIRTA_DATASYNC_PATH + "/aktiiviset/"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
   final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
 

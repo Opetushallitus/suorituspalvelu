@@ -1,14 +1,16 @@
 package fi.oph.suorituspalvelu.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, SaferIterator, SyncResultForHenkilo, Util}
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo, TarjontaIntegration, Util}
+import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
-import fi.oph.suorituspalvelu.service.VirtaService.{VIRTA_REFRESH_TASK, VIRTA_REFRESH_TASK_FOR_HAKU}
+import fi.oph.suorituspalvelu.service.VirtaService.{VIRTA_REFRESH_TASK_FOR_HAUT, VIRTA_REFRESH_TASK_FOR_OPPIJA}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -24,15 +26,15 @@ import fi.oph.suorituspalvelu.service.VirtaService.LOG
 import slick.jdbc.JdbcBackend
 
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable
+import scala.jdk.CollectionConverters.*
 
 object VirtaService {
 
   val LOG = LoggerFactory.getLogger(classOf[VirtaService])
 
-  val VIRTA_REFRESH_TASK: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh", classOf[String]);
-  val VIRTA_REFRESH_TASK_FOR_HAKU: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh-for-haku", classOf[String]);
+  val VIRTA_REFRESH_TASK_FOR_OPPIJA: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh", classOf[String]);
+  val VIRTA_REFRESH_TASK_FOR_HAUT: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh-for-haku", classOf[String]);
 }
 
 object VirtaUtil {
@@ -59,6 +61,9 @@ class VirtaRefresh {
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired val virtaClient: VirtaClient = null
+
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
 
   final val VIRTA_CONCURRENCY = 3
 
@@ -117,16 +122,18 @@ class VirtaRefresh {
   }
 
   @Bean
-  def virtaRefreshTaskForHaku(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK_FOR_HAKU)
+  def virtaRefreshTaskForHaut(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK_FOR_HAUT)
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(1, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(30), 2)))
     .execute((instance, ctx) => {
-      val hakuOid: String = instance.getData
-      val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
-      refreshVirtaForPersonOids(personOids)
+      val hakuOids: Seq[String] = mapper.readValue(instance.getData, classOf[Seq[String]])
+      hakuOids.foreach(hakuOid => {
+        val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+        refreshVirtaForPersonOids(personOids)
+      })
     })
 
   @Bean
-  def virtaRefreshTask(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK)
+  def virtaRefreshTask(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK_FOR_OPPIJA)
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(6, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(1), 2)))
     .execute((instance, ctx) => {
     val oppijaNumero = instance.getData
@@ -139,15 +146,26 @@ class VirtaService {
 
   @Autowired val scheduler: Scheduler = null
 
+  @Autowired val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired val mapper: ObjectMapper = null
+    
   def syncVirta(oppijaNumero: String): UUID = {
     val taskId = UUID.randomUUID();
-    this.scheduler.schedule(VIRTA_REFRESH_TASK.instance(taskId.toString).data(oppijaNumero).scheduledTo(Instant.now()))
+    this.scheduler.schedule(VIRTA_REFRESH_TASK_FOR_OPPIJA.instance(taskId.toString).data(oppijaNumero).scheduledTo(Instant.now()))
     taskId
   }
 
-  def syncVirtaForHaku(hakuOid: String): UUID = {
+  def syncVirtaForHaut(hakuOids: Seq[String]): UUID = {
     val taskId = UUID.randomUUID();
-    this.scheduler.schedule(VIRTA_REFRESH_TASK_FOR_HAKU.instance(taskId.toString).data(hakuOid).scheduledTo(Instant.now()))
+    this.scheduler.schedule(VIRTA_REFRESH_TASK_FOR_HAUT.instance(taskId.toString).data(mapper.writeValueAsString(hakuOids.asJava)).scheduledTo(Instant.now()))
     taskId
+  }
+
+  def syncVirtaForAktiivisetHaut(): Seq[UUID] = {
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
+      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("11"))
+
+    Seq(syncVirtaForHaut(paivitettavatHaut.map(h => h.oid)))
   }
 }

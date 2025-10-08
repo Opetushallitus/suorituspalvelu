@@ -2,8 +2,10 @@ package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
+
+import java.util.UUID
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService}
@@ -344,7 +346,7 @@ class DataSyncResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
           .map(henkiloOid =>
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map("henkiloOid" -> henkiloOid), AuditOperation.PaivitaVirtaTiedot, None)
+            AuditLog.log(user, Map(VIRTA_DATASYNC_PARAM_NAME -> henkiloOid), AuditOperation.PaivitaVirtaTiedot, None)
             LOG.info(s"Haetaan Virta-tiedot henkilölle ${henkiloOid}")
             val jobId = virtaService.syncVirta(henkiloOid)
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
@@ -402,9 +404,42 @@ class DataSyncResource {
           val user = AuditLog.getUser(request)
           AuditLog.log(user, Map("hakuOid" -> hakuOid), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
-          val jobId = virtaService.syncVirtaForHaku(hakuOid)
+          val jobId = virtaService.syncVirtaForHaut(Seq(hakuOid))
           LOG.info(s"Palautetaan rajapintavastaus, $jobId")
           ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId))
+        })
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+  }
+
+  @PostMapping(
+    path = Array(VIRTA_DATASYNC_AKTIIVISET_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Päivittää aktiivisten hakujen hakijoiden tiedot Virrasta",
+    description = "Huomioita:\n" +
+      "- Huomio 1",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa job-id:n"),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def paivitaVirtaTiedotAktiivisetHaut(request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = VIRTA_DATASYNC_AKTIIVISET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      Right(None)
+        .flatMap(_ =>
+          // tarkastetaan oikeudet
+          if (securityOperaatiot.onRekisterinpitaja())
+            Right(None)
+          else
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+        .map(_ => {
+          val user = AuditLog.getUser(request)
+          AuditLog.log(user, Map.empty, AuditOperation.PaivitaVirtaTiedotAktiivisille, None)
+          LOG.info(s"Päivitetään aktiivisten hakujen hakijoiden tiedot Virrasta")
+          val jobIds = virtaService.syncVirtaForAktiivisetHaut()
+          ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(UUID.randomUUID()))
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
