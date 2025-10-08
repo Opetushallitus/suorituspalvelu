@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
+import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -495,7 +496,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
-  
+
   @Test def testTelma(): Unit =
     val telma = getFirstSuoritusFromJson(
       """
@@ -509,7 +510,7 @@ class KoskiParsingTest {
         |            {
         |              "alku": "2022-06-06",
         |              "tila": {
-        |                "koodiarvo": "mitatoity"
+        |                "koodiarvo": "lasna"
         |              }
         |            }
         |          ]
@@ -552,7 +553,26 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), telma.nimi)
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), telma.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
+    Assertions.assertEquals(2023, telma.suoritusVuosi)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
+
+  @Test def testTelmaOsasuoritukset(): Unit = {
+    val fileName = "/telmaosasuoritukset.json"
+    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    splitData.foreach((oppijaOid, data) => {
+      val koskiOpiskeluoikeudet: Seq[koski.Opiskeluoikeus] = KoskiParser.parseKoskiData(data)
+      val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
+        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+
+      val telmaSuoritus = oikeudet.head.suoritukset.head.asInstanceOf[Telma]
+      val telmaLaajuus = telmaSuoritus.hyvaksyttyLaajuus.map(_.arvo)
+
+      Assertions.assertEquals(oikeudet.size, 1)
+      Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
+      Assertions.assertEquals(telmaLaajuus.get, 60)
+      })
+  }
 
   @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson("""
@@ -1226,7 +1246,9 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), vst.koskiTila)
     Assertions.assertEquals(Some(LocalDate.parse("2024-05-25")), vst.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-04-16")), vst.vahvistusPaivamaara)
-    Assertions.assertEquals(Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.laajuus)
+    Assertions.assertEquals(
+      Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)),
+      Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.hyvaksyttyLaajuus)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), vst.suoritusKieli)
 
   @Test def testMitatoidutOpiskeluoikeudetFiltteroidaan(): Unit =
@@ -1265,7 +1287,7 @@ class KoskiParsingTest {
         |  }
         |]
         |""".stripMargin)
-    
+
     Assertions.assertTrue(opiskeluoikeus.isEmpty)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {

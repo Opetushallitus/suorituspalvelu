@@ -94,10 +94,53 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}", Instant.now())
-    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
-    val telma = Telma(UUID.randomUUID(), Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), suoritusKieli)
-    val perusopetuksenOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), None, Koodi("valmistunut", "koodisto", None), SuoritusTila.VALMIS, suoritusKieli, Set.empty, None, None, None, Set.empty)
-    val perusopetuksenOppiaineenOppimaara = NuortenPerusopetuksenOppiaineenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "oid"), Kielistetty(Some("nimi"), None, None), Koodi("arvo", "koodisto", None), Koodi("6", "arviointiasteikkoyleissivistava", None), suoritusKieli, None, None)
+    val ammatillinenTutkinto =
+      AmmatillinenPerustutkinto(
+        UUID.randomUUID(),
+        Kielistetty(Some("diplomi"), None, None),
+        Koodi(tutkintoKoodi, "koulutus", Some(1)),
+        Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
+        Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()),
+        Some(LocalDate.now()),
+        None,
+        Koodi("tapa", "suoritustapa", Some(1)),
+        suoritusKieli,
+        Set.empty)
+    val telma =
+      Telma(
+        UUID.randomUUID(),
+        Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None),
+        Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
+        Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()),
+        Some(LocalDate.now()),
+        2025,
+        suoritusKieli,
+        Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)))
+    val perusopetuksenOppimaara =
+      PerusopetuksenOppimaara(
+        UUID.randomUUID(),
+        None,
+        Oppilaitos(Kielistetty(None, None, None), "oid"),
+        None,
+        Koodi("valmistunut", "koodisto", None),
+        SuoritusTila.VALMIS,
+        suoritusKieli,
+        Set.empty,
+        None,
+        None,
+        None,
+        Set.empty)
+    val perusopetuksenOppiaineenOppimaara =
+      NuortenPerusopetuksenOppiaineenOppimaara(
+        UUID.randomUUID(),
+        None,
+        Oppilaitos(Kielistetty(None, None, None), "oid"),
+        Kielistetty(Some("nimi"), None, None),
+        Koodi("arvo", "koodisto", None),
+        Koodi("6", "arviointiasteikkoyleissivistava", None),
+        suoritusKieli,
+        None,
+        None)
     val yoTutkinto = YOTutkinto(UUID.randomUUID(), suoritusKieli, SuoritusTila.KESKEN, None, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),

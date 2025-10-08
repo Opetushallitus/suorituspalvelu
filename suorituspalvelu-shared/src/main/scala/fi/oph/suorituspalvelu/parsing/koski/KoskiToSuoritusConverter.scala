@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
 import java.time.LocalDate
@@ -91,6 +92,12 @@ object KoskiToSuoritusConverter {
                   arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
                     .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
                 }
+              }
+              parasArviointi
+            case "arviointiasteikkoammatillinenhyvaksyttyhylatty" =>
+              val parasArviointi: Option[Arviointi] = {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
               }
               parasArviointi
             case _ =>
@@ -203,7 +210,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy())
     )
-  
+
   def toAmmatillinenTutkinto(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): fi.oph.suorituspalvelu.business.Suoritus = {
     suoritus.koulutusmoduuli.get.koulutustyyppi.get.koodiarvo match
       case "1" => toAmmatillinenPerustutkinto(opiskeluoikeus, suoritus)
@@ -212,7 +219,24 @@ object KoskiToSuoritusConverter {
       case "12" => toErikoisAmmattiTutkinto(opiskeluoikeus, suoritus)
   }
 
-  def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma =
+  //Vahvistuspäivän vuosi, tai kuluva vuosi jos ei vahvistettu
+  //Suunniteltu käyttöön suoritustyypeille Tuva, Telma, Opistovuosi
+  def getLisapistekoulutusSuoritusvuosi(suoritus: Suoritus): Int = {
+    suoritus.vahvistus.map(_.`päivä`).map(p => LocalDate.parse(p).getYear)
+      .getOrElse(java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate.getYear)
+  }
+
+  def getLisapistekoulutusHyvaksyttyLaajuus(suoritus: Suoritus): Option[Laajuus] = {
+    suoritus.osasuoritukset.map(ost => Laajuus(
+      ost.filter(_.arviointi.exists(a => a.exists(_.hyväksytty)))
+        .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
+      asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
+      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.map(y => y.nimi)))).headOption,
+      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.flatMap(y => y.lyhytNimi)))).headOption
+    ))
+  }
+
+  def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma = {
     val tila = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.tila).last)
 
     Telma(
@@ -231,8 +255,11 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
+      getLisapistekoulutusSuoritusvuosi(suoritus),
+      suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
+      getLisapistekoulutusHyvaksyttyLaajuus(suoritus)
     )
+  }
 
   def toTuva(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Tuva =
     Tuva(
@@ -251,7 +278,12 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => Laajuus(l.arvo, asKoodiObject(l.yksikkö.get), Option.apply(l.yksikkö.get.nimi), l.yksikkö.get.lyhytNimi)))
+      laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l =>
+        Laajuus(
+          l.arvo,
+          asKoodiObject(l.yksikkö.get),
+          Option.apply(l.yksikkö.get.nimi),
+          l.yksikkö.get.lyhytNimi)))
     )
 
   def toVapaaSivistystyoKoulutus(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): VapaaSivistystyo =
@@ -271,6 +303,7 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+      getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.osasuoritukset.map(ost => Laajuus(
         ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
         asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
