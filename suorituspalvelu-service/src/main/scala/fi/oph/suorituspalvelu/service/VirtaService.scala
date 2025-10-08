@@ -1,14 +1,15 @@
 package fi.oph.suorituspalvelu.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenkilo}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
-import fi.oph.suorituspalvelu.service.VirtaService.{VIRTA_REFRESH_TASK, VIRTA_REFRESH_TASK_FOR_HAKU}
+import fi.oph.suorituspalvelu.service.VirtaService.{VIRTA_REFRESH_TASK_FOR_HAKU, VIRTA_REFRESH_TASK_FOR_OPPIJA}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -26,12 +27,13 @@ import slick.jdbc.JdbcBackend
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable
+import scala.jdk.CollectionConverters.*
 
 object VirtaService {
 
   val LOG = LoggerFactory.getLogger(classOf[VirtaService])
 
-  val VIRTA_REFRESH_TASK: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh", classOf[String]);
+  val VIRTA_REFRESH_TASK_FOR_OPPIJA: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh", classOf[String]);
   val VIRTA_REFRESH_TASK_FOR_HAKU: TaskDescriptor[String] = TaskDescriptor.of("virta-refresh-for-haku", classOf[String]);
 }
 
@@ -59,6 +61,8 @@ class VirtaRefresh {
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired val virtaClient: VirtaClient = null
+
+  @Autowired val mapper: ObjectMapper = null
 
   final val TIMEOUT = 30.seconds
 
@@ -113,67 +117,69 @@ class VirtaRefresh {
   }
 
   @Bean
-  def virtaRefreshTaskForHaku(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK_FOR_HAKU)
+  def virtaRefreshTaskForHaut(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK_FOR_HAKU)
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(1, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(30), 2)))
     .execute((instance, ctx) => {
-      val hakuOid: String = instance.getData
+      val hakuOids: Seq[String] = mapper.readValue(instance.getData, classOf[Array[String]]).toSeq
 
-      //Hetut voisi ottaa joko hakemuksilta tai erikseen haettavilta onr-henkilöiltä. Onr-henkilöt lienevät vähintään yhtä hyvä ja mahdollisesti parempi lähde?
-      val hakemustenHenkilot: Future[Seq[AtaruHakemuksenHenkilotiedot]] = hakemuspalveluClient.getHaunHakijat(hakuOid)
-      hakemustenHenkilot.flatMap((hakemustenHenkilotResult: Seq[AtaruHakemuksenHenkilotiedot]) => {
-        val personOids = hakemustenHenkilotResult.flatMap(_.personOid).toSet
-        LOG.info(s"Saatiin ${hakemustenHenkilotResult.size} hakemuksen tiedot haulle $hakuOid")
-        val aliakset = onrIntegration.getAliasesForPersonOids(personOids)
-        //val masterHenkilot = onrIntegration.getMasterHenkilosForPersonOids(personOids)
+      hakuOids.foreach(hakuOid => {
+        //Hetut voisi ottaa joko hakemuksilta tai erikseen haettavilta onr-henkilöiltä. Onr-henkilöt lienevät vähintään yhtä hyvä ja mahdollisesti parempi lähde?
+        val hakemustenHenkilot: Future[Seq[AtaruHakemuksenHenkilotiedot]] = hakemuspalveluClient.getHaunHakijat(hakuOid)
+        hakemustenHenkilot.flatMap((hakemustenHenkilotResult: Seq[AtaruHakemuksenHenkilotiedot]) => {
+          val personOids = hakemustenHenkilotResult.flatMap(_.personOid).toSet
+          LOG.info(s"Saatiin ${hakemustenHenkilotResult.size} hakemuksen tiedot haulle $hakuOid")
+          val aliakset = onrIntegration.getAliasesForPersonOids(personOids)
+          //val masterHenkilot = onrIntegration.getMasterHenkilosForPersonOids(personOids)
 
-        //Haetaan Virrasta yksitellen tiedot kaikkien hakijoiden kaikille aliaksille
-        val resultsForOids: Future[Seq[SyncResultForHenkilo]] = aliakset.flatMap(aliasResult => {
-          LOG.info(s"Saatiin oppijanumerorekisteristä yhteensä ${aliasResult.allOids.size} oppijanumeroa ja aliasta hakemuksilta poimituille ${personOids.size} henkilöOidille")
-          val synced = new AtomicInteger(0)
-          aliasResult.allOids.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
-            case (result: Future[Seq[SyncResultForHenkilo]], personOid: String) =>
-              result.flatMap((rs: Seq[SyncResultForHenkilo]) => {
-                LOG.info(
-                  s"Syncing VIRTA for person: $personOid, progress ${synced.incrementAndGet()}/${aliasResult.allOids.size}"
-                )
-                safeFetchAndPersistPersonOid(personOid).map(cr => rs :+ cr)
-              })
+          //Haetaan Virrasta yksitellen tiedot kaikkien hakijoiden kaikille aliaksille
+          val resultsForOids: Future[Seq[SyncResultForHenkilo]] = aliakset.flatMap(aliasResult => {
+            LOG.info(s"Saatiin oppijanumerorekisteristä yhteensä ${aliasResult.allOids.size} oppijanumeroa ja aliasta hakemuksilta poimituille ${personOids.size} henkilöOidille")
+            val synced = new AtomicInteger(0)
+            aliasResult.allOids.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
+              case (result: Future[Seq[SyncResultForHenkilo]], personOid: String) =>
+                result.flatMap((rs: Seq[SyncResultForHenkilo]) => {
+                  LOG.info(
+                    s"Syncing VIRTA for person: $personOid, progress ${synced.incrementAndGet()}/${aliasResult.allOids.size}"
+                  )
+                  safeFetchAndPersistPersonOid(personOid).map(cr => rs :+ cr)
+                })
+            }
+          })
+
+          //Ei persistoida toistaiseksi tietoja hetuille
+          /*
+          val hetuF: Future[Seq[SyncResultForHenkilo]] = masterHenkilot.flatMap(masterHenkilotResult => {
+            val synced = new AtomicInteger(0)
+            val kaikkiHetut = masterHenkilotResult.flatMap(_._2.combinedHetut).toSet
+            kaikkiHetut.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
+              case (result: Future[Seq[SyncResultForHenkilo]], hetu: String) =>
+                result.flatMap((rs: Seq[SyncResultForHenkilo]) => {
+                  LOG.info(
+                    s"Syncing VIRTA for person with hetu (xxxxxx-xxxx), progress ${synced.incrementAndGet()}/${kaikkiHetut.size}"
+                  )
+                  val syncResultF: Future[SyncResultForHenkilo] = virtaClient.haeTiedotHetulle(hetu).map(persist)
+                  syncResultF.map(cr => rs :+ cr)
+                })
           }
-        })
+          })
+          */
 
-        //Ei persistoida toistaiseksi tietoja hetuille
-        /*
-        val hetuF: Future[Seq[SyncResultForHenkilo]] = masterHenkilot.flatMap(masterHenkilotResult => {
-          val synced = new AtomicInteger(0)
-          val kaikkiHetut = masterHenkilotResult.flatMap(_._2.combinedHetut).toSet
-          kaikkiHetut.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
-            case (result: Future[Seq[SyncResultForHenkilo]], hetu: String) =>
-              result.flatMap((rs: Seq[SyncResultForHenkilo]) => {
-                LOG.info(
-                  s"Syncing VIRTA for person with hetu (xxxxxx-xxxx), progress ${synced.incrementAndGet()}/${kaikkiHetut.size}"
-                )
-                val syncResultF: Future[SyncResultForHenkilo] = virtaClient.haeTiedotHetulle(hetu).map(persist)
-                syncResultF.map(cr => rs :+ cr)
-              })
-        }
-        })
-        */
-
-        val fullResults = Future.sequence(Seq(resultsForOids))
-        val succeeded = fullResults.map(_.flatten.filter(_.exception.isEmpty))
-        succeeded.map(results => {
-          LOG.info(s"Synkattiin onnistuneesti ${results.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
-        })
-        val failed = fullResults.map(_.flatten.filter(_.exception.isDefined))
-        failed.map(failedResults => {
-          LOG.error(s"Failed to sync ${failedResults.size} henkiloita VIRTA-tietojen synkronoinnissa")
-          failedResults.foreach(r => LOG.error(s"Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
+          val fullResults = Future.sequence(Seq(resultsForOids))
+          val succeeded = fullResults.map(_.flatten.filter(_.exception.isEmpty))
+          succeeded.map(results => {
+            LOG.info(s"Synkattiin onnistuneesti ${results.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
+          })
+          val failed = fullResults.map(_.flatten.filter(_.exception.isDefined))
+          failed.map(failedResults => {
+            LOG.error(s"Failed to sync ${failedResults.size} henkiloita VIRTA-tietojen synkronoinnissa")
+            failedResults.foreach(r => LOG.error(s"Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
+          })
         })
       })
     })
 
   @Bean
-  def virtaRefreshTask(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK)
+  def virtaRefreshTask(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK_FOR_OPPIJA)
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(6, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(1), 2)))
     .execute((instance, ctx) => {
     val oppijaNumero = instance.getData.split(":").head
@@ -196,15 +202,26 @@ class VirtaService {
 
   @Autowired val scheduler: Scheduler = null
 
-  def syncVirta(oppijaNumero: String, hetu: Option[String]): UUID = {
+  @Autowired val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired val mapper: ObjectMapper = null
+
+  def syncVirtaForOppija(oppijaNumero: String, hetu: Option[String]): UUID = {
     val taskId = UUID.randomUUID();
-    this.scheduler.schedule(VIRTA_REFRESH_TASK.instance(taskId.toString).data(oppijaNumero + ":" + hetu.getOrElse("")).scheduledTo(Instant.now()))
+    this.scheduler.schedule(VIRTA_REFRESH_TASK_FOR_OPPIJA.instance(taskId.toString).data(oppijaNumero + ":" + hetu.getOrElse("")).scheduledTo(Instant.now()))
     taskId
   }
 
-  def syncVirtaForHaku(hakuOid: String): UUID = {
+  def syncVirtaForHaut(hakuOids: Seq[String]): UUID = {
     val taskId = UUID.randomUUID();
-    this.scheduler.schedule(VIRTA_REFRESH_TASK_FOR_HAKU.instance(taskId.toString).data(hakuOid).scheduledTo(Instant.now()))
+    this.scheduler.schedule(VIRTA_REFRESH_TASK_FOR_HAKU.instance(taskId.toString).data(mapper.writeValueAsString(hakuOids.asJava)).scheduledTo(Instant.now()))
     taskId
+  }
+
+  def syncVirtaForAktiivisetHaut(): Seq[UUID] = {
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
+      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("11"))
+
+    Seq(syncVirtaForHaut(paivitettavatHaut.map(h => h.oid)))
   }
 }

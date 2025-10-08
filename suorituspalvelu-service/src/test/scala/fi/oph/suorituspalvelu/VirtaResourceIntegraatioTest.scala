@@ -38,19 +38,19 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testRefreshVirtaAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tällä ei väliä"), ""))
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH_OPPIJA.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tällä ei väliä"), ""))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testRefreshVirtaNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tällä ei väliä"), ""))
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH_OPPIJA.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tällä ei väliä"), ""))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaMalformedOid(): Unit =
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH_OPPIJA.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
@@ -64,7 +64,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(virtaClient.haeKaikkiTiedot(oppijaNumero, None)).thenReturn(Future.successful(Seq(VirtaResultForHenkilo(oppijaNumero, virtaXml))))
 
-    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH_OPPIJA.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk()).andReturn()
 
     val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
@@ -92,7 +92,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(virtaClient.haeKaikkiTiedot(oppijaNumero, None)).thenReturn(Future.successful(Seq(VirtaResultForHenkilo(oppijaNumero, virtaXml))))
 
-    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_PATH_OPPIJA.replace(ApiConstants.VIRTA_DATASYNC_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk()).andReturn()
 
     val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
