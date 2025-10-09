@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
-import io.swagger.v3.oas.annotations.media.{Schema}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_TULOSTIEDOSTO, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
 import java.util.{Optional, UUID}
@@ -44,6 +44,13 @@ case class YtrSyncFailureResponse(
 case class KoskiHaeMuuttuneetJalkeenPayload(
   @(Schema @field)(example = ESIMERKKI_AIKALEIMA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty aikaleima: Optional[String]) {
+
+  def this() = this(Optional.empty())
+}
+
+case class KoskiRetryPayload(
+  @(Schema @field)(example = "[\"" + ESIMERKKI_TULOSTIEDOSTO + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tiedostot: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
 }

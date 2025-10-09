@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruHenkiloSearchParams, Hake
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -61,63 +61,78 @@ class KoskiIntegration {
 
   private val KOSKI_BATCH_SIZE = 5000
 
-  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): Seq[KoskiDataForOppija] = {
-    fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp))
+  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): SaferIterator[KoskiDataForOppija] = {
+    new SaferIterator(fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp)))
   }
 
-  def fetchKoskiTiedotForOppijat(personOids: Set[String]): Seq[KoskiDataForOppija] = {
-    val grouped = personOids.grouped(KOSKI_BATCH_SIZE).toSeq
+  def fetchKoskiTiedotForOppijat(personOids: Set[String]): SaferIterator[KoskiDataForOppija] = {
+    val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
     val started = new AtomicInteger(0)
 
-    grouped.flatMap(group => {
+    new SaferIterator(grouped.flatMap(group => {
       LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
       fetchKoskiBatch(KoskiMassaluovutusQueryParams.forOids(group))
-    })
+    }))
   }
 
-  private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Seq[KoskiDataForOppija] = {
+  def retryKoskiResultFile(fileUrl: String): SaferIterator[KoskiDataForOppija] = {
+    new SaferIterator(Await.result(handleFile(fileUrl, 3), 2.hours))
+  }
+
+  private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Iterator[KoskiDataForOppija] = {
     val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
-      pollUntilReady(res.resultsUrl.get).flatMap(finishedQuery => {
-        LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} Koski-tiedostoa.")
-        // Jaetaan tiedostot neljään sekvenssiin, ja sekvenssit käsitellään rinnakkain. Kunkin yksittäisen sekvenssin
-        // sisällä tiedostot käsitellään peräkkäin
-        val grouped = finishedQuery.files.groupBy(_.hashCode % 4).values.toSeq
-        Future.sequence(grouped.map(files => {
-          val initial = Future.successful(Seq.empty[KoskiDataForOppija])
-          files.foldLeft(initial)((acc, fileUrl) => acc.flatMap(accData => handleFile(fileUrl).map(h => accData ++ h)))
-        }
-        )).map(dataSeqs => dataSeqs.flatten)
+      LOG.info(s"Käsitellään KOSKI-massaluovutushaun $query tulokset osoitteesta ${res.resultsUrl.get}")
+      pollUntilReadyWithRetries(res.resultsUrl.get, 3).map(finishedQuery => {
+        LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} KOSKI-tulostiedostoa.")
+        Util.toIterator(finishedQuery.files.iterator.map(f => handleFile(f, 3)), 3, 1.minute).flatten
       })
     })
     Await.result(syncResultF, 2.hours)
+  }
+
+  def pollUntilReadyWithRetries(pollUrl: String, retries: Int): Future[KoskiMassaluovutusQueryResponse] = {
+    pollUntilReady(pollUrl).recoverWith({
+      case e: Exception =>
+        if(retries > 0)
+          pollUntilReadyWithRetries(pollUrl, retries - 1)
+        else
+          LOG.error(s"Virhe KOSKI-pollauksessa: $pollUrl", e)
+          Future.failed(e)
+    })
   }
 
   private def pollUntilReady(pollUrl: String): Future[KoskiMassaluovutusQueryResponse] = {
     koskiClient.pollQuery(pollUrl).flatMap((pollResult: KoskiMassaluovutusQueryResponse) => {
       pollResult match {
         case response if response.isComplete() =>
-          LOG.info(s"Valmista! ${response.getTruncatedLoggable()}")
+          LOG.info(s"KOSKI-massaluovutushaku valmistui: ${response.getTruncatedLoggable()}")
           Future.successful(response)
         case response if response.isFailed() =>
-          LOG.error(s"Koski failure: ${response.getTruncatedLoggable()}")
+          LOG.error(s"KOSKI-massaluovutushaun tulosten pollaus epäonnistui: ${response.getTruncatedLoggable()}")
           Future.failed(new RuntimeException("Koski failure!"))
         case response =>
-          LOG.info(s"Ei vielä valmista, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")
+          LOG.info(s"KOSKI-massaluovutushaun tulokset eivät vielä valmiit, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")
           Thread.sleep(2500) //Todo, fiksumpi odottelumekanismi
           pollUntilReady(pollUrl)
       }
     })
   }
 
-  private def handleFile(fileUrl: String): Future[Seq[KoskiDataForOppija]] =
-    LOG.info(s"Käsitellään tiedosto: $fileUrl")
+  private def handleFile(fileUrl: String, retries: Int): Future[Iterator[KoskiDataForOppija]] =
+    LOG.info(s"Käsitellään KOSKI-massaluovutushaun tulostiedosto: $fileUrl")
     koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).map(fileResult => {
-      LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
+      LOG.info(s"Saatiin haettua KOSKI-massaluovutushaun tiedosto $fileUrl onnistuneesti")
       val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
-      val splitted = splitKoskiDataByOppija(inputStream).toSeq
-      LOG.info(s"Saatiin tulokset tiedostolle $fileUrl")
+      val splitted = splitKoskiDataByOppija(inputStream)
       splitted.map(henkilonTiedot => {
         KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)
       })
+    }).recoverWith({
+      case e: Exception =>
+        if(retries > 0)
+          handleFile(fileUrl, retries - 1)
+        else
+          LOG.error(s"Virhe KOSKI-tulostiedoston $fileUrl käsittelyssä", e)
+          Future.failed(e)
     })
 }
