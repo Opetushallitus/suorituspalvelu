@@ -26,14 +26,20 @@ class KoskiConfiguration {
 
   @Autowired var koskiService: KoskiService = null
 
+  val LOG = LoggerFactory.getLogger(classOf[KoskiConfiguration])
+
   val KOSKI_POLL_CHANGED_TASK: TaskDescriptor[Instant] = TaskDescriptor.of("koski-poll", classOf[Instant]);
 
   @Bean
   def koskiPollTask(koskiClient: KoskiClient) = Tasks.recurring(KOSKI_POLL_CHANGED_TASK, Schedules.cron("0 */2 * * * *")).executeStateful((inst, ctx) => {
     val start = Instant.now()
     val prevStart = Option.apply(inst.getData)
-    if(prevStart.isDefined) // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
-      koskiService.syncKoskiChangesSince(prevStart.get.minusSeconds(60))
+    if(prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
+      try 
+        koskiService.syncKoskiChangesSince(prevStart.get.minusSeconds(60))
+      catch
+        case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
+    }
 
     start
   })

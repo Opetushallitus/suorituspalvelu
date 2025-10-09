@@ -77,12 +77,23 @@ class KoskiIntegration {
 
   private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Iterator[KoskiDataForOppija] = {
     val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
-      pollUntilReady(res.resultsUrl.get).map(finishedQuery => {
+      pollUntilReadyWithRetries(res.resultsUrl.get, 3).map(finishedQuery => {
         LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} Koski-tiedostoa.")
-        Util.toIterator(finishedQuery.files.iterator.map(f => handleFile(f)), 3, 1.minute).flatten
+        Util.toIterator(finishedQuery.files.iterator.map(f => handleFile(f, 3)), 3, 1.minute).flatten
       })
     })
     Await.result(syncResultF, 2.hours)
+  }
+
+  def pollUntilReadyWithRetries(pollUrl: String, retries: Int): Future[KoskiMassaluovutusQueryResponse] = {
+    pollUntilReady(pollUrl).recoverWith({
+      case e: Exception =>
+        if(retries > 0)
+          pollUntilReadyWithRetries(pollUrl, retries - 1)
+        else
+          LOG.error(s"Virhe Koski-pollauksessa: $pollUrl", e)
+          Future.failed(e)
+    })
   }
 
   private def pollUntilReady(pollUrl: String): Future[KoskiMassaluovutusQueryResponse] = {
@@ -102,7 +113,7 @@ class KoskiIntegration {
     })
   }
 
-  private def handleFile(fileUrl: String): Future[Iterator[KoskiDataForOppija]] =
+  private def handleFile(fileUrl: String, retries: Int): Future[Iterator[KoskiDataForOppija]] =
     LOG.info(s"Käsitellään tiedosto: $fileUrl")
     koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).map(fileResult => {
       LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
@@ -112,5 +123,12 @@ class KoskiIntegration {
       splitted.map(henkilonTiedot => {
         KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)
       })
+    }).recoverWith({
+      case e: Exception =>
+        if(retries > 0)
+          handleFile(fileUrl, retries - 1)
+        else
+          LOG.error(s"Virhe Koski-tiedoston $fileUrl haussa", e)
+          Future.failed(e)
     })
 }

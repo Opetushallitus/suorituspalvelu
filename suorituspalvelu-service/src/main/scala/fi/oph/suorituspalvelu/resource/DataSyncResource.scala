@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE
 import fi.oph.suorituspalvelu.resource.ui.{LuoPerusopetuksenOppimaaraFailureResponse, SyotettyPerusopetuksenOppimaaranSuoritus}
@@ -84,12 +84,17 @@ class DataSyncResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava))))
           })
         .map(_ => {
-          val user = AuditLog.getUser(request)
-          AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, None)
-          LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
-          val result = koskiService.syncKoskiForOppijat(personOids.toSet)
-          LOG.info(s"Palautetaan rajapintavastaus, $result")
-          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
+          try
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, None)
+            LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
+            val result = koskiService.syncKoskiForOppijat(personOids.toSet)
+            LOG.info(s"Palautetaan rajapintavastaus, $result")
+            ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
+          catch
+            case e: Exception =>
+              LOG.error(s"KOSKI-tietojen päivitys oppijoille ${personOids.mkString(",")} epäonnistui", e)
+              Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(KoskiSyncFailureResponse(Seq(KOSKI_DATASYNC_500_VIRHE).asJava)))
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
@@ -129,14 +134,19 @@ class DataSyncResource {
           else
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(_ => {
-          val user = AuditLog.getUser(request)
-          AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
-          LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
-          val (changed, exceptions) = koskiService.syncKoskiForHaku(hakuOid.get)
-            .foldLeft((0, 0))((counts, result) => (counts._1 + { if(result.versio.isDefined) 1 else 0 }, counts._2 + { if(result.exception.isDefined) 1 else 0 }))
-          val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${changed} versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia."
-          LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
-          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+          try
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
+            LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
+            val (changed, exceptions) = koskiService.syncKoskiForHaku(hakuOid.get)
+              .foldLeft((0, 0))((counts, result) => (counts._1 + { if(result.versio.isDefined) 1 else 0 }, counts._2 + { if(result.exception.isDefined) 1 else 0 }))
+            val responseStr = s"Tallennettiin haulle $hakuOid yhteensä ${changed} versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia."
+            LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
+            ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+          catch
+            case e: Exception =>
+              LOG.error(s"KOSKI-tietojen päivitys haulle ${hakuOid.get} epäonnistui", e)
+              Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(KoskiSyncFailureResponse(Seq(KOSKI_DATASYNC_500_VIRHE).asJava)))
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
@@ -183,14 +193,19 @@ class DataSyncResource {
           else
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
         .map(timestamp => {
-          val user = AuditLog.getUser(request)
-          AuditLog.log(user, Map("timestamp" -> timestamp.toString), AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
-          LOG.info(s"Haetaan ${timestamp} jälkeen muuttuneet Koski-tiedot")
-          val (changed, exceptions) = koskiService.syncKoskiChangesSince(timestamp)
-            .foldLeft((0, 0))((counts, result) => (counts._1 + { if(result.versio.isDefined) 1 else 0 }, counts._2 + { if(result.exception.isDefined) 1 else 0 }))
-          val responseStr = s"Tallennettiin yhteensä ${changed} muuttunutta versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia."
-          LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
-          ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+          try
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map("timestamp" -> timestamp.toString), AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
+            LOG.info(s"Haetaan ${timestamp} jälkeen muuttuneet Koski-tiedot")
+            val (changed, exceptions) = koskiService.syncKoskiChangesSince(timestamp)
+              .foldLeft((0, 0))((counts, result) => (counts._1 + { if(result.versio.isDefined) 1 else 0 }, counts._2 + { if(result.exception.isDefined) 1 else 0 }))
+            val responseStr = s"Tallennettiin yhteensä ${changed} muuttunutta versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia."
+            LOG.info(s"Palautetaan rajapintavastaus, $responseStr")
+            ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(responseStr))
+          catch
+            case e: Exception =>
+              LOG.error("Muuttuneiden KOSKI-tietojen haku epäonnistui", e)
+              Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(KoskiSyncFailureResponse(Seq(KOSKI_DATASYNC_500_VIRHE).asJava)))
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
