@@ -3,9 +3,9 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
-import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.*
@@ -22,6 +22,7 @@ import java.time.Instant
 import java.util.Optional
 import scala.io.Source
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters.*
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -68,6 +69,13 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     //Tarkistetaan että kantaan on tallennettu kolme opiskeluoikeutta
     Assertions.assertEquals(haetut.head._2.size, 3)
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaKoskiTiedotHenkiloille.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "personOids" -> Seq(oppijaNumero).mkString("Array(", ", ", ")"),
+    ), auditLogEntry.target)
   }
 
   //-- Koski sync for haku --
@@ -105,6 +113,13 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     //Tarkistetaan että kantaan on tallennettu kolme opiskeluoikeutta
     Assertions.assertEquals(haetut.head._2.size, 3)
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaKoskiTiedotHaunHakijoille.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "hakuOid" -> hakuOid,
+    ), auditLogEntry.target)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -162,6 +177,74 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     //Tarkistetaan että kantaan on tallennettu opiskeluoikeus
     Assertions.assertEquals(haetut.head._2.size, 1)
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaMuuttuneetKoskiTiedot.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "timestamp" -> aikaleima,
+    ), auditLogEntry.target)
+  }
+
+  // -- Koski sync for muuttuneet --
+
+  @WithAnonymousUser
+  @Test def testRefreshKoskiRetryAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testRefreshKoskiRetryNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, KoskiRetryPayload(Optional.of(List("https://valid.url.fi").asJava))))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiRetryMalformedJson(): Unit =
+    // ei validi aikaleima ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, "Tämä ei ole validia JSONia"))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(ApiConstants.DATASYNC_JSON_VIRHE)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetMalformedUrl(): Unit =
+    val invalidUrl = "tämä ei ole validi url"
+
+    // ei validi aikaleima ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, KoskiRetryPayload(Optional.of(List(invalidUrl).asJava))))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_URL_EI_VALIDI + invalidUrl)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiRetryAllowed(): Unit = {
+    val fileUrl = "https://valid.url.fi"
+    val oppijaNumero = "1_2_246_562_98_69863082363"
+    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
+
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
+    Mockito.when(koskiIntegration.retryKoskiResultFile(fileUrl)).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2))))
+
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, KoskiRetryPayload(Optional.of(List(fileUrl).asJava))))
+      .andExpect(status().isOk).andReturn()
+    val koskiSyncResponse: KoskiSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse])
+
+    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+
+    //Tarkistetaan että kantaan on tallennettu opiskeluoikeus
+    Assertions.assertEquals(haetut.head._2.size, 1)
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.RetryKoskiTiedosto.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "tiedostot" -> fileUrl,
+    ), auditLogEntry.target)
+
   }
 
 }

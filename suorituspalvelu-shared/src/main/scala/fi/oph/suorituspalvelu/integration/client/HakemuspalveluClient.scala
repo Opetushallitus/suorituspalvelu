@@ -97,11 +97,11 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
       Future.successful(Map.empty)
     else {
       // Atarun rajapinta on sivuttava, tällä hetkellä palauttaa 1000 kerrallaan. Laitetaan oma raja defensiivisesti
-      // neljäsosaan tästä.
-      val futures = oppijaOids.grouped(250).map(group =>
-        doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri", AtaruHautRequest(group)).map(data => mapper.readValue(data, classOf[AtaruHautResponse]))
-      )
-      Future.sequence(futures).map(r => r.flatMap(r => r.applications).toSeq.groupBy(_.personOid).map(a => a._1 -> a._2.map(_.applicationSystemId)))
+      // neljäsosaan tästä ja tehdään kutsut peräjälkeen
+      val (head, rest) = oppijaOids.splitAt(250)
+      doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri", AtaruHautRequest(head)).map(data => mapper.readValue(data, classOf[AtaruHautResponse]))
+        .map(response => response.applications.groupBy(_.personOid).map(a => a._1 -> a._2.map(_.applicationSystemId)))
+        .flatMap(headResult => getHenkilonHaut(rest).map(restResult => headResult ++ restResult))
     }
   }
 
