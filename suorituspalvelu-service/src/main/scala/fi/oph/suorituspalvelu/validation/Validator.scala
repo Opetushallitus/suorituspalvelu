@@ -1,8 +1,10 @@
 package fi.oph.suorituspalvelu.validation
 
+import java.net.{URI, URL}
 import java.time.Instant
 import java.util.Optional
 import scala.util.matching.Regex
+import scala.util.Try
 import scala.jdk.OptionConverters.*
 
 /**
@@ -26,6 +28,7 @@ object Validator {
   final val VALIDATION_EI_VALIDIT_OIDIT           = "Seuraavat oppijanumerot eivät ole valideja: "
   final val VALIDATION_MUOKATTUJALKEEN_TYHJA      = "muokattuJalkeen: Kenttä on pakollinen"
   final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muokattuJalkeen: muokattuJalkeen ei oli validi aikaleima"
+  final val VALIDATION_URL_EI_VALIDI              = "tiedostot: Url ei ole validi: "
 
   val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.24\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
@@ -117,5 +120,13 @@ object Validator {
     else
       Set.empty
   }
+
+  def validateUrl(url: String): Set[String] = {
+    if(Try(new URI(url).toURL).isSuccess)
+      Set.empty
+    else
+      Set(VALIDATION_URL_EI_VALIDI + url)
+  }
+
 
 }

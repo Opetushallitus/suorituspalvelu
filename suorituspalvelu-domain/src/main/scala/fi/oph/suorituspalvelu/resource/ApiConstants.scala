@@ -30,6 +30,7 @@ object ApiConstants {
 
   final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
   final val KOSKI_DATASYNC_MUUTTUNEET_PATH                  = KOSKI_DATASYNC_PATH + "/muuttuneet"
+  final val KOSKI_DATASYNC_RETRY_PATH                       = KOSKI_DATASYNC_PATH + "/retry"
 
   final val YTR_DATASYNC_PATH = DATASYNC_PATH + "/ytr"
   final val YTR_DATASYNC_HAKU_PATH = YTR_DATASYNC_PATH + "/haku"
@@ -104,5 +105,6 @@ object ApiConstants {
   final val ESIMERKKI_VUOSI                                 = "2025"
   final val ESIMERKKI_LUOKKA                                = "9B"
   final val ESIMERKKI_AIKALEIMA                             = "2025-09-28T10:15:30.00Z"
+  final val ESIMERKKI_TULOSTIEDOSTO                         = "https://virkailija.opintopolku.fi/koski/api/massaluovutus/a45ad5b4-88dc-4586-8401-34978956215d/1.json"
 
 }

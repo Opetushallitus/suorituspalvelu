@@ -35,7 +35,7 @@ class KoskiConfiguration {
     val start = Instant.now()
     val prevStart = Option.apply(inst.getData)
     if(prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
-      try 
+      try
         koskiService.syncKoskiChangesSince(prevStart.get.minusSeconds(60))
       catch
         case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
@@ -98,6 +98,10 @@ class KoskiService {
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
     syncKoskiForOppijat(personOids)
+
+  def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
+    val fetchedAt = Instant.now()
+    new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
 
   private def processKoskiDataForOppijat(data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
     val kantaOperaatiot = KantaOperaatiot(database)

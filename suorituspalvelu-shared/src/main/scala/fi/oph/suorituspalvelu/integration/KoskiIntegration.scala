@@ -75,10 +75,15 @@ class KoskiIntegration {
     }))
   }
 
+  def retryKoskiResultFile(fileUrl: String): SaferIterator[KoskiDataForOppija] = {
+    new SaferIterator(Await.result(handleFile(fileUrl, 3), 2.hours))
+  }
+
   private def fetchKoskiBatch(query: KoskiMassaluovutusQueryParams): Iterator[KoskiDataForOppija] = {
     val syncResultF = koskiClient.createMassaluovutusQuery(query).flatMap(res => {
+      LOG.info(s"Käsitellään KOSKI-massaluovutushaun $query tulokset osoitteesta ${res.resultsUrl.get}")
       pollUntilReadyWithRetries(res.resultsUrl.get, 3).map(finishedQuery => {
-        LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} Koski-tiedostoa.")
+        LOG.info(s"Haku valmis, käsitellään ${finishedQuery.files.size} KOSKI-tulostiedostoa.")
         Util.toIterator(finishedQuery.files.iterator.map(f => handleFile(f, 3)), 3, 1.minute).flatten
       })
     })
@@ -91,7 +96,7 @@ class KoskiIntegration {
         if(retries > 0)
           pollUntilReadyWithRetries(pollUrl, retries - 1)
         else
-          LOG.error(s"Virhe Koski-pollauksessa: $pollUrl", e)
+          LOG.error(s"Virhe KOSKI-pollauksessa: $pollUrl", e)
           Future.failed(e)
     })
   }
@@ -100,13 +105,13 @@ class KoskiIntegration {
     koskiClient.pollQuery(pollUrl).flatMap((pollResult: KoskiMassaluovutusQueryResponse) => {
       pollResult match {
         case response if response.isComplete() =>
-          LOG.info(s"Valmista! ${response.getTruncatedLoggable()}")
+          LOG.info(s"KOSKI-massaluovutushaku valmistui: ${response.getTruncatedLoggable()}")
           Future.successful(response)
         case response if response.isFailed() =>
-          LOG.error(s"Koski failure: ${response.getTruncatedLoggable()}")
+          LOG.error(s"KOSKI-massaluovutushaun tulosten pollaus epäonnistui: ${response.getTruncatedLoggable()}")
           Future.failed(new RuntimeException("Koski failure!"))
         case response =>
-          LOG.info(s"Ei vielä valmista, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")
+          LOG.info(s"KOSKI-massaluovutushaun tulokset eivät vielä valmiit, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")
           Thread.sleep(2500) //Todo, fiksumpi odottelumekanismi
           pollUntilReady(pollUrl)
       }
@@ -114,12 +119,11 @@ class KoskiIntegration {
   }
 
   private def handleFile(fileUrl: String, retries: Int): Future[Iterator[KoskiDataForOppija]] =
-    LOG.info(s"Käsitellään tiedosto: $fileUrl")
+    LOG.info(s"Käsitellään KOSKI-massaluovutushaun tulostiedosto: $fileUrl")
     koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).map(fileResult => {
-      LOG.info(s"Saatiin haettua tiedosto $fileUrl onnistuneesti")
+      LOG.info(s"Saatiin haettua KOSKI-massaluovutushaun tiedosto $fileUrl onnistuneesti")
       val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
       val splitted = splitKoskiDataByOppija(inputStream)
-      LOG.info(s"Saatiin tulokset tiedostolle $fileUrl")
       splitted.map(henkilonTiedot => {
         KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)
       })
@@ -128,7 +132,7 @@ class KoskiIntegration {
         if(retries > 0)
           handleFile(fileUrl, retries - 1)
         else
-          LOG.error(s"Virhe Koski-tiedoston $fileUrl haussa", e)
+          LOG.error(s"Virhe KOSKI-tulostiedoston $fileUrl käsittelyssä", e)
           Future.failed(e)
     })
 }
