@@ -1,10 +1,7 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto,
-  ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus,
-  PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo,
-  YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
@@ -97,8 +94,16 @@ object AvainArvoConverter {
     val riittavaLaajuus: Seq[Telma] = telmat.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
     val tuoreinRiittava: Option[Telma] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
 
-    val seliteLaajuus = tuoreinRiittava.map(_.hyvaksyttyLaajuus.map(_.arvo)).getOrElse(telmat.map(_.hyvaksyttyLaajuus.map(_.arvo)).map(_.max))
-    val suoritusSelite = Seq(s"Telma-suorituksen laajuus on $seliteLaajuus.")
+    val suoritusSelite = (tuoreinRiittava, telmat) match {
+      case (tuorein, _) if tuorein.isDefined =>
+        Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
+      case (_, telmat) if telmat.nonEmpty =>
+        val korkeinLaajuus: Laajuus = telmat.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
+        Seq(s"Ei löytynyt tarpeeksi laajaa Opistovuosi-suoritusta. Korkein löytynyt laajuus: " +
+          s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")
+      case (_, telmat) =>
+        Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
+    }
 
     val suoritusArvot = AvainArvoConstants.telmaSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
     val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
@@ -117,8 +122,16 @@ object AvainArvoConverter {
       vstOpistovuodet.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.opistovuosiMinimiLaajuus))
     val tuoreinRiittava: Option[VapaaSivistystyo] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
 
-    val seliteLaajuus = tuoreinRiittava.map(_.hyvaksyttyLaajuus.map(_.arvo)).getOrElse(vstOpistovuodet.map(_.hyvaksyttyLaajuus.map(_.arvo)).map(_.max))
-    val suoritusSelite = Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on $seliteLaajuus.")
+    val suoritusSelite = (tuoreinRiittava, vstOpistovuodet) match {
+      case (tuorein, _) if tuorein.isDefined =>
+        Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
+      case (_, vstOpistovuodet) if vstOpistovuodet.nonEmpty =>
+        val korkeinLaajuus: Laajuus = vstOpistovuodet.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
+        Seq(s"Ei löytynyt tarpeeksi laajaa Opistovuosi-suoritusta. Korkein löytynyt laajuus: " +
+          s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")
+      case (_, vstOpistovuodet) =>
+        Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
+    }
 
     val suoritusArvot = AvainArvoConstants.opistovuosiSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
     val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
