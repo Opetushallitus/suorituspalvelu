@@ -32,7 +32,7 @@ enum SuoritusTila:
 
 case class Container(
                       @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                      opiskeluoikeudet: Set[Opiskeluoikeus])
+                      opiskeluoikeus: Opiskeluoikeus)
 
 sealed trait TallennettavaEntiteetti
 

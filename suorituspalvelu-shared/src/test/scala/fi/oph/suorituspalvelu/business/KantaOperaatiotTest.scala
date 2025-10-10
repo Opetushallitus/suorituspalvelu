@@ -82,10 +82,11 @@ class KantaOperaatiotTest {
   @AfterEach def teardownTest(): Unit =
     Await.result(database.run(
       sqlu"""
-            DROP FUNCTION get_tyyppi(text, text);
+            --DROP FUNCTION get_tyyppi(text, text);
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
             DROP TABLE scheduled_tasks;
+            DROP TABLE opiskeluoikeudet;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -474,4 +475,29 @@ class KantaOperaatiotTest {
 
     Assertions.assertEquals(loppu1, loppu2)
 
+  @Test def testHaeMetadatalla(): Unit =
+    // tallennetaan versiot
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877767", SuoritusJoukko.KOSKI, "{}", Instant.now()).get
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877768", SuoritusJoukko.KOSKI, "{}", Instant.now()).get
+
+    // ja opiskeluoikeudet metadatalla
+    // versiolla 1 molemmat haetut avaimet
+    val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("4.5.6"), "dummy oid", Set.empty, None, VALMIS)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1), Map(
+      "haettuAvain1" -> Set("haettuArvo1", "muuArvo1"),
+      "haettuAvain2" -> Set("haettuArvo2", "muuArvo2")
+    ))
+
+    // mutta versiolla 2 vain ensimmäinen
+    val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("4.5.6"), "dummy oid", Set.empty, None, VALMIS)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus2), Map(
+      "haettuAvain1" -> Set("haettuArvo1", "muuArvo3"),
+      "haettuAvain2" -> Set("muuArvo4", "muuArvo5")
+    ))
+
+    // joten palautuu vain versio 1
+    Assertions.assertEquals(Set(versio1), this.kantaOperaatiot.haeVersiot(Map(
+      "haettuAvain1" -> Set("haettuArvo1"),
+      "haettuAvain2" -> Set("haettuArvo2")
+    )))
 }
