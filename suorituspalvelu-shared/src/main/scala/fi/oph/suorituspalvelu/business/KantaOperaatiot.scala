@@ -40,7 +40,8 @@ object KantaOperaatiot {
       classOf[NuortenPerusopetuksenOppiaineenOppimaara],
       classOf[Tuva],
       classOf[VirtaTutkinto],
-      classOf[Opintosuoritus])
+      classOf[Opintosuoritus],
+      classOf[VapaaSivistystyo])
     mapper
   }
 
