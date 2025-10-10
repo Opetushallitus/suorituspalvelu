@@ -1049,15 +1049,14 @@ object EntityToUIConverter {
       ))
   }
 
-  def getOppijanValintaData(oppijaNumero: String, hakuOid: Option[String], valintaData: ValintaData): Option[OppijanValintaDataSuccessResponse] = {
+  def getOppijanValintaData(oppijaNumero: String, hakuOid: Option[String], valintaData: ValintaData): OppijanValintaDataSuccessResponse = {
     //Todo, mitä kaikkea palautetaan? Ainakin avain-arvot ja selitteet.
-    
-    Some(OppijanValintaDataSuccessResponse(
+    OppijanValintaDataSuccessResponse(
       oppijaNumero,
       hakuOid.toJava,
       valintaData.avainArvot.map(aac => {
         AvainArvoContainerUI(aac.avain, aac.arvo, aac.selitteet.toList.asJava)
       }).toList.asJava
-    ))
+    )
   }
 }
