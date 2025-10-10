@@ -93,7 +93,7 @@ class VirtaRefresh {
     val kantaResult: SyncResultForHenkilo =
       try {
         val kantaOperaatiot = KantaOperaatiot(database)
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, SuoritusJoukko.VIRTA, hetulessXml, fetchedAt)
+        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, SuoritusJoukko.VIRTA, Seq(hetulessXml), fetchedAt)
 
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")

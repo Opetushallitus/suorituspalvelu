@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS versiot (
     oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
     voimassaolo                 TSTZRANGE NOT NULL,
     suoritusjoukko              VARCHAR NOT NULL,
-    data_json                   JSONB,
-    data_xml                    XML,
+    data_json                   JSONB[],
+    data_xml                    XML[],
     EXCLUDE USING gist (oppijanumero WITH =, suoritusjoukko WITH =, voimassaolo WITH &&),
     CHECK ((suoritusjoukko='VIRTA' AND data_json IS NULL       AND data_xml IS NOT NULL) OR
                                       (data_json IS NOT NULL   AND data_xml IS NULL))
@@ -24,5 +24,6 @@ create table opiskeluoikeudet (
     metadata                VARCHAR[]
 );
 
-CREATE INDEX IF NOT EXISTS opiskeluoikeudet_metadata_idx ON opiskeluoikeudet USING GIN (metadata);
-CREATE INDEX IF NOT EXISTS opiskeluoikeudet_data_parseroitu_idx ON opiskeluoikeudet USING gin (data_parseroitu jsonb_path_ops);
+CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_versio_tunniste ON opiskeluoikeudet(versio_tunniste);
+CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_metadata ON opiskeluoikeudet USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_data_parseroitu ON opiskeluoikeudet USING gin (data_parseroitu jsonb_path_ops);

@@ -65,7 +65,7 @@ class YtrIntegration {
     LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
     try {
       val kantaOperaatiot = KantaOperaatiot(database)
-      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, ytrResult.resultJson.getOrElse("{}"), fetchedAt)
+      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), fetchedAt)
       versio.foreach(v => {
         LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
         val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
