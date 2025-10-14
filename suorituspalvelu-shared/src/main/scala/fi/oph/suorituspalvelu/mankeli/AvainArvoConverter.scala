@@ -14,36 +14,49 @@ case class ValintaData(personOid: String, avainArvot: Set[AvainArvoContainer], o
   def getAvainArvoMap(): Map[String, String] = avainArvot.map(a => (a.avain, a.arvo)).toMap
 }
 
-case class AvainArvoContainer(avain: String, arvo: String, selitteet: Seq[String] = Seq.empty)
+//Sama tieto sijoitetaan useamman avaimen alle, koska eri valintaperusteissa saatetaan viitata eri avaimiin.
+case class Avaimet(avain: String, rinnakkaisAvaimet: Set[String]) {
+  //(Avain, isDuplikaatti)
+  def kaikkiAvaimet: Set[(String, Boolean)] = {
+    val pa: (String, Boolean) = (avain, false)
+    val ra: Set[(String, Boolean)] = rinnakkaisAvaimet.map(avain => (avain, true))
+    ra + pa
+  }
+}
+
+case class AvainArvoContainerN(avain: String, arvo: String, selitteet: Seq[String] = Seq.empty) {
+
+}
+case class AvainArvoContainer(avain: String, arvo: String, duplikaatti: Boolean, selitteet: Seq[String] = Seq.empty)
 
 object AvainArvoConstants {
-  //Sama tieto tallennetaan kahden avaimen alle: vanhan Valintalaskentakoostepalvelusta periytyvän,
-  // johon kenties viitataan nykyisistä valintaperusteista, ja lisäksi uuden selkeämmän avaimen, jota käytetään jatkossa uusissa valintaperusteissa.
-  // Vanhat avaimet voi toivottavasti jossain kohtaa pudottaa pois.
-  final val perusopetuksenKieliKeys = Set("perusopetuksen_kieli")
-  final val peruskouluPaattotodistusvuosiKeys = Set("PK_PAATTOTODISTUSVUOSI", "PERUSKOULU_PAATTOTODISTUSVUOSI")
-  final val peruskouluSuoritusvuosiKeys = Set("PK_SUORITUSVUOSI", "PERUSKOULU_SUORITUSVUOSI")
-  final val peruskouluSuoritettuKeys = Set("PK_TILA", "PERUSKOULU_SUORITETTU")
-  final val lukioSuoritettuKeys = Set("LK_TILA", "lukio_suoritettu")
-  final val yoSuoritettuKeys = Set("YO_TILA", "yo-tutkinto_suoritettu")
-  final val ammSuoritettuKeys = Set("AM_TILA", "ammatillinen_suoritettu")
+  //Sama tieto tallennetaan sekä pääavaimen että rinnakkaisten avaimien alle. Tämä antaa tuen vanhoille valintaperusteille.
+  //Pääavaimia ei kannata vaihtaa, koska mahdolliset yliajot on tehty niille. Uusia rinnakkaisia avaimia voi lisätä tarpeen mukaan.
+  final val perusopetuksenKieliKeys = Avaimet("perusopetuksen_kieli", Set.empty)
+  final val peruskouluPaattotodistusvuosiKeys = Avaimet("peruskoulu_paattotodistusvuosi", Set("PK_PAATTOTODISTUSVUOSI"))
+  final val peruskouluSuoritusvuosiKeys = Avaimet("peruskoulu_suoritusvuosi", Set("PK_SUORITUSVUOSI"))
+  final val peruskouluSuoritettuKeys = Avaimet("perustutkinto_suoritettu", Set("PK_TILA"))
+  final val lukioSuoritettuKeys = Avaimet("lukio_suoritettu", Set("LK_TILA"))
+  final val yoSuoritettuKeys = Avaimet("yo-tutkinto_suoritettu", Set("YO_TILA"))
+  final val ammSuoritettuKeys = Avaimet("ammatillinen_suoritettu", Set("AM_TILA"))
 
   //Lisäpistekoulutukset
   final val telmaMinimiLaajuus: BigDecimal = 25
   final val tuvaMinimiLaajuus: BigDecimal = 19
   final val opistovuosiMinimiLaajuus: BigDecimal = 26.5
 
-  final val telmaSuoritettuKeys = Set("LISAKOULUTUS_TELMA", "lisapistekoulutus_telma")
-  final val telmaSuoritusvuosiKeys = Set("LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI", "lisapistekoulutus_telma_vuosi")
+  final val telmaSuoritettuKeys = Avaimet("lisapistekoulutus_telma", Set("LISAKOULUTUS_TELMA"))
+  final val telmaSuoritusvuosiKeys = Avaimet("lisapistekoulutus_telma_vuosi", Set("LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI"))
 
-  final val opistovuosiSuoritettuKeys = Set("LISAKOULUTUS_OPISTO", "lisapistekoulutus_opisto")
-  final val opistovuosiSuoritusvuosiKeys = Set("LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI", "lisapistekoulutus_opisto_vuosi")
+  final val opistovuosiSuoritettuKeys = Avaimet("lisapistekoulutus_opisto", Set("LISAKOULUTUS_OPISTO"))
+  final val opistovuosiSuoritusvuosiKeys = Avaimet("lisapistekoulutus_opisto_vuosi", Set("LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI"))
 
-  final val peruskouluAineenArvosanaPrefixes = Set("PK_", "PERUSKOULU_ARVOSANA_")
+  //Todo, tarkistetaan vielä arvosanojen muoto uudessa mallissa
+  final val peruskouluAineenArvosanaPrefixes = Avaimet("PERUSKOULU_ARVOSANA_", Set("PK_"))
 
   //Nämä tulevat aineen arvosanojen perään, eli esimerkiksi jos varsinainen arvosana
   // on avaimen "PK_B1" alla, tulee kieli avainten "PK_B1_OPPIAINE" ja "PK_B1_OPPIAINEEN_KIELI" alle
-  final val peruskouluAineenKieliPostfixes = Set("_OPPIAINE", "_OPPIAINEEN_KIELI")
+  final val peruskouluAineenKieliPostfixes = Avaimet("_OPPIAINEEN_KIELI", Set("_OPPIAINE"))
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -105,9 +118,9 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
 
-    val suoritusArvot = AvainArvoConstants.telmaSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
+    val suoritusArvot = AvainArvoConstants.telmaSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, tuoreinRiittava.isDefined.toString, isDuplikaatti, suoritusSelite))
     val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
-      AvainArvoConstants.telmaSuoritusvuosiKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.get.suoritusVuosi.toString))
+      AvainArvoConstants.telmaSuoritusvuosiKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, tuoreinRiittava.get.suoritusVuosi.toString, isDuplikaatti))
     } else Set.empty
 
     suoritusArvot ++ suoritusVuosiArvot
@@ -133,9 +146,9 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
 
-    val suoritusArvot = AvainArvoConstants.opistovuosiSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
+    val suoritusArvot = AvainArvoConstants.opistovuosiSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, tuoreinRiittava.isDefined.toString, isDuplikaatti, suoritusSelite))
     val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
-      AvainArvoConstants.opistovuosiSuoritusvuosiKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.get.suoritusVuosi.toString))
+      AvainArvoConstants.opistovuosiSuoritusvuosiKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, tuoreinRiittava.get.suoritusVuosi.toString, isDuplikaatti))
     } else Set.empty
 
     suoritusArvot ++ suoritusVuosiArvot
@@ -168,7 +181,7 @@ object AvainArvoConverter {
     val ammSelite = s"Löytyi yhteensä ${allAmmSuoritukset.size} ammatillista suoritusta. " +
       s"Näistä ${validSuoritukset.size} oli vahvistettu viimeistään ${vahvistettuViimeistaan}. Vahvistuspäivät: ${allAmmSuoritukset.flatMap(_._2).distinct.mkString(", ")}"
 
-    val arvot = AvainArvoConstants.ammSuoritettuKeys.map(key => AvainArvoContainer(key, validSuoritukset.nonEmpty.toString, Seq(ammSelite)))
+    val arvot = AvainArvoConstants.ammSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, validSuoritukset.nonEmpty.toString, isDuplikaatti, Seq(ammSelite)))
     LOG.info(s"Ammatilliset arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
@@ -182,7 +195,7 @@ object AvainArvoConverter {
     val valmistumispaivaSelite = if (paivat.nonEmpty) s" Valmistumispaivat: ${paivat.mkString(", ")}" else ""
     val yoSelite = s"Löytyi yhteensä ${yoOpiskeluoikeudet.size} YO-opiskeluoikeutta." + valmistumispaivaSelite
 
-    val arvot = AvainArvoConstants.yoSuoritettuKeys.map(key => AvainArvoContainer(key, hasYoSuoritus.toString, Seq(yoSelite)))
+    val arvot = AvainArvoConstants.yoSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, hasYoSuoritus.toString, isDuplikaatti, Seq(yoSelite)))
     LOG.info(s"Yo-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
@@ -192,7 +205,7 @@ object AvainArvoConverter {
     //val lukioOpiskeluoikeudet = opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
     val hasLukioSuoritus = false
     val lukioSelite = s"Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
-    val arvot = AvainArvoConstants.lukioSuoritettuKeys.map(key => AvainArvoContainer(key, hasLukioSuoritus.toString, Seq(lukioSelite)))
+    val arvot = AvainArvoConstants.lukioSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, hasLukioSuoritus.toString, isDuplikaatti, Seq(lukioSelite)))
     LOG.info(s"Lukioarvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
@@ -235,9 +248,9 @@ object AvainArvoConverter {
     })
 
     val avainArvot: Set[AvainArvoContainer] = aineidenKorkeimmatArvosanat.values.flatMap(aine =>
-      val arvosanaArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluAineenArvosanaPrefixes.map(prefix => AvainArvoContainer(prefix + aine.koodi.arvo, aine.arvosana.arvo, Seq.empty))
-      val kieliArvot: Set[AvainArvoContainer] = aine.kieli.map(k => AvainArvoConstants.peruskouluAineenKieliPostfixes.map(postfix => {
-        arvosanaArvot.map(arvosanaArvo => AvainArvoContainer(arvosanaArvo._1 + postfix, k.arvo, Seq.empty))
+      val arvosanaArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluAineenArvosanaPrefixes.kaikkiAvaimet.map((prefix, isDuplikaatti) => AvainArvoContainer(prefix + aine.koodi.arvo, aine.arvosana.arvo, isDuplikaatti, Seq.empty))
+      val kieliArvot: Set[AvainArvoContainer] = aine.kieli.map(k => AvainArvoConstants.peruskouluAineenKieliPostfixes.kaikkiAvaimet.map((postfix, isDuplikaatti) => {
+        arvosanaArvot.map(arvosanaArvo => AvainArvoContainer(arvosanaArvo._1 + postfix, k.arvo, isDuplikaatti, Seq.empty))
       })).map(_.flatten).getOrElse(Set.empty)
       arvosanaArvot ++ kieliArvot
     ).toSet
@@ -251,7 +264,14 @@ object AvainArvoConverter {
     val vahvistusPvm = perusopetuksenOppimaara.map(_.vahvistusPaivamaara)
     val vahvistettuAjoissa: Boolean = perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).exists(v => v.isBefore(vahvistettuViimeistaan) || v.equals(vahvistettuViimeistaan))
 
-    val kieliArvot: Set[AvainArvoContainer] = perusopetuksenOppimaara.map(_.suoritusKieli.arvo).map(kieli => AvainArvoConstants.perusopetuksenKieliKeys.map(key => AvainArvoContainer(key, kieli, Seq.empty))).getOrElse(Set.empty)
+    val kieliArvot: Set[AvainArvoContainer] =
+      perusopetuksenOppimaara
+        .map(_.suoritusKieli.arvo)
+        .map(kieli =>
+          AvainArvoConstants
+            .perusopetuksenKieliKeys.kaikkiAvaimet
+            .map((avain, isDuplikaatti) => AvainArvoContainer(avain, kieli, isDuplikaatti, Seq.empty)))
+        .getOrElse(Set.empty)
 
     val arvot = if (oppimaaraOnVahvistettu) {
       if (vahvistettuAjoissa) {
@@ -260,14 +280,14 @@ object AvainArvoConverter {
         val suoritusVuosiArvot: Set[AvainArvoContainer] =
           perusopetuksenOppimaara
             .flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear))
-            .map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys
-              .map(key => AvainArvoContainer(key, year.toString, Seq(vahvistettuAjoissaSelite))))
+            .map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys.kaikkiAvaimet
+              .map((avain, isDuplikaatti) => AvainArvoContainer(avain, year.toString, isDuplikaatti, Seq(vahvistettuAjoissaSelite))))
             .getOrElse(Set.empty)
-        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(vahvistettuAjoissaSelite)))
+        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, vahvistettuAjoissa.toString, isDuplikaatti, Seq(vahvistettuAjoissaSelite)))
         arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvot ++ suoritusArvot
       } else {
         val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.map(_.vahvistusPaivamaara)}"
-        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(vahvistettuMyohassaSelite)))
+        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.kaikkiAvaimet.map((avain, isDuplikaatti) => AvainArvoContainer(avain, vahvistettuAjoissa.toString, isDuplikaatti, Seq(vahvistettuMyohassaSelite)))
         suoritusArvot ++ kieliArvot
       }
     } else {
