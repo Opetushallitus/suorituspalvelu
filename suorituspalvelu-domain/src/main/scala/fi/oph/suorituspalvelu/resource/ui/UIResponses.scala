@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.resource.ui
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_HETU, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN}
 import fi.oph.suorituspalvelu.resource.*
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE, UI_VALINTADATA_EI_OIKEUKSIA}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -1139,6 +1139,24 @@ case class OppijanTiedotFailureResponse(
   @(Schema @field)(example = UI_TIEDOT_ESIMERKKI_VIRHE)
   @BeanProperty virheet: java.util.Set[String],
 ) extends OppijanTiedotResponse
+
+case class AvainArvoContainerUI(@BeanProperty avain: String,
+                                @BeanProperty arvo: String,
+                                @BeanProperty selitteet: java.util.List[String])
+
+case class OppijanValintaDataSuccessResponse(
+                                         @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+                                         @BeanProperty henkiloOID: String,
+                                         @BeanProperty hakuOID: Optional[String],
+                                         //@BeanProperty leikkuriPaiva: LocalDate, lisätään tänne kun saadaan tieto kaivettua ohjausparametreista ja käyttöön
+                                         //@BeanProperty laskennanAlkaminen: LocalDate, lisätään tänne kun saadaan tieto kaivettua jostain ja käyttöön
+                                         @BeanProperty avainArvot: java.util.List[AvainArvoContainerUI]
+                                       ) extends OppijanTiedotResponse
+
+case class OppijanValintaDataFailureResponse(
+                                         @(Schema @field)(example = UI_VALINTADATA_EI_OIKEUKSIA)
+                                         @BeanProperty virheet: java.util.Set[String],
+                                       ) extends OppijanTiedotResponse
 
 case class SyotettavaSuoritusTyyppiVaihtoehtoNimi(
   @(Schema @field)(example = "Nuorten perusopetuksen oppiaineen oppimäärä", requiredMode = RequiredMode.NOT_REQUIRED)
