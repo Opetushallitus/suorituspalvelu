@@ -193,12 +193,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Map[String, Set[String]] = Map.empty) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
     val deletePrevious = sqlu"""DELETE FROM opiskeluoikeudet WHERE versio_tunniste=${versio.tunniste.toString}::uuid"""
-    val enableVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL WHERE tunniste=${versio.tunniste.toString}::uuid"""
+    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL, metadata=${metadata.map((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).flatten.toSeq} WHERE tunniste=${versio.tunniste.toString}::uuid"""
     val dataInserts = opiskeluoikeudet.map(opiskeluoikeus =>
       sqlu"""
-            INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu, metadata) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb, ${metadata.map((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).flatten.toSeq})
+            INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb)
             """)
-    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(enableVersion))), DB_TIMEOUT)
+    val metadataArvotInserts = metadata.flatMap((avain, arvot) => arvot.map(arvo => sqlu"""INSERT INTO metadata_arvot (avain, arvo) VALUES($avain, $arvo) ON CONFLICT DO NOTHING"""))
+    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataArvotInserts)), DB_TIMEOUT)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
@@ -273,23 +274,16 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def haeVersiot(metadata: Map[String, Set[String]]): Set[VersioEntiteetti] =
     Await.result(db.run(
         (sql"""
-          WITH RECURSIVE
-            w_versio_tunnisteet AS (
-              SELECT versio_tunniste FROM opiskeluoikeudet WHERE metadata @> (${metadata.flatMap((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).toSeq})
-            ),
-            w_versiot AS (
-              SELECT versiot.tunniste AS versio_tunniste,
-                jsonb_build_object(
-                  'tunniste', versiot.tunniste,
-                  'oppijaNumero', versiot.oppijanumero,
-                  'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
-                  'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-                  'suoritusJoukko', versiot.suoritusjoukko
-                )::text AS data
-              FROM w_versio_tunnisteet JOIN versiot ON w_versio_tunnisteet.versio_tunniste=versiot.tunniste
-              WHERE versiot.use_versio_tunniste IS NULL
-            )
-          SELECT data FROM w_versiot;
+          SELECT
+            jsonb_build_object(
+              'tunniste', versiot.tunniste,
+              'oppijaNumero', versiot.oppijanumero,
+              'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
+              'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+              'suoritusJoukko', versiot.suoritusjoukko
+            )::text AS data
+          FROM versiot
+          WHERE versiot.use_versio_tunniste IS NULL AND metadata @> (${metadata.flatMap((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).toSeq})
         """).as[String]), DB_TIMEOUT).map(data => MAPPER.readValue(data, classOf[VersioEntiteetti]))
       .toSet
 
@@ -297,4 +291,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     LOG.info(s"päätetään version $tunniste voimassaolo")
     val voimassaolo = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), now()) WHERE tunniste=${tunniste.toString}::uuid AND upper(voimassaolo)='infinity'::timestamptz"""
     Await.result(db.run(voimassaolo), DB_TIMEOUT)>0
+
+  def haeMetadataAvaimenArvot(avain: String): Set[String] =
+    Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain""".as[String]), DB_TIMEOUT).toSet
+
 }

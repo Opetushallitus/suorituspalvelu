@@ -8,9 +8,9 @@ object UIVirheet {
 
   final val UI_HAKU_ESIMERKKI_VIRHE                         = "backend-virhe.oppilaitos_oid.ei_validi"
   final val UI_HAKU_KRITEERI_PAKOLLINEN                     = "backend-virhe.haku.jokin_kriteeri_pakollinen"
-  final val UI_HAKU_HAKUSANA_TAI_VUOSI_PAKOLLINEN           = "backend-virhe.haku.hakusana_tai_vuosi_pakollinen"
+  final val UI_HAKU_VUOSI_PAKOLLINEN                        = "backend-virhe.haku.vuosi_pakollinen"
   final val UI_HAKU_OPPILAITOS_PAKOLLINEN                   = "backend-virhe.haku.oppilaitos_pakollinen"
-  final val UI_HAKU_VUOSI_PAKOLLINEN                        = "backend-virhe.haku.vuosi_pakollinen_jos_luokka_maaritelty"
+  final val UI_HAKU_VUOSI_PAKOLLINEN_JOS_LUOKKA             = "backend-virhe.haku.vuosi_pakollinen_jos_luokka_maaritelty"
   final val UI_HAKU_EI_OIKEUKSIA                            = "backend-virhe.haku.ei_oikeuksia"
   final val UI_HAKU_EPAONNISTUI                             = "backend-virhe.haku.haku_epaonnistui"
 

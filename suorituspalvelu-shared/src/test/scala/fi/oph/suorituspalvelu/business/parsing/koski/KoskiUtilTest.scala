@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiOppijaFilter, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiUtil, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -15,10 +15,10 @@ import java.util.UUID
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
-class KoskiOppijaFilterTest {
+class KoskiUtilTest {
 
   @Test def testIsYsiluokkalainenEiSuoritusta(): Unit =
-    Assertions.assertFalse(KoskiOppijaFilter.isYsiluokkalainen(Set.empty))
+    Assertions.assertFalse(KoskiUtil.isYsiluokkalainen(Seq.empty))
   
   @Test def testIsYsiluokkalainenTrue(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
@@ -29,7 +29,7 @@ class KoskiOppijaFilterTest {
         PerusopetuksenOppimaara(
           tunniste = UUID.randomUUID(),
           versioTunniste = None,
-          oppilaitos = null,
+          oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
           luokka = None,
           koskiTila = null,
           supaTila = SuoritusTila.KESKEN,
@@ -42,9 +42,11 @@ class KoskiOppijaFilterTest {
         ),
         PerusopetuksenVuosiluokka(
           tunniste = UUID.randomUUID(),
+          oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
           nimi = Kielistetty(None, None, None),
           koodi = Koodi("9", "perusopetuksenluokkaaste", None),
           alkamisPaiva = None,
+          vahvistusPaivamaara = Some(LocalDate.now()),
           jaaLuokalle = false
         )
       ),
@@ -52,7 +54,7 @@ class KoskiOppijaFilterTest {
       tila = KESKEN
     )
     
-    Assertions.assertTrue(KoskiOppijaFilter.isYsiluokkalainen(Set(opiskeluoikeus)))
+    Assertions.assertTrue(KoskiUtil.isYsiluokkalainen(Seq(opiskeluoikeus)))
 
   @Test def testIsYsiluokkalainenValmisPerusopetus(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
@@ -63,7 +65,7 @@ class KoskiOppijaFilterTest {
         PerusopetuksenOppimaara(
           tunniste = UUID.randomUUID(),
           versioTunniste = None,
-          oppilaitos = null,
+          oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
           luokka = None,
           koskiTila = null,
           supaTila = SuoritusTila.VALMIS,
@@ -76,9 +78,11 @@ class KoskiOppijaFilterTest {
         ),
         PerusopetuksenVuosiluokka(
           tunniste = UUID.randomUUID(),
+          oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
           nimi = Kielistetty(None, None, None),
           koodi = Koodi("9", "perusopetuksenluokkaaste", None),
           alkamisPaiva = None,
+          vahvistusPaivamaara = Some(LocalDate.now()),
           jaaLuokalle = false
         )
       ),
@@ -86,5 +90,5 @@ class KoskiOppijaFilterTest {
       tila = SuoritusTila.VALMIS
     )
 
-    Assertions.assertFalse(KoskiOppijaFilter.isYsiluokkalainen(Set(opiskeluoikeus)))
+    Assertions.assertFalse(KoskiUtil.isYsiluokkalainen(Seq(opiskeluoikeus)))
 }

@@ -87,6 +87,7 @@ class KantaOperaatiotTest {
             DROP TABLE spring_session;
             DROP TABLE scheduled_tasks;
             DROP TABLE opiskeluoikeudet;
+            DROP TABLE metadata_arvot;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;
             DROP TABLE oppijat;
@@ -248,6 +249,9 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Map(versio1 -> Set(opiskeluoikeus1)), haetutSuoritusEntiteetit1)
 
 
+  /**
+   * Testataan että oppijan osittainen KOSKI-suoritussetti säilyy muuttumattomana kun se tallennetaan ja luetaan
+   */
   @Test def testAitoKoskiDataSuorituksetOsajoukkoRoundtrip(): Unit = {
     Seq(
       "/1_2_246_562_24_40483869857b.json"
@@ -371,13 +375,13 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Instant.now()).get
 
     val suoritus1 = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID1), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, None, None, Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None), Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("FI", "kielivalikoima", None)), true, None, None)))
-    val luokkasuoritus1 = PerusopetuksenVuosiluokka(UUID.randomUUID(), Kielistetty(Some("vuosiluokka"), None, None), Koodi("arvo1", "koodisto", Some(1)), Some(LocalDate.parse("2024-08-01")), false)
+    val luokkasuoritus1 = PerusopetuksenVuosiluokka(UUID.randomUUID(), Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID1), Kielistetty(Some("vuosiluokka"), None, None), Koodi("arvo1", "koodisto", Some(1)), Some(LocalDate.parse("2024-08-01")), Some(LocalDate.parse("2025-08-01")), false)
     val lisatiedot = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(true)))), Some(false), Some(List(Kotiopetusjakso("2023-08-24", Some("2024-01-22")))))
     val tilat = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-06-03"), KoskiKoodi("opiskelu", "tilakoodisto", Some(6), Kielistetty(None, None, None), None)), OpiskeluoikeusJakso(LocalDate.parse("2024-11-09"), KoskiKoodi("joulunvietto", "tilakoodisto", Some(6), Kielistetty(None, None, None), None))))
     val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(OPISKELUOIKEUSOID1), OPPILAITOSOID1, Set(suoritus1, luokkasuoritus1), Some(lisatiedot), KESKEN)
 
     val suoritus2 = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID2), None, Koodi("toinenarvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, None, None, Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None)))
-    val luokkasuoritus2 = PerusopetuksenVuosiluokka(UUID.randomUUID(), Kielistetty(Some("vuosiluokka2"), None, None), Koodi("arvo2", "koodisto", Some(1)), Some(LocalDate.parse("2023-08-01")), false)
+    val luokkasuoritus2 = PerusopetuksenVuosiluokka(UUID.randomUUID(), Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID2), Kielistetty(Some("vuosiluokka2"), None, None), Koodi("arvo2", "koodisto", Some(1)), Some(LocalDate.parse("2023-08-01")), Some(LocalDate.parse("2024-08-01")), false)
     val lisatiedot2 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(false)))), Some(true), None)
     val tilat2 = OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2022-07-02"), KoskiKoodi("hengailu", "tilakoodisto", Some(6), Kielistetty(None, None, None), None)), OpiskeluoikeusJakso(LocalDate.parse("2022-10-09"), KoskiKoodi("juhannusvalmistelut", "tilakoodisto", Some(6), Kielistetty(None, None, None), None))))
     val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(OPISKELUOIKEUSOID2), OPPILAITOSOID2, Set(suoritus2, luokkasuoritus2), Some(lisatiedot2), KESKEN)
@@ -500,4 +504,15 @@ class KantaOperaatiotTest {
       "haettuAvain1" -> Set("haettuArvo1"),
       "haettuAvain2" -> Set("haettuArvo2")
     )))
+
+  @Test def testHaeMetadaArvot(): Unit =
+    // tallennetaan versiot ja opiskeluoikeudet metadatalla
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877767", SuoritusJoukko.KOSKI, Seq("{}"), Instant.now()).get
+    val arvot = Set("arvo1", "arvo2", "arvo3")
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set.empty, Map(
+      "avain1" -> arvot,
+      "avain2" -> Set("muu1", "muu2")
+    ))
+
+    Assertions.assertEquals(arvot, this.kantaOperaatiot.haeMetadataAvaimenArvot("avain1"));
 }

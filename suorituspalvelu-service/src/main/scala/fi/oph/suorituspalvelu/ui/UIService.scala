@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.VirkailijaAuthorization
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID, EXAMPLE_OPPILAITOS_NIMI, EXAMPLE_OPPILAITOS_OID}
@@ -125,6 +126,19 @@ class UIService {
     }
   }
 
+  def haeOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
+    val metadata = KoskiUtil.getPeruskouluMetadata(oppilaitos, vuosi)
+
+    val versiot = metadata.flatMap((key, value) => kantaOperaatiot.haeVersiot(Set(key -> value).toMap)
+      .filter(v => v.loppu.isEmpty))
+    val oppijaOids = versiot.map(v => v.oppijaNumero)
+
+    val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids.toSet)
+      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet)
+
+    Await.result(ornOppijat, 30.seconds)
+  }
+
   //Tämä ei oikeasti toimi kovin tehokkaasti suurille joukoille Oppijoita, koska Atarun permissioncheck-rajapinta käsittelee yhden henkilön kerrallaan.
   def filtteroiHakemuspohjaisillaOikeuksilla(oppijat: Set[Oppija], authorization: VirkailijaAuthorization, aliakset: Map[String, Set[String]]): Future[Set[Oppija]] = {
     LOG.info(s"Tarkistetaan käyttäjälle $authorization oikeudet Atarusta.")
@@ -154,10 +168,8 @@ class UIService {
     })
   }
 
-  // TODO: Muut parametrit kuin hakusana eivät toistaiseksi vaikuta mihinkään. Korjataan asia kun Supan hakuindeksi on olemassa.
-  // TODO: implementaatiohuomio. Todennäköisesti halutaan purkaa olennainen tieto (oppilaitos, vuosi, luokka) erilliseen sopivasti GIN-indeksoituun tauluun KOSKI-hakujen yhteydessä josta sitten haetaan tässä
-  def haeOppijat(hakusana: Option[String], oppilaitos: Option[String], vuosi: Option[String], luokka: Option[String], authorization: VirkailijaAuthorization): Set[Oppija] = {
-    val resultF = suoritaOnrHaku(hakusana).flatMap(onrResult => {
+  def haeOppijat(hakusana: String, authorization: VirkailijaAuthorization): Set[Oppija] = {
+    val resultF = suoritaOnrHaku(Some(hakusana)).flatMap(onrResult => {
       val onrOppijat: Set[Oppija] = onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet
       if (onrOppijat.nonEmpty) {
         if (authorization.onRekisterinpitaja) {

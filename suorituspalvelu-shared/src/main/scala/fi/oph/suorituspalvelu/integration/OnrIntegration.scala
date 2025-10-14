@@ -95,6 +95,7 @@ class OnrIntegrationImpl extends OnrIntegration {
   }
 
   override def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
+    if(personOids.isEmpty) return Future.successful(Seq.empty)
     onrClient.getPerustiedotByPersonOids(personOids)
   }
 }
