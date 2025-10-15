@@ -8,3 +8,5 @@ CREATE TABLE IF NOT EXISTS yliajot (
     selite         VARCHAR,
     voimassaolo    TSTZRANGE NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS execution_time_idx ON yliajot (henkilo_oid, haku_oid);
