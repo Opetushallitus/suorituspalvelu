@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, VirtaOpiskeluoikeus, YOOpiskeluoikeus}
-import fi.oph.suorituspalvelu.mankeli.ValintaData
+import fi.oph.suorituspalvelu.mankeli.{AvaimetArvoContainer, AvainArvoConverterResults}
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
@@ -1049,13 +1049,13 @@ object EntityToUIConverter {
       ))
   }
 
-  def getOppijanValintaData(oppijaNumero: String, hakuOid: Option[String], valintaData: ValintaData): OppijanValintaDataSuccessResponse = {
+  def getOppijanValintaData(oppijaNumero: String, hakuOid: Option[String], valintaData: AvainArvoConverterResults): OppijanValintaDataSuccessResponse = {
     //Todo, mitä kaikkea palautetaan? Ainakin avain-arvot ja selitteet.
     OppijanValintaDataSuccessResponse(
       oppijaNumero,
       hakuOid.toJava,
-      valintaData.avainArvot.map(aac => {
-        AvainArvoContainerUI(aac.avain, aac.arvo, aac.selitteet.toList.asJava)
+      valintaData.avainArvot.flatMap(_.toSingleContainers).map(saac => {
+        AvainArvoContainerUI(saac.avain, saac.arvo, saac.selitteet.toList.asJava)
       }).toList.asJava
     )
   }

@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.Util
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, SingleAvainArvoContainer, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider

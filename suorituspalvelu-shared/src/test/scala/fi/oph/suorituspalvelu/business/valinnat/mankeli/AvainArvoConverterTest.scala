@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
+import fi.oph.suorituspalvelu.mankeli.{AvaimetArvoContainer, AvainArvoConstants, AvainArvoConverter, SingleAvainArvoContainer}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -73,9 +73,12 @@ class AvainArvoConverterTest {
         })
       })
 
+      //Todo, tarkistettava tämä logiikka. Lähtökohtaisesti vaikuttaa, että ristiin toistensa kanssa liitetyt prefixit ja postfixit eivät ole tarpeellisia.
+      //Eli löytyy avaimet PERUSKOULU_ARVOSANA_B2_OPPIAINEEN_KIELI ja PK_B2_OPPIAINE, mutta ei avaimia PK_B2_OPPIAINEEN_KIELI tai PERUSKOULU_ARVOSANA_B2_OPPIAINE
       tavoiteKielet.foreach((aine, kieli) => {
         AvainArvoConstants.peruskouluAineenKieliPostfixes.kaikkiAvaimet.foreach((postfix, isDuplikaatti) => {
-          AvainArvoConstants.peruskouluAineenArvosanaPrefixes.kaikkiAvaimet.foreach((prefix, isDuplikaatti) => {
+          //Duplikaattiavaimille on löydyttävä vain toisten duplikaattiavainten postfixit.
+          AvainArvoConstants.peruskouluAineenArvosanaPrefixes.kaikkiAvaimet.filter(_._2.equals(isDuplikaatti)).foreach((prefix, isDuplikaatti) => {
             Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(prefix + aine + postfix))
           })
         })
@@ -94,7 +97,7 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None, true, None, None))
     val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet)
 
-    val ka: Set[AvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty)
+    val ka: Set[SingleAvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty).flatMap(_.toSingleContainers)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
 
     val tavoiteArvosanat = Map("A1" -> "10", "BI" -> "8", "KO" -> "S", "LI" -> "9")
