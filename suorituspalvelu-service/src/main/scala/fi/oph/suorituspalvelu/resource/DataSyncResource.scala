@@ -88,7 +88,7 @@ class DataSyncResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaKoskiTiedotHenkiloille, None)
             LOG.info(s"Haetaan Koski-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
-            val result = koskiService.syncKoskiForOppijat(personOids.toSet)
+            val result = koskiService.syncKoskiForOppijat(personOids.toSet).foldLeft(Set.empty[SyncResultForHenkilo])((s, r) => s ++ Set(r))
             LOG.info(s"Palautetaan rajapintavastaus, $result")
             ResponseEntity.status(HttpStatus.OK).body(KoskiSyncSuccessResponse(result.toString())) //Todo, tässä nyt palautellaan vain jotain mitä sattui jäämään käteen. Mitä tietoja oikeasti halutaan palauttaa?
           catch

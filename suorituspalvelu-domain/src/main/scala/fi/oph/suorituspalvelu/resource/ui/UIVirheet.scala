@@ -11,6 +11,7 @@ object UIVirheet {
   final val UI_HAKU_VUOSI_PAKOLLINEN                        = "backend-virhe.haku.vuosi_pakollinen"
   final val UI_HAKU_OPPILAITOS_PAKOLLINEN                   = "backend-virhe.haku.oppilaitos_pakollinen"
   final val UI_HAKU_VUOSI_PAKOLLINEN_JOS_LUOKKA             = "backend-virhe.haku.vuosi_pakollinen_jos_luokka_maaritelty"
+  final val UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS            = "backend-virhe.haku.joko_hakusana_tai_oppilaitos_sallittu"
   final val UI_HAKU_EI_OIKEUKSIA                            = "backend-virhe.haku.ei_oikeuksia"
   final val UI_HAKU_EPAONNISTUI                             = "backend-virhe.haku.haku_epaonnistui"
 

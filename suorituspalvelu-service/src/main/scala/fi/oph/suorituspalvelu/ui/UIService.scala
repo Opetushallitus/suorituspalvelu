@@ -3,10 +3,11 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PeruskoulunSuoritusMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.VirkailijaAuthorization
 import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID, EXAMPLE_OPPILAITOS_NIMI, EXAMPLE_OPPILAITOS_OID}
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import fi.oph.suorituspalvelu.validation.Validator
@@ -108,15 +109,32 @@ class UIService {
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
 
-  def haeOppilaitokset(): Set[Oppilaitos] =
-    Set(Oppilaitos(
-      nimi = OppilaitosNimi(
-        fi = Optional.of(EXAMPLE_OPPILAITOS_NIMI),
-        sv = Optional.of(EXAMPLE_OPPILAITOS_NIMI),
-        en = Optional.of(EXAMPLE_OPPILAITOS_NIMI)
-      ),
-      oid = EXAMPLE_OPPILAITOS_OID
-    ))
+  @Autowired val organisaatioProvider: OrganisaatioProvider = null
+
+  def haeOppilaitoksetJoihinOikeudet(virkailijaAuthorization: VirkailijaAuthorization): Set[Oppilaitos] = {
+    virkailijaAuthorization.oikeudellisetOrganisaatiot
+      .map(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
+        .map(organisaatio => Oppilaitos(OppilaitosNimi(
+        Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+        organisaatio.oid)))
+      .flatten
+  }
+
+  def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {
+    Set(
+      kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PERUSKOULU_OPPIMAARA_VUOSI_AVAIN)
+        .map(avain => new PeruskoulunSuoritusMetadataArvo(avain).oppilaitosOid)
+        .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
+        .map(organisaatio => Oppilaitos(OppilaitosNimi(
+          Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+          organisaatio.oid)),
+      kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PERUSKOULU_YSI_AVAIN)
+        .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
+        .map(organisaatio => Oppilaitos(OppilaitosNimi(
+          Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+          organisaatio.oid))
+    ).flatten
+  }
 
   def suoritaOnrHaku(hakusana: Option[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
     hakusana match {
@@ -126,8 +144,8 @@ class UIService {
     }
   }
 
-  def haeOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
-    val metadata = KoskiUtil.getPeruskouluMetadata(oppilaitos, vuosi)
+  def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
+    val metadata = KoskiUtil.getPeruskouluHakuMetadata(oppilaitos, vuosi, luokka)
 
     val versiot = metadata.flatMap((key, value) => kantaOperaatiot.haeVersiot(Set(key -> value).toMap)
       .filter(v => v.loppu.isEmpty))
@@ -168,8 +186,8 @@ class UIService {
     })
   }
 
-  def haeOppijat(hakusana: String, authorization: VirkailijaAuthorization): Set[Oppija] = {
-    val resultF = suoritaOnrHaku(Some(hakusana)).flatMap(onrResult => {
+  def haeOppija(oppijaOid: String, authorization: VirkailijaAuthorization): Set[Oppija] = {
+    val resultF = suoritaOnrHaku(Some(oppijaOid)).flatMap(onrResult => {
       val onrOppijat: Set[Oppija] = onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet
       if (onrOppijat.nonEmpty) {
         if (authorization.onRekisterinpitaja) {

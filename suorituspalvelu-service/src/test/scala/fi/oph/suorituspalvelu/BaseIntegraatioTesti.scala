@@ -26,7 +26,11 @@ import org.springframework.test.web.servlet.setup.{DefaultMockMvcBuilder, MockMv
 import org.springframework.boot.test.system.{CapturedOutput, OutputCaptureExtension}
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
-import slick.jdbc.JdbcBackend.Database
+import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
+import slick.jdbc.PostgresProfile.api.*
+
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 
 class OphPostgresContainer(dockerImageName: String) extends PostgreSQLContainer[OphPostgresContainer](dockerImageName) {}
 
@@ -73,6 +77,7 @@ class BaseIntegraatioTesti {
     ds.setPassword(POSTGRES_PASSWORD)
     ds
 
+  var database: JdbcDatabaseDef = null
   var kantaOperaatiot: KantaOperaatiot = null
 
   // kontteja ei voi käynnistää vasta @BeforeAll-metodissa koska spring-konteksti rakennetaan ennen sitä
@@ -87,7 +92,7 @@ class BaseIntegraatioTesti {
     System.setProperty("web.url.cas-login", "DUMMY_CAS_LOGIN")
     System.setProperty("host.virkailija", "DUMMY")
 
-    val database = Database.forDataSource(getDatasource(), None)
+    database = Database.forDataSource(getDatasource(), None)
     kantaOperaatiot = KantaOperaatiot(database)
     true
   }
@@ -108,6 +113,13 @@ class BaseIntegraatioTesti {
       scheduler.stop()
     postgres.stop()
   }
+
+  @AfterEach def teardownTest(): Unit =
+    Await.result(database.run(
+      sqlu"""
+             DELETE FROM opiskeluoikeudet;
+             DELETE FROM versiot;
+          """), 5.seconds)
 
   var capturedOutput: CapturedOutput = null
   var outputLength = 0;
