@@ -278,3 +278,10 @@ case class Opintosuoritus(
                            opinnaytetyo: Boolean,
                            opiskeluoikeusAvain: String //Onhan tämä aina saatavilla?
                          ) extends Suoritus, Tyypitetty
+
+case class AvainArvoYliajo(avain: String,
+                           arvo: String,
+                           henkiloOid: String,
+                           hakuOid: String,
+                           virkailijaOid: String,
+                           selite: String)
