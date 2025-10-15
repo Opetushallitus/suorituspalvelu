@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoContainer, AvainArvoConverter, ValintaData}
+import fi.oph.suorituspalvelu.mankeli.{SingleAvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -22,7 +22,15 @@ class ValintaDataService {
 
   val LOG = LoggerFactory.getLogger(classOf[ValintaDataService])
 
-  def fetchValintaDataForOppija(personOid: String, hakuOid: Option[String]): ValintaData = {
+  def fetchOverridesForOppija(personOid: String, hakuOid: String): Seq[AvainArvoYliajo] = {
+    kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
+  }
+
+  def saveOverridesForOppija(personOid: String, hakuOid: String, overrides: Set[AvainArvoYliajo]): Unit = {
+    overrides.foreach(o => kantaOperaatiot.tallennaYliajo(o))
+  }
+
+  def fetchValintaDataForOppija(personOid: String, hakuOid: Option[String]): AvainArvoConverterResults = {
     //Todo, tarvitaan lopulta kaksi aikaleimaa:
     // -yksi tietojen haulle kannasta (laskennan alkamisen ajanhetki, mistä haetaan? Ohjausparametrit/Valintalaskenta/Koostepalvelu/muu, mikä?)
     // -toinen leikkuripäiväksi suoritusten vahvistuspäivämääriä vasten (haetaan ohjausparametreista, mutta ohjausparametria ei ole vielä lisätty)
@@ -36,7 +44,5 @@ class ValintaDataService {
 
     LOG.info(s"Muodostetaan avain-arvot henkilölle $personOid, ${opiskeluoikeudet.size} opiskeluoikeutta ja vahvistettu viimeistään $vahvistettuViimeistaan")
     AvainArvoConverter.convertOpiskeluoikeudet(personOid, opiskeluoikeudet.toSeq, vahvistettuViimeistaan)
-
   }
-
 }
