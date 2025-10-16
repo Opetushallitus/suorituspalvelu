@@ -51,6 +51,18 @@ case class OppilaitosFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppilaitosResponse
 
+trait LuokatResponse()
+
+case class LuokatSuccessResponse(
+  @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luokat: java.util.List[String]
+) extends LuokatResponse
+
+case class LuokatFailureResponse(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends LuokatResponse
+
 trait OppijanHakuResponse()
 
 case class Oppija(

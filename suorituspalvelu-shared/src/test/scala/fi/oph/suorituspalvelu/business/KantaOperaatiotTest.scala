@@ -483,6 +483,7 @@ class KantaOperaatiotTest {
     // tallennetaan versiot
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877767", SuoritusJoukko.KOSKI, Seq("{}"), Instant.now()).get
     val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877768", SuoritusJoukko.KOSKI, Seq("{}"), Instant.now()).get
+    val versio3 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877769", SuoritusJoukko.KOSKI, Seq("{}"), Instant.now()).get
 
     // ja opiskeluoikeudet metadatalla
     // versiolla 1 molemmat haetut avaimet
@@ -492,9 +493,17 @@ class KantaOperaatiotTest {
       "haettuAvain2" -> Set("haettuArvo2", "muuArvo2")
     ))
 
-    // mutta versiolla 2 vain ensimmäinen
+    // versiolla 2 molemmat haetut avaimet mutta ei voimassa
+    this.kantaOperaatiot.paataVersionVoimassaolo(versio2.tunniste)
     val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("4.5.6"), "dummy oid", Set.empty, None, VALMIS)
-    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus2), Map(
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus1), Map(
+      "haettuAvain1" -> Set("haettuArvo1", "muuArvo1"),
+      "haettuAvain2" -> Set("haettuArvo2", "muuArvo2")
+    ))
+
+    // ja versiolla 2 vain ensimmäinen
+    val opiskeluoikeus3 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("4.5.6"), "dummy oid", Set.empty, None, VALMIS)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio3, Set(opiskeluoikeus2), Map(
       "haettuAvain1" -> Set("haettuArvo1", "muuArvo3"),
       "haettuAvain2" -> Set("muuArvo4", "muuArvo5")
     ))
@@ -503,7 +512,7 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Set(versio1), this.kantaOperaatiot.haeVersiot(Map(
       "haettuAvain1" -> Set("haettuArvo1"),
       "haettuAvain2" -> Set("haettuArvo2")
-    )))
+    ), Instant.now()))
 
   @Test def testHaeMetadaArvot(): Unit =
     // tallennetaan versiot ja opiskeluoikeudet metadatalla
@@ -515,4 +524,17 @@ class KantaOperaatiotTest {
     ))
 
     Assertions.assertEquals(arvot, this.kantaOperaatiot.haeMetadataAvaimenArvot("avain1"));
+
+  @Test def testHaeMetadaArvotPrefixilla(): Unit =
+    // tallennetaan versiot ja opiskeluoikeudet metadatalla
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.99988877767", SuoritusJoukko.KOSKI, Seq("{}"), Instant.now()).get
+    val haetutArvot = Set("prefiksi:arvo1", "prefiksi:arvo2")
+    val muutArvot = Set("arvo3", "arvo4")
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set.empty, Map(
+      "avain1" -> Set(haetutArvot, muutArvot).flatten,
+      "avain2" -> Set("prefiksi:arvo3", "muu2")
+    ))
+
+    Assertions.assertEquals(haetutArvot, this.kantaOperaatiot.haeMetadataAvaimenArvot("avain1", Some("prefiksi:")));
+
 }

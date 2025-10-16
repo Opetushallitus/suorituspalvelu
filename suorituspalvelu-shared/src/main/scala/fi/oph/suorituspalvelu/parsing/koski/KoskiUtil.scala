@@ -1,57 +1,103 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka}
+import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
+import org.slf4j.LoggerFactory
 
-case class PerusopetuksenSuoritusOrganisaatio(oppilaitosOid: String, vuosi: Option[Integer], luokka: Option[String])
+import java.time.{Instant, LocalDate}
 
-case class PeruskoulunSuoritusMetadataArvo(oppilaitosOid: String, vuosi: Integer) {
+case class PKOppimaaraOppilaitosVuosiMetadataArvo(oppilaitosOid: String, vuosi: Integer) {
 
   def this(str: String) = this(str.split(":")(0), str.split(":")(1).toInt)
 
   override def toString(): String = s"$oppilaitosOid:$vuosi"
 }
 
-case class PeruskoulunLuokkaMetadataArvo(oppilaitosOid: String, luokka: String) {
+case class PKOppimaaraOppilaitosKeskenMetadataArvo(oppilaitosOid: String) {
+
+  override def toString(): String = s"$oppilaitosOid"
+}
+
+case class PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid: String, vuosi: Integer, luokka: String) {
+
+  def this(str: String) = this(str.split(":")(0), str.split(":")(1).toInt, str.split(":")(2))
+
+  override def toString(): String = s"$oppilaitosOid:$vuosi:$luokka"
+}
+
+case class PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(oppilaitosOid: String, luokka: String) {
 
   def this(str: String) = this(str.split(":")(0), str.split(":")(1))
 
   override def toString(): String = s"$oppilaitosOid:$luokka"
 }
 
+case class OponSeurattavaPerusopetuksenTila(oppilaitosOid: String, vahvistusVuosi: Option[Int], luokka: Option[String]) {
+
+  def toMetadata(): Map[String, Set[String]] = {
+    if(vahvistusVuosi.isDefined)
+      Seq(
+        Some(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN -> Set(PKOppimaaraOppilaitosVuosiMetadataArvo(oppilaitosOid, vahvistusVuosi.get).toString())),
+        luokka.map(l => PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN -> Set(PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid, vahvistusVuosi.get, l).toString()))
+      ).flatten.toMap
+    else
+      Seq(
+        Some(PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN -> Set(PKOppimaaraOppilaitosKeskenMetadataArvo(oppilaitosOid).toString())),
+        luokka.map(l => PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN -> Set(PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(oppilaitosOid, l).toString()))
+      ).flatten.toMap
+  }
+}
+
 object KoskiUtil {
 
   val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
 
-  val PERUSKOULU_OPPIMAARA_VUOSI_AVAIN = "PK_OPPIMAARA_OPPILAITOS_VUOSI"
-  val PERUSKOULU_OPPIMAARA_LUOKKA_AVAIN = "PK_OPPILAITOS_LUOKKA"
-  val PERUSKOULU_YSI_AVAIN = "PK_YSI_OPPILAITOS"
+  val PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN         = "PK_OPPIMAARA_OPPILAITOS_VUOSI"
+  val PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN        = "PK_OPPIMAARA_OPPILAITOS_KESKEN"
+  val PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN  = "PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA"
+  val PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN = "PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA"
 
-  def perusopetuksenSuoritusOrganisaatiot(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Set[PerusopetuksenSuoritusOrganisaatio] =
+  def getOponSeurattavatPerusopetuksenTilat(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Set[OponSeurattavaPerusopetuksenTila] = {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
       .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
-      .filter(o => o.tila == VALMIS).flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
-      .map(s => PerusopetuksenSuoritusOrganisaatio(s.oppilaitos.oid, Some(s.vahvistusPaivamaara.get.getYear), None))
-      .toSet
+      .map(o => {
+        val ysiluokat = o.suoritukset
+          .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenVuosiluokka])
+          .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenVuosiluokka])
+          .filter(s => {
+            s.koodi.arvo == "9"
+          })
+        if(ysiluokat.size>1)
+          throw new RuntimeException(s"Opiskeluoikeudessa ${o.oid} on useita ysiluokkia")
 
-  def ysiluokatOrganisaatiot(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Set[PerusopetuksenSuoritusOrganisaatio] =
-    opiskeluoikeudet
-      .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
-      .filter(o => o.tila != KESKEYTYNYT)
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenVuosiluokka])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenVuosiluokka])
-      .filter(s => {
-        s.koodi.arvo == "9"
-      })
-      // Annetaan toistaiseksi kaikille dummy-luokkatieto kunnes saadaan oikea koskesta
-      .map(s => PerusopetuksenSuoritusOrganisaatio(s.oppilaitos.oid, s.vahvistusPaivamaara.map(_.getYear), Some("9A")))
-      .toSet
+        val perusopetuksenOppimaarat = o.suoritukset
+          .filter(s => s.isInstanceOf[PerusopetuksenOppimaara])
+          .map(s => s.asInstanceOf[PerusopetuksenOppimaara])
+        if(perusopetuksenOppimaarat.size>1)
+          throw new RuntimeException(s"Opiskeluoikeudessa ${o.oid} on useita perusopetuksen oppimääriä")
+
+        // TODO: annetaan toistaiseksi kaikille dummy-luokkatieto kunnes saadaan oikea koskesta
+        (ysiluokat.headOption, perusopetuksenOppimaarat.headOption) match
+          case (None, None) => None
+          case (None, Some(oppimaara)) =>
+            o.tila match
+              case VALMIS => Some(OponSeurattavaPerusopetuksenTila(oppimaara.oppilaitos.oid, Some(oppimaara.vahvistusPaivamaara.get.getYear), None))
+              case KESKEN => None // eivät ysillä
+              case KESKEYTYNYT => None
+          case (Some(ysiluokka), None) =>
+            o.tila match
+              case KESKEYTYNYT => None
+              case default => Some(OponSeurattavaPerusopetuksenTila(ysiluokka.oppilaitos.oid, None, Some("9A")))
+          case (Some(ysiluokka), Some(oppimaara)) =>
+            o.tila match
+              case VALMIS => Some(OponSeurattavaPerusopetuksenTila(o.oppilaitosOid, Some(oppimaara.vahvistusPaivamaara.get.getYear), Some("9A")))
+              case KESKEN => Some(OponSeurattavaPerusopetuksenTila(o.oppilaitosOid, None, Some("9A")))
+              case KESKEYTYNYT => None
+      }).toSet.flatten
+  }
 
   /**
    * Henkilö on ysiluokalla jos:
@@ -62,11 +108,15 @@ object KoskiUtil {
    * @param opiskeluoikeudet
    * @return
    */
-  def isYsiluokkalainen(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Boolean =
-    val valmisPerusopetus = perusopetuksenSuoritusOrganisaatiot(opiskeluoikeudet).nonEmpty
-    val eiEronnutYsiluokkalainen = ysiluokatOrganisaatiot(opiskeluoikeudet).nonEmpty
-
-    !valmisPerusopetus && eiEronnutYsiluokkalainen
+  def isOponSeurattava(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Boolean =
+    getOponSeurattavatPerusopetuksenTilat(opiskeluoikeudet).exists(t =>
+      t.vahvistusVuosi match {
+        case None => true
+        // tämän vuoden valmistuneita seurataan elokuun loppuun
+        case Some(vuosi) if vuosi == LocalDate.now().getYear && LocalDate.now().getMonthValue < 9 => true
+        case default => false
+      }
+    )
 
   def includePerusopetuksenOppiaine(osaSuoritus: OsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
@@ -80,19 +130,33 @@ object KoskiUtil {
     hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusYli2vvk)
   }
 
-  def getPeruskouluHakuMetadata(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Map[String, Set[String]] =
-    Seq(
-      Some(PERUSKOULU_OPPIMAARA_VUOSI_AVAIN -> Set(PeruskoulunSuoritusMetadataArvo(oppilaitosOid, vuosi).toString)),
-      Some(PERUSKOULU_YSI_AVAIN -> Set(oppilaitosOid)),
-      luokka.map(l => PERUSKOULU_OPPIMAARA_LUOKKA_AVAIN -> Set(PeruskoulunLuokkaMetadataArvo(oppilaitosOid, l).toString))
-    ).flatten.toMap
+  def getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Seq[Map[String, Set[String]]] = {
+    (vuosi, luokka) match
+      case (vuosi, None) if LocalDate.now().getYear==vuosi =>
+        // jos tämä vuosi mutta luokkaa ei määritelty, niin pitää olla joko kyseisen oppilaitoksen valmis perusopetuksen suoritus
+        // tältä vuodelta, tai oppilaitoksen (ei valmis) ysiluokkalainen
+        Seq(
+          OponSeurattavaPerusopetuksenTila(oppilaitosOid, Some(vuosi), None).toMetadata(),
+          OponSeurattavaPerusopetuksenTila(oppilaitosOid, None, None).toMetadata()
+        )
+      case (vuosi, Some(luokka)) if LocalDate.now().getYear==vuosi =>
+        // jos tämä vuosi ja luokka määritelty, pitää olla joko kyseisen oppilaitoksen ja luokan valmis tai
+        // kesken olevan ysi
+        Seq(
+          OponSeurattavaPerusopetuksenTila(oppilaitosOid, Some(vuosi), Some(luokka)).toMetadata(),
+          OponSeurattavaPerusopetuksenTila(oppilaitosOid, None, Some(luokka)).toMetadata()
+        )
+      case (vuosi, None) =>
+        // jos aikaisempi vuosi ja luokkaa ei määritelty, pitää olla kyseisen oppilaitoksen valmis perusopetuksen suoritus
+        Seq(OponSeurattavaPerusopetuksenTila(oppilaitosOid, Some(vuosi), None).toMetadata())
+      case (vuosi, Some(luokka)) =>
+        // jos aikaisempi vuosi ja luokka määritelty, pitää olla kyseisen oppilaitoksen ja luokan valmis perusopetuksen suoritus
+        Seq(OponSeurattavaPerusopetuksenTila(oppilaitosOid, Some(vuosi), Some(luokka)).toMetadata())
+  }
 
-  def getPeruskoulunSuoritusMetadata(opiskeluoikeudet: Seq[Opiskeluoikeus]): Map[String, Set[String]] = {
-    Set(
-      PERUSKOULU_OPPIMAARA_VUOSI_AVAIN -> perusopetuksenSuoritusOrganisaatiot(opiskeluoikeudet).map(o => PeruskoulunSuoritusMetadataArvo(o.oppilaitosOid, o.vuosi.get).toString),
-      PERUSKOULU_YSI_AVAIN -> ysiluokatOrganisaatiot(opiskeluoikeudet).filter(_.vuosi.isEmpty).map(_.oppilaitosOid),
-      PERUSKOULU_OPPIMAARA_LUOKKA_AVAIN -> ysiluokatOrganisaatiot(opiskeluoikeudet).map(o => PeruskoulunLuokkaMetadataArvo(o.oppilaitosOid, o.luokka.get).toString),
-    ).toMap
+  def getMetadata(opiskeluoikeudet: Seq[Opiskeluoikeus]): Map[String, Set[String]] = {
+    // TODO: kunnon merge
+    getOponSeurattavatPerusopetuksenTilat(opiskeluoikeudet).flatMap(_.toMetadata()).toMap
   }
 
 }

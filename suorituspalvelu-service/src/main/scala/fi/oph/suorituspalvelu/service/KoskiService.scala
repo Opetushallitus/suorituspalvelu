@@ -82,7 +82,7 @@ class KoskiService {
 
       def isYsiluokkalainen(koskiData: String): Boolean =
         val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData), koodistoProvider)
-        KoskiUtil.isYsiluokkalainen(opiskeluoikeudet)
+        KoskiUtil.isOponSeurattava(opiskeluoikeudet)
 
       val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
       processKoskiDataForOppijat(new SaferIterator(filtteroity.iterator), fetchedAt)
@@ -112,7 +112,7 @@ class KoskiService {
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
           val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getPeruskoulunSuoritusMetadata(oikeudet))
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getMetadata(oikeudet))
         })
         SyncResultForHenkilo(oppija.oppijaOid, versio, None)
       } catch {

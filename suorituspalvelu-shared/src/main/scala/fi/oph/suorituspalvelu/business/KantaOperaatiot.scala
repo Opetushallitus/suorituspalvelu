@@ -199,7 +199,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb)
             """)
     val metadataArvotInserts = metadata.flatMap((avain, arvot) => arvot.map(arvo => sqlu"""INSERT INTO metadata_arvot (avain, arvo) VALUES($avain, $arvo) ON CONFLICT DO NOTHING"""))
-    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataArvotInserts)), DB_TIMEOUT)
+    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataArvotInserts).transactionally), DB_TIMEOUT)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
@@ -271,7 +271,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
-  def haeVersiot(metadata: Map[String, Set[String]]): Set[VersioEntiteetti] =
+  def haeVersiot(metadata: Map[String, Set[String]], timestamp: Instant): Set[VersioEntiteetti] =
     Await.result(db.run(
         (sql"""
           SELECT
@@ -283,7 +283,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'suoritusJoukko', versiot.suoritusjoukko
             )::text AS data
           FROM versiot
-          WHERE versiot.use_versio_tunniste IS NULL AND metadata @> (${metadata.flatMap((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).toSeq})
+          WHERE versiot.use_versio_tunniste IS NULL
+          AND metadata @> (${metadata.flatMap((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).toSeq})
+          AND ${Instant.ofEpochMilli(timestamp.toEpochMilli).toString}::timestamptz <@ voimassaolo
         """).as[String]), DB_TIMEOUT).map(data => MAPPER.readValue(data, classOf[VersioEntiteetti]))
       .toSet
 
@@ -292,7 +294,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val voimassaolo = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), now()) WHERE tunniste=${tunniste.toString}::uuid AND upper(voimassaolo)='infinity'::timestamptz"""
     Await.result(db.run(voimassaolo), DB_TIMEOUT)>0
 
-  def haeMetadataAvaimenArvot(avain: String): Set[String] =
-    Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain""".as[String]), DB_TIMEOUT).toSet
+  def haeMetadataAvaimenArvot(avain: String, prefix: Option[String] = None): Set[String] =
+    prefix match
+      case None => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain""".as[String]), DB_TIMEOUT).toSet
+      case Some(prefix) => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain AND arvo LIKE ${s"$prefix%"}""".as[String]), DB_TIMEOUT).toSet
 
 }

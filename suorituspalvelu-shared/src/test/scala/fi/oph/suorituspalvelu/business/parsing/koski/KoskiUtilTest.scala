@@ -18,7 +18,7 @@ import java.util.UUID
 class KoskiUtilTest {
 
   @Test def testIsYsiluokkalainenEiSuoritusta(): Unit =
-    Assertions.assertFalse(KoskiUtil.isYsiluokkalainen(Seq.empty))
+    Assertions.assertFalse(KoskiUtil.isOponSeurattava(Seq.empty))
   
   @Test def testIsYsiluokkalainenTrue(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
@@ -54,7 +54,7 @@ class KoskiUtilTest {
       tila = KESKEN
     )
     
-    Assertions.assertTrue(KoskiUtil.isYsiluokkalainen(Seq(opiskeluoikeus)))
+    Assertions.assertTrue(KoskiUtil.isOponSeurattava(Seq(opiskeluoikeus)))
 
   @Test def testIsYsiluokkalainenValmisPerusopetus(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
@@ -90,5 +90,5 @@ class KoskiUtilTest {
       tila = SuoritusTila.VALMIS
     )
 
-    Assertions.assertFalse(KoskiUtil.isYsiluokkalainen(Seq(opiskeluoikeus)))
+    Assertions.assertFalse(KoskiUtil.isOponSeurattava(Seq(opiskeluoikeus)))
 }

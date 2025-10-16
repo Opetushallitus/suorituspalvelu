@@ -118,6 +118,7 @@ class BaseIntegraatioTesti {
     Await.result(database.run(
       sqlu"""
              DELETE FROM opiskeluoikeudet;
+             DELETE FROM metadata_arvot;
              DELETE FROM versiot;
           """), 5.seconds)
 
