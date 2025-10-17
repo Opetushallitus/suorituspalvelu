@@ -1070,6 +1070,12 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val yliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
     val yliajo = AvainArvoYliajo(yliajettuAvain, yliajettuArvo, oppijaNumero, hakuOid, virkailijaOid, yliajoSelite)
 
+    val eriHaunOid = "1.2.246.562.29.01000000000000013918"
+    val eriHaunYliajettuAvain = "lisapistekoulutus_opisto"
+    val eriHaunYliajettuArvo = "true"
+    val eriHaunYliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
+    val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, eriHaunYliajettuArvo, oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
+
     kantaOperaatiot.tallennaYliajo(yliajo)
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETTY_OPPIAINE, Seq("{}"), Instant.now())
 
@@ -1102,5 +1108,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(yliajettu.arvo, yliajettuArvo)
     Assertions.assertEquals(yliajettu.metadata.arvoEnnenYliajoa.get, "false")
     Assertions.assertEquals(yliajettu.metadata.yliajo.get().selite, yliajoSelite)
+
+    //Tarkistetaan, että eri haulle tehty yliajo ei vaikuta täällä
+    val eriHaunYliajettu = parsedResult.avainArvot.asScala.find(_.avain == eriHaunYliajettuAvain).get
+    Assertions.assertEquals(eriHaunYliajettu.arvo, "false")
+    Assertions.assertNotEquals(eriHaunYliajettu.arvo, eriHaunYliajettuArvo)
+    Assertions.assertTrue(eriHaunYliajettu.metadata.arvoEnnenYliajoa.isEmpty)
   }
 }
