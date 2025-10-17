@@ -39,6 +39,10 @@ class ValintaDataService {
   def combineBaseAvainArvotWithYliajot(baseResults: AvainArvoConverterResults, yliajot: Set[AvainArvoYliajo]): Set[CombinedAvainArvoContainer] = {
     val yliajotMap: Map[String, AvainArvoYliajo] = yliajot.map(y => (y.avain, y)).toMap
 
+    if (yliajotMap.nonEmpty) {
+      LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}")
+    }
+
     baseResults.containers.flatMap(baseContainer => {
       val yliajo: Option[AvainArvoYliajo] = yliajotMap.get(baseContainer.avaimet.avain)
       baseContainer.avaimet.kaikkiAvaimet.map((avain, isDuplikaatti) => {
