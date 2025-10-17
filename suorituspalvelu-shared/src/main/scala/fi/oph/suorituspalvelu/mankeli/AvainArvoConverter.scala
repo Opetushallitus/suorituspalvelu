@@ -1,20 +1,21 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
 import scala.collection.immutable
 
 //Opiskeluoikeudet sisältävät kaiken lähdedatan, käyttö nykyisellään vain debug-tarkoituksiin.
-case class AvainArvoConverterResults(personOid: String, avainArvot: Set[AvaimetArvoContainer], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty) {
+case class AvainArvoConverterResults(personOid: String, containers: Set[AvaimetArvoContainer], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty) {
+
   def getAvainArvoMap(): Map[String, String] = {
-    avainArvot.flatMap(aa => aa.toSingleContainers.map(aac => aac.avain -> aac.arvo).toSeq).toMap
+    containers.flatMap(aa => aa.toSingleContainers.map(aac => aac.avain -> aac.arvo).toSeq).toMap
   }
 
   def toSingleContainers(): Set[SingleAvainArvoContainer] = {
-    avainArvot.flatMap(_.toSingleContainers)
+    containers.flatMap(_.toSingleContainers)
   }
 }
 
@@ -28,13 +29,12 @@ case class Avaimet(avain: String, rinnakkaisAvaimet: Set[String]) {
   }
 }
 
-//Pidetään näitä kädessä siihen asti kunnes myös yliajot on otettu huomioon, ja räjäytetään lopuksi SingleAvainArvoContainereiksi.
 case class AvaimetArvoContainer(avaimet: Avaimet, arvo: String, selitteet: Seq[String] = Seq.empty) {
+  //Raakadataa AvainArvoConverterilta
   def toSingleContainers: Set[SingleAvainArvoContainer] = avaimet.kaikkiAvaimet.map((avain, isDuplikaatti) => SingleAvainArvoContainer(avain, arvo, isDuplikaatti, selitteet))
 }
 
-case class SingleAvainArvoContainer(avain: String, arvo: String, duplikaatti: Boolean, selitteet: Seq[String] = Seq.empty, yliajo: Option[String] = None)
-
+case class SingleAvainArvoContainer(avain: String, arvo: String, duplikaatti: Boolean, selitteet: Seq[String] = Seq.empty)
 
 object AvainArvoConstants {
   //Sama tieto tallennetaan sekä pääavaimen että rinnakkaisten avaimien alle. Tämä antaa tuen vanhoille valintaperusteille.
