@@ -1166,9 +1166,22 @@ case class OppijanTiedotFailureResponse(
   @BeanProperty virheet: java.util.Set[String],
 ) extends OppijanTiedotResponse
 
+case class AvainArvoYliajoUI(@BeanProperty avain: String,
+                             @BeanProperty arvo: String,
+                             @BeanProperty henkiloOid: String,
+                             @BeanProperty hakuOid: String,
+                             @BeanProperty virkailijaOid: String,
+                             @BeanProperty selite: String)
+
+case class AvainArvoMetadataUI(@BeanProperty selitteet: java.util.List[String],
+                               @BeanProperty duplikaatti: Boolean, //Yleisesti ottaen duplikaattiavaimia ei varmaan kannata kälissä näyttää
+                               @BeanProperty arvoEnnenYliajoa: Optional[String],
+                               @BeanProperty yliajo: Optional[AvainArvoYliajoUI])
+
+
 case class AvainArvoContainerUI(@BeanProperty avain: String,
                                 @BeanProperty arvo: String,
-                                @BeanProperty selitteet: java.util.List[String])
+                                @BeanProperty metadata: AvainArvoMetadataUI)
 
 case class OppijanValintaDataSuccessResponse(
                                          @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)

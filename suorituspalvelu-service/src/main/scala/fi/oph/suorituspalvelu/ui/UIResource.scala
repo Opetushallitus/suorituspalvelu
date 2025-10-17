@@ -815,7 +815,7 @@ class UIResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.orElse(null), UI_VALINTADATA_HAKU_PARAM_NAME -> hakuOid.orElse(null)), AuditOperation.HaeOppijaValintaDataUI, None)
             val data = valintaDataService.fetchValintaDataForOppija(oppijaNumero.get, hakuOid.toScala)
-            val oppijanValintaData: OppijanValintaDataSuccessResponse = EntityToUIConverter.getOppijanValintaData(oppijaNumero.get(), hakuOid.toScala, data)
+            val oppijanValintaData: OppijanValintaDataSuccessResponse = EntityToUIConverter.getOppijanValintaDataForUI(oppijaNumero.get(), hakuOid.toScala, data)
             Right(ResponseEntity.status(HttpStatus.OK).body(oppijanValintaData))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanTiedotResponse]])
