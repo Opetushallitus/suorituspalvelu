@@ -110,13 +110,12 @@ class UIService {
 
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
-  def haeOppilaitoksetJoihinOikeudet(virkailijaAuthorization: VirkailijaAuthorization): Set[Oppilaitos] = {
-    virkailijaAuthorization.oikeudellisetOrganisaatiot
-      .map(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
-        .map(organisaatio => Oppilaitos(OppilaitosNimi(
+  def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
+    oppilaitosOids
+      .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
+      .map(organisaatio => Oppilaitos(OppilaitosNimi(
         Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
         organisaatio.oid)))
-      .flatten
   }
 
   def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {

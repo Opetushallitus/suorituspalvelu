@@ -136,7 +136,7 @@ class UIResource {
               Right(ResponseEntity.status(HttpStatus.OK).body(OppilaitosSuccessResponse(uiService.haeKaikkiOppilaitoksetJoissaPKSuorituksia().toList.asJava)))
             else
               val virkailijaAuth = securityOperaatiot.getAuthorization(SecurityConstants.ROOLIT_OPPIJA_HAULLE, organisaatioProvider)
-              val oppilaitokset = uiService.haeOppilaitoksetJoihinOikeudet(virkailijaAuth)
+              val oppilaitokset = uiService.haeOppilaitoksetJoihinOikeudet(virkailijaAuth.oikeudellisetOrganisaatiot)
               Right(ResponseEntity.status(HttpStatus.OK).body(OppilaitosSuccessResponse(oppilaitokset.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppilaitosResponse]])
