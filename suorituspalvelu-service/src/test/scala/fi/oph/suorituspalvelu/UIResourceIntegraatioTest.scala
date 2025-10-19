@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet, VuodetSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -159,6 +159,71 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppilaitosSuccessResponse]))
 
   /*
+   * Integraatiotestit vuosilistauksen haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeVuodetAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
+        .replace(ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPILAITOS_OID), ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeVuodetNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
+        .replace(ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPILAITOS_OID), ""))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123196"))
+  @Test def testHaeVuodetAllowed(): Unit =
+    val oppijanumero = "1.2.246.562.24.21583363331"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val valmistumisvuosi = "2024"
+
+    // tallennetaan valmis perusopetuksen oppimäärä
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      oppilaitosOid,
+      Set(PerusopetuksenOppimaara(
+        UUID.randomUUID(),
+        None,
+        fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+        None,
+        Koodi("", "", None),
+        VALMIS,
+        Koodi("", "", None),
+        Set.empty,
+        None,
+        None,
+        Some(LocalDate.parse(s"$valmistumisvuosi-08-18")),
+        Set.empty
+      )),
+      None,
+      VALMIS
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+
+    // haetaan vuodet ja katsotaan että täsmää, TODO: toistaiseksi luokka kovakoodattu kunnes saadaan koskesta
+    val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
+        .replace(ApiConstants.UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER, oppilaitosOid), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    Assertions.assertEquals(VuodetSuccessResponse(java.util.List.of(valmistumisvuosi)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VuodetSuccessResponse]))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeVuodetUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid
+    ), auditLogEntry.target)
+
+  /*
    * Integraatiotestit luokkalistauksen haulle
    */
 
@@ -219,6 +284,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AuditOperation.HaeLuokatUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
       ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid,
+      ApiConstants.UI_LUOKAT_VUOSI_PARAM_NAME -> valmistumisvuosi
     ), auditLogEntry.target)
 
   /*

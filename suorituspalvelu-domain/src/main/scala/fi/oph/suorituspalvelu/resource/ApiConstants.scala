@@ -72,6 +72,11 @@ object ApiConstants {
   final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
   final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
 
+  final val UI_VUODET_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
+  final val UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_VUODET_OPPILAITOS_PARAM_NAME + "}"
+  final val UI_VUODET_PATH                                  = UI_API_PREFIX + "/luokat/" + UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER
+  final val UI_VUODET_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa vuosista"
+
   final val UI_LUOKAT_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_LUOKAT_OPPILAITOS_PARAM_NAME + "}"
   final val UI_LUOKAT_VUOSI_PARAM_NAME                      = "vuosi"

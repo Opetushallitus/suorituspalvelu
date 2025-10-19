@@ -51,6 +51,18 @@ case class OppilaitosFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppilaitosResponse
 
+trait VuodetResponse()
+
+case class VuodetSuccessResponse(
+  @(Schema @field)(example = "2025", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty vuodet: java.util.List[String]
+) extends VuodetResponse
+
+case class VuodetFailureResponse(
+  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends VuodetResponse
+
 trait LuokatResponse()
 
 case class LuokatSuccessResponse(

@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo, PKOppimaaraOppilaitosKeskenMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.VirkailijaAuthorization
@@ -132,6 +132,17 @@ class UIService {
       .map(organisaatio => Oppilaitos(OppilaitosNimi(
         Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
         organisaatio.oid))
+  }
+
+  def haeVuodet(oppilaitosOid: String): Set[String] = {
+    Set(
+      if(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, Some(s"$oppilaitosOid")).nonEmpty)
+        Some(Set(LocalDate.now().getYear.toString))
+      else
+        None,
+      Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, Some(s"$oppilaitosOid"))
+        .map(arvo => new PKOppimaaraOppilaitosVuosiMetadataArvo(arvo).vuosi.toString)),
+    ).flatten.flatten
   }
 
   def haeLuokat(oppilaitosOid: String, vuosi: Int): Set[String] = {
