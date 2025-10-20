@@ -84,9 +84,11 @@ class UIResource {
       LogContext(path = UI_KAYTTAJAN_TIEDOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
+            val securityOperaatiot = new SecurityOperaatiot
+            val onOrganisaationKatselija = securityOperaatiot.onOrganisaationKatselija()
             val storedKieli = Option.apply(session.getAttribute(ASIOINTIKIELI_SESSION_KEY).asInstanceOf[String])
             if(storedKieli.isDefined)
-              Right(ResponseEntity.status(HttpStatus.OK).body(KayttajaSuccessResponse(storedKieli.get)))
+              Right(ResponseEntity.status(HttpStatus.OK).body(KayttajaSuccessResponse(storedKieli.get, onOrganisaationKatselija)))
             else
               val principal = SecurityContextHolder.getContext.getAuthentication.getPrincipal.asInstanceOf[UserDetails]
               val kieli = Await.result(this.onrIntegration.getAsiointikieli(principal.getUsername), ONR_TIMEOUT)
@@ -94,7 +96,7 @@ class UIResource {
                 Left(ResponseEntity.status(HttpStatus.NOT_FOUND).body(KayttajaFailureResponse(java.util.Set.of(UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT))))
               else
                 session.setAttribute(ASIOINTIKIELI_SESSION_KEY, kieli.get)
-                Right(ResponseEntity.status(HttpStatus.OK).body(KayttajaSuccessResponse(kieli.get)))
+                Right(ResponseEntity.status(HttpStatus.OK).body(KayttajaSuccessResponse(kieli.get, onOrganisaationKatselija)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[KayttajaResponse]])
     catch
