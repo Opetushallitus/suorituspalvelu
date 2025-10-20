@@ -3,14 +3,18 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.OnrHenkiloPerustiedot
-import fi.oph.suorituspalvelu.integration.client.{Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuSuccessResponse}
+import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.{Assertions, Test}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -22,6 +26,15 @@ import scala.concurrent.Future
 class UIServiceTest extends BaseIntegraatioTesti {
 
   @Autowired var uiService: UIService = null
+
+  @MockBean
+  val onrIntegration: OnrIntegration = null
+
+  @MockBean
+  var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  @MockBean
+  var organisaatioProvider: OrganisaatioProvider = null
 
   val OPPIJANUMERO_YSI_KESKEN             = "1.2.246.562.24.21583363334"
   val OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI  = "1.2.246.562.24.21583363335"
@@ -72,6 +85,9 @@ class UIServiceTest extends BaseIntegraatioTesti {
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
 
+  /*
+   * Integraatiotestit metadatapohjaiselle oppijoiden haulle
+   */
 
   // TODO: tätä pitää vielä täydentää kun saadaan esim. Juholta mahdollisest kombinaatiot
   private def lisaaSuoritukset(): Unit =
@@ -138,5 +154,121 @@ class UIServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(
       Set.empty,
       uiService.haePKOppijaOidit(OPPILAITOS_OID, TOISSAVUOSI, Some("9A")))
+
+  /*
+   * Integraatiotestit oikeuksien tarkistukselle atarusta
+   */
+
+  final val ROOLI_HAKENEIDEN_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA + "_1.2.246.562.10.52320123196"
+  final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA + "_1.2.246.562.10.52320123196"
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testCheckAccessRekisterinpitaja(): Unit =
+    val oppijaOid = "1.2.246.562.24.21583363334"
+
+    Assertions.assertEquals(true, uiService.hasOppijanKatseluOikeus(oppijaOid))
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testCheckAccessNoPermission(): Unit =
+    val oppijaOid = "1.2.246.562.24.21583363334"
+
+    // mockataan onr-vastaus, ei aliaksia
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+
+    Assertions.assertEquals(false, uiService.hasOppijanKatseluOikeus(oppijaOid))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_HAKENEIDEN_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testCheckAccessAtaruPermission(): Unit =
+    val oppijaOid = "1.2.246.562.24.21583363334"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("", "", ""), None, Seq.empty)
+    val onOikeus = true
+
+    // mockataan onr ja ataru-vastaukset
+    val permissionRequest = AtaruPermissionRequest(Set(oppijaOid), Set(oppilaitosOid), Set.empty)
+    val permissionResponse = AtaruPermissionResponse(Some(onOikeus), None)
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+    Mockito.when(hakemuspalveluClient.checkPermission(permissionRequest)).thenReturn(Future.successful(permissionResponse))
+
+    // palautuu atarun vastaus
+    Assertions.assertEquals(onOikeus, uiService.hasOppijanKatseluOikeus(oppijaOid))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testCheckAccessOrganisaatioPermission(): Unit =
+    val oppijaOid = "1.2.246.562.24.21583363334"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("", "", ""), None, Seq.empty)
+
+    // mockataan onr ja organisaatiopalvelun vastaukset
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+
+    // tallennetaan valmis perusopetuksen oppimäärä
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      oppilaitosOid,
+      Set(PerusopetuksenOppimaara(
+        UUID.randomUUID(),
+        None,
+        fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+        None,
+        Koodi("", "", None),
+        VALMIS,
+        Koodi("", "", None),
+        Set.empty,
+        None,
+        None,
+        Some(LocalDate.parse("2025-08-18")),
+        Set.empty
+      )),
+      None,
+      VALMIS
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+
+    // palautuu true koska oppijalla oppilaitoksessa pk-suoritus
+    Assertions.assertEquals(true, uiService.hasOppijanKatseluOikeus(oppijaOid))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testCheckAccessOrganisaatioNoPermission(): Unit =
+    val oppijaOid = "1.2.246.562.24.21583363334"
+    val oppilaitosJohonOikeudetOid = "1.2.246.562.10.52320123196"
+    val oppilaitosJossaSuoritusOid = "1.2.246.562.10.52320123197"
+    val organisaatio = Organisaatio(oppilaitosJohonOikeudetOid, OrganisaatioNimi("", "", ""), None, Seq.empty)
+
+    // mockataan onr ja organisaatiopalvelun vastaukset
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosJohonOikeudetOid)).thenReturn(Some(organisaatio))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+
+    // tallennetaan valmis perusopetuksen oppimäärä
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      oppilaitosJossaSuoritusOid,
+      Set(PerusopetuksenOppimaara(
+        UUID.randomUUID(),
+        None,
+        fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), oppilaitosJossaSuoritusOid),
+        None,
+        Koodi("", "", None),
+        VALMIS,
+        Koodi("", "", None),
+        Set.empty,
+        None,
+        None,
+        Some(LocalDate.parse("2025-08-18")),
+        Set.empty
+      )),
+      None,
+      VALMIS
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+
+    // palautuu false koska oppijalla pk-suoritus muuta toisessa oppilaitoksessa kuin oikeus
+    Assertions.assertEquals(false, uiService.hasOppijanKatseluOikeus(oppijaOid))
 
 }
