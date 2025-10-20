@@ -59,12 +59,14 @@ object ApiConstants {
 
   final val UI_DATA_PATH                                    = UI_API_PREFIX + "/valintadata"
 
-  final val UI_HAKU_PATH                                    = UI_API_PREFIX + "/oppijat"
-  final val UI_HAKU_HAKUSANA_PARAM_NAME                     = "hakusana"
-  final val UI_HAKU_OPPILAITOS_PARAM_NAME                   = "oppilaitos"
-  final val UI_HAKU_VUOSI_PARAM_NAME                        = "vuosi"
-  final val UI_HAKU_LUOKKA_PARAM_NAME                       = "luokka"
-  final val UI_HAKU_ESIMERKKI_HAKUKENTAN_ARVO               = "Olli Op"
+  final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/oppijat"
+  final val UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME             = "hakusana"
+  final val UI_HENKILO_HAKU_ESIMERKKI_HAKUKENTAN_ARVO       = "Olli Op"
+
+  final val UI_OPPILAITOS_HAKU_PATH                         = UI_API_PREFIX + "/oppilaitoksenoppijat"
+  final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
+  final val UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME             = "vuosi"
+  final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
 
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "haku"
