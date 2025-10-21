@@ -93,15 +93,12 @@ const EditSuoritusContent = ({
                   );
                 }}
                 options={oppilaitoksetOptions}
-                renderInput={(params) => (
-                  <TextField name="oppilaitos" {...params} />
-                )}
+                renderInput={(params) => <TextField {...params} />}
               />
             );
           }}
         />
         <OphSelectFormField
-          name="tila"
           label={t('muokkaus.suoritus.tila')}
           options={useKoodistoOptions('suorituksentila')}
           required={true}
@@ -115,7 +112,6 @@ const EditSuoritusContent = ({
         />
         <DatePicker
           label={t('muokkaus.suoritus.valmistumispaiva')}
-          name="valmistumispaiva"
           value={suoritus?.valmistumispaiva}
           onChange={(date) => {
             setSuoritus((prev) =>
@@ -126,7 +122,6 @@ const EditSuoritusContent = ({
       </InfoItemRow>
       <InfoItemRow slotAmount={3} spacing={2}>
         <OphSelectFormField
-          name="suorituskieli"
           label={t('muokkaus.suoritus.suorituskieli')}
           sx={{ flex: 1, maxWidth: '300px' }}
           required={true}
@@ -139,7 +134,6 @@ const EditSuoritusContent = ({
           }}
         />
         <OphSelectFormField
-          name="koulusivistyskieli"
           label={t('muokkaus.suoritus.koulusivistyskieli')}
           sx={{ flex: 1, maxWidth: '300px' }}
           required={true}
@@ -152,7 +146,6 @@ const EditSuoritusContent = ({
           }}
         />
         <OphSelectFormField
-          name="yksilollistetty"
           label={t('muokkaus.suoritus.yksilollistetty')}
           sx={{ flex: 2 }}
           required={true}
@@ -182,7 +175,7 @@ const EditSuoritusContent = ({
   );
 };
 
-export const EditSuoritusPaper = ({
+export const AddSuoritusPaper = ({
   suoritus,
   onSave,
   setSuoritus,

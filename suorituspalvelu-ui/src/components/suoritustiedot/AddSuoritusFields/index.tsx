@@ -1,1 +1,1 @@
-export { AddSuoritusFields } from './AddSuoritusFields';
+export { AddSuoritusFields as AddSuoritusFields } from './AddSuoritusFields';

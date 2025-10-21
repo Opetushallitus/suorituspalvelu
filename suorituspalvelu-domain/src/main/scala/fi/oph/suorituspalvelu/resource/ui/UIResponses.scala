@@ -949,6 +949,8 @@ case class PerusopetuksenOppiaineNimi(
 case class PerusopetuksenOppiaine(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
+  @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, description="koskioppiaineetyleissivistävä-koodiston koodi", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty koodi: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: PerusopetuksenOppiaineNimi,
   @(Schema @field)(example = ESIMERKKI_VIERAS_KIELI_KIELIKOODI, requiredMode = RequiredMode.REQUIRED)

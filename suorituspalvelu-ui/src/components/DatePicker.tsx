@@ -120,7 +120,6 @@ export type DatePickerProps = {
   value?: Date | null;
   onChange?: (value: Date | null) => void;
   label: string;
-  name: string;
   required?: boolean;
 };
 
@@ -128,7 +127,6 @@ export const DatePicker = ({
   value,
   onChange,
   label,
-  name,
   required = false,
 }: DatePickerProps) => {
   const { t, getLanguage } = useTranslations();
@@ -140,7 +138,6 @@ export const DatePicker = ({
   }: CalendarInputProps & { ref?: React.RefObject<HTMLInputElement | null> }) {
     return (
       <StyledOphInput
-        name={name}
         placeholder={t('datepicker.placeholder')}
         {...props}
         endAdornment={
@@ -162,7 +159,6 @@ export const DatePicker = ({
         renderInput={({ labelId }) => (
           <ReactDatePicker
             ariaLabelledBy={labelId}
-            name={name}
             selected={value}
             onChange={onChange}
             customInput={<CustomInput ref={refCustomInput} />}

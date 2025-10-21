@@ -429,6 +429,7 @@ object EntityToUIConverter {
           )).toJava,
           oppiaineet = om.aineet.map(a => PerusopetuksenOppiaine(
             tunniste = a.tunniste,
+            koodi = a.koodi.arvo,
             nimi = PerusopetuksenOppiaineNimi(
               fi = a.nimi.fi.toJava,
               sv = a.nimi.sv.toJava,
@@ -456,8 +457,6 @@ object EntityToUIConverter {
   def getOppijanTiedot(oppijaNumero: String, opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): Option[OppijanTiedotSuccessResponse] = {
     if(opiskeluoikeudet.isEmpty && !EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
       None
-    else if(EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
-      MockEntityToUIConverter.getOppijanTiedot()
     else
       Some(OppijanTiedotSuccessResponse(
         // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
