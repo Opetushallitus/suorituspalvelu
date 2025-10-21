@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 import {
   type SuorituksenPerustiedot,
   type SuorituksenTila,

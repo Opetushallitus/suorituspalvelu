@@ -6,12 +6,12 @@ import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useMemo } from 'react';
-import { StripedTable } from './StripedTable';
+import { StripedTable } from '../StripedTable';
 import { isKielistetty } from '@/lib/translation-utils';
-import { InfoItemRow } from './InfoItemRow';
+import { InfoItemRow } from '@/components/InfoItemRow';
 
 const Luokkatiedot = ({
   oppimaara,
