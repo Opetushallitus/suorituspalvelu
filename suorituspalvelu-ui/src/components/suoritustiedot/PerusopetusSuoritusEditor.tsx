@@ -8,9 +8,9 @@ import {
   type PerusopetuksenOppimaara,
 } from '@/types/ui-types';
 import { OphButton } from '@opetushallitus/oph-design-system';
-import { PerusopetusSuoritusReadOnlyPaper } from './PerusopetusSuoritusReadOnlyPaper';
+import { PerusopetusSuoritusDisplay } from './PerusopetusSuoritusDisplay';
 
-export const PerusopetusSuoritusEditablePaper = ({
+export const PerusopetusSuoritusEditor = ({
   henkiloOID,
   suoritus: suoritusProp,
 }: {
@@ -40,6 +40,7 @@ export const PerusopetusSuoritusEditablePaper = ({
       >
         {suoritusFields && mode === 'edit' ? (
           <EditSuoritusPaper
+            mode={mode}
             suoritus={suoritusFields}
             ref={suoritusPaperRef}
             onSuoritusChange={onSuoritusChange}
@@ -52,7 +53,7 @@ export const PerusopetusSuoritusEditablePaper = ({
             }}
           />
         ) : (
-          <PerusopetusSuoritusReadOnlyPaper
+          <PerusopetusSuoritusDisplay
             suoritus={suoritusProp}
             actions={
               <Stack

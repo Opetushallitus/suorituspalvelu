@@ -170,7 +170,7 @@ const PerusopetusOppiaineetTable = ({
   );
 };
 
-export const PerusopetusSuoritusReadOnlyPaper = ({
+export const PerusopetusSuoritusDisplay = ({
   suoritus,
   actions,
 }: {

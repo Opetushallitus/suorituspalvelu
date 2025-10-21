@@ -1,4 +1,4 @@
-import { Autocomplete, Stack, TextField } from '@mui/material';
+import { Autocomplete, Stack, TextField, Typography } from '@mui/material';
 import {
   OphButton,
   ophColors,
@@ -23,12 +23,14 @@ import { EditArvosanatTable } from './EditArvosanatTable';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 
 const EditSuoritusContent = ({
+  mode,
   suoritus,
   onSave,
   onCancel,
   onSuoritusChange,
   onOppiaineChange,
 }: {
+  mode: 'add' | 'edit';
   suoritus: SuoritusFields;
   onSave: () => void;
   onCancel?: () => void;
@@ -62,6 +64,11 @@ const EditSuoritusContent = ({
 
   return (
     <Stack sx={{ gap: 1 }}>
+      <Typography variant="h5">
+        {mode === 'add'
+          ? t('muokkaus.suoritus.otsikko-lisaa')
+          : t('muokkaus.suoritus.otsikko-muokkaa')}
+      </Typography>
       <InfoItemRow slotAmount={1} spacing={2}>
         <OphSelectFormField
           name="tyyppi"
@@ -159,6 +166,7 @@ const EditSuoritusContent = ({
 };
 
 export const EditSuoritusPaper = ({
+  mode,
   suoritus,
   onSave,
   onCancel,
@@ -166,6 +174,7 @@ export const EditSuoritusPaper = ({
   onOppiaineChange,
   ref,
 }: {
+  mode: 'add' | 'edit';
   suoritus: SuoritusFields;
   onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => void;
   onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
@@ -177,6 +186,7 @@ export const EditSuoritusPaper = ({
     <PaperWithTopColor ref={ref} topColor={ophColors.cyan2}>
       <QuerySuspenseBoundary>
         <EditSuoritusContent
+          mode={mode}
           onSave={onSave}
           onCancel={onCancel}
           suoritus={suoritus}

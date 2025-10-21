@@ -1,6 +1,6 @@
 import { type PerusopetusSuoritus } from '@/types/ui-types';
-import { PerusopetusSuoritusEditablePaper } from './PerusopetusSuoritusEditablePaper';
-import { PerusopetusSuoritusReadOnlyPaper } from './PerusopetusSuoritusReadOnlyPaper';
+import { PerusopetusSuoritusEditor } from './PerusopetusSuoritusEditor';
+import { PerusopetusSuoritusDisplay } from './PerusopetusSuoritusDisplay';
 
 export const PerusopetusSuoritusPaper = ({
   henkiloOID,
@@ -13,11 +13,8 @@ export const PerusopetusSuoritusPaper = ({
     'suoritustyyppi' in suoritus &&
     (suoritus.suoritustyyppi === 'perusopetuksenoppimaara' ||
       suoritus.suoritustyyppi === 'perusopetuksenoppiaineenoppimaara') ? (
-    <PerusopetusSuoritusEditablePaper
-      suoritus={suoritus}
-      henkiloOID={henkiloOID}
-    />
+    <PerusopetusSuoritusEditor suoritus={suoritus} henkiloOID={henkiloOID} />
   ) : (
-    <PerusopetusSuoritusReadOnlyPaper suoritus={suoritus} />
+    <PerusopetusSuoritusDisplay suoritus={suoritus} />
   );
 };
