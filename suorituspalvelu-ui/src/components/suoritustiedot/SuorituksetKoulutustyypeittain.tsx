@@ -97,6 +97,7 @@ export function SuorituksetKoulutustyypeittain({
           ?.map((suoritus) => (
             <PerusopetusSuoritusPaper
               key={suoritus.tunniste}
+              henkiloOID={oppijanTiedot.henkiloOID}
               suoritus={suoritus}
             />
           ))}

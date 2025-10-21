@@ -62,7 +62,7 @@ object VirkailijaToSuoritusConverter {
             toOppiaineenNimi(oppiaine.koodi.get, koodistoProvider),
             oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
             oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-            suoritus.suorituskieli.toScala.map(k => Koodi(k, "kieli", None)),
+            oppiaine.kieli.toScala.map(k => Koodi(k, if ("AI".equals(oppiaine.koodi.get())) "oppiaineaidinkielijakirjallisuus" else "kielivalikoima", None)),
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None

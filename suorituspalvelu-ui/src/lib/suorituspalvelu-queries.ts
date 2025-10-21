@@ -9,11 +9,14 @@ import {
 import { useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
 
-export const useOppija = (oppijaNumero: string) => {
-  return useApiSuspenseQuery({
+export const queryOptionsGetOppija = (oppijaNumero: string) =>
+  queryOptions({
     queryKey: ['getOppija', oppijaNumero],
     queryFn: () => getOppija(oppijaNumero),
   });
+
+export const useOppija = (oppijaNumero: string) => {
+  return useApiSuspenseQuery(queryOptionsGetOppija(oppijaNumero));
 };
 
 export const queryOptionsSearchOppijat = (params: OppijatSearchParams) =>

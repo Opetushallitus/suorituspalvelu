@@ -119,15 +119,24 @@ export type VapaaSivistystyoSuoritus = IVapaaSivistystyoKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
 };
 
-type PerusopetuksenOppimaara = Omit<IPerusopetuksenOppimaara, 'oppiaineet'> & {
+export type PerusopetuksenOppimaara = Omit<
+  IPerusopetuksenOppimaara,
+  'oppiaineet'
+> & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
+  suoritustyyppi: 'perusopetuksenoppimaara';
+  koulutustyyppi: 'perusopetus';
+  isEditable: true;
 };
 
-type PerusopetuksenOppiaineenOppimaara = Omit<
+export type PerusopetuksenOppiaineenOppimaara = Omit<
   IPerusopetuksenOppiaineenOppimaara,
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
+  suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
+  koulutustyyppi: 'perusopetus';
+  isEditable: true;
 };
 
 type AikuistenPerusopetuksenOppimaara = Omit<
@@ -150,7 +159,7 @@ export type PerusopetusSuoritus = (
   | IPerusopetuksenOppimaara78Luokkalaiset
   | NuortenPerusopetuksenOppiaineenOppimaara
   | AikuistenPerusopetuksenOppimaara
-) & { koulutustyyppi: 'perusopetus' };
+) & { koulutustyyppi: 'perusopetus'; isEditable: boolean };
 
 export type Suoritus =
   | KorkeakouluSuoritus
@@ -185,6 +194,7 @@ export type PerusopetusOppiaineFields = {
 };
 
 export type SuoritusFields = {
+  versioTunniste: string;
   oppijaOid: string;
   oppilaitosOid: string;
   tila?: string;

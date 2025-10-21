@@ -1,4 +1,5 @@
 import { castToArray } from '@/lib/common';
+import type { IPerusopetuksenOppiaine } from '@/types/backend';
 import type {
   OppijanTiedot,
   PerusopetuksenOppiaine,
@@ -6,6 +7,46 @@ import type {
 } from '@/types/ui-types';
 import { useMemo } from 'react';
 import { groupBy, isTruthy, omit } from 'remeda';
+
+const convertPerusopetusOppiaineet = (
+  oppiaineet: Array<IPerusopetuksenOppiaine>,
+): Array<PerusopetuksenOppiaine> => {
+  const groupedOppiaineet = groupBy(
+    oppiaineet,
+    (oppiaine) => oppiaine.koodi + (oppiaine.kieli ?? ''),
+  );
+  const result = Object.values(groupedOppiaineet).map?.((oppiaineGroup) => {
+    return oppiaineGroup?.reduce((mergedOppiaine, curr) => {
+      const baseOppiaine: PerusopetuksenOppiaine = {
+        ...mergedOppiaine,
+        nimi: curr.nimi,
+        tunniste: curr.tunniste,
+        koodi: curr.koodi,
+        kieli: curr.kieli,
+      };
+      if (curr.valinnainen) {
+        return {
+          ...baseOppiaine,
+          valinnaisetArvosanat: [
+            ...(mergedOppiaine?.valinnaisetArvosanat ?? []),
+            curr.arvosana,
+          ],
+        };
+      }
+      if (mergedOppiaine.arvosana && curr.arvosana) {
+        throw new Error(
+          `Pakolliselle oppiaineelle löytyi duplikaatti-arvosanoja (tunniste: ${curr.tunniste}, koodi: ${curr.koodi}, kieli: ${curr.kieli})`,
+        );
+      }
+      return {
+        ...baseOppiaine,
+        arvosana: curr.arvosana,
+      };
+    }, {} as PerusopetuksenOppiaine);
+  });
+
+  return result;
+};
 
 export function useSuorituksetFlattened(
   oppijanTiedot: OppijanTiedot,
@@ -103,60 +144,50 @@ export function useSuorituksetFlattened(
     );
 
     addSuoritukset(
+      suoritusTiedot.perusopetuksenOppimaarat.map((suoritus) => {
+        return {
+          ...suoritus,
+          isEditable: suoritus.syotetty,
+          koulutustyyppi: 'perusopetus',
+          suoritustyyppi: 'perusopetuksenoppimaara',
+          // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
+          oppiaineet: convertPerusopetusOppiaineet(suoritus.oppiaineet),
+        };
+      }),
+    );
+
+    addSuoritukset(
       [
-        ...suoritusTiedot.perusopetuksenOppimaarat,
         suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset,
         ...suoritusTiedot.nuortenPerusopetuksenOppiaineenOppimaarat,
-        ...suoritusTiedot.perusopetuksenOppiaineenOppimaarat,
-        ...suoritusTiedot.aikuistenPerusopetuksenOppimaarat,
       ]
         .filter(isTruthy)
-        .map((suoritus) => {
-          if ('oppiaineet' in suoritus) {
-            const groupedOppiaineet = groupBy(
-              suoritus.oppiaineet,
-              (oppiaine) => oppiaine.koodi + (oppiaine.kieli ?? ''),
-            );
-            return {
-              ...suoritus,
-              koulutustyyppi: 'perusopetus',
-              // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
-              oppiaineet: Object.values(groupedOppiaineet).map?.(
-                (oppiaineet) => {
-                  return oppiaineet?.reduce((mergedOppiaine, curr) => {
-                    const baseOppiaine: PerusopetuksenOppiaine = {
-                      ...mergedOppiaine,
-                      nimi: curr.nimi,
-                      tunniste: curr.tunniste,
-                      koodi: curr.koodi,
-                      kieli: curr.kieli,
-                    };
-                    if (curr.valinnainen) {
-                      return {
-                        ...baseOppiaine,
-                        valinnaisetArvosanat: [
-                          ...(mergedOppiaine?.valinnaisetArvosanat ?? []),
-                          curr.arvosana,
-                        ],
-                      };
-                    }
-                    if (mergedOppiaine.arvosana && curr.arvosana) {
-                      throw new Error(
-                        `Pakolliselle oppiaineelle löytyi duplikaatti-arvosanoja (tunniste: ${curr.tunniste}, koodi: ${curr.koodi}, kieli: ${curr.kieli})`,
-                      );
-                    }
-                    return {
-                      ...baseOppiaine,
-                      arvosana: curr.arvosana,
-                    };
-                  }, {} as PerusopetuksenOppiaine);
-                },
-              ),
-            };
-          } else {
-            return { ...suoritus, koulutustyyppi: 'perusopetus' };
-          }
-        }),
+        .map((suoritus) => ({
+          ...suoritus,
+          koulutustyyppi: 'perusopetus',
+          isEditable: false,
+        })),
+    );
+
+    addSuoritukset(
+      suoritusTiedot.perusopetuksenOppiaineenOppimaarat.map((suoritus) => {
+        return {
+          ...suoritus,
+          isEditable: Boolean('syotetty' in suoritus && suoritus.syotetty),
+          koulutustyyppi: 'perusopetus',
+          suoritustyyppi: 'perusopetuksenopiaineenoppimaara',
+          // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
+          oppiaineet: convertPerusopetusOppiaineet(suoritus.oppiaineet),
+        };
+      }),
+    );
+
+    addSuoritukset(
+      suoritusTiedot.aikuistenPerusopetuksenOppimaarat.map((suoritus) => ({
+        ...suoritus,
+        koulutustyyppi: 'perusopetus',
+        isEditable: false,
+      })),
     );
 
     if (sortByDate) {
