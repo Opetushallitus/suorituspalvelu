@@ -41,7 +41,7 @@ Sovelluksen käyttöliittymä löytyy käynnistyksen jälkeen osoitteesta http:/
 
 #### TS-tyyppien generointi
 
-UI-endpointtien käyttämien tyyppien Typescript-vastineet generoidaan automaattisesti `suorituspalvelu-ui/scripts/generate-backend-types.sh` -komennolla. Tämä pitää ajaa kun UIResponses-luokassa olevia tyyppejä on muutettu.
+UI-endpointtien käyttämien tyyppien Typescript-vastineet generoidaan ajamalla [TypeScriptGenerator](./suorituspalvelu-service/src/main/scala/fi/oph/suorituspalvelu/ui/TypeScriptGenerator.scala)-objekti tai vaihtoehtoisesti komentoriviltä ajamalla [generate-backend-types.sh](./suorituspalvelu-ui/scripts/generate-backend-types.sh). Tyypit täytyy generoida uudelleen kun UIResponses-luokassa olevia tyyppejä on muutettu.
 
 #### Playwright-testien ajaminen lokaalisti
 

@@ -95,7 +95,6 @@ export const saveSuoritus = async (
 
   const oppiaineet = suoritusFields.oppiaineet?.map((oa) => ({
     koodi: oa.koodi,
-    aidienkielenOppimaara: oa.aidinkielenOppimaara,
     kieli: oa.kieli,
     arvosana: parseInt(oa.arvosana, 10),
     valinnainen: oa.valinnainen,

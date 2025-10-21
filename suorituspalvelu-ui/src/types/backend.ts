@@ -5,8 +5,8 @@ export interface IAikuistenPerusopetuksenOppimaara {
   nimi: IAikuistenPerusopetuksenOppimaaraNimi;
   oppilaitos: IPKOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: IPerusopetuksenOppiaine[];
 }
@@ -33,8 +33,8 @@ export interface IAmmatillinentutkinto {
   nimi: IAmmatillinentutkintoNimi;
   oppilaitos: IAmmatillinenOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   painotettuKeskiarvo?: number;
   ytot: IYTO[];
@@ -79,8 +79,8 @@ export interface IAmmattitutkinto {
   nimi: IAmmattitutkintoNimi;
   oppilaitos: IAmmatillinenOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
 }
 
@@ -108,8 +108,8 @@ export interface IDIATutkinto {
   nimi: IDIATutkintoNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
 }
 
@@ -124,8 +124,8 @@ export interface IDIAVastaavuusTodistus {
   nimi: IDIAVastaavuusTodistusNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   kieletKirjallisuusTaide: IDIAOppiaine[];
   matematiikkaLuonnontieteet: IDIAOppiaine[];
@@ -163,8 +163,8 @@ export interface IEBTutkinto {
   nimi: IEBTutkintoNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: IEBOppiaine[];
 }
@@ -180,8 +180,8 @@ export interface IErikoisammattitutkinto {
   nimi: IErikoisammattitutkintoNimi;
   oppilaitos: IAmmatillinenOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
 }
 
@@ -222,8 +222,8 @@ export interface IIBTutkinto {
   nimi: IIBTutkintoNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: IIBOppiaine[];
 }
@@ -250,8 +250,8 @@ export interface IKKSuoritus {
   nimi: IKKSuoritusNimi;
   oppilaitos: IKKOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
 }
 
 export interface IKKSuoritusNimi {
@@ -276,8 +276,8 @@ export interface ILukionOppiaineenOppimaara {
   nimi: ILukionOppiaineenOppimaaraNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: ILukionOppiaine[];
 }
@@ -293,8 +293,8 @@ export interface ILukionOppimaara {
   nimi: ILukionOppimaaraNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: ILukionOppiaine[];
 }
@@ -323,8 +323,8 @@ export interface INuortenPerusopetuksenOppiaineenOppimaara {
   nimi: INuortenPerusopetuksenOppiaineenOppimaaraNimi;
   oppilaitos: IPKOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: IPerusopetuksenOppiaine[];
 }
@@ -367,7 +367,7 @@ export interface IOppijanTiedotFailureResponse {
 export interface IOppijanTiedotSuccessResponse {
   nimi: string;
   henkiloTunnus: string;
-  syntymaAika: Date;
+  syntymaAika: string;
   oppijaNumero: string;
   henkiloOID: string;
   opiskeluoikeudet: IUIOpiskeluoikeus[];
@@ -442,8 +442,8 @@ export interface IPerusopetuksenOppiaineenOppimaara {
   nimi: IPerusopetuksenOppiaineenOppimaaraNimi;
   oppilaitos: IPKOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: IPerusopetuksenOppiaine[];
 }
@@ -460,8 +460,8 @@ export interface IPerusopetuksenOppimaara {
   nimi: IPerusopetuksenOppimaaraNimi;
   oppilaitos: IPKOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   luokka?: string;
   yksilollistaminen?: IYksilollistaminen;
@@ -473,8 +473,8 @@ export interface IPerusopetuksenOppimaara78Luokkalaiset {
   nimi: IPerusopetuksenOppimaara78LuokkalaisetNimi;
   oppilaitos: IPKOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   koulusivistyskieli: string;
   luokka: string;
@@ -498,8 +498,8 @@ export interface IPreIB {
   nimi: IPreIBNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
 }
 
@@ -582,8 +582,8 @@ export interface ITelma {
   nimi: ITelmaNimi;
   oppilaitos: IAmmatillinenOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
 }
 
@@ -598,8 +598,8 @@ export interface ITuva {
   nimi: ITuvaNimi;
   oppilaitos: IAmmatillinenOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   laajuus?: ITuvaLaajuus;
 }
 
@@ -624,8 +624,8 @@ export interface IUIOpiskeluoikeus {
   tunniste: string;
   nimi: IUIOpiskeluoikeusNimi;
   oppilaitos: IOOOppilaitos;
-  voimassaolonAlku: Date;
-  voimassaolonLoppu: Date;
+  voimassaolonAlku: string;
+  voimassaolonLoppu: string;
   supaTila: OpiskeluoikeusTila;
   virtaTila: IUIOpiskeluoikeusVirtaTila;
 }
@@ -647,8 +647,8 @@ export interface IVapaaSivistystyoKoulutus {
   nimi: IVapaaSivistystyoKoulutusNimi;
   oppilaitos: IVapaaSivistystyoOppilaitos;
   tila: SuoritusTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
   suorituskieli: string;
   laajuus?: IVapaaSivistystyoLaajuus;
 }
@@ -686,7 +686,7 @@ export interface IYOKoe {
   nimi: IYOKoeNimi;
   arvosana: string;
   yhteispistemaara?: number;
-  tutkintokerta: Date;
+  tutkintokerta: string;
 }
 
 export interface IYOKoeNimi {
@@ -711,7 +711,7 @@ export interface IYOTutkinto {
   nimi: IYOTutkintoNimi;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTila;
-  valmistumispaiva?: Date;
+  valmistumispaiva?: string;
   suorituskieli: string;
   yoKokeet: IYOKoe[];
 }
