@@ -27,6 +27,7 @@
     "./*.mjs",
     "./*.mts",
     "./.*.mjs",
+    "lint-staged.config.js",
     ".react-router/types/**/*"
   ],
   "exclude": ["out", "node_modules", "cdk", ".next"]
