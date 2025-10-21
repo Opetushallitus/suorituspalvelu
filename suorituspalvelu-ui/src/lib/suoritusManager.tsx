@@ -149,32 +149,60 @@ const useSuoritusManagerState = () => {
     },
   });
 
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const addSuoritus = () => {
+      suoritusMutation.reset();
+      setMode('add');
+      setSuoritusState(
+        createNewSuoritusFields({
+          oppijaOid,
+        }),
+      );
+    };
+
+    const editSuoritus = (
+      suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+    ) => {
+      suoritusMutation.reset();
+      setMode('edit');
+      if (oppijaOid) {
+        setSuoritusState(createEditableSuoritusFields({ oppijaOid, suoritus }));
+      }
+    };
+
+    return {
       suoritusFields: suoritusState,
       mode,
       suoritusMutation,
       setOppijaOid,
       startSuoritusAdd: () => {
-        if (!suoritusState) {
-          suoritusMutation.reset();
-          setMode('add');
-          setSuoritusState(
-            createNewSuoritusFields({
-              oppijaOid,
-            }),
-          );
+        if (suoritusState && mode === 'edit') {
+          showConfirmation({
+            title: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.otsikko'),
+            content: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.sisalto'),
+            maxWidth: 'md',
+            onConfirm: () => {
+              addSuoritus();
+            },
+          });
+        } else if (!suoritusState) {
+          addSuoritus();
         }
       },
       startSuoritusEdit: (
         suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
       ) => {
-        suoritusMutation.reset();
-        setMode('edit');
-        if (oppijaOid) {
-          setSuoritusState(
-            createEditableSuoritusFields({ oppijaOid, suoritus }),
-          );
+        if (suoritusState && mode === 'add') {
+          showConfirmation({
+            title: t('muokkaus.suoritus.muokkaa-lisattaessa.otsikko'),
+            content: t('muokkaus.suoritus.muokkaa-lisattaessa.sisalto'),
+            maxWidth: 'md',
+            onConfirm: () => {
+              editSuoritus(suoritus);
+            },
+          });
+        } else if (!suoritusState) {
+          editSuoritus(suoritus);
         }
       },
       stopSuoritusModify: () => {
@@ -188,13 +216,14 @@ const useSuoritusManagerState = () => {
       onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => {
         setSuoritusState((previousSuoritus) => {
           if (previousSuoritus) {
-            const newOppiaineet = previousSuoritus.oppiaineet ?? [];
+            let newOppiaineet = previousSuoritus.oppiaineet ?? [];
             const existingOppiaineIndex = newOppiaineet.findIndex(
               (oa) => oa.koodi === changedOppiaine.koodi,
             );
             if (existingOppiaineIndex === -1) {
-              newOppiaineet.push(changedOppiaine);
+              newOppiaineet = [...newOppiaineet, changedOppiaine];
             } else {
+              newOppiaineet = [...newOppiaineet];
               newOppiaineet[existingOppiaineIndex] = changedOppiaine;
             }
             return {
@@ -210,15 +239,21 @@ const useSuoritusManagerState = () => {
       },
       deleteSuoritus: (versioTunniste?: string) => {
         showConfirmation({
-          title: t('muokkaus.poisto-vahvistus'),
+          title: t('muokkaus.suoritus.poisto-vahvistus'),
           onConfirm: () => {
             suoritusMutation.mutate({ operation: 'delete', versioTunniste });
           },
         });
       },
-    }),
-    [suoritusState, setSuoritusState, suoritusMutation, mode, setOppijaOid, t],
-  );
+    };
+  }, [
+    suoritusState,
+    setSuoritusState,
+    suoritusMutation,
+    mode,
+    setOppijaOid,
+    t,
+  ]);
 };
 
 export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {

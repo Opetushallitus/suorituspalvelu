@@ -180,8 +180,9 @@
   },
   "muokkaus": {
     "suoritus": {
+      "otsikko-lisaa": "Lisää suoritus",
+      "otsikko-muokkaa": "Muokkaa suoritusta",
       "perusopetus": "Perusopetus",
-      "otsikko": "Uusi suoritus",
       "lisaa": "Lisää suoritus",
       "tyyppi": "Tyyppi",
       "oppilaitos": "Oppilaitos",
@@ -199,11 +200,21 @@
       "tallennus-onnistui": "Suoritus tallennettiin onnistuneesti!",
       "tallennus-epaonnistui": "Suorituksen tallennus epäonnistui!",
       "poisto-onnistui": "Suoritus poistettiin onnistuneesti!",
-      "poisto-epaonnistui": "Suorituksen poisto epäonnistui!"
+      "poisto-epaonnistui": "Suorituksen poisto epäonnistui!",
+      "poisto-vahvistus": "Haluatko varmasti poistaa suorituksen?",
+      "lisaa-uusi-muokattaessa": {
+        "otsikko": "Haluatko keskeyttää suorituksen muokkauksen?",
+        "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen muokkauksen ja lisätä uuden suorituksen? Tallentamattomat muutokset menetetään."
+      },
+      "muokkaa-lisattaessa": {
+        "otsikko": "Haluatko keskeyttää suorituksen lisäämisen?",
+        "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen lisäämisen ja muokata suoritusta? Tallentamattomat muutokset menetetään."
+      },
+      "lisaa-uusi-muokattaessa-vahvistus": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Haluatko keskeyttää muokkauksen ja lisätä uuden suorituksen? Tallentamattomat muutokset menetetään.",
+      "muokkaa-lisattaessa-vahvistus": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Haluatko keskeyttää lisäämisen ja muokata suoritusta? Tallentamattomat muutokset menetetään."
     },
     "tallenna": "Tallenna",
-    "poista": "Poista",
-    "poisto-vahvistus": "Haluatko varmasti poistaa suorituksen?"
+    "poista": "Poista"
   },
   "yksilollistetty": {
     "kylla": "Kyllä",
