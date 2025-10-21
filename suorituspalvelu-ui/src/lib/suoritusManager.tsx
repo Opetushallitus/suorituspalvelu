@@ -13,6 +13,8 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationStatusIndicator';
+import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export type SuoritusOperation = 'add' | 'edit' | 'delete';
 
@@ -102,10 +104,13 @@ const createEditableSuoritusFields = ({
 };
 
 const useSuoritusManagerState = () => {
+  const { t } = useTranslations();
   const [oppijaOid, setOppijaOid] = useState<string | undefined>(undefined);
   const [suoritusState, setSuoritusState] = useState<SuoritusFields | null>(
     null,
   );
+
+  const { showConfirmation } = useGlobalConfirmationModal();
 
   const [mode, setMode] = useState<SuoritusOperation>('add');
 
@@ -204,10 +209,15 @@ const useSuoritusManagerState = () => {
         suoritusMutation.mutate({ operation: 'edit' });
       },
       deleteSuoritus: (versioTunniste?: string) => {
-        suoritusMutation.mutate({ operation: 'delete', versioTunniste });
+        showConfirmation({
+          title: t('muokkaus.poisto-vahvistus'),
+          onConfirm: () => {
+            suoritusMutation.mutate({ operation: 'delete', versioTunniste });
+          },
+        });
       },
     }),
-    [suoritusState, setSuoritusState, suoritusMutation, mode, setOppijaOid],
+    [suoritusState, setSuoritusState, suoritusMutation, mode, setOppijaOid, t],
   );
 };
 

@@ -202,7 +202,8 @@
       "poisto-epaonnistui": "Suorituksen poisto epäonnistui!"
     },
     "tallenna": "Tallenna",
-    "poista": "Poista"
+    "poista": "Poista",
+    "poisto-vahvistus": "Haluatko varmasti poistaa suorituksen?"
   },
   "yksilollistetty": {
     "kylla": "Kyllä",
