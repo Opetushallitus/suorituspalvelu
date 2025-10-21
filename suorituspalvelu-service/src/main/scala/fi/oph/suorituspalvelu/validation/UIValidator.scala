@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.resource.ui.{ManuaalinenAvainArvoYliajo, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.ui.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern, validateHakuOid}
@@ -248,10 +248,13 @@ object UIValidator {
 
   //Todo, lisätäänkö muita validointeja, ehkä joku nonempty arvolle/selitteelle? Onko hyödyllistä voida tallentaa tyhjä arvo?
   def validateYliajot(container: YliajoTallennusContainer): Set[String] = {
-    Set(
+    val yliajot = container.yliajot.toScala.map(_.asScala).getOrElse(List.empty)
+    val avainErrors = yliajot.flatMap(y => validateAvain(y.avain.toScala, true))
+    val containerErrors = Set(
       validateOppijanumero(container.henkiloOid.toScala, true),
       validateOppijanumero(container.virkailijaOid.toScala, true),
       validateHakuOid(container.hakuOid.toScala, true)
     ).flatten
+    containerErrors ++ avainErrors
   }
 }
