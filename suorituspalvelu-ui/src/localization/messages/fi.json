@@ -12,6 +12,11 @@
   "select": {
     "valitse": "Valitse..."
   },
+  "tallentamattomia-muutoksia": {
+    "otsikko": "Tallentamattomia muutoksia",
+    "sisalto": "Olet poistumassa sivulta jolla on tallentamattomia muutoksia. Jatketaanko silti?",
+    "jatka": "Jatka"
+  },
   "404": {
     "sivua-ei-loytynyt": "Sivua ei löytynyt",
     "sivua-ei-loytynyt-teksti": "Hakemaasi sivua ei löytynyt suorituspalvelusta. Tarkista osoite.",
