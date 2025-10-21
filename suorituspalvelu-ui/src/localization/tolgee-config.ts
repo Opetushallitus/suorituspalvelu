@@ -5,7 +5,7 @@ import {
   type TolgeeInstance,
 } from '@tolgee/react';
 import { FormatIcu } from '@tolgee/format-icu';
-import { configPromise, isTest, localTranslations } from '@/configuration';
+import { configPromise, isTest, localTranslations } from '@/lib/configuration';
 
 const NAMESPACE = 'suorituspalvelu';
 

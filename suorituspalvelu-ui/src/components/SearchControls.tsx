@@ -1,7 +1,6 @@
 import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
-import { useApiSuspenseQuery } from '@/http-client';
 import { DEFAULT_BOX_BORDER } from '@/lib/theme';
-import { queryOptionsGetOppilaitokset } from '@/queries';
+import { useOppilaitoksetOptions } from '@/lib/suorituspalvelu-queries';
 import { Stack } from '@mui/material';
 import {
   OphInputFormField,
@@ -16,16 +15,9 @@ const OppilaitosSelectField = ({
   React.ComponentProps<typeof OphSelectFormField>,
   'value' | 'onChange'
 >) => {
-  const { t, translateKielistetty } = useTranslations();
+  const { t } = useTranslations();
 
-  const { data: oppilaitoksetOptions } = useApiSuspenseQuery({
-    ...queryOptionsGetOppilaitokset(),
-    select: (data) =>
-      data?.oppilaitokset?.map(($) => ({
-        value: $.oid,
-        label: translateKielistetty($.nimi),
-      })) ?? [],
-  });
+  const oppilaitoksetOptions = useOppilaitoksetOptions();
 
   return (
     <OphSelectFormField
