@@ -10,7 +10,6 @@ import type { SuoritusFields } from '@/types/ui-types';
 import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { useTranslations } from '@/hooks/useTranslations';
 import { InfoItemRow } from '@/components/InfoItemRow';
-import { useKoodistoOptions } from '@/lib/koodisto-queries';
 import {
   queryOptionsGetSuoritusvaihtoehdot,
   useOppilaitoksetOptions,
@@ -100,15 +99,16 @@ const EditSuoritusContent = ({
         />
         <OphSelectFormField
           label={t('muokkaus.suoritus.tila')}
-          options={useKoodistoOptions('suorituksentila')}
+          options={[
+            {
+              label: t('Suoritus') + ' ' + t('suorituksen-tila.VALMIS'),
+              value: 'suorituksentila_valmis',
+            },
+          ]}
           required={true}
           sx={{ flex: 1 }}
-          value={suoritus?.tila}
-          onChange={(event) => {
-            setSuoritus((prev) =>
-              prev ? { ...prev, tila: event.target.value } : null,
-            );
-          }}
+          defaultValue="suorituksentila_valmis"
+          value="suorituksentila_valmis"
         />
         <DatePicker
           label={t('muokkaus.suoritus.valmistumispaiva')}

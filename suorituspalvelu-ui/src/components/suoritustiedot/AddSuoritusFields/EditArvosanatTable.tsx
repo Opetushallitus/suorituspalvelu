@@ -15,8 +15,23 @@ export const EditArvosanatTable = ({
 }) => {
   const { t, translateKielistetty } = useTranslations();
 
-  const { oppiaineet, aidinkielenOppimaarat, vieraatKielet } =
+  const { oppiaineet, aidinkielenOppimaarat, vieraatKielet, arvosanat } =
     suoritusvaihtoehdot;
+
+  const aidinKieliOptions = aidinkielenOppimaarat.map((am) => ({
+    label: translateKielistetty(am.nimi),
+    value: am.arvo,
+  }));
+
+  const vierasKieliOptions = vieraatKielet.map((vk) => ({
+    label: translateKielistetty(vk.nimi),
+    value: vk.arvo,
+  }));
+
+  const arvosanaOptions: Array<SelectOption> = arvosanat.map((a) => ({
+    label: a.arvo?.toString() ?? '',
+    value: a.arvo?.toString() ?? '',
+  }));
 
   return (
     <StripedTable
@@ -37,17 +52,10 @@ export const EditArvosanatTable = ({
       <TableBody>
         {oppiaineet.map((oppiaine) => {
           let kieliOptions: Array<SelectOption> | undefined = undefined;
-
           if (oppiaine.isAidinkieli) {
-            kieliOptions = aidinkielenOppimaarat.map((am) => ({
-              label: translateKielistetty(am.nimi),
-              value: am.arvo,
-            }));
+            kieliOptions = aidinKieliOptions;
           } else if (oppiaine.isKieli) {
-            kieliOptions = vieraatKielet.map((vk) => ({
-              label: translateKielistetty(vk.nimi),
-              value: vk.arvo,
-            }));
+            kieliOptions = vierasKieliOptions;
           }
 
           return (
@@ -78,6 +86,7 @@ export const EditArvosanatTable = ({
                   return previousSuoritus;
                 });
               }}
+              arvosanaOptions={arvosanaOptions}
               kieliOptions={kieliOptions}
               title={translateKielistetty(oppiaine.nimi)}
             />
