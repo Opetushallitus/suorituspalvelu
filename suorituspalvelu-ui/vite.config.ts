@@ -9,6 +9,9 @@ export default defineConfig({
     tsConfigPaths(),
     vitePluginOptimizeNamedImports(['@mui/icons-material']),
   ],
+  optimizeDeps: {
+    entries: ['@tolgee/format-icu'],
+  },
   build: {
     // Jotta toimii myös Spring Bootissa, assetit täytyy noutaa /suorituspalvelu-polun alta eikä juuresta.
     assetsDir: 'suorituspalvelu/assets',
