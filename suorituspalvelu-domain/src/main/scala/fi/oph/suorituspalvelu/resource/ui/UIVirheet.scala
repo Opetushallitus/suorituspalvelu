@@ -27,6 +27,9 @@ object UIVirheet {
   final val UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA   = "backend-virhe.luo_perusopetuksen_oppimaara.oppijanumerolla_ei_loydy_henkiloa"
   final val UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_VIRHE     = "backend-virhe.luo_perusopetuksen_oppimaara.tallennus_epaonnistui"
 
+  final val UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_VIRHE    = "backend-virhe.tallenna_yliajo_oppijalle.tallennus_epaonnistui"
+  final val UI_TALLENNA_YLIAJO_OPPIJALLE_TUNTEMATON_OPPIJA  = "backend-virhe.tallenna_yliajo_oppijalle.oppijanumerolla_ei_loydy_henkiloa"
+
   final val UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE        = "backend-virhe.oppijanumero.ei_validi"
   final val UI_LUO_SUORITUS_OPPIAINE_EI_OIKEUKSIA           = "backend-virhe.luo_perusopetuksen_oppimaara.ei_oikeuksia"
   final val UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE             = "backend-virhe.luo_perusopetuksen_oppimaara.json_ei_validi"

@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{ManuaalinenAvainArvoYliajo, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.ui.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern}
+import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern, validateHakuOid}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -47,6 +47,7 @@ object UIValidator {
   final val VALIDATION_ARVOSANA_EI_VALIDI         = "backend-virhe.oppiaine.arvosana.ei_validi"
   final val VALIDATION_VERSIOTUNNISTE_TYHJA       = "backend-virhe.versiotunniste.tyhja"
   final val VALIDATION_VERSIOTUNNISTE_EI_VALIDI   = "backend-virhe.versiotunniste.ei_validi"
+  final val VALIDATION_AVAIN_TYHJA                = "backend-virhe.avain.tyhja"
 
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
 
@@ -236,4 +237,21 @@ object UIValidator {
     ).flatten
   }
 
+  def validateAvain(avain: Option[String], pakollinen: Boolean): Set[String] =
+    if (avain.isEmpty || avain.exists(_.isEmpty))
+      if (pakollinen)
+        Set(VALIDATION_AVAIN_TYHJA)
+      else
+        Set.empty
+    else
+      Set.empty
+
+  //Todo, lisätäänkö muita validointeja, ehkä joku nonempty arvolle/selitteelle? Onko hyödyllistä voida tallentaa tyhjä arvo?
+  def validateYliajot(container: YliajoTallennusContainer): Set[String] = {
+    Set(
+      validateOppijanumero(container.henkiloOid.toScala, true),
+      validateOppijanumero(container.virkailijaOid.toScala, true),
+      validateHakuOid(container.hakuOid.toScala, true)
+    ).flatten
+  }
 }
