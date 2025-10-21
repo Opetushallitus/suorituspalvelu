@@ -7,6 +7,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useMutation } from '@tanstack/react-query';
 import { saveSuoritus as saveSuoritusApi } from '@/lib/suorituspalvelu-service';
 import { AddSuoritusPaper } from './EditSuoritusPaper';
+import { SpinnerModal } from '@/components/SpinnerModal';
 
 const createSuoritusFields = (
   base: Partial<SuoritusFields> = {},
@@ -77,6 +78,10 @@ export const AddSuoritusFields = ({
       spacing={2}
       sx={{ alignItems: 'flex-start', marginBottom: 2 }}
     >
+      <SpinnerModal
+        title={t('muokkaus.suoritus.tallennetaan')}
+        open={suoritusMutation.isPending}
+      />
       {mode === 'add' && (
         <OphButton
           variant="outlined"
