@@ -30,6 +30,8 @@ import type {
   IYTO,
   ILuoSuoritusDropdownDataSuccessResponse,
   IYksilollistaminen,
+  IPoistaSuoritusFailureResponse,
+  ILuoPerusopetuksenOppimaaraFailureResponse,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -134,6 +136,7 @@ export type PerusopetuksenOppiaineenOppimaara = Omit<
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
+  versioTunniste?: string; // TODO: Poista, kun versioTunniste tulee backendistä
   suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
   koulutustyyppi: 'perusopetus';
   isEditable: true;
@@ -206,3 +209,27 @@ export type SuoritusFields = {
 };
 
 export type Yksilollistaminen = IYksilollistaminen;
+
+export type GenericBackendError = IPoistaSuoritusFailureResponse;
+
+export const isGenericBackendError = (
+  error: unknown,
+): error is GenericBackendError => {
+  return (
+    typeof error === 'object' &&
+    error != null &&
+    'virheAvaimet' in error &&
+    Array.isArray(error.virheAvaimet)
+  );
+};
+
+export const isPerusopetusOppimaaraBackendError = (
+  body: unknown,
+): body is ILuoPerusopetuksenOppimaaraFailureResponse => {
+  return (
+    typeof body === 'object' &&
+    body != null &&
+    'yleisetVirheAvaimet' in body &&
+    Array.isArray(body.yleisetVirheAvaimet)
+  );
+};

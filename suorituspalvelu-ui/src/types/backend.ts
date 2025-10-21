@@ -305,6 +305,16 @@ export interface ILukionOppimaaraNimi {
   en?: string;
 }
 
+export interface ILuoPerusopetuksenOppimaaraFailureResponse {
+  yleisetVirheAvaimet: string[];
+  oppiaineKohtaisetVirheet: ILuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe[];
+}
+
+export interface ILuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe {
+  oppiaineKoodiArvo: string;
+  virheAvaimet: string[];
+}
+
 export interface ILuoSuoritusDropdownDataFailureResponse {
   virheet: string[];
 }
@@ -495,6 +505,10 @@ export interface IPerusopetuksenOppimaaraNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IPoistaSuoritusFailureResponse {
+  virheAvaimet: string[];
 }
 
 export interface IPreIB {
@@ -773,8 +787,8 @@ export interface IYksilollistamisNimi {
   en?: string;
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';

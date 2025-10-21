@@ -79,7 +79,7 @@ export const getSuoritusvaihtoehdot = async () => {
 };
 
 export const saveSuoritus = async (
-  suoritusFields: SuoritusFields,
+  suoritusFields: Omit<SuoritusFields, 'versioTunniste'>,
 ): Promise<void> => {
   const config = await configPromise;
 

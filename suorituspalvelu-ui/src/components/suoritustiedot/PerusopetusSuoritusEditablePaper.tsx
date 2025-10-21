@@ -1,12 +1,20 @@
-import { Stack } from '@mui/material';
-import { useRef } from 'react';
+import {
+  Alert,
+  Box,
+  Snackbar,
+  Stack,
+  type SnackbarCloseReason,
+} from '@mui/material';
+import { useRef, useState } from 'react';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditSuoritusPaper } from './EditSuoritusPaper';
 import { useSuoritusState } from '@/hooks/useSuoritusState';
-import type {
-  PerusopetuksenOppiaineenOppimaara,
-  PerusopetuksenOppimaara,
-  SuoritusFields,
+import {
+  isGenericBackendError,
+  isPerusopetusOppimaaraBackendError,
+  type PerusopetuksenOppiaineenOppimaara,
+  type PerusopetuksenOppimaara,
+  type SuoritusFields,
 } from '@/types/ui-types';
 import { OphButton } from '@opetushallitus/oph-design-system';
 import { PerusopetusSuoritusReadOnlyPaper } from './PerusopetusSuoritusReadOnlyPaper';
@@ -14,6 +22,7 @@ import { OphModal } from '../OphModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
 import { FullSpinner } from '../FullSpinner';
+import { FetchError } from '@/lib/http-client';
 
 const createSuoritusFields = ({
   oppijaOid,
@@ -51,33 +60,128 @@ const createSuoritusFields = ({
   };
 };
 
-export const EditStatusModal = ({
-  status,
-  message,
+const ErrorModal = ({
+  mode,
+  error,
   onClose,
 }: {
-  status?: 'pending' | 'error' | 'success' | 'idle';
-  message?: string;
+  mode: 'save' | 'delete';
+  error?: Error | null;
   onClose: () => void;
 }) => {
   const { t } = useTranslations();
 
+  let message: React.ReactNode = error?.message;
+
+  if (error instanceof FetchError) {
+    const responseJSON = error.jsonBody;
+    if (isGenericBackendError(responseJSON)) {
+      message = (
+        <Box>
+          {responseJSON.virheAvaimet.map((virhe) => (
+            <p key={virhe}>{t(virhe)}</p>
+          ))}
+        </Box>
+      );
+    } else if (isPerusopetusOppimaaraBackendError(responseJSON)) {
+      message = (
+        <Box>
+          {responseJSON.yleisetVirheAvaimet.map((yleinenVirhe) => (
+            <p key={yleinenVirhe}>{t(yleinenVirhe)}</p>
+          ))}
+          {responseJSON.oppiaineKohtaisetVirheet.map((virhe) => (
+            <Box key={virhe.oppiaineKoodiArvo} sx={{ marginBottom: 2 }}>
+              <h4>{virhe.oppiaineKoodiArvo}</h4>
+              {virhe.virheAvaimet.map((v) => (
+                <p key={v}>{t(v)}</p>
+              ))}
+            </Box>
+          ))}
+        </Box>
+      );
+    }
+  }
+
+  return (
+    <OphModal
+      open={true}
+      onClose={onClose}
+      title={
+        mode === 'save'
+          ? t('muokkaus.suoritus.tallennus-epaonnistui')
+          : t('muokkaus.suoritus.poisto-epaonnistui')
+      }
+    >
+      {message}
+    </OphModal>
+  );
+};
+
+export const MutationStatusIndicator = ({
+  status,
+  onClose,
+  mode,
+  error,
+}: {
+  status?: 'pending' | 'error' | 'success' | 'idle';
+  onClose: () => void;
+  error?: Error | null;
+  mode: 'save' | 'delete';
+}) => {
+  const { t } = useTranslations();
+
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [prevStatus, setPrevStatus] = useState(status);
+
+  if (status !== prevStatus) {
+    setPrevStatus(status);
+    if (status !== 'idle') {
+      setIsOpen(true);
+    }
+  }
+
+  const handleSuccessToastClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason,
+  ) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setIsOpen(false);
+  };
+
   switch (status) {
     case 'error':
-      return (
-        <OphModal
-          open={true}
-          title={t('muokkaus.suoritus.tallennus-epaonnistui')}
-          onClose={onClose}
-        >
-          {message ? t(message) : ''}
-        </OphModal>
-      );
+      return <ErrorModal mode={mode} error={error} onClose={onClose} />;
     case 'pending':
       return (
-        <OphModal title={t('muokkaus.suoritus.tallennetaan')} open={true}>
+        <OphModal
+          title={
+            mode === 'save'
+              ? t('muokkaus.suoritus.tallennetaan')
+              : t('muokkaus.suoritus.poistetaan')
+          }
+          open={true}
+        >
           <FullSpinner />
         </OphModal>
+      );
+    case 'success':
+      return (
+        <Snackbar
+          key={mode}
+          open={isOpen}
+          onClose={handleSuccessToastClose}
+          autoHideDuration={5000}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert severity="success" variant="filled">
+            {mode === 'save'
+              ? t('muokkaus.suoritus.tallennus-onnistui')
+              : t('muokkaus.suoritus.poisto-onnistui')}
+          </Alert>
+        </Snackbar>
       );
     default:
       return null;
@@ -95,73 +199,77 @@ export const PerusopetusSuoritusEditablePaper = ({
   const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
   const queryClient = useQueryClient();
-  const { suoritus, setSuoritus, suoritusMutation } = useSuoritusState(
-    suoritusProp.tunniste,
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(queryOptionsGetOppija(henkiloOID));
-        queryClient.refetchQueries(queryOptionsGetOppija(henkiloOID));
-        setSuoritus(null);
-      },
+  const { suoritus, setSuoritus, suoritusMutation, mode } = useSuoritusState({
+    onSuccess: () => {
+      queryClient.invalidateQueries(queryOptionsGetOppija(henkiloOID));
+      queryClient.refetchQueries(queryOptionsGetOppija(henkiloOID));
+      setSuoritus(null);
     },
-  );
+  });
 
   return (
-    <Stack
-      direction="column"
-      spacing={2}
-      sx={{ alignItems: 'flex-start', marginBottom: 2 }}
-    >
-      <EditStatusModal
+    <Box>
+      <MutationStatusIndicator
         status={suoritusMutation.status}
         onClose={() => suoritusMutation.reset()}
+        error={suoritusMutation.error}
+        mode={mode}
       />
-      {suoritus ? (
-        <EditSuoritusPaper
-          suoritus={suoritus}
-          ref={suoritusPaperRef}
-          setSuoritus={setSuoritus}
-          onSave={() => {
-            suoritusMutation.mutate('save');
-          }}
-          onCancel={() => {
-            setSuoritus(null);
-          }}
-        />
-      ) : (
-        <PerusopetusSuoritusReadOnlyPaper
-          suoritus={suoritusProp}
-          actions={
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ justifyContent: 'flex-end' }}
-            >
-              <OphButton
-                variant="outlined"
-                onClick={() => {
-                  suoritusMutation.mutate('delete');
-                }}
+      <Stack
+        direction="column"
+        spacing={2}
+        sx={{ alignItems: 'flex-start', marginBottom: 2 }}
+      >
+        {suoritus ? (
+          <EditSuoritusPaper
+            suoritus={suoritus}
+            ref={suoritusPaperRef}
+            setSuoritus={setSuoritus}
+            onSave={() => {
+              suoritusMutation.mutate({ operation: 'save' });
+            }}
+            onCancel={() => {
+              setSuoritus(null);
+            }}
+          />
+        ) : (
+          <PerusopetusSuoritusReadOnlyPaper
+            suoritus={suoritusProp}
+            actions={
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{ justifyContent: 'flex-end' }}
               >
-                {t('muokkaus.suoritus.poista')}
-              </OphButton>
-              <OphButton
-                variant="contained"
-                onClick={() => {
-                  setSuoritus(
-                    createSuoritusFields({
-                      oppijaOid: henkiloOID,
-                      suoritus: suoritusProp,
-                    }),
-                  );
-                }}
-              >
-                {t('muokkaus.suoritus.muokkaa')}
-              </OphButton>
-            </Stack>
-          }
-        />
-      )}
-    </Stack>
+                <OphButton
+                  variant="outlined"
+                  onClick={() => {
+                    suoritusMutation.mutate({
+                      operation: 'delete',
+                      versioTunniste: suoritusProp.versioTunniste,
+                    });
+                  }}
+                >
+                  {t('muokkaus.suoritus.poista')}
+                </OphButton>
+                <OphButton
+                  variant="contained"
+                  onClick={() => {
+                    setSuoritus(
+                      createSuoritusFields({
+                        oppijaOid: henkiloOID,
+                        suoritus: suoritusProp,
+                      }),
+                    );
+                  }}
+                >
+                  {t('muokkaus.suoritus.muokkaa')}
+                </OphButton>
+              </Stack>
+            }
+          />
+        )}
+      </Stack>
+    </Box>
   );
 };

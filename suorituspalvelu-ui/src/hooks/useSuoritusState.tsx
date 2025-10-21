@@ -3,19 +3,27 @@ import type { SuoritusFields } from '@/types/ui-types';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
-export const useSuoritusState = (
-  versioTunniste: string,
-  { onSuccess }: { onSuccess?: () => void } = {},
-) => {
+type SuoritusOperation = 'save' | 'delete';
+
+type SuoritusMutateParams = {
+  operation: SuoritusOperation;
+  versioTunniste?: string;
+};
+
+export const useSuoritusState = ({
+  onSuccess,
+}: { onSuccess?: () => void } = {}) => {
   const [suoritusState, setSuoritusState] = useState<SuoritusFields | null>(
     null,
   );
 
+  const [mode, setMode] = useState<SuoritusOperation>('save');
+
   const suoritusMutation = useMutation({
-    mutationFn: async (operation: 'save' | 'delete') => {
+    mutationFn: async ({ operation, versioTunniste }: SuoritusMutateParams) => {
       if (operation === 'save' && suoritusState) {
+        setMode('save');
         return saveSuoritus({
-          versioTunniste,
           oppijaOid: suoritusState.oppijaOid,
           oppilaitosOid: suoritusState.oppilaitosOid,
           tyyppi: suoritusState.tyyppi,
@@ -26,6 +34,12 @@ export const useSuoritusState = (
         });
       }
       if (operation === 'delete') {
+        if (!versioTunniste) {
+          throw new Error(
+            'Versiotunniste puuttuu! Ei voida poistaa suoritusta.',
+          );
+        }
+        setMode('delete');
         return deleteSuoritus(versioTunniste);
       }
     },
@@ -40,5 +54,6 @@ export const useSuoritusState = (
     suoritus: suoritusState,
     setSuoritus: setSuoritusState,
     suoritusMutation,
+    mode,
   };
 };
