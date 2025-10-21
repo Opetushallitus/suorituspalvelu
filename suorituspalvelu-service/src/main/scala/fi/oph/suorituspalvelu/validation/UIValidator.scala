@@ -21,6 +21,7 @@ object UIValidator {
   final val VALIDATION_OPPIJANUMERO_EI_VALIDI     = "backend-virhe.oppijanumero.ei_validi"
   final val VALIDATION_OPPILAITOSOID_TYHJA        = "backend-virhe.oppilaitosoid.tyhja"
   final val VALIDATION_OPPILAITOSOID_EI_VALIDI    = "backend-virhe.oppilaitosoid.ei_validi"
+  final val VALIDATION_HAKUSANA_TYHJA             = "backend-virhe.hakusana.tyhja"
   final val VALIDATION_HAKUSANA_EI_VALIDI         = "backend-virhe.hakusana.ei_validi"
   final val VALIDATION_VUOSI_TYHJA                = "backend-virhe.vuosi.tyhja"
   final val VALIDATION_VUOSI_EI_VALIDI            = "backend-virhe.vuosi.ei_validi"
@@ -74,13 +75,14 @@ object UIValidator {
       Set.empty
 
   //Tuetaan tässä vaiheessa hetuja ja oppijanumeroita
-  def validateHakusana(hakusana: String): Set[String] = {
-    if (!hetuPattern.matches(hakusana) && !oppijaOidPattern.matches(hakusana)) {
+  def validateHakusana(hakusana: Option[String]): Set[String] = {
+    if (hakusana.isEmpty || hakusana.get.isEmpty)
+      Set(VALIDATION_HAKUSANA_TYHJA)
+    else if (!hetuPattern.matches(hakusana.get) && !oppijaOidPattern.matches(hakusana.get))
       Set(VALIDATION_HAKUSANA_EI_VALIDI)
-    } else
+    else
       Set.empty
   }
-
 
   def validateOppilaitosOid(oppilaitosOid: Option[String], pakollinen: Boolean): Set[String] = {
     if (pakollinen && (oppilaitosOid.isEmpty || oppilaitosOid.get.isEmpty))

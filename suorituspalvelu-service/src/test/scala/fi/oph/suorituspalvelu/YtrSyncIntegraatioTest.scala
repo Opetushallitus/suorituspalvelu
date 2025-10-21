@@ -142,8 +142,8 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(versiot.head.suoritusJoukko, SuoritusJoukko.YTR)
 
     val data = kantaOperaatiot.haeData(versiot.head)
-    val parsed: Student = objectMapper.readValue(data._2, classOf[Student])
-    Assertions.assertTrue(parsed.ssn.isEmpty)
+    val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
+    parsed.foreach(p => Assertions.assertTrue(p.ssn.isEmpty))
   }
 
 
@@ -215,8 +215,8 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       Assertions.assertTrue(versiot.size == 1)
       Assertions.assertEquals(versiot.head.suoritusJoukko, SuoritusJoukko.YTR)
       val data = kantaOperaatiot.haeData(versiot.head)
-      val parsed: Student = objectMapper.readValue(data._2, classOf[Student])
-      Assertions.assertTrue(parsed.ssn.isEmpty)
+      val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
+      parsed.foreach(p => Assertions.assertTrue(p.ssn.isEmpty))
 
       val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.oppijaNumero)
       Assertions.assertFalse(suoritukset.isEmpty)

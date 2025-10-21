@@ -31,7 +31,6 @@ import java.util.{Optional, UUID}
 class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
 
   val OPPIJA_OID = "1.2.246.562.24.40483869857"
-
   def getHenkiloPath(oid: String = OPPIJA_OID): String =
     ApiConstants.LEGACY_SUORITUKSET_PATH + "?" + LEGACY_SUORITUKSET_HENKILO_PARAM_NAME + "=" + oid
 
@@ -84,40 +83,42 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetHenkilolleAllowed(capturedOutput: CapturedOutput): Unit =
+    val oppijaOid = "1.2.246.562.24.40483869857"
     val tutkintoKoodi = "123456"
 
     // tallennetaan ammatillinen- ja yo-tutkinto
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}", Instant.now())
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None)))
 
-    val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.YTR, "{\"testi\": \"suorituksetHenkilölle\"}", Instant.now())
+    val ytrVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.YTR, Seq.empty, Instant.now())
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytrVersio.get, Set(YOOpiskeluoikeus(UUID.randomUUID(), YOTutkinto(UUID.randomUUID(), Koodi("fi", "kieli", Some(1)), SuoritusTila.KESKEN, None, Set.empty))))
 
     // haetaan tutkinnot legacy-rajapinnasta
-    val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(OPPIJA_OID)))
+    val result = mvc.perform(MockMvcRequestBuilders.get(getHenkiloPath(oppijaOid)))
       .andExpect(status().isOk).andReturn()
     val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), new TypeReference[Seq[LegacyAmmatillinenTaiYOSuoritus]] {})
 
     // varmistetaan että tulokset täsmäävät
     Assertions.assertEquals(Seq(
-      LegacyAmmatillinenTaiYOSuoritus(OPPIJA_OID, SUORITYSTYYPPI_AMMATILLINENTUTKINTO, Optional.of(tutkintoKoodi), "VALMIS"),
-      LegacyAmmatillinenTaiYOSuoritus(OPPIJA_OID, "yotutkinto", Optional.empty, "VALMIS")
+      LegacyAmmatillinenTaiYOSuoritus(oppijaOid, SUORITYSTYYPPI_AMMATILLINENTUTKINTO, Optional.of(tutkintoKoodi), "VALMIS"),
+      LegacyAmmatillinenTaiYOSuoritus(oppijaOid, "yotutkinto", Optional.empty, "VALMIS")
     ), legacySuorituksetResponse)
 
     // ja että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeYoTaiAmmatillinenTutkintoTiedot.name, auditLogEntry.operation)
-    Assertions.assertEquals(Map(ApiConstants.LEGACY_SUORITUKSET_HENKILO_PARAM_NAME -> OPPIJA_OID), auditLogEntry.target)
+    Assertions.assertEquals(Map(ApiConstants.LEGACY_SUORITUKSET_HENKILO_PARAM_NAME -> oppijaOid), auditLogEntry.target)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testLegacySuorituksetMuuttuneetAllowed(): Unit =
+    val oppijaOid = "1.2.246.562.24.40483869858"
     val aikaleima = Instant.now
     
     // tallennetaan suoritus
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"muuttuneetSuoritukset\"}", Instant.now())
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), OPPIJA_OID, Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None)))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), oppijaOid, Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None)))
 
     // haetaan muuttuneet legacy-rajapinnasta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.LEGACY_SUORITUKSET_PATH + "?" + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "=" + aikaleima.toString))
@@ -125,7 +126,7 @@ class LegacySuorituksetIntegraatioTest extends BaseIntegraatioTesti {
     val legacySuorituksetResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), new TypeReference[Seq[LegacyMuuttunutSuoritus]] {})
 
     // varmistetaan että tulokset täsmäävät
-    Assertions.assertEquals(Seq(LegacyMuuttunutSuoritus(OPPIJA_OID)), legacySuorituksetResponse)
+    Assertions.assertEquals(Seq(LegacyMuuttunutSuoritus(oppijaOid)), legacySuorituksetResponse)
 
     // ja että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()

@@ -11,22 +11,26 @@ CREATE TABLE IF NOT EXISTS versiot (
     oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
     voimassaolo                 TSTZRANGE NOT NULL,
     suoritusjoukko              VARCHAR NOT NULL,
-    data_json                   JSONB,
-    data_xml                    XML,
-    data_parseroitu             JSONB,
+    data_json                   JSONB[],
+    data_xml                    XML[],
+    metadata                    VARCHAR[],
     EXCLUDE USING gist (oppijanumero WITH =, suoritusjoukko WITH =, voimassaolo WITH &&),
     CHECK ((suoritusjoukko='VIRTA' AND data_json IS NULL       AND data_xml IS NOT NULL) OR
-                                      (data_json IS NOT NULL   AND data_xml IS NULL)),
-    CHECK ((use_versio_tunniste IS NOT NULL AND data_parseroitu IS NULL) OR
-           (use_versio_tunniste IS NULL AND data_parseroitu IS NOT NULL))
+                                      (data_json IS NOT NULL   AND data_xml IS NULL))
 );
 
-CREATE INDEX idx_versiot_data_parseroitu ON versiot USING gin (data_parseroitu jsonb_path_ops);
+CREATE INDEX IF NOT EXISTS idx_versiot_metadata ON versiot USING GIN (metadata);
 
-CREATE OR REPLACE FUNCTION get_tyyppi(polku text, tyyppi text)
-RETURNS TABLE (
-  versio_tunniste UUID,
-  data jsonb
-) AS $$
-select versiot.tunniste, itemdata from versiot, jsonb_path_query(versiot.data_parseroitu, format('%s ? (@.type==$tyyppi)', polku)::jsonpath, jsonb_build_object('tyyppi', tyyppi)) as itemdata where versiot.data_parseroitu @@ format('%s.type=="%s"', polku, tyyppi)::jsonpath;
-$$ LANGUAGE SQL STABLE;
+create table opiskeluoikeudet (
+    versio_tunniste UUID    NOT NULL REFERENCES versiot (tunniste),
+    data_parseroitu         JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_versio_tunniste ON opiskeluoikeudet(versio_tunniste);
+CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_data_parseroitu ON opiskeluoikeudet USING GIN (data_parseroitu jsonb_path_ops);
+
+create table metadata_arvot (
+    avain   VARCHAR,
+    arvo    VARCHAR,
+    PRIMARY KEY (avain, arvo)
+)

@@ -103,8 +103,8 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     //Tarkistetaan että version yhteyteen tallennetusta lähdedatasta ei löydy alkuperäistä hetua mutta korvaava hetu löytyy
     val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
     val versionData = kantaOperaatiot.haeData(suorituksetKannasta.head._1)
-    Assertions.assertTrue(versionData._2.contains(VirtaUtil.replacementHetu))
-    Assertions.assertFalse(versionData._2.contains("010296-1230"))
+    Assertions.assertTrue(versionData._2.exists(_.contains(VirtaUtil.replacementHetu)))
+    Assertions.assertFalse(versionData._2.exists(_.contains("010296-1230")))
   }
 
   @WithAnonymousUser

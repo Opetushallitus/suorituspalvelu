@@ -1,18 +1,19 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.KantaOperaatiot
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo, PKOppimaaraOppilaitosKeskenMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.VirkailijaAuthorization
-import fi.oph.suorituspalvelu.ui.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID, EXAMPLE_OPPILAITOS_NIMI, EXAMPLE_OPPILAITOS_OID}
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import fi.oph.suorituspalvelu.validation.Validator
 import org.slf4j.LoggerFactory
 
-import java.util.Optional
-import scala.jdk.OptionConverters.*
+import java.time.{Instant, LocalDate}
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.Optional
 import scala.concurrent.{Await, Future}
@@ -107,15 +108,53 @@ class UIService {
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
 
-  def haeOppilaitokset(): Set[Oppilaitos] =
-    Set(Oppilaitos(
-      nimi = OppilaitosNimi(
-        fi = Optional.of(EXAMPLE_OPPILAITOS_NIMI),
-        sv = Optional.of(EXAMPLE_OPPILAITOS_NIMI),
-        en = Optional.of(EXAMPLE_OPPILAITOS_NIMI)
-      ),
-      oid = EXAMPLE_OPPILAITOS_OID
-    ))
+  @Autowired val organisaatioProvider: OrganisaatioProvider = null
+
+  def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
+    oppilaitosOids
+      .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
+      .map(organisaatio => Oppilaitos(OppilaitosNimi(
+        Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+        organisaatio.oid)))
+  }
+
+  def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {
+    val oppilaitosOids = Set(
+      kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN)
+        .map(avain => PKOppimaaraOppilaitosKeskenMetadataArvo(avain).oppilaitosOid),
+      kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN)
+        .map(avain => new PKOppimaaraOppilaitosVuosiMetadataArvo(avain).oppilaitosOid)
+    ).flatten
+
+    oppilaitosOids
+      .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
+      .map(organisaatio => Oppilaitos(OppilaitosNimi(
+        Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+        organisaatio.oid))
+  }
+
+  def haeVuodet(oppilaitosOid: String): Set[String] = {
+    Set(
+      if(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, Some(s"$oppilaitosOid")).nonEmpty)
+        Some(Set(LocalDate.now().getYear.toString))
+      else
+        None,
+      Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, Some(s"$oppilaitosOid"))
+        .map(arvo => new PKOppimaaraOppilaitosVuosiMetadataArvo(arvo).vuosi.toString)),
+    ).flatten.flatten
+  }
+
+  def haeLuokat(oppilaitosOid: String, vuosi: Int): Set[String] = {
+    Set(
+      if(LocalDate.now().getYear==vuosi)
+        Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, Some(s"$oppilaitosOid"))
+          .map(arvo => new PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(arvo).luokka))
+      else
+        None,
+      Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN, Some(s"$oppilaitosOid"))
+        .map(arvo => new PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(arvo).luokka)),
+    ).flatten.flatten
+  }
 
   def suoritaOnrHaku(hakusana: Option[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
     hakusana match {
@@ -123,6 +162,21 @@ class UIService {
       case Some(h) if Validator.oppijaOidPattern.matches(h) => onrIntegration.getPerustiedotByPersonOids(Set(h))
       case _ => Future.successful(Seq.empty)
     }
+  }
+
+  def haePKOppijaOidit(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[String] = {
+    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitos, vuosi, luokka)
+      .flatMap(metadata => kantaOperaatiot.haeVersiot(metadata, Instant.now()).map(v => v.oppijaNumero))
+      .toSet
+  }
+
+  def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
+    val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka)
+
+    val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
+      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet)
+
+    Await.result(ornOppijat, 30.seconds)
   }
 
   //Tämä ei oikeasti toimi kovin tehokkaasti suurille joukoille Oppijoita, koska Atarun permissioncheck-rajapinta käsittelee yhden henkilön kerrallaan.
@@ -154,10 +208,8 @@ class UIService {
     })
   }
 
-  // TODO: Muut parametrit kuin hakusana eivät toistaiseksi vaikuta mihinkään. Korjataan asia kun Supan hakuindeksi on olemassa.
-  // TODO: implementaatiohuomio. Todennäköisesti halutaan purkaa olennainen tieto (oppilaitos, vuosi, luokka) erilliseen sopivasti GIN-indeksoituun tauluun KOSKI-hakujen yhteydessä josta sitten haetaan tässä
-  def haeOppijat(hakusana: Option[String], oppilaitos: Option[String], vuosi: Option[String], luokka: Option[String], authorization: VirkailijaAuthorization): Set[Oppija] = {
-    val resultF = suoritaOnrHaku(hakusana).flatMap(onrResult => {
+  def haeOppija(oppijaOid: String, authorization: VirkailijaAuthorization): Set[Oppija] = {
+    val resultF = suoritaOnrHaku(Some(oppijaOid)).flatMap(onrResult => {
       val onrOppijat: Set[Oppija] = onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet
       if (onrOppijat.nonEmpty) {
         if (authorization.onRekisterinpitaja) {

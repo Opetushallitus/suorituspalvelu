@@ -93,7 +93,7 @@ class LegacyOppijatIntegraatioTest extends BaseIntegraatioTesti {
     val suoritusKieli = Koodi("fi", "kieli", Some(1))
 
     // tallennetaan tutkinnot
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, "{\"testi\": \"suorituksetHenkilölle\"}", Instant.now())
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
     val ammatillinenTutkinto =
       AmmatillinenPerustutkinto(
         UUID.randomUUID(),

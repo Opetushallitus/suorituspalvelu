@@ -6,8 +6,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.KantaOperaatiot.{KantaEntiteetit, MAPPER}
 import org.skyscreamer.jsonassert.{JSONCompare, JSONCompareMode}
-import slick.jdbc.{JdbcBackend, SQLActionBuilder}
+import slick.jdbc.{GetResult, JdbcBackend, SQLActionBuilder, SetParameter}
 import slick.jdbc.PostgresProfile.api.*
+import com.github.tminglei.slickpg.utils.PlainSQLUtils.mkArraySetParameter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
@@ -17,6 +18,16 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
 import KantaOperaatiot.KantaEntiteetit.*
+
+implicit val setStringArray: SetParameter[Seq[String]] = mkArraySetParameter[String]("varchar")
+
+implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
+  r.rs.getArray(r.skip.currentPos)
+    .getArray
+    .asInstanceOf[Array[Any]]
+    .toList
+    .map(_.toString())
+)
 
 object KantaOperaatiot {
   val MAPPER: ObjectMapper = {
@@ -59,12 +70,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  def isNewVersion(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: String, fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
+  def isNewVersion(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
             SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json
             FROM versiot
             WHERE oppijanumero=${oppijaNumero} AND suoritusjoukko=${suoritusJoukko.nimi} AND upper(voimassaolo)='infinity'::timestamptz
-        """.as[(String, String)].map(result => {
+        """.as[(String, Seq[String])].map(result => {
       if(result.isEmpty)
         true
       else
@@ -76,14 +87,17 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           suoritusJoukko match
             case SuoritusJoukko.VIRTA => true // TODO: ei toteutettu
             case default =>
-              if(JSONCompare.compareJSON(existingData, data, JSONCompareMode.NON_EXTENSIBLE).passed())
-                LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
-                false
-              else
-                true
+              existingData.length != data.length ||
+              existingData.sorted.zip(data.sorted).exists((existingDataItem, dataItem) => {
+                if (JSONCompare.compareJSON(existingDataItem, dataItem, JSONCompareMode.NON_EXTENSIBLE).passed())
+                  LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+                  false
+                else
+                  true
+              })
     })
 
-  def tallennaJarjestelmaVersio(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: String, fetchedAt: Instant): Option[VersioEntiteetti] =
+  def tallennaJarjestelmaVersio(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: Seq[String], fetchedAt: Instant): Option[VersioEntiteetti] =
     val insertOppijaAction = sqlu"INSERT INTO oppijat(oppijanumero) VALUES (${oppijaNumero}) ON CONFLICT DO NOTHING"
     val lockOppijaAction = sql"""SELECT 1 FROM oppijat WHERE oppijanumero=${oppijaNumero} FOR UPDATE"""
     val insertVersioIfNewDataAction = DBIO.sequence(Seq(insertOppijaAction, lockOppijaAction.as[Int]))
@@ -110,10 +124,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               suoritusJoukko match
                 case SuoritusJoukko.VIRTA => sqlu"""
                     INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, suoritusjoukko, data_xml)
-                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${data}::xml)"""
+                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${data}::xml[])"""
                 case default => sqlu"""
                     INSERT INTO versiot(tunniste, use_versio_tunniste, oppijanumero, voimassaolo, suoritusjoukko, data_json)
-                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${data}::jsonb)"""
+                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${oppijaNumero}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${data}::jsonb[])"""
             })
           insertVersioAction.map(_ => Some(VersioEntiteetti(tunniste, oppijaNumero, timestamp, None, suoritusJoukko)))
       })
@@ -163,7 +177,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           SELECT * FROM w_versiot""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
-  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, String) =
+  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, Seq[String]) =
     Await.result(db.run(
       sql"""SELECT jsonb_build_object('tunniste', tunniste,
               'oppijaNumero', oppijanumero,
@@ -171,18 +185,25 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
               'suoritusJoukko', suoritusjoukko
             )::text AS versio,
-            CASE WHEN suoritusjoukko='VIRTA' THEN data_xml::text ELSE data_json::text END
+            CASE WHEN suoritusjoukko='VIRTA' THEN data_xml::text[] ELSE data_json::text[] END
             FROM versiot
-            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, String)]), DB_TIMEOUT)
+            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String])]), DB_TIMEOUT)
       .map((json, data) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), data)).head
 
-  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus]) = {
+  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Map[String, Set[String]] = Map.empty) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
-    val dataInsert = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL, data_parseroitu=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb WHERE tunniste=${versio.tunniste.toString}::uuid"""
-    Await.result(db.run(dataInsert), DB_TIMEOUT)
+    val deletePrevious = sqlu"""DELETE FROM opiskeluoikeudet WHERE versio_tunniste=${versio.tunniste.toString}::uuid"""
+    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL, metadata=${metadata.map((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).flatten.toSeq} WHERE tunniste=${versio.tunniste.toString}::uuid"""
+    val dataInserts = opiskeluoikeudet.map(opiskeluoikeus =>
+      sqlu"""
+            INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb)
+            """)
+    val metadataArvotInserts = metadata.flatMap((avain, arvot) => arvot.map(arvo => sqlu"""INSERT INTO metadata_arvot (avain, arvo) VALUES($avain, $arvo) ON CONFLICT DO NOTHING"""))
+    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataArvotInserts).transactionally), DB_TIMEOUT)
   }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+    var versiotByKey = Map.empty[String, VersioEntiteetti]
     Await.result(db.run(
         (sql"""
           WITH RECURSIVE
@@ -201,24 +222,39 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 AND w_versiot_in_use.tunniste<>versiot.tunniste
             ),
             w_versiot AS (
-              SELECT jsonb_build_object(
-                'tunniste', versiot.tunniste,
-                'oppijaNumero', versiot.oppijanumero,
-                'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
-                'loppu', CASE WHEN loppu='infinity'::timestamptz THEN null ELSE to_json(loppu::timestamptz)#>>'{}' END,
-                'suoritusJoukko', versiot.suoritusjoukko
-              )::text AS versio,
-              data_parseroitu::text AS data
+              SELECT versiot.tunniste AS versio_tunniste,
+                jsonb_build_object(
+                  'tunniste', versiot.tunniste,
+                  'oppijaNumero', versiot.oppijanumero,
+                  'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
+                  'loppu', CASE WHEN loppu='infinity'::timestamptz THEN null ELSE to_json(loppu::timestamptz)#>>'{}' END,
+                  'suoritusJoukko', versiot.suoritusjoukko
+                )::text AS data
               FROM w_versiot_in_use JOIN versiot ON w_versiot_in_use.tunniste=versiot.tunniste
               WHERE w_versiot_in_use.use_versio_tunniste IS NULL
+            ),
+            w_data AS(
+              SELECT opiskeluoikeudet.versio_tunniste AS versio_tunniste, data_parseroitu::text AS data
+              FROM opiskeluoikeudet JOIN w_versiot ON opiskeluoikeudet.versio_tunniste=w_versiot.versio_tunniste
             )
-          SELECT * FROM w_versiot;
-        """).as[(String, String)]), DB_TIMEOUT).map((versioData, data) =>
-        val versio = MAPPER.readValue(versioData, classOf[VersioEntiteetti])
-        val container = MAPPER.readValue(data, classOf[Container])
-        (versio, container.opiskeluoikeudet))
+          SELECT 1 as priority, 'versio' AS tyyppi, null AS versio_tunniste, data FROM w_versiot
+          UNION ALL
+          SELECT 2 as priority, 'opiskeluoikeus' as tyyppi, versio_tunniste, data FROM w_data
+          ORDER BY priority ASC;
+        """).as[(Int, String, String, String)]), DB_TIMEOUT).flatMap((priority, tyyppi, versioTunniste, data) => {
+        tyyppi match {
+          case "versio" =>
+            val versio = MAPPER.readValue(data, classOf[VersioEntiteetti])
+            versiotByKey = versiotByKey + (versio.tunniste.toString -> versio)
+            None
+          case "opiskeluoikeus" =>
+            val container = MAPPER.readValue(data, classOf[Container])
+            Some(versiotByKey(versioTunniste), container.opiskeluoikeus)
+        }
+      })
       .groupBy((versio, _) => versio)
-      .map((versio, suoritukset) => (versio, suoritukset.map(t => t._2).flatten.toSet))
+      .map((versio, suoritukset) => (versio, suoritukset.map(t => t._2).toSet))
+  }
 
   def haeSuoritukset(oppijaNumero: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE oppijanumero=${oppijaNumero} AND upper(voimassaolo)='infinity'::timestamptz""")
@@ -235,8 +271,32 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
+  def haeVersiot(metadata: Map[String, Set[String]], timestamp: Instant): Set[VersioEntiteetti] =
+    Await.result(db.run(
+        (sql"""
+          SELECT
+            jsonb_build_object(
+              'tunniste', versiot.tunniste,
+              'oppijaNumero', versiot.oppijanumero,
+              'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
+              'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+              'suoritusJoukko', versiot.suoritusjoukko
+            )::text AS data
+          FROM versiot
+          WHERE versiot.use_versio_tunniste IS NULL
+          AND metadata @> (${metadata.flatMap((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).toSeq})
+          AND ${Instant.ofEpochMilli(timestamp.toEpochMilli).toString}::timestamptz <@ voimassaolo
+        """).as[String]), DB_TIMEOUT).map(data => MAPPER.readValue(data, classOf[VersioEntiteetti]))
+      .toSet
+
   def paataVersionVoimassaolo(tunniste: UUID): Boolean =
     LOG.info(s"päätetään version $tunniste voimassaolo")
     val voimassaolo = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), now()) WHERE tunniste=${tunniste.toString}::uuid AND upper(voimassaolo)='infinity'::timestamptz"""
     Await.result(db.run(voimassaolo), DB_TIMEOUT)>0
+
+  def haeMetadataAvaimenArvot(avain: String, prefix: Option[String] = None): Set[String] =
+    prefix match
+      case None => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain""".as[String]), DB_TIMEOUT).toSet
+      case Some(prefix) => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain AND arvo LIKE ${s"$prefix%"}""".as[String]), DB_TIMEOUT).toSet
+
 }

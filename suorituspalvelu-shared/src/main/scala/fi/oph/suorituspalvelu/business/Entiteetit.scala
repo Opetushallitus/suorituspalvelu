@@ -32,7 +32,7 @@ enum SuoritusTila:
 
 case class Container(
                       @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                      opiskeluoikeudet: Set[Opiskeluoikeus])
+                      opiskeluoikeus: Opiskeluoikeus)
 
 sealed trait TallennettavaEntiteetti
 
@@ -182,9 +182,11 @@ case class PerusopetuksenOppiaine(tunniste: UUID,
                                   rajattu: Option[Boolean]) extends Tyypitetty
 
 case class PerusopetuksenVuosiluokka(tunniste: UUID,
+                                     oppilaitos: Oppilaitos,
                                      nimi: Kielistetty,
                                      koodi: Koodi,
                                      alkamisPaiva: Option[LocalDate],
+                                     vahvistusPaivamaara: Option[LocalDate],
                                      jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOpiskeluoikeus(
