@@ -44,7 +44,7 @@ export const PerusopetusSuoritusAdder = ({
       >
         {t('muokkaus.suoritus.lisaa')}
       </OphButton>
-      {suoritusFields && mode === 'add' && (
+      {suoritusFields && mode === 'new' && (
         <EditSuoritusPaper
           mode={mode}
           suoritus={suoritusFields}
