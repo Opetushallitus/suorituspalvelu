@@ -3,6 +3,7 @@ import {
   OphButton,
   ophColors,
   OphFormFieldWrapper,
+  OphInputFormField,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
 import { type Ref } from 'react';
@@ -133,12 +134,21 @@ const EditSuoritusContent = ({
       <InfoItemRow slotAmount={3} spacing={2}>
         <OphSelectFormField
           label={t('muokkaus.suoritus.suorituskieli')}
-          sx={{ flex: 1, maxWidth: '300px' }}
           required={true}
+          sx={{ flex: 1 }}
           options={suorituskieliOptions}
           value={suoritus?.suorituskieli}
           onChange={(event) => {
             onSuoritusChange({ suorituskieli: event.target.value });
+          }}
+        />
+        <OphInputFormField
+          label={t('muokkaus.suoritus.luokka')}
+          sx={{ flex: 1 }}
+          required={true}
+          value={suoritus?.luokka}
+          onChange={(event) => {
+            onSuoritusChange({ luokka: event.target.value });
           }}
         />
         <OphSelectFormField

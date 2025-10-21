@@ -24,7 +24,6 @@ object Validator {
   final val VALIDATION_VUOSI_TYHJA                = "vuosi: Kenttä on pakollinen"
   final val VALIDATION_VUOSI_EI_VALIDI            = "vuosi ei ole validi: "
   final val VALIDATION_LUOKKA_TYHJA               = "luokka: Kenttä on pakollinen"
-  final val VALIDATION_LUOKKA_EI_VALIDI           = "luokka ei ole validi: "
   final val VALIDATION_EI_VALIDIT_OIDIT           = "Seuraavat oppijanumerot eivät ole valideja: "
   final val VALIDATION_MUOKATTUJALKEEN_TYHJA      = "muokattuJalkeen: Kenttä on pakollinen"
   final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muokattuJalkeen: muokattuJalkeen ei oli validi aikaleima"
@@ -115,8 +114,6 @@ object Validator {
   def validateLuokka(luokka: Option[String], pakollinen: Boolean): Set[String] = {
     if (pakollinen && (luokka.isEmpty || luokka.get.isEmpty))
       Set(VALIDATION_LUOKKA_TYHJA)
-    else if (luokka.isDefined && !luokkaPattern.matches(luokka.get))
-      Set(VALIDATION_LUOKKA_EI_VALIDI+luokka.get)
     else
       Set.empty
   }

@@ -64,6 +64,7 @@ const createNewSuoritusFields = (
     tila: 'VALMIS',
     valmistumispaiva: new Date(),
     suorituskieli: 'FI',
+    luokka: '',
     yksilollistetty: '1',
     oppiaineet: [],
     ...base,
@@ -103,6 +104,7 @@ const createEditableSuoritusFields = ({
             valinnaisetArvosanat: oa.valinnaisetArvosanat,
           }))
         : [],
+    luokka: 'luokka' in suoritus ? suoritus.luokka : '',
   };
 };
 
@@ -140,6 +142,7 @@ const useSuoritusManagerState = () => {
           oppilaitosOid: suoritusState.oppilaitosOid,
           tyyppi: suoritusState.tyyppi,
           suorituskieli: suoritusState.suorituskieli,
+          luokka: suoritusState.luokka,
           yksilollistetty: suoritusState.yksilollistetty,
           valmistumispaiva: suoritusState.valmistumispaiva,
           oppiaineet: suoritusState.oppiaineet,

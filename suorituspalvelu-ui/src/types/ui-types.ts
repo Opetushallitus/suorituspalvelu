@@ -204,6 +204,7 @@ export type SuoritusFields = {
   tyyppi: string;
   valmistumispaiva?: Date;
   suorituskieli: string;
+  luokka?: string;
   yksilollistetty: string;
   oppiaineet: Array<PerusopetusOppiaineFields>;
 };

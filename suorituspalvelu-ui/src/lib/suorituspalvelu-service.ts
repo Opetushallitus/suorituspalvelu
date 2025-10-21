@@ -92,7 +92,7 @@ export const saveSuoritus = async (
     oppilaitosOid: suoritusFields.oppilaitosOid,
     suorituskieli: suoritusFields.suorituskieli,
     yksilollistetty: parseInt(suoritusFields.yksilollistetty, 10),
-    luokka: '9A', // TODO: Lue luokkatieto parametreista
+    luokka: suoritusFields.luokka,
     valmistumispaiva: suoritusFields.valmistumispaiva
       ? format(toFinnishDate(suoritusFields.valmistumispaiva), 'yyyy-MM-dd')
       : undefined,
