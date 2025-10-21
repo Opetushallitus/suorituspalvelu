@@ -49,9 +49,9 @@ object VirkailijaToSuoritusConverter {
             ),
             suoritus.oppilaitosOid.get
           )).get,
-          None,
+          suoritus.luokka.toScala,
           Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), // syötetään vain valmistuneita suorituksia
-          SuoritusTila.VALMIS,
+          SuoritusTila.valueOf(suoritus.tila.get),
           Koodi(suoritus.suorituskieli.get, "kieli", Some(1)),
           Set(Koodi(suoritus.suorituskieli.get, "kieli", Some(1))),
           suoritus.yksilollistetty.toScala,
