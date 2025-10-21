@@ -1,12 +1,21 @@
 import {
+  type Kielistetty,
   type PerusopetuksenOppiaine,
   type PerusopetusSuoritus,
 } from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
-import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { LabeledInfoItem } from '../LabeledInfoItem';
+import {
+  Stack,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+  useTheme,
+} from '@mui/material';
+import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useMemo } from 'react';
 import { StripedTable } from '../StripedTable';
@@ -40,24 +49,60 @@ const Luokkatiedot = ({
   );
 };
 
+const OppiaineValue = ({
+  value,
+}: {
+  value: Kielistetty | string | Array<string> | number | undefined;
+}) => {
+  const { translateKielistetty } = useTranslations();
+  switch (true) {
+    case isKielistetty(value):
+      return translateKielistetty(value);
+    case Array.isArray(value):
+      return (
+        <Stack spacing={1}>
+          {value.map((v, i) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            <Typography key={i}>{v}</Typography>
+          ))}
+        </Stack>
+      );
+    default:
+      return value;
+  }
+};
+
 const PerusopetusOppiaineetTable = ({
   oppiaineet,
 }: {
   oppiaineet: Array<PerusopetuksenOppiaine>;
 }) => {
-  const { t, translateKielistetty } = useTranslations();
+  const { t } = useTranslations();
 
   const hasArvosana = oppiaineet.some((oppiaine) => oppiaine.arvosana);
-  const hasValinnainen = oppiaineet.some((oppiaine) => oppiaine?.valinnainen);
+  const hasValinnainen = oppiaineet.some(
+    (oppiaine) => oppiaine?.valinnaisetArvosanat,
+  );
+
+  const theme = useTheme();
+
+  const columnStyles: React.CSSProperties = {
+    verticalAlign: 'top',
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
+    lineHeight: theme.spacing(2),
+  };
 
   const columns = useMemo(() => {
     const cols: Array<{
       key: keyof (typeof oppiaineet)[number];
       title: string;
+      style: React.CSSProperties;
     }> = [
       {
         key: 'nimi',
         title: t('oppija.oppiaine'),
+        style: columnStyles,
       },
     ];
 
@@ -65,13 +110,15 @@ const PerusopetusOppiaineetTable = ({
       cols.push({
         key: 'arvosana',
         title: t('oppija.arvosana'),
+        style: { textAlign: 'center', ...columnStyles },
       });
     }
 
     if (hasValinnainen) {
       cols.push({
-        key: 'valinnainen',
+        key: 'valinnaisetArvosanat',
         title: t('oppija.valinnainen'),
+        style: { textAlign: 'center', ...columnStyles },
       });
     }
 
@@ -93,9 +140,7 @@ const PerusopetusOppiaineetTable = ({
             {columns.map((column) => {
               const value = oppiaine[column.key];
               return (
-                <TableCell key={column.key}>
-                  {isKielistetty(value) ? translateKielistetty(value) : value}
-                </TableCell>
+                <OppiaineValue key={column.key} value={value} />
               );
             })}
           </TableRow>
