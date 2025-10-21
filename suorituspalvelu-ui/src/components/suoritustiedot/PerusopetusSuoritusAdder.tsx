@@ -1,6 +1,5 @@
 import { Stack } from '@mui/material';
 import { OphButton } from '@opetushallitus/oph-design-system';
-import { useRef } from 'react';
 import { Add } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditSuoritusPaper } from './EditSuoritusPaper';
@@ -12,9 +11,9 @@ export const PerusopetusSuoritusAdder = ({
   henkiloOID: string;
 }) => {
   const { t } = useTranslations();
-  const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
   const {
+    suoritusPaperRef,
     mode,
     suoritusFields,
     saveSuoritus,
@@ -35,11 +34,6 @@ export const PerusopetusSuoritusAdder = ({
         startIcon={<Add />}
         onClick={() => {
           startSuoritusAdd();
-          setTimeout(() => {
-            suoritusPaperRef.current?.scrollIntoView({
-              behavior: 'smooth',
-            });
-          }, 20);
         }}
       >
         {t('muokkaus.suoritus.lisaa')}
