@@ -320,6 +320,7 @@ export interface ILuoSuoritusDropdownDataFailureResponse {
 }
 
 export interface ILuoSuoritusDropdownDataSuccessResponse {
+  suoritusTilat: ISyotettavaSuoritusTilaVaihtoehto[];
   suoritusTyypit: ISyotettavaSuoritusTyyppiVaihtoehto[];
   oppiaineet: ISyotettavaOppiaineVaihtoehto[];
   suoritusKielet: ISyotettavaSuoritusKieliVaihtoehto[];
@@ -566,6 +567,17 @@ export interface ISyotettavaSuoritusKieliVaihtoehtoNimi {
   en?: string;
 }
 
+export interface ISyotettavaSuoritusTilaVaihtoehto {
+  nimi: ISyotettavaSuoritusTilaVaihtoehtoNimi;
+  arvo: string;
+}
+
+export interface ISyotettavaSuoritusTilaVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface ISyotettavaSuoritusTyyppiVaihtoehto {
   nimi: ISyotettavaSuoritusTyyppiVaihtoehtoNimi;
   arvo: string;
@@ -787,8 +799,8 @@ export interface IYksilollistamisNimi {
   en?: string;
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";

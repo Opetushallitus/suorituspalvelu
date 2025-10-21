@@ -61,7 +61,8 @@ const createNewSuoritusFields = (
     oppijaOid: '',
     oppilaitosOid: '',
     tyyppi: 'perusopetuksenoppimaara',
-    tila: 'suorituksentila_valmis',
+    tila: 'VALMIS',
+    valmistumispaiva: new Date(),
     suorituskieli: 'FI',
     yksilollistetty: '1',
     oppiaineet: [],
@@ -134,6 +135,7 @@ const useSuoritusManagerState = () => {
       } else if (operation === 'save' && suoritusState) {
         setOppijaOid(suoritusState.oppijaOid);
         return saveSuoritus({
+          tila: suoritusState.tila,
           oppijaOid: suoritusState.oppijaOid,
           oppilaitosOid: suoritusState.oppilaitosOid,
           tyyppi: suoritusState.tyyppi,
@@ -273,7 +275,7 @@ export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {
 
   useEffect(() => {
     context.setOppijaOid(oppijaOid);
-  }, [oppijaOid]);
+  }, [context, oppijaOid]);
 
   return context;
 };

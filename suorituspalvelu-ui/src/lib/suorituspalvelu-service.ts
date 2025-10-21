@@ -9,6 +9,7 @@ import type {
 } from '@/types/backend';
 import type { KayttajaTiedot, SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
+import { toFinnishDate } from './time-utils';
 
 export type OppijatSearchParams = {
   hakusana?: string;
@@ -78,18 +79,22 @@ export const getSuoritusvaihtoehdot = async () => {
   return res.data;
 };
 
+// Perusopetuksen oppimäärän ja oppiaineen oppimäärän tallentaminen
+// TODO: Oppiaineen oppimäärän tallentaminen puuttuu vielä
 export const saveSuoritus = async (
   suoritusFields: Omit<SuoritusFields, 'versioTunniste'>,
 ): Promise<void> => {
   const config = await configPromise;
 
   const postData: Record<string, unknown> = {
+    tila: suoritusFields.tila,
     oppijaOid: suoritusFields.oppijaOid,
     oppilaitosOid: suoritusFields.oppilaitosOid,
     suorituskieli: suoritusFields.suorituskieli,
     yksilollistetty: parseInt(suoritusFields.yksilollistetty, 10),
+    luokka: '9A', // TODO: Lue luokkatieto parametreista
     valmistumispaiva: suoritusFields.valmistumispaiva
-      ? format(suoritusFields.valmistumispaiva, 'yyyy-MM-dd')
+      ? format(toFinnishDate(suoritusFields.valmistumispaiva), 'yyyy-MM-dd')
       : undefined,
   };
 
