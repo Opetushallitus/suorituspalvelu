@@ -23,6 +23,9 @@ class SecurityOperaatiot(
   def onRekisterinpitaja(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL)
 
+  def onOrganisaationKatselija(): Boolean =
+    kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA)
+
   //Todo, otetaanko huomioon hakukohderyhmäkohtaiset oikeudet? (eri solmuluokka)
   private def getOrganisaatioOidsFromRoolit(roolit: Set[String]): Set[String] = {
     roolit.filter(rooli => rooli.contains("1.2.246.562.10."))

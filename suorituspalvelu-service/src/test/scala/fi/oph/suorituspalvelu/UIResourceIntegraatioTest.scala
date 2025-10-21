@@ -44,6 +44,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @MockBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
+  final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA + "_1.2.246.562.10.52320123196"
+
   /*
    * Integraatiotestit käyttäjän tietojen haulle
    */
@@ -81,10 +83,25 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk)
       .andReturn()
 
-    // asiointikieli on "fi"
-    Assertions.assertEquals(KayttajaSuccessResponse("fi"),
+    // asiointikieli on "fi" ja kyseessä ei organisaation katselija
+    Assertions.assertEquals(KayttajaSuccessResponse("fi", false),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA))
+  @Test def testHaeKayttajanTiedotAllowedOrganisaationKatselija(): Unit =
+    // mockataan onr-vastaus
+    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
+
+    // haetaan käyttäjän tiedot
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // asiointikieli on "fi" ja kyseessä ei organisaation katselija
+    Assertions.assertEquals(KayttajaSuccessResponse("fi", true),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
+  
   /*
    * Integraatiotestit oppilaitoslistauksen haulle
    */
@@ -103,7 +120,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .get(ApiConstants.UI_OPPILAITOKSET_PATH, ""))
       .andExpect(status().isForbidden())
 
-  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123196"))
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeOppilaitoksetAllowedOpo(): Unit =
     val oppilaitosOid = "1.2.246.562.10.52320123196"
 
@@ -181,7 +198,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .replace(ApiConstants.UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPILAITOS_OID), ""))
       .andExpect(status().isForbidden())
 
-  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123196"))
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeVuodetAllowed(): Unit =
     val oppijanumero = "1.2.246.562.24.21583363331"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
@@ -248,7 +265,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .replace(ApiConstants.UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_VUOSI), ""))
       .andExpect(status().isForbidden())
 
-  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123196"))
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeLuokatAllowed(): Unit =
     val oppijanumero = "1.2.246.562.24.21583363331"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
@@ -348,7 +365,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       ApiConstants.UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME -> hakusanaOppijanumero
     ), auditLogEntry.target)
 
-  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123197"))
+  final val HAKENEIDEN_KATSELIJA = SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA + "_1.2.246.562.10.52320123197"
+
+  @WithMockUser(value = "kayttaja", authorities = Array(HAKENEIDEN_KATSELIJA))
   @Test def testHaeOppijatOppilaitoskayttajaAllowedByHakemus(): Unit =
     val hakusanaOppijanumero = "1.2.246.562.24.21583363333"
     val orgOid = "1.2.246.562.10.52320123197"
@@ -383,7 +402,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       ApiConstants.UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME -> hakusanaOppijanumero
     ), auditLogEntry.target)
 
-  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123197"))
+  @WithMockUser(value = "kayttaja", authorities = Array(HAKENEIDEN_KATSELIJA))
   @Test def testHaeOppijatOppilaitoskayttajaNotAllowedByHakemus(): Unit =
     val hakusanaOppijanumero = "1.2.246.562.24.21583363441"
     val orgOid = "1.2.246.562.10.52320123197"
@@ -511,12 +530,12 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       )),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123197"))
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeOppilaitoksenOppijatByOppilaitosAndVuosiValmisPKAllowed(): Unit =
     val etunimet = "Teppo Hemmo"
     val sukunimi = "Testinen"
     val hakusanaOppijanumero = "1.2.246.562.24.21583363334"
-    val oppilaitosOid = "1.2.246.562.10.52320123197"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
     val vuosi = "2025"
 
     // mockataan onr-vastaus

@@ -15,7 +15,9 @@ trait KayttajaResponse()
 
 case class KayttajaSuccessResponse(
   @(Schema @field)(example = "fi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty asiointiKieli: String
+  @BeanProperty asiointiKieli: String,
+  @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty isOrganisaationKatselija: Boolean
 ) extends KayttajaResponse
 
 case class KayttajaFailureResponse(
