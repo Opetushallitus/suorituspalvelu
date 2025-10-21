@@ -29,6 +29,7 @@ import type {
   IIBOppiaine,
   IAmmatillisenTutkinnonOsa,
   IYTO,
+  ILuoSuoritusDropdownDataSuccessResponse,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -141,3 +142,5 @@ export type TutkinnonOsanOsaAlue = {
 export type KayttajaTiedot = {
   asiointiKieli: Language;
 };
+
+export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
