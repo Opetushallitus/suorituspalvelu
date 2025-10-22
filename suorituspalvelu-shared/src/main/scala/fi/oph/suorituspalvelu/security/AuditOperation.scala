@@ -59,4 +59,6 @@ object AuditOperation {
 
   case object TallennaYliajotOppijalle extends AuditOperation("TALLENNA YLIAJOT OPPIJALLE UI")
 
+  case object PoistaOppijanYliajot extends AuditOperation("POISTA YLIAJO OPPIJALTA UI")
+
 }

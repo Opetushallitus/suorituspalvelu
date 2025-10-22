@@ -1408,6 +1408,16 @@ case class PoistaSuoritusFailureResponse(
   @BeanProperty virheAvaimet: java.util.Set[String],
 ) extends PoistaSuoritusResponse
 
+
+trait PoistaYliajotResponse()
+
+case class PoistaYliajotSuccessResponse() extends PoistaYliajotResponse
+
+case class PoistaYliajotFailureResponse(
+                                          @(Schema @field)(example = UI_POISTA_SUORITUS_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
+                                          @BeanProperty virheAvaimet: java.util.Set[String],
+                                        ) extends PoistaYliajotResponse
+
 trait TallennaYliajotOppijalleResponse()
 
 case class TallennaYliajotOppijalleSuccessResponse() extends TallennaYliajotOppijalleResponse
@@ -1415,21 +1425,6 @@ case class TallennaYliajotOppijalleSuccessResponse() extends TallennaYliajotOppi
 case class TallennaYliajotOppijalleFailureResponse(
   @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheAvaimet: java.util.Set[String]) extends TallennaYliajotOppijalleResponse
-
-case class ManuaalinenAvainArvoYliajo(
-  @(Schema @field)(example = ESIMERKKI_YLIAJO_AVAIN, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty avain: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_YLIAJO_ARVO, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvo: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty henkiloOid: Optional[String], //Oppija, jonka arvoihin yliajo vaikuttaa
-  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty hakuOid: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_YLIAJO_VIRKAILIJA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty virkailijaOid: Optional[String], //Yliajon tehneen virkailijan oid. Poimitaan käyttäjätiedoista?
-  @(Schema @field)(example = ESIMERKKI_YLIAJO_SELITE)
-  @BeanProperty selite: Optional[String])
-
 
 case class Yliajo(
   @(Schema @field)(example = ESIMERKKI_YLIAJO_AVAIN, requiredMode = RequiredMode.REQUIRED)

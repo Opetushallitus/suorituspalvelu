@@ -48,8 +48,11 @@ object UIValidator {
   final val VALIDATION_VERSIOTUNNISTE_TYHJA       = "backend-virhe.versiotunniste.tyhja"
   final val VALIDATION_VERSIOTUNNISTE_EI_VALIDI   = "backend-virhe.versiotunniste.ei_validi"
   final val VALIDATION_AVAIN_TYHJA                = "backend-virhe.avain.tyhja"
+  final val VALIDATION_HAKUOID_TYHJA              = "backend-virhe.hakuoid.tyhja"
+  final val VALIDATION_HAKUOID_EI_VALIDI          = "backend-virhe.hakuoid.ei_validi"
 
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
+  val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
@@ -245,6 +248,15 @@ object UIValidator {
         Set.empty
     else
       Set.empty
+
+  def validateHakuOid(hakuOid: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (hakuOid.isEmpty || hakuOid.get.isEmpty))
+      Set(VALIDATION_HAKUOID_TYHJA)
+    else if (hakuOid.isDefined && !hakuOidPattern.matches(hakuOid.get))
+      Set(VALIDATION_HAKUOID_EI_VALIDI + hakuOid.get)
+    else
+      Set.empty
+  }
 
   //Todo, lisätäänkö muita validointeja, ehkä joku nonempty arvolle/selitteelle? Onko hyödyllistä voida tallentaa tyhjä arvo?
   def validateYliajot(container: YliajoTallennusContainer): Set[String] = {

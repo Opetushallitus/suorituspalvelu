@@ -333,42 +333,63 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     ), DB_TIMEOUT)
   }
 
-  def tallennaYliajo(avainArvoYliajo: AvainArvoYliajo): Unit = {
-    LOG.info(s"Tallennetaan yliajo oppijan ${avainArvoYliajo.henkiloOid} avaimelle ${avainArvoYliajo.avain} haussa ${avainArvoYliajo.hakuOid}")
+  def tallennaYliajot(yliajot: Seq[AvainArvoYliajo]): Unit = {
 
+    // Päivitetään mahdollisten vanhojen versioiden voimassaolo loppumaan tähän hetkeen
+    val updateOldVersionsAction = DBIO.sequence(
+      yliajot.map { yliajo =>
+        sqlu"""
+        UPDATE yliajot
+        SET voimassaolo = tstzrange(lower(voimassaolo), now())
+        WHERE henkilo_oid = ${yliajo.henkiloOid}
+          AND haku_oid = ${yliajo.hakuOid}
+          AND avain = ${yliajo.avain}
+          AND upper(voimassaolo) = 'infinity'::timestamptz
+        """
+      }
+    )
+
+    // Luodaan uudet yliajot, joiden voimassaolo alkaa tästä hetkestä
+    val insertNewVersionsAction = DBIO.sequence(
+      yliajot.map { yliajo =>
+        sqlu"""
+        INSERT INTO yliajot (
+          avain,
+          arvo,
+          henkilo_oid,
+          haku_oid,
+          virkailija_oid,
+          selite,
+          voimassaolo
+        ) VALUES (
+          ${yliajo.avain},
+          ${yliajo.arvo},
+          ${yliajo.henkiloOid},
+          ${yliajo.hakuOid},
+          ${yliajo.virkailijaOid},
+          ${yliajo.selite},
+          tstzrange(now(), 'infinity'::timestamptz)
+        )
+        """
+      }
+    )
+
+    // Suoritetaan operaatiot samassa transaktiossa
+    Await.result(db.run(
+      DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
+    ), DB_TIMEOUT)
+  }
+
+  //Ei poisteta kannasta kokonaan, vaan merkataan voimassaolo päättyneeksi mutta ei tallenneta uutta.
+  def poistaYliajo(henkiloOid: String, hakuOid: String, avain: String): Unit = {
     val updateOldVersionsAction =
       sqlu"""
       UPDATE yliajot
       SET voimassaolo = tstzrange(lower(voimassaolo), now())
-      WHERE henkilo_oid = ${avainArvoYliajo.henkiloOid}
-        AND haku_oid = ${avainArvoYliajo.hakuOid}
-        AND avain = ${avainArvoYliajo.avain}
+      WHERE henkilo_oid = $henkiloOid
+        AND haku_oid = $hakuOid
+        AND avain = $avain
         AND upper(voimassaolo) = 'infinity'::timestamptz
     """
-
-    val insertNewVersionAction =
-      sqlu"""
-      INSERT INTO yliajot (
-        avain,
-        arvo,
-        henkilo_oid,
-        haku_oid,
-        virkailija_oid,
-        selite,
-        voimassaolo
-      ) VALUES (
-        ${avainArvoYliajo.avain},
-        ${avainArvoYliajo.arvo},
-        ${avainArvoYliajo.henkiloOid},
-        ${avainArvoYliajo.hakuOid},
-        ${avainArvoYliajo.virkailijaOid},
-        ${avainArvoYliajo.selite},
-        tstzrange(now(), 'infinity'::timestamptz)
-      )
-    """
-
-    Await.result(db.run(
-      DBIO.seq(updateOldVersionsAction, insertNewVersionAction).transactionally
-    ), DB_TIMEOUT)
   }
 }

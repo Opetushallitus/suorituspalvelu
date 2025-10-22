@@ -7,11 +7,11 @@ import fi.oph.suorituspalvelu.integration.OnrIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClient}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
-import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_HENKILO_HAKU_ESIMERKKI_HAKUKENTAN_ARVO, UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME, UI_HENKILO_HAKU_PATH, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_LUO_SUORITUS_OPPIAINE_PATH, UI_LUO_SUORITUS_OPPILAITOKSET_PATH, UI_LUO_SUORITUS_PERUSOPETUS_PATH, UI_LUO_SUORITUS_VAIHTOEHDOT_PATH, UI_OPPILAITOKSET_EI_OIKEUKSIA, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VUODET_EI_OIKEUKSIA, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, ESIMERKKI_YLIAJO_AVAIN, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_HENKILO_HAKU_ESIMERKKI_HAKUKENTAN_ARVO, UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME, UI_HENKILO_HAKU_PATH, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_LUO_SUORITUS_OPPIAINE_PATH, UI_LUO_SUORITUS_OPPILAITOKSET_PATH, UI_LUO_SUORITUS_PERUSOPETUS_PATH, UI_LUO_SUORITUS_VAIHTOEHDOT_PATH, UI_OPPILAITOKSET_EI_OIKEUKSIA, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_POISTA_YLIAJOT_PATH, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VUODET_EI_OIKEUKSIA, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH}
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_EI_OIKEUKSIA, UI_HAKU_EPAONNISTUI, UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_EI_OIKEUKSIA, UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_VIRHE, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_EI_OIKEUKSIA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_VIRHE, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_VIRHE, UI_TIEDOT_EI_OIKEUKSIA, UI_TIEDOT_HAKU_EPAONNISTUI, UI_VALINTADATA_EI_OIKEUKSIA}
 import fi.oph.suorituspalvelu.validation.UIValidator.VALIDATION_HAKUSANA_EI_VALIDI
 import fi.oph.suorituspalvelu.validation.Validator
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, PoistaYliajotFailureResponse, PoistaYliajotResponse, PoistaYliajotSuccessResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityConstants, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.ValintaDataService
 import fi.oph.suorituspalvelu.ui.UIService.{KOODISTO_KIELIVALIKOIMA, KOODISTO_OPPIAINEET, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUKSENTYYPIT, KOODISTO_SUORITUSKIELET, SYOTETTAVAT_OPPIAINEET, SYOTETTAVAT_SUORITUSTYYPIT, SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT, SYOTETYN_OPPIMAARAN_SUORITUSKIELET, SYOTETYN_OPPIMAARAN_YKSILOLLISTAMINEN}
@@ -834,7 +834,7 @@ class UIResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Tallentaa listan yliajoja oppijan avain-arvoihin",
+    summary = "Tallentaa listan yliajoja oppijan avain-arvoihin haulle",
     description = "Huomioita:\n" +
       "- Huomio 1", // TODO: päivitä
     requestBody =
@@ -880,27 +880,81 @@ class UIResource {
             if (Await.result(onrIntegration.henkiloExists(yliajoContainer.henkiloOid.get), ONR_TIMEOUT))
               Right(yliajoContainer)
             else
-              LOG.error(s"Perusopetuksen oppimaaran suorituksen tallennus oppijalle ${yliajoContainer.henkiloOid.get} epäonnistui, henkilöä ei löydy ONR:stä")
+              LOG.error(s"Yliajojen tallennus oppijalle ${yliajoContainer.henkiloOid.get} epäonnistui, henkilöä ei löydy ONR:stä")
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA), List.empty.asJava))))
           .flatMap((yliajoContainer: YliajoTallennusContainer) =>
-            val oppijaOid = yliajoContainer.henkiloOid.get //Assertoidaanko, että kaikki yliajot ovat samalle henkilölle? Kannattanee.
+            val oppijaOid = yliajoContainer.henkiloOid.get
             val virkailijaOid = SecurityContextHolder.getContext.getAuthentication.getName
-            LOG.info(s"Tallennetaan perusopetuksen oppimaaran suoritus oppijalle ${oppijaOid}")
+            LOG.info(s"Tallennetaan ${yliajoContainer.yliajot.toScala.size} yliajoa oppijalle ${oppijaOid}")
             val user: User = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaOid, UI_VALINTADATA_HAKU_PARAM_NAME -> yliajoContainer.hakuOid.get), AuditOperation.TallennaYliajotOppijalle, Some(yliajoContainer))
 
-            yliajoContainer.yliajot.toScala.get.asScala.foreach(y => {
-              val yliajo = AvainArvoYliajo(avain = y.avain.get, arvo = y.arvo.get, henkiloOid = yliajoContainer.henkiloOid.get, hakuOid = yliajoContainer.hakuOid.get, virkailijaOid = virkailijaOid, selite = y.selite.get)
-              kantaOperaatiot.tallennaYliajo(yliajo)
-            })
+            val yliajotToSave = yliajoContainer.yliajot.toScala.get.asScala.map(y => {
+              AvainArvoYliajo(avain = y.avain.get, arvo = y.arvo.get, henkiloOid = yliajoContainer.henkiloOid.get, hakuOid = yliajoContainer.hakuOid.get, virkailijaOid = virkailijaOid, selite = y.selite.get)
+            }).toSeq
+            kantaOperaatiot.tallennaYliajot(yliajotToSave)
 
             Right(ResponseEntity.status(HttpStatus.OK).body(TallennaYliajotOppijalleSuccessResponse())))
       )
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[TallennaYliajotOppijalleResponse]]
     catch
       case e: Exception =>
-        LOG.error("Perusopetuksen oppimaaran tallentaminen oppijalle epäonnistui", e)
+        LOG.error("Yliajojen tallentaminen oppijalle epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(TallennaYliajotOppijalleFailureResponse(java.util.Set.of(UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_VIRHE)))
   }
 
+  @DeleteMapping(
+    path = Array(UI_POISTA_YLIAJOT_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Poistaa tietylle avaimelle tietyssä haussa tehdyn yliajon yksittäiseltä oppijalta",
+    description = "Huomioita:\n" +
+      "- Huomio 1", // TODO: päivitä
+    requestBody =
+      new io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = Array(new Content(schema = new Schema(implementation = classOf[SyotettyPerusopetuksenOppimaaranSuoritus])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[PoistaYliajotSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[PoistaYliajotFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def poistaOppijanYliajo(
+                           @RequestParam(name = UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, required = true) @Parameter(description = "oppijanumero", example = ESIMERKKI_OPPIJANUMERO) oppijaNumero: Optional[String],
+                           @RequestParam(name = UI_VALINTADATA_HAKU_PARAM_NAME, required = false) @Parameter(description = "haun oid", example = ESIMERKKI_HAKU_OID) hakuOid: Optional[String],
+                           @RequestParam(name = UI_VALINTADATA_HAKU_PARAM_NAME, required = false) @Parameter(description = "poistettavan yliajon avain", example = ESIMERKKI_YLIAJO_AVAIN) avain: Optional[String],
+                      request: HttpServletRequest): ResponseEntity[PoistaYliajotResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = UI_POISTA_SUORITUS_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            // tarkastetaan oikeudet
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(PoistaYliajotFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_EI_OIKEUKSIA)))))
+          .flatMap(_ =>
+            // validoidaan tunniste
+            val virheet =
+              UIValidator.validateAvain(avain.toScala, pakollinen = true) ++
+              UIValidator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true) ++
+              UIValidator.validateHakuOid(hakuOid.toScala, pakollinen = true)
+            if (virheet.isEmpty)
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaYliajotFailureResponse(virheet.asJava))))
+          .flatMap(_ =>
+            LOG.info(s"Poistetaan yliajo ${avain.get} oppijalta ${oppijaNumero.get} haussa ${hakuOid.get}")
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.get), AuditOperation.PoistaOppijanYliajot, None)
+
+            kantaOperaatiot.poistaYliajo(oppijaNumero.get, hakuOid.get, avain.get)
+            Right(ResponseEntity.status(HttpStatus.OK).body(PoistaYliajotSuccessResponse()))))
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[PoistaYliajotResponse]]
+    catch
+      case e: Exception =>
+        LOG.error("Yliajon poisto oppijalle epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(PoistaYliajotFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_TALLENNUS_VIRHE)))
+  }
 }

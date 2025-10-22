@@ -554,7 +554,7 @@ class KantaOperaatiotTest {
     )
 
     //Save and fetch
-    this.kantaOperaatiot.tallennaYliajo(avainArvoYliajo)
+    this.kantaOperaatiot.tallennaYliajot(Seq(avainArvoYliajo))
     val haetutYliajot = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
 
     // Verify results
@@ -584,7 +584,7 @@ class KantaOperaatiotTest {
     )
 
     // Save first override
-    this.kantaOperaatiot.tallennaYliajo(yliajo1)
+    this.kantaOperaatiot.tallennaYliajot(Seq(yliajo1))
 
     // Verify it's saved correctly
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
@@ -602,7 +602,7 @@ class KantaOperaatiotTest {
     )
 
     // Save second override
-    this.kantaOperaatiot.tallennaYliajo(yliajo2)
+    this.kantaOperaatiot.tallennaYliajot(Seq(yliajo2))
 
     // Verify only the second override is active
     val haetutYliajot2 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
@@ -636,8 +636,7 @@ class KantaOperaatiotTest {
     )
 
     // Save both overrides
-    this.kantaOperaatiot.tallennaYliajo(yliajo1)
-    this.kantaOperaatiot.tallennaYliajo(yliajo2)
+    this.kantaOperaatiot.tallennaYliajot(Seq(yliajo1, yliajo2))
 
     val haetutYliajot = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
     Assertions.assertEquals(2, haetutYliajot.size)
@@ -681,8 +680,7 @@ class KantaOperaatiotTest {
     )
 
     // Save both overrides
-    this.kantaOperaatiot.tallennaYliajo(yliajo1)
-    this.kantaOperaatiot.tallennaYliajo(yliajo2)
+    this.kantaOperaatiot.tallennaYliajot(Seq(yliajo1, yliajo2))
 
     // Fetch overrides for person 1
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid1, hakuOid)
@@ -723,8 +721,7 @@ class KantaOperaatiotTest {
     )
 
     // Save both overrides
-    this.kantaOperaatiot.tallennaYliajo(yliajo1)
-    this.kantaOperaatiot.tallennaYliajo(yliajo2)
+    this.kantaOperaatiot.tallennaYliajot(Seq(yliajo1, yliajo2))
 
     // Check haku 1
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid1)
