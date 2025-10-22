@@ -183,13 +183,13 @@ class UIService {
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
    * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
    *
-   * @param   oppijaOid haettava oppija
+   * @param   hakusana  haettava oppija
    * @return            oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
    */
-  def haeOppija(oppijaOid: String): Option[Oppija] = {
-    val oppija = haeHenkilonPerustiedot(Some(oppijaOid)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)))
-    val hasOikeus = hasOppijanKatseluOikeus(oppijaOid)
-    (Await.result(oppija, 30.seconds), hasOikeus) match
+  def haeOppija(hakusana: String): Option[Oppija] = {
+    val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi))), 30.seconds)
+    val hasOikeus = oppija.exists(o => hasOppijanKatseluOikeus(o.oppijaNumero))
+    (oppija, hasOikeus) match
       case (Some(oppija), true) => Some(oppija)
       case (Some(oppija), false) => None
       //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
