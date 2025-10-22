@@ -1,49 +1,69 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
 import scala.collection.immutable
 
-//Lisätään filtteröityihin suorituksiin kaikki sellaiset suoritukset, joilta on poimittu avainArvoja.
-// Eli jos jossain kohtaa pudotetaan pois suorituksia syystä tai toisesta, ne eivät ole mukana filtteröidyissä suorituksissa.
-//Opiskeluoikeudet sisältävät kaiken lähdedatan.
-case class ValintaData(personOid: String, avainArvot: Set[AvainArvoContainer], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty, filtteroidytSuoritukset: Seq[Suoritus]) {
-  def getAvainArvoMap(): Map[String, String] = avainArvot.map(a => (a.avain, a.arvo)).toMap
+//Opiskeluoikeudet sisältävät kaiken lähdedatan, käyttö nykyisellään vain debug-tarkoituksiin.
+case class AvainArvoConverterResults(personOid: String, containers: Set[AvaimetArvoContainer], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty) {
+
+  def getAvainArvoMap(): Map[String, String] = {
+    containers.flatMap(aa => aa.toSingleContainers.map(aac => aac.avain -> aac.arvo).toSeq).toMap
+  }
+
+  def toSingleContainers(): Set[SingleAvainArvoContainer] = {
+    containers.flatMap(_.toSingleContainers)
+  }
 }
 
-case class AvainArvoContainer(avain: String, arvo: String, selitteet: Seq[String] = Seq.empty)
+//Sama tieto sijoitetaan useamman avaimen alle, koska eri valintaperusteissa saatetaan viitata eri avaimiin.
+case class Avaimet(avain: String, rinnakkaisAvaimet: Set[String]) {
+  //(Avain, isDuplikaatti)
+  def kaikkiAvaimet: Set[(String, Boolean)] = {
+    val pa: (String, Boolean) = (avain, false)
+    val ra: Set[(String, Boolean)] = rinnakkaisAvaimet.map(avain => (avain, true))
+    ra + pa
+  }
+}
+
+case class AvaimetArvoContainer(avaimet: Avaimet, arvo: String, selitteet: Seq[String] = Seq.empty) {
+  //Raakadataa AvainArvoConverterilta
+  def toSingleContainers: Set[SingleAvainArvoContainer] = avaimet.kaikkiAvaimet.map((avain, isDuplikaatti) => SingleAvainArvoContainer(avain, arvo, isDuplikaatti, selitteet))
+}
+
+case class SingleAvainArvoContainer(avain: String, arvo: String, duplikaatti: Boolean, selitteet: Seq[String] = Seq.empty)
 
 object AvainArvoConstants {
-  //Sama tieto tallennetaan kahden avaimen alle: vanhan Valintalaskentakoostepalvelusta periytyvän,
-  // johon kenties viitataan nykyisistä valintaperusteista, ja lisäksi uuden selkeämmän avaimen, jota käytetään jatkossa uusissa valintaperusteissa.
-  // Vanhat avaimet voi toivottavasti jossain kohtaa pudottaa pois.
-  final val perusopetuksenKieliKeys = Set("perusopetuksen_kieli")
-  final val peruskouluPaattotodistusvuosiKeys = Set("PK_PAATTOTODISTUSVUOSI", "PERUSKOULU_PAATTOTODISTUSVUOSI")
-  final val peruskouluSuoritusvuosiKeys = Set("PK_SUORITUSVUOSI", "PERUSKOULU_SUORITUSVUOSI")
-  final val peruskouluSuoritettuKeys = Set("PK_TILA", "PERUSKOULU_SUORITETTU")
-  final val lukioSuoritettuKeys = Set("LK_TILA", "lukio_suoritettu")
-  final val yoSuoritettuKeys = Set("YO_TILA", "yo-tutkinto_suoritettu")
-  final val ammSuoritettuKeys = Set("AM_TILA", "ammatillinen_suoritettu")
+  //Sama tieto tallennetaan sekä pääavaimen että rinnakkaisten avaimien alle. Tämä antaa tuen vanhoille valintaperusteille.
+  //Pääavaimia ei kannata vaihtaa, koska mahdolliset yliajot on tehty niille. Uusia rinnakkaisia avaimia voi lisätä tarpeen mukaan.
+  final val perusopetuksenKieliKeys = Avaimet("perusopetuksen_kieli", Set.empty)
+  final val peruskouluPaattotodistusvuosiKeys = Avaimet("peruskoulu_paattotodistusvuosi", Set("PK_PAATTOTODISTUSVUOSI"))
+  final val peruskouluSuoritusvuosiKeys = Avaimet("peruskoulu_suoritusvuosi", Set("PK_SUORITUSVUOSI"))
+  final val peruskouluSuoritettuKeys = Avaimet("perustutkinto_suoritettu", Set("PK_TILA"))
+  final val lukioSuoritettuKeys = Avaimet("lukio_suoritettu", Set("LK_TILA"))
+  final val yoSuoritettuKeys = Avaimet("yo-tutkinto_suoritettu", Set("YO_TILA"))
+  final val ammSuoritettuKeys = Avaimet("ammatillinen_suoritettu", Set("AM_TILA"))
 
   //Lisäpistekoulutukset
   final val telmaMinimiLaajuus: BigDecimal = 25
   final val tuvaMinimiLaajuus: BigDecimal = 19
   final val opistovuosiMinimiLaajuus: BigDecimal = 26.5
 
-  final val telmaSuoritettuKeys = Set("LISAKOULUTUS_TELMA", "lisapistekoulutus_telma")
-  final val telmaSuoritusvuosiKeys = Set("LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI", "lisapistekoulutus_telma_vuosi")
+  final val telmaSuoritettuKeys = Avaimet("lisapistekoulutus_telma", Set("LISAKOULUTUS_TELMA"))
+  final val telmaSuoritusvuosiKeys = Avaimet("lisapistekoulutus_telma_vuosi", Set("LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI"))
 
-  final val opistovuosiSuoritettuKeys = Set("LISAKOULUTUS_OPISTO", "lisapistekoulutus_opisto")
-  final val opistovuosiSuoritusvuosiKeys = Set("LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI", "lisapistekoulutus_opisto_vuosi")
+  final val opistovuosiSuoritettuKeys = Avaimet("lisapistekoulutus_opisto", Set("LISAKOULUTUS_OPISTO"))
+  final val opistovuosiSuoritusvuosiKeys = Avaimet("lisapistekoulutus_opisto_vuosi", Set("LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI"))
 
-  final val peruskouluAineenArvosanaPrefixes = Set("PK_", "PERUSKOULU_ARVOSANA_")
+  //Todo, tarkistetaan vielä arvosanojen muoto uudessa mallissa
+  final val peruskouluAineenArvosanaPrefixes = Avaimet("PERUSKOULU_ARVOSANA_", Set("PK_"))
 
   //Nämä tulevat aineen arvosanojen perään, eli esimerkiksi jos varsinainen arvosana
   // on avaimen "PK_B1" alla, tulee kieli avainten "PK_B1_OPPIAINE" ja "PK_B1_OPPIAINEEN_KIELI" alle
-  final val peruskouluAineenKieliPostfixes = Set("_OPPIAINE", "_OPPIAINEEN_KIELI")
+  final val peruskouluAineenKieliPostfixes = Avaimet("_OPPIAINEEN_KIELI", Set("_OPPIAINE"))
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -74,7 +94,7 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): ValintaData = {
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
 
     val peruskouluArvot = convertPeruskouluArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
@@ -83,10 +103,10 @@ object AvainArvoConverter {
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet)
 
     val avainArvot = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot ++ lisapistekoulutusArvot
-    ValintaData(personOid, avainArvot, opiskeluoikeudet, Seq.empty)
+    AvainArvoConverterResults(personOid, avainArvot, opiskeluoikeudet)
   }
 
-  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
+  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvaimetArvoContainer] = {
     val telmat = opiskeluoikeudet.collect {
       case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
     }.flatten
@@ -105,15 +125,16 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
 
-    val suoritusArvot = AvainArvoConstants.telmaSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
-    val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
-      AvainArvoConstants.telmaSuoritusvuosiKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.get.suoritusVuosi.toString))
-    } else Set.empty
+    val suoritusArvo = AvaimetArvoContainer(AvainArvoConstants.telmaSuoritettuKeys, tuoreinRiittava.isDefined.toString, suoritusSelite)
 
-    suoritusArvot ++ suoritusVuosiArvot
+    val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
+      Some(AvaimetArvoContainer(AvainArvoConstants.telmaSuoritusvuosiKeys, tuoreinRiittava.get.suoritusVuosi.toString))
+    } else None
+
+    suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
   }
 
-  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]) = {
+  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvaimetArvoContainer] = {
     val vstOpistovuodet = opiskeluoikeudet.collect {
       case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: VapaaSivistystyo => s }
     }.flatten
@@ -133,15 +154,16 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
 
-    val suoritusArvot = AvainArvoConstants.opistovuosiSuoritettuKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.isDefined.toString, suoritusSelite))
-    val suoritusVuosiArvot = if (tuoreinRiittava.isDefined) {
-      AvainArvoConstants.opistovuosiSuoritusvuosiKeys.map(key => AvainArvoContainer(key, tuoreinRiittava.get.suoritusVuosi.toString))
-    } else Set.empty
+    val suoritusArvo = AvaimetArvoContainer(AvainArvoConstants.opistovuosiSuoritettuKeys, tuoreinRiittava.isDefined.toString, suoritusSelite)
 
-    suoritusArvot ++ suoritusVuosiArvot
+    val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
+      Some(AvaimetArvoContainer(AvainArvoConstants.opistovuosiSuoritusvuosiKeys, tuoreinRiittava.get.suoritusVuosi.toString))
+    } else None
+
+    suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
   }
 
-  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
+  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvaimetArvoContainer] = {
     //todo tuva
     //todo kansanopisto?
     val telmaArvot = convertTelma(personOid, opiskeluoikeudet)
@@ -150,7 +172,7 @@ object AvainArvoConverter {
     telmaArvot ++ opistovuosiArvot
   }
 
-  def convertAmmatillisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+  def convertAmmatillisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvaimetArvoContainer] = {
     val ammatillisetOpiskeluoikeudet = opiskeluoikeudet.collect { case o: AmmatillinenOpiskeluoikeus => o }
 
     val allAmmSuoritukset: Seq[(Suoritus, Option[LocalDate])] = ammatillisetOpiskeluoikeudet.flatMap(ammOikeus => {
@@ -168,12 +190,13 @@ object AvainArvoConverter {
     val ammSelite = s"Löytyi yhteensä ${allAmmSuoritukset.size} ammatillista suoritusta. " +
       s"Näistä ${validSuoritukset.size} oli vahvistettu viimeistään ${vahvistettuViimeistaan}. Vahvistuspäivät: ${allAmmSuoritukset.flatMap(_._2).distinct.mkString(", ")}"
 
-    val arvot = AvainArvoConstants.ammSuoritettuKeys.map(key => AvainArvoContainer(key, validSuoritukset.nonEmpty.toString, Seq(ammSelite)))
+    val arvot = Set(AvaimetArvoContainer(AvainArvoConstants.ammSuoritettuKeys, validSuoritukset.nonEmpty.toString, Seq(ammSelite)))
+
     LOG.info(s"Ammatilliset arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
 
-  def convertYoArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+  def convertYoArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvaimetArvoContainer] = {
     val yoOpiskeluoikeudet: Seq[(YOOpiskeluoikeus, Option[LocalDate])] = opiskeluoikeudet.collect { case o: YOOpiskeluoikeus => (o, o.yoTutkinto.valmistumisPaiva) }
 
     val hasYoSuoritus = yoOpiskeluoikeudet.exists(_._2.exists(v => v.isBefore(vahvistettuViimeistaan) || v.equals(vahvistettuViimeistaan)))
@@ -182,17 +205,20 @@ object AvainArvoConverter {
     val valmistumispaivaSelite = if (paivat.nonEmpty) s" Valmistumispaivat: ${paivat.mkString(", ")}" else ""
     val yoSelite = s"Löytyi yhteensä ${yoOpiskeluoikeudet.size} YO-opiskeluoikeutta." + valmistumispaivaSelite
 
-    val arvot = AvainArvoConstants.yoSuoritettuKeys.map(key => AvainArvoContainer(key, hasYoSuoritus.toString, Seq(yoSelite)))
+    val arvot = Set(AvaimetArvoContainer(AvainArvoConstants.yoSuoritettuKeys, hasYoSuoritus.toString, Seq(yoSelite)))
+
     LOG.info(s"Yo-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
 
   //TODO lukiosuorituksia ei ole vielä parseroitu eikä niitä saada Koskesta massaluovutusrajapinnan kautta. Tämä päättely ei siis vielä toimi.
-  def convertLukioArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+  def convertLukioArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvaimetArvoContainer] = {
     //val lukioOpiskeluoikeudet = opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
     val hasLukioSuoritus = false
     val lukioSelite = s"Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
-    val arvot = AvainArvoConstants.lukioSuoritettuKeys.map(key => AvainArvoContainer(key, hasLukioSuoritus.toString, Seq(lukioSelite)))
+
+    val arvot = Set(AvaimetArvoContainer(AvainArvoConstants.lukioSuoritettuKeys, hasLukioSuoritus.toString, Seq(lukioSelite)))
+
     LOG.info(s"Lukioarvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
@@ -224,7 +250,7 @@ object AvainArvoConverter {
 
 
   //Ottaa huomioon ensi vaiheessa PerusopetuksenOppimaarat ja myöhemmin myös PerusopetuksenOppiaineenOppimaarien sisältämät arvosanat JOS löytyy suoritettu PerusopetuksenOppimaara
-  def korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]): Set[AvainArvoContainer] = {
+  def korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]): Set[AvaimetArvoContainer] = {
     val aineet: Set[PerusopetuksenOppiaine] = perusopetuksenOppimaara.map(om => om.aineet).getOrElse(Set.empty)
     val byAineKey: Map[String, Set[PerusopetuksenOppiaine]] = aineet.groupBy(_.koodi.arvo)
 
@@ -234,44 +260,55 @@ object AvainArvoConverter {
       (key, highestGrade)
     })
 
-    val avainArvot: Set[AvainArvoContainer] = aineidenKorkeimmatArvosanat.values.flatMap(aine =>
-      val arvosanaArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluAineenArvosanaPrefixes.map(prefix => AvainArvoContainer(prefix + aine.koodi.arvo, aine.arvosana.arvo, Seq.empty))
-      val kieliArvot: Set[AvainArvoContainer] = aine.kieli.map(k => AvainArvoConstants.peruskouluAineenKieliPostfixes.map(postfix => {
-        arvosanaArvot.map(arvosanaArvo => AvainArvoContainer(arvosanaArvo._1 + postfix, k.arvo, Seq.empty))
-      })).map(_.flatten).getOrElse(Set.empty)
-      arvosanaArvot ++ kieliArvot
+    val avainArvot: Set[AvaimetArvoContainer] = aineidenKorkeimmatArvosanat.values.flatMap(aine =>
+
+      val arvosanaAvaimet = Avaimet(AvainArvoConstants.peruskouluAineenArvosanaPrefixes.avain + aine.koodi.arvo, AvainArvoConstants.peruskouluAineenArvosanaPrefixes.rinnakkaisAvaimet.map(ra => ra + aine.koodi.arvo))
+      val arvosanaArvot: AvaimetArvoContainer = AvaimetArvoContainer(arvosanaAvaimet, aine.arvosana.arvo)
+
+      val kieliArvot: Option[AvaimetArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
+       //arvosanaAvaimet sisältävät jo avaimen muodossa PERUSKOULU_ARVOSANA_GE, eli prefix+ainetieto
+        val kieliAvaimet = Avaimet(
+          arvosanaArvot.avaimet.avain + AvainArvoConstants.peruskouluAineenKieliPostfixes.avain,
+          arvosanaArvot.avaimet.rinnakkaisAvaimet.flatMap(prefixRinnakkaisAvain => AvainArvoConstants.peruskouluAineenKieliPostfixes.rinnakkaisAvaimet.map(postfixRinnakkaisAvain => prefixRinnakkaisAvain + postfixRinnakkaisAvain)))
+
+        AvaimetArvoContainer(kieliAvaimet, aineenKieliKoodi.arvo)
+      })
+
+      Set(arvosanaArvot) ++ kieliArvot
     ).toSet
     avainArvot
   }
 
-  def convertPeruskouluArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+  def convertPeruskouluArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvaimetArvoContainer] = {
     val (perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[NuortenPerusopetuksenOppiaineenOppimaara]) = filterForPeruskoulu(personOid, opiskeluoikeudet)
 
     val oppimaaraOnVahvistettu: Boolean = perusopetuksenOppimaara.exists(_.vahvistusPaivamaara.isDefined)
     val vahvistusPvm = perusopetuksenOppimaara.map(_.vahvistusPaivamaara)
     val vahvistettuAjoissa: Boolean = perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).exists(v => v.isBefore(vahvistettuViimeistaan) || v.equals(vahvistettuViimeistaan))
 
-    val kieliArvot: Set[AvainArvoContainer] = perusopetuksenOppimaara.map(_.suoritusKieli.arvo).map(kieli => AvainArvoConstants.perusopetuksenKieliKeys.map(key => AvainArvoContainer(key, kieli, Seq.empty))).getOrElse(Set.empty)
+    val kieliArvot: Option[AvaimetArvoContainer] = perusopetuksenOppimaara
+      .map(_.suoritusKieli.arvo)
+      .map(kieli => AvaimetArvoContainer(AvainArvoConstants.perusopetuksenKieliKeys, kieli))
 
     val arvot = if (oppimaaraOnVahvistettu) {
       if (vahvistettuAjoissa) {
         val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${vahvistusPvm.map(_.toString).get}"
-        val arvosanaArvot: Set[AvainArvoContainer] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, Seq.empty)
-        val suoritusVuosiArvot: Set[AvainArvoContainer] =
-          perusopetuksenOppimaara
-            .flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear))
-            .map(year => AvainArvoConstants.peruskouluSuoritusvuosiKeys
-              .map(key => AvainArvoContainer(key, year.toString, Seq(vahvistettuAjoissaSelite))))
-            .getOrElse(Set.empty)
-        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(vahvistettuAjoissaSelite)))
-        arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvot ++ suoritusArvot
+        val arvosanaArvot: Set[AvaimetArvoContainer] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, Seq.empty)
+
+        val suoritusVuosiArvo: Option[AvaimetArvoContainer] = perusopetuksenOppimaara
+          .flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear))
+          .map(year => AvaimetArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKeys, year.toString, Seq(vahvistettuAjoissaSelite)))
+
+        val suoritusArvo = AvaimetArvoContainer(AvainArvoConstants.peruskouluSuoritettuKeys, vahvistettuAjoissa.toString, Seq(vahvistettuAjoissaSelite))
+
+        arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvo ++ Some(suoritusArvo)
       } else {
         val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.map(_.vahvistusPaivamaara)}"
-        val suoritusArvot: Set[AvainArvoContainer] = AvainArvoConstants.peruskouluSuoritettuKeys.map(key => AvainArvoContainer(key, vahvistettuAjoissa.toString, Seq(vahvistettuMyohassaSelite)))
-        suoritusArvot ++ kieliArvot
+        val suoritusArvo = AvaimetArvoContainer(AvainArvoConstants.peruskouluSuoritettuKeys, vahvistettuAjoissa.toString, Seq(vahvistettuMyohassaSelite))
+        Set(suoritusArvo) ++ kieliArvot
       }
     } else {
-      kieliArvot
+      kieliArvot.toSet
     }
     arvot
   }

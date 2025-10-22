@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.ui.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern}
+import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern, validateHakuOid}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -47,8 +47,12 @@ object UIValidator {
   final val VALIDATION_ARVOSANA_EI_VALIDI         = "backend-virhe.oppiaine.arvosana.ei_validi"
   final val VALIDATION_VERSIOTUNNISTE_TYHJA       = "backend-virhe.versiotunniste.tyhja"
   final val VALIDATION_VERSIOTUNNISTE_EI_VALIDI   = "backend-virhe.versiotunniste.ei_validi"
+  final val VALIDATION_AVAIN_TYHJA                = "backend-virhe.avain.tyhja"
+  final val VALIDATION_HAKUOID_TYHJA              = "backend-virhe.hakuoid.tyhja"
+  final val VALIDATION_HAKUOID_EI_VALIDI          = "backend-virhe.hakuoid.ei_validi"
 
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
+  val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
@@ -236,4 +240,33 @@ object UIValidator {
     ).flatten
   }
 
+  def validateAvain(avain: Option[String], pakollinen: Boolean): Set[String] =
+    if (avain.isEmpty || avain.exists(_.isEmpty))
+      if (pakollinen)
+        Set(VALIDATION_AVAIN_TYHJA)
+      else
+        Set.empty
+    else
+      Set.empty
+
+  def validateHakuOid(hakuOid: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (hakuOid.isEmpty || hakuOid.get.isEmpty))
+      Set(VALIDATION_HAKUOID_TYHJA)
+    else if (hakuOid.isDefined && !hakuOidPattern.matches(hakuOid.get))
+      Set(VALIDATION_HAKUOID_EI_VALIDI + hakuOid.get)
+    else
+      Set.empty
+  }
+
+  //Todo, lisätäänkö muita validointeja, ehkä joku nonempty arvolle/selitteelle? Onko hyödyllistä voida tallentaa tyhjä arvo?
+  def validateYliajot(container: YliajoTallennusContainer): Set[String] = {
+    val yliajot = container.yliajot.toScala.map(_.asScala).getOrElse(List.empty)
+    val avainErrors = yliajot.flatMap(y => validateAvain(y.avain.toScala, true))
+    val containerErrors = Set(
+      validateOppijanumero(container.henkiloOid.toScala, true),
+      validateOppijanumero(container.virkailijaOid.toScala, true),
+      validateHakuOid(container.hakuOid.toScala, true)
+    ).flatten
+    containerErrors ++ avainErrors
+  }
 }
