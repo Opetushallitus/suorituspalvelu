@@ -133,6 +133,16 @@ class UIService {
         organisaatio.oid))
   }
 
+  def haeSyotettavienSuoritustenOppilaitokset(): List[Oppilaitos] = {
+    organisaatioProvider.haeKaikkiOrganisaatiot()
+      .values
+      .filter(organisaatio => organisaatio.tyypit.exists(tyyppi => tyyppi=="organisaatiotyyppi_02"))
+      .map(organisaatio => Oppilaitos(OppilaitosNimi(
+        Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
+        organisaatio.oid))
+      .toList
+  } 
+
   def haeVuodet(oppilaitosOid: String): Set[String] = {
     Set(
       if(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, Some(s"$oppilaitosOid")).nonEmpty)

@@ -92,6 +92,7 @@ object ApiConstants {
 
   final val UI_LUO_SUORITUS_OPPIAINE_PATH                   = UI_API_PREFIX + "/perusopetuksenoppiaineenoppimaarat"
 
+  final val UI_LUO_SUORITUS_OPPILAITOKSET_PATH              = UI_API_PREFIX + "/luosuoritusoppilaitokset"
   final val UI_LUO_SUORITUS_VAIHTOEHDOT_PATH                = UI_API_PREFIX + "/luosuoritusvaihtoehdot"
 
   final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME    = "versioTunniste"

@@ -27,7 +27,8 @@ class OrganisaatioUtilTest {
       oid = orgOid,
       nimi = OrganisaatioNimi("Testiorganisaatio", "", ""),
       parentOid = None,
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val result = OrganisaatioUtil.flattenHierarkia(Seq(singleOrg))
@@ -50,14 +51,16 @@ class OrganisaatioUtilTest {
       oid = childOid,
       nimi = OrganisaatioNimi("Test child organisaatio", "", ""),
       parentOid = Some(parentOid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val parentOrg = HierarkiaOrganisaatio(
       oid = parentOid,
       nimi = OrganisaatioNimi("Test parent organisaatio", "", ""),
       parentOid = None,
-      children = Seq(childOrg)
+      children = Seq(childOrg),
+      tyypit = Seq.empty
     )
 
     val result = OrganisaatioUtil.flattenHierarkia(Seq(parentOrg))
@@ -94,35 +97,40 @@ class OrganisaatioUtilTest {
       oid = grandchild1Oid,
       nimi = OrganisaatioNimi("Test grandchild organisaatio 1", "", ""),
       parentOid = Some(child1Oid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val grandchild2 = HierarkiaOrganisaatio(
       oid = grandchild2Oid,
       nimi = OrganisaatioNimi("Test grandchild organisaatio 2", "", ""),
       parentOid = Some(child1Oid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val child1 = HierarkiaOrganisaatio(
       oid = child1Oid,
       nimi = OrganisaatioNimi("Test child organisaatio 1", "", ""),
       parentOid = Some(rootOid),
-      children = Seq(grandchild1, grandchild2)
+      children = Seq(grandchild1, grandchild2),
+      tyypit = Seq.empty
     )
 
     val child2 = HierarkiaOrganisaatio(
       oid = child2Oid,
       nimi = OrganisaatioNimi("Test child organisaatio 2", "", ""),
       parentOid = Some(rootOid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val root = HierarkiaOrganisaatio(
       oid = rootOid,
       nimi = OrganisaatioNimi("Test root organisaatio", "", ""),
       parentOid = None,
-      children = Seq(child1, child2)
+      children = Seq(child1, child2),
+      tyypit = Seq.empty
     )
 
     val result = OrganisaatioUtil.flattenHierarkia(Seq(root))
@@ -166,14 +174,16 @@ class OrganisaatioUtilTest {
       oid = org1Oid,
       nimi = OrganisaatioNimi("Test organisaatio 1", "", ""),
       parentOid = None,
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val org2 = HierarkiaOrganisaatio(
       oid = org2Oid,
       nimi = OrganisaatioNimi("Test organisaatio 2", "", ""),
       parentOid = None,
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val result = OrganisaatioUtil.flattenHierarkia(Seq(org1, org2))
@@ -199,42 +209,48 @@ class OrganisaatioUtilTest {
       oid = greatGrandchildOid,
       nimi = OrganisaatioNimi("Test great grandchild organisaatio 1", "", ""),
       parentOid = Some(grandchild2Oid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val grandchild1 = HierarkiaOrganisaatio(
       oid = grandchild1Oid,
       nimi = OrganisaatioNimi("Test grandchild organisaatio 1", "", ""),
       parentOid = Some(child1Oid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val grandchild2 = HierarkiaOrganisaatio(
       oid = grandchild2Oid,
       nimi = OrganisaatioNimi("Test grandchild organisaatio 2", "", ""),
       parentOid = Some(child1Oid),
-      children = Seq(greatGrandchild)
+      children = Seq(greatGrandchild),
+      tyypit = Seq.empty
     )
 
     val child1 = HierarkiaOrganisaatio(
       oid = child1Oid,
       nimi = OrganisaatioNimi("Test child organisaatio 1", "", ""),
       parentOid = Some(rootOid),
-      children = Seq(grandchild1, grandchild2)
+      children = Seq(grandchild1, grandchild2),
+      tyypit = Seq.empty
     )
 
     val child2 = HierarkiaOrganisaatio(
       oid = child2Oid,
       nimi = OrganisaatioNimi("Test child organisaatio 2", "", ""),
       parentOid = Some(rootOid),
-      children = Seq.empty
+      children = Seq.empty,
+      tyypit = Seq.empty
     )
 
     val root = HierarkiaOrganisaatio(
       oid = rootOid,
       nimi = OrganisaatioNimi("Test root organisaatio", "", ""),
       parentOid = None,
-      children = Seq(child1, child2)
+      children = Seq(child1, child2),
+      tyypit = Seq.empty
     )
 
     val result = OrganisaatioUtil.flattenHierarkia(Seq(root))

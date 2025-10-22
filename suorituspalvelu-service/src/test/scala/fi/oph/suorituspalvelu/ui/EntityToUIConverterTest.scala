@@ -21,7 +21,7 @@ import scala.jdk.OptionConverters.*
 class EntityToUIConverterTest {
 
   val DUMMY_ORGANISAATIOPROVIDER = new OrganisaatioProvider {
-    override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = Some(Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty))
+    override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] = Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
   }
 
   val DUMMY_KOODISTOPROVIDER = new KoodistoProvider {
@@ -543,6 +543,7 @@ class EntityToUIConverterTest {
 
   @Test def testConvertOpiskeluoikeudet(): Unit = {
     val OPPIJANUMERO = "1.2.3"
+    val ORGANISAATION_OID = "2.3.4"
 
     val virtaOpiskeluoikeus = VirtaOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
@@ -552,7 +553,7 @@ class EntityToUIConverterTest {
       loppuPvm = LocalDate.parse("2021-01-01"),
       virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
       supaTila = KKOpiskeluoikeusTila.VOIMASSA,
-      myontaja = "2.3.4",
+      myontaja = ORGANISAATION_OID,
       suoritukset = Set.empty
     )
 
@@ -560,8 +561,8 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_SV = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
-        Some(Organisaatio(organisaatioOid, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty))
+      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] = {
+        Map(ORGANISAATION_OID -> Organisaatio(ORGANISAATION_OID, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty, Seq.empty))
       }
     }
 
@@ -603,7 +604,7 @@ class EntityToUIConverterTest {
           Optional.of(ORGANISAATION_NIMI_SV),
           Optional.of(ORGANISAATION_NIMI_EN)
         ),
-        organisaatioProvider.haeOrganisaationTiedot("2.3.4").get.oid
+        organisaatioProvider.haeOrganisaationTiedot(ORGANISAATION_OID).get.oid
       ),
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
@@ -635,12 +636,8 @@ class EntityToUIConverterTest {
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
-        if(organisaatioOid == virtaTutkinto.myontaja)
-          Some(Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty))
-        else
-          throw new RuntimeException()
-      }
+      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
+        Map(virtaTutkinto.myontaja -> Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty, Seq.empty))
     }
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritus(
