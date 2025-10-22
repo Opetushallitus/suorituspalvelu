@@ -31,8 +31,8 @@ class ValintaDataService {
     kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
   }
 
-  def saveOverridesForOppija(personOid: String, hakuOid: String, overrides: Set[AvainArvoYliajo]): Unit = {
-    overrides.foreach(o => kantaOperaatiot.tallennaYliajo(o))
+  def saveOverridesForOppija(personOid: String, hakuOid: String, overrides: Seq[AvainArvoYliajo]): Unit = {
+    kantaOperaatiot.tallennaYliajot(overrides)
   }
 
 

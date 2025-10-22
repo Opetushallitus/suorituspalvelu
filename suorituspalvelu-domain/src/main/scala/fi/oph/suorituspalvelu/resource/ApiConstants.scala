@@ -73,6 +73,7 @@ object ApiConstants {
 
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
+  final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"
 
   final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
   final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"

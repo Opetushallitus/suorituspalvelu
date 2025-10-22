@@ -1043,7 +1043,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val eriHaunYliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
     val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, eriHaunYliajettuArvo, oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
 
-    kantaOperaatiot.tallennaYliajo(yliajo)
+    kantaOperaatiot.tallennaYliajot(Seq(yliajo))
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETTY_OPPIAINE, Seq("{}"), Instant.now())
 
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
