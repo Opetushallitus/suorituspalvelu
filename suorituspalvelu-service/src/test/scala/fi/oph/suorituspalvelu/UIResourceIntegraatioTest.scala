@@ -518,14 +518,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeOppilaitoksenOppijatMalformedParameters(): Unit =
     // kaikki validoidut parametrit määritelty mutta mikään ei validi
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_OPPILAITOS_HAKU_PATH + "?oppilaitos={oppilaitos}&luokka={luokka}&vuosi={vuosi}", "ei validi oppilaitos", "ei validi luokka", "ei validi vuosi"))
+        .get(ApiConstants.UI_OPPILAITOS_HAKU_PATH + "?oppilaitos={oppilaitos}&vuosi={vuosi}", "ei validi oppilaitos",  "ei validi vuosi"))
       .andExpect(status().isBadRequest)
       .andReturn()
 
     Assertions.assertEquals(OppijanHakuFailureResponse(
       java.util.Set.of(
         UIValidator.VALIDATION_OPPILAITOSOID_EI_VALIDI,
-        UIValidator.VALIDATION_LUOKKA_EI_VALIDI,
         UIValidator.VALIDATION_VUOSI_EI_VALIDI
       )),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
@@ -676,7 +675,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     SyotettyPerusopetuksenOppimaaranSuoritus(
       Optional.of("1.2.246.562.24.21250967214"),
       Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
+      Optional.of("KESKEN"),
       Optional.of(LocalDate.now().toString),
+      Optional.of("9A"),
       Optional.of("FI"),
       Optional.of(1),
       Optional.of(List(SyotettyPerusopetuksenOppiaine(

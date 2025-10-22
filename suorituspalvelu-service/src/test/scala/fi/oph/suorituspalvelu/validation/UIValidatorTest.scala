@@ -58,13 +58,22 @@ class UIValidatorTest {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_TYHJA), UIValidator.validateLuokka(None, true))
   }
 
-  @Test def testValidateLuokkaInvalid(): Unit = {
-    val luokka = "tämä ei ole validi luokka"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI), UIValidator.validateLuokka(Some(luokka), true))
-  }
-
   @Test def testValidateLuokkaValid(): Unit = {
     Assertions.assertEquals(Set.empty, UIValidator.validateLuokka(Some(ApiConstants.ESIMERKKI_LUOKKA), true))
+  }
+
+  // tila
+  @Test def testValidateTilaRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_TILA_TYHJA), UIValidator.validateTila(None, true))
+  }
+
+  @Test def testValidateTilaInvalid(): Unit = {
+    val tila = "tämä ei ole validi tila"
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_TILA_EI_VALIDI), UIValidator.validateTila(Some(tila), true))
+  }
+
+  @Test def testValidateTilaValid(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validateTila(Some(ApiConstants.ESIMERKKI_TILA), true))
   }
 
   // valmistumispäivä

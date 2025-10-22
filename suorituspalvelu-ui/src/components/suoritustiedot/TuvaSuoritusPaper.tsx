@@ -3,7 +3,7 @@ import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { useTranslations } from '@/hooks/useTranslations';
 import { ophColors } from '@opetushallitus/oph-design-system';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 
 export const TuvaSuoritusPaper = ({ suoritus }: { suoritus: TUVASuoritus }) => {
   const { t, translateKielistetty } = useTranslations();

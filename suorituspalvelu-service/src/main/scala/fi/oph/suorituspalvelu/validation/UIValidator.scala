@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.validation
 
+import fi.oph.suorituspalvelu.business.SuoritusTila
 import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.ui.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
@@ -26,7 +27,8 @@ object UIValidator {
   final val VALIDATION_VUOSI_TYHJA                = "backend-virhe.vuosi.tyhja"
   final val VALIDATION_VUOSI_EI_VALIDI            = "backend-virhe.vuosi.ei_validi"
   final val VALIDATION_LUOKKA_TYHJA               = "backend-virhe.luokka.tyhja"
-  final val VALIDATION_LUOKKA_EI_VALIDI           = "backend-virhe.luokka.ei_validi"
+  final val VALIDATION_TILA_TYHJA                 = "backend-virhe.tila.tyhja"
+  final val VALIDATION_TILA_EI_VALIDI             = "backend-virhe.tila.ei_validi"
   final val VALIDATION_VALMISTUMISPAIVA_TYHJA     = "backend-virhe.valmistumispaiva.tyhja"
   final val VALIDATION_VALMISTUMISPAIVA_EI_VALIDI = "backend-virhe.valmistumispaiva.ei_validi"
   final val VALIDATION_YKSILOLLISTETTY_TYHJA      = "backend-virhe.yksilollistetty.tyhja"
@@ -51,7 +53,6 @@ object UIValidator {
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
-  val luokkaPattern: Regex = "^[0-9][A-Z]$".r
 
   def validateVersioTunniste(tunniste: Option[String]): Set[String] =
     if (tunniste.isEmpty)
@@ -64,7 +65,7 @@ object UIValidator {
         case default => Set(VALIDATION_VERSIOTUNNISTE_EI_VALIDI)
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
-    if (oppijaNumero.isEmpty || oppijaNumero.get.length == 0)
+    if (oppijaNumero.isEmpty || oppijaNumero.get.isEmpty)
       if(pakollinen)
         Set(VALIDATION_OPPIJANUMERO_TYHJA)
       else
@@ -105,10 +106,19 @@ object UIValidator {
   def validateLuokka(luokka: Option[String], pakollinen: Boolean): Set[String] = {
     if (pakollinen && (luokka.isEmpty || luokka.get.isEmpty))
       Set(VALIDATION_LUOKKA_TYHJA)
-    else if (luokka.isDefined && !luokkaPattern.matches(luokka.get))
-      Set(VALIDATION_LUOKKA_EI_VALIDI)
     else
       Set.empty
+  }
+
+  def validateTila(tila: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (tila.isEmpty || tila.get.isEmpty))
+      Set(VALIDATION_TILA_TYHJA)
+    else
+      try
+        SuoritusTila.valueOf(tila.get)
+        Set.empty
+      catch
+        case default => Set(VALIDATION_TILA_EI_VALIDI)
   }
 
   def validateValmistumisPaiva(valmistumisPaiva: Option[String]): Set[String] = {
@@ -153,6 +163,8 @@ object UIValidator {
     Set(
       validateOppijanumero(suoritus.oppijaOid.toScala, true),
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
+      validateLuokka(suoritus.luokka.toScala, true),
+      validateTila(suoritus.tila.toScala, true),
       validateValmistumisPaiva(suoritus.valmistumispaiva.toScala),
       validatePerusopetuksenOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
       validatePerusopetuksenOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),

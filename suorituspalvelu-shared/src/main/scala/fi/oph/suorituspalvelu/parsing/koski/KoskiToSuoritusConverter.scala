@@ -370,7 +370,7 @@ object KoskiToSuoritusConverter {
         fi.oph.suorituspalvelu.business.Oppilaitos(
           o.nimi,
           o.oid)).getOrElse(dummy()),
-      None, // TODO: tämä pitää kaivaa vuosiluokan suoritukselta jossain vaiheessa
+      None, // Tämä tallennetaan perusopetuksen oppimäärälle vain syötetyille suorituksille. KOSKI-suorituksille tieto löytyy vuosiluokan suoritukselta
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),

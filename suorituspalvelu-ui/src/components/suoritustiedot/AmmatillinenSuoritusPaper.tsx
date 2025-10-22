@@ -2,11 +2,11 @@ import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import type { AmmatillinenSuoritus } from '@/types/ui-types';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
-import { TutkinnonOsatTable } from './TutkinnonOsatTable';
 import { pointToComma } from '@/lib/common';
-import { InfoItemRow } from './InfoItemRow';
+import { InfoItemRow } from '../InfoItemRow';
+import { TutkinnonOsatTable } from './TutkinnonOsatTable';
 
 export const AmmatillinenSuoritusPaper = ({
   suoritus,

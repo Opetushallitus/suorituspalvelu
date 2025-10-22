@@ -1,0 +1,307 @@
+import { deleteSuoritus, saveSuoritus } from '@/lib/suorituspalvelu-service';
+import {
+  type PerusopetuksenOppiaineenOppimaara,
+  type PerusopetuksenOppimaara,
+  type PerusopetusOppiaineFields,
+  type SuoritusFields,
+} from '@/types/ui-types';
+import {
+  useMutation,
+  useQueryClient,
+  type UseMutationResult,
+} from '@tanstack/react-query';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
+import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationStatusIndicator';
+import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useConfirmNavigation } from '@/hooks/useConfirmNavigation';
+
+export type SuoritusMutationOperation = 'save' | 'delete';
+
+export type SuoritusEditMode = 'new' | 'existing';
+
+export type SuoritusMutateParams = {
+  operation: SuoritusMutationOperation;
+  versioTunniste?: string;
+};
+
+export type SuoritusMutationResult = UseMutationResult<
+  unknown,
+  Error,
+  SuoritusMutateParams,
+  unknown
+>;
+
+const SuoritusManagerContext = React.createContext<ReturnType<
+  typeof useSuoritusManagerState
+> | null>(null);
+
+export const SuoritusManagerProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const suoritusState = useSuoritusManagerState();
+  return (
+    <SuoritusManagerContext value={suoritusState}>
+      <SuoritusMutationStatusIndicator
+        operation={suoritusState.operation}
+        mutation={suoritusState.suoritusMutation}
+      />
+      {children}
+    </SuoritusManagerContext>
+  );
+};
+
+const createNewSuoritusFields = (
+  base: Partial<SuoritusFields> = {},
+): SuoritusFields => {
+  return {
+    versioTunniste: '',
+    oppijaOid: '',
+    oppilaitosOid: '',
+    tyyppi: 'perusopetuksenoppimaara',
+    tila: 'VALMIS',
+    valmistumispaiva: new Date(),
+    suorituskieli: 'FI',
+    luokka: '',
+    yksilollistetty: '1',
+    oppiaineet: [],
+    ...base,
+  };
+};
+
+const createEditableSuoritusFields = ({
+  oppijaOid,
+  suoritus,
+}: {
+  oppijaOid: string;
+  suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara;
+}): SuoritusFields => {
+  return {
+    versioTunniste:
+      'versioTunniste' in suoritus && suoritus.versioTunniste
+        ? suoritus.versioTunniste
+        : suoritus.tunniste,
+    oppijaOid,
+    oppilaitosOid: suoritus.oppilaitos.oid,
+    tila: suoritus.tila,
+    tyyppi: suoritus.suoritustyyppi,
+    valmistumispaiva: suoritus.valmistumispaiva
+      ? new Date(suoritus.valmistumispaiva)
+      : undefined,
+    suorituskieli: suoritus.suorituskieli,
+    yksilollistetty:
+      'yksilollistaminen' in suoritus
+        ? (suoritus.yksilollistaminen?.arvo ?? '').toString()
+        : '',
+    oppiaineet:
+      'oppiaineet' in suoritus
+        ? suoritus.oppiaineet.map((oa) => ({
+            koodi: oa.koodi ?? '',
+            kieli: oa.kieli,
+            arvosana: oa.arvosana,
+            valinnaisetArvosanat: oa.valinnaisetArvosanat,
+          }))
+        : [],
+    luokka: 'luokka' in suoritus ? suoritus.luokka : '',
+  };
+};
+
+const useSuoritusManagerState = () => {
+  const { t } = useTranslations();
+
+  const [isDirty, setIsDirty] = useState(false);
+  const [oppijaOid, setOppijaOid] = useState<string | undefined>(undefined);
+  const [suoritusState, setSuoritusState] = useState<SuoritusFields | null>(
+    null,
+  );
+
+  const { showConfirmation } = useGlobalConfirmationModal();
+
+  const [mutationOperation, setMutationOperation] =
+    useState<SuoritusMutationOperation | null>(null);
+
+  const [mode, setMode] = useState<SuoritusEditMode>('new');
+
+  const queryClient = useQueryClient();
+
+  const suoritusMutation = useMutation({
+    mutationFn: async ({ operation, versioTunniste }: SuoritusMutateParams) => {
+      setMutationOperation(operation);
+      if (operation === 'delete') {
+        if (!versioTunniste) {
+          throw new Error(
+            'Versiotunniste puuttuu! Ei voida poistaa suoritusta.',
+          );
+        }
+        return deleteSuoritus(versioTunniste);
+      } else if (operation === 'save' && suoritusState) {
+        setOppijaOid(suoritusState.oppijaOid);
+        return saveSuoritus({
+          tila: suoritusState.tila,
+          oppijaOid: suoritusState.oppijaOid,
+          oppilaitosOid: suoritusState.oppilaitosOid,
+          tyyppi: suoritusState.tyyppi,
+          suorituskieli: suoritusState.suorituskieli,
+          luokka: suoritusState.luokka,
+          yksilollistetty: suoritusState.yksilollistetty,
+          valmistumispaiva: suoritusState.valmistumispaiva,
+          oppiaineet: suoritusState.oppiaineet,
+        });
+      }
+    },
+    onSuccess: () => {
+      if (oppijaOid) {
+        queryClient.invalidateQueries(queryOptionsGetOppija(oppijaOid));
+        queryClient.refetchQueries(queryOptionsGetOppija(oppijaOid));
+      }
+      if (mutationOperation !== 'delete') {
+        setSuoritusState(null);
+        setIsDirty(false);
+      }
+    },
+  });
+
+  useConfirmNavigation(isDirty);
+
+  const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
+
+  return useMemo(() => {
+    const scrollToSuoritusPaper = () => {
+      setTimeout(() => {
+        suoritusPaperRef.current?.scrollIntoView({
+          behavior: 'smooth',
+        });
+      }, 20);
+    };
+
+    const addSuoritus = () => {
+      suoritusMutation.reset();
+      setMode('new');
+      setSuoritusState(
+        createNewSuoritusFields({
+          oppijaOid,
+        }),
+      );
+      setIsDirty(false);
+      scrollToSuoritusPaper();
+    };
+
+    const editSuoritus = (
+      suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+    ) => {
+      suoritusMutation.reset();
+      setMode('existing');
+      if (oppijaOid) {
+        setSuoritusState(createEditableSuoritusFields({ oppijaOid, suoritus }));
+      }
+      setIsDirty(false);
+      scrollToSuoritusPaper();
+    };
+
+    return {
+      suoritusPaperRef,
+      suoritusFields: suoritusState,
+      mode,
+      operation: mutationOperation,
+      suoritusMutation,
+      setOppijaOid,
+      startSuoritusAdd: () => {
+        if (suoritusState && mode === 'existing') {
+          showConfirmation({
+            title: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.otsikko'),
+            content: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.sisalto'),
+            maxWidth: 'md',
+            onConfirm: () => {
+              addSuoritus();
+            },
+          });
+        } else if (!suoritusState) {
+          addSuoritus();
+        }
+      },
+      startSuoritusEdit: (
+        suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+      ) => {
+        if (suoritusState && mode === 'new') {
+          showConfirmation({
+            title: t('muokkaus.suoritus.muokkaa-lisattaessa.otsikko'),
+            content: t('muokkaus.suoritus.muokkaa-lisattaessa.sisalto'),
+            maxWidth: 'md',
+            onConfirm: () => {
+              editSuoritus(suoritus);
+            },
+          });
+        } else if (!suoritusState) {
+          editSuoritus(suoritus);
+        }
+      },
+      stopSuoritusModify: () => {
+        setSuoritusState(null);
+      },
+      onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
+        setSuoritusState((prev) =>
+          prev ? { ...prev, ...updatedFields } : prev,
+        );
+        setIsDirty(true);
+      },
+      onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => {
+        setSuoritusState((previousSuoritus) => {
+          if (previousSuoritus) {
+            let newOppiaineet = previousSuoritus.oppiaineet ?? [];
+            const existingOppiaineIndex = newOppiaineet.findIndex(
+              (oa) => oa.koodi === changedOppiaine.koodi,
+            );
+            if (existingOppiaineIndex === -1) {
+              newOppiaineet = [...newOppiaineet, changedOppiaine];
+            } else {
+              newOppiaineet = [...newOppiaineet];
+              newOppiaineet[existingOppiaineIndex] = changedOppiaine;
+            }
+            return {
+              ...previousSuoritus,
+              oppiaineet: newOppiaineet,
+            };
+          }
+          return previousSuoritus;
+        });
+        setIsDirty(true);
+      },
+      saveSuoritus: () => {
+        suoritusMutation.mutate({ operation: 'save' });
+      },
+      deleteSuoritus: (versioTunniste?: string) => {
+        showConfirmation({
+          title: t('muokkaus.suoritus.poisto-vahvistus'),
+          onConfirm: () => {
+            suoritusMutation.mutate({ operation: 'delete', versioTunniste });
+          },
+        });
+      },
+    };
+  }, [
+    suoritusState,
+    setSuoritusState,
+    suoritusMutation,
+    mode,
+    setOppijaOid,
+    t,
+  ]);
+};
+
+export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {
+  const context = React.use(SuoritusManagerContext);
+  if (!context) {
+    throw new Error(
+      'useSuoritusManager must be used within a SuoritusManagerProvider',
+    );
+  }
+
+  useEffect(() => {
+    context.setOppijaOid(oppijaOid);
+  }, [context, oppijaOid]);
+
+  return context;
+};

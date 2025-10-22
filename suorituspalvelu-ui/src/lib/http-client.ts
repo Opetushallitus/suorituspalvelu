@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { isPlainObject } from 'remeda';
-import { useIsSessionExpired } from './components/SessionExpired';
+import { useIsSessionExpired } from '../components/SessionExpired';
 
 export function getCookies() {
   return document.cookie.split('; ').reduce(
@@ -31,9 +31,18 @@ export class SessionExpiredError extends OphCustomError {
 
 export class FetchError extends OphCustomError {
   response: Response;
-  constructor(response: Response, message = 'Fetch error') {
+  textBody?: string;
+  jsonBody?: unknown;
+  constructor(
+    response: Response,
+    message = 'Fetch error',
+    textBody?: string,
+    jsonBody?: unknown,
+  ) {
     super(message);
     this.response = response;
+    this.textBody = textBody;
+    this.jsonBody = jsonBody;
   }
 }
 
@@ -41,6 +50,9 @@ export type HttpClientResponse<D> = {
   headers: Headers;
   data: D;
 };
+
+const getResponseContentType = (response: Response) =>
+  response.headers.get('content-type')?.split(';')?.[0] ?? 'text/plain';
 
 const getContentFilename = (headers: Headers) => {
   const contentDisposition = headers.get('content-disposition');
@@ -65,6 +77,20 @@ export const createFileResult = async (
 const doFetch = async (request: Request) => {
   try {
     const response = await fetch(request);
+    if (response.status >= 400) {
+      const textBody = (await response.text()) ?? '';
+      let jsonBody: unknown | undefined = undefined;
+      try {
+        if (getResponseContentType(response) === 'application/json') {
+          jsonBody = JSON.parse(textBody);
+        }
+      } catch {
+        // ignore JSON parse errors
+      }
+      return Promise.reject(
+        new FetchError(response, textBody, textBody, jsonBody),
+      );
+    }
     return response.status >= 400
       ? Promise.reject(new FetchError(response, (await response.text()) ?? ''))
       : Promise.resolve(response);
@@ -121,8 +147,7 @@ const responseToData = async <Result = unknown>(
   if (hasNoContent(res)) {
     return { headers: res.headers, data: undefined as Result };
   }
-  const contentType =
-    res.headers.get('content-type')?.split(';')?.[0] ?? 'text/plain';
+  const contentType = getResponseContentType(res);
 
   const parseBody = (RESPONSE_BODY_PARSERS?.[contentType] ??
     TEXT_PARSER) as BodyParser<Result>;

@@ -24,6 +24,10 @@ export const getConfiguration = async () => {
         oppijanTiedotUrl: `${suorituspalveluBackendUrl}/ui/tiedot`,
         oppijatSearchUrl: `${suorituspalveluBackendUrl}/ui/oppijat`,
         oppilaitoksetUrl: `${suorituspalveluBackendUrl}/ui/oppilaitokset`,
+        suoritusvaihtoehdotUrl: `${suorituspalveluBackendUrl}/ui/luosuoritusvaihtoehdot`,
+        perusopetuksenOppimaaratUrl: `${suorituspalveluBackendUrl}/ui/perusopetuksenoppimaarat`,
+        perusopetuksenOppiaineenOppimaaratUrl: `${suorituspalveluBackendUrl}/ui/perusopetuksenoppiaineenoppimaarat`,
+        versioDeleteUrl: `${suorituspalveluBackendUrl}/ui/versiot`,
       },
     },
   };
@@ -32,3 +36,30 @@ export const getConfiguration = async () => {
 export const configPromise = getConfiguration();
 
 export const useConfig = () => use(configPromise);
+
+export function getConfigUrl(
+  routeString: string,
+  params: Record<string, string | boolean | number> = {},
+): string {
+  let route = routeString;
+  Object.entries(params).forEach(
+    (entry: [string, string | number | boolean]) => {
+      const value = '' + entry[1];
+      const placeholder = `{${entry[0]}}`;
+      if (!route.includes(placeholder)) {
+        console.warn(
+          `Placeholder ${placeholder} not found in route ${routeString}. Using value: ${value}`,
+        );
+      }
+
+      route = route.replace(`{${entry[0]}}`, value);
+    },
+  );
+
+  if (/\{[^}]+\}/.test(route)) {
+    throw new Error(
+      `Not all placeholders were replaced in route ${routeString}. Result: ${route}`,
+    );
+  }
+  return route;
+}

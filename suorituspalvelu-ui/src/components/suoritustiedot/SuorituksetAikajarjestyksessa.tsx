@@ -9,8 +9,10 @@ import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
 import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 
 function SuoritusPaper({
+  henkiloOID,
   suoritus,
 }: {
+  henkiloOID: string;
   suoritus: ReturnType<typeof useSuorituksetFlattened>[number];
 }) {
   switch (suoritus.koulutustyyppi) {
@@ -27,7 +29,9 @@ function SuoritusPaper({
     case 'tuva':
       return <TuvaSuoritusPaper suoritus={suoritus} />;
     case 'perusopetus':
-      return <PerusopetusSuoritusPaper suoritus={suoritus} />;
+      return (
+        <PerusopetusSuoritusPaper suoritus={suoritus} henkiloOID={henkiloOID} />
+      );
     default:
       return null;
   }
@@ -43,7 +47,11 @@ export function SuorituksetAikajarjestyksessa({
   return (
     <Stack spacing={4}>
       {suoritukset.map((suoritus) => (
-        <SuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
+        <SuoritusPaper
+          key={suoritus.tunniste}
+          suoritus={suoritus}
+          henkiloOID={oppijanTiedot.henkiloOID}
+        />
       ))}
     </Stack>
   );

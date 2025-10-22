@@ -27,6 +27,11 @@ object UIService {
   val EXAMPLE_OPPILAITOS_OID = "1.2.246.562.10.56753942459"
   val EXAMPLE_OPPILAITOS_NIMI = "Esimerkki oppilaitos"
 
+  val KOODISTO_SUORITUKSENTILAT = "suorituksentila"
+  val SYOTETTAVAT_SUORITUSTILAT = List(
+    "VALMIS",
+    "KESKEN"
+  )
   val KOODISTO_SUORITUKSENTYYPIT = "suorituksentyyppi"
   val SYOTETTAVAT_SUORITUSTYYPIT = List(
     "perusopetuksenoppimaara",

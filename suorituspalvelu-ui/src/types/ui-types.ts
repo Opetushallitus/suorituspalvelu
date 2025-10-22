@@ -1,7 +1,6 @@
 import type {
   IYOKoe,
   SuoritusTila,
-  IPerusopetuksenOppiaine,
   ILukionOppiaine,
   IKKSuoritus,
   ILukionOppimaara,
@@ -29,6 +28,10 @@ import type {
   IIBOppiaine,
   IAmmatillisenTutkinnonOsa,
   IYTO,
+  ILuoSuoritusDropdownDataSuccessResponse,
+  IYksilollistaminen,
+  IPoistaSuoritusFailureResponse,
+  ILuoPerusopetuksenOppimaaraFailureResponse,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -40,14 +43,14 @@ export type SuorituksenPerustiedot = {
   };
   tila: SuorituksenTila;
   suorituskieli?: string;
-  valmistumispaiva?: Date;
+  valmistumispaiva?: string;
 };
 
 export type SuoritusOtsikkoTiedot = {
   nimi: Kielistetty;
   tila: SuorituksenTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
 };
 
 export type Kielistetty = {
@@ -62,7 +65,14 @@ export type OppijanTiedot = IOppijanTiedotSuccessResponse;
 
 export type YOKoe = IYOKoe;
 
-export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
+export type PerusopetuksenOppiaine = {
+  tunniste: string;
+  koodi?: string;
+  nimi: Kielistetty;
+  kieli?: string;
+  arvosana?: string;
+  valinnaisetArvosanat?: Array<string>;
+};
 
 export type LukionOppiaine = ILukionOppiaine | IEBOppiaine | IIBOppiaine;
 
@@ -111,13 +121,48 @@ export type VapaaSivistystyoSuoritus = IVapaaSivistystyoKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
 };
 
+export type PerusopetuksenOppimaara = Omit<
+  IPerusopetuksenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+  suoritustyyppi: 'perusopetuksenoppimaara';
+  koulutustyyppi: 'perusopetus';
+  isEditable: true;
+};
+
+export type PerusopetuksenOppiaineenOppimaara = Omit<
+  IPerusopetuksenOppiaineenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+  versioTunniste?: string; // TODO: Poista, kun versioTunniste tulee backendistä
+  suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
+  koulutustyyppi: 'perusopetus';
+  isEditable: true;
+};
+
+type AikuistenPerusopetuksenOppimaara = Omit<
+  IAikuistenPerusopetuksenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+};
+
+type NuortenPerusopetuksenOppiaineenOppimaara = Omit<
+  INuortenPerusopetuksenOppiaineenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+};
+
 export type PerusopetusSuoritus = (
-  | IPerusopetuksenOppimaara
-  | IPerusopetuksenOppiaineenOppimaara
+  | PerusopetuksenOppimaara
+  | PerusopetuksenOppiaineenOppimaara
   | IPerusopetuksenOppimaara78Luokkalaiset
-  | INuortenPerusopetuksenOppiaineenOppimaara
-  | IAikuistenPerusopetuksenOppimaara
-) & { koulutustyyppi: 'perusopetus' };
+  | NuortenPerusopetuksenOppiaineenOppimaara
+  | AikuistenPerusopetuksenOppimaara
+) & { koulutustyyppi: 'perusopetus'; isEditable: boolean };
 
 export type Suoritus =
   | KorkeakouluSuoritus
@@ -140,4 +185,52 @@ export type TutkinnonOsanOsaAlue = {
 
 export type KayttajaTiedot = {
   asiointiKieli: Language;
+};
+
+export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
+
+export type PerusopetusOppiaineFields = {
+  koodi: string;
+  kieli?: string;
+  arvosana?: string;
+  valinnaisetArvosanat?: Array<string>;
+};
+
+export type SuoritusFields = {
+  versioTunniste: string;
+  oppijaOid: string;
+  oppilaitosOid: string;
+  tila: string;
+  tyyppi: string;
+  valmistumispaiva?: Date;
+  suorituskieli: string;
+  luokka?: string;
+  yksilollistetty: string;
+  oppiaineet: Array<PerusopetusOppiaineFields>;
+};
+
+export type Yksilollistaminen = IYksilollistaminen;
+
+export type GenericBackendError = IPoistaSuoritusFailureResponse;
+
+export const isGenericBackendError = (
+  error: unknown,
+): error is GenericBackendError => {
+  return (
+    typeof error === 'object' &&
+    error != null &&
+    'virheAvaimet' in error &&
+    Array.isArray(error.virheAvaimet)
+  );
+};
+
+export const isPerusopetusOppimaaraBackendError = (
+  body: unknown,
+): body is ILuoPerusopetuksenOppimaaraFailureResponse => {
+  return (
+    typeof body === 'object' &&
+    body != null &&
+    'yleisetVirheAvaimet' in body &&
+    Array.isArray(body.yleisetVirheAvaimet)
+  );
 };

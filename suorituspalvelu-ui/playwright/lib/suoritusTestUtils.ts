@@ -350,7 +350,7 @@ export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
       ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9', ''],
       ['A1-kieli, englanti', '9', ''],
       ['B1-kieli, ruotsi', '9', ''],
-      ['B2-kieli, saksa', '9', ''],
+      ['B2-kieli, saksa', '', '9'],
       ['Matematiikka', '9', ''],
       ['Biologia', '9', ''],
       ['Maantieto', '9', ''],

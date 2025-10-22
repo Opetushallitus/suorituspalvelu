@@ -1,6 +1,6 @@
 import { formatDate } from 'date-fns';
 import React from 'react';
-import { isTruthy } from 'remeda';
+import { isNullish, isTruthy } from 'remeda';
 
 export const DEFAULT_NUQS_OPTIONS = {
   history: 'push',
@@ -14,8 +14,11 @@ export const EMPTY_OBJECT = Object.freeze({});
 export const EMPTY_ARRAY = Object.freeze([]) as Array<never>;
 export const EMPTY_STRING_SET = Object.freeze(new Set<string>());
 
-export function castToArray<T>(args: T) {
-  return (Array.isArray(args) ? args : [args]) as T extends Array<unknown>
+export function castToArray<T>(val: T) {
+  if (isNullish(val)) {
+    return [] as T extends Array<unknown> ? T : Array<T>;
+  }
+  return (Array.isArray(val) ? val : [val]) as T extends Array<unknown>
     ? T
     : Array<T>;
 }

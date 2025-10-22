@@ -1,5 +1,5 @@
 import { OphTypography } from '@opetushallitus/oph-design-system';
-import { PaperWithTopColor } from './PaperWithTopColor';
+import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { Stack } from '@mui/material';
 import type { SuoritusOtsikkoTiedot } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
