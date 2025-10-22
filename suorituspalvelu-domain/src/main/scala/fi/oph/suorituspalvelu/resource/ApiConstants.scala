@@ -76,7 +76,7 @@ object ApiConstants {
   final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
 
   final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
-  final val UI_POISTA_YLIAJOT_PATH                          = UI_API_PREFIX + "/poistayliajot"
+  final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
 
   final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/oppijat"
   final val UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME             = "hakusana"

@@ -391,5 +391,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         AND avain = $avain
         AND upper(voimassaolo) = 'infinity'::timestamptz
     """
+
+    Await.result(db.run(
+      DBIO.seq(updateOldVersionsAction)
+    ), DB_TIMEOUT)
   }
 }
