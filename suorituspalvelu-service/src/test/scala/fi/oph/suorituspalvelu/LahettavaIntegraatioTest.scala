@@ -1,0 +1,148 @@
+package fi.oph.suorituspalvelu
+
+import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
+import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.integration.client.*
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
+import fi.oph.suorituspalvelu.resource.ApiConstants
+import fi.oph.suorituspalvelu.resource.api.{LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ui.*
+import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
+import fi.oph.suorituspalvelu.ui.UIService
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import fi.oph.suorituspalvelu.validation.{UIValidator, Validator}
+import org.junit.jupiter.api.*
+import org.mockito.Mockito
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+
+import java.nio.charset.Charset
+import java.time.{Instant, LocalDate}
+import java.util
+import java.util.{Optional, UUID}
+import scala.concurrent.Future
+import scala.jdk.CollectionConverters.*
+
+/**
+ * Lähettävät-apin integraatiotestit. Testeissä on pyritty kattamaan kaikkien endpointtien kaikki eri paluuarvoihin
+ * johtavat skenaariot. Eri variaatiot näiden skenaarioiden sisällä (esim. erityyppiset validointiongelmat) testataan
+ * yksikkötasolla. Onnistuneiden kutsujen osalta validoidaan että kannan tila kutsun jälkeen vastaa oletusta.
+ */
+class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
+
+  @MockBean
+  val onrIntegration: OnrIntegration = null
+
+  @MockBean
+  val organisaatioProvider: OrganisaatioProvider = null
+
+  @MockBean
+  var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  /*
+   * Integraatiotestit luokkien haulle
+   */
+
+  val OPPILAITOS_OID = "1.2.246.562.10.52320123196"
+
+  @WithAnonymousUser
+  @Test def testHaeLuokatAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.LAHETTAVAT_LUOKAT_PATH
+          .replace(ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER, OPPILAITOS_OID)
+          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "2025"), ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeLuokatEiOikeuksia(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.LAHETTAVAT_LUOKAT_PATH
+          .replace(ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER, OPPILAITOS_OID)
+          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "2025"), ""))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
+  @Test def testHaeLuokatInvalidParams(): Unit =
+    // mockataan onr-vastaus
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.LAHETTAVAT_LUOKAT_PATH
+          .replace(ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER, "Tämä ei ole validi oid")
+          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "Tämä ei ole validi vuosi"), ""))
+      .andExpect(status().isBadRequest).andReturn()
+
+    // virhe on kuten pitää
+    Assertions.assertEquals(LahettavatLuokatFailureResponse(java.util.Set.of(
+        Validator.VALIDATION_OPPILAITOSOID_EI_VALIDI + "Tämä ei ole validi oid",
+        Validator.VALIDATION_VUOSI_EI_VALIDI + "Tämä ei ole validi vuosi")
+      ),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatLuokatFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
+  @Test def testHaeLuokatAllowed(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21583363331"
+    val vuosi = 2025
+
+    // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
+    // (rekisterinpitäjälle palautettavat oppilaitokset perustuvat metadatan arvoihin)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      OPPILAITOS_OID,
+      Set(
+        PerusopetuksenOppimaara(
+          UUID.randomUUID(),
+          None,
+          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
+          None,
+          Koodi("", "", None),
+          VALMIS,
+          Koodi("", "", None),
+          Set.empty,
+          None,
+          None,
+          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Set.empty
+        ),
+        PerusopetuksenVuosiluokka(
+          UUID.randomUUID(),
+          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
+          Kielistetty(None, None, None),
+          Koodi("9", "perusopetuksenluokkaaste", None),
+          None,
+          Some(LocalDate.parse(s"$vuosi-08-18")),
+          false
+        )
+      ),
+      None,
+      VALMIS
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+
+    // haetaan luokat
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.LAHETTAVAT_LUOKAT_PATH
+          .replace(ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER, OPPILAITOS_OID)
+          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, vuosi.toString), ""))
+      .andExpect(status().isOk).andReturn()
+
+    // asiointikieli on "fi" ja kyseessä ei organisaation katselija
+    Assertions.assertEquals(LahettavatLuokatSuccessResponse(List("9A").asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatLuokatSuccessResponse]))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeLuokatLahettava.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_NAME -> OPPILAITOS_OID,
+      ApiConstants.LAHETTAVAT_VUOSI_PARAM_NAME -> vuosi.toString
+    ), auditLogEntry.target)
+}

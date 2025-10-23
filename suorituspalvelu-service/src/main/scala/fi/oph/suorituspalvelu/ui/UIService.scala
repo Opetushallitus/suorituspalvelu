@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo, PKOppimaaraOppilaitosKeskenMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo, PKOppimaaraOppilaitosKeskenMetadataArvo, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
@@ -152,7 +152,7 @@ class UIService {
       else
         None,
       Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN, Some(s"$oppilaitosOid"))
-        .map(arvo => new PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(arvo).luokka)),
+        .map(arvo => new PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(arvo).luokka)),
     ).flatten.flatten
   }
 

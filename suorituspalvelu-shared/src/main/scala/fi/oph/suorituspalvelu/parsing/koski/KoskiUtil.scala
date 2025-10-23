@@ -22,7 +22,7 @@ case class PKOppimaaraOppilaitosKeskenMetadataArvo(oppilaitosOid: String) {
 
 case class PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid: String, vuosi: Integer, luokka: String) {
 
-  def this(str: String) = this(str.split(":")(0), str.split(":")(1).toInt, str.substring((str.split(":")(0) + ":" + str.split(":")(1)).length))
+  def this(str: String) = this(str.split(":")(0), str.split(":")(1).toInt, str.substring((str.split(":")(0) + ":" + str.split(":")(1) + ":").length))
 
   override def toString(): String = s"$oppilaitosOid:$vuosi:$luokka"
 }
