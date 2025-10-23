@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
-import fi.oph.suorituspalvelu.mankeli.{AvaimetArvoContainer, AvainArvoConverter, AvainArvoConverterResults}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -14,7 +14,7 @@ import scala.concurrent.duration.DurationInt
 case class AvainArvoMetadata(selitteet: Seq[String], duplikaatti: Boolean, arvoEnnenYliajoa: Option[String], yliajo: Option[AvainArvoYliajo])
 case class CombinedAvainArvoContainer(avain: String, arvo: String, metadata: AvainArvoMetadata)
 
-case class ValintaData(personOid: String, avainArvot: Set[CombinedAvainArvoContainer], opiskeluoikeudet: Set[Opiskeluoikeus], vahvistettuViimeistaan: String, laskennanAlkaminen: String) {
+case class ValintaData(personOid: String, avainArvot: Seq[CombinedAvainArvoContainer], opiskeluoikeudet: Set[Opiskeluoikeus], vahvistettuViimeistaan: String, laskennanAlkaminen: String) {
   def getAvainArvoMap: Map[String, String] = avainArvot.map(a => (a.avain, a.arvo)).toMap
 }
 
@@ -35,7 +35,15 @@ class ValintaDataService {
     kantaOperaatiot.tallennaYliajot(overrides)
   }
 
+  def expandWithAvainAliases(originalContainers: Seq[CombinedAvainArvoContainer]): Seq[CombinedAvainArvoContainer] = {
+    val aliasContainers: Seq[CombinedAvainArvoContainer] = originalContainers.flatMap(oc => {
+      val avainAliakset = AvainArvoConstants.avainToRinnakkaisAvaimet.getOrElse(oc.avain, Set.empty)
+      avainAliakset.map(avainAlias => oc.copy(avain = avainAlias))
+    })
+    originalContainers ++ aliasContainers
+  }
 
+  //Tehdään ensin yliajot pääavaimille
   def combineBaseAvainArvotWithYliajot(baseResults: AvainArvoConverterResults, yliajot: Set[AvainArvoYliajo]): Set[CombinedAvainArvoContainer] = {
     val yliajotMap: Map[String, AvainArvoYliajo] = yliajot.map(y => (y.avain, y)).toMap
 
@@ -43,15 +51,28 @@ class ValintaDataService {
       LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}")
     }
 
-    baseResults.containers.flatMap(baseContainer => {
-      val yliajo: Option[AvainArvoYliajo] = yliajotMap.get(baseContainer.avaimet.avain)
-      baseContainer.avaimet.kaikkiAvaimet.map((avain, isDuplikaatti) => {
+    val yliajetutTulokset =
+      baseResults.containers.map((baseContainer: AvainArvoContainer) => {
+        val yliajo: Option[AvainArvoYliajo] = yliajotMap.get(baseContainer.avain)
         yliajo match {
-          case None => CombinedAvainArvoContainer(avain, baseContainer.arvo, AvainArvoMetadata(baseContainer.selitteet, isDuplikaatti, None, None))
-          case Some(yliajo) => CombinedAvainArvoContainer(avain, yliajo.arvo, AvainArvoMetadata(baseContainer.selitteet, isDuplikaatti, Some(baseContainer.arvo), Some(yliajo)))
+          case None =>
+            CombinedAvainArvoContainer(
+              baseContainer.avain,
+              baseContainer.arvo,
+              AvainArvoMetadata(baseContainer.selitteet, false, None, None)
+            )
+          case Some(yliajo) =>
+            CombinedAvainArvoContainer(
+              baseContainer.avain,
+              yliajo.arvo,
+              AvainArvoMetadata(baseContainer.selitteet, false, Some(baseContainer.arvo), Some(yliajo))
+            )
         }
       })
-    })
+
+    //Todo, lisätään synteettiset tulokset sellaisille yliajoille, joille ei ollut valmista tulosta.
+    yliajetutTulokset
+
   }
 
   def fetchValintaDataForOppija(personOid: String, hakuOid: Option[String]): ValintaData = {
@@ -71,6 +92,7 @@ class ValintaDataService {
     val yliajot = hakuOid.map(hakuOid => fetchOverridesForOppija(personOid, hakuOid)).getOrElse(Seq.empty)
 
     val combinedWithYliajot: Set[CombinedAvainArvoContainer] = combineBaseAvainArvotWithYliajot(converterResults, yliajot.toSet)
-    ValintaData(personOid, combinedWithYliajot, opiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString) //Todo, oikeat aikaleimat
+    val withAliases = expandWithAvainAliases(combinedWithYliajot.toSeq)
+    ValintaData(personOid, withAliases, opiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString) //Todo, oikeat aikaleimat
   }
 }
