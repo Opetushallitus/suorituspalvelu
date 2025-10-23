@@ -261,17 +261,27 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
     Await.result(db.run(
-        sql"""SELECT jsonb_build_object('tunniste', tunniste,
-                  'oppijaNumero', oppijanumero,
-                  'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
-                  'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-                  'suoritusJoukko', suoritusjoukko
-                )::text AS versio
-                FROM versiot
-                WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
+        sql"""SELECT jsonb_build_object(
+                'tunniste', tunniste,
+                'oppijaNumero', oppijanumero,
+                'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+                'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+                'suoritusJoukko', suoritusjoukko
+              )::text AS versio
+              FROM versiot
+              WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
-  def haeVersiot(metadata: Map[String, Set[String]], timestamp: Instant): Set[VersioEntiteetti] =
+  def parseMetadata(avainArvot: Seq[String]): Map[String, Set[String]] =
+    avainArvot.map(element => {
+        val key = element.split(":")(0)
+        val value = element.substring(key.length + ":".length)
+        key -> value
+      })
+      .groupBy((key, value) => key)
+      .map((key, values) => key -> values.map(v => v._2).toSet)
+
+  def haeVersiotJaMetadata(metadata: Map[String, Set[String]], timestamp: Instant): Seq[(VersioEntiteetti, Map[String, Set[String]])] =
     Await.result(db.run(
         (sql"""
           SELECT
@@ -281,13 +291,14 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
               'suoritusJoukko', versiot.suoritusjoukko
-            )::text AS data
+            )::text AS data,
+            metadata
           FROM versiot
           WHERE versiot.use_versio_tunniste IS NULL
           AND metadata @> (${metadata.flatMap((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).toSeq})
           AND ${Instant.ofEpochMilli(timestamp.toEpochMilli).toString}::timestamptz <@ voimassaolo
-        """).as[String]), DB_TIMEOUT).map(data => MAPPER.readValue(data, classOf[VersioEntiteetti]))
-      .toSet
+        """).as[(String, List[String])]), DB_TIMEOUT)
+      .map((data, metadata) => (MAPPER.readValue(data, classOf[VersioEntiteetti]), parseMetadata(metadata)))
 
   def paataVersionVoimassaolo(tunniste: UUID): Boolean =
     LOG.info(s"päätetään version $tunniste voimassaolo")

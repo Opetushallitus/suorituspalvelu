@@ -47,10 +47,13 @@ object ApiConstants {
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
   final val LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER              = "{" + LAHETTAVAT_VUOSI_PARAM_NAME + "}"
   final val LAHETTAVAT_PATH                                 = VERSIONED_API_PREFIX + "/lahettavat/" + LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER + "/" + LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER
-  final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
   final val LAHETTAVAT_EI_OIKEUKSIA                         = "Käyttäjällä ei ole oikeuksia hakea rajaimien tietoja"
   final val LAHETTAVAT_ESIMERKKI_VIRHE                      = "oppilaitosOid ei ole validi oid"
   final val LAHETTAVAT_500_VIRHE                            = "Tietojen haku epäonnistui"
+  final val LAHETTAVAT_HAKU_EPÄONNISTUI                     = "Rajaimien tietojen haku epäonnistui"
+
+  final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
+  final val LAHETTAVAT_HENKILOT_PATH                     = LAHETTAVAT_PATH + "/opiskelijat"
 
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
