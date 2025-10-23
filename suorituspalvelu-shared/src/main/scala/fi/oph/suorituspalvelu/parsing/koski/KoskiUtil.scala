@@ -59,6 +59,18 @@ object KoskiUtil {
   val PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN  = "PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA"
   val PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN = "PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA"
 
+  val PK_OPPILAITOS_KEYS = Set(
+    PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN,
+    PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN,
+    PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN,
+    PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN
+  )
+
+  def hasOrganisaatioPKMetadata(organisaatioOid: String, metadata: Map[String, Set[String]]): Boolean =
+    metadata
+      .filter((key, values) => PK_OPPILAITOS_KEYS.contains(key))
+      .exists((key, values) => values.exists(value => value.startsWith(organisaatioOid)))
+
   def getOponSeurattavatPerusopetuksenTilat(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Set[OponSeurattavaPerusopetuksenTila] = {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])

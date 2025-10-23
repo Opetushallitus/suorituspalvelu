@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo, PKOppimaaraOppilaitosKeskenMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.security.VirkailijaAuthorization
+import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -90,11 +90,11 @@ object UIService {
 
   val YTL_ORGANISAATIO_OID = "1.2.246.562.10.43628088406"
 
-  val EXAMPLE_OPPIJAT: Set[Oppija] = Set(Oppija(
+  val EXAMPLE_OPPIJA = Oppija(
     EXAMPLE_OPPIJA_OID,
     Optional.of(EXAMPLE_HETU),
     EXAMPLE_NIMI
-  ))
+  )
 }
 
 @Component
@@ -156,14 +156,6 @@ class UIService {
     ).flatten.flatten
   }
 
-  def suoritaOnrHaku(hakusana: Option[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
-    hakusana match {
-      case Some(h) if Validator.hetuPattern.matches(h) => onrIntegration.getPerustiedotByHetus(Set(h))
-      case Some(h) if Validator.oppijaOidPattern.matches(h) => onrIntegration.getPerustiedotByPersonOids(Set(h))
-      case _ => Future.successful(Seq.empty)
-    }
-  }
-
   def haePKOppijaOidit(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[String] = {
     KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitos, vuosi, luokka)
       .flatMap(metadata => kantaOperaatiot.haeVersiot(metadata, Instant.now()).map(v => v.oppijaNumero))
@@ -179,51 +171,62 @@ class UIService {
     Await.result(ornOppijat, 30.seconds)
   }
 
-  //Tämä ei oikeasti toimi kovin tehokkaasti suurille joukoille Oppijoita, koska Atarun permissioncheck-rajapinta käsittelee yhden henkilön kerrallaan.
-  def filtteroiHakemuspohjaisillaOikeuksilla(oppijat: Set[Oppija], authorization: VirkailijaAuthorization, aliakset: Map[String, Set[String]]): Future[Set[Oppija]] = {
-    LOG.info(s"Tarkistetaan käyttäjälle $authorization oikeudet Atarusta.")
-    oppijat.foldLeft(Future.successful(Seq.empty[(Oppija, AtaruPermissionResponse)])) {
-      case (prevFuture, oppija) =>
-        prevFuture.flatMap(results => {
-          val pRequest = AtaruPermissionRequest(
-            aliakset.getOrElse(oppija.oppijaNumero, throw new RuntimeException(s"Oppijan ${oppija.oppijaNumero} aliaksia ei löytynyt!")),
-            authorization.oikeudellisetOrganisaatiot,
-            Set.empty)
-          LOG.info(s"Kutsutaan atarua, $pRequest")
-          hakemuspalveluClient.checkPermission(pRequest).map(p => results :+ (oppija, p))
-        })
-    }.flatMap((results: Seq[(Oppija, AtaruPermissionResponse)]) => {
-      val filtered = results.toSet.flatMap({
-        case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(true) =>
-          Some(o)
-        case (o: Oppija, r: AtaruPermissionResponse) if r.accessAllowed.contains(false) =>
-          LOG.warn(s"Ei oikeuksia käyttäjälle $authorization oppijaan ${oppijat.head.oppijaNumero}. Filtteröidään oppija pois.")
-          None
-        case (o: Oppija, r: AtaruPermissionResponse) if r.errorMessage.isDefined =>
-          LOG.error(s"Virhe atarussa: ${r.errorMessage.get}")
-          throw new RuntimeException(s"Virhe atarussa: ${r.errorMessage.get}")
-        case _ => ???
-      })
-      Future.successful(filtered)
-    })
+  def haeHenkilonPerustiedot(hakusana: Option[String]): Future[Option[OnrHenkiloPerustiedot]] = {
+    hakusana match {
+      case Some(h) if Validator.hetuPattern.matches(h) => onrIntegration.getPerustiedotByHetus(Set(h)).map(r => r.headOption)
+      case Some(h) if Validator.oppijaOidPattern.matches(h) => onrIntegration.getPerustiedotByPersonOids(Set(h)).map(r => r.headOption)
+      case _ => Future.successful(None)
+    }
   }
 
-  def haeOppija(oppijaOid: String, authorization: VirkailijaAuthorization): Set[Oppija] = {
-    val resultF = suoritaOnrHaku(Some(oppijaOid)).flatMap(onrResult => {
-      val onrOppijat: Set[Oppija] = onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet
-      if (onrOppijat.nonEmpty) {
-        if (authorization.onRekisterinpitaja) {
-          Future.successful(onrOppijat)
-        } else {
-          onrIntegration.getAliasesForPersonOids(onrOppijat.map(_.oppijaNumero)).map(_.allOidsByQueriedOids).flatMap(aliasResult => {
-            filtteroiHakemuspohjaisillaOikeuksilla(onrOppijat, authorization, aliasResult)
-          })
-        }
-      } else {
-        //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
-        Future.successful(UIService.EXAMPLE_OPPIJAT)
-      }
-    })
-    Await.result(resultF, 30.seconds)
+  /**
+   * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
+   * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
+   *
+   * @param   hakusana  haettava oppija
+   * @return            oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
+   */
+  def haeOppija(hakusana: String): Option[Oppija] = {
+    val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi))), 30.seconds)
+    val hasOikeus = oppija.exists(o => hasOppijanKatseluOikeus(o.oppijaNumero))
+    (oppija, hasOikeus) match
+      case (Some(oppija), true) => Some(oppija)
+      case (Some(oppija), false) => None
+      //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
+      case (None, _) => Some(UIService.EXAMPLE_OPPIJA)
   }
+
+  /**
+   * Tarkastaa onko käyttäjällä oikeuksia nähdä oppijat tiedot. Tarkastetaan sekä rekisterinpitäjä-status että
+   * lähettävän ja vastaanottavan organisaation oikeudet.
+   *
+   * @param oppijaOid oppijan oid jonka tietoja halutaan katsella
+   * @return          true jos käyttäjällä oikeudet nähdä oppijan tiedot
+   */
+  def hasOppijanKatseluOikeus(oppijaOid: String): Boolean = {
+    val securityOperaatiot = new SecurityOperaatiot()
+    lazy val aliases = onrIntegration.getAliasesForPersonOids(Set(oppijaOid)).map(aliasResult => aliasResult.allOids)
+
+    def hasHakijaKatseluoikeus(): Boolean =
+      val hakijaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
+      hakijaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.flatMap(allOids => {
+        hakemuspalveluClient.checkPermission(AtaruPermissionRequest(allOids, hakijaOikeusOrganisaatiot, Set.empty))
+          .map(permissionResult => {
+            if(permissionResult.errorMessage.isDefined)
+              LOG.error(s"Virhe atarussa: ${permissionResult.errorMessage.get}")
+            permissionResult.accessAllowed.getOrElse(false)
+          })
+      }), 30.seconds)
+
+    def hasOrganisaatioKatseluoikeus(): Boolean =
+      val vastaanottajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
+      vastaanottajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => allOids.exists(oppijaOid => {
+        val opiskeluoikeudet = this.kantaOperaatiot.haeSuoritukset(oppijaOid).values.flatten.toSeq
+        val metadata = KoskiUtil.getMetadata(opiskeluoikeudet)
+        vastaanottajaOikeusOrganisaatiot.exists(organisaatio => KoskiUtil.hasOrganisaatioPKMetadata(organisaatio, metadata))
+      })), 30.seconds)
+
+    securityOperaatiot.onRekisterinpitaja() || hasHakijaKatseluoikeus() || hasOrganisaatioKatseluoikeus()
+  }
+
 }
