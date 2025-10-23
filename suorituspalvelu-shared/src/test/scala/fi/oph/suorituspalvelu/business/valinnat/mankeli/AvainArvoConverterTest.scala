@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
-import fi.oph.suorituspalvelu.mankeli.{AvaimetArvoContainer, AvainArvoConstants, AvainArvoConverter, SingleAvainArvoContainer}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoContainer, AvainArvoConstants, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -39,15 +39,10 @@ class AvainArvoConverterTest {
       val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
       val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri)
 
-      AvainArvoConstants.perusopetuksenKieliKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-        Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(key))
-      })
-      AvainArvoConstants.peruskouluSuoritusvuosiKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-        Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(key))
-      })
-      AvainArvoConstants.peruskouluSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-        Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKeys.kaikkiAvaimet.head._1))
-      })
+      Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
+      Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
+      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
+
     })
   }
 
@@ -67,22 +62,18 @@ class AvainArvoConverterTest {
         "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
       val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE")
 
-      tavoiteArvosanat.foreach((aine, arvosana) => {
-        AvainArvoConstants.peruskouluAineenArvosanaPrefixes.kaikkiAvaimet.foreach((prefix, isDuplikaatti) => {
-          Assertions.assertEquals(Some(arvosana), converterResult.getAvainArvoMap().get(prefix + aine))
-        })
-      })
+      tavoiteArvosanat.foreach { case (aine, arvosana) =>
+        val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
+        Assertions.assertEquals(Some(arvosana), converterResult.getAvainArvoMap().get(prefix + aine))
+      }
 
-      //Todo, tarkistettava tämä logiikka. Lähtökohtaisesti vaikuttaa, että ristiin toistensa kanssa liitetyt prefixit ja postfixit eivät ole tarpeellisia.
-      //Eli löytyy avaimet PERUSKOULU_ARVOSANA_B2_OPPIAINEEN_KIELI ja PK_B2_OPPIAINE, mutta ei avaimia PK_B2_OPPIAINEEN_KIELI tai PERUSKOULU_ARVOSANA_B2_OPPIAINE
-      tavoiteKielet.foreach((aine, kieli) => {
-        AvainArvoConstants.peruskouluAineenKieliPostfixes.kaikkiAvaimet.foreach((postfix, isDuplikaatti) => {
-          //Duplikaattiavaimille on löydyttävä vain toisten duplikaattiavainten postfixit.
-          AvainArvoConstants.peruskouluAineenArvosanaPrefixes.kaikkiAvaimet.filter(_._2.equals(isDuplikaatti)).foreach((prefix, isDuplikaatti) => {
-            Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(prefix + aine + postfix))
-          })
-        })
-      })
+      tavoiteKielet.foreach { case (aine, kieli) =>
+        val postfix = AvainArvoConstants.peruskouluAineenKieliPostfix
+        val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
+        val kieliAvain = prefix + aine + postfix
+
+        Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(kieliAvain))
+      }
     })
   }
 
@@ -97,15 +88,14 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None, true, None, None))
     val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet)
 
-    val ka: Set[SingleAvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty).flatMap(_.toSingleContainers)
+    val ka: Set[AvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
 
     val tavoiteArvosanat = Map("A1" -> "10", "BI" -> "8", "KO" -> "S", "LI" -> "9")
-    tavoiteArvosanat.foreach((aine, arvosana) => {
-      AvainArvoConstants.peruskouluAineenArvosanaPrefixes.kaikkiAvaimet.foreach((prefix, isDuplikaatti) => {
-        Assertions.assertEquals(Some(arvosana), korkeimmatArvosanat.get(prefix + aine))
-      })
-    })
+    tavoiteArvosanat.foreach { case (aine, arvosana) =>
+      val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
+      Assertions.assertEquals(Some(arvosana), korkeimmatArvosanat.get(prefix + aine))
+    }
   }
 
   @Test def testYoArvoEnnenLeikkuripaivaa(): Unit = {
@@ -135,9 +125,7 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri)
 
-    AvainArvoConstants.yoSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritettuKey))
   }
 
   @Test def testYoArvoLeikkuripaivanJalkeen(): Unit = {
@@ -167,9 +155,8 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri)
 
-    AvainArvoConstants.yoSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritettuKey))
+
   }
 
   @Test def testAmmArvoMyohassaValmistunut(): Unit = {
@@ -182,9 +169,7 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
 
-    AvainArvoConstants.ammSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
   }
 
   @Test def testAmmArvoAjoissaValmistunut(): Unit = {
@@ -197,9 +182,7 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
 
-    AvainArvoConstants.ammSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
@@ -231,12 +214,9 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
 
-    AvainArvoConstants.telmaSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(key))
-    })
-    AvainArvoConstants.telmaSuoritusvuosiKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
+    Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
+
   }
 
   @Test def testTelmaRiittamatonLaajuus(): Unit = {
@@ -269,14 +249,10 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
 
-    AvainArvoConstants.telmaSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(key))
-    })
-    //Jos Telmaa ei ole suoritettu riittävässä laajuudessa, suoritusvuodelle ei saa tulla avain-arvoa.
-    AvainArvoConstants.telmaSuoritusvuosiKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
 
+    //Jos Telmaa ei ole suoritettu riittävässä laajuudessa, suoritusvuodelle ei saa tulla avain-arvoa.
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
   }
 
   @Test def testOpistovuosiRiittavaLaajuus(): Unit = {
@@ -309,12 +285,10 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
 
-    AvainArvoConstants.opistovuosiSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(key))
-    })
-    AvainArvoConstants.opistovuosiSuoritusvuosiKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
+
+    Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
+
   }
 
   @Test def testOpistovuosiRiittamatonLaajuus(): Unit = {
@@ -349,13 +323,9 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva)
 
-    AvainArvoConstants.opistovuosiSuoritettuKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
+
     //Jos Opistovuotta ei ole suoritettu riittävässä laajuudessa, suoritusvuodelle ei saa tulla avain-arvoa.
-    AvainArvoConstants.opistovuosiSuoritusvuosiKeys.kaikkiAvaimet.foreach((key, isDuplikaatti) => {
-      Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(key))
-    })
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
   }
 }
-
