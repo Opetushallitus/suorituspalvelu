@@ -2,51 +2,45 @@ package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
 
 import java.time.{Instant, LocalDate}
 
-case class PKOppimaaraOppilaitosVuosiMetadataArvo(oppilaitosOid: String, vuosi: Integer) {
+case class PKOppimaaraOppilaitosVuosiMetadataArvo(oppilaitosOid: String, vuosi: Option[Int]) {
 
-  def this(str: String) = this(str.split(":")(0), str.split(":")(1).toInt)
+  def this(str: String) = this(str.split(":")(0), {
+    str.split(":")(1) match
+      case "KESKEN" => None
+      case vuosi => Some(vuosi.toInt)
+  })
 
-  override def toString(): String = s"$oppilaitosOid:$vuosi"
+  override def toString(): String = s"$oppilaitosOid:${if(vuosi.isDefined) vuosi.get else "KESKEN"}"
 }
 
-case class PKOppimaaraOppilaitosKeskenMetadataArvo(oppilaitosOid: String) {
+case class PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid: String, vuosi: Option[Int], luokka: String) {
 
-  override def toString(): String = s"$oppilaitosOid"
-}
+  def this(str: String) = this(str.split(":")(0), {
+    str.split(":")(1) match
+      case "KESKEN" => None
+      case vuosi => Some(vuosi.toInt)
+  }, {
+    val parts = str.split(":")
+    val prefix = s"${parts(0)}:${parts(1)}:"
+    str.substring(prefix.length)
+  })
 
-case class PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid: String, vuosi: Integer, luokka: String) {
-
-  def this(str: String) = this(str.split(":")(0), str.split(":")(1).toInt, str.substring((str.split(":")(0) + ":" + str.split(":")(1) + ":").length))
-
-  override def toString(): String = s"$oppilaitosOid:$vuosi:$luokka"
-}
-
-case class PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(oppilaitosOid: String, luokka: String) {
-
-  def this(str: String) = this(str.split(":")(0), str.substring((str.split(":")(0) + ":").length))
-
-  override def toString(): String = s"$oppilaitosOid:$luokka"
+  override def toString(): String = s"$oppilaitosOid:${if(vuosi.isDefined) vuosi.get else "KESKEN"}:$luokka"
 }
 
 case class OponSeurattavaPerusopetuksenTila(oppilaitosOid: String, vahvistusVuosi: Option[Int], luokka: Option[String]) {
 
   def toMetadata(): Map[String, Set[String]] = {
-    if(vahvistusVuosi.isDefined)
-      Seq(
-        Some(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN -> Set(PKOppimaaraOppilaitosVuosiMetadataArvo(oppilaitosOid, vahvistusVuosi.get).toString())),
-        luokka.map(l => PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN -> Set(PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid, vahvistusVuosi.get, l).toString()))
-      ).flatten.toMap
-    else
-      Seq(
-        Some(PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN -> Set(PKOppimaaraOppilaitosKeskenMetadataArvo(oppilaitosOid).toString())),
-        luokka.map(l => PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN -> Set(PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(oppilaitosOid, l).toString()))
-      ).flatten.toMap
+    Seq(
+      Some(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN -> Set(PKOppimaaraOppilaitosVuosiMetadataArvo(oppilaitosOid, vahvistusVuosi).toString())),
+      luokka.map(l => PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN -> Set(PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(oppilaitosOid, vahvistusVuosi, l).toString()))
+    ).flatten.toMap
   }
 }
 
@@ -55,16 +49,19 @@ object KoskiUtil {
   val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
 
   val PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN         = "PK_OPPIMAARA_OPPILAITOS_VUOSI"
-  val PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN        = "PK_OPPIMAARA_OPPILAITOS_KESKEN"
   val PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN  = "PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA"
-  val PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN = "PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA"
 
   val PK_OPPILAITOS_KEYS = Set(
     PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN,
-    PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN,
-    PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN,
-    PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN
+    PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN
   )
+
+  def extractLuokat(oppilaitosOid: String, metadata: Map[String, Set[String]]): Set[String] =
+    metadata.get(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN)
+      .map(arvot => arvot
+        .map(arvo => new PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(arvo))
+        .filter(arvo => arvo.oppilaitosOid == oppilaitosOid)
+        .map(arvo => arvo.luokka)).getOrElse(Set.empty)
 
   def hasOrganisaatioPKMetadata(organisaatioOid: String, metadata: Map[String, Set[String]]): Boolean =
     metadata
