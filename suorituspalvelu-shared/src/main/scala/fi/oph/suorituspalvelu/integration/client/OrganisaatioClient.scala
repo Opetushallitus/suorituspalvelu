@@ -12,9 +12,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class OrganisaatioNimi(fi: String, sv: String, en: String)
 
-case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String])
+case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String], tyypit: Seq[String])
 
-case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio])
+case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio], tyypit: Seq[String])
 
 case class HierarkiaResponse(numHits: Int, organisaatiot: Seq[HierarkiaOrganisaatio])
 // TODO: tämä pitää evaluoida uudelleen kun ruvetaan miettimään käyttöoikeuksia. Jos organisaatiohierarkia haetaan

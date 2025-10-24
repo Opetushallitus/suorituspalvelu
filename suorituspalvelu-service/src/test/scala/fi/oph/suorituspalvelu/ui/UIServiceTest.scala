@@ -181,7 +181,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
   @Test def testCheckAccessAtaruPermission(): Unit =
     val oppijaOid = "1.2.246.562.24.21583363334"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
-    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("", "", ""), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty)
     val onOikeus = true
 
     // mockataan onr ja ataru-vastaukset
@@ -198,7 +198,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
   @Test def testCheckAccessOrganisaatioPermission(): Unit =
     val oppijaOid = "1.2.246.562.24.21583363334"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
-    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("", "", ""), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty)
 
     // mockataan onr ja organisaatiopalvelun vastaukset
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
@@ -237,7 +237,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     val oppijaOid = "1.2.246.562.24.21583363334"
     val oppilaitosJohonOikeudetOid = "1.2.246.562.10.52320123196"
     val oppilaitosJossaSuoritusOid = "1.2.246.562.10.52320123197"
-    val organisaatio = Organisaatio(oppilaitosJohonOikeudetOid, OrganisaatioNimi("", "", ""), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosJohonOikeudetOid, OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty)
 
     // mockataan onr ja organisaatiopalvelun vastaukset
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosJohonOikeudetOid)).thenReturn(Some(organisaatio))

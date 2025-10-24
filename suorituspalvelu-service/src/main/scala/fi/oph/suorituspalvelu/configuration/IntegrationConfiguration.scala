@@ -140,9 +140,8 @@ class IntegrationConfiguration {
           OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
         })
 
-      override def haeOrganisaationTiedot(organisaatioOid: String): Option[Organisaatio] = {
-        hierarkiaCache.get("hierarkia").get(organisaatioOid)
-      }
+      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
+        hierarkiaCache.get("hierarkia")
     }
 
   }

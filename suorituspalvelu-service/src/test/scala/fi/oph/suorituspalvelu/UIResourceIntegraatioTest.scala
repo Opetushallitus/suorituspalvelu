@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet, VuodetSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, UIVirheet, VuodetSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.ui.UIService
@@ -125,7 +125,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppilaitosOid = "1.2.246.562.10.52320123196"
 
     // mockataan organisaatiopalvelun vastaus
-    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
     val result = mvc.perform(MockMvcRequestBuilders
@@ -169,7 +169,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
 
     // mockataan organisaatiopalvelun vastaus
-    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
     val result = mvc.perform(MockMvcRequestBuilders
@@ -372,7 +372,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakusanaOppijanumero = "1.2.246.562.24.21583363333"
     val orgOid = "1.2.246.562.10.52320123197"
     val descendantOid = "1.2.246.562.10.52320123198"
-    val organisaatio = Organisaatio(orgOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid))
+    val organisaatio = Organisaatio(orgOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
     val onrPerustiedot = OnrHenkiloPerustiedot(oidHenkilo = hakusanaOppijanumero,
       etunimet = "Teppo Hemmo",
       sukunimi = "Testinen")
@@ -407,7 +407,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakusanaOppijanumero = "1.2.246.562.24.21583363441"
     val orgOid = "1.2.246.562.10.52320123197"
     val descendantOid = "1.2.246.562.10.52320123198"
-    val organisaatio = Organisaatio(orgOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid))
+    val organisaatio = Organisaatio(orgOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
     val onrPerustiedot = OnrHenkiloPerustiedot(oidHenkilo = hakusanaOppijanumero,
       etunimet = "Teppo Hemmo",
       sukunimi = "Testinen")
@@ -461,7 +461,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppilaitosOidHaettu = "1.2.246.562.10.52320123198"
 
     // mockataan organisaatiopalvelun vastaus
-    val organisaatio = Organisaatio(oppilaitosOidJohonOikeudet, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosOidJohonOikeudet, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOidJohonOikeudet)).thenReturn(Some(organisaatio))
 
     val result = mvc.perform(MockMvcRequestBuilders
@@ -544,7 +544,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .thenReturn(Future.successful(Seq(onrPerustiedot)))
 
     // mockataan organisaatiopalvelun vastaus
-    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty)
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
     // tallennetaan valmis perusopetuksen oppimäärä
@@ -669,6 +669,39 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
   /*
+   * Integraatiotestit suorituksen tallennuksen vaihtoehtojen haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeSyotettavatOppilaitoksetAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_LUO_SUORITUS_OPPILAITOKSET_PATH))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeSyotettavatOppilaitoksetNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_LUO_SUORITUS_OPPILAITOKSET_PATH))
+      .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeSyotettavatOppilaitoksetAllowed(): Unit =
+    // mockataan organisaatiopalvelun vastaus
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq("organisaatiotyyppi_02"))
+    Mockito.when(organisaatioProvider.haeKaikkiOrganisaatiot()).thenReturn(Map(oppilaitosOid -> organisaatio))
+
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_LUO_SUORITUS_OPPILAITOKSET_PATH))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    Assertions.assertEquals(LuoSuoritusOppilaitoksetSuccessResponse(java.util.List.of(Oppilaitos(OppilaitosNimi(Optional.of(UIService.EXAMPLE_OPPILAITOS_NIMI), Optional.of(UIService.EXAMPLE_OPPILAITOS_NIMI), Optional.of(UIService.EXAMPLE_OPPILAITOS_NIMI)), oppilaitosOid))),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoSuoritusOppilaitoksetSuccessResponse]))
+
+  /*
    * Integraatiotestit perusopetuksen oppimäärän suorituksen tallennukselle
    */
 
@@ -754,7 +787,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPerusopetuksenOppimaaranSuoritusOppijaAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21250967213"
-    val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty)
+    val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
@@ -867,7 +900,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusOppijaAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21250967210"
-    val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty)
+    val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))

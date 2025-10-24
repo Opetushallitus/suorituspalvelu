@@ -37,7 +37,7 @@ case class OppilaitosNimi(
 case class Oppilaitos(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: OppilaitosNimi,
-  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oid: String
 )
 
@@ -1283,6 +1283,18 @@ case class SyotettavaYksilollistamisVaihtoehto(
   @(Schema @field)(example = "1", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvo: Int
 )
+
+trait LuoSuoritusOppilaitoksetResponse()
+
+case class LuoSuoritusOppilaitoksetSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppilaitokset: java.util.List[Oppilaitos],
+) extends LuoSuoritusOppilaitoksetResponse
+
+case class LuoSuoritusOppilaitoksetFailureResponse(
+  @(Schema @field)(example = UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends LuoSuoritusOppilaitoksetResponse
 
 trait LuoSuoritusDropdownDataResponse()
 

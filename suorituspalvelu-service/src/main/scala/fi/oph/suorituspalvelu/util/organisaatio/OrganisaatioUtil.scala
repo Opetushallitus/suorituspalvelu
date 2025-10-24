@@ -17,7 +17,9 @@ object OrganisaatioUtil {
           oid = org.oid,
           nimi = org.nimi,
           parentOid = org.parentOid,
-          allDescendantOids = descendantOids)
+          allDescendantOids = descendantOids,
+          tyypit = org.tyypit
+        )
         val childrenMap = flatten(org.children)
         acc + (org.oid -> o) ++ childrenMap
       }
