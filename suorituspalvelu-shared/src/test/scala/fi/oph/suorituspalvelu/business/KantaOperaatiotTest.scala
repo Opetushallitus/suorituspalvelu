@@ -488,10 +488,11 @@ class KantaOperaatiotTest {
     // ja opiskeluoikeudet metadatalla
     // versiolla 1 molemmat haetut avaimet
     val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("4.5.6"), "dummy oid", Set.empty, None, VALMIS)
-    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1), Map(
+    val metadata1 = Map(
       "haettuAvain1" -> Set("haettuArvo1", "muuArvo1"),
       "haettuAvain2" -> Set("haettuArvo2", "muuArvo2")
-    ))
+    )
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1), metadata1)
 
     // versiolla 2 molemmat haetut avaimet mutta ei voimassa
     this.kantaOperaatiot.paataVersionVoimassaolo(versio2.tunniste)
@@ -509,7 +510,7 @@ class KantaOperaatiotTest {
     ))
 
     // joten palautuu vain versio 1
-    Assertions.assertEquals(Set(versio1), this.kantaOperaatiot.haeVersiot(Map(
+    Assertions.assertEquals(Seq((versio1, metadata1)), this.kantaOperaatiot.haeVersiotJaMetadata(Map(
       "haettuAvain1" -> Set("haettuArvo1"),
       "haettuAvain2" -> Set("haettuArvo2")
     ), Instant.now()))

@@ -112,7 +112,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta
     Assertions.assertEquals(
-      Set(OPPIJANUMERO_YSI_KESKEN, OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI),
+      Set((OPPIJANUMERO_YSI_KESKEN, Set("9A")), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, Set("9A"))),
       uiService.haePKOppijaOidit(OPPILAITOS_OID, TAMA_VUOSI, None))
 
   @Test def testHaePKOppijaOiditViimevuosi(): Unit =
@@ -120,7 +120,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     
     // palautuu vain oppijat joilla valmis suoritus haetulta vuodelta
     Assertions.assertEquals(
-      Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI),
+      Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, Set("9A"))),
       uiService.haePKOppijaOidit(OPPILAITOS_OID, VIIMEVUOSI, None))
 
   @Test def testHaePKOppijaOiditToissavuosi(): Unit =
@@ -136,7 +136,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta ja luokka täsmää
     Assertions.assertEquals(
-      Set(OPPIJANUMERO_YSI_KESKEN, OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI),
+      Set((OPPIJANUMERO_YSI_KESKEN, Set("9A")), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, Set("9A"))),
       uiService.haePKOppijaOidit(OPPILAITOS_OID, TAMA_VUOSI, Some("9A")))
 
   @Test def testHaePKOppijaOiditViimevuosiLuokka(): Unit =
@@ -144,7 +144,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
     // palautuu oppijat joilla valmis suoritus haetulta vuodelta ja luokka täsmää
     Assertions.assertEquals(
-      Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI),
+      Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, Set("9A"))),
       uiService.haePKOppijaOidit(OPPILAITOS_OID, VIIMEVUOSI, Some("9A")))
 
   @Test def testHaePKOppijaOiditToissavuosiLuokka(): Unit =

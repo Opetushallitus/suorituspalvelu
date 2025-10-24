@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_TULOSTIEDOSTO, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -54,3 +54,34 @@ case class KoskiRetryPayload(
 
   def this() = this(Optional.empty())
 }
+
+trait LahettavatLuokatResponse()
+
+case class LahettavatLuokatSuccessResponse(
+  @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luokat: java.util.List[String]
+) extends LahettavatLuokatResponse
+
+case class LahettavatLuokatFailureResponse(
+  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends LahettavatLuokatResponse
+
+case class LahettavatHenkilo(
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOid: String,
+  @(Schema @field)(example = ESIMERKKI_LUOKKA, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luokat: java.util.List[String],
+)
+
+trait LahettavatHenkilotResponse()
+
+case class LahettavatHenkilotSuccessResponse(
+  @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkilot: java.util.List[LahettavatHenkilo]
+) extends LahettavatHenkilotResponse
+
+case class LahettavatHenkilotFailureResponse(
+  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.Set[String]
+) extends LahettavatHenkilotResponse
