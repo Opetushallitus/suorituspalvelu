@@ -43,35 +43,31 @@ class ValintaDataService {
     originalContainers ++ aliasContainers
   }
 
-  //Tehdään ensin yliajot pääavaimille
   def combineBaseAvainArvotWithYliajot(baseResults: AvainArvoConverterResults, yliajot: Set[AvainArvoYliajo]): Set[CombinedAvainArvoContainer] = {
     val yliajotMap: Map[String, AvainArvoYliajo] = yliajot.map(y => (y.avain, y)).toMap
+    LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}")
 
-    if (yliajotMap.nonEmpty) {
-      LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}")
-    }
-
-    val yliajetutTulokset =
+    //Tehdään mahdolliset yliajot sellaisille arvoille, joille on jo tuloksia
+    val tuloksetYliajoilla: Set[CombinedAvainArvoContainer] =
       baseResults.containers.map((baseContainer: AvainArvoContainer) => {
         val yliajo: Option[AvainArvoYliajo] = yliajotMap.get(baseContainer.avain)
         yliajo match {
           case None =>
-            CombinedAvainArvoContainer(
-              baseContainer.avain,
-              baseContainer.arvo,
-              AvainArvoMetadata(baseContainer.selitteet, false, None, None)
-            )
+            val metadata = AvainArvoMetadata(baseContainer.selitteet, false, None, None)
+            CombinedAvainArvoContainer(baseContainer.avain, baseContainer.arvo, metadata)
           case Some(yliajo) =>
-            CombinedAvainArvoContainer(
-              baseContainer.avain,
-              yliajo.arvo,
-              AvainArvoMetadata(baseContainer.selitteet, false, Some(baseContainer.arvo), Some(yliajo))
-            )
+            val metadata = AvainArvoMetadata(baseContainer.selitteet, false, Some(baseContainer.arvo), Some(yliajo))
+            CombinedAvainArvoContainer(baseContainer.avain, yliajo.arvo, metadata)
         }
       })
 
-    //Todo, lisätään synteettiset tulokset sellaisille yliajoille, joille ei ollut valmista tulosta.
-    yliajetutTulokset
+    //Lisätään synteettiset tulokset sellaisille yliajoille, joille ei ollut valmista tulosta yliajettavaksi.
+    val tuloksettomatYliajot: Iterable[AvainArvoYliajo] = yliajotMap.filter(yliajo => !tuloksetYliajoilla.exists(_.avain.equals(yliajo._2.avain))).values
+    val synteettisetTulokset: Set[CombinedAvainArvoContainer] = tuloksettomatYliajot.map(yliajo => {
+      CombinedAvainArvoContainer(yliajo.avain, yliajo.arvo, AvainArvoMetadata(Seq.empty, false, None, Some(yliajo)))
+    }).toSet
+
+    tuloksetYliajoilla ++ synteettisetTulokset
 
   }
 
