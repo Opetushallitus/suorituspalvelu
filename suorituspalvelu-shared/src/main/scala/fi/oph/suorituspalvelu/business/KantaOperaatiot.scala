@@ -369,7 +369,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     ), DB_TIMEOUT)
   }
 
-  //Ei poisteta kannasta kokonaan, vaan merkataan voimassaolo päättyneeksi mutta ei tallenneta uutta.
+  //Ei poisteta kannasta kokonaan, vaan merkataan voimassaolo päättyneeksi.
   def poistaYliajo(henkiloOid: String, hakuOid: String, avain: String): Unit = {
     val updateOldVersionsAction =
       sqlu"""
