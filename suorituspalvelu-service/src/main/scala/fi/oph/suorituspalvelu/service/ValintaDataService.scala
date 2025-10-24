@@ -38,7 +38,7 @@ class ValintaDataService {
   def expandWithAvainAliases(originalContainers: Seq[CombinedAvainArvoContainer]): Seq[CombinedAvainArvoContainer] = {
     val aliasContainers: Seq[CombinedAvainArvoContainer] = originalContainers.flatMap(oc => {
       val avainAliakset = AvainArvoConstants.avainToRinnakkaisAvaimet.getOrElse(oc.avain, Set.empty)
-      avainAliakset.map(avainAlias => oc.copy(avain = avainAlias))
+      avainAliakset.map(avainAlias => oc.copy(avain = avainAlias, metadata = oc.metadata.copy(duplikaatti = true)))
     })
     originalContainers ++ aliasContainers
   }
