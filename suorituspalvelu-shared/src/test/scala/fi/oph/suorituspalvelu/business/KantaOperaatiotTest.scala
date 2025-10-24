@@ -736,4 +736,56 @@ class KantaOperaatiotTest {
     Assertions.assertEquals("Haku 2 yliajo", haetutYliajot2.head.selite)
   }
 
+  @Test def testYliajonPoisto(): Unit = {
+    val personOid = "1.2.246.562.24.12345678901"
+    val hakuOid1 = "1.2.246.562.29.11111111111"
+    val hakuOid2 = "1.2.246.562.29.22222222222"
+    val virkailijaOid = "1.2.246.562.24.11223344556"
+    val avain = "perusopetuksen_kieli"
+
+    val yliajo1 = AvainArvoYliajo(
+      avain = avain,
+      arvo = "FI",
+      henkiloOid = personOid,
+      hakuOid = hakuOid1,
+      virkailijaOid = virkailijaOid,
+      selite = "Haku 1 yliajo"
+    )
+
+    val yliajo2 = AvainArvoYliajo(
+      avain = avain,
+      arvo = "SV",
+      henkiloOid = personOid,
+      hakuOid = hakuOid2,
+      virkailijaOid = virkailijaOid,
+      selite = "Haku 2 yliajo"
+    )
+
+    this.kantaOperaatiot.tallennaYliajot(Seq(yliajo1, yliajo2))
+
+    // Tarkistetaan haun 1 yliajo
+    val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid1)
+    Assertions.assertEquals(1, haetutYliajot1.size)
+    Assertions.assertEquals("FI", haetutYliajot1.head.arvo)
+    Assertions.assertEquals("Haku 1 yliajo", haetutYliajot1.head.selite)
+
+    // Tarkistetaan haun 2 yliajo
+    val haetutYliajot2 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid2)
+    Assertions.assertEquals(1, haetutYliajot2.size)
+    Assertions.assertEquals("SV", haetutYliajot2.head.arvo)
+    Assertions.assertEquals("Haku 2 yliajo", haetutYliajot2.head.selite)
+
+    //Poistetaan yliajo haulta 2
+    this.kantaOperaatiot.poistaYliajo(personOid, hakuOid2, avain)
+
+    // Tarkistetaan että haun 1 yliajo edelleen voimassa
+    val haetutYliajot1After = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid1)
+    Assertions.assertEquals(1, haetutYliajot1After.size)
+    Assertions.assertEquals("FI", haetutYliajot1After.head.arvo)
+    Assertions.assertEquals("Haku 1 yliajo", haetutYliajot1After.head.selite)
+
+    // Tarkistetaan että haulle 2 ei enää yliajoa
+    val haetutYliajot2After = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid2)
+    Assertions.assertEquals(0, haetutYliajot2After.size)
+  }
 }
