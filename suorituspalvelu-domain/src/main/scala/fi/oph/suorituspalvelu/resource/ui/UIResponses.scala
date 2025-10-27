@@ -1411,9 +1411,9 @@ case class PoistaSuoritusFailureResponse(
 
 trait PoistaYliajotResponse()
 
-case class PoistaYliajotSuccessResponse() extends PoistaYliajotResponse
+case class PoistaYliajoSuccessResponse() extends PoistaYliajotResponse
 
-case class PoistaYliajotFailureResponse(
+case class PoistaYliajoFailureResponse(
                                           @(Schema @field)(example = UI_POISTA_SUORITUS_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
                                           @BeanProperty virheAvaimet: java.util.Set[String],
                                         ) extends PoistaYliajotResponse

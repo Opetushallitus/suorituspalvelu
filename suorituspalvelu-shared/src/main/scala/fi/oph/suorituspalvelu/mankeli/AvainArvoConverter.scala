@@ -79,7 +79,7 @@ object AvainArvoConstants {
   final val peruskouluSuoritusvuosiKey = "peruskoulu_suoritusvuosi"
   final val peruskouluSuoritettuKey = "perustutkinto_suoritettu"
   final val lukioSuoritettuKey = "lukio_suoritettu"
-  final val yoSuoritettuKey = "yo-tutkinto_suoritettu"
+  final val yoSuoritettuKey = "yo_tutkinto_suoritettu"
   final val ammSuoritettuKey = "ammatillinen_suoritettu"
 
   final val telmaSuoritettuKey = "lisapistekoulutus_telma"
@@ -169,7 +169,7 @@ object PerusopetuksenArvosanaOrdering {
 object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
-  
+
   def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
 
     val peruskouluArvot = convertPeruskouluArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
