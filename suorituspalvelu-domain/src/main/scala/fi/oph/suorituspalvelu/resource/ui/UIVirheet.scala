@@ -42,6 +42,8 @@ object UIVirheet {
   final val UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA         = "backend-virhe.poista_suoritus.suoritus_ei_voimassa"
   final val UI_POISTA_SUORITUS_TALLENNUS_VIRHE              = "backend-virhe.poista_suoritus.poisto_epaonnistui"
 
+  final val UI_POISTA_YLIAJO_VIRHE                          = "backend-virhe.poista_yliajo.poisto_epaonnistui"
+
   final val UI_VALINTADATA_EI_OIKEUKSIA                     = "backend-virhe.valintadata.ei_oikeuksia"
   final val UI_VALINTADATA_OPPIJAA_EI_LOYTYNYT              = "backend-virhe.valintadata.oppijaa_ei_loytynyt"
 }
