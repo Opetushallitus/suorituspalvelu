@@ -56,4 +56,9 @@ object AuditOperation {
   case object PoistaPerusopetuksenOppimaaranSuoritus extends AuditOperation("POISTA PERUSOPETUKSEN OPPIMAARAN SUORITUS UI")
 
   case object PoistaPerusopetuksenOppiaineenOppimaaranSuoritus extends AuditOperation("POISTA PERUSOPETUKSEN OPPIAINEEN OPPIMAARAN SUORITUS UI")
+
+  case object TallennaYliajotOppijalle extends AuditOperation("TALLENNA YLIAJOT OPPIJALLE UI")
+
+  case object PoistaOppijanYliajot extends AuditOperation("POISTA YLIAJO OPPIJALTA UI")
+
 }

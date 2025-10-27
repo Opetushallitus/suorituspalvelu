@@ -310,4 +310,90 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       case None => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain""".as[String]), DB_TIMEOUT).toSet
       case Some(prefix) => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain AND arvo LIKE ${s"$prefix%"}""".as[String]), DB_TIMEOUT).toSet
 
+  def haeOppijanYliajot(oppijaNumero: String, hakuOid: String): Seq[AvainArvoYliajo] = {
+    Await.result(db.run(
+      sql"""
+        SELECT
+          avain,
+          arvo,
+          henkilo_oid,
+          haku_oid,
+          virkailija_oid,
+          selite
+        FROM yliajot
+        WHERE henkilo_oid = ${oppijaNumero}
+          AND haku_oid = ${hakuOid}
+          AND upper(voimassaolo)='infinity'::timestamptz
+        ORDER BY lower(voimassaolo) DESC
+      """.as[(String, String, String, String, String, String)]
+        .map(rows => rows.map {
+          case (avain, arvo, henkiloOid, hakuOid, virkailijaOid, selite) =>
+            AvainArvoYliajo(avain, arvo, henkiloOid, hakuOid, virkailijaOid, selite)
+        })
+    ), DB_TIMEOUT)
+  }
+
+  def tallennaYliajot(yliajot: Seq[AvainArvoYliajo]): Unit = {
+
+    // Päivitetään mahdollisten vanhojen versioiden voimassaolo loppumaan tähän hetkeen
+    val updateOldVersionsAction = DBIO.sequence(
+      yliajot.map { yliajo =>
+        sqlu"""
+        UPDATE yliajot
+        SET voimassaolo = tstzrange(lower(voimassaolo), now())
+        WHERE henkilo_oid = ${yliajo.henkiloOid}
+          AND haku_oid = ${yliajo.hakuOid}
+          AND avain = ${yliajo.avain}
+          AND upper(voimassaolo) = 'infinity'::timestamptz
+        """
+      }
+    )
+
+    // Luodaan uudet yliajot, joiden voimassaolo alkaa tästä hetkestä
+    val insertNewVersionsAction = DBIO.sequence(
+      yliajot.map { yliajo =>
+        sqlu"""
+        INSERT INTO yliajot (
+          avain,
+          arvo,
+          henkilo_oid,
+          haku_oid,
+          virkailija_oid,
+          selite,
+          voimassaolo
+        ) VALUES (
+          ${yliajo.avain},
+          ${yliajo.arvo},
+          ${yliajo.henkiloOid},
+          ${yliajo.hakuOid},
+          ${yliajo.virkailijaOid},
+          ${yliajo.selite},
+          tstzrange(now(), 'infinity'::timestamptz)
+        )
+        """
+      }
+    )
+
+    // Suoritetaan operaatiot samassa transaktiossa
+    Await.result(db.run(
+      DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
+    ), DB_TIMEOUT)
+  }
+
+  //Ei poisteta kannasta kokonaan, vaan merkataan voimassaolo päättyneeksi.
+  def poistaYliajo(henkiloOid: String, hakuOid: String, avain: String): Unit = {
+    val updateOldVersionsAction =
+      sqlu"""
+      UPDATE yliajot
+      SET voimassaolo = tstzrange(lower(voimassaolo), now())
+      WHERE henkilo_oid = $henkiloOid
+        AND haku_oid = $hakuOid
+        AND avain = $avain
+        AND upper(voimassaolo) = 'infinity'::timestamptz
+    """
+
+    Await.result(db.run(
+      DBIO.seq(updateOldVersionsAction)
+    ), DB_TIMEOUT)
+  }
 }

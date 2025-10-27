@@ -27,6 +27,9 @@ object UIVirheet {
   final val UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA   = "backend-virhe.luo_perusopetuksen_oppimaara.oppijanumerolla_ei_loydy_henkiloa"
   final val UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_VIRHE     = "backend-virhe.luo_perusopetuksen_oppimaara.tallennus_epaonnistui"
 
+  final val UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_VIRHE    = "backend-virhe.tallenna_yliajo_oppijalle.tallennus_epaonnistui"
+  final val UI_TALLENNA_YLIAJO_OPPIJALLE_TUNTEMATON_OPPIJA  = "backend-virhe.tallenna_yliajo_oppijalle.oppijanumerolla_ei_loydy_henkiloa"
+
   final val UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE        = "backend-virhe.oppijanumero.ei_validi"
   final val UI_LUO_SUORITUS_OPPIAINE_EI_OIKEUKSIA           = "backend-virhe.luo_perusopetuksen_oppimaara.ei_oikeuksia"
   final val UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE             = "backend-virhe.luo_perusopetuksen_oppimaara.json_ei_validi"
@@ -38,6 +41,9 @@ object UIVirheet {
   final val UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA = "backend-virhe.poista_suoritus.suoritus_ei_poistettavissa"
   final val UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA         = "backend-virhe.poista_suoritus.suoritus_ei_voimassa"
   final val UI_POISTA_SUORITUS_TALLENNUS_VIRHE              = "backend-virhe.poista_suoritus.poisto_epaonnistui"
+
+  final val UI_POISTA_YLIAJO_EI_OIKEUKSIA                   = "backend-virhe.poista_yliajo.ei_oikeuksia"
+  final val UI_POISTA_YLIAJO_VIRHE                          = "backend-virhe.poista_yliajo.poisto_epaonnistui"
 
   final val UI_VALINTADATA_EI_OIKEUKSIA                     = "backend-virhe.valintadata.ei_oikeuksia"
   final val UI_VALINTADATA_OPPIJAA_EI_LOYTYNYT              = "backend-virhe.valintadata.oppijaa_ei_loytynyt"

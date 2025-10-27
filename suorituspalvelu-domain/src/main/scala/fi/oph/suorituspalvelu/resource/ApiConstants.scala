@@ -73,7 +73,10 @@ object ApiConstants {
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER        = "{" + UI_TIEDOT_OPPIJANUMERO_PARAM_NAME + "}"
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot/" + UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER
 
-  final val UI_DATA_PATH                                    = UI_API_PREFIX + "/valintadata"
+  final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
+
+  final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
+  final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
 
   final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/oppijat"
   final val UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME             = "hakusana"
@@ -85,7 +88,8 @@ object ApiConstants {
   final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
 
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
-  final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "haku"
+  final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
+  final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"
 
   final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
   final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
@@ -142,5 +146,10 @@ object ApiConstants {
   final val ESIMERKKI_LUOKKA                                = "9B"
   final val ESIMERKKI_AIKALEIMA                             = "2025-09-28T10:15:30.00Z"
   final val ESIMERKKI_TULOSTIEDOSTO                         = "https://virkailija.opintopolku.fi/koski/api/massaluovutus/a45ad5b4-88dc-4586-8401-34978956215d/1.json"
+
+  final val ESIMERKKI_YLIAJO_AVAIN                          = "lisapistekoulutus_telma"
+  final val ESIMERKKI_YLIAJO_ARVO                           = "true"
+  final val ESIMERKKI_YLIAJO_VIRKAILIJA                     = "1.2.246.562.24.40483869921"
+  final val ESIMERKKI_YLIAJO_SELITE                         = "Tarkistettu, että Telma-suoritus on tarpeeksi laaja. Tiedot puuttuvat lähdejärjestelmästä."
 
 }

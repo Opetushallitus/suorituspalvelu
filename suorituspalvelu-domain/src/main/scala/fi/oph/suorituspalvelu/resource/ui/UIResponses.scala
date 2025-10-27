@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.ui
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_HETU, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKU_OID, ESIMERKKI_HETU, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN, ESIMERKKI_YLIAJO_ARVO, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, ESIMERKKI_YLIAJO_VIRKAILIJA}
 import fi.oph.suorituspalvelu.resource.*
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE, UI_VALINTADATA_EI_OIKEUKSIA}
 import io.swagger.v3.oas.annotations.media.Schema
@@ -1166,9 +1166,22 @@ case class OppijanTiedotFailureResponse(
   @BeanProperty virheet: java.util.Set[String],
 ) extends OppijanTiedotResponse
 
+case class AvainArvoYliajoUI(@BeanProperty avain: String,
+                             @BeanProperty arvo: String,
+                             @BeanProperty henkiloOid: String,
+                             @BeanProperty hakuOid: String,
+                             @BeanProperty virkailijaOid: String,
+                             @BeanProperty selite: String)
+
+case class AvainArvoMetadataUI(@BeanProperty selitteet: java.util.List[String],
+                               @BeanProperty duplikaatti: Boolean, //Yleisesti ottaen duplikaattiavaimia ei varmaan kannata kälissä näyttää
+                               @BeanProperty arvoEnnenYliajoa: Optional[String],
+                               @BeanProperty yliajo: Optional[AvainArvoYliajoUI])
+
+
 case class AvainArvoContainerUI(@BeanProperty avain: String,
                                 @BeanProperty arvo: String,
-                                @BeanProperty selitteet: java.util.List[String])
+                                @BeanProperty metadata: AvainArvoMetadataUI)
 
 case class OppijanValintaDataSuccessResponse(
                                          @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
@@ -1394,3 +1407,38 @@ case class PoistaSuoritusFailureResponse(
   @(Schema @field)(example = UI_POISTA_SUORITUS_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheAvaimet: java.util.Set[String],
 ) extends PoistaSuoritusResponse
+
+
+trait PoistaYliajotResponse()
+
+case class PoistaYliajoSuccessResponse() extends PoistaYliajotResponse
+
+case class PoistaYliajoFailureResponse(
+                                          @(Schema @field)(example = UI_POISTA_SUORITUS_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
+                                          @BeanProperty virheAvaimet: java.util.Set[String],
+                                        ) extends PoistaYliajotResponse
+
+trait TallennaYliajotOppijalleResponse()
+
+case class TallennaYliajotOppijalleSuccessResponse() extends TallennaYliajotOppijalleResponse
+
+case class TallennaYliajotOppijalleFailureResponse(
+  @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheAvaimet: java.util.Set[String]) extends TallennaYliajotOppijalleResponse
+
+case class Yliajo(
+  @(Schema @field)(example = ESIMERKKI_YLIAJO_AVAIN, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty avain: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_YLIAJO_ARVO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvo: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_YLIAJO_SELITE)
+  @BeanProperty selite: Optional[String])
+
+case class YliajoTallennusContainer(
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOid: Optional[String], //Oppija, jonka arvoihin yliajo vaikuttaa
+  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOid: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_YLIAJO_VIRKAILIJA, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virkailijaOid: Optional[String], //Yliajon tehneen virkailijan oid. Poimitaan käyttäjätiedoista?
+  yliajot: Optional[java.util.List[Yliajo]])
