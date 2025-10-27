@@ -32,8 +32,8 @@ object ApiConstants {
   final val KOSKI_DATASYNC_MUUTTUNEET_PATH                  = KOSKI_DATASYNC_PATH + "/muuttuneet"
   final val KOSKI_DATASYNC_RETRY_PATH                       = KOSKI_DATASYNC_PATH + "/retry"
 
-  final val YTR_DATASYNC_PATH = DATASYNC_PATH + "/ytr"
-  final val YTR_DATASYNC_HAKU_PATH = YTR_DATASYNC_PATH + "/haku"
+  final val YTR_DATASYNC_PATH                               = DATASYNC_PATH + "/ytr"
+  final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
 
   final val VIRTA_DATASYNC_PARAM_NAME                       = "oppijaNumero"
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
@@ -41,6 +41,22 @@ object ApiConstants {
   final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta" + "/haku/"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
   final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
+
+  final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
+  final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"
+  final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
+  final val LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER              = "{" + LAHETTAVAT_VUOSI_PARAM_NAME + "}"
+  final val LAHETTAVAT_PATH                                 = VERSIONED_API_PREFIX + "/lahettavat/" + LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER + "/" + LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER
+  final val LAHETTAVAT_EI_OIKEUKSIA                         = "Käyttäjällä ei ole oikeuksia hakea rajaimien tietoja"
+  final val LAHETTAVAT_ESIMERKKI_VIRHE                      = "oppilaitosOid ei ole validi oid"
+  final val LAHETTAVAT_500_VIRHE                            = "Tietojen haku epäonnistui"
+  final val LAHETTAVAT_HAKU_EPÄONNISTUI                     = "Rajaimien tietojen haku epäonnistui"
+
+  final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
+  final val LAHETTAVAT_HENKILOT_PATH                     = LAHETTAVAT_PATH + "/opiskelijat"
+
+  final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
 
   final val LEGACY_SUORITUKSET_HENKILO_PARAM_NAME           = "henkilo"
   final val LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME  = "muokattuJalkeen"

@@ -3,8 +3,8 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo, PKOppimaaraOppilaitosKeskenMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
@@ -119,12 +119,8 @@ class UIService {
   }
 
   def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {
-    val oppilaitosOids = Set(
-      kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN)
-        .map(avain => PKOppimaaraOppilaitosKeskenMetadataArvo(avain).oppilaitosOid),
-      kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN)
-        .map(avain => new PKOppimaaraOppilaitosVuosiMetadataArvo(avain).oppilaitosOid)
-    ).flatten
+    val oppilaitosOids = kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN)
+      .map(avain => new PKOppimaaraOppilaitosVuosiMetadataArvo(avain).oppilaitosOid)
 
     oppilaitosOids
       .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
@@ -144,36 +140,30 @@ class UIService {
   } 
 
   def haeVuodet(oppilaitosOid: String): Set[String] = {
-    Set(
-      if(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_KESKEN_AVAIN, Some(s"$oppilaitosOid")).nonEmpty)
-        Some(Set(LocalDate.now().getYear.toString))
-      else
-        None,
-      Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, Some(s"$oppilaitosOid"))
-        .map(arvo => new PKOppimaaraOppilaitosVuosiMetadataArvo(arvo).vuosi.toString)),
-    ).flatten.flatten
+    kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, Some(s"$oppilaitosOid"))
+      .map(arvo => new PKOppimaaraOppilaitosVuosiMetadataArvo(arvo).vuosi.getOrElse(LocalDate.now().getYear).toString)
   }
 
   def haeLuokat(oppilaitosOid: String, vuosi: Int): Set[String] = {
     Set(
       if(LocalDate.now().getYear==vuosi)
-        Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_KESKEN_LUOKKA_AVAIN, Some(s"$oppilaitosOid"))
-          .map(arvo => new PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(arvo).luokka))
+        Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN, Some(s"$oppilaitosOid:KESKEN"))
+          .map(arvo => new PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(arvo).luokka))
       else
         None,
-      Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN, Some(s"$oppilaitosOid"))
-        .map(arvo => new PKOppimaaraOppilaitosKeskenLuokkaMetadataArvo(arvo).luokka)),
+      Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN, Some(s"$oppilaitosOid:$vuosi"))
+        .map(arvo => new PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(arvo).luokka)),
     ).flatten.flatten
   }
 
-  def haePKOppijaOidit(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[String] = {
-    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitos, vuosi, luokka)
-      .flatMap(metadata => kantaOperaatiot.haeVersiot(metadata, Instant.now()).map(v => v.oppijaNumero))
+  def haePKOppijaOidit(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Set[(String, Set[String])] = {
+    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid, vuosi, luokka)
+      .flatMap(metadata => kantaOperaatiot.haeVersiotJaMetadata(metadata, Instant.now()).map((versio, metadata) => (versio.oppijaNumero, KoskiUtil.extractLuokat(oppilaitosOid, metadata))))
       .toSet
   }
 
   def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
-    val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka)
+    val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka).map(_._1)
 
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
       .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet)

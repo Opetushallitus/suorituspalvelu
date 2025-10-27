@@ -30,7 +30,7 @@ import scala.jdk.OptionConverters.*
 @RequestMapping(path = Array(""))
 @RestController
 @Tag(
-  name = "Data sync",
+  name = "Manuaalinen tietojen päivitys",
   description = "Manuaalinen datan haku lähdejärjestelmistä")
 class DataSyncResource {
 

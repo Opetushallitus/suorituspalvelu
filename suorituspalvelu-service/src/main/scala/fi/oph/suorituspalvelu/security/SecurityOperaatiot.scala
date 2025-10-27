@@ -23,6 +23,9 @@ class SecurityOperaatiot(
   def onRekisterinpitaja(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL)
 
+  def onPalveluKayttaja(): Boolean =
+    kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA)
+
   def onOrganisaationKatselija(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA)
 
