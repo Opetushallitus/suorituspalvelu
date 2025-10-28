@@ -1,15 +1,15 @@
 import { Stack } from '@mui/material';
-import { Opiskeluoikeudet } from '@/components/suoritustiedot/Opiskeluoikeudet';
-import { Suoritukset } from '@/components/suoritustiedot/Suoritukset';
 import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { useConfig } from '@/lib/configuration';
 import { ExternalLink } from '@/components/ExternalLink';
 import { formatFinnishDate } from '@/lib/common';
-import type { Route } from './+types/HenkiloPage';
+import type { Route } from './+types/HenkiloPageLayout';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusManagerProvider } from '@/lib/suoritusManager';
+import { TiedotTabNavi } from '@/components/TiedotTabNavi';
+import { Outlet } from 'react-router';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -22,7 +22,7 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   );
 };
 
-export default function HenkiloPage({ params }: Route.ComponentProps) {
+export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
   const { data: tiedot } = useOppija(params.oppijaNumero);
   const { t } = useTranslations();
   return (
@@ -51,8 +51,8 @@ export default function HenkiloPage({ params }: Route.ComponentProps) {
             />
           </Stack>
         </Stack>
-        <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
-        <Suoritukset oppijanTiedot={tiedot} />
+        <TiedotTabNavi />
+        <Outlet />
       </Stack>
     </SuoritusManagerProvider>
   );

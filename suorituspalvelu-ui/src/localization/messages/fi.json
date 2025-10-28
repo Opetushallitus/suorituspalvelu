@@ -257,5 +257,9 @@
   },
   "datepicker": {
     "placeholder": "pp.kk.vvvv"
+  },
+  "tabs": {
+    "suoritustiedot": "Suoritustiedot",
+    "opiskelijavalinnan-tiedot": "Opiskelijavalinnan tiedot"
   }
 }
