@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.integration.client.AtaruValintalaskentaHakemus
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
@@ -11,10 +12,12 @@ class UseitaVahvistettujaOppimaariaException(val message: String) extends Runtim
 
 //Opiskeluoikeudet sisältävät kaiken lähdedatan, käyttö nykyisellään vain debug-tarkoituksiin.
 case class AvainArvoConverterResults(personOid: String,
-                                     containers: Set[AvainArvoContainer],
+                                     paatellytArvot: Set[AvainArvoContainer],
+                                     convertedHakemus: Option[ConvertedAtaruHakemus], //Myös hakemus sisältää avain-arvoja. Niitä ei kuitenkaan voi yliajaa.
                                      opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty) {
+  //Todo, tämän voisi refaktoroida pois ja testit nojaamaan johonkin muuhun. Datan yhdistely eri tarpeisiin ValintaDataServicessä, ja testaus myös siellä.
   def getAvainArvoMap(): Map[String, String] = {
-    containers.map(aa => aa.avain -> aa.arvo).toMap
+    paatellytArvot.map(aa => aa.avain -> aa.arvo).toMap
   }
 }
 
@@ -142,6 +145,13 @@ object AvainArvoConstants {
   final val telmaMinimiLaajuus: BigDecimal = 25
   final val tuvaMinimiLaajuus: BigDecimal = 19
   final val opistovuosiMinimiLaajuus: BigDecimal = 26.5
+
+  val elibilityAtaruTilaToValintalaskentaTila = Map(
+    "eligible" -> "ELIGIBLE",
+    "uneligible" -> "INELIGIBLE",
+    "unreviewed" -> "NOT_CHECKED",
+    "conditionally-eligible" -> "CONDITIONALLY_ELIGIBLE"
+  )
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -166,6 +176,60 @@ object PerusopetuksenArvosanaOrdering {
   }
 }
 
+case class ValintalaskentaHakutoive(hakuOid: String,
+                                    hakukohdeOid: String,
+                                    prioriteetti: Int,
+                                    hakukohderyhmaOids: Set[String],
+                                    harkinnanvaraisuus: Boolean = false //Onkohan tämä tarpeellinen? Tarkistetaan, kun muuten laitetaan harkinnanvaraisuusasiat kuntoon.
+                                   )
+case class ConvertedAtaruHakemus(hakutoiveet: List[ValintalaskentaHakutoive], avainArvot: Set[AvainArvoContainer])
+
+object HakemusConverter {
+
+  def convertHakutoiveet(hakemus: AtaruValintalaskentaHakemus): (List[ValintalaskentaHakutoive], Set[AvainArvoContainer]) = {
+    val hakutoiveResults: List[(ValintalaskentaHakutoive, Set[AvainArvoContainer])] = hakemus.hakutoiveet.zipWithIndex.map((hakutoive, index) => {
+      val prioriteetti = index + 1
+      val valintalaskentaHakutoive = ValintalaskentaHakutoive(
+        hakemus.hakuOid,
+        hakutoive.hakukohdeOid,
+        prioriteetti,
+        Set.empty //Todo, add hakukohderyhmaoids
+      )
+
+      val aa = Set(
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id", hakutoive.hakukohdeOid, false, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-eligibility",
+          AvainArvoConstants.elibilityAtaruTilaToValintalaskentaTila
+            .getOrElse(
+              hakutoive.eligibilityState,
+              throw new RuntimeException(s"Unknown state: ${hakutoive.eligibilityState}")), false, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-processingState", hakutoive.processingState.toUpperCase, false, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-paymentObligation", hakutoive.paymentObligation.toUpperCase, false, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-languageRequirement", hakutoive.languageRequirement.toUpperCase, false, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-degreeRequirement", hakutoive.degreeRequirement.toUpperCase, false, Seq.empty)
+      )
+
+      (valintalaskentaHakutoive, aa)
+    })
+    val hakutoiveet = hakutoiveResults.map(_._1)
+    val aas = hakutoiveResults.map(_._2).foldLeft(Set.empty[AvainArvoContainer])(_ ++ _)
+
+    (hakutoiveet, aas)
+  }
+
+  def convertHakemus(hakemus: AtaruValintalaskentaHakemus): ConvertedAtaruHakemus = {
+    val hakutoiveData: (List[ValintalaskentaHakutoive], Set[AvainArvoContainer]) = convertHakutoiveet(hakemus)
+
+    //Todo, arvoille "language" ja "pohjakoulutus_vuosi" erilliskäsittelyä Koostepalvelussa. Päästäänkö nyt eroon?
+    val avainArvotHakemukselta: Set[AvainArvoContainer] = hakemus.keyValues.map((k, v) => {
+      AvainArvoContainer(k, v, false, Seq.empty)
+    }).toSet
+    val avainArvotHakukohteilta: Set[AvainArvoContainer] = hakutoiveData._2
+
+    ConvertedAtaruHakemus(hakutoiveData._1, avainArvotHakemukselta ++ avainArvotHakukohteilta)
+  }
+}
+
 //Tätä moduulia varten tehdään kahdenlaista filtteröintiä. Vahvistuspäivän mukaan tapahtuva suoritusten filtteröinti selitteineen tapahtuu tämän moduulin sisällä.
 //Laskennan alkamishetken mukaan tapahtuva oppijan tiettynä ajanhetkellä voimassaollut versio haetaan tämän moduulin ulkopuolella.
 object AvainArvoConverter {
@@ -173,6 +237,13 @@ object AvainArvoConverter {
   val LOG = LoggerFactory.getLogger(getClass)
 
   def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
+    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan)
+  }
+
+  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
+
+    //Todo, valintapisteet avain-arvoiksi
+    val convertedHakemus = hakemus.map(h => HakemusConverter.convertHakemus(h))
 
     val peruskouluArvot = convertPeruskouluArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
@@ -180,9 +251,9 @@ object AvainArvoConverter {
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet)
 
-    val avainArvot = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot ++ lisapistekoulutusArvot
+    val paatellytArvot: Set[AvainArvoContainer] = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot ++ lisapistekoulutusArvot
 
-    AvainArvoConverterResults(personOid, avainArvot, opiskeluoikeudet)
+    AvainArvoConverterResults(personOid, paatellytArvot, convertedHakemus, opiskeluoikeudet)
   }
 
   def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
