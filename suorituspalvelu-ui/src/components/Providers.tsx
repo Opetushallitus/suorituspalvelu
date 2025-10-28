@@ -4,7 +4,6 @@ import '@fontsource/open-sans/latin-700.css';
 import '@/styles/global.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionExpiredProvider } from '@/components/SessionExpired';
-import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import { LocalizationProvider } from './LocalizationProvider';
 import { use } from 'react';
 import { configPromise } from '@/lib/configuration';
@@ -25,14 +24,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const config = use(configPromise);
   return (
     <SessionExpiredProvider>
-      <NuqsAdapter>
-        <script async src={config.routes.yleiset.raamitUrl}></script>
-        <QueryClientProvider client={queryClient}>
-          <LocalizationProvider>
-            <ConfirmationModalProvider>{children}</ConfirmationModalProvider>
-          </LocalizationProvider>
-        </QueryClientProvider>
-      </NuqsAdapter>
+      <script async src={config.routes.yleiset.raamitUrl}></script>
+      <QueryClientProvider client={queryClient}>
+        <LocalizationProvider>
+          <ConfirmationModalProvider>{children}</ConfirmationModalProvider>
+        </LocalizationProvider>
+      </QueryClientProvider>
     </SessionExpiredProvider>
   );
 }

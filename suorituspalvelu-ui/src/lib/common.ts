@@ -2,12 +2,6 @@ import { formatDate } from 'date-fns';
 import React from 'react';
 import { isNullish, isTruthy } from 'remeda';
 
-export const DEFAULT_NUQS_OPTIONS = {
-  history: 'push',
-  clearOnDefault: true,
-  defaultValue: '',
-} as const;
-
 export const NDASH = '\u2013';
 
 export const EMPTY_OBJECT = Object.freeze({});

@@ -41,7 +41,6 @@ export const TiedotTabNavi = () => {
 
   // Convert URLSearchParams to search string
   const searchString = searchParams.toString();
-  console.log('searchString:', searchString);
 
   const searchWithPrefix = searchString ? `?${searchString}` : '';
 
