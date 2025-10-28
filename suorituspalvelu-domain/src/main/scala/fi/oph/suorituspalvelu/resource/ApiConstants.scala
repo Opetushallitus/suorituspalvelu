@@ -18,7 +18,7 @@ object ApiConstants {
   final val DATASYNC_EI_OIKEUKSIA                           = "Käyttäjällä ei ole oikeuksia käynnistää tietojen synkronointia"
   final val DATASYNC_JSON_VIRHE                             = "JSON-deserialisointi epäonnistui"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
+  final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
 
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
 
@@ -27,6 +27,7 @@ object ApiConstants {
   final val KOSKI_DATASYNC_HENKILOT_MAX_MAARA               = KOSKI_DATASYNC_HENKILOT_MAX_MAARA_STR.toInt
   final val KOSKI_DATASYNC_HENKILOT_LIIKAA                  = "Tiedot voi hakea korkeintaan 5000 henkilölle kerrallaan"
   final val KOSKI_DATASYNC_500_VIRHE                        = "Tietojen päivitys KOSKI-järjestelmästä epäonnistui"
+  final val KOSKI_DATASYNC_ESIMERKKI_VIRHE                  = "henkilöOid:" + ESIMERKKI_OPPIJANUMERO + ", virheet: Henkilön tietojen päivitys epäonnistui"
 
   final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
   final val KOSKI_DATASYNC_MUUTTUNEET_PATH                  = KOSKI_DATASYNC_PATH + "/muuttuneet"
@@ -53,7 +54,7 @@ object ApiConstants {
   final val LAHETTAVAT_HAKU_EPÄONNISTUI                     = "Rajaimien tietojen haku epäonnistui"
 
   final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
-  final val LAHETTAVAT_HENKILOT_PATH                     = LAHETTAVAT_PATH + "/opiskelijat"
+  final val LAHETTAVAT_HENKILOT_PATH                        = LAHETTAVAT_PATH + "/opiskelijat"
 
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
