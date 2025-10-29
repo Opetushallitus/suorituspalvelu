@@ -123,9 +123,10 @@
       "tyyppi": "Tyyppi",
       "oppilaitos": "Oppilaitos",
       "tila": "Tila",
-      "suoritusvuosi": "Suoritusvuosi",
       "koulusivistyskieli": "Koulusivistyskieli",
-      "yksilollistetty": "Yksilöllistetty"
+      "yksilollistetty": "Yksilöllistetty",
+      "valmistumispaiva": "Valmistumispäivä",
+      "suorituskieli": "Suorituskieli"
     },
     "tallenna": "Tallenna",
     "poista": "Poista"
@@ -143,5 +144,8 @@
     "ruotsi": "ruotsi",
     "englanti": "englanti",
     "muu": "muu"
+  },
+  "datepicker": {
+    "placeholder": "pp.kk.vvvv"
   }
 }
