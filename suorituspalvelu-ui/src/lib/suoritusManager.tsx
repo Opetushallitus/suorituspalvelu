@@ -15,6 +15,7 @@ import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationStatusIndicator';
 import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useConfirmNavigation } from '@/hooks/useConfirmNavigation';
 
 export type SuoritusMutationOperation = 'save' | 'delete';
 
@@ -110,6 +111,8 @@ const createEditableSuoritusFields = ({
 
 const useSuoritusManagerState = () => {
   const { t } = useTranslations();
+
+  const [isDirty, setIsDirty] = useState(false);
   const [oppijaOid, setOppijaOid] = useState<string | undefined>(undefined);
   const [suoritusState, setSuoritusState] = useState<SuoritusFields | null>(
     null,
@@ -156,9 +159,12 @@ const useSuoritusManagerState = () => {
       }
       if (mutationOperation !== 'delete') {
         setSuoritusState(null);
+        setIsDirty(false);
       }
     },
   });
+
+  useConfirmNavigation(isDirty);
 
   return useMemo(() => {
     const addSuoritus = () => {
@@ -169,6 +175,7 @@ const useSuoritusManagerState = () => {
           oppijaOid,
         }),
       );
+      setIsDirty(false);
     };
 
     const editSuoritus = (
@@ -179,6 +186,7 @@ const useSuoritusManagerState = () => {
       if (oppijaOid) {
         setSuoritusState(createEditableSuoritusFields({ oppijaOid, suoritus }));
       }
+      setIsDirty(false);
     };
 
     return {
@@ -224,6 +232,7 @@ const useSuoritusManagerState = () => {
         setSuoritusState((prev) =>
           prev ? { ...prev, ...updatedFields } : prev,
         );
+        setIsDirty(true);
       },
       onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => {
         setSuoritusState((previousSuoritus) => {
@@ -245,6 +254,7 @@ const useSuoritusManagerState = () => {
           }
           return previousSuoritus;
         });
+        setIsDirty(true);
       },
       saveSuoritus: () => {
         suoritusMutation.mutate({ operation: 'save' });
