@@ -76,7 +76,7 @@
     "yo-kokeen-tutkintokerta": "Tutkintokerta",
     "arvosana": "Arvosana",
     "oppiaine": "Oppiaine",
-    "valinnainen": "Valinnainen",
+    "valinnainen": "Valinnainen arvosana",
     "eb-written": "Written",
     "eb-oral": "Oral",
     "eb-final": "Final",
@@ -103,7 +103,7 @@
     "syntymaaika": "Syntymäaika",
     "oppijanumero": "Oppijanumero",
     "henkiloOid": "Henkilö-OID",
-    "lisatieto-kieli": "Lisätieto (kieli)"
+    "lisatieto-kieli": "Lisätieto (oppimäärä)"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",
@@ -128,7 +128,7 @@
       "yksilollistetty": "Yksilöllistetty",
       "valmistumispaiva": "Valmistumispäivä",
       "suorituskieli": "Suorituskieli",
-      "lisaa-valinnainen": "Lisää valinnainen",
+      "lisaa-valinnainen": "Lisää arvosana",
       "tallennetaan": "Tallennetaan suoritusta...",
       "tallenna": "Tallenna suoritus",
       "poista": "Poista suoritus",
