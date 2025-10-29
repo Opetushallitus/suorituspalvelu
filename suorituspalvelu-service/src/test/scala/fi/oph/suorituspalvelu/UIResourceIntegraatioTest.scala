@@ -519,7 +519,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeOppilaitoksenOppijatMalformedParameters(): Unit =
     // kaikki validoidut parametrit määritelty mutta mikään ei validi
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_OPPILAITOS_HAKU_PATH + "?oppilaitos={oppilaitos}&luokka={luokka}&vuosi={vuosi}", "ei validi oppilaitos", "ei validi luokka", "ei validi vuosi"))
+        .get(ApiConstants.UI_OPPILAITOS_HAKU_PATH + "?oppilaitos={oppilaitos}&luokka={luokka}&vuosi={vuosi}", "ei validi oppilaitos", "ei#validi luokka", "ei validi vuosi"))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -614,7 +614,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeOppijanTiedotMalformedOid(): Unit =
     // ei validi oid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-      .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
+        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
       .andExpect(status().isBadRequest)
       .andReturn()
 

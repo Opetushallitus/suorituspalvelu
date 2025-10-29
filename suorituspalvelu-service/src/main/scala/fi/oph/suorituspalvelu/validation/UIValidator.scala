@@ -63,7 +63,7 @@ object UIValidator {
   val avainArvoStringPattern: Regex = "^[a-zA-Z0-9_]*$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
-  val luokkaPattern: Regex = "^[0-9][A-Z]$".r
+  val luokkaPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d \\-_]+$".r
 
   def validateVersioTunniste(tunniste: Option[String]): Set[String] =
     if (tunniste.isEmpty)
@@ -76,7 +76,7 @@ object UIValidator {
         case default => Set(VALIDATION_VERSIOTUNNISTE_EI_VALIDI)
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
-    if (oppijaNumero.isEmpty || oppijaNumero.get.length == 0)
+    if (oppijaNumero.isEmpty || oppijaNumero.get.isEmpty)
       if(pakollinen)
         Set(VALIDATION_OPPIJANUMERO_TYHJA)
       else

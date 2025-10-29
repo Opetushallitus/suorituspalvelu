@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaineenOppim
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 
 import java.time.LocalDate
-import java.util.{Optional, UUID}
+import java.util.UUID
 import scala.jdk.OptionConverters.*
 import scala.jdk.CollectionConverters.*
 

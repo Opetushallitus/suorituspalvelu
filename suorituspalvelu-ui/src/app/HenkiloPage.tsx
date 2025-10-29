@@ -26,32 +26,34 @@ export default function HenkiloPage({ params }: Route.ComponentProps) {
   const { data: tiedot } = useOppija(params.oppijaNumero);
   const { t } = useTranslations();
   return (
-    <Stack spacing={6} sx={{ margin: 2 }}>
-      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${tiedot.nimi}`}</title>
-      <Stack spacing={2}>
-        <OphTypography variant="h3" component="h2">
-          {tiedot.nimi}{' '}
-          <span style={{ fontWeight: 'normal' }}>({tiedot.henkiloTunnus})</span>
-        </OphTypography>
-        <Stack direction="row">
-          <LabeledInfoItem
-            label={t('oppija.syntymaaika')}
-            value={formatFinnishDate(tiedot?.syntymaAika)}
-          />
-          <LabeledInfoItem
-            label={t('oppija.oppijanumero')}
-            value={<OppijanumeroLink oppijaNumero={tiedot.oppijaNumero} />}
-          />
-          <LabeledInfoItem
-            label={t('oppija.henkiloOid')}
-            value={tiedot?.henkiloOID}
-          />
+    <SuoritusManagerProvider>
+      <Stack spacing={6} sx={{ margin: 2 }}>
+        <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${tiedot.nimi}`}</title>
+        <Stack spacing={2}>
+          <OphTypography variant="h3" component="h2">
+            {tiedot.nimi}{' '}
+            <span style={{ fontWeight: 'normal' }}>
+              ({tiedot.henkiloTunnus})
+            </span>
+          </OphTypography>
+          <Stack direction="row">
+            <LabeledInfoItem
+              label={t('oppija.syntymaaika')}
+              value={formatFinnishDate(tiedot?.syntymaAika)}
+            />
+            <LabeledInfoItem
+              label={t('oppija.oppijanumero')}
+              value={<OppijanumeroLink oppijaNumero={tiedot.oppijaNumero} />}
+            />
+            <LabeledInfoItem
+              label={t('oppija.henkiloOid')}
+              value={tiedot?.henkiloOID}
+            />
+          </Stack>
         </Stack>
-      </Stack>
-      <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
-      <SuoritusManagerProvider>
+        <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
         <Suoritukset oppijanTiedot={tiedot} />
-      </SuoritusManagerProvider>
-    </Stack>
+      </Stack>
+    </SuoritusManagerProvider>
   );
 }

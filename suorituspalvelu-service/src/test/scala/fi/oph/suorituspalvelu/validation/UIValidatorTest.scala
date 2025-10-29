@@ -59,8 +59,8 @@ class UIValidatorTest {
   }
 
   @Test def testValidateLuokkaInvalid(): Unit = {
-    val luokka = "tämä ei ole validi luokka"
-    Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI), UIValidator.validateLuokka(Some(luokka), true))
+    val eiValidiLuokka = "luokka#9"
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI), UIValidator.validateLuokka(Some(eiValidiLuokka), true))
   }
 
   @Test def testValidateLuokkaValid(): Unit = {
