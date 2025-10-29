@@ -6,7 +6,7 @@ import {
   OphInputFormField,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
-import { type Ref } from 'react';
+import { useId, type Ref } from 'react';
 import type {
   PerusopetusOppiaineFields,
   SuoritusFields,
@@ -110,9 +110,11 @@ const EditSuoritusContent = ({
       value: tila.arvo,
     })) ?? [];
 
+  const labelId = useId();
+
   return (
-    <Stack sx={{ gap: 1 }}>
-      <Typography variant="h5">
+    <Stack role="region" sx={{ gap: 1 }} aria-labelledby={labelId}>
+      <Typography variant="h5" id={labelId}>
         {mode === 'new'
           ? t('muokkaus.suoritus.otsikko-lisaa')
           : t('muokkaus.suoritus.otsikko-muokkaa')}

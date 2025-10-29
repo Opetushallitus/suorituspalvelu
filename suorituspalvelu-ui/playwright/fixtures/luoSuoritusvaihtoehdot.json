@@ -1,0 +1,1243 @@
+{
+  "suoritusTilat": [
+    {
+      "nimi": {
+        "fi": "Suoritus valmis",
+        "sv": "Prestationen slutförd",
+        "en": null
+      },
+      "arvo": "VALMIS"
+    },
+    {
+      "nimi": {
+        "fi": "Suoritus kesken",
+        "sv": "Prestationen icke slutförd",
+        "en": null
+      },
+      "arvo": "KESKEN"
+    }
+  ],
+  "suoritusTyypit": [
+    {
+      "nimi": {
+        "fi": "Perusopetuksen oppimäärä",
+        "sv": "Grundläggande utbildningens lärokurs",
+        "en": "Comprehensive school education syllabus"
+      },
+      "arvo": "perusopetuksenoppimaara"
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen oppiaineen oppimäärä",
+        "sv": "Lärokurs i ett läroämne i grundläggande utbildning",
+        "en": "Subject syllabus in comprehensive school education"
+      },
+      "arvo": "perusopetuksenoppiaineenoppimaara"
+    }
+  ],
+  "oppiaineet": [
+    {
+      "nimi": {
+        "fi": "Äidinkieli ja kirjallisuus",
+        "sv": "Modersmålet och litteratur",
+        "en": "Mother tongue and literature"
+      },
+      "arvo": "AI",
+      "isKieli": false,
+      "isAidinkieli": true
+    },
+    {
+      "nimi": {
+        "fi": "A1-kieli",
+        "sv": "A1-språk",
+        "en": "A1-language"
+      },
+      "arvo": "A1",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "A2-kieli",
+        "sv": "A2-språk",
+        "en": "A2-language"
+      },
+      "arvo": "A2",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "B1-kieli",
+        "sv": "B1-språk",
+        "en": "B1-language"
+      },
+      "arvo": "B1",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Matematiikka",
+        "sv": "Matematik",
+        "en": "Mathematics"
+      },
+      "arvo": "MA",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Biologia",
+        "sv": "Biologi",
+        "en": "Biology"
+      },
+      "arvo": "BI",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Maantieto",
+        "sv": "Geografi",
+        "en": "Geography"
+      },
+      "arvo": "GE",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Fysiikka",
+        "sv": "Fysik",
+        "en": "Physics"
+      },
+      "arvo": "FY",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Kemia",
+        "sv": "Kemi",
+        "en": "Chemistry"
+      },
+      "arvo": "KE",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Terveystieto",
+        "sv": "Hälsokunskap",
+        "en": "Health education"
+      },
+      "arvo": "TE",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Uskonto/Elämänkatsomustieto",
+        "sv": "Religion/Livsåskådningskunskap",
+        "en": "Religion/ethics"
+      },
+      "arvo": "KT",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Historia",
+        "sv": "Historia",
+        "en": "History"
+      },
+      "arvo": "HI",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Yhteiskuntaoppi",
+        "sv": "Samhällslära",
+        "en": "Social studies"
+      },
+      "arvo": "YH",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Musiikki",
+        "sv": "Musik",
+        "en": "Music"
+      },
+      "arvo": "MU",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Kuvataide",
+        "sv": "Bildkonst",
+        "en": "Visual arts"
+      },
+      "arvo": "KU",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Käsityö",
+        "sv": "Slöjd",
+        "en": "Crafts"
+      },
+      "arvo": "KS",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Liikunta",
+        "sv": "Gymnastik",
+        "en": "Physical education"
+      },
+      "arvo": "LI",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Kotitalous",
+        "sv": "Huslig ekonomi",
+        "en": "Home economics"
+      },
+      "arvo": "KO",
+      "isKieli": false,
+      "isAidinkieli": false
+    }
+  ],
+  "suoritusKielet": [
+    {
+      "nimi": {
+        "fi": "suomi",
+        "sv": "finska",
+        "en": "Finnish"
+      },
+      "arvo": "FI"
+    },
+    {
+      "nimi": {
+        "fi": "ruotsi",
+        "sv": "svenska",
+        "en": "Swedish"
+      },
+      "arvo": "SV"
+    },
+    {
+      "nimi": {
+        "fi": "englanti",
+        "sv": "engelska",
+        "en": "English"
+      },
+      "arvo": "EN"
+    },
+    {
+      "nimi": {
+        "fi": "pohjoissaame",
+        "sv": "samiska",
+        "en": "Northern Sami"
+      },
+      "arvo": "SE"
+    },
+    {
+      "nimi": {
+        "fi": "saksa",
+        "sv": "tyska",
+        "en": "German"
+      },
+      "arvo": "DE"
+    }
+  ],
+  "aidinkielenOppimaarat": [
+    {
+      "nimi": {
+        "fi": "Suomen kieli ja kirjallisuus",
+        "sv": "Finska och litteratur",
+        "en": "Finnish language and literature"
+      },
+      "arvo": "AI1"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsin kieli ja kirjallisuus",
+        "sv": "Svenska och litteratur",
+        "en": "Swedish language and literature"
+      },
+      "arvo": "AI2"
+    },
+    {
+      "nimi": {
+        "fi": "Saamen kieli ja kirjallisuus",
+        "sv": "Samiska och litteratur",
+        "en": "Saami language and literature"
+      },
+      "arvo": "AI3"
+    },
+    {
+      "nimi": {
+        "fi": "Romanikieli ja kirjallisuus",
+        "sv": "Romani och litteratur",
+        "en": "Romani and literature"
+      },
+      "arvo": "AI4"
+    },
+    {
+      "nimi": {
+        "fi": "Viittomakieli ja kirjallisuus",
+        "sv": "Teckenspråk och litteratur",
+        "en": "Sign language and literature"
+      },
+      "arvo": "AI5"
+    },
+    {
+      "nimi": {
+        "fi": "Muu oppilaan äidinkieli",
+        "sv": "Annat modersmål",
+        "en": "Other mother tongue"
+      },
+      "arvo": "AI6"
+    },
+    {
+      "nimi": {
+        "fi": "Suomi toisena kielenä ja kirjallisuus",
+        "sv": "Finska som andraspråk och litteratur",
+        "en": "Finnish as a second language and literature"
+      },
+      "arvo": "AI7"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsi toisena kielenä ja kirjallisuus",
+        "sv": "Svenska som andraspråk och litteratur",
+        "en": "Swedish as a second language and literature"
+      },
+      "arvo": "AI8"
+    },
+    {
+      "nimi": {
+        "fi": "Suomi saamenkielisille",
+        "sv": "Finska för samisktalande",
+        "en": "Finnish for Saami speakers"
+      },
+      "arvo": "AI9"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsi saamenkielisille",
+        "sv": "Svenska för samisktalande",
+        "en": "Swedish for Saami speakers"
+      },
+      "arvo": "AI10"
+    },
+    {
+      "nimi": {
+        "fi": "Suomi viittomakielisille",
+        "sv": "Finska för teckenspråkiga",
+        "en": "Finnish for sign language speakers"
+      },
+      "arvo": "AI11"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsi viittomakielisille",
+        "sv": "Svenska för teckenspråkiga",
+        "en": "Swedish for sign language speakers"
+      },
+      "arvo": "AI12"
+    },
+    {
+      "nimi": {
+        "fi": "Suomen kieli, äidinkielenomainen suomi",
+        "sv": "Finska, modersmålsinriktad finska",
+        "en": "Suomen kieli, äidinkielenomainen suomi"
+      },
+      "arvo": "AIAI"
+    }
+  ],
+  "vieraatKielet": [
+    {
+      "nimi": {
+        "fi": "gudžarati",
+        "sv": "gujarati",
+        "en": "Gujarati"
+      },
+      "arvo": "GU"
+    },
+    {
+      "nimi": {
+        "fi": "japani",
+        "sv": "japanska",
+        "en": "Japanese"
+      },
+      "arvo": "JA"
+    },
+    {
+      "nimi": {
+        "fi": "joruba",
+        "sv": "joruba",
+        "en": "Yoruba"
+      },
+      "arvo": "YO"
+    },
+    {
+      "nimi": {
+        "fi": "Ei suoritusta",
+        "sv": "Ej avlagd",
+        "en": null
+      },
+      "arvo": "97"
+    },
+    {
+      "nimi": {
+        "fi": "katalaani",
+        "sv": "katalanska",
+        "en": "Catalan"
+      },
+      "arvo": "CA"
+    },
+    {
+      "nimi": {
+        "fi": "kurmandži",
+        "sv": "nordkurdiska",
+        "en": "Kurmanji"
+      },
+      "arvo": "KMR"
+    },
+    {
+      "nimi": {
+        "fi": "malajalam",
+        "sv": "malayalam",
+        "en": "Malayalam"
+      },
+      "arvo": "ML"
+    },
+    {
+      "nimi": {
+        "fi": "indonesia",
+        "sv": "indonesiska",
+        "en": "Indonesian"
+      },
+      "arvo": "ID"
+    },
+    {
+      "nimi": {
+        "fi": "bulgaria",
+        "sv": "bulgariska",
+        "en": "Bulgarian"
+      },
+      "arvo": "BG"
+    },
+    {
+      "nimi": {
+        "fi": "thai",
+        "sv": "thai",
+        "en": null
+      },
+      "arvo": "TH"
+    },
+    {
+      "nimi": {
+        "fi": "wolof",
+        "sv": "wolof",
+        "en": "Wolof"
+      },
+      "arvo": "WO"
+    },
+    {
+      "nimi": {
+        "fi": "ruotsi",
+        "sv": "svenska",
+        "en": "Swedish"
+      },
+      "arvo": "SV"
+    },
+    {
+      "nimi": {
+        "fi": "turkki",
+        "sv": "turkiska",
+        "en": "Turkish"
+      },
+      "arvo": "TR"
+    },
+    {
+      "nimi": {
+        "fi": "lingala",
+        "sv": "lingala",
+        "en": "Lingala"
+      },
+      "arvo": "LN"
+    },
+    {
+      "nimi": {
+        "fi": "venäjä",
+        "sv": "ryska",
+        "en": "Russian"
+      },
+      "arvo": "RU"
+    },
+    {
+      "nimi": {
+        "fi": "pohjoissaame",
+        "sv": "nordsamiska",
+        "en": "Northern Sámi"
+      },
+      "arvo": "SME"
+    },
+    {
+      "nimi": {
+        "fi": "tanska",
+        "sv": "danska",
+        "en": "Danish"
+      },
+      "arvo": "DA"
+    },
+    {
+      "nimi": {
+        "fi": "Dari",
+        "sv": "Dari",
+        "en": "Dari"
+      },
+      "arvo": "PRS"
+    },
+    {
+      "nimi": {
+        "fi": "albania",
+        "sv": "albanska",
+        "en": "Albanian"
+      },
+      "arvo": "SQ"
+    },
+    {
+      "nimi": {
+        "fi": "englanti",
+        "sv": "engelska",
+        "en": "English"
+      },
+      "arvo": "EN"
+    },
+    {
+      "nimi": {
+        "fi": "kantoninkiina",
+        "sv": "kantonesiska",
+        "en": "Yue Chinese"
+      },
+      "arvo": "YUE"
+    },
+    {
+      "nimi": {
+        "fi": "kannada",
+        "sv": "kannada",
+        "en": "Kannada"
+      },
+      "arvo": "KN"
+    },
+    {
+      "nimi": {
+        "fi": "heprea",
+        "sv": "hebreiska",
+        "en": "Hebrew"
+      },
+      "arvo": "HE"
+    },
+    {
+      "nimi": {
+        "fi": "espanja",
+        "sv": "spanska",
+        "en": "Spanish"
+      },
+      "arvo": "ES"
+    },
+    {
+      "nimi": {
+        "fi": "azeri",
+        "sv": "azerbajdzjanska",
+        "en": "Azerbaijani"
+      },
+      "arvo": "AZ"
+    },
+    {
+      "nimi": {
+        "fi": "marathi",
+        "sv": "marathi",
+        "en": "Marathi"
+      },
+      "arvo": "MR"
+    },
+    {
+      "nimi": {
+        "fi": "sinhala",
+        "sv": "singalesiska",
+        "en": "Sinhala; Sinhalese; Singhalese"
+      },
+      "arvo": "SI"
+    },
+    {
+      "nimi": {
+        "fi": "ruotsi viittomakielisille",
+        "sv": "svenska för teckenspråkiga",
+        "en": "Swedish for sign language users"
+      },
+      "arvo": "XAI12"
+    },
+    {
+      "nimi": {
+        "fi": "romania",
+        "sv": "rumänska",
+        "en": "Romanian"
+      },
+      "arvo": "RO"
+    },
+    {
+      "nimi": {
+        "fi": "suahili",
+        "sv": "swahili",
+        "en": "Swahili, Kiswahili"
+      },
+      "arvo": "SW"
+    },
+    {
+      "nimi": {
+        "fi": "telugu",
+        "sv": "telugu",
+        "en": "Telegu"
+      },
+      "arvo": "TE"
+    },
+    {
+      "nimi": {
+        "fi": "suomi viittomakielisille",
+        "sv": "finska för teckenspråkiga",
+        "en": "Finnish for sign language users"
+      },
+      "arvo": "XAI11"
+    },
+    {
+      "nimi": {
+        "fi": "kirgiisi",
+        "sv": "kirgisiska",
+        "en": "Kirghiz, Kyrgyz"
+      },
+      "arvo": "KY"
+    },
+    {
+      "nimi": {
+        "fi": "suomi toisena kielenä",
+        "sv": "finska som andraspråk",
+        "en": "Finnish as a second language"
+      },
+      "arvo": "XAI7"
+    },
+    {
+      "nimi": {
+        "fi": "koltansaame",
+        "sv": "skoltsamiska",
+        "en": "Skolt Sámi"
+      },
+      "arvo": "SMS"
+    },
+    {
+      "nimi": {
+        "fi": "viittomakieli",
+        "sv": "teckenspråk",
+        "en": "Sign language"
+      },
+      "arvo": "VK"
+    },
+    {
+      "nimi": {
+        "fi": "afrikaans",
+        "sv": "afrikaans",
+        "en": "afrikaans"
+      },
+      "arvo": "AF"
+    },
+    {
+      "nimi": {
+        "fi": "sloveeni",
+        "sv": "slovenska",
+        "en": "Slovenian"
+      },
+      "arvo": "SL"
+    },
+    {
+      "nimi": {
+        "fi": "unkari",
+        "sv": "ungerska",
+        "en": "Hungarian"
+      },
+      "arvo": "HU"
+    },
+    {
+      "nimi": {
+        "fi": "nepali",
+        "sv": "nepali",
+        "en": "Nepali"
+      },
+      "arvo": "NE"
+    },
+    {
+      "nimi": {
+        "fi": "suomi",
+        "sv": "finska",
+        "en": "Finnish"
+      },
+      "arvo": "FI"
+    },
+    {
+      "nimi": {
+        "fi": "mongoli",
+        "sv": "mongoliska",
+        "en": "Mongolian"
+      },
+      "arvo": "MN"
+    },
+    {
+      "nimi": {
+        "fi": "norja",
+        "sv": "norska",
+        "en": "Norwegian"
+      },
+      "arvo": "NO"
+    },
+    {
+      "nimi": {
+        "fi": "kiina",
+        "sv": "kinesiska",
+        "en": "Chinese"
+      },
+      "arvo": "ZH"
+    },
+    {
+      "nimi": {
+        "fi": "mandinka ",
+        "sv": "mandinka",
+        "en": "Mandinka"
+      },
+      "arvo": "MNK"
+    },
+    {
+      "nimi": {
+        "fi": "keskikhmer",
+        "sv": "khmeriska, kambodjanska",
+        "en": "Cambodian, Khmer"
+      },
+      "arvo": "KM"
+    },
+    {
+      "nimi": {
+        "fi": "liettua",
+        "sv": "litauiska",
+        "en": "Lithuanian"
+      },
+      "arvo": "LT"
+    },
+    {
+      "nimi": {
+        "fi": "serbokroatia",
+        "sv": "serbokroatiska",
+        "en": "Serbo-Croatian"
+      },
+      "arvo": "SH"
+    },
+    {
+      "nimi": {
+        "fi": "persia, farsi",
+        "sv": "persiska",
+        "en": "Persian, Farsi"
+      },
+      "arvo": "FA"
+    },
+    {
+      "nimi": {
+        "fi": "muu kieli",
+        "sv": "övrigt språk",
+        "en": "Other languages"
+      },
+      "arvo": "KX"
+    },
+    {
+      "nimi": {
+        "fi": "tigrinja",
+        "sv": "tigrinja",
+        "en": "Tigrinya"
+      },
+      "arvo": "TI"
+    },
+    {
+      "nimi": {
+        "fi": "puola",
+        "sv": "polska",
+        "en": "Polish"
+      },
+      "arvo": "PL"
+    },
+    {
+      "nimi": {
+        "fi": "urdu",
+        "sv": "urdu",
+        "en": "Urdu"
+      },
+      "arvo": "UR"
+    },
+    {
+      "nimi": {
+        "fi": "eteläsotho",
+        "sv": "sotho",
+        "en": "Sesotho, Southern Sotho"
+      },
+      "arvo": "ST"
+    },
+    {
+      "nimi": {
+        "fi": "ruotsi toisena kielenä",
+        "sv": "svenska som andraspråk",
+        "en": "Swedish as a second language"
+      },
+      "arvo": "XAI8"
+    },
+    {
+      "nimi": {
+        "fi": "filipino",
+        "sv": "filipino",
+        "en": "Filipino"
+      },
+      "arvo": "FIL"
+    },
+    {
+      "nimi": {
+        "fi": "latvia, lätti",
+        "sv": "lettiska",
+        "en": "Latvian"
+      },
+      "arvo": "LV"
+    },
+    {
+      "nimi": {
+        "fi": "uiguuri",
+        "sv": "uiguriska",
+        "en": "Uighur"
+      },
+      "arvo": "UG"
+    },
+    {
+      "nimi": {
+        "fi": "islanti",
+        "sv": "isländska",
+        "en": "Icelandic"
+      },
+      "arvo": "IS"
+    },
+    {
+      "nimi": {
+        "fi": "saame, lappi",
+        "sv": "samiska",
+        "en": "Northern Sami"
+      },
+      "arvo": "SE"
+    },
+    {
+      "nimi": {
+        "fi": "arabia",
+        "sv": "arabiska",
+        "en": "Arabic"
+      },
+      "arvo": "AR"
+    },
+    {
+      "nimi": {
+        "fi": "tamili",
+        "sv": "tamili",
+        "en": "Tamil"
+      },
+      "arvo": "TA"
+    },
+    {
+      "nimi": {
+        "fi": "kurdi",
+        "sv": "kurdiska",
+        "en": "Kurdish"
+      },
+      "arvo": "KU"
+    },
+    {
+      "nimi": {
+        "fi": "ranska",
+        "sv": "franska",
+        "en": "French"
+      },
+      "arvo": "FR"
+    },
+    {
+      "nimi": {
+        "fi": "ukraina",
+        "sv": "ukrainska",
+        "en": "Ukrainian"
+      },
+      "arvo": "UK"
+    },
+    {
+      "nimi": {
+        "fi": "kroatia",
+        "sv": "kroatiska",
+        "en": "Croatian"
+      },
+      "arvo": "HR"
+    },
+    {
+      "nimi": {
+        "fi": "bosnia",
+        "sv": "bosniska",
+        "en": "Bosnian"
+      },
+      "arvo": "BS"
+    },
+    {
+      "nimi": {
+        "fi": "filipino",
+        "sv": null,
+        "en": null
+      },
+      "arvo": "fil"
+    },
+    {
+      "nimi": {
+        "fi": "georgia",
+        "sv": "georgiska",
+        "en": "Georgian"
+      },
+      "arvo": "KA"
+    },
+    {
+      "nimi": {
+        "fi": "muu kieli",
+        "sv": "övrigt språk",
+        "en": "Other languages"
+      },
+      "arvo": "XX"
+    },
+    {
+      "nimi": {
+        "fi": "somali",
+        "sv": "somaliska",
+        "en": "Somali"
+      },
+      "arvo": "SO"
+    },
+    {
+      "nimi": {
+        "fi": "bengali",
+        "sv": "bengali",
+        "en": "Bengali, Bangla"
+      },
+      "arvo": "BN"
+    },
+    {
+      "nimi": {
+        "fi": "ruanda",
+        "sv": "kinyarwanda",
+        "en": "Kinyarwanda, Rwanda"
+      },
+      "arvo": "RW"
+    },
+    {
+      "nimi": {
+        "fi": "portugali",
+        "sv": "portugisiska",
+        "en": "Portuguese"
+      },
+      "arvo": "PT"
+    },
+    {
+      "nimi": {
+        "fi": "inarinsaame",
+        "sv": "enaresamiska",
+        "en": "Inari Sámi"
+      },
+      "arvo": "SMN"
+    },
+    {
+      "nimi": {
+        "fi": "tšekki",
+        "sv": "tjeckiska",
+        "en": "Czech"
+      },
+      "arvo": "CS"
+    },
+    {
+      "nimi": {
+        "fi": "swazi",
+        "sv": "swazi",
+        "en": "Siswati, Swazi, Swati"
+      },
+      "arvo": "SS"
+    },
+    {
+      "nimi": {
+        "fi": "amhara",
+        "sv": "amhariska",
+        "en": "Amharic"
+      },
+      "arvo": "AM"
+    },
+    {
+      "nimi": {
+        "fi": "mandariinikiina",
+        "sv": "mandarin",
+        "en": "Mandarin Chinese"
+      },
+      "arvo": "CMN"
+    },
+    {
+      "nimi": {
+        "fi": "tataari",
+        "sv": "tatariska",
+        "en": "Tatar"
+      },
+      "arvo": "TT"
+    },
+    {
+      "nimi": {
+        "fi": "pandžabi",
+        "sv": "panjabi",
+        "en": "Punjabi, Panjabi"
+      },
+      "arvo": "PA"
+    },
+    {
+      "nimi": {
+        "fi": "italia",
+        "sv": "italienska",
+        "en": "Italian"
+      },
+      "arvo": "IT"
+    },
+    {
+      "nimi": {
+        "fi": "kreikka",
+        "sv": "grekiska",
+        "en": "Greek"
+      },
+      "arvo": "EL"
+    },
+    {
+      "nimi": {
+        "fi": "hindi",
+        "sv": "hindi",
+        "en": "Hindi"
+      },
+      "arvo": "HI"
+    },
+    {
+      "nimi": {
+        "fi": "slovakki",
+        "sv": "slovakiska",
+        "en": "Slovak"
+      },
+      "arvo": "SK"
+    },
+    {
+      "nimi": {
+        "fi": "makedonia",
+        "sv": "makedonska",
+        "en": "Macedonian"
+      },
+      "arvo": "MK"
+    },
+    {
+      "nimi": {
+        "fi": "tagalog",
+        "sv": "tagalog",
+        "en": "Tagalog"
+      },
+      "arvo": "TL"
+    },
+    {
+      "nimi": {
+        "fi": "latina",
+        "sv": "latin",
+        "en": "Latin"
+      },
+      "arvo": "LA"
+    },
+    {
+      "nimi": {
+        "fi": "vietnam",
+        "sv": "vietnamesiska",
+        "en": "Vietnamese"
+      },
+      "arvo": "VI"
+    },
+    {
+      "nimi": {
+        "fi": "hollanti",
+        "sv": "holländska",
+        "en": "Dutch"
+      },
+      "arvo": "NL"
+    },
+    {
+      "nimi": {
+        "fi": "igbo",
+        "sv": "ibo",
+        "en": "Igbo"
+      },
+      "arvo": "IG"
+    },
+    {
+      "nimi": {
+        "fi": "korea",
+        "sv": "koreanska",
+        "en": "Korean"
+      },
+      "arvo": "KO"
+    },
+    {
+      "nimi": {
+        "fi": "viro, eesti",
+        "sv": "estniska",
+        "en": "Estonian"
+      },
+      "arvo": "ET"
+    },
+    {
+      "nimi": {
+        "fi": "armenia",
+        "sv": "armeniska",
+        "en": "Armenian"
+      },
+      "arvo": "HY"
+    },
+    {
+      "nimi": {
+        "fi": "paštu, myös: afgaani",
+        "sv": "pashto",
+        "en": "Pashto, Pushto"
+      },
+      "arvo": "PS"
+    },
+    {
+      "nimi": {
+        "fi": "hausa",
+        "sv": "hausa",
+        "en": "Hausa"
+      },
+      "arvo": "HA"
+    },
+    {
+      "nimi": {
+        "fi": "romani",
+        "sv": "romani",
+        "en": "Romani"
+      },
+      "arvo": "RI"
+    },
+    {
+      "nimi": {
+        "fi": "malaiji",
+        "sv": "malajiska",
+        "en": "Malay"
+      },
+      "arvo": "MS"
+    },
+    {
+      "nimi": {
+        "fi": "saksa",
+        "sv": "tyska",
+        "en": "German"
+      },
+      "arvo": "DE"
+    },
+    {
+      "nimi": {
+        "fi": "serbia",
+        "sv": "serbiska",
+        "en": "Serbian"
+      },
+      "arvo": "SR"
+    }
+  ],
+  "yksilollistaminen": [
+    {
+      "nimi": {
+        "fi": "Perusopetuksen oppimäärä",
+        "sv": "Den grundläggande utbildningens lärokurs",
+        "en": "Basic education"
+      },
+      "arvo": 1
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen osittain yksilöllistetty oppimäärä",
+        "sv": "Delvis individualiserad lärokurs inom den grundläggande utbildningen",
+        "en": "Partially individualized basic education syllabus"
+      },
+      "arvo": 2
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen yksilöllistetty oppimäärä, opetus järjestetty toiminta-alueittain",
+        "sv": "Individualiserad lärokurs inom den grundläggande utbildningen, som utgår från verksamhetsområden",
+        "en": "Individualized syllabus in basic education, with instruction organized according to functional areas"
+      },
+      "arvo": 3
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen pääosin tai kokonaan yksilöllistetty oppimäärä",
+        "sv": "Helt eller i huvudsak individualiserad lärokurs inom den grundläggande utbildningen",
+        "en": "Predominantly or fully individualized basic education syllabus"
+      },
+      "arvo": 6
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen osittain rajattu oppimäärä",
+        "sv": "Delvis avgränsad lärokurs inom den grundläggande utbildningen",
+        "en": "Partially adapted basic education syllabus"
+      },
+      "arvo": 8
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen pääosin tai kokonaan rajattu oppimäärä",
+        "sv": "Helt eller i huvudsak avgränsad lärokurs inom den grundläggande utbildningen",
+        "en": "Predominantly or fully adapted basic education syllabus"
+      },
+      "arvo": 9
+    }
+  ],
+  "arvosanat": [
+    {
+      "arvo": 4
+    },
+    {
+      "arvo": 5
+    },
+    {
+      "arvo": 6
+    },
+    {
+      "arvo": 7
+    },
+    {
+      "arvo": 8
+    },
+    {
+      "arvo": 9
+    },
+    {
+      "arvo": 10
+    }
+  ]
+}
