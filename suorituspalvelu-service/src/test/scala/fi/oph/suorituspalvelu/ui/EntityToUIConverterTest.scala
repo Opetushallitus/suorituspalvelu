@@ -538,7 +538,8 @@ class EntityToUIConverterTest {
         kieli = aine.kieli.map(_.arvo).toJava,
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
-      )).toList.asJava
+      )).toList.asJava,
+      syotetty = true
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).get.perusopetuksenOppimaarat)
   }
 

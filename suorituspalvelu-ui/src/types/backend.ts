@@ -316,6 +316,7 @@ export interface ILuoSuoritusDropdownDataSuccessResponse {
   aidinkielenOppimaarat: ISyotettavaAidinkielenOppimaaraVaihtoehto[];
   vieraatKielet: ISyotettavaVierasKieliVaihtoehto[];
   yksilollistaminen: ISyotettavaYksilollistamisVaihtoehto[];
+  arvosanat: ISyotettavaArvosanaVaihtoehto[];
 }
 
 export interface INuortenPerusopetuksenOppiaineenOppimaara {
@@ -327,6 +328,7 @@ export interface INuortenPerusopetuksenOppiaineenOppimaara {
   valmistumispaiva?: string;
   suorituskieli: string;
   oppiaineet: IPerusopetuksenOppiaine[];
+  syotetty: boolean;
 }
 
 export interface INuortenPerusopetuksenOppiaineenOppimaaraNimi {
@@ -467,6 +469,7 @@ export interface IPerusopetuksenOppimaara {
   luokka?: string;
   yksilollistaminen?: IYksilollistaminen;
   oppiaineet: IPerusopetuksenOppiaine[];
+  syotetty: boolean;
 }
 
 export interface IPerusopetuksenOppimaara78Luokkalaiset {
@@ -519,6 +522,10 @@ export interface ISyotettavaAidinkielenOppimaaraVaihtoehtoNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface ISyotettavaArvosanaVaihtoehto {
+  arvo: number;
 }
 
 export interface ISyotettavaOppiaineVaihtoehto {
@@ -766,8 +773,8 @@ export interface IYksilollistamisNimi {
   en?: string;
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";

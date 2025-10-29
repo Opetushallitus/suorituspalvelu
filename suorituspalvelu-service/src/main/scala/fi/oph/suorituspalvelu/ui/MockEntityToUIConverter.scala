@@ -950,7 +950,8 @@ object MockEntityToUIConverter {
           arvosana = "9",
           valinnainen = false,
         )
-      )
+      ),
+      syotetty = false
     ))
 
   def getPerusopetuksenOppimaarat78Luokkalaiset(): Option[PerusopetuksenOppimaara78Luokkalaiset] =
@@ -1020,7 +1021,8 @@ object MockEntityToUIConverter {
         kieli = Optional.empty(),
         arvosana = "8",
         valinnainen = false
-      ))
+      )),
+      syotetty = false
     ))
 
   def getPerusopetuksenOppiaineenOppimaarat(): List[PerusopetuksenOppiaineenOppimaara] =

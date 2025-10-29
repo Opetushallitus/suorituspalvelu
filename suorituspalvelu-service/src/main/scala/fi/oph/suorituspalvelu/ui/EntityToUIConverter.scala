@@ -439,7 +439,8 @@ object EntityToUIConverter {
             kieli = a.kieli.map(k => k.arvo).toJava,
             arvosana = a.arvosana.arvo,
             valinnainen = !a.pakollinen,
-          )).toList.asJava
+          )).toList.asJava,
+          syotetty = om.yksilollistaminen.isDefined // KOSKI-tiedoissa yksilöllistäminen on oppiainetasolla
         )
       }).toList
 
