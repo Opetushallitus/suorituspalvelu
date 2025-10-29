@@ -2,6 +2,7 @@ import { isEmpty, isNullish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client } from './http-client';
 import type {
+  ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
@@ -65,4 +66,13 @@ export const getKayttaja = async () => {
 export const getAsiointiKieli = async () => {
   const kayttaja = await getKayttaja();
   return kayttaja.asiointiKieli;
+};
+
+export const getSuoritusvaihtoehdot = async () => {
+  const config = await configPromise;
+
+  const res = await client.get<ILuoSuoritusDropdownDataSuccessResponse>(
+    config.routes.suorituspalvelu.suoritusvaihtoehdotUrl,
+  );
+  return res.data;
 };

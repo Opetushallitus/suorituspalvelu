@@ -305,6 +305,19 @@ export interface ILukionOppimaaraNimi {
   en?: string;
 }
 
+export interface ILuoSuoritusDropdownDataFailureResponse {
+  virheet: string[];
+}
+
+export interface ILuoSuoritusDropdownDataSuccessResponse {
+  suoritusTyypit: ISyotettavaSuoritusTyyppiVaihtoehto[];
+  oppiaineet: ISyotettavaOppiaineVaihtoehto[];
+  suoritusKielet: ISyotettavaSuoritusKieliVaihtoehto[];
+  aidinkielenOppimaarat: ISyotettavaAidinkielenOppimaaraVaihtoehto[];
+  vieraatKielet: ISyotettavaVierasKieliVaihtoehto[];
+  yksilollistaminen: ISyotettavaYksilollistamisVaihtoehto[];
+}
+
 export interface INuortenPerusopetuksenOppiaineenOppimaara {
   tunniste: string;
   nimi: INuortenPerusopetuksenOppiaineenOppimaaraNimi;
@@ -491,6 +504,74 @@ export interface IPreIB {
 }
 
 export interface IPreIBNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaAidinkielenOppimaaraVaihtoehto {
+  nimi: ISyotettavaAidinkielenOppimaaraVaihtoehtoNimi;
+  arvo: string;
+}
+
+export interface ISyotettavaAidinkielenOppimaaraVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaOppiaineVaihtoehto {
+  nimi: ISyotettavaOppiaineVaihtoehtoNimi;
+  arvo: string;
+  isKieli: boolean;
+  isAidinkieli: boolean;
+}
+
+export interface ISyotettavaOppiaineVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaSuoritusKieliVaihtoehto {
+  nimi: ISyotettavaSuoritusKieliVaihtoehtoNimi;
+  arvo: string;
+}
+
+export interface ISyotettavaSuoritusKieliVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaSuoritusTyyppiVaihtoehto {
+  nimi: ISyotettavaSuoritusTyyppiVaihtoehtoNimi;
+  arvo: string;
+}
+
+export interface ISyotettavaSuoritusTyyppiVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaVierasKieliVaihtoehto {
+  nimi: ISyotettavaVierasKieliVaihtoehtoNimi;
+  arvo: string;
+}
+
+export interface ISyotettavaVierasKieliVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaYksilollistamisVaihtoehto {
+  nimi: ISyotettavaYksilollistamisVaihtoehtoNimi;
+  arvo: number;
+}
+
+export interface ISyotettavaYksilollistamisVaihtoehtoNimi {
   fi?: string;
   sv?: string;
   en?: string;
