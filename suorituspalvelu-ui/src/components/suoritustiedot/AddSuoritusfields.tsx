@@ -20,7 +20,6 @@ const createSuoritusFields = (
     tyyppi: 'perusopetuksenoppimaara',
     tila: 'suorituksentila_valmis',
     suorituskieli: 'FI',
-    koulusivistyskieli: 'FI',
     yksilollistetty: '1',
     oppiaineet: [],
     ...base,

@@ -35,7 +35,6 @@ const createSuoritusFields = ({
       ? new Date(suoritus.valmistumispaiva)
       : undefined,
     suorituskieli: suoritus.suorituskieli,
-    koulusivistyskieli: suoritus.suorituskieli, //TODO: Vaihda koulusivistyskieleen, kun se palautuu backendistä
     yksilollistetty:
       'yksilollistaminen' in suoritus
         ? (suoritus.yksilollistaminen?.arvo ?? '').toString()
@@ -97,7 +96,7 @@ export const PerusopetusSuoritusEditablePaper = ({
 
   const queryClient = useQueryClient();
   const { suoritus, setSuoritus, suoritusMutation } = useSuoritusState(
-    suoritusProp.versioTunniste ?? suoritusProp.tunniste,
+    suoritusProp.tunniste,
     {
       onSuccess: () => {
         queryClient.invalidateQueries(queryOptionsGetOppija(henkiloOID));

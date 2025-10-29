@@ -136,18 +136,6 @@ const EditSuoritusContent = ({
           }}
         />
         <OphSelectFormField
-          label={t('muokkaus.suoritus.koulusivistyskieli')}
-          sx={{ flex: 1, maxWidth: '300px' }}
-          required={true}
-          options={suorituskieliOptions}
-          value={suoritus?.koulusivistyskieli}
-          onChange={(event) => {
-            setSuoritus((prev) =>
-              prev ? { ...prev, koulusivistyskieli: event.target.value } : null,
-            );
-          }}
-        />
-        <OphSelectFormField
           label={t('muokkaus.suoritus.yksilollistetty')}
           sx={{ flex: 2 }}
           required={true}

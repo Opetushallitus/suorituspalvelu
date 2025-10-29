@@ -133,7 +133,6 @@ export type PerusopetuksenOppiaineenOppimaara = Omit<
   IPerusopetuksenOppiaineenOppimaara,
   'oppiaineet'
 > & {
-  versioTunniste?: string; // TODO: Poista kun tulee myös backendistä
   oppiaineet: Array<PerusopetuksenOppiaine>;
   suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
   koulutustyyppi: 'perusopetus';
@@ -202,7 +201,6 @@ export type SuoritusFields = {
   tyyppi: string;
   valmistumispaiva?: Date;
   suorituskieli: string;
-  koulusivistyskieli?: string;
   yksilollistetty: string;
   oppiaineet: Array<PerusopetusOppiaineFields>;
 };
