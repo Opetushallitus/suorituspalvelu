@@ -6,7 +6,7 @@ import React from 'react';
 export type ConfirmationModalProps = {
   title: string;
   open: boolean;
-  children?: React.ReactNode;
+  content?: React.ReactNode;
   onConfirm: () => void;
   onCancel?: () => void;
   confirmLabel?: string;
@@ -14,10 +14,13 @@ export type ConfirmationModalProps = {
   maxWidth?: 'sm' | 'md' | false;
 };
 
-export const ConfirmationModalContext = React.createContext<{
+type ConfirmationModalContextValue = {
   showConfirmation: (props: Omit<ConfirmationModalProps, 'open'>) => void;
   hideConfirmation: () => void;
-} | null>(null);
+};
+
+export const ConfirmationModalContext =
+  React.createContext<ConfirmationModalContextValue | null>(null);
 
 export const ConfirmationModalProvider = ({
   children,
@@ -27,17 +30,17 @@ export const ConfirmationModalProvider = ({
   const [modalProps, setModalProps] =
     React.useState<ConfirmationModalProps | null>(null);
 
-  const contextValue = React.useMemo(
+  const contextValue: ConfirmationModalContextValue = React.useMemo(
     () => ({
-      showConfirmation: (props: Omit<ConfirmationModalProps, 'open'>) =>
+      showConfirmation: (props) =>
         setModalProps({
           ...props,
           onConfirm: () => {
-            props?.onConfirm();
+            props.onConfirm();
             setModalProps(null);
           },
           onCancel: () => {
-            props?.onCancel?.();
+            props.onCancel?.();
             setModalProps(null);
           },
           open: true,
@@ -58,7 +61,7 @@ export const ConfirmationModalProvider = ({
 export const ConfirmationModal = ({
   title,
   open,
-  children,
+  content,
   onConfirm,
   onCancel,
   confirmLabel,
@@ -83,7 +86,7 @@ export const ConfirmationModal = ({
         </>
       }
     >
-      {children}
+      {content}
     </OphModal>
   );
 };

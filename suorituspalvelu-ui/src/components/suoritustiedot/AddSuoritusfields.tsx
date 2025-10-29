@@ -30,9 +30,7 @@ export const AddSuoritusFields = ({ henkiloOID }: { henkiloOID: string }) => {
         variant="outlined"
         startIcon={<Add />}
         onClick={() => {
-          if (!suoritusFields) {
-            startSuoritusAdd();
-          }
+          startSuoritusAdd();
           setTimeout(() => {
             suoritusPaperRef.current?.scrollIntoView({
               behavior: 'smooth',
