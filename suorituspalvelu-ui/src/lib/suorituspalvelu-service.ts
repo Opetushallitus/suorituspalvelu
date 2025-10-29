@@ -7,7 +7,8 @@ import type {
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
 } from '@/types/backend';
-import type { KayttajaTiedot } from '@/types/ui-types';
+import type { KayttajaTiedot, SuoritusFields } from '@/types/ui-types';
+import { format } from 'date-fns';
 
 export type OppijatSearchParams = {
   hakusana?: string;
@@ -75,4 +76,41 @@ export const getSuoritusvaihtoehdot = async () => {
     config.routes.suorituspalvelu.suoritusvaihtoehdotUrl,
   );
   return res.data;
+};
+
+export const saveSuoritus = async (
+  suoritusFields: SuoritusFields,
+): Promise<void> => {
+  const config = await configPromise;
+
+  const postData: Record<string, unknown> = {
+    oppijaOid: suoritusFields.oppijaOid,
+    oppilaitosOid: suoritusFields.oppilaitosOid,
+    suorituskieli: suoritusFields.suorituskieli,
+    yksilollistetty: parseInt(suoritusFields.yksilollistetty, 10),
+    valmistumispaiva: suoritusFields.valmistumispaiva
+      ? format(suoritusFields.valmistumispaiva, 'yyyy-MM-dd')
+      : undefined,
+  };
+
+  const oppiaineet = suoritusFields.oppiaineet?.map((oa) => ({
+    koodi: oa.koodi,
+    aidienkielenOppimaara: oa.aidinkielenOppimaara,
+    kieli: oa.kieli,
+    arvosana: parseInt(oa.arvosana, 10),
+    valinnainen: oa.valinnainen,
+  }));
+
+  let url: string | null = null;
+  if (suoritusFields.tyyppi === 'perusopetuksenoppimaara') {
+    url = config.routes.suorituspalvelu.perusopetuksenOppimaaratUrl;
+    postData.oppiaineet = oppiaineet;
+  } else if (suoritusFields.tyyppi === 'perusopetuksenoppiaineenoppimaara') {
+    url = config.routes.suorituspalvelu.perusopetuksenOppiaineenOppimaaratUrl;
+    postData.oppiaine = oppiaineet?.[0];
+  } else {
+    throw new Error(`Tuntematon suoritustyyppi: ${suoritusFields.tyyppi}`);
+  }
+
+  await client.post(url, postData);
 };

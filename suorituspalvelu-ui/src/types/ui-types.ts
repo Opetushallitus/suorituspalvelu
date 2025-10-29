@@ -144,3 +144,21 @@ export type KayttajaTiedot = {
 };
 
 export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
+
+export type SuoritusFields = {
+  oppijaOid: string;
+  oppilaitosOid: string;
+  tila?: string;
+  tyyppi: string;
+  valmistumispaiva?: Date;
+  suorituskieli: string;
+  koulusivistyskieli?: string;
+  yksilollistetty: string;
+  oppiaineet: Array<{
+    koodi: string;
+    aidinkielenOppimaara: string;
+    kieli: string;
+    arvosana: string;
+    valinnainen: boolean;
+  }>;
+};
