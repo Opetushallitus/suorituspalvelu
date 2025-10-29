@@ -10,7 +10,7 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationStatusIndicator';
 import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
@@ -166,7 +166,17 @@ const useSuoritusManagerState = () => {
 
   useConfirmNavigation(isDirty);
 
+  const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
+
   return useMemo(() => {
+    const scrollToSuoritusPaper = () => {
+      setTimeout(() => {
+        suoritusPaperRef.current?.scrollIntoView({
+          behavior: 'smooth',
+        });
+      }, 20);
+    };
+
     const addSuoritus = () => {
       suoritusMutation.reset();
       setMode('new');
@@ -176,6 +186,7 @@ const useSuoritusManagerState = () => {
         }),
       );
       setIsDirty(false);
+      scrollToSuoritusPaper();
     };
 
     const editSuoritus = (
@@ -187,9 +198,11 @@ const useSuoritusManagerState = () => {
         setSuoritusState(createEditableSuoritusFields({ oppijaOid, suoritus }));
       }
       setIsDirty(false);
+      scrollToSuoritusPaper();
     };
 
     return {
+      suoritusPaperRef,
       suoritusFields: suoritusState,
       mode,
       operation: mutationOperation,

@@ -1,5 +1,4 @@
 import { Box, Stack } from '@mui/material';
-import { useRef } from 'react';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditSuoritusPaper } from './EditSuoritusPaper';
 import { useSuoritusManager } from '@/lib/suoritusManager';
@@ -18,9 +17,9 @@ export const PerusopetusSuoritusEditor = ({
   suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara;
 }) => {
   const { t } = useTranslations();
-  const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
   const {
+    suoritusPaperRef,
     suoritusFields,
     onSuoritusChange,
     onOppiaineChange,
