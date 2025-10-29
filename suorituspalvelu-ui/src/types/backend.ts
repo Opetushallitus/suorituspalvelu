@@ -90,6 +90,28 @@ export interface IAmmattitutkintoNimi {
   en?: string;
 }
 
+export interface IAvainArvoContainerUI {
+  avain: string;
+  arvo: string;
+  metadata: IAvainArvoMetadataUI;
+}
+
+export interface IAvainArvoMetadataUI {
+  selitteet: string[];
+  duplikaatti: boolean;
+  arvoEnnenYliajoa?: string;
+  yliajo?: IAvainArvoYliajoUI;
+}
+
+export interface IAvainArvoYliajoUI {
+  avain: string;
+  arvo: string;
+  henkiloOid: string;
+  hakuOid: string;
+  virkailijaOid: string;
+  selite: string;
+}
+
 export interface IDIAOppiaine {
   tunniste: string;
   nimi: IDIAOppiaineNimi;
@@ -404,6 +426,16 @@ export interface IOppijanTiedotSuccessResponse {
   nuortenPerusopetuksenOppiaineenOppimaarat: INuortenPerusopetuksenOppiaineenOppimaara[];
   perusopetuksenOppiaineenOppimaarat: IPerusopetuksenOppiaineenOppimaara[];
   aikuistenPerusopetuksenOppimaarat: IAikuistenPerusopetuksenOppimaara[];
+}
+
+export interface IOppijanValintaDataFailureResponse {
+  virheet: string[];
+}
+
+export interface IOppijanValintaDataSuccessResponse {
+  henkiloOID: string;
+  hakuOID?: string;
+  avainArvot: IAvainArvoContainerUI[];
 }
 
 export interface IOppilaitos {
@@ -799,8 +831,8 @@ export interface IYksilollistamisNimi {
   en?: string;
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';
