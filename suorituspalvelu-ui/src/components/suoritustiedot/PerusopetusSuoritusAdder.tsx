@@ -6,7 +6,11 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { EditSuoritusPaper } from './EditSuoritusPaper';
 import { useSuoritusManager } from '@/lib/suoritusManager';
 
-export const AddSuoritusFields = ({ henkiloOID }: { henkiloOID: string }) => {
+export const PerusopetusSuoritusAdder = ({
+  henkiloOID,
+}: {
+  henkiloOID: string;
+}) => {
   const { t } = useTranslations();
   const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,6 +46,7 @@ export const AddSuoritusFields = ({ henkiloOID }: { henkiloOID: string }) => {
       </OphButton>
       {suoritusFields && mode === 'add' && (
         <EditSuoritusPaper
+          mode={mode}
           suoritus={suoritusFields}
           ref={suoritusPaperRef}
           onSuoritusChange={onSuoritusChange}
