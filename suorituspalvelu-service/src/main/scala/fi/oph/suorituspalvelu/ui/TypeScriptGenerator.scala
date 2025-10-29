@@ -64,10 +64,12 @@ object TypeScriptGenerator extends App {
   implicit val luoSuoritusDropdownDataSuccessTsType: TSType[LuoSuoritusDropdownDataSuccessResponse] = TSType.fromCaseClass
   implicit val luoSuoritusDropdownDataFailureTsType: TSType[LuoSuoritusDropdownDataFailureResponse] = TSType.fromCaseClass
 
+  // Korjataan polku, jotta toimii riippumatta siitä kutsutaanko suorituspalvelu-servicen vai juuren kontekstista
+  val prefix = System.getProperty("user.dir").replace("/suorituspalvelu-service", "")
+  val outputFile = new File(s"${prefix}/suorituspalvelu-ui/src/types/backend.ts")
   // Kirjoitetaan TS-tyypit tiedostoon
-  val outputDir = new File("suorituspalvelu-ui/src/types/backend.ts")
   WriteTSToFiles.generate(OutputOptions(
-    outputDir,
+    outputFile,
     StyleOptions(semicolons = true),
     Some("/* Scala-koodista automaattisesti generoituja tyyppejä (kts. TypeScriptGenerator.scala). Älä muokkaa käsin! */"))
   )(Map(
