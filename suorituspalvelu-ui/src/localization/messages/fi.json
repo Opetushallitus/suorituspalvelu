@@ -15,7 +15,7 @@
   },
   "tallentamattomia-muutoksia": {
     "otsikko": "Tallentamattomia muutoksia",
-    "sisalto": "Olet poistumassa sivulta jolla on tallentamattomia muutoksia. Jatketaanko silti?",
+    "sisalto": "Olet poistumassa sivulta jolla on tallentamattomia muutoksia. Jatketaanko silti? Tallentamattomat muutokset menetetään.",
     "jatka": "Jatka"
   },
   "404": {
@@ -219,6 +219,14 @@
       "vaihda-suoritusta": {
         "otsikko": "Haluatko vaihtaa muokattavaa suoritusta?",
         "sisalto": "Vain yhden suorituksen muokkaaminen kerrallaan on mahdollista. Oletko varma, että haluat keskeyttää suorituksen muokkauksen ja muokata toista suoritusta? Tallentamattomat muutokset menetetään."
+      },
+      "peruuta-lisays": {
+        "otsikko": "Haluatko peruuttaa suorituksen lisäämisen?",
+        "sisalto": "Oletko varma, että haluat peruuttaa suorituksen lisäämisen? Tallentamattomat muutokset menetetään."
+      },
+      "peruuta-muokkaus": {
+        "otsikko": "Haluatko peruuttaa suorituksen muokkauksen?",
+        "sisalto": "Oletko varma, että haluat peruuttaa suorituksen muokkauksen? Tallentamattomat muutokset menetetään."
       },
       "luokka": "Luokka"
     },

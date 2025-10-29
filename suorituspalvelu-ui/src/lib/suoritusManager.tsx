@@ -243,6 +243,23 @@ const useSuoritusManagerState = () => {
         }
       },
       stopSuoritusEdit: () => {
+        if (suoritusState && isDirty) {
+          showConfirmation({
+            title:
+              mode === 'new'
+                ? t('muokkaus.suoritus.peruuta-lisays.otsikko')
+                : t('muokkaus.suoritus.peruuta-muokkaus.otsikko'),
+            content:
+              mode === 'new'
+                ? t('muokkaus.suoritus.peruuta-lisays.sisalto')
+                : t('muokkaus.suoritus.peruuta-muokkaus.sisalto'),
+            maxWidth: 'md',
+            onConfirm: () => {
+              setSuoritusState(null);
+              setIsDirty(false);
+            },
+          });
+        }
         setSuoritusState(null);
       },
       onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
