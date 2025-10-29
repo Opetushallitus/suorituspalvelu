@@ -1,13 +1,15 @@
-import { queryOptions } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 import {
   getOppija,
   getOppilaitokset,
+  getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
   searchOppijat,
   type OppijatSearchParams,
 } from './suorituspalvelu-service';
 import { useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
+import { prop, sortBy } from 'remeda';
 
 export const queryOptionsGetOppija = (oppijaNumero: string) =>
   queryOptions({
@@ -44,9 +46,32 @@ export const useOppilaitoksetOptions = () => {
   return oppilaitoksetOptions;
 };
 
+export const useSuoritusOppilaitosOptions = () => {
+  const { translateKielistetty } = useTranslations();
+  return useQuery({
+    ...queryOptionsGetSuorituksenOppilaitosVaihtoehdot(),
+    select: (data) =>
+      sortBy(
+        data?.map(($) => ({
+          value: $.oid,
+          label: translateKielistetty($.nimi).trim() + ` (${$.oid})`,
+        })) ?? [],
+        [prop('label'), 'asc'],
+      ),
+    throwOnError: true,
+  });
+};
+
 export const queryOptionsGetSuoritusvaihtoehdot = () =>
   queryOptions({
     queryKey: ['getSuoritusvaihtoehdot'],
     queryFn: () => getSuoritusvaihtoehdot(),
     staleTime: 10 * 60 * 1000,
+  });
+
+export const queryOptionsGetSuorituksenOppilaitosVaihtoehdot = () =>
+  queryOptions({
+    queryKey: ['getSuorituksenOppilaitosVaihtoehdot'],
+    queryFn: () => getSuorituksenOppilaitosVaihtoehdot(),
+    staleTime: Infinity, // Pidetään muistissa niin kauan kunnes sivu ladataan uudelleen
   });

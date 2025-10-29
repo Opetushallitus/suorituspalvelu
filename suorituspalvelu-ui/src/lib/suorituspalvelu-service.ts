@@ -79,6 +79,15 @@ export const getSuoritusvaihtoehdot = async () => {
   return res.data;
 };
 
+export const getSuorituksenOppilaitosVaihtoehdot = async () => {
+  const config = await configPromise;
+
+  const res = await client.get<IOppilaitosSuccessResponse>(
+    config.routes.suorituspalvelu.oppilaitosvaihtoehdotUrl,
+  );
+  return res.data.oppilaitokset;
+};
+
 // Perusopetuksen oppimäärän ja oppiaineen oppimäärän tallentaminen
 // TODO: Oppiaineen oppimäärän tallentaminen puuttuu vielä
 export const saveSuoritus = async (

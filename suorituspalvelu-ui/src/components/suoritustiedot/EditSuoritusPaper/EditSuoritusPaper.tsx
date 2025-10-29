@@ -16,13 +16,54 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { InfoItemRow } from '@/components/InfoItemRow';
 import {
   queryOptionsGetSuoritusvaihtoehdot,
-  useOppilaitoksetOptions,
+  useSuoritusOppilaitosOptions,
 } from '@/lib/suorituspalvelu-queries';
 import { DatePicker } from '@/components/DatePicker';
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { EditArvosanatTable } from './EditArvosanatTable';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import type { SuoritusEditMode } from '@/lib/suoritusManager';
+
+const OppilaitosField = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (newValue: string) => void;
+}) => {
+  const { data: oppilaitoksetOptions = [], isLoading } =
+    useSuoritusOppilaitosOptions();
+
+  const { t } = useTranslations();
+
+  return (
+    <OphFormFieldWrapper
+      label={label}
+      sx={{ flex: 2 }}
+      renderInput={({ labelId }) => {
+        return (
+          <Autocomplete
+            options={oppilaitoksetOptions}
+            loading={isLoading}
+            loadingText={t('ladataan-oppilaitoksia')}
+            filterOptions={(options, state) =>
+              options.filter((o) => o.label.includes(state.inputValue))
+            }
+            value={oppilaitoksetOptions.find((o) => o.value === value) || null}
+            onChange={(_, newValue) => {
+              onChange(newValue?.value ?? '');
+            }}
+            renderInput={(params) => (
+              <TextField aria-labelledby={labelId} {...params} />
+            )}
+          />
+        );
+      }}
+    />
+  );
+};
 
 const EditSuoritusContent = ({
   mode,
@@ -40,7 +81,6 @@ const EditSuoritusContent = ({
   onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
 }) => {
   const { t, translateKielistetty } = useTranslations();
-  const oppilaitoksetOptions = useOppilaitoksetOptions();
 
   const { data: suoritusvaihtoehdot } = useApiSuspenseQuery(
     queryOptionsGetSuoritusvaihtoehdot(),
@@ -92,25 +132,11 @@ const EditSuoritusContent = ({
         />
       </InfoItemRow>
       <InfoItemRow slotAmount={3} spacing={2}>
-        <OphFormFieldWrapper
+        <OppilaitosField
           label={t('muokkaus.suoritus.oppilaitos')}
-          sx={{ flex: 2 }}
-          renderInput={({ labelId }) => {
-            return (
-              <Autocomplete
-                id={labelId}
-                value={
-                  oppilaitoksetOptions.find(
-                    (o) => o.value === suoritus?.oppilaitosOid,
-                  ) || null
-                }
-                onChange={(_, newValue) => {
-                  onSuoritusChange({ oppilaitosOid: newValue?.value ?? '' });
-                }}
-                options={oppilaitoksetOptions}
-                renderInput={(params) => <TextField {...params} />}
-              />
-            );
+          value={suoritus?.oppilaitosOid}
+          onChange={(newValue) => {
+            onSuoritusChange({ oppilaitosOid: newValue });
           }}
         />
         <OphSelectFormField
