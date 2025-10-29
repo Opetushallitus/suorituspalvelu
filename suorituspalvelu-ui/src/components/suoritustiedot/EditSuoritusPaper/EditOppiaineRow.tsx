@@ -93,20 +93,18 @@ export const EditOppiaineRow = ({
               />
             </Stack>
           ))}
-          {valinnaisetArvosanat.length < 2 && (
-            <OphButton
-              startIcon={<Add />}
-              sx={{ padding: 0 }}
-              onClick={() => {
-                onChange({
-                  ...value,
-                  valinnaisetArvosanat: [...valinnaisetArvosanat, ''],
-                });
-              }}
-            >
-              {t('muokkaus.suoritus.lisaa-valinnainen')}
-            </OphButton>
-          )}
+          <OphButton
+            startIcon={<Add />}
+            sx={{ padding: 0 }}
+            onClick={() => {
+              onChange({
+                ...value,
+                valinnaisetArvosanat: [...valinnaisetArvosanat, ''],
+              });
+            }}
+          >
+            {t('muokkaus.suoritus.lisaa-valinnainen')}
+          </OphButton>
         </Stack>
       </TableCell>
     </TableRow>
