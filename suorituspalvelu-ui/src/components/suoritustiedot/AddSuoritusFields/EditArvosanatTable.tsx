@@ -1,13 +1,17 @@
 import { StripedTable } from '@/components/StripedTable';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { Suoritusvaihtoehdot } from '@/types/ui-types';
+import type { SuoritusFields, Suoritusvaihtoehdot } from '@/types/ui-types';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { EditArvosanaRow, type SelectOption } from './EditArvosanaRow';
+import { EditOppiaineRow, type SelectOption } from './EditOppiaineRow';
 
 export const EditArvosanatTable = ({
+  suoritus,
   suoritusvaihtoehdot,
+  setSuoritus,
 }: {
+  suoritus: SuoritusFields;
   suoritusvaihtoehdot: Suoritusvaihtoehdot;
+  setSuoritus: React.Dispatch<React.SetStateAction<SuoritusFields | null>>;
 }) => {
   const { t, translateKielistetty } = useTranslations();
 
@@ -31,25 +35,48 @@ export const EditArvosanatTable = ({
       </TableHead>
       <TableBody>
         {oppiaineet.map((oppiaine) => {
-          let lisatietoOptions: Array<SelectOption> | undefined = undefined;
+          let kieliOptions: Array<SelectOption> | undefined = undefined;
           if (oppiaine.isAidinkieli) {
-            lisatietoOptions = aidinkielenOppimaarat.map((am) => ({
+            kieliOptions = aidinkielenOppimaarat.map((am) => ({
               label: translateKielistetty(am.nimi),
               value: am.arvo,
             }));
           } else if (oppiaine.isKieli) {
-            lisatietoOptions = vieraatKielet.map((vk) => ({
+            kieliOptions = vieraatKielet.map((vk) => ({
               label: translateKielistetty(vk.nimi),
               value: vk.arvo,
             }));
           }
-
           return (
-            <EditArvosanaRow
+            <EditOppiaineRow
               key={oppiaine.arvo}
-              name={oppiaine.arvo}
+              value={
+                suoritus.oppiaineet.find(
+                  (oa) => oa.koodi === oppiaine.arvo,
+                ) ?? { koodi: oppiaine.arvo, arvosana: '', valinnainen: false }
+              }
+              onChange={(changedOppiaine) => {
+                setSuoritus((previousSuoritus) => {
+                  if (previousSuoritus) {
+                    const newOppiaineet = previousSuoritus.oppiaineet ?? [];
+                    const existingOppiaineIndex = newOppiaineet.findIndex(
+                      (oa) => oa.koodi === changedOppiaine.koodi,
+                    );
+                    if (existingOppiaineIndex === -1) {
+                      newOppiaineet.push(changedOppiaine);
+                    } else {
+                      newOppiaineet[existingOppiaineIndex] = changedOppiaine;
+                    }
+                    return {
+                      ...previousSuoritus,
+                      oppiaineet: newOppiaineet,
+                    };
+                  }
+                  return previousSuoritus;
+                });
+              }}
+              kieliOptions={kieliOptions}
               title={translateKielistetty(oppiaine.nimi)}
-              lisatietoOptions={lisatietoOptions}
             />
           );
         })}

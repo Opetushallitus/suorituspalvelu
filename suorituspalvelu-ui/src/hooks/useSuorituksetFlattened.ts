@@ -7,7 +7,7 @@ export function useSuorituksetFlattened(
   oppijanTiedot: OppijanTiedot,
   sortByDate: boolean = false,
 ) {
-  const unsortedSuoritukset = useMemo(() => {
+  return useMemo(() => {
     const suoritusTiedot = omit(oppijanTiedot, [
       'nimi',
       'oppijaNumero',
@@ -58,12 +58,9 @@ export function useSuorituksetFlattened(
     );
     addValue(suoritusTiedot.perusopetuksenOppiaineenOppimaarat, 'perusopetus');
     addValue(suoritusTiedot.aikuistenPerusopetuksenOppimaarat, 'perusopetus');
-    return result;
-  }, [oppijanTiedot]);
 
-  return useMemo(() => {
     if (sortByDate) {
-      return unsortedSuoritukset.sort((a, b) => {
+      return result.sort((a, b) => {
         if (a.valmistumispaiva && b.valmistumispaiva) {
           if (a.valmistumispaiva === b.valmistumispaiva) {
             return 0;
@@ -82,6 +79,6 @@ export function useSuorituksetFlattened(
         return 0;
       });
     }
-    return unsortedSuoritukset;
-  }, [unsortedSuoritukset, sortByDate]);
+    return result;
+  }, [oppijanTiedot, sortByDate]);
 }
