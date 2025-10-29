@@ -42,7 +42,8 @@ export const EditOppiaineRow = ({
             options={kieliOptions}
             value={value.kieli ?? ''}
             clearable={true}
-            placeholder="&nbsp;"
+            placeholder="-"
+            aria-label={t('muokkaus.suoritus.kieli-label', { oppiaine: title })}
             onChange={(e) => {
               onChange({ ...value, kieli: e.target.value });
             }}
@@ -54,7 +55,10 @@ export const EditOppiaineRow = ({
           options={arvosanaOptions}
           value={value.arvosana ?? ''}
           clearable={true}
-          placeholder="&nbsp;"
+          placeholder="-"
+          aria-label={t('muokkaus.suoritus.arvosana-label', {
+            oppiaine: title,
+          })}
           onChange={(e) => onChange({ ...value, arvosana: e.target.value })}
         />
       </TableCell>
@@ -64,10 +68,14 @@ export const EditOppiaineRow = ({
             // eslint-disable-next-line @eslint-react/no-array-index-key
             <Stack key={index} direction="row">
               <StyledSelect
-                placeholder="&nbsp;"
+                placeholder="-"
                 options={arvosanaOptions}
                 value={valinnainenArvosana ?? ''}
                 clearable={true}
+                aria-label={t('muokkaus.suoritus.valinnainen-arvosana-label', {
+                  oppiaine: title,
+                  number: index + 1,
+                })}
                 onChange={(e) => {
                   if (valinnaisetArvosanat) {
                     const newValinnaiset = [...valinnaisetArvosanat];

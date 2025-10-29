@@ -259,8 +259,9 @@ const useSuoritusManagerState = () => {
               setIsDirty(false);
             },
           });
+        } else {
+          setSuoritusState(null);
         }
-        setSuoritusState(null);
       },
       onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
         setSuoritusState((prev) =>

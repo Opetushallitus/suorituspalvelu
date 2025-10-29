@@ -28,7 +28,6 @@ const OppilaitosSelectField = ({
       value={value}
       label={t('oppilaitos')}
       onChange={onChange}
-      MenuProps={{ id: 'select-menu' }}
     />
   );
 };

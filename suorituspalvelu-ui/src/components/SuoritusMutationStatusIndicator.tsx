@@ -39,17 +39,26 @@ const SuoritusMutationErrorModal = ({
     } else if (isPerusopetusOppimaaraBackendError(responseJSON)) {
       message = (
         <Box>
-          {responseJSON.yleisetVirheAvaimet.map((yleinenVirhe) => (
-            <p key={yleinenVirhe}>{t(yleinenVirhe)}</p>
-          ))}
-          {responseJSON.oppiaineKohtaisetVirheet.map((virhe) => (
-            <Box key={virhe.oppiaineKoodiArvo} sx={{ marginBottom: 2 }}>
-              <h4>{virhe.oppiaineKoodiArvo}</h4>
-              {virhe.virheAvaimet.map((v) => (
-                <p key={v}>{t(v)}</p>
-              ))}
-            </Box>
-          ))}
+          <Box>
+            {responseJSON.yleisetVirheAvaimet.map((yleinenVirhe) => (
+              <p key={yleinenVirhe}>{t(yleinenVirhe)}</p>
+            ))}
+          </Box>
+          {responseJSON.oppiaineKohtaisetVirheet.map((virhe) => {
+            const oppiaineErrorsLabelId = `oppiaine-virheet-label-${virhe.oppiaineKoodiArvo}`;
+            return (
+              <Box
+                key={virhe.oppiaineKoodiArvo}
+                sx={{ marginBottom: 2 }}
+                aria-labelledby={oppiaineErrorsLabelId}
+              >
+                <h4 id={oppiaineErrorsLabelId}>{virhe.oppiaineKoodiArvo}</h4>
+                {virhe.virheAvaimet.map((v) => (
+                  <p key={v}>{t(v)}</p>
+                ))}
+              </Box>
+            );
+          })}
         </Box>
       );
     }

@@ -228,7 +228,10 @@
         "otsikko": "Haluatko peruuttaa suorituksen muokkauksen?",
         "sisalto": "Oletko varma, että haluat peruuttaa suorituksen muokkauksen? Tallentamattomat muutokset menetetään."
       },
-      "luokka": "Luokka"
+      "luokka": "Luokka",
+      "kieli-label": "Oppimäärä oppiaineelle {oppiaine}",
+      "arvosana-label": "Arvosana oppiaineelle {oppiaine}",
+      "valinnainen-arvosana-label": "Valinnainen arvosana {number} oppiaineelle {oppiaine}"
     },
     "tallenna": "Tallenna",
     "poista": "Poista"

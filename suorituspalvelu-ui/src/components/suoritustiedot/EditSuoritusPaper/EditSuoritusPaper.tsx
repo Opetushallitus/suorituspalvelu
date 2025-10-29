@@ -1,8 +1,9 @@
-import { Autocomplete, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Stack, Typography } from '@mui/material';
 import {
   OphButton,
   ophColors,
   OphFormFieldWrapper,
+  OphInput,
   OphInputFormField,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
@@ -23,6 +24,7 @@ import { useApiSuspenseQuery } from '@/lib/http-client';
 import { EditArvosanatTable } from './EditArvosanatTable';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import type { SuoritusEditMode } from '@/lib/suoritusManager';
+import { omit } from 'remeda';
 
 const OppilaitosField = ({
   label,
@@ -52,12 +54,24 @@ const OppilaitosField = ({
               options.filter((o) => o.label.includes(state.inputValue))
             }
             value={oppilaitoksetOptions.find((o) => o.value === value) || null}
+            slotProps={{
+              listbox: { 'aria-labelledby': labelId },
+            }}
             onChange={(_, newValue) => {
               onChange(newValue?.value ?? '');
             }}
-            renderInput={(params) => (
-              <TextField aria-labelledby={labelId} {...params} />
-            )}
+            renderInput={({ InputProps, ...params }) => {
+              return (
+                <OphInput
+                  {...omit(params, ['InputLabelProps'])}
+                  {...InputProps}
+                  inputProps={{
+                    ...params.inputProps,
+                    'aria-labelledby': labelId,
+                  }}
+                />
+              );
+            }}
           />
         );
       }}

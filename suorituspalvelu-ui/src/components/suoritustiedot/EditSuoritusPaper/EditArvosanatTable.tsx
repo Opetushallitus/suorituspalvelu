@@ -19,8 +19,12 @@ export const EditArvosanatTable = ({
 }) => {
   const { t, translateKielistetty } = useTranslations();
 
-  const { oppiaineet, aidinkielenOppimaarat, vieraatKielet, arvosanat } =
-    suoritusvaihtoehdot;
+  const {
+    oppiaineet: syotettavatOppiaineet,
+    aidinkielenOppimaarat,
+    vieraatKielet,
+    arvosanat,
+  } = suoritusvaihtoehdot;
 
   const aidinKieliOptions = aidinkielenOppimaarat.map((am) => ({
     label: translateKielistetty(am.nimi),
@@ -54,7 +58,7 @@ export const EditArvosanatTable = ({
         </TableRow>
       </TableHead>
       <TableBody>
-        {oppiaineet.map((oppiaine) => {
+        {syotettavatOppiaineet.map((oppiaine) => {
           let kieliOptions: Array<SelectOption> | undefined = undefined;
           if (oppiaine.isAidinkieli) {
             kieliOptions = aidinKieliOptions;
