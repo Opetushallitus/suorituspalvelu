@@ -1,6 +1,6 @@
 import { Stack } from '@mui/material';
-import { Opiskeluoikeudet } from '@/components/Opiskeluoikeudet';
-import { Suoritukset } from '@/components/Suoritukset';
+import { Opiskeluoikeudet } from '@/components/suoritustiedot/Opiskeluoikeudet';
+import { Suoritukset } from '@/components/suoritustiedot/Suoritukset';
 import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';

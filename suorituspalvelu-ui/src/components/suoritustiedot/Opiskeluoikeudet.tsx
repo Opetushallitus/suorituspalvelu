@@ -3,8 +3,8 @@ import { Circle } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
-import { PaperWithTopColor } from './PaperWithTopColor';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { PaperWithTopColor } from '@/components/PaperWithTopColor';
+import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import type { Opiskeluoikeus } from '@/types/ui-types';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
 
