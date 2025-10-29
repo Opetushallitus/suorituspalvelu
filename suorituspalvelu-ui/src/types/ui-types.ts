@@ -64,6 +64,7 @@ export type YOKoe = IYOKoe;
 
 export type PerusopetuksenOppiaine = {
   tunniste: string;
+  koodi?: string;
   nimi: Kielistetty;
   kieli?: string;
   arvosana?: string;
@@ -175,11 +176,11 @@ export type KayttajaTiedot = {
 
 export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
 
-export type OppiaineFields = {
+export type PerusopetusOppiaineFields = {
   koodi: string;
   kieli?: string;
-  arvosana: string;
-  valinnainen: boolean;
+  arvosana?: string;
+  valinnaisetArvosanat?: Array<string>;
 };
 
 export type SuoritusFields = {
@@ -191,5 +192,5 @@ export type SuoritusFields = {
   suorituskieli: string;
   koulusivistyskieli?: string;
   yksilollistetty: string;
-  oppiaineet: Array<OppiaineFields>;
+  oppiaineet: Array<PerusopetusOppiaineFields>;
 };

@@ -17,6 +17,7 @@ export const EditArvosanatTable = ({
 
   const { oppiaineet, aidinkielenOppimaarat, vieraatKielet } =
     suoritusvaihtoehdot;
+
   return (
     <StripedTable
       sx={{
@@ -36,6 +37,7 @@ export const EditArvosanatTable = ({
       <TableBody>
         {oppiaineet.map((oppiaine) => {
           let kieliOptions: Array<SelectOption> | undefined = undefined;
+
           if (oppiaine.isAidinkieli) {
             kieliOptions = aidinkielenOppimaarat.map((am) => ({
               label: translateKielistetty(am.nimi),
@@ -47,13 +49,14 @@ export const EditArvosanatTable = ({
               value: vk.arvo,
             }));
           }
+
           return (
             <EditOppiaineRow
               key={oppiaine.arvo}
               value={
                 suoritus.oppiaineet.find(
                   (oa) => oa.koodi === oppiaine.arvo,
-                ) ?? { koodi: oppiaine.arvo, arvosana: '', valinnainen: false }
+                ) ?? { koodi: oppiaine.arvo, arvosana: '' }
               }
               onChange={(changedOppiaine) => {
                 setSuoritus((previousSuoritus) => {

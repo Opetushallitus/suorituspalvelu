@@ -430,6 +430,7 @@ object EntityToUIConverter {
           )).toJava,
           oppiaineet = om.aineet.map(a => PerusopetuksenOppiaine(
             tunniste = a.tunniste,
+            koodi = a.koodi.arvo,
             nimi = PerusopetuksenOppiaineNimi(
               fi = a.nimi.fi.toJava,
               sv = a.nimi.sv.toJava,

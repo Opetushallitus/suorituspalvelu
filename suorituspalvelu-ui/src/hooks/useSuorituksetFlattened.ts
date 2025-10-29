@@ -115,7 +115,7 @@ export function useSuorituksetFlattened(
           if ('oppiaineet' in suoritus) {
             const groupedOppiaineet = groupBy(
               suoritus.oppiaineet,
-              (oppiaine) => oppiaine.tunniste + (oppiaine.kieli ?? ''),
+              (oppiaine) => oppiaine.koodi + (oppiaine.kieli ?? ''),
             );
             return {
               ...suoritus,
@@ -128,6 +128,7 @@ export function useSuorituksetFlattened(
                       ...mergedOppiaine,
                       nimi: curr.nimi,
                       tunniste: curr.tunniste,
+                      koodi: curr.koodi,
                       kieli: curr.kieli,
                     };
                     if (curr.valinnainen) {
@@ -141,7 +142,7 @@ export function useSuorituksetFlattened(
                     }
                     if (mergedOppiaine.arvosana && curr.arvosana) {
                       throw new Error(
-                        `Pakolliselle oppiaineelle löytyi duplikaatti-arvosanoja (tunniste: ${curr.tunniste}, kieli: ${curr.kieli})`,
+                        `Pakolliselle oppiaineelle löytyi duplikaatti-arvosanoja (tunniste: ${curr.tunniste}, koodi: ${curr.koodi}, kieli: ${curr.kieli})`,
                       );
                     }
                     return {

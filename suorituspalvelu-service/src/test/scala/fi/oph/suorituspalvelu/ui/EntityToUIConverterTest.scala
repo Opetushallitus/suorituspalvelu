@@ -529,6 +529,7 @@ class EntityToUIConverterTest {
       )),
       oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaine(
         tunniste = aine.tunniste,
+        koodi = aine.koodi.arvo,
         nimi = PerusopetuksenOppiaineNimi(
           aine.nimi.fi.toJava,
           aine.nimi.sv.toJava,

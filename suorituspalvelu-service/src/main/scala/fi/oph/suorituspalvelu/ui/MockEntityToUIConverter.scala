@@ -830,6 +830,7 @@ object MockEntityToUIConverter {
       oppiaineet = java.util.List.of(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "AI",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus"),
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
@@ -840,6 +841,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "A1",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("A1-kieli, englanti"),
             sv = Optional.of("A1-kieli, englanti sv"),
@@ -850,6 +852,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "B1",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("B1-kieli, ruotsi"),
             sv = Optional.of("B1-kieli, ruotsi sv"),
@@ -860,6 +863,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "B2",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("B2-kieli, saksa"),
             sv = Optional.of("B2-kieli, saksa sv"),
@@ -870,6 +874,7 @@ object MockEntityToUIConverter {
           valinnainen = true,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "MA",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Matematiikka"),
             sv = Optional.of("Matematiikka sv"),
@@ -880,6 +885,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "BI",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Biologia"),
             sv = Optional.of("Biologia sv"),
@@ -890,6 +896,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "GE",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Maantieto"),
             sv = Optional.of("Maantieto sv"),
@@ -900,6 +907,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "FY",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Fysiikka"),
             sv = Optional.of("Fysiikka sv"),
@@ -910,16 +918,18 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "KE",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Kemia"),
             sv = Optional.of("Kemia sv"),
-            en = Optional.of("Fysiikka en")
+            en = Optional.of("Kemia en")
           ),
           kieli = Optional.empty(),
           arvosana = "9",
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "TE",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Terveystieto"),
             sv = Optional.of("Terveystieto sv"),
@@ -930,6 +940,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "UE",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Uskonto tai elämänkatsomustieto"),
             sv = Optional.of("Uskonto tai elämänkatsomustieto sv"),
@@ -989,6 +1000,7 @@ object MockEntityToUIConverter {
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
+        koodi = "BI",
         nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("Biologia"),
           sv = Optional.of("Biologia sv"),
@@ -999,6 +1011,7 @@ object MockEntityToUIConverter {
         valinnainen = false
       ),PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
+        koodi = "HI",
         nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("Historia"),
           sv = Optional.of("Historia sv"),
@@ -1032,6 +1045,7 @@ object MockEntityToUIConverter {
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
+        koodi = "MA",
         nimi = PerusopetuksenOppiaineNimi(
           fi = Optional.of("matematiikka"),
           sv = Optional.of("matematiikka sv"),
@@ -1066,6 +1080,7 @@ object MockEntityToUIConverter {
       oppiaineet = java.util.List.of(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "AI",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus"),
             sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
@@ -1076,6 +1091,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "A1",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("A1-kieli, englanti"),
             sv = Optional.of("A1-kieli, englanti sv"),
@@ -1086,6 +1102,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "B1",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("B1-kieli, ruotsi"),
             sv = Optional.of("B1-kieli, ruotsi sv"),
@@ -1096,6 +1113,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "B2",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("B2-kieli, saksa"),
             sv = Optional.of("B2-kieli, saksa sv"),
@@ -1106,6 +1124,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "MA",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Matematiikka"),
             sv = Optional.of("Matematiikka sv"),
@@ -1116,6 +1135,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "BI",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Biologia"),
             sv = Optional.of("Biologia sv"),
@@ -1126,6 +1146,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "GE",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Maantieto"),
             sv = Optional.of("Maantieto sv"),
@@ -1136,6 +1157,7 @@ object MockEntityToUIConverter {
           valinnainen = false,
         ), PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          koodi = "FY",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Fysiikka"),
             sv = Optional.of("Fysiikka sv"),

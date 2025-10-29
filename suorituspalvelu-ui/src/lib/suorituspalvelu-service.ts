@@ -93,12 +93,27 @@ export const saveSuoritus = async (
       : undefined,
   };
 
-  const oppiaineet = suoritusFields.oppiaineet?.map((oa) => ({
-    koodi: oa.koodi,
-    kieli: oa.kieli,
-    arvosana: parseInt(oa.arvosana, 10),
-    valinnainen: oa.valinnainen,
-  }));
+  const oppiaineet = suoritusFields.oppiaineet?.flatMap((oa) => {
+    const pakolliset = oa.arvosana
+      ? [
+          {
+            koodi: oa.koodi,
+            kieli: oa.kieli,
+            arvosana: parseInt(oa.arvosana, 10),
+            valinnainen: false,
+          },
+        ]
+      : [];
+
+    const valinnaiset = (oa.valinnaisetArvosanat ?? []).map((arv) => ({
+      koodi: oa.koodi,
+      kieli: oa.kieli,
+      arvosana: parseInt(arv, 10),
+      valinnainen: true,
+    }));
+
+    return [...pakolliset, ...valinnaiset];
+  });
 
   let url: string | null = null;
   if (suoritusFields.tyyppi === 'perusopetuksenoppimaara') {

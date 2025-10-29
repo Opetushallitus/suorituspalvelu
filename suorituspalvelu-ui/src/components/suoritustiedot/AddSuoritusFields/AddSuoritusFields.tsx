@@ -6,7 +6,7 @@ import { Add } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useMutation } from '@tanstack/react-query';
 import { saveSuoritus as saveSuoritusApi } from '@/lib/suorituspalvelu-service';
-import { EditSuoritusPaper } from './EditSuoritusPaper';
+import { AddSuoritusPaper } from './EditSuoritusPaper';
 
 const createSuoritusFields = (
   base: Partial<SuoritusFields> = {},
@@ -62,21 +62,22 @@ const useSuoritusState = () => {
 
 export const AddSuoritusFields = ({
   oppijanTiedot,
+  mode,
 }: {
   oppijanTiedot: OppijanTiedot;
+  mode: 'add' | 'edit';
 }) => {
   const { t } = useTranslations();
-
   const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
-
   const { suoritus, setSuoritus, suoritusMutation } = useSuoritusState();
 
   return (
-    <>
-      <Stack
-        direction="row"
-        sx={{ justifyContent: 'flex-start', marginTop: 2, marginBottom: 2 }}
-      >
+    <Stack
+      direction="column"
+      spacing={2}
+      sx={{ alignItems: 'flex-start', marginBottom: 2 }}
+    >
+      {mode === 'add' && (
         <OphButton
           variant="outlined"
           startIcon={<Add />}
@@ -97,8 +98,8 @@ export const AddSuoritusFields = ({
         >
           {t('muokkaus.suoritus.lisaa')}
         </OphButton>
-      </Stack>
-      <EditSuoritusPaper
+      )}
+      <AddSuoritusPaper
         suoritus={suoritus}
         ref={suoritusPaperRef}
         setSuoritus={setSuoritus}
@@ -106,6 +107,6 @@ export const AddSuoritusFields = ({
           suoritusMutation.mutate();
         }}
       />
-    </>
+    </Stack>
   );
 };
