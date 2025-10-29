@@ -41,10 +41,10 @@ export const EditOppiaineRow = ({
           <StyledSelect
             options={kieliOptions}
             value={value.kieli ?? ''}
+            clearable={true}
+            placeholder="&nbsp;"
             onChange={(e) => {
-              if (e.target.value) {
-                onChange({ ...value, kieli: e.target.value });
-              }
+              onChange({ ...value, kieli: e.target.value });
             }}
           />
         )}
@@ -53,6 +53,8 @@ export const EditOppiaineRow = ({
         <StyledSelect
           options={arvosanaOptions}
           value={value.arvosana ?? ''}
+          clearable={true}
+          placeholder="&nbsp;"
           onChange={(e) => onChange({ ...value, arvosana: e.target.value })}
         />
       </TableCell>
@@ -62,8 +64,10 @@ export const EditOppiaineRow = ({
             // eslint-disable-next-line @eslint-react/no-array-index-key
             <Stack key={index} direction="row">
               <StyledSelect
+                placeholder="&nbsp;"
                 options={arvosanaOptions}
                 value={valinnainenArvosana ?? ''}
+                clearable={true}
                 onChange={(e) => {
                   if (valinnaisetArvosanat) {
                     const newValinnaiset = [...valinnaisetArvosanat];

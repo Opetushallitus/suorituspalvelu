@@ -117,7 +117,9 @@ export const saveSuoritus = async (
       valinnainen: true,
     }));
 
-    return [...pakolliset, ...valinnaiset];
+    return [...pakolliset, ...valinnaiset].filter(
+      (aine) => !isNaN(aine.arvosana),
+    );
   });
 
   let url: string | null = null;
