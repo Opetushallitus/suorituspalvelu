@@ -62,8 +62,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[VirtaOpiskeluoikeus])
       .map(o => o.asInstanceOf[VirtaOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
+      .flatMap(o => o.suoritukset)
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.VirtaTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.VirtaTutkinto])
       .map(t => {
@@ -95,8 +94,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[YOOpiskeluoikeus])
       .map(o => o.asInstanceOf[YOOpiskeluoikeus])
-      .map(o => Seq(o.yoTutkinto))
-      .flatten
+      .flatMap(o => Seq(o.yoTutkinto))
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.YOTutkinto])
       .map(t => {
         YOTutkinto(
@@ -134,387 +132,30 @@ object EntityToUIConverter {
       }).toList
 
   def getLukionOppimaara(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[LukionOppimaara] =
-    Some(LukionOppimaara(
-      tunniste = UUID.randomUUID(),
-      nimi = LukionOppimaaraNimi(
-        fi = Optional.of("Lukion oppimaara"),
-        sv = Optional.of("Lukion oppimaara sv"),
-        en = Optional.of("Lukion oppimaara en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(LukionOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = LukionOppiaineNimi(
-          fi = Optional.of("Äidinkieli ja kirjallisuus"),
-          sv = Optional.of("Äidinkieli ja kirjallisuus sv"),
-          en = Optional.of("Äidinkieli ja kirjallisuus en")
-        )
-      ),LukionOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = LukionOppiaineNimi(
-          fi = Optional.of("Uskonto/Elämänkatsomustieto"),
-          sv = Optional.of("Uskonto/Elämänkatsomustieto sv"),
-          en = Optional.of("Uskonto/Elämänkatsomustieto en")
-        )
-      ))
-    ))
+    None
 
   def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] =
-    List(LukionOppiaineenOppimaara(
-      tunniste = UUID.randomUUID(),
-      nimi = LukionOppiaineenOppimaaraNimi(
-        fi = Optional.of("Lukion oppiaineen oppimäärä"),
-        sv = Optional.of("Lukion oppiaineen oppimäärä sv"),
-        en = Optional.of("Lukion oppiaineen oppimäärä en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(LukionOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = LukionOppiaineNimi(
-          fi = Optional.of("Äidinkieli ja kirjallisuus, suomi äidinkielenä"),
-          sv = Optional.of("Äidinkieli ja kirjallisuus, suomi äidinkielenä sv"),
-          en = Optional.of("Äidinkieli ja kirjallisuus, suomi äidinkielenä en")
-        )
-      ), LukionOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = LukionOppiaineNimi(
-          fi = Optional.of("Matematiikka, lyhyt oppimäärä, valinnainen"),
-          sv = Optional.of("Matematiikka, lyhyt oppimäärä, valinnainen sv"),
-          en = Optional.of("Matematiikka, lyhyt oppimäärä, valinnainen en")
-        )
-      ))
-    ))
+    List.empty[LukionOppiaineenOppimaara]
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkinto] =
-    Some(DIATutkinto(
-      tunniste = UUID.randomUUID(),
-      nimi = DIATutkintoNimi(
-        fi = Optional.of("DIA-tutkinto"),
-        sv = Optional.of("DIA-tutkinto sv"),
-        en = Optional.of("DIA-tutkinto en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-    ))
+  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkinto] = None
 
   def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistus] =
-    Some(DIAVastaavuusTodistus(
-      tunniste = UUID.randomUUID(),
-      nimi = DIAVastaavuusTodistusNimi(
-        fi = Optional.of("DIA-vastaavuustodistus"),
-        sv = Optional.of("DIA-vastaavuustodistus sv"),
-        en = Optional.of("DIA-vastaavuustodistus en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      kieletKirjallisuusTaide = java.util.List.of(DIAOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = DIAOppiaineNimi(
-          fi = Optional.of("A-kieli, englanti"),
-          sv = Optional.of("A-kieli, englanti sv"),
-          en = Optional.of("A-kieli, englanti en")
-        ),
-        laajuus = 3,
-        keskiarvo = 8.5
-      ), DIAOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = DIAOppiaineNimi(
-          fi = Optional.of("Historia"),
-          sv = Optional.of("Historia sv"),
-          en = Optional.of("Historia en")
-        ),
-        laajuus = 2,
-        keskiarvo = 8.5
-      )),
-      matematiikkaLuonnontieteet = java.util.List.of(DIAOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = DIAOppiaineNimi(
-          fi = Optional.of("Matematiikka"),
-          sv = Optional.of("Matematiikka sv"),
-          en = Optional.of("Matematiikka en")
-        ),
-        laajuus = 3,
-        keskiarvo = 6
-      ), DIAOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = DIAOppiaineNimi(
-          fi = Optional.of("Kuvataide"),
-          sv = Optional.of("Kuvataide sv"),
-          en = Optional.of("Kuvataide en")
-        ),
-        laajuus = 3,
-        keskiarvo = 8.5
-      ))
-    ))
+    None
 
   def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[EBTutkinto] =
-    Some(EBTutkinto(
-      tunniste = UUID.randomUUID(),
-      nimi = EBTutkintoNimi(
-        fi = Optional.of("EB-tutkinto"),
-        sv = Optional.of("EB-tutkinto sv"),
-        en = Optional.of("EB-tutkinto en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(EBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = EBOppiaineNimi(
-          fi = Optional.of("Mathematics fi"),
-          sv = Optional.of("Mathematics sv"),
-          en = Optional.of("Mathematics")
-        ),
-        suorituskieli = "englanti",
-        laajuus = 4,
-        written = EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        ),
-        oral = Optional.empty(),
-        `final` = EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        )
-      ), EBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = EBOppiaineNimi(
-          fi = Optional.of("First language, ranska fi"),
-          sv = Optional.of("First language, ranska sv"),
-          en = Optional.of("First language, ranska en")
-        ),
-        suorituskieli = "englanti",
-        laajuus = 3,
-        written = EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        ),
-        oral = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        )),
-        `final` = EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        )
-      ), EBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = EBOppiaineNimi(
-          fi = Optional.of("Second language, saksa fi"),
-          sv = Optional.of("Second language, saksa sv"),
-          en = Optional.of("Second language, saksa en")
-        ),
-        suorituskieli = "englanti",
-        laajuus = 3,
-        written = EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        ),
-        oral = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        )),
-        `final` = EBSuoritus(
-          tunniste = UUID.randomUUID(),
-          arvosana = 8.67,
-        )
-      ))
-    ))
+    None
 
   def getIBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[IBTutkinto] =
-    Some(IBTutkinto(
-      tunniste = UUID.randomUUID(),
-      nimi = IBTutkintoNimi(
-        fi = Optional.of("IB-tutkinto"),
-        sv = Optional.of("IB-tutkinto sv"),
-        en = Optional.of("IB-tutkinto en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(IBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = IBOppiaineNimi(
-          fi = Optional.of("Studies in language and literature fi"),
-          sv = Optional.of("Studies in language and literature sv"),
-          en = Optional.of("Studies in language and literature en")
-        ),
-        suoritukset = java.util.List.of(IBSuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = IBSuoritusNimi(
-            fi = Optional.of("Language A: literature, suomi fi"),
-            sv = Optional.of("Language A: literature, suomi sv"),
-            en = Optional.of("Language A: literature, suomi en")
-          ),
-          laajuus = 9,
-          predictedGrade = Some(7),
-          arvosana = 7
-        ), IBSuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = IBSuoritusNimi(
-            fi = Optional.of("Language A: language and literature, englanti fi"),
-            sv = Optional.of("Language A: language and literature, englanti sv"),
-            en = Optional.of("Language A: language and literature, englanti en")
-          ),
-          laajuus = 6,
-          predictedGrade = Some(7),
-          arvosana = 7
-        ))
-      ), IBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = IBOppiaineNimi(
-          fi = Optional.of("Individuals and societies fi"),
-          sv = Optional.of("Individuals and societies sv"),
-          en = Optional.of("Individuals and societies en")
-        ),
-        suoritukset = java.util.List.of(IBSuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = IBSuoritusNimi(
-            fi = Optional.of("History fi"),
-            sv = Optional.of("History sv"),
-            en = Optional.of("History en")
-          ),
-          laajuus = 3,
-          predictedGrade = Some(7),
-          arvosana = 7
-        ), IBSuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = IBSuoritusNimi(
-            fi = Optional.of("Psychology fi"),
-            sv = Optional.of("Psychology sv"),
-            en = Optional.of("Psychology en")
-          ),
-          laajuus = 3,
-          predictedGrade = Some(7),
-          arvosana = 7
-        ))
-      ), IBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = IBOppiaineNimi(
-          fi = Optional.of("Experimental sciences fi"),
-          sv = Optional.of("Experimental sciences sv"),
-          en = Optional.of("Experimental sciences en")
-        ),
-        suoritukset = java.util.List.of(IBSuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = IBSuoritusNimi(
-            fi = Optional.of("Biology fi"),
-            sv = Optional.of("Biology sv"),
-            en = Optional.of("Biology en")
-          ),
-          laajuus = 3,
-          predictedGrade = Some(7),
-          arvosana = 7
-        ))
-      ), IBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = IBOppiaineNimi(
-          fi = Optional.of("Mathematics fi"),
-          sv = Optional.of("Mathematics sv"),
-          en = Optional.of("Mathematics en")
-        ),
-        suoritukset = java.util.List.of(IBSuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = IBSuoritusNimi(
-            fi = Optional.of("Mathematical studies fi"),
-            sv = Optional.of("Mathematical studies sv"),
-            en = Optional.of("Mathematical studies en")
-          ),
-          laajuus = 3,
-          predictedGrade = Some(7),
-          arvosana = 7
-        ))
-      ))
-    ))
+    None
 
   def getPreIB(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PreIB] =
-    Some(PreIB(
-      tunniste = UUID.randomUUID(),
-      nimi = PreIBNimi(
-        fi = Optional.of("Pre-IB"),
-        sv = Optional.of("Pre-IB sv"),
-        en = Optional.of("Pre-IB en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-    ))
+    None
 
   def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Ammatillinentutkinto] =
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
+      .flatMap(o => o.suoritukset)
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(t => {
@@ -594,8 +235,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
+      .flatMap(o => o.suoritukset)
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
       .map(t => {
@@ -625,8 +265,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
+      .flatMap(o => o.suoritukset)
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
       .map(t => {
@@ -656,8 +295,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
+      .flatMap(o => o.suoritukset)
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Telma])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Telma])
       .map(t => {
@@ -688,8 +326,7 @@ object EntityToUIConverter {
       opiskeluoikeudet
         .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
         .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-        .map(o => o.suoritukset)
-        .flatten
+        .flatMap(o => o.suoritukset)
         .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
         .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
         .map(t => {
@@ -723,8 +360,7 @@ object EntityToUIConverter {
       opiskeluoikeudet
         .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
         .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
-        .map(o => o.suoritukset)
-        .flatten
+        .flatMap(o => o.suoritukset)
         .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
         .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
         .map(t => {
@@ -759,8 +395,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
       .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
-      .map(o => o.suoritukset)
-      .flatten
+      .flatMap(o => o.suoritukset)
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara])
       .map(om => {
@@ -808,210 +443,16 @@ object EntityToUIConverter {
       }).toList
 
   def getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PerusopetuksenOppimaara78Luokkalaiset] =
-    Some(PerusopetuksenOppimaara78Luokkalaiset(
-      tunniste = UUID.randomUUID(),
-      nimi = PerusopetuksenOppimaara78LuokkalaisetNimi(
-        fi = Optional.of("Perusopetuksen oppimäärä"),
-        sv = Optional.of("Grundläggande utbildningens lärokurs"),
-        en = Optional.of("Basic education syllabus")
-      ),
-      oppilaitos = PKOppilaitos(
-        nimi = PKOppilaitosNimi(
-          fi = Optional.of("Keltinmäen koulu"),
-          sv = Optional.of("Keltinmäen koulu sv"),
-          en = Optional.of("Keltinmäen koulu en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
-      suorituskieli = "suomi",
-      koulusivistyskieli = "suomi",
-      luokka = "9A",
-      yksilollistetty = false
-    ))
+    None
 
   def getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[NuortenPerusopetuksenOppiaineenOppimaara] =
-    List(NuortenPerusopetuksenOppiaineenOppimaara(
-      tunniste = UUID.randomUUID(),
-      nimi = NuortenPerusopetuksenOppiaineenOppimaaraNimi(
-        fi = Optional.of("Nuorten perusopetuksen oppiaineen oppimäärä"),
-        sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning sv"),
-        en = Optional.of("Basic education for youth subject syllabus en")
-      ),
-      oppilaitos = PKOppilaitos(
-        nimi = PKOppilaitosNimi(
-          fi = Optional.of("Keltinmäen koulu"),
-          sv = Optional.of("Keltinmäen koulu sv"),
-          en = Optional.of("Keltinmäen koulu en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = PerusopetuksenOppiaineNimi(
-          fi = Optional.of("Biologia"),
-          sv = Optional.of("Biologia sv"),
-          en = Optional.of("Biologia en")
-        ),
-        kieli = Optional.empty(),
-        arvosana = "9",
-        valinnainen = false
-      ),PerusopetuksenOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = PerusopetuksenOppiaineNimi(
-          fi = Optional.of("Historia"),
-          sv = Optional.of("Historia sv"),
-          en = Optional.of("Historia en")
-        ),
-        kieli = Optional.empty(),
-        arvosana = "8",
-        valinnainen = false
-      ))
-    ))
+    List.empty[NuortenPerusopetuksenOppiaineenOppimaara]
 
   def getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppiaineenOppimaara] =
-    List(PerusopetuksenOppiaineenOppimaara(
-      tunniste = UUID.randomUUID(),
-      nimi = PerusopetuksenOppiaineenOppimaaraNimi(
-        fi = Optional.of("Perusopetuksen oppiaineen oppimäärä"),
-        sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning"),
-        en = Optional.of("Basic education subject syllabus")
-      ),
-      oppilaitos = PKOppilaitos(
-        nimi = PKOppilaitosNimi(
-          fi = Optional.of("Keltinmäen koulu"),
-          sv = Optional.of("Keltinmäen koulu sv"),
-          en = Optional.of("Keltinmäen koulu en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(PerusopetuksenOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = PerusopetuksenOppiaineNimi(
-          fi = Optional.of("matematiikka"),
-          sv = Optional.of("matematiikka sv"),
-          en = Optional.of("matematiikka en")
-        ),
-        kieli = Optional.empty(),
-        arvosana = "9",
-        valinnainen = false
-      ))
-    ))
+    List.empty[PerusopetuksenOppiaineenOppimaara]
 
   def getAikuistenPerusopetuksetOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[AikuistenPerusopetuksenOppimaara] =
-    List(AikuistenPerusopetuksenOppimaara(
-      tunniste = UUID.randomUUID(),
-      nimi = AikuistenPerusopetuksenOppimaaraNimi(
-        fi = Optional.of("Aikuisten perusopetuksen oppimäärä"),
-        sv = Optional.of("Lärokurs i den grundläggande utbildningen för vuxna"),
-        en = Optional.of("Preparatory instruction and lower secondary education for adults syllabus")
-      ),
-      oppilaitos = PKOppilaitos(
-        nimi = PKOppilaitosNimi(
-          fi = Optional.of("Keltinmäen koulu"),
-          sv = Optional.of("Keltinmäen koulu sv"),
-          en = Optional.of("Keltinmäen koulu en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(
-        PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus"),
-            sv = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus sv"),
-            en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
-          ),
-          kieli = Optional.of("AI1"),
-          arvosana = "9",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("A1-kieli, englanti"),
-            sv = Optional.of("A1-kieli, englanti sv"),
-            en = Optional.of("A1-kieli, englanti en")
-          ),
-          kieli = Optional.of("EN"),
-          arvosana = "9",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("B1-kieli, ruotsi"),
-            sv = Optional.of("B1-kieli, ruotsi sv"),
-            en = Optional.of("B1-kieli, ruotsi en")
-          ),
-          kieli = Optional.of("SV"),
-          arvosana = "9",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("B2-kieli, saksa"),
-            sv = Optional.of("B2-kieli, saksa sv"),
-            en = Optional.of("B2-kieli, saksa en")
-          ),
-          kieli = Optional.of("DE"),
-          arvosana = "9",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Matematiikka"),
-            sv = Optional.of("Matematiikka sv"),
-            en = Optional.of("Matematiikka en")
-          ),
-          kieli = Optional.empty(),
-          arvosana = "9",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Biologia"),
-            sv = Optional.of("Biologia sv"),
-            en = Optional.of("Biologia en")
-          ),
-          kieli = Optional.empty(),
-          arvosana = "8",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Maantieto"),
-            sv = Optional.of("Maantieto sv"),
-            en = Optional.of("Maantieto en")
-          ),
-          kieli = Optional.empty(),
-          arvosana = "8",
-          valinnainen = false,
-        ), PerusopetuksenOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("Fysiikka"),
-            sv = Optional.of("Fysiikka sv"),
-            en = Optional.of("Fysiikka en")
-          ),
-          kieli = Optional.empty(),
-          arvosana = "8",
-          valinnainen = false,
-        )
-      )
-    ))
+    List.empty[AikuistenPerusopetuksenOppimaara]
 
   def getOppijanTiedot(oppijaNumero: String, opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): Option[OppijanTiedotSuccessResponse] = {
     if(opiskeluoikeudet.isEmpty && !EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
