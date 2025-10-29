@@ -1,7 +1,6 @@
 import type {
   IYOKoe,
   SuoritusTila,
-  IPerusopetuksenOppiaine,
   ILukionOppiaine,
   IKKSuoritus,
   ILukionOppimaara,
@@ -63,7 +62,13 @@ export type OppijanTiedot = IOppijanTiedotSuccessResponse;
 
 export type YOKoe = IYOKoe;
 
-export type PerusopetuksenOppiaine = IPerusopetuksenOppiaine;
+export type PerusopetuksenOppiaine = {
+  tunniste: string;
+  nimi: Kielistetty;
+  kieli?: string;
+  arvosana?: string;
+  valinnaisetArvosanat?: Array<string>;
+};
 
 export type LukionOppiaine = ILukionOppiaine | IEBOppiaine | IIBOppiaine;
 
@@ -112,12 +117,37 @@ export type VapaaSivistystyoSuoritus = IVapaaSivistystyoKoulutus & {
   koulutustyyppi: 'vapaa-sivistystyo';
 };
 
+type PerusopetuksenOppimaara = Omit<IPerusopetuksenOppimaara, 'oppiaineet'> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+};
+
+type PerusopetuksenOppiaineenOppimaara = Omit<
+  IPerusopetuksenOppiaineenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+};
+
+type AikuistenPerusopetuksenOppimaara = Omit<
+  IAikuistenPerusopetuksenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+};
+
+type NuortenPerusopetuksenOppiaineenOppimaara = Omit<
+  INuortenPerusopetuksenOppiaineenOppimaara,
+  'oppiaineet'
+> & {
+  oppiaineet: Array<PerusopetuksenOppiaine>;
+};
+
 export type PerusopetusSuoritus = (
-  | IPerusopetuksenOppimaara
-  | IPerusopetuksenOppiaineenOppimaara
+  | PerusopetuksenOppimaara
+  | PerusopetuksenOppiaineenOppimaara
   | IPerusopetuksenOppimaara78Luokkalaiset
-  | INuortenPerusopetuksenOppiaineenOppimaara
-  | IAikuistenPerusopetuksenOppimaara
+  | NuortenPerusopetuksenOppiaineenOppimaara
+  | AikuistenPerusopetuksenOppimaara
 ) & { koulutustyyppi: 'perusopetus' };
 
 export type Suoritus =
