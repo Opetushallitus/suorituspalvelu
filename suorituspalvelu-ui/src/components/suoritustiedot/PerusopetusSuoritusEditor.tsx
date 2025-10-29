@@ -26,7 +26,7 @@ export const PerusopetusSuoritusEditor = ({
     saveSuoritus,
     deleteSuoritus,
     startSuoritusEdit,
-    stopSuoritusModify,
+    stopSuoritusEdit,
     mode,
   } = useSuoritusManager({ oppijaOid: henkiloOID });
 
@@ -48,7 +48,7 @@ export const PerusopetusSuoritusEditor = ({
               saveSuoritus();
             }}
             onCancel={() => {
-              stopSuoritusModify();
+              stopSuoritusEdit();
             }}
           />
         ) : (

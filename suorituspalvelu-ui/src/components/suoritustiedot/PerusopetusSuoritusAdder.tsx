@@ -19,8 +19,8 @@ export const PerusopetusSuoritusAdder = ({
     saveSuoritus,
     onSuoritusChange,
     onOppiaineChange,
-    startSuoritusAdd,
-    stopSuoritusModify,
+    startSuoritusEdit,
+    stopSuoritusEdit,
   } = useSuoritusManager({ oppijaOid: henkiloOID });
 
   return (
@@ -33,7 +33,7 @@ export const PerusopetusSuoritusAdder = ({
         variant="outlined"
         startIcon={<Add />}
         onClick={() => {
-          startSuoritusAdd();
+          startSuoritusEdit();
         }}
       >
         {t('muokkaus.suoritus.lisaa')}
@@ -49,7 +49,7 @@ export const PerusopetusSuoritusAdder = ({
             saveSuoritus();
           }}
           onCancel={() => {
-            stopSuoritusModify();
+            stopSuoritusEdit();
           }}
         />
       )}

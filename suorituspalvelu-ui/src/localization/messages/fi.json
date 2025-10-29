@@ -215,6 +215,10 @@
         "otsikko": "Haluatko keskeyttää suorituksen lisäämisen?",
         "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen lisäämisen ja muokata suoritusta? Tallentamattomat muutokset menetetään."
       },
+      "vaihda-suoritusta": {
+        "otsikko": "Haluatko vaihtaa muokattavaa suoritusta?",
+        "sisalto": "Vain yhden suorituksen muokkaaminen kerrallaan on mahdollista. Oletko varma, että haluat keskeyttää suorituksen muokkauksen ja muokata toista suoritusta? Tallentamattomat muutokset menetetään."
+      },
       "luokka": "Luokka"
     },
     "tallenna": "Tallenna",

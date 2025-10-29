@@ -113,17 +113,20 @@ const useSuoritusManagerState = () => {
   const { t } = useTranslations();
 
   const [isDirty, setIsDirty] = useState(false);
+
   const [oppijaOid, setOppijaOid] = useState<string | undefined>(undefined);
+
+  // Muokattavat suoritustiedot. Jos null, ei olla muokkaustilassa.
   const [suoritusState, setSuoritusState] = useState<SuoritusFields | null>(
     null,
   );
-
-  const { showConfirmation } = useGlobalConfirmationModal();
 
   const [mutationOperation, setMutationOperation] =
     useState<SuoritusMutationOperation | null>(null);
 
   const [mode, setMode] = useState<SuoritusEditMode>('new');
+
+  const { showConfirmation } = useGlobalConfirmationModal();
 
   const queryClient = useQueryClient();
 
@@ -177,25 +180,17 @@ const useSuoritusManagerState = () => {
       }, 20);
     };
 
-    const addSuoritus = () => {
-      suoritusMutation.reset();
-      setMode('new');
-      setSuoritusState(
-        createNewSuoritusFields({
-          oppijaOid,
-        }),
-      );
-      setIsDirty(false);
-      scrollToSuoritusPaper();
-    };
-
-    const editSuoritus = (
-      suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+    const initializeSuoritusEditState = (
+      suoritus?: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
     ) => {
       suoritusMutation.reset();
-      setMode('existing');
+      setMode(suoritus ? 'existing' : 'new');
       if (oppijaOid) {
-        setSuoritusState(createEditableSuoritusFields({ oppijaOid, suoritus }));
+        setSuoritusState(
+          suoritus
+            ? createEditableSuoritusFields({ oppijaOid, suoritus })
+            : createNewSuoritusFields({ oppijaOid }),
+        );
       }
       setIsDirty(false);
       scrollToSuoritusPaper();
@@ -208,37 +203,46 @@ const useSuoritusManagerState = () => {
       operation: mutationOperation,
       suoritusMutation,
       setOppijaOid,
-      startSuoritusAdd: () => {
-        if (suoritusState && mode === 'existing') {
-          showConfirmation({
-            title: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.otsikko'),
-            content: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.sisalto'),
-            maxWidth: 'md',
-            onConfirm: () => {
-              addSuoritus();
-            },
-          });
-        } else if (!suoritusState) {
-          addSuoritus();
-        }
-      },
       startSuoritusEdit: (
-        suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+        suoritus?: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
       ) => {
-        if (suoritusState && mode === 'new') {
-          showConfirmation({
-            title: t('muokkaus.suoritus.muokkaa-lisattaessa.otsikko'),
-            content: t('muokkaus.suoritus.muokkaa-lisattaessa.sisalto'),
-            maxWidth: 'md',
-            onConfirm: () => {
-              editSuoritus(suoritus);
-            },
-          });
-        } else if (!suoritusState) {
-          editSuoritus(suoritus);
+        const newEditMode = suoritus ? 'existing' : 'new';
+
+        if (suoritusState) {
+          if (newEditMode !== mode) {
+            showConfirmation({
+              title:
+                newEditMode === 'new'
+                  ? t('muokkaus.suoritus.lisaa-uusi-muokattaessa.otsikko')
+                  : t('muokkaus.suoritus.muokkaa-lisattaessa.otsikko'),
+              content:
+                newEditMode === 'new'
+                  ? t('muokkaus.suoritus.lisaa-uusi-muokattaessa.sisalto')
+                  : t('muokkaus.suoritus.muokkaa-lisattaessa.sisalto'),
+              maxWidth: 'md',
+              onConfirm: () => {
+                initializeSuoritusEditState(suoritus);
+              },
+            });
+          } else if (
+            suoritus?.versioTunniste !== suoritusState?.versioTunniste
+          ) {
+            showConfirmation({
+              title: t('muokkaus.suoritus.vaihda-suoritusta.otsikko'),
+              content: t('muokkaus.suoritus.vaihda-suoritusta.sisalto'),
+              maxWidth: 'md',
+              onConfirm: () => {
+                initializeSuoritusEditState(suoritus);
+              },
+            });
+          } else {
+            scrollToSuoritusPaper();
+          }
+        } else {
+          initializeSuoritusEditState(suoritus);
         }
       },
-      stopSuoritusModify: () => {
+      stopSuoritusEdit: () => {
         setSuoritusState(null);
       },
       onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
