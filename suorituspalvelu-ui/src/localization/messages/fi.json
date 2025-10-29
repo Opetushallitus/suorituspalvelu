@@ -231,7 +231,9 @@
       "luokka": "Luokka",
       "kieli-label": "Oppimäärä oppiaineelle {oppiaine}",
       "arvosana-label": "Arvosana oppiaineelle {oppiaine}",
-      "valinnainen-arvosana-label": "Valinnainen arvosana {number} oppiaineelle {oppiaine}"
+      "valinnainen-arvosana-label": "Valinnainen arvosana {number} oppiaineelle {oppiaine}",
+      "arvosana-placeholder": "-",
+      "oppiaine-placeholder": "-"
     },
     "tallenna": "Tallenna",
     "poista": "Poista"
