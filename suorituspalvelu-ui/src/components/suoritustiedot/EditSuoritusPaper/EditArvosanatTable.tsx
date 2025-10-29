@@ -1,17 +1,21 @@
 import { StripedTable } from '@/components/StripedTable';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { SuoritusFields, Suoritusvaihtoehdot } from '@/types/ui-types';
+import type {
+  PerusopetusOppiaineFields,
+  SuoritusFields,
+  Suoritusvaihtoehdot,
+} from '@/types/ui-types';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { EditOppiaineRow, type SelectOption } from './EditOppiaineRow';
 
 export const EditArvosanatTable = ({
   suoritus,
   suoritusvaihtoehdot,
-  setSuoritus,
+  onOppiaineChange,
 }: {
   suoritus: SuoritusFields;
   suoritusvaihtoehdot: Suoritusvaihtoehdot;
-  setSuoritus: React.Dispatch<React.SetStateAction<SuoritusFields | null>>;
+  onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
 }) => {
   const { t, translateKielistetty } = useTranslations();
 
@@ -66,26 +70,7 @@ export const EditArvosanatTable = ({
                   (oa) => oa.koodi === oppiaine.arvo,
                 ) ?? { koodi: oppiaine.arvo, arvosana: '' }
               }
-              onChange={(changedOppiaine) => {
-                setSuoritus((previousSuoritus) => {
-                  if (previousSuoritus) {
-                    const newOppiaineet = previousSuoritus.oppiaineet ?? [];
-                    const existingOppiaineIndex = newOppiaineet.findIndex(
-                      (oa) => oa.koodi === changedOppiaine.koodi,
-                    );
-                    if (existingOppiaineIndex === -1) {
-                      newOppiaineet.push(changedOppiaine);
-                    } else {
-                      newOppiaineet[existingOppiaineIndex] = changedOppiaine;
-                    }
-                    return {
-                      ...previousSuoritus,
-                      oppiaineet: newOppiaineet,
-                    };
-                  }
-                  return previousSuoritus;
-                });
-              }}
+              onChange={onOppiaineChange}
               arvosanaOptions={arvosanaOptions}
               kieliOptions={kieliOptions}
               title={translateKielistetty(oppiaine.nimi)}

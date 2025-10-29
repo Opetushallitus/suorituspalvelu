@@ -6,7 +6,10 @@ import {
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
 import { type Ref } from 'react';
-import type { SuoritusFields } from '@/types/ui-types';
+import type {
+  PerusopetusOppiaineFields,
+  SuoritusFields,
+} from '@/types/ui-types';
 import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { useTranslations } from '@/hooks/useTranslations';
 import { InfoItemRow } from '@/components/InfoItemRow';
@@ -23,12 +26,14 @@ const EditSuoritusContent = ({
   suoritus,
   onSave,
   onCancel,
-  setSuoritus,
+  onSuoritusChange,
+  onOppiaineChange,
 }: {
   suoritus: SuoritusFields;
   onSave: () => void;
   onCancel?: () => void;
-  setSuoritus: React.Dispatch<React.SetStateAction<SuoritusFields | null>>;
+  onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => void;
+  onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
 }) => {
   const { t, translateKielistetty } = useTranslations();
   const oppilaitoksetOptions = useOppilaitoksetOptions();
@@ -65,9 +70,7 @@ const EditSuoritusContent = ({
           required={true}
           value={suoritus?.tyyppi}
           onChange={(event) => {
-            setSuoritus((prev) =>
-              prev ? { ...prev, tyyppi: event.target.value } : null,
-            );
+            onSuoritusChange({ tyyppi: event.target.value });
           }}
           sx={{ flex: 1 }}
           defaultValue={suoritus?.tyyppi}
@@ -87,11 +90,7 @@ const EditSuoritusContent = ({
                   ) || null
                 }
                 onChange={(_, newValue) => {
-                  setSuoritus((prev) =>
-                    prev
-                      ? { ...prev, oppilaitosOid: newValue?.value ?? '' }
-                      : null,
-                  );
+                  onSuoritusChange({ oppilaitosOid: newValue?.value ?? '' });
                 }}
                 options={oppilaitoksetOptions}
                 renderInput={(params) => <TextField {...params} />}
@@ -116,9 +115,7 @@ const EditSuoritusContent = ({
           label={t('muokkaus.suoritus.valmistumispaiva')}
           value={suoritus?.valmistumispaiva}
           onChange={(date) => {
-            setSuoritus((prev) =>
-              prev ? { ...prev, valmistumispaiva: date ?? undefined } : null,
-            );
+            onSuoritusChange({ valmistumispaiva: date ?? undefined });
           }}
         />
       </InfoItemRow>
@@ -130,9 +127,7 @@ const EditSuoritusContent = ({
           options={suorituskieliOptions}
           value={suoritus?.suorituskieli}
           onChange={(event) => {
-            setSuoritus((prev) =>
-              prev ? { ...prev, suorituskieli: event.target.value } : null,
-            );
+            onSuoritusChange({ suorituskieli: event.target.value });
           }}
         />
         <OphSelectFormField
@@ -142,16 +137,14 @@ const EditSuoritusContent = ({
           options={yksilollistaminenOptions}
           value={suoritus?.yksilollistetty}
           onChange={(event) => {
-            setSuoritus((prev) =>
-              prev ? { ...prev, yksilollistetty: event.target.value } : null,
-            );
+            onSuoritusChange({ yksilollistetty: event.target.value });
           }}
         />
       </InfoItemRow>
       <EditArvosanatTable
         suoritus={suoritus}
         suoritusvaihtoehdot={suoritusvaihtoehdot}
-        setSuoritus={setSuoritus}
+        onOppiaineChange={onOppiaineChange}
       />
       <Stack direction="row" sx={{ justifyContent: 'flex-end', gap: 2 }}>
         <OphButton variant="outlined" onClick={onCancel}>
@@ -169,27 +162,28 @@ export const EditSuoritusPaper = ({
   suoritus,
   onSave,
   onCancel,
-  setSuoritus,
+  onSuoritusChange,
+  onOppiaineChange,
   ref,
 }: {
-  suoritus: SuoritusFields | null;
-  setSuoritus: React.Dispatch<React.SetStateAction<SuoritusFields | null>>;
+  suoritus: SuoritusFields;
+  onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => void;
+  onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
   onSave: () => void;
   onCancel?: () => void;
   ref: Ref<HTMLDivElement> | null;
 }) => {
   return (
-    suoritus && (
-      <PaperWithTopColor ref={ref} topColor={ophColors.cyan2}>
-        <QuerySuspenseBoundary>
-          <EditSuoritusContent
-            onSave={onSave}
-            onCancel={onCancel}
-            suoritus={suoritus}
-            setSuoritus={setSuoritus}
-          />
-        </QuerySuspenseBoundary>
-      </PaperWithTopColor>
-    )
+    <PaperWithTopColor ref={ref} topColor={ophColors.cyan2}>
+      <QuerySuspenseBoundary>
+        <EditSuoritusContent
+          onSave={onSave}
+          onCancel={onCancel}
+          suoritus={suoritus}
+          onSuoritusChange={onSuoritusChange}
+          onOppiaineChange={onOppiaineChange}
+        />
+      </QuerySuspenseBoundary>
+    </PaperWithTopColor>
   );
 };

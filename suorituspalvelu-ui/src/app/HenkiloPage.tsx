@@ -9,6 +9,7 @@ import { ExternalLink } from '@/components/ExternalLink';
 import { formatFinnishDate } from '@/lib/common';
 import type { Route } from './+types/HenkiloPage';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
+import { SuoritusManagerProvider } from '@/lib/suoritusManager';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -48,7 +49,9 @@ export default function HenkiloPage({ params }: Route.ComponentProps) {
         </Stack>
       </Stack>
       <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
-      <Suoritukset oppijanTiedot={tiedot} />
+      <SuoritusManagerProvider>
+        <Suoritukset oppijanTiedot={tiedot} />
+      </SuoritusManagerProvider>
     </Stack>
   );
 }
