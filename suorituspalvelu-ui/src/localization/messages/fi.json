@@ -145,7 +145,10 @@
     "suomi": "suomi",
     "ruotsi": "ruotsi",
     "englanti": "englanti",
-    "muu": "muu"
+    "muu": "muu",
+    "FI": "suomi",
+    "SV": "ruotsi",
+    "EN": "englanti"
   },
   "datepicker": {
     "placeholder": "pp.kk.vvvv"

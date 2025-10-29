@@ -29,6 +29,7 @@ import type {
   IAmmatillisenTutkinnonOsa,
   IYTO,
   ILuoSuoritusDropdownDataSuccessResponse,
+  IYksilollistaminen,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -194,3 +195,5 @@ export type SuoritusFields = {
   yksilollistetty: string;
   oppiaineet: Array<PerusopetusOppiaineFields>;
 };
+
+export type Yksilollistaminen = IYksilollistaminen;

@@ -74,7 +74,7 @@ export const SuorituksenPerustiedotIndicator = ({
       {perustiedot.suorituskieli && (
         <LabeledInfoItem
           label={t('oppija.suorituskieli')}
-          value={perustiedot.suorituskieli}
+          value={t(`kieli.${perustiedot.suorituskieli}`)}
         />
       )}
     </Stack>

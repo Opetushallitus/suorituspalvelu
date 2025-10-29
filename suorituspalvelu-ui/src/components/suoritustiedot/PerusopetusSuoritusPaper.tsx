@@ -2,6 +2,7 @@ import {
   type Kielistetty,
   type PerusopetuksenOppiaine,
   type PerusopetusSuoritus,
+  type Yksilollistaminen,
 } from '@/types/ui-types';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
@@ -28,23 +29,35 @@ const Luokkatiedot = ({
   oppimaara: {
     koulusivistyskieli?: string;
     luokka?: string;
+    yksilollistaminen?: Yksilollistaminen;
     yksilollistetty?: boolean;
   };
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
   return (
     <InfoItemRow slotAmount={4}>
       {oppimaara.koulusivistyskieli && (
         <LabeledInfoItem
           label={t('oppija.koulusivistyskieli')}
-          value={oppimaara.koulusivistyskieli}
+          value={t(`kieli.${oppimaara.koulusivistyskieli}`)}
         />
       )}
-      <LabeledInfoItem label={t('oppija.luokka')} value={oppimaara.luokka} />
-      <LabeledInfoItem
-        label={t('oppija.yksilollistetty')}
-        value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
-      />
+      {oppimaara.luokka && (
+        <LabeledInfoItem label={t('oppija.luokka')} value={oppimaara.luokka} />
+      )}
+      {/* TODO: Poista tämä kun 7,8-luokkalaiset käyttää yksilollistaminen-kenttää */}
+      {oppimaara.yksilollistetty && (
+        <LabeledInfoItem
+          label={t('oppija.yksilollistetty')}
+          value={oppimaara.yksilollistetty ? t('kylla') : t('ei')}
+        />
+      )}
+      {oppimaara.yksilollistaminen && (
+        <LabeledInfoItem
+          label={t('oppija.yksilollistetty')}
+          value={translateKielistetty(oppimaara.yksilollistaminen.nimi)}
+        />
+      )}
     </InfoItemRow>
   );
 };
