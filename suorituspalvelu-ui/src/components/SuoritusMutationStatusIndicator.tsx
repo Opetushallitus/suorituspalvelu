@@ -10,7 +10,7 @@ import { useTranslations } from '../hooks/useTranslations';
 import { FetchError } from '@/lib/http-client';
 import type {
   SuoritusMutationResult,
-  SuoritusOperation,
+  SuoritusMutationOperation,
 } from '@/lib/suoritusManager';
 
 const SuoritusMutationErrorModal = ({
@@ -71,11 +71,11 @@ const SuoritusMutationErrorModal = ({
 };
 
 export const SuoritusMutationStatusIndicator = ({
-  mode,
+  operation,
   mutation,
 }: {
   mutation: SuoritusMutationResult;
-  mode: SuoritusOperation;
+  operation: SuoritusMutationOperation | null;
 }) => {
   const { t } = useTranslations();
   const { status, error } = mutation;
@@ -100,7 +100,7 @@ export const SuoritusMutationStatusIndicator = ({
 
     setIsOpen(false);
   };
-  const isSaving = mode === 'add' || mode === 'edit';
+  const isSaving = operation === 'save';
 
   switch (status) {
     case 'error':
@@ -129,7 +129,7 @@ export const SuoritusMutationStatusIndicator = ({
     case 'success':
       return (
         <Snackbar
-          key={mode}
+          key={operation}
           open={isOpen}
           onClose={handleSuccessToastClose}
           autoHideDuration={5000}

@@ -38,7 +38,7 @@ export const PerusopetusSuoritusEditor = ({
         spacing={2}
         sx={{ alignItems: 'flex-start', marginBottom: 2 }}
       >
-        {suoritusFields && mode === 'edit' ? (
+        {suoritusFields && mode === 'existing' ? (
           <EditSuoritusPaper
             mode={mode}
             suoritus={suoritusFields}

@@ -16,10 +16,12 @@ import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationSt
 import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
 import { useTranslations } from '@/hooks/useTranslations';
 
-export type SuoritusOperation = 'add' | 'edit' | 'delete';
+export type SuoritusMutationOperation = 'save' | 'delete';
+
+export type SuoritusEditMode = 'new' | 'existing';
 
 export type SuoritusMutateParams = {
-  operation: SuoritusOperation;
+  operation: SuoritusMutationOperation;
   versioTunniste?: string;
 };
 
@@ -43,7 +45,7 @@ export const SuoritusManagerProvider = ({
   return (
     <SuoritusManagerContext value={suoritusState}>
       <SuoritusMutationStatusIndicator
-        mode={suoritusState.mode}
+        operation={suoritusState.operation}
         mutation={suoritusState.suoritusMutation}
       />
       {children}
@@ -112,13 +114,24 @@ const useSuoritusManagerState = () => {
 
   const { showConfirmation } = useGlobalConfirmationModal();
 
-  const [mode, setMode] = useState<SuoritusOperation>('add');
+  const [mutationOperation, setMutationOperation] =
+    useState<SuoritusMutationOperation | null>(null);
+
+  const [mode, setMode] = useState<SuoritusEditMode>('new');
 
   const queryClient = useQueryClient();
 
   const suoritusMutation = useMutation({
     mutationFn: async ({ operation, versioTunniste }: SuoritusMutateParams) => {
-      if ((operation === 'add' || operation === 'edit') && suoritusState) {
+      setMutationOperation(operation);
+      if (operation === 'delete') {
+        if (!versioTunniste) {
+          throw new Error(
+            'Versiotunniste puuttuu! Ei voida poistaa suoritusta.',
+          );
+        }
+        return deleteSuoritus(versioTunniste);
+      } else if (operation === 'save' && suoritusState) {
         setOppijaOid(suoritusState.oppijaOid);
         return saveSuoritus({
           oppijaOid: suoritusState.oppijaOid,
@@ -130,29 +143,22 @@ const useSuoritusManagerState = () => {
           oppiaineet: suoritusState.oppiaineet,
         });
       }
-      if (operation === 'delete') {
-        setMode('delete');
-        if (!versioTunniste) {
-          throw new Error(
-            'Versiotunniste puuttuu! Ei voida poistaa suoritusta.',
-          );
-        }
-        return deleteSuoritus(versioTunniste);
-      }
     },
     onSuccess: () => {
       if (oppijaOid) {
         queryClient.invalidateQueries(queryOptionsGetOppija(oppijaOid));
         queryClient.refetchQueries(queryOptionsGetOppija(oppijaOid));
       }
-      setSuoritusState(null);
+      if (mutationOperation !== 'delete') {
+        setSuoritusState(null);
+      }
     },
   });
 
   return useMemo(() => {
     const addSuoritus = () => {
       suoritusMutation.reset();
-      setMode('add');
+      setMode('new');
       setSuoritusState(
         createNewSuoritusFields({
           oppijaOid,
@@ -164,7 +170,7 @@ const useSuoritusManagerState = () => {
       suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
     ) => {
       suoritusMutation.reset();
-      setMode('edit');
+      setMode('existing');
       if (oppijaOid) {
         setSuoritusState(createEditableSuoritusFields({ oppijaOid, suoritus }));
       }
@@ -173,10 +179,11 @@ const useSuoritusManagerState = () => {
     return {
       suoritusFields: suoritusState,
       mode,
+      operation: mutationOperation,
       suoritusMutation,
       setOppijaOid,
       startSuoritusAdd: () => {
-        if (suoritusState && mode === 'edit') {
+        if (suoritusState && mode === 'existing') {
           showConfirmation({
             title: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.otsikko'),
             content: t('muokkaus.suoritus.lisaa-uusi-muokattaessa.sisalto'),
@@ -192,7 +199,7 @@ const useSuoritusManagerState = () => {
       startSuoritusEdit: (
         suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
       ) => {
-        if (suoritusState && mode === 'add') {
+        if (suoritusState && mode === 'new') {
           showConfirmation({
             title: t('muokkaus.suoritus.muokkaa-lisattaessa.otsikko'),
             content: t('muokkaus.suoritus.muokkaa-lisattaessa.sisalto'),
@@ -235,7 +242,7 @@ const useSuoritusManagerState = () => {
         });
       },
       saveSuoritus: () => {
-        suoritusMutation.mutate({ operation: 'edit' });
+        suoritusMutation.mutate({ operation: 'save' });
       },
       deleteSuoritus: (versioTunniste?: string) => {
         showConfirmation({

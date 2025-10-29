@@ -21,6 +21,7 @@ import { DatePicker } from '@/components/DatePicker';
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { EditArvosanatTable } from './EditArvosanatTable';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
+import type { SuoritusEditMode } from '@/lib/suoritusManager';
 
 const EditSuoritusContent = ({
   mode,
@@ -30,7 +31,7 @@ const EditSuoritusContent = ({
   onSuoritusChange,
   onOppiaineChange,
 }: {
-  mode: 'add' | 'edit';
+  mode: SuoritusEditMode;
   suoritus: SuoritusFields;
   onSave: () => void;
   onCancel?: () => void;
@@ -65,7 +66,7 @@ const EditSuoritusContent = ({
   return (
     <Stack sx={{ gap: 1 }}>
       <Typography variant="h5">
-        {mode === 'add'
+        {mode === 'new'
           ? t('muokkaus.suoritus.otsikko-lisaa')
           : t('muokkaus.suoritus.otsikko-muokkaa')}
       </Typography>
@@ -174,7 +175,7 @@ export const EditSuoritusPaper = ({
   onOppiaineChange,
   ref,
 }: {
-  mode: 'add' | 'edit';
+  mode: SuoritusEditMode;
   suoritus: SuoritusFields;
   onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => void;
   onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
