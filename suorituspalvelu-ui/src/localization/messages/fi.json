@@ -8,6 +8,7 @@
   "ei": "Ei",
   "sulje": "Sulje",
   "suoritus": "Suoritus",
+  "peruuta": "Peruuta",
   "select": {
     "valitse": "Valitse..."
   },
@@ -128,7 +129,12 @@
       "valmistumispaiva": "Valmistumispäivä",
       "suorituskieli": "Suorituskieli",
       "lisaa-valinnainen": "Lisää valinnainen",
-      "tallennetaan": "Tallennetaan suoritusta..."
+      "tallennetaan": "Tallennetaan suoritusta...",
+      "tallenna": "Tallenna suoritus",
+      "poista": "Poista suoritus",
+      "muokkaa": "Muokkaa suoritusta",
+      "tallennus-onnistui": "Suoritus tallennettiin onnistuneesti!",
+      "tallennus-epaonnistui": "Suorituksen tallennus epäonnistui!"
     },
     "tallenna": "Tallenna",
     "poista": "Poista"

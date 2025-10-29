@@ -30,6 +30,7 @@ export const EditOppiaineRow = ({
   const { t } = useTranslations();
 
   const valinnaisetArvosanat = value.valinnaisetArvosanat ?? [''];
+
   return (
     <TableRow>
       <TableCell sx={{ verticalAlign: 'top', lineHeight: '36px' }}>

@@ -22,10 +22,12 @@ import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 const EditSuoritusContent = ({
   suoritus,
   onSave,
+  onCancel,
   setSuoritus,
 }: {
   suoritus: SuoritusFields;
   onSave: () => void;
+  onCancel?: () => void;
   setSuoritus: React.Dispatch<React.SetStateAction<SuoritusFields | null>>;
 }) => {
   const { t, translateKielistetty } = useTranslations();
@@ -164,26 +166,28 @@ const EditSuoritusContent = ({
         setSuoritus={setSuoritus}
       />
       <Stack direction="row" sx={{ justifyContent: 'flex-end', gap: 2 }}>
-        <OphButton variant="outlined" onClick={() => setSuoritus(null)}>
-          {t('muokkaus.poista')}
+        <OphButton variant="outlined" onClick={onCancel}>
+          {t('peruuta')}
         </OphButton>
         <OphButton variant="contained" onClick={onSave}>
-          {t('muokkaus.tallenna')}
+          {t('muokkaus.suoritus.tallenna')}
         </OphButton>
       </Stack>
     </Stack>
   );
 };
 
-export const AddSuoritusPaper = ({
+export const EditSuoritusPaper = ({
   suoritus,
   onSave,
+  onCancel,
   setSuoritus,
   ref,
 }: {
   suoritus: SuoritusFields | null;
   setSuoritus: React.Dispatch<React.SetStateAction<SuoritusFields | null>>;
   onSave: () => void;
+  onCancel?: () => void;
   ref: Ref<HTMLDivElement> | null;
 }) => {
   return (
@@ -192,6 +196,7 @@ export const AddSuoritusPaper = ({
         <QuerySuspenseBoundary>
           <EditSuoritusContent
             onSave={onSave}
+            onCancel={onCancel}
             suoritus={suoritus}
             setSuoritus={setSuoritus}
           />

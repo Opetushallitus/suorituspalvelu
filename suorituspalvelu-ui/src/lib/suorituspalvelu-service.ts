@@ -128,3 +128,11 @@ export const saveSuoritus = async (
 
   await client.post(url, postData);
 };
+
+export const deleteSuoritus = async (versioTunniste: string) => {
+  const config = await configPromise;
+  const url =
+    config.routes.suorituspalvelu.versioDeleteUrl + '/' + versioTunniste;
+  const res = await client.delete(url);
+  return res.data;
+};

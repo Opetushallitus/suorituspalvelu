@@ -5,7 +5,7 @@ import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain
 import { useState } from 'react';
 import type { OppijanTiedot } from '@/types/ui-types';
 import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
-import { AddSuoritusFields } from './AddSuoritusFields/AddSuoritusFields';
+import { AddSuoritusFields } from './AddSuoritusfields';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
 
@@ -52,7 +52,7 @@ export function Suoritukset({
           </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-      <AddSuoritusFields oppijanTiedot={oppijanTiedot} mode="add" />
+      <AddSuoritusFields henkiloOID={oppijanTiedot.henkiloOID} />
       {suoritusOrder === 'koulutustyypeittain' ? (
         <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
       ) : (
