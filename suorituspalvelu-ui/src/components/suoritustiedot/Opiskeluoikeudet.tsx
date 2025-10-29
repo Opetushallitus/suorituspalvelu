@@ -7,6 +7,7 @@ import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { LabeledInfoItem } from '@/components/LabeledInfoItem';
 import type { Opiskeluoikeus } from '@/types/ui-types';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
+import { isEmpty } from 'remeda';
 
 const VoimassaoloIndicator = ({
   opiskeluoikeus,
@@ -68,7 +69,7 @@ export const Opiskeluoikeudet = ({
   opiskeluoikeudet: Array<Opiskeluoikeus>;
 }) => {
   const { t, translateKielistetty } = useTranslations();
-  return (
+  return isEmpty(opiskeluoikeudet) ? null : (
     <Box data-test-id="opiskeluoikeudet">
       <OphTypography variant="h3" component="h2" sx={{ marginBottom: 2 }}>
         {t('oppija.opiskeluoikeudet')}
