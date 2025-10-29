@@ -1309,6 +1309,11 @@ case class LuoSuoritusOppilaitoksetFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuoSuoritusOppilaitoksetResponse
 
+case class SyotettavaArvosanaVaihtoehto(
+  @(Schema @field)(example = "10", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvo: Int
+)
+
 trait LuoSuoritusDropdownDataResponse()
 
 case class LuoSuoritusDropdownDataSuccessResponse(
@@ -1324,6 +1329,8 @@ case class LuoSuoritusDropdownDataSuccessResponse(
   @BeanProperty vieraatKielet: java.util.List[SyotettavaVierasKieliVaihtoehto],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty yksilollistaminen: java.util.List[SyotettavaYksilollistamisVaihtoehto],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosanat: java.util.List[SyotettavaArvosanaVaihtoehto],
 ) extends LuoSuoritusDropdownDataResponse
 
 case class LuoSuoritusDropdownDataFailureResponse(
