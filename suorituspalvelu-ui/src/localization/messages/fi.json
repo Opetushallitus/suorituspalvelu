@@ -28,6 +28,68 @@
     "virhekoodi": "Virhekoodi",
     "yrita-uudelleen": "Yritä uudelleen"
   },
+  "backend-virhe": {
+    "oppijanumero": {
+      "tyhja": "Oppijanumero ei saa olla tyhjä!",
+      "ei_validi": "Oppijanumero ei ole validi!"
+    },
+    "oppilaitosoid": {
+      "tyhja": "Oppilaitos ei saa olla tyhjä!",
+      "ei_validi": "Oppilaitoksen OID ei ole validi!"
+    },
+    "hakusana": {
+      "ei_validi": "Hakusana ei ole validi!"
+    },
+    "vuosi": {
+      "tyhja": "Vuosi ei saa olla tyhjä!",
+      "ei_validi": "Vuosi ei ole validi!"
+    },
+    "luokka": {
+      "tyhja": "Luokka ei saa olla tyhjä!",
+      "ei_validi": "Luokka ei ole validi!"
+    },
+    "valmistumispaiva": {
+      "tyhja": "Valmistumispäivä ei saa olla tyhjä!",
+      "ei_validi": "Valmistumispäivä ei ole validi!"
+    },
+    "yksilollistetty": {
+      "tyhja": "Yksilöllistetty ei saa olla tyhjä!",
+      "ei_validi": "Yksilöllistetty ei ole validi!"
+    },
+    "suorituskieli": {
+      "tyhja": "Suorituskieli ei saa olla tyhjä!",
+      "ei_validi": "Suorituskieli ei ole validi!"
+    },
+    "oppiaine": {
+      "tyhja": "Oppiaine ei saa olla tyhjä!",
+      "koodi_tyhja": "Oppiaineen koodi ei saa olla tyhjä!",
+      "koodi.ei_validi": "Oppiaineen koodi ei ole validi!",
+      "kieli": {
+        "maaritelty": "Oppiaineen kieli-oppimäärä on määritelty, vaikka oppiaine ei ole kieli!",
+        "ei_validi": "Oppiaineen kieli ei ole validi!",
+        "ei_maaritelty": "Oppiaineen kieltä ei ole määritelty!"
+      },
+      "valinnaisuus": {
+        "ei_maaritelty": "Oppiaineen valinnaisuutta ei ole määritelty!",
+        "ei_validi": "Oppiaineen valinnaisuus ei ole validi!"
+      },
+      "ai_oppimaara": {
+        "ei_validi": "Äidinkielen oppimäärä ei ole validi!"
+      },
+      "arvosana": {
+        "tyhja": "Arvosana ei saa olla tyhjä!",
+        "ei_validi": "Arvosana ei ole validi!"
+      }
+    },
+    "oppiaineet": {
+      "tyhja": "Oppiaineet ei saa olla tyhjä!",
+      "koodi_tyhja": "Oppiaineiden koodi ei saa olla tyhjä!"
+    },
+    "versiotunniste": {
+      "tyhja": "Suorituksen versiotunniste ei saa olla tyhjä!",
+      "ei_validi": "Suorituksen versiotunniste ei ole validi!"
+    }
+  },
   "sivupalkki": {
     "navigaatio": "Henkilövalitsin",
     "nayta": "Näytä hakutulos",
@@ -130,11 +192,14 @@
       "suorituskieli": "Suorituskieli",
       "lisaa-valinnainen": "Lisää arvosana",
       "tallennetaan": "Tallennetaan suoritusta...",
+      "poistetaan": "Poistetaan suoritusta...",
       "tallenna": "Tallenna suoritus",
       "poista": "Poista suoritus",
       "muokkaa": "Muokkaa suoritusta",
       "tallennus-onnistui": "Suoritus tallennettiin onnistuneesti!",
-      "tallennus-epaonnistui": "Suorituksen tallennus epäonnistui!"
+      "tallennus-epaonnistui": "Suorituksen tallennus epäonnistui!",
+      "poisto-onnistui": "Suoritus poistettiin onnistuneesti!",
+      "poisto-epaonnistui": "Suorituksen poisto epäonnistui!"
     },
     "tallenna": "Tallenna",
     "poista": "Poista"

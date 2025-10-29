@@ -8,7 +8,7 @@ import { EditSuoritusPaper } from './EditSuoritusPaper';
 import { useSuoritusState } from '@/hooks/useSuoritusState';
 import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
 import { useQueryClient } from '@tanstack/react-query';
-import { EditStatusModal } from './PerusopetusSuoritusEditablePaper';
+import { MutationStatusIndicator } from './PerusopetusSuoritusEditablePaper';
 
 const createSuoritusFields = (
   base: Partial<SuoritusFields> = {},
@@ -31,22 +31,23 @@ export const AddSuoritusFields = ({ henkiloOID }: { henkiloOID: string }) => {
   const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
   const queryClient = useQueryClient();
-  const { suoritus, setSuoritus, suoritusMutation } = useSuoritusState('', {
+  const { suoritus, setSuoritus, suoritusMutation, mode } = useSuoritusState({
     onSuccess: () => {
       queryClient.invalidateQueries(queryOptionsGetOppija(henkiloOID));
       queryClient.refetchQueries(queryOptionsGetOppija(henkiloOID));
       setSuoritus(null);
     },
   });
-
   return (
     <Stack
       direction="column"
       spacing={2}
       sx={{ alignItems: 'flex-start', marginBottom: 2 }}
     >
-      <EditStatusModal
+      <MutationStatusIndicator
+        mode={mode}
         status={suoritusMutation.status}
+        error={suoritusMutation.error}
         onClose={() => suoritusMutation.reset()}
       />
       <OphButton
@@ -74,7 +75,7 @@ export const AddSuoritusFields = ({ henkiloOID }: { henkiloOID: string }) => {
         ref={suoritusPaperRef}
         setSuoritus={setSuoritus}
         onSave={() => {
-          suoritusMutation.mutate('save');
+          suoritusMutation.mutate({ operation: 'save' });
         }}
         onCancel={() => {
           setSuoritus(null);

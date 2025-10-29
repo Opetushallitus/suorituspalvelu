@@ -15,11 +15,11 @@ import {
 import { capitalize } from 'remeda';
 import { styled } from '../lib/theme';
 import { useTranslations } from '@/hooks/useTranslations';
-import { fi, sv, enIE } from 'date-fns/locale';
+import { fi, sv, enUS } from 'date-fns/locale';
 
 registerLocale('fi', fi);
 registerLocale('sv', sv);
-registerLocale('en', enIE);
+registerLocale('en', enUS);
 
 const CALENDAR_CLASSNAME = 'oph-calendar';
 

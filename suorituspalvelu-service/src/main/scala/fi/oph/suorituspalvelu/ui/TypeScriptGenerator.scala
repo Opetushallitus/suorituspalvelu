@@ -63,6 +63,8 @@ object TypeScriptGenerator extends App {
   implicit val oppilaitosFailureTSType: TSType[OppilaitosFailureResponse] = TSType.fromCaseClass
   implicit val luoSuoritusDropdownDataSuccessTsType: TSType[LuoSuoritusDropdownDataSuccessResponse] = TSType.fromCaseClass
   implicit val luoSuoritusDropdownDataFailureTsType: TSType[LuoSuoritusDropdownDataFailureResponse] = TSType.fromCaseClass
+  implicit val savePerusopetusOppimaaraFailureResponseTsType: TSType[LuoPerusopetuksenOppimaaraFailureResponse] = TSType.fromCaseClass
+  implicit val deleteSuoritusFailureResponseTsType: TSType[PoistaSuoritusFailureResponse] = TSType.fromCaseClass
 
   // Korjataan polku, jotta toimii riippumatta siitä kutsutaanko suorituspalvelu-servicen vai juuren kontekstista
   val prefix = System.getProperty("user.dir").replace("/suorituspalvelu-service", "")
@@ -80,7 +82,9 @@ object TypeScriptGenerator extends App {
     "oppilaitosSuccess" -> oppilaitosSuccessTSType.get,
     "oppilaitosFailure" -> oppilaitosFailureTSType.get,
     "luoSuoritusDropdownDataSuccess" -> luoSuoritusDropdownDataSuccessTsType.get,
-    "luoSuoritusDropdownDataFailure" -> luoSuoritusDropdownDataFailureTsType.get
+    "luoSuoritusDropdownDataFailure" -> luoSuoritusDropdownDataFailureTsType.get,
+    "savePerusopetusOppimaaraFailure" -> savePerusopetusOppimaaraFailureResponseTsType.get,
+    "deleteSuoritusFailure" -> deleteSuoritusFailureResponseTsType.get
   ))
 
   println(s"TypeScript interfaces generated")
