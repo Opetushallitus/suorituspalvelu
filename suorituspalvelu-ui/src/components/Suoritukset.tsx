@@ -20,7 +20,7 @@ import {
 import { useTranslate } from '@tolgee/react';
 import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain';
 import { useRef, useState, type Ref } from 'react';
-import type { OppijanTiedot } from '@/types/ui-types';
+import type { OppijanTiedot, Suoritusvaihtoehdot } from '@/types/ui-types';
 import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 import { Add } from '@mui/icons-material';
 import { PaperWithTopColor } from './PaperWithTopColor';
@@ -29,10 +29,14 @@ import { InfoItemRow } from './InfoItemRow';
 import { StripedTable } from './StripedTable';
 import { styled } from '@/lib/theme';
 import { useKoodistoOptions } from '@/lib/koodisto-queries';
-import { useOppilaitoksetOptions } from '@/lib/suorituspalvelu-queries';
+import {
+  queryOptionsGetSuoritusvaihtoehdot,
+  useOppilaitoksetOptions,
+} from '@/lib/suorituspalvelu-queries';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { Form } from 'react-router';
 import { DatePicker } from './DatePicker';
+import { useApiSuspenseQuery } from '@/lib/http-client';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
 
@@ -52,28 +56,11 @@ type SelectOption = {
 };
 
 const EMPTY_SUORITUS: EditableSuoritus = {
-  tyyppi: 'peruskoulu',
+  tyyppi: 'perusopetuksenoppimaara',
   tila: 'suorituksentila_kesken',
   koulusivistyskieli: '',
   suorituskieli: '',
-  yksilollistetty: 'yksilollistaminen_ei',
-};
-
-const useAidinkieliOptions = () => {
-  return useKoodistoOptions('aidinkielijakirjallisuus');
-};
-
-const getSuoritusTyyppiOptions = () => {
-  return [
-    {
-      label: 'Peruskoulu',
-      value: 'peruskoulu',
-    },
-    {
-      label: 'Perusopetuksen lisäopetus',
-      value: 'perusopetuksen_lisaopetuss',
-    },
-  ];
+  yksilollistetty: '1',
 };
 
 const StyledSelect = styled(OphSelect)({
@@ -112,12 +99,15 @@ const ArvosanaRow = ({
   );
 };
 
-const useKieliOptions = () => {
-  return useKoodistoOptions('kieli');
-};
+const ArvosanatTable = ({
+  suoritusvaihtoehdot,
+}: {
+  suoritusvaihtoehdot: Suoritusvaihtoehdot;
+}) => {
+  const { t, translateKielistetty } = useTranslations();
 
-const ArvosanatTable = () => {
-  const { t } = useTranslations();
+  const { oppiaineet, aidinkielenOppimaarat, vieraatKielet } =
+    suoritusvaihtoehdot;
   return (
     <StripedTable
       sx={{
@@ -135,68 +125,29 @@ const ArvosanatTable = () => {
         </TableRow>
       </TableHead>
       <TableBody>
-        <ArvosanaRow
-          name="aidinkieli"
-          title="Äidinkieli ja kirjallisuus"
-          lisatietoOptions={useAidinkieliOptions()}
-        />
-        <ArvosanaRow
-          name="a1_kieli1"
-          title="A1-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="a1_kieli2"
-          title="A1-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="a2_kieli1"
-          title="A2-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="a2_kieli2"
-          title="A2-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="b1_kieli1"
-          title="B1-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="b1_kieli2"
-          title="B1-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="b2_kieli1"
-          title="B2-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow
-          name="b2_kieli2"
-          title="B2-kieli"
-          lisatietoOptions={useKieliOptions()}
-        />
-        <ArvosanaRow name="matematiikka" title="Matematiikka" />
-        <ArvosanaRow name="biologia" title="Biologia" />
-        <ArvosanaRow name="maantieto" title="Maantieto" />
-        <ArvosanaRow name="fysiikka" title="Fysiikka" />
-        <ArvosanaRow name="kemia" title="Kemia" />
-        <ArvosanaRow name="terveystieto" title="Terveystieto" />
-        <ArvosanaRow
-          name="uskonto_tai_et"
-          title="Uskonto tai elämänkatsomustieto"
-        />
-        <ArvosanaRow name="historia" title="Historia" />
-        <ArvosanaRow name="yhteiskuntaoppi" title="Yhteiskuntaoppi" />
-        <ArvosanaRow name="musiikki" title="Musiikki" />
-        <ArvosanaRow name="kuvataide" title="Kuvataide" />
-        <ArvosanaRow name="kasityo" title="Käsityö" />
-        <ArvosanaRow name="liikunta" title="Liikunta" />
-        <ArvosanaRow name="kotitalous" title="Kotitalous" />
+        {oppiaineet.map((oppiaine) => {
+          let lisatietoOptions: Array<SelectOption> | undefined = undefined;
+          if (oppiaine.isAidinkieli) {
+            lisatietoOptions = aidinkielenOppimaarat.map((am) => ({
+              label: translateKielistetty(am.nimi),
+              value: am.arvo,
+            }));
+          } else if (oppiaine.isKieli) {
+            lisatietoOptions = vieraatKielet.map((vk) => ({
+              label: translateKielistetty(vk.nimi),
+              value: vk.arvo,
+            }));
+          }
+
+          return (
+            <ArvosanaRow
+              key={oppiaine.arvo}
+              name={oppiaine.arvo}
+              title={translateKielistetty(oppiaine.nimi)}
+              lisatietoOptions={lisatietoOptions}
+            />
+          );
+        })}
       </TableBody>
     </StripedTable>
   );
@@ -213,8 +164,30 @@ const EditSuoritusPaper = ({
   onDelete: () => void;
   ref: Ref<HTMLDivElement> | null;
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
   const oppilaitoksetOptions = useOppilaitoksetOptions();
+
+  const { data: suoritusvaihtoehdot } = useApiSuspenseQuery(
+    queryOptionsGetSuoritusvaihtoehdot(),
+  );
+
+  const suoritusTyyppiOptions =
+    suoritusvaihtoehdot?.suoritusTyypit.map((tyyppi) => ({
+      label: translateKielistetty(tyyppi.nimi),
+      value: tyyppi.arvo,
+    })) ?? [];
+
+  const suorituskieliOptions =
+    suoritusvaihtoehdot?.suoritusKielet.map((kieli) => ({
+      label: translateKielistetty(kieli.nimi),
+      value: kieli.arvo,
+    })) ?? [];
+
+  const yksilollistaminenOptions =
+    suoritusvaihtoehdot?.yksilollistaminen.map((y) => ({
+      label: translateKielistetty(y.nimi),
+      value: y.arvo.toString(),
+    })) ?? [];
 
   const [valmistumispaiva, setValmistumispaiva] = useState<Date | null>(() =>
     suoritus?.valmistumispaiva ? new Date(suoritus.valmistumispaiva) : null,
@@ -242,7 +215,7 @@ const EditSuoritusPaper = ({
           <OphSelectFormField
             name="tyyppi"
             label={t('muokkaus.suoritus.tyyppi')}
-            options={getSuoritusTyyppiOptions()}
+            options={suoritusTyyppiOptions}
             required={true}
             sx={{ flex: 1 }}
             defaultValue={suoritus?.tyyppi}
@@ -288,7 +261,7 @@ const EditSuoritusPaper = ({
             sx={{ flex: 1 }}
             required={true}
             defaultValue={suoritus?.suorituskieli}
-            options={useKoodistoOptions('oppilaitoksenopetuskieli')}
+            options={suorituskieliOptions}
           />
           <OphSelectFormField
             name="koulusivistyskieli"
@@ -296,18 +269,18 @@ const EditSuoritusPaper = ({
             sx={{ flex: 1 }}
             required={true}
             defaultValue={suoritus?.koulusivistyskieli}
-            options={useKoodistoOptions('oppilaitoksenopetuskieli')}
+            options={suorituskieliOptions}
           />
           <OphSelectFormField
             name="yksilollistetty"
             label={t('muokkaus.suoritus.yksilollistetty')}
             sx={{ flex: 1 }}
             required={true}
-            options={useKoodistoOptions('yksilollistaminen')}
+            options={yksilollistaminenOptions}
             defaultValue={suoritus?.yksilollistetty}
           />
         </InfoItemRow>
-        <ArvosanatTable />
+        <ArvosanatTable suoritusvaihtoehdot={suoritusvaihtoehdot} />
         <Stack direction="row" sx={{ justifyContent: 'flex-end', gap: 2 }}>
           <OphButton variant="outlined" onClick={onDelete}>
             {t('muokkaus.poista')}
