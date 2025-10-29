@@ -490,7 +490,6 @@ class UIResource {
             val aidinkielenOppimaarat = koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS)
             val kielivalikoima        = koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA)
             val pohjakoulutus         = koodistoProvider.haeKoodisto(KOODISTO_POHJAKOULUTUS)
-            val arvosanat             = koodistoProvider.haeKoodisto(KOODISTO_POHJAKOULUTUS)
 
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoSuoritusDropdownDataSuccessResponse(
             SYOTETTAVAT_SUORITUSTILAT.map(t => {
