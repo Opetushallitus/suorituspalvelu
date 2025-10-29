@@ -58,13 +58,22 @@ class UIValidatorTest {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_TYHJA), UIValidator.validateLuokka(None, true))
   }
 
-  @Test def testValidateLuokkaInvalid(): Unit = {
-    val eiValidiLuokka = "luokka#9"
+  @Test def testValidateLuokkaInvalidWithDoubleQuotes(): Unit = {
+    val eiValidiLuokka = "9A-\"luokka\""
     Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI), UIValidator.validateLuokka(Some(eiValidiLuokka), true))
   }
 
-  @Test def testValidateLuokkaValid(): Unit = {
+  @Test def testValidateLuokkaInvalidWithSingleQuotes(): Unit = {
+    val eiValidiLuokka = "9A-'luokka'"
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_LUOKKA_EI_VALIDI), UIValidator.validateLuokka(Some(eiValidiLuokka), true))
+  }
+
+  @Test def testValidateLuokkaValidStandard(): Unit = {
     Assertions.assertEquals(Set.empty, UIValidator.validateLuokka(Some(ApiConstants.ESIMERKKI_LUOKKA), true))
+  }
+
+  @Test def testValidateLuokkaValidWithSpecialChars(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validateLuokka(Some("meiän_luokka 9-A"), true))
   }
 
   // tila
