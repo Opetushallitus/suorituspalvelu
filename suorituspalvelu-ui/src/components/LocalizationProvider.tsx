@@ -3,10 +3,10 @@ import { type TolgeeInstance, TolgeeProvider } from '@tolgee/react';
 import { initTolgee } from '@/localization/tolgee-config';
 import { OphThemeProvider } from '@opetushallitus/oph-design-system/theme';
 import { UntranslatedFullSpinner } from './FullSpinner';
-import { getAsiointiKieli } from '@/api';
-import type { Language } from '@/types/ui-types';
+import { type Language } from '@/types/ui-types';
 import { THEME_OVERRIDES } from '@/lib/theme';
 import { Box } from '@mui/material';
+import { getAsiointiKieli } from '@/lib/suorituspalvelu-service';
 
 export function LocalizationProvider({
   children,

@@ -101,7 +101,8 @@
     "lyhenne-yhteensa": "Yht.",
     "syntymaaika": "Syntymäaika",
     "oppijanumero": "Oppijanumero",
-    "henkiloOid": "Henkilö-OID"
+    "henkiloOid": "Henkilö-OID",
+    "lisatieto-kieli": "Lisätieto (kieli)"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",
@@ -113,5 +114,34 @@
   },
   "suoritustapa": {
     "NAYTTOTUTKINTO": "Näyttötutkinto"
+  },
+  "muokkaus": {
+    "suoritus": {
+      "perusopetus": "Perusopetus",
+      "otsikko": "Uusi suoritus",
+      "lisaa": "Lisää suoritus",
+      "tyyppi": "Tyyppi",
+      "oppilaitos": "Oppilaitos",
+      "tila": "Tila",
+      "suoritusvuosi": "Suoritusvuosi",
+      "koulusivistyskieli": "Koulusivistyskieli",
+      "yksilollistetty": "Yksilöllistetty"
+    },
+    "tallenna": "Tallenna",
+    "poista": "Poista"
+  },
+  "yksilollistetty": {
+    "kylla": "Kyllä",
+    "ei": "Ei"
+  },
+  "arvosana": {
+    "hyvaksytty": "Hyväksytty",
+    "ei-arvosanaa": "Ei arvosanaa"
+  },
+  "kieli": {
+    "suomi": "suomi",
+    "ruotsi": "ruotsi",
+    "englanti": "englanti",
+    "muu": "muu"
   }
 }

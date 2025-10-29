@@ -1,6 +1,6 @@
 import { ExternalLink } from '@/components/ExternalLink';
 import { LabeledInfoItem } from '@/components/LabeledInfoItem';
-import { useConfig } from '@/configuration';
+import { useConfig } from '@/lib/configuration';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getOppilaitosLinkUrl } from '@/lib/getOppilaitosLink';
 import type { SuorituksenPerustiedot } from '@/types/ui-types';

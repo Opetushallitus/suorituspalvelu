@@ -1,4 +1,4 @@
-import { useConfig } from '@/configuration';
+import { useConfig } from '@/lib/configuration';
 import { useTranslate } from '@tolgee/react';
 import { createContext, use, useMemo, useState } from 'react';
 import { OphModal } from './OphModal';

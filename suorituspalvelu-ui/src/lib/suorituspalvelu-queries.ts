@@ -4,8 +4,9 @@ import {
   getOppilaitokset,
   searchOppijat,
   type OppijatSearchParams,
-} from './api';
+} from './suorituspalvelu-service';
 import { useApiSuspenseQuery } from './http-client';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export const useOppija = (oppijaNumero: string) => {
   return useApiSuspenseQuery({
@@ -25,3 +26,16 @@ export const queryOptionsGetOppilaitokset = () =>
     queryKey: ['getOppilaitokset'],
     queryFn: () => getOppilaitokset(),
   });
+
+export const useOppilaitoksetOptions = () => {
+  const { translateKielistetty } = useTranslations();
+  const { data: oppilaitoksetOptions } = useApiSuspenseQuery({
+    ...queryOptionsGetOppilaitokset(),
+    select: (data) =>
+      data?.oppilaitokset?.map(($) => ({
+        value: $.oid,
+        label: translateKielistetty($.nimi),
+      })) ?? [],
+  });
+  return oppilaitoksetOptions;
+};

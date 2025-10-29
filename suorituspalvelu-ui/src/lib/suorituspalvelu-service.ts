@@ -5,8 +5,8 @@ import type {
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppilaitosSuccessResponse,
-} from './types/backend';
-import type { KayttajaTiedot } from './types/ui-types';
+} from '@/types/backend';
+import type { KayttajaTiedot } from '@/types/ui-types';
 
 export type OppijatSearchParams = {
   hakusana?: string;
