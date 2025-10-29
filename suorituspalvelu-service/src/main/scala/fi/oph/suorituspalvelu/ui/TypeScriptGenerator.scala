@@ -14,14 +14,13 @@ object TypeScriptGenerator extends App {
   // Scala-TSI ei osaa oletuksena muuntaa Scala-enumeja oikein
   implicit val suoritusTilaTSType: TSType[SuoritusTila] =
     TSType.alias("SuoritusTila", TSUnion(SuoritusTila.values.map(v => TypescriptType.TSLiteralString(v.toString))))
-
   implicit val suoritusTapaTSType: TSType[SuoritusTapa] =
     TSType.alias("Suoritustapa", TSUnion(SuoritusTapa.values.map(v => TypescriptType.TSLiteralString(v.toString))))
-
   implicit val opiskeluoikeusTilaTSType: TSType[OpiskeluoikeusTila] =
     TSType.alias("OpiskeluoikeusTila", TSUnion(OpiskeluoikeusTila.values.map(v => TypescriptType.TSLiteralString(v.toString))))
 
-  implicit val date: TSType[LocalDate] = TSType.external("Date")
+  // Päivämäärät palautuu rajapinnoista aikaleima-merkkijonoina, joten asetetaan päivämäärät string-tyyppisiksi
+  implicit val date: TSType[LocalDate] = TSType.sameAs[LocalDate, String]
   implicit val optionalDate: TSType[Optional[LocalDate]] = TSType.sameAs[Optional[LocalDate], Option[LocalDate]]
   implicit val optionalString: TSType[Optional[String]] = TSType.sameAs[Optional[String], Option[String]]
   implicit val optionalInt: TSType[Optional[Int]] = TSType.sameAs[Optional[Int], Option[Int]]
@@ -65,8 +64,8 @@ object TypeScriptGenerator extends App {
   implicit val luoSuoritusDropdownDataSuccessTsType: TSType[LuoSuoritusDropdownDataSuccessResponse] = TSType.fromCaseClass
   implicit val luoSuoritusDropdownDataFailureTsType: TSType[LuoSuoritusDropdownDataFailureResponse] = TSType.fromCaseClass
 
-  // Kirjoitetaan TS-tyypit tiedostoon, polku kannattaa muuttaa sopivammaksi kun fronttityö etenee
-  val outputDir = new File("target/generated-sources/typescript/Interface.ts")
+  // Kirjoitetaan TS-tyypit tiedostoon
+  val outputDir = new File("suorituspalvelu-ui/src/types/backend.ts")
   WriteTSToFiles.generate(OutputOptions(
     outputDir,
     StyleOptions(semicolons = true),

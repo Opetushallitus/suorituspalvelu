@@ -40,14 +40,14 @@ export type SuorituksenPerustiedot = {
   };
   tila: SuorituksenTila;
   suorituskieli?: string;
-  valmistumispaiva?: Date;
+  valmistumispaiva?: string;
 };
 
 export type SuoritusOtsikkoTiedot = {
   nimi: Kielistetty;
   tila: SuorituksenTila;
-  aloituspaiva?: Date;
-  valmistumispaiva?: Date;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
 };
 
 export type Kielistetty = {

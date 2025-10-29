@@ -40,7 +40,7 @@ const SuorituksenTilaIndicator = ({ tila }: { tila: SuorituksenTila }) => {
 const ValmistumispaivaIndicator = ({
   valmistumispaiva,
 }: {
-  valmistumispaiva?: Date;
+  valmistumispaiva?: string;
 }) => {
   return (
     <OphTypography>
