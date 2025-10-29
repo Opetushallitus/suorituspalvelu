@@ -8,6 +8,7 @@ import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import { LocalizationProvider } from './LocalizationProvider';
 import { use } from 'react';
 import { configPromise } from '@/lib/configuration';
+import { ConfirmationModalProvider } from './ConfirmationModal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <NuqsAdapter>
         <script async src={config.routes.yleiset.raamitUrl}></script>
         <QueryClientProvider client={queryClient}>
-          <LocalizationProvider>{children}</LocalizationProvider>
+          <LocalizationProvider>
+            <ConfirmationModalProvider>{children}</ConfirmationModalProvider>
+          </LocalizationProvider>
         </QueryClientProvider>
       </NuqsAdapter>
     </SessionExpiredProvider>
