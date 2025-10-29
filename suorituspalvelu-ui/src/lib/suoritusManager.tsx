@@ -225,6 +225,7 @@ const useSuoritusManagerState = () => {
               },
             });
           } else if (
+            mode === 'existing' &&
             suoritus?.versioTunniste !== suoritusState?.versioTunniste
           ) {
             showConfirmation({
