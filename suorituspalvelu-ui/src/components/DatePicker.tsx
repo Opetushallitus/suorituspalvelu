@@ -107,10 +107,6 @@ const CalendarStyles = styled(Box)(({ theme }) => ({
   },
 }));
 
-const StyledOphInput = styled(OphInput)(() => ({
-  marginTop: 2,
-}));
-
 interface CalendarInputProps {
   value?: string | Date;
   onClick?: () => void;
@@ -137,7 +133,7 @@ export const DatePicker = ({
     ...props
   }: CalendarInputProps & { ref?: React.RefObject<HTMLInputElement | null> }) {
     return (
-      <StyledOphInput
+      <OphInput
         placeholder={t('datepicker.placeholder')}
         {...props}
         endAdornment={
