@@ -133,6 +133,7 @@ export type PerusopetuksenOppiaineenOppimaara = Omit<
   IPerusopetuksenOppiaineenOppimaara,
   'oppiaineet'
 > & {
+  versioTunniste?: string; // TODO: Poista kun tulee myös backendistä
   oppiaineet: Array<PerusopetuksenOppiaine>;
   suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
   koulutustyyppi: 'perusopetus';

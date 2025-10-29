@@ -97,7 +97,7 @@ export const PerusopetusSuoritusEditablePaper = ({
 
   const queryClient = useQueryClient();
   const { suoritus, setSuoritus, suoritusMutation } = useSuoritusState(
-    suoritusProp.tunniste,
+    suoritusProp.versioTunniste ?? suoritusProp.tunniste,
     {
       onSuccess: () => {
         queryClient.invalidateQueries(queryOptionsGetOppija(henkiloOID));
