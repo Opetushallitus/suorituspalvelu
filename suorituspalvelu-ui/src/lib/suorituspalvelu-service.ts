@@ -5,6 +5,7 @@ import type {
   ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
+  IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
 } from '@/types/backend';
 import type { KayttajaTiedot, SuoritusFields } from '@/types/ui-types';
@@ -86,6 +87,27 @@ export const getSuorituksenOppilaitosVaihtoehdot = async () => {
     config.routes.suorituspalvelu.oppilaitosvaihtoehdotUrl,
   );
   return res.data.oppilaitokset;
+};
+
+export const getValintadata = async ({
+  oppijaNumero,
+  hakuOid,
+}: {
+  oppijaNumero: string;
+  hakuOid?: string;
+}) => {
+  const config = await configPromise;
+
+  const searchParams = new URLSearchParams();
+  searchParams.set('oppijaNumero', oppijaNumero);
+  if (hakuOid) {
+    searchParams.set('hakuOid', hakuOid);
+  }
+
+  const res = await client.get<IOppijanValintaDataSuccessResponse>(
+    `${config.routes.suorituspalvelu.valintadataUrl}?${searchParams.toString()}`,
+  );
+  return res.data;
 };
 
 // Perusopetuksen oppimäärän ja oppiaineen oppimäärän tallentaminen

@@ -261,5 +261,15 @@
   "tabs": {
     "suoritustiedot": "Suoritustiedot",
     "opiskelijavalinnan-tiedot": "Opiskelijavalinnan tiedot"
+  },
+  "opiskelijavalinnan-tiedot": {
+    "ei-tietoja": "Opiskelijavalinnan tietoja ei ole saatavilla.",
+    "otsikko": "Opiskelijavalinnan tiedot",
+    "suorituspalvelusta-opiskelijavalintaan-siirtyvat-tiedot": "Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot",
+    "ryhmat": {
+      "suoritukset": "Suoritukset",
+      "lisapistekoulutukset": "Lisäpistekoulutus",
+      "perusopetuksen-oppiaineet": "Peruskoulu"
+    }
   }
 }
