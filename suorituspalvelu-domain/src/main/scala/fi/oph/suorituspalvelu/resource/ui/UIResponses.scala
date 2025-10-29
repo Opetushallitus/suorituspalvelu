@@ -1212,6 +1212,22 @@ case class SyotettavaSuoritusTyyppiVaihtoehtoNimi(
   @BeanProperty en: Optional[String],
 )
 
+case class SyotettavaSuoritusTilaVaihtoehtoNimi(
+  @(Schema @field)(example = "Suoritus valmis", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Prestationen slutförd", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
+case class SyotettavaSuoritusTilaVaihtoehto(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: SyotettavaSuoritusTilaVaihtoehtoNimi,
+  @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvo: String
+)
+
 case class SyotettavaSuoritusTyyppiVaihtoehto(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: SyotettavaSuoritusTyyppiVaihtoehtoNimi,
@@ -1323,6 +1339,8 @@ case class SyotettavaArvosanaVaihtoehto(
 trait LuoSuoritusDropdownDataResponse()
 
 case class LuoSuoritusDropdownDataSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty suoritusTilat: java.util.List[SyotettavaSuoritusTilaVaihtoehto],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suoritusTyypit: java.util.List[SyotettavaSuoritusTyyppiVaihtoehto],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)

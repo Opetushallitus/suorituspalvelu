@@ -63,6 +63,12 @@ const EditSuoritusContent = ({
       value: y.arvo.toString(),
     })) ?? [];
 
+  const tilaOptions =
+    suoritusvaihtoehdot?.suoritusTilat.map((tila) => ({
+      label: translateKielistetty(tila.nimi),
+      value: tila.arvo,
+    })) ?? [];
+
   return (
     <Stack sx={{ gap: 1 }}>
       <Typography variant="h5">
@@ -108,16 +114,13 @@ const EditSuoritusContent = ({
         />
         <OphSelectFormField
           label={t('muokkaus.suoritus.tila')}
-          options={[
-            {
-              label: t('Suoritus') + ' ' + t('suorituksen-tila.VALMIS'),
-              value: 'suorituksentila_valmis',
-            },
-          ]}
+          options={tilaOptions}
           required={true}
           sx={{ flex: 1 }}
-          defaultValue="suorituksentila_valmis"
-          value="suorituksentila_valmis"
+          value={suoritus?.tila ?? ''}
+          onChange={(event) => {
+            onSuoritusChange({ tila: event.target.value });
+          }}
         />
         <DatePicker
           label={t('muokkaus.suoritus.valmistumispaiva')}

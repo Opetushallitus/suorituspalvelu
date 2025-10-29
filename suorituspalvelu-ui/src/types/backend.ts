@@ -320,6 +320,7 @@ export interface ILuoSuoritusDropdownDataFailureResponse {
 }
 
 export interface ILuoSuoritusDropdownDataSuccessResponse {
+  suoritusTilat: ISyotettavaSuoritusTilaVaihtoehto[];
   suoritusTyypit: ISyotettavaSuoritusTyyppiVaihtoehto[];
   oppiaineet: ISyotettavaOppiaineVaihtoehto[];
   suoritusKielet: ISyotettavaSuoritusKieliVaihtoehto[];
@@ -561,6 +562,17 @@ export interface ISyotettavaSuoritusKieliVaihtoehto {
 }
 
 export interface ISyotettavaSuoritusKieliVaihtoehtoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISyotettavaSuoritusTilaVaihtoehto {
+  nimi: ISyotettavaSuoritusTilaVaihtoehtoNimi;
+  arvo: string;
+}
+
+export interface ISyotettavaSuoritusTilaVaihtoehtoNimi {
   fi?: string;
   sv?: string;
   en?: string;

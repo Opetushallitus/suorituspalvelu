@@ -200,7 +200,7 @@ export type SuoritusFields = {
   versioTunniste: string;
   oppijaOid: string;
   oppilaitosOid: string;
-  tila?: string;
+  tila: string;
   tyyppi: string;
   valmistumispaiva?: Date;
   suorituskieli: string;
