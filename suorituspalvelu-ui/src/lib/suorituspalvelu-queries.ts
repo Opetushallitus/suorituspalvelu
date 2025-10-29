@@ -66,7 +66,7 @@ export const queryOptionsGetSuoritusvaihtoehdot = () =>
   queryOptions({
     queryKey: ['getSuoritusvaihtoehdot'],
     queryFn: () => getSuoritusvaihtoehdot(),
-    staleTime: 10 * 60 * 1000,
+    staleTime: Infinity, // Pidetään muistissa niin kauan kunnes sivu ladataan uudelleen
   });
 
 export const queryOptionsGetSuorituksenOppilaitosVaihtoehdot = () =>

@@ -7,11 +7,13 @@ import {
 import { Alert, Box, Snackbar, type SnackbarCloseReason } from '@mui/material';
 import React, { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
-import { FetchError } from '@/lib/http-client';
+import { FetchError, useApiSuspenseQuery } from '@/lib/http-client';
 import type {
   SuoritusMutationResult,
   SuoritusMutationOperation,
 } from '@/lib/suoritusManager';
+import { queryOptionsGetSuoritusvaihtoehdot } from '@/lib/suorituspalvelu-queries';
+import { translateKielistetty } from '@/lib/translation-utils';
 
 const SuoritusMutationErrorModal = ({
   isSaving,
@@ -23,6 +25,12 @@ const SuoritusMutationErrorModal = ({
   onClose: () => void;
 }) => {
   const { t } = useTranslations();
+
+  const { data: suoritusvaihtoehdot } = useApiSuspenseQuery(
+    queryOptionsGetSuoritusvaihtoehdot(),
+  );
+
+  const { oppiaineet } = suoritusvaihtoehdot;
 
   let message: React.ReactNode = error?.message;
 
@@ -46,13 +54,21 @@ const SuoritusMutationErrorModal = ({
           </Box>
           {responseJSON.oppiaineKohtaisetVirheet.map((virhe) => {
             const oppiaineErrorsLabelId = `oppiaine-virheet-label-${virhe.oppiaineKoodiArvo}`;
+            const oppiaine = oppiaineet.find(
+              (oa) => oa.arvo === virhe.oppiaineKoodiArvo,
+            );
+
+            const oppiaineNimi = oppiaine
+              ? translateKielistetty(oppiaine.nimi)
+              : virhe.oppiaineKoodiArvo;
+
             return (
               <Box
                 key={virhe.oppiaineKoodiArvo}
                 sx={{ marginBottom: 2 }}
                 aria-labelledby={oppiaineErrorsLabelId}
               >
-                <h4 id={oppiaineErrorsLabelId}>{virhe.oppiaineKoodiArvo}</h4>
+                <h4 id={oppiaineErrorsLabelId}>{oppiaineNimi}</h4>
                 {virhe.virheAvaimet.map((v) => (
                   <p key={v}>{t(v)}</p>
                 ))}

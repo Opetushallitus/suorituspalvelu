@@ -319,6 +319,7 @@ test.describe('Suorituksen lisäys', () => {
 
     await expect(addSuoritusForm).toBeVisible();
   });
+
   test('epäonnistunut tallennus näyttää palvelimelta palautuvat validointivirheet', async ({
     page,
   }) => {
@@ -334,7 +335,7 @@ test.describe('Suorituksen lisäys', () => {
               virheAvaimet: ['backend-virhe.oppiaine.tyhja'],
             },
             {
-              oppiaineKoodiArvo: 'BIO',
+              oppiaineKoodiArvo: 'BI',
               virheAvaimet: [
                 'backend-virhe.oppiaine.arvosana.tyhja',
                 'backend-virhe.oppiaine.kieli.maaritelty',
@@ -367,10 +368,14 @@ test.describe('Suorituksen lisäys', () => {
 
     await expect(errorDialog).toContainText('Oppilaitos ei saa olla tyhjä!');
 
-    const oppiaineMaErrors = errorDialog.getByLabel('MA');
+    const oppiaineMaErrors = errorDialog.getByLabel('Matematiikka', {
+      exact: true,
+    });
     await expect(oppiaineMaErrors).toContainText('Oppiaine ei saa olla tyhjä!');
 
-    const oppiaineBioErrors = errorDialog.getByLabel('BIO');
+    const oppiaineBioErrors = errorDialog.getByLabel('Biologia', {
+      exact: true,
+    });
     await expect(oppiaineBioErrors).toContainText(
       'Arvosana ei saa olla tyhjä!',
     );
