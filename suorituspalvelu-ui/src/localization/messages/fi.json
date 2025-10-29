@@ -209,8 +209,8 @@
       "poisto-epaonnistui": "Suorituksen poisto epäonnistui!",
       "poisto-vahvistus": "Haluatko varmasti poistaa suorituksen?",
       "lisaa-uusi-muokattaessa": {
-        "otsikko": "Haluatko keskeyttää suorituksen muokkauksen?",
-        "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen muokkauksen ja lisätä uuden suorituksen? Tallentamattomat muutokset menetetään."
+        "otsikko": "Haluatko keskeyttää suorituksen muokkaamisen?",
+        "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen muokkaamisen ja lisätä uuden suorituksen? Tallentamattomat muutokset menetetään."
       },
       "muokkaa-lisattaessa": {
         "otsikko": "Haluatko keskeyttää suorituksen lisäämisen?",
@@ -218,15 +218,15 @@
       },
       "vaihda-suoritusta": {
         "otsikko": "Haluatko vaihtaa muokattavaa suoritusta?",
-        "sisalto": "Vain yhden suorituksen muokkaaminen kerrallaan on mahdollista. Oletko varma, että haluat keskeyttää suorituksen muokkauksen ja muokata toista suoritusta? Tallentamattomat muutokset menetetään."
+        "sisalto": "Vain yhden suorituksen muokkaaminen kerrallaan on mahdollista. Oletko varma, että haluat keskeyttää suorituksen muokkaamisen ja muokata toista suoritusta? Tallentamattomat muutokset menetetään."
       },
       "peruuta-lisays": {
         "otsikko": "Haluatko peruuttaa suorituksen lisäämisen?",
         "sisalto": "Oletko varma, että haluat peruuttaa suorituksen lisäämisen? Tallentamattomat muutokset menetetään."
       },
       "peruuta-muokkaus": {
-        "otsikko": "Haluatko peruuttaa suorituksen muokkauksen?",
-        "sisalto": "Oletko varma, että haluat peruuttaa suorituksen muokkauksen? Tallentamattomat muutokset menetetään."
+        "otsikko": "Haluatko peruuttaa suorituksen muokkaamisen?",
+        "sisalto": "Oletko varma, että haluat peruuttaa suorituksen muokkaamisen? Tallentamattomat muutokset menetetään."
       },
       "luokka": "Luokka",
       "kieli-label": "Oppimäärä oppiaineelle {oppiaine}",

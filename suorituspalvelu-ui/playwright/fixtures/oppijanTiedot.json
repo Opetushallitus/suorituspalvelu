@@ -69,7 +69,7 @@
       },
       "tila": "VALMIS",
       "valmistumispaiva": "2019-06-01",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "yoKokeet": [
         {
           "tunniste": "782cfe5f-3dee-4909-abd1-1503dd4f4c6d",
@@ -158,7 +158,7 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "suomi",
+    "suorituskieli": "FI",
     "oppiaineet": [
       {
         "tunniste": "776bb322-8a34-4c0b-9bc9-f7507dbd493b",
@@ -197,7 +197,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2023-12-31",
       "valmistumispaiva": "2024-12-31",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "oppiaineet": [
         {
           "tunniste": "dc5dd156-abb8-4597-b05c-32435cdd989f",
@@ -236,7 +236,7 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "suomi"
+    "suorituskieli": "FI"
   },
   "diaVastaavuusTodistus": {
     "tunniste": "3a018106-dee4-4826-ab1c-56b88e0d1a90",
@@ -256,7 +256,7 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "suomi",
+    "suorituskieli": "FI",
     "kieletKirjallisuusTaide": [
       {
         "tunniste": "883049c1-f544-45c3-8122-f0a0746df4f6",
@@ -320,7 +320,7 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "suomi",
+    "suorituskieli": "FI",
     "oppiaineet": [
       {
         "tunniste": "6c039282-c1b3-4917-9965-b4dd75819b02",
@@ -405,7 +405,7 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "suomi",
+    "suorituskieli": "FI",
     "oppiaineet": [
       {
         "tunniste": "94c51966-c627-4157-bc04-b2d85a122353",
@@ -533,7 +533,7 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "suomi"
+    "suorituskieli": "FI"
   },
   "ammatillisetPerusTutkinnot": [
     {
@@ -554,7 +554,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2024-12-31",
       "valmistumispaiva": "2024-12-31",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "painotettuKeskiarvo": 4.34,
       "ytot": [
         {
@@ -694,7 +694,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2024-12-31",
       "valmistumispaiva": "2024-12-31",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "painotettuKeskiarvo": 4.34,
       "ytot": [],
       "ammatillisenTutkinnonOsat": [],
@@ -720,7 +720,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2017-06-01",
       "valmistumispaiva": "2017-06-01",
-      "suorituskieli": "suomi"
+      "suorituskieli": "FI"
     }
   ],
   "erikoisammattitutkinnot": [
@@ -742,7 +742,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2017-06-01",
       "valmistumispaiva": "2017-06-01",
-      "suorituskieli": "suomi"
+      "suorituskieli": "FI"
     }
   ],
   "telmat": [
@@ -764,7 +764,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2017-06-01",
       "valmistumispaiva": "2017-06-01",
-      "suorituskieli": "suomi"
+      "suorituskieli": "FI"
     }
   ],
   "tuvat": [
@@ -815,7 +815,7 @@
       "tila": "KESKEYTYNYT",
       "aloituspaiva": "2023-12-31",
       "valmistumispaiva": null,
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "laajuus": {
         "arvo": 38,
         "yksikko": {
@@ -846,7 +846,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2015-12-31",
       "valmistumispaiva": "2016-06-01",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "luokka": "9A",
       "yksilollistaminen": {
         "arvo": 2,
@@ -1011,8 +1011,8 @@
     "tila": "VALMIS",
     "aloituspaiva": "2015-12-31",
     "valmistumispaiva": "2016-06-01",
-    "suorituskieli": "suomi",
-    "koulusivistyskieli": "suomi",
+    "suorituskieli": "FI",
+    "koulusivistyskieli": "FI",
     "luokka": "9A",
     "yksilollistetty": false
   },
@@ -1035,7 +1035,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2015-12-31",
       "valmistumispaiva": "2016-06-01",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "oppiaineet": [
         {
           "tunniste": "7434a3da-13a5-4e78-878d-0e2497a06898",
@@ -1084,7 +1084,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2015-12-31",
       "valmistumispaiva": "2016-06-01",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "oppiaineet": [
         {
           "tunniste": "1770ca6a-8a4b-4715-a20f-c431b1221d6e",
@@ -1120,7 +1120,7 @@
       "tila": "VALMIS",
       "aloituspaiva": "2015-12-31",
       "valmistumispaiva": "2016-06-01",
-      "suorituskieli": "suomi",
+      "suorituskieli": "FI",
       "oppiaineet": [
         {
           "tunniste": "8bdc5c6b-ccf6-4a65-a2ec-1ae9f25acf83",

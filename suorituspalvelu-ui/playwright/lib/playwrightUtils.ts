@@ -81,3 +81,40 @@ export const expectList = async (list: Locator, items: Array<string>) => {
     await expect(list.nth(i)).toHaveText(items[i] as string);
   }
 };
+
+export const startEditSuoritus = async (page: Page) => {
+  await expect(
+    page.getByRole('heading', { name: 'Suoritukset' }),
+  ).toBeVisible();
+
+  await page
+    .getByRole('button', { name: 'Muokkaa suoritusta' })
+    .first()
+    .click();
+
+  const region = page.getByRole('region', { name: 'Muokkaa suoritusta' });
+  await expect(region).toBeVisible();
+  return region;
+};
+
+export const selectDateInDatePicker = async (picker: Locator, date: string) => {
+  await picker.getByRole('textbox').fill(date);
+};
+
+export const startAddSuoritus = async (page: Page) => {
+  await expect(
+    page.getByRole('heading', { name: 'Suoritukset' }),
+  ).toBeVisible();
+
+  const addButton = page.getByRole('button', { name: 'Lisää suoritus' });
+  await addButton.click();
+
+  const lisaaSuoritusForm = page.getByRole('region', {
+    name: 'Lisää suoritus',
+  });
+  await expect(
+    lisaaSuoritusForm.getByRole('heading', { name: 'Lisää suoritus' }),
+  ).toBeVisible();
+
+  return lisaaSuoritusForm;
+};

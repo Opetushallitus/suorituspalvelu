@@ -78,6 +78,16 @@
     },
     {
       "nimi": {
+        "fi": "B2-kieli",
+        "sv": "B2-språk",
+        "en": "B2-language"
+      },
+      "arvo": "B2",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
         "fi": "Matematiikka",
         "sv": "Matematik",
         "en": "Mathematics"

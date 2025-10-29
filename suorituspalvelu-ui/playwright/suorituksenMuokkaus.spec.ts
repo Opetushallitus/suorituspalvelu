@@ -7,13 +7,13 @@ import SUORITUSVAIHTOEHDOT from './fixtures/luoSuoritusvaihtoehdot.json' with { 
 import {
   selectDateInDatePicker,
   selectOption,
-  startEditSuoritus,
   startAddSuoritus,
+  startEditSuoritus,
 } from './lib/playwrightUtils';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
 
-test.describe('Suorituksen lisäys', () => {
+test.describe('Suorituksen muokkaus', () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date('2025-01-01T12:00:00Z'));
 
@@ -44,157 +44,167 @@ test.describe('Suorituksen lisäys', () => {
     await page.goto(`/suorituspalvelu/henkilo/${OPPIJANUMERO}`);
   });
 
-  test('lomake näyttää kaikki kentät oletusarvoilla', async ({ page }) => {
-    const addSuoritusForm = await startAddSuoritus(page);
+  test('lomake näyttää kaikki kentät oikeilla arvoilla', async ({ page }) => {
+    const editSuoritusForm = await startEditSuoritus(page);
 
-    await expect(addSuoritusForm.getByLabel('Tyyppi')).toHaveText(
+    await expect(editSuoritusForm.getByLabel('Tyyppi')).toHaveText(
       'Perusopetuksen oppimäärä',
     );
-    await expect(addSuoritusForm.getByLabel('Oppilaitos')).toHaveText('');
-    await expect(addSuoritusForm.getByLabel('Tila')).toHaveText(
+    await expect(editSuoritusForm.getByLabel('Oppilaitos')).toHaveValue(
+      'Esimerkkioppilaitos fi (1.2.3.4)',
+    );
+    await expect(editSuoritusForm.getByLabel('Tila')).toHaveText(
       'Suoritus valmis',
     );
     await expect(
-      addSuoritusForm.getByLabel('Valmistumispäivä').locator('input'),
-    ).toHaveValue('01.01.2025');
-    await expect(addSuoritusForm.getByLabel('Suorituskieli')).toHaveText(
+      editSuoritusForm.getByLabel('Valmistumispäivä').locator('input'),
+    ).toHaveValue('01.06.2016');
+    await expect(editSuoritusForm.getByLabel('Suorituskieli')).toHaveText(
       'suomi',
     );
-    await expect(addSuoritusForm.getByLabel('Luokka')).toHaveValue('');
-    await expect(addSuoritusForm.getByLabel('Yksilöllistetty')).toHaveText(
-      'Perusopetuksen oppimäärä',
+    await expect(editSuoritusForm.getByLabel('Luokka')).toHaveValue('9A');
+    await expect(editSuoritusForm.getByLabel('Yksilöllistetty')).toHaveText(
+      'Perusopetuksen osittain yksilöllistetty oppimäärä',
     );
 
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Oppimäärä oppiaineelle Äidinkieli ja kirjallisuus',
       ),
-    ).toHaveText('-');
+    ).toHaveText('Suomen kieli ja kirjallisuus');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Arvosana oppiaineelle Äidinkieli ja kirjallisuus',
       ),
-    ).toHaveText('-');
+    ).toHaveText('9');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle Äidinkieli ja kirjallisuus',
       ),
     ).toHaveText('-');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle A1-kieli'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle A1-kieli'),
+    ).toHaveText('englanti');
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle A1-kieli'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle A1-kieli'),
+    ).toHaveText('9');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle A1-kieli',
       ),
     ).toHaveText('-');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle A2-kieli'),
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle A2-kieli'),
     ).toHaveText('-');
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle A2-kieli'),
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle A2-kieli'),
     ).toHaveText('-');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle A2-kieli',
       ),
     ).toHaveText('-');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle B1-kieli'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle B1-kieli'),
+    ).toHaveText('ruotsi');
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle B1-kieli'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle B1-kieli'),
+    ).toHaveText('9');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle B1-kieli',
       ),
     ).toHaveText('-');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle B2-kieli'),
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle B2-kieli'),
+    ).toHaveText('saksa');
+    await expect(
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle B2-kieli'),
     ).toHaveText('-');
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle B2-kieli'),
-    ).toHaveText('-');
-    await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle B2-kieli',
       ),
-    ).toHaveText('-');
+    ).toHaveText('9');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle Matematiikka'),
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle Matematiikka'),
     ).toBeHidden();
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle Matematiikka'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle Matematiikka'),
+    ).toHaveText('9');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle Matematiikka',
       ),
     ).toHaveText('-');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle Biologia'),
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle Biologia'),
     ).toBeHidden();
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle Biologia'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle Biologia'),
+    ).toHaveText('9');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle Biologia',
       ),
     ).toHaveText('-');
 
     await expect(
-      addSuoritusForm.getByLabel('Oppimäärä oppiaineelle Maantieto'),
+      editSuoritusForm.getByLabel('Oppimäärä oppiaineelle Maantieto'),
     ).toBeHidden();
     await expect(
-      addSuoritusForm.getByLabel('Arvosana oppiaineelle Maantieto'),
-    ).toHaveText('-');
+      editSuoritusForm.getByLabel('Arvosana oppiaineelle Maantieto'),
+    ).toHaveText('9');
     await expect(
-      addSuoritusForm.getByLabel(
+      editSuoritusForm.getByLabel(
         'Valinnainen arvosana 1 oppiaineelle Maantieto',
       ),
     ).toHaveText('-');
 
-    const peruutaButton = addSuoritusForm.getByRole('button', {
+    const peruutaButton = editSuoritusForm.getByRole('button', {
       name: 'Peruuta',
     });
     await expect(peruutaButton).toBeVisible();
     await expect(
-      addSuoritusForm.getByRole('button', { name: 'Tallenna' }),
+      editSuoritusForm.getByRole('button', { name: 'Tallenna' }),
     ).toBeVisible();
 
     await peruutaButton.click();
-    await expect(addSuoritusForm).toBeHidden();
+    await expect(editSuoritusForm).toBeHidden();
   });
 
   test('peruuttaminen pyytää vahvistuksen, jos muutoksia', async ({ page }) => {
-    const addSuoritusForm = await startAddSuoritus(page);
-    await addSuoritusForm.getByLabel('Luokka').fill('9A');
+    const editSuoritusForm = await startEditSuoritus(page);
+    await editSuoritusForm.getByLabel('Luokka').fill('9A');
 
-    const peruutaButton = addSuoritusForm.getByRole('button', {
+    const peruutaButton = editSuoritusForm.getByRole('button', {
       name: 'Peruuta',
     });
+
+    await selectOption({
+      page,
+      name: 'Tila',
+      option: 'Suoritus kesken',
+      locator: editSuoritusForm,
+    });
+
     await peruutaButton.click();
 
     const vahvistaModal = page.getByRole('dialog', {
-      name: 'Haluatko peruuttaa suorituksen lisäämisen?',
+      name: 'Haluatko peruuttaa suorituksen muokkaamisen?',
     });
     await expect(vahvistaModal).toBeVisible();
 
     await vahvistaModal.getByRole('button', { name: 'Ei' }).click();
     await expect(vahvistaModal).toBeHidden();
 
-    await expect(addSuoritusForm).toBeVisible();
+    await expect(editSuoritusForm).toBeVisible();
 
     await peruutaButton.click();
 
@@ -205,26 +215,25 @@ test.describe('Suorituksen lisäys', () => {
     await vahvistaPeruutaButton.click();
 
     await expect(vahvistaModal).toBeHidden();
-    await expect(addSuoritusForm).toBeHidden();
+    await expect(editSuoritusForm).toBeHidden();
   });
 
   test('onnistunut tallennus lähettää suorituksen tallennuspyynnön ja lataa suoritustiedot uudelleen', async ({
     page,
   }) => {
-    // Mock the save API endpoint
     await page.route('**/ui/perusopetuksenoppimaarat', async (route) => {
       await route.fulfill({
         status: 200,
       });
     });
 
-    const addSuoritusForm = await startAddSuoritus(page);
+    const editSuoritusForm = await startEditSuoritus(page);
 
     await selectOption({
       page,
       name: 'Tyyppi',
       option: 'Perusopetuksen oppimäärä',
-      locator: addSuoritusForm,
+      locator: editSuoritusForm,
     });
 
     await selectOption({
@@ -232,18 +241,18 @@ test.describe('Suorituksen lisäys', () => {
       name: 'Oppilaitos',
       option: 'Hailuodon peruskoulu (1.2.246.562.10.46678824486)',
       exactOption: false,
-      locator: addSuoritusForm,
+      locator: editSuoritusForm,
     });
 
     await selectOption({
       page,
       name: 'Tila',
       option: 'Suoritus valmis',
-      locator: addSuoritusForm,
+      locator: editSuoritusForm,
     });
 
     await selectDateInDatePicker(
-      addSuoritusForm.getByLabel('Valmistumispäivä'),
+      editSuoritusForm.getByLabel('Valmistumispäivä'),
       '01.06.2024',
     );
 
@@ -251,22 +260,22 @@ test.describe('Suorituksen lisäys', () => {
       page,
       name: 'Suorituskieli',
       option: 'suomi',
-      locator: addSuoritusForm,
+      locator: editSuoritusForm,
     });
 
-    await addSuoritusForm.getByLabel('Luokka').fill('9A');
+    await editSuoritusForm.getByLabel('Luokka').fill('9A');
 
     await selectOption({
       page,
       name: 'Yksilöllistetty',
       option: 'Perusopetuksen oppimäärä',
-      locator: addSuoritusForm,
+      locator: editSuoritusForm,
     });
 
     const [saveRequest] = await Promise.all([
       page.waitForRequest('**/ui/perusopetuksenoppimaarat'), // tallennus
       page.waitForRequest(`**/ui/tiedot/${OPPIJANUMERO}`), // tietojen uudelleenlataus
-      addSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
+      editSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
     ]);
 
     const saveRequestData = saveRequest.postDataJSON();
@@ -281,13 +290,12 @@ test.describe('Suorituksen lisäys', () => {
       valmistumispaiva: '2024-06-01',
     });
 
-    await expect(addSuoritusForm).toBeHidden();
+    await expect(editSuoritusForm).toBeHidden();
   });
 
   test('epäonnistunut tallennus näyttää palvelimelta tulevan virheilmoituksen', async ({
     page,
   }) => {
-    // Mock the save API endpoint
     await page.route('**/ui/perusopetuksenoppimaarat', async (route) => {
       await route.fulfill({
         status: 500,
@@ -295,18 +303,18 @@ test.describe('Suorituksen lisäys', () => {
       });
     });
 
-    const addSuoritusForm = await startAddSuoritus(page);
+    const lisaaSuoritusForm = await startEditSuoritus(page);
 
     await selectOption({
       page,
       name: 'Tyyppi',
       option: 'Perusopetuksen oppimäärä',
-      locator: addSuoritusForm,
+      locator: lisaaSuoritusForm,
     });
 
     await Promise.all([
       page.waitForRequest('**/ui/perusopetuksenoppimaarat'), // tallennus
-      addSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
+      lisaaSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
     ]);
 
     const errorDialog = await page
@@ -317,8 +325,9 @@ test.describe('Suorituksen lisäys', () => {
 
     await errorDialog.getByRole('button', { name: 'Sulje' }).click();
 
-    await expect(addSuoritusForm).toBeVisible();
+    await expect(lisaaSuoritusForm).toBeVisible();
   });
+
   test('epäonnistunut tallennus näyttää palvelimelta palautuvat validointivirheet', async ({
     page,
   }) => {
@@ -345,18 +354,18 @@ test.describe('Suorituksen lisäys', () => {
       });
     });
 
-    const addSuoritusForm = await startAddSuoritus(page);
+    const lisaaSuoritusForm = await startEditSuoritus(page);
 
     await selectOption({
       page,
       name: 'Tyyppi',
       option: 'Perusopetuksen oppimäärä',
-      locator: addSuoritusForm,
+      locator: lisaaSuoritusForm,
     });
 
     await Promise.all([
       page.waitForRequest('**/ui/perusopetuksenoppimaarat'), // tallennus
-      addSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
+      lisaaSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
     ]);
 
     const errorDialog = await page
@@ -380,34 +389,68 @@ test.describe('Suorituksen lisäys', () => {
 
     await errorDialog.getByRole('button', { name: 'Sulje' }).click();
 
-    await expect(addSuoritusForm).toBeVisible();
+    await expect(lisaaSuoritusForm).toBeVisible();
   });
 
-  test('näyttää vahvistusmodaalin, jos ollaan jo muokkaamassa suoritusta', async ({
+  test('näyttää vahvistusmodaalin, jos ollaan jo lisäämässä suoritusta', async ({
     page,
   }) => {
-    const editSuoritusForm = await startEditSuoritus(page);
-    const addSuoritusForm = page.getByRole('region', {
-      name: 'Lisää suoritus',
+    const addSuoritusForm = await startAddSuoritus(page);
+    const editSuoritusForm = page.getByRole('region', {
+      name: 'Muokkaa suoritusta',
     });
 
-    const addButton = page.getByRole('button', { name: 'Lisää suoritus' });
-    await addButton.click();
+    const editButton = page.getByRole('button', { name: 'Muokkaa suoritusta' });
+    await editButton.click();
 
     const confirmationModal = page.getByRole('dialog', {
-      name: 'Haluatko keskeyttää suorituksen muokkaamisen?',
+      name: 'Haluatko keskeyttää suorituksen lisäämisen?',
     });
     await expect(confirmationModal).toBeVisible();
 
     await confirmationModal.getByRole('button', { name: 'Ei' }).click();
     await expect(confirmationModal).toBeHidden();
-    await expect(addSuoritusForm).toBeHidden();
-    await expect(editSuoritusForm).toBeVisible();
-    await addButton.click();
+    await expect(addSuoritusForm).toBeVisible();
+    await expect(editSuoritusForm).toBeHidden();
+    await editButton.click();
 
     await confirmationModal.getByRole('button', { name: 'Kyllä' }).click();
     await expect(confirmationModal).toBeHidden();
-    await expect(addSuoritusForm).toBeVisible();
-    await expect(editSuoritusForm).toBeHidden();
+    await expect(addSuoritusForm).toBeHidden();
+    await expect(editSuoritusForm).toBeVisible();
+  });
+
+  test('poistaminen lähettää poistopyynnön ja päivittää näkymän', async ({
+    page,
+  }) => {
+    const PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE =
+      '10b37fec-ce8d-49c8-858d-6d0d2786fb40';
+
+    await page.route(
+      `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+        });
+      },
+    );
+
+    const deleteButton = page.getByRole('button', {
+      name: 'Poista suoritus',
+    });
+    await deleteButton.click();
+
+    const confirmationModal = page.getByRole('dialog', {
+      name: 'Haluatko varmasti poistaa suorituksen?',
+    });
+    await expect(confirmationModal).toBeVisible();
+
+    await Promise.all([
+      page.waitForRequest(
+        `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
+      ), // poisto
+      page.waitForRequest(`**/ui/tiedot/${OPPIJANUMERO}`), // tietojen uudelleenlataus
+      confirmationModal.getByRole('button', { name: 'Kyllä' }).click(),
+    ]);
   });
 });
