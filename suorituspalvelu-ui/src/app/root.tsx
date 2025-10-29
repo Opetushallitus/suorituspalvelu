@@ -1,6 +1,5 @@
 import { Outlet, Scripts, ScrollRestoration } from 'react-router';
 import { Providers } from '@/components/Providers';
-import { UntranslatedFullSpinner } from '@/components/FullSpinner';
 import { ErrorView } from '@/components/ErrorView';
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -20,7 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export function HydrateFallback() {
-  return <UntranslatedFullSpinner />;
+  return null;
 }
 
 export default function App() {
