@@ -12,34 +12,36 @@ import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.mockito
 import org.mockito.Mockito
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.YtrSyncSuccessResponse
+import fi.oph.suorituspalvelu.resource.api.{YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import fi.oph.suorituspalvelu.parsing.ytr.Student
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser.MAPPER
+import fi.oph.suorituspalvelu.validation.Validator
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 
-import java.util.UUID
+import java.util.{Optional, UUID}
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
 import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
 import scala.concurrent.Future
 import scala.util.Try
+import scala.jdk.CollectionConverters.*
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
 class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
-  @MockBean
+  @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
-  @MockBean
+  @MockitoBean
   var ytrClient: YtrClient = null
 
-  @MockBean
+  @MockitoBean
   var onrIntegration: OnrIntegration = null
 
   def toInputStreams(z: ZipInputStream): Iterator[InputStream] = {
@@ -82,11 +84,11 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       val parsed: Seq[(String, String)] = YtrParser.splitAndSanitize(data).toList
       println(s"Parsed ${parsed.size} records: $parsed")
 
-      Assertions.assertTrue(parsed.find(_._1 == "150875-935M").isDefined)
-      Assertions.assertTrue(parsed.find(_._1 == "080578-945T").isDefined)
-      Assertions.assertTrue(parsed.find(_._1 == "040577-967N").isDefined)
-      Assertions.assertTrue(parsed.find(_._1 == "080562-9273").isDefined)
-      Assertions.assertTrue(parsed.find(_._1 == "060864-933X").isDefined)
+      Assertions.assertTrue(parsed.exists(_._1 == "150875-935M"))
+      Assertions.assertTrue(parsed.exists(_._1 == "080578-945T"))
+      Assertions.assertTrue(parsed.exists(_._1 == "040577-967N"))
+      Assertions.assertTrue(parsed.exists(_._1 == "080562-9273"))
+      Assertions.assertTrue(parsed.exists(_._1 == "060864-933X"))
       parsed
     })
   }
@@ -96,20 +98,33 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testRefreshYtrOppijaAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, ""))
+    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, "payloadilla ei ole väliä"))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testRefreshYtrOppijatNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, Set("1.2.3")))
+    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, "payloadilla ei ole väliä"))
       .andExpect(status().isForbidden())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshYtrOppijatMalformedJson(): Unit =
+    // ei validi oid ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, "tämä ei ole validia jsonia"))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(YtrSyncFailureResponse(List(ApiConstants.DATASYNC_JSON_VIRHE).asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncFailureResponse]))
+
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshYtrOppijatMalformedOid(): Unit =
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, Set("1.2.246.562.25.01000000000000056245")))
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, YTRPaivitaTiedotHenkilollePayload(Optional.of(List("1.2.246.562.25.01000000000000056245").asJava))))
       .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(YtrSyncFailureResponse(List(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI).asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshYtrForOppijaAllowed(): Unit = {
@@ -131,7 +146,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(ytrClient.fetchOne(YtrHetuPostData(hetuToPersonOid.keySet.head, Some(List.empty))))
       .thenReturn(Future.successful(Some(personJson)))
 
-    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, Set(oppijaNumero)))
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, YTRPaivitaTiedotHenkilollePayload(Optional.of(List(oppijaNumero).asJava))))
       .andExpect(status().isOk).andReturn()
     val ytrSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
 
@@ -152,19 +167,19 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testRefreshYtrHakuAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAKU_PATH, ""))
+    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAKU_PATH, "payloadilla ei ole väliä"))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testRefreshYtrHakuNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_PATH, Set("1.2.3")))
+    mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, "payloadilla ei ole väliä"))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshYtrHakuMalformedOid(): Unit =
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPostString(ApiConstants.YTR_DATASYNC_PATH, "1.2.246.562.28.01000000000000056245"))
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, YTRPaivitaTiedotHaullePayload(Optional.of("tämä ei ole validi hakuOid"))))
       .andExpect(status().isBadRequest).andReturn()
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -205,7 +220,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(ytrClient.fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString()))
       .thenReturn(Future.successful(Some(zippedBytes)))
 
-    val result = mvc.perform(jsonPostString(ApiConstants.YTR_DATASYNC_HAKU_PATH, hakuOid))
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAKU_PATH, YTRPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
       .andExpect(status().isOk).andReturn()
     val ytrSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
 

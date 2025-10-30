@@ -49,6 +49,15 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshVirtaMalformedJson(): Unit =
+    // ei validi oid ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HENKILO_PATH, "tämä ei ole validia jsonia"))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(ApiConstants.DATASYNC_JSON_VIRHE)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaMalformedOid(): Unit =
     // ei validi oid ei sallittu
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HENKILO_PATH, VirtaPaivitaTiedotHenkilollePayload(Optional.of("tämä ei ole validi oid"))))

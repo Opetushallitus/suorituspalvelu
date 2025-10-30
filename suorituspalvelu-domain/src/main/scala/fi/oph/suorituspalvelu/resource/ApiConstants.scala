@@ -34,6 +34,7 @@ object ApiConstants {
   final val KOSKI_DATASYNC_RETRY_PATH                       = KOSKI_DATASYNC_PATH + "/retry"
 
   final val YTR_DATASYNC_PATH                               = DATASYNC_PATH + "/ytr"
+  final val YTR_DATASYNC_HENKILOT_PATH                      = YTR_DATASYNC_PATH + "/henkilot"
   final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
 
   final val VIRTA_DATASYNC_HENKILO_PATH                     = DATASYNC_PATH + "/virta/henkilo"

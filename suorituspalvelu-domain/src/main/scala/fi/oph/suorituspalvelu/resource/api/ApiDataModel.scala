@@ -18,11 +18,11 @@ case class VirtaSyncSuccessResponse(
 
 @Schema(name = "VirtaSyncFailureResponse")
 case class VirtaSyncFailureResponse(
-  @(Schema @field)(example = VIRTA_DATASYNC_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + VIRTA_DATASYNC_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
 
 @Schema(name = "KoskiSyncSuccessResponse")
-  case class KoskiSyncSuccessResponse(
+case class KoskiSyncSuccessResponse(
   @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty onnistuneet: Int,
   @(Schema @field)(example = "0", requiredMode = RequiredMode.REQUIRED)
@@ -30,18 +30,34 @@ case class VirtaSyncFailureResponse(
 
 @Schema(name = "KoskiSyncFailureResponse")
 case class KoskiSyncFailureResponse(
-  @(Schema @field)(example = DATASYNC_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + DATASYNC_EI_OIKEUKSIA + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
 
 @Schema(name = "YtrSyncSuccessResponse")
 case class YtrSyncSuccessResponse(
-  @(Schema @field)(example = "", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty responseStr: String) extends SyncResponse {}
+  @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty onnistuneet: Int,
+  @(Schema @field)(example = "0", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheet: Int) extends SyncResponse {}
 
 @Schema(name = "YtrSyncFailureResponse")
 case class YtrSyncFailureResponse(
-  @(Schema @field)(example = VIRTA_DATASYNC_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + VIRTA_DATASYNC_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
+
+case class YTRPaivitaTiedotHaullePayload(
+  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOid: Optional[String]) {
+
+  def this() = this(Optional.empty())
+}
+
+case class YTRPaivitaTiedotHenkilollePayload(
+  @(Schema @field)(example = "[\"" + ESIMERKKI_OPPIJANUMERO + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOids: Optional[java.util.List[String]]) {
+
+  def this() = this(Optional.empty())
+}
 
 case class VirtaPaivitaTiedotHaullePayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
@@ -65,7 +81,7 @@ case class KoskiPaivitaTiedotHaullePayload(
 }
 
 case class KoskiPaivitaTiedotHenkiloillePayload(
-  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + ESIMERKKI_OPPIJANUMERO + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty henkiloOidit: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
@@ -89,30 +105,30 @@ case class KoskiRetryPayload(
 trait LahettavatLuokatResponse()
 
 case class LahettavatLuokatSuccessResponse(
-  @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + ESIMERKKI_LUOKKA + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty luokat: java.util.List[String]
 ) extends LahettavatLuokatResponse
 
 case class LahettavatLuokatFailureResponse(
-  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LahettavatLuokatResponse
 
 case class LahettavatHenkilo(
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty henkiloOid: String,
-  @(Schema @field)(example = ESIMERKKI_LUOKKA, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + ESIMERKKI_LUOKKA + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty luokat: java.util.List[String],
 )
 
 trait LahettavatHenkilotResponse()
 
 case class LahettavatHenkilotSuccessResponse(
-  @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty henkilot: java.util.List[LahettavatHenkilo]
 ) extends LahettavatHenkilotResponse
 
 case class LahettavatHenkilotFailureResponse(
-  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LahettavatHenkilotResponse
