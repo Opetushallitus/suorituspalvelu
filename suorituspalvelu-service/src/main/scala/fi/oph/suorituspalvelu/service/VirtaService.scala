@@ -4,9 +4,9 @@ import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, SaferIterator, SyncResultForHenkilo, Util}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
-import fi.oph.suorituspalvelu.integration.virta.{VirtaClient, VirtaResultForHenkilo}
+import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.service.VirtaService.{VIRTA_REFRESH_TASK, VIRTA_REFRESH_TASK_FOR_HAKU}
 import org.slf4j.LoggerFactory
@@ -60,56 +60,60 @@ class VirtaRefresh {
 
   @Autowired val virtaClient: VirtaClient = null
 
+  final val VIRTA_CONCURRENCY = 3
+
   final val TIMEOUT = 30.seconds
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
 
-  def safeFetchAndPersistPersonOid(personOid: String): Future[SyncResultForHenkilo] = {
-    try {
-      val fetchedAt = Instant.now()
-      virtaClient.haeTiedotOppijanumerolle(personOid).map(r => persist(r, fetchedAt))
-    } catch {
-      case exception: Exception =>
-        LOG.error(s"Jotain meni pieleen VIRTA-tietojen käsittelyssä henkilölle $personOid", exception)
-        Future.successful(SyncResultForHenkilo(personOid, None, Some(exception)))
-    }
+  def persist(oppijaNumero: String, virtaXmls: Seq[String], fetchedAt: Instant): Option[VersioEntiteetti] = {
+    val hetulessXmls = virtaXmls.map(xml => VirtaUtil.replaceHetusWithPlaceholder(xml))
+    LOG.info(s"Persistoidaan Virta-data henkilölle $oppijaNumero")
+
+    val kantaOperaatiot = KantaOperaatiot(database)
+    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.VIRTA, hetulessXmls, fetchedAt)
+
+    versio.foreach(v => {
+      LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
+      val parseroidut = hetulessXmls.map(xml => VirtaParser.parseVirtaData(new ByteArrayInputStream(xml.getBytes)))
+      val konvertoidut = parseroidut.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p))
+      kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet)
+      LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle $oppijaNumero, yhteensä ${konvertoidut.size} suoritusta.")
+    })
+
+    versio
   }
 
-  def safeFetchAndPersistHetu(hetu: String): Future[SyncResultForHenkilo] = {
-    try {
-      val fetchedAt = Instant.now()
-      virtaClient.haeTiedotHetulle(hetu).map(r => persist(r, fetchedAt))
-    } catch {
-      case exception: Exception =>
-        LOG.error(s"Jotain meni pieleen VIRTA-tietojen käsittelyssä henkilölle (hetu xxxxxx-xxxx)", exception)
-        Future.successful(SyncResultForHenkilo(hetu, None, Some(exception)))
-    }
-  }
+  def refreshVirtaForPersonOids(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+    val masterHenkilot = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), TIMEOUT).values.toSet
+    val masterOids = masterHenkilot.map(_.oidHenkilo)
+    val duplikaatit = Await.result(onrIntegration.getAliasesForPersonOids(masterHenkilot.map(_.oidHenkilo)), TIMEOUT).allOids
+      .filter(oid => !masterOids.contains(oid))
 
-  def persist(virtaResult: VirtaResultForHenkilo, fetchedAt: Instant): SyncResultForHenkilo = {
-    val hetulessXml = VirtaUtil.replaceHetusWithPlaceholder(virtaResult.resultXml)
-    LOG.info(s"Persistoidaan Virta-data henkilölle ${virtaResult.oppijanumeroTaiHetu}")
+    // konstruoidaan lista (henkiloOid, Set[hetu]) tupleja joille sitten suoritetaan Virtahaku, muiden kuin masterhenkilöiden
+    // hetut ovat tyhjä joukko
+    val virtaHaut = masterHenkilot.map(h => (h.oidHenkilo, h.combinedHetut)) ++ duplikaatit.map(a => (a, Set.empty.asInstanceOf[Set[String]]))
+    val tulokset = Util.toIterator(virtaHaut.iterator.map((oppijaNumero, hetut) => {
+      Future.sequence(Seq(
+        Seq(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)),
+        hetut.map(hetu => virtaClient.haeTiedotHetulle(hetu))
+      ).flatten)
+        .map(xmls => SyncResultForHenkilo(oppijaNumero, persist(oppijaNumero, xmls, Instant.now()), None))
+        .recover {
+          case e: Exception =>
+            LOG.error(s"Henkilon $oppijaNumero VIRTA-tietojen päivittäminen epäonnistui", e)
+            SyncResultForHenkilo(oppijaNumero, None, Some(e))
+          case t: Throwable => throw t
+        }
+    }), VIRTA_CONCURRENCY, TIMEOUT).toList
 
-    val kantaResult: SyncResultForHenkilo =
-      try {
-        val kantaOperaatiot = KantaOperaatiot(database)
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(virtaResult.oppijanumeroTaiHetu, SuoritusJoukko.VIRTA, Seq(hetulessXml), fetchedAt)
+    val succeeded = tulokset.filter(_.exception.isEmpty)
+    LOG.info(s"Synkattiin onnistuneesti ${succeeded.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
+    val failed = tulokset.filter(_.exception.isDefined)
+    LOG.error(s"Failed to sync ${failed.size} henkiloita VIRTA-tietojen synkronoinnissa")
+    failed.foreach(r => LOG.error(s"Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
 
-        versio.foreach(v => {
-          LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
-          val versionParseroidut: VirtaSuoritukset = VirtaParser.parseVirtaData(new ByteArrayInputStream(hetulessXml.getBytes))
-          val konvertoidut: Seq[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(versionParseroidut)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet)
-          LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle ${virtaResult.oppijanumeroTaiHetu}, yhteensä ${konvertoidut.size} suoritusta.")
-        })
-        SyncResultForHenkilo(virtaResult.oppijanumeroTaiHetu, versio, None)
-      } catch {
-        case e: Exception =>
-          LOG.error(s"Henkilon ${virtaResult.oppijanumeroTaiHetu} VIRTA-tietojen tallentaminen epäonnistui", e)
-          SyncResultForHenkilo(virtaResult.oppijanumeroTaiHetu, None, Some(e))
-      }
-
-    kantaResult
+    tulokset
   }
 
   @Bean
@@ -117,77 +121,16 @@ class VirtaRefresh {
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(1, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(30), 2)))
     .execute((instance, ctx) => {
       val hakuOid: String = instance.getData
-
-      //Hetut voisi ottaa joko hakemuksilta tai erikseen haettavilta onr-henkilöiltä. Onr-henkilöt lienevät vähintään yhtä hyvä ja mahdollisesti parempi lähde?
-      val hakemustenHenkilot: Future[Seq[AtaruHakemuksenHenkilotiedot]] = hakemuspalveluClient.getHaunHakijat(hakuOid)
-      hakemustenHenkilot.flatMap((hakemustenHenkilotResult: Seq[AtaruHakemuksenHenkilotiedot]) => {
-        val personOids = hakemustenHenkilotResult.flatMap(_.personOid).toSet
-        LOG.info(s"Saatiin ${hakemustenHenkilotResult.size} hakemuksen tiedot haulle $hakuOid")
-        val aliakset = onrIntegration.getAliasesForPersonOids(personOids)
-        //val masterHenkilot = onrIntegration.getMasterHenkilosForPersonOids(personOids)
-
-        //Haetaan Virrasta yksitellen tiedot kaikkien hakijoiden kaikille aliaksille
-        val resultsForOids: Future[Seq[SyncResultForHenkilo]] = aliakset.flatMap(aliasResult => {
-          LOG.info(s"Saatiin oppijanumerorekisteristä yhteensä ${aliasResult.allOids.size} oppijanumeroa ja aliasta hakemuksilta poimituille ${personOids.size} henkilöOidille")
-          val synced = new AtomicInteger(0)
-          aliasResult.allOids.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
-            case (result: Future[Seq[SyncResultForHenkilo]], personOid: String) =>
-              result.flatMap((rs: Seq[SyncResultForHenkilo]) => {
-                LOG.info(
-                  s"Syncing VIRTA for person: $personOid, progress ${synced.incrementAndGet()}/${aliasResult.allOids.size}"
-                )
-                safeFetchAndPersistPersonOid(personOid).map(cr => rs :+ cr)
-              })
-          }
-        })
-
-        //Ei persistoida toistaiseksi tietoja hetuille
-        /*
-        val hetuF: Future[Seq[SyncResultForHenkilo]] = masterHenkilot.flatMap(masterHenkilotResult => {
-          val synced = new AtomicInteger(0)
-          val kaikkiHetut = masterHenkilotResult.flatMap(_._2.combinedHetut).toSet
-          kaikkiHetut.foldLeft(Future.successful(Seq.empty[SyncResultForHenkilo])) {
-            case (result: Future[Seq[SyncResultForHenkilo]], hetu: String) =>
-              result.flatMap((rs: Seq[SyncResultForHenkilo]) => {
-                LOG.info(
-                  s"Syncing VIRTA for person with hetu (xxxxxx-xxxx), progress ${synced.incrementAndGet()}/${kaikkiHetut.size}"
-                )
-                val syncResultF: Future[SyncResultForHenkilo] = virtaClient.haeTiedotHetulle(hetu).map(persist)
-                syncResultF.map(cr => rs :+ cr)
-              })
-        }
-        })
-        */
-
-        val fullResults = Future.sequence(Seq(resultsForOids))
-        val succeeded = fullResults.map(_.flatten.filter(_.exception.isEmpty))
-        succeeded.map(results => {
-          LOG.info(s"Synkattiin onnistuneesti ${results.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
-        })
-        val failed = fullResults.map(_.flatten.filter(_.exception.isDefined))
-        failed.map(failedResults => {
-          LOG.error(s"Failed to sync ${failedResults.size} henkiloita VIRTA-tietojen synkronoinnissa")
-          failedResults.foreach(r => LOG.error(s"Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
-        })
-      })
+      val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+      refreshVirtaForPersonOids(personOids)
     })
 
   @Bean
   def virtaRefreshTask(virtaClient: VirtaClient) = Tasks.oneTime(VIRTA_REFRESH_TASK)
     .onFailure(new FailureHandler.MaxRetriesFailureHandler(6, new FailureHandler.ExponentialBackoffFailureHandler(ofSeconds(1), 2)))
     .execute((instance, ctx) => {
-    val oppijaNumero = instance.getData.split(":").head
-    val hetu = instance.getData.split(":").tail.headOption.getOrElse("")
-    try {
-      val kantaOperaatiot = KantaOperaatiot(database)
-      val fetchedAt = Instant.now()
-      val virtaResults: Seq[VirtaResultForHenkilo] = Await.result(virtaClient.haeKaikkiTiedot(oppijaNumero, {
-        if (hetu.isBlank) None else Some(hetu)
-      }), TIMEOUT)
-      virtaResults.map(r => persist(r, fetchedAt))
-    } catch {
-      case e: Exception => LOG.error(s"Virhe päivettäessä Virta-tietoja oppijanumerolle ${oppijaNumero}", e)
-    }
+    val oppijaNumero = instance.getData
+    refreshVirtaForPersonOids(Set(oppijaNumero))
   })
 }
 
@@ -196,9 +139,9 @@ class VirtaService {
 
   @Autowired val scheduler: Scheduler = null
 
-  def syncVirta(oppijaNumero: String, hetu: Option[String]): UUID = {
+  def syncVirta(oppijaNumero: String): UUID = {
     val taskId = UUID.randomUUID();
-    this.scheduler.schedule(VIRTA_REFRESH_TASK.instance(taskId.toString).data(oppijaNumero + ":" + hetu.getOrElse("")).scheduledTo(Instant.now()))
+    this.scheduler.schedule(VIRTA_REFRESH_TASK.instance(taskId.toString).data(oppijaNumero).scheduledTo(Instant.now()))
     taskId
   }
 
