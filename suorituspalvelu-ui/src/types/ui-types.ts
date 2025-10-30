@@ -32,6 +32,7 @@ import type {
   IYksilollistaminen,
   IPoistaSuoritusFailureResponse,
   ILuoPerusopetuksenOppimaaraFailureResponse,
+  IAvainArvoContainerUI,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -212,6 +213,8 @@ export type SuoritusFields = {
 export type Yksilollistaminen = IYksilollistaminen;
 
 export type GenericBackendError = IPoistaSuoritusFailureResponse;
+
+export type AvainArvo = IAvainArvoContainerUI;
 
 export const isGenericBackendError = (
   error: unknown,

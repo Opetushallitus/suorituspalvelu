@@ -265,11 +265,13 @@
   "opiskelijavalinnan-tiedot": {
     "ei-tietoja": "Opiskelijavalinnan tietoja ei ole saatavilla.",
     "otsikko": "Opiskelijavalinnan tiedot",
+    "uudet-avainarvot": "Uudet avainarvot",
+    "vanhat-avainarvot": "Vanhat avainarvot",
     "suorituspalvelusta-opiskelijavalintaan-siirtyvat-tiedot": "Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot",
     "ryhmat": {
       "suoritukset": "Suoritukset",
       "lisapistekoulutukset": "Lisäpistekoulutus",
-      "perusopetuksen-oppiaineet": "Peruskoulu"
+      "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet"
     }
   }
 }
