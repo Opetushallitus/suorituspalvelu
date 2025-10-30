@@ -118,3 +118,12 @@ export const startAddSuoritus = async (page: Page) => {
 
   return lisaaSuoritusForm;
 };
+
+export const expectLabeledValues = async (
+  locator: Page | Locator,
+  values: Array<{ label: string; value: string }>,
+) => {
+  for (const { label, value } of values) {
+    await expect(locator.getByLabel(label, { exact: true })).toHaveText(value);
+  }
+};

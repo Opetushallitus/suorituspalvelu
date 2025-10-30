@@ -21,14 +21,14 @@ test.describe('Henkilö-haku', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/ui/oppijat*', async (route) => {
       const url = new URL(route.request().url());
-      const oppijaParam = url.searchParams.get('oppija');
+      const hakusanaParam = url.searchParams.get('hakusana');
       const oppilaitosParam = url.searchParams.get('oppilaitos');
 
       await route.fulfill({
         json: {
           oppijat: OPPIJAT.filter(
             (oppija) =>
-              oppija.nimi.includes(oppijaParam ?? '') &&
+              oppija.nimi.includes(hakusanaParam ?? '') &&
               (!oppilaitosParam || oppilaitosParam === oppija.oppilaitosOid),
           ),
         },

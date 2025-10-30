@@ -4,6 +4,7 @@ import {
   getOppilaitokset,
   getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
+  getValintadata,
   searchOppijat,
   type OppijatSearchParams,
 } from './suorituspalvelu-service';
@@ -74,4 +75,16 @@ export const queryOptionsGetSuorituksenOppilaitosVaihtoehdot = () =>
     queryKey: ['getSuorituksenOppilaitosVaihtoehdot'],
     queryFn: () => getSuorituksenOppilaitosVaihtoehdot(),
     staleTime: Infinity, // Pidetään muistissa niin kauan kunnes sivu ladataan uudelleen
+  });
+
+export const queryOptionsGetValintadata = ({
+  oppijaNumero,
+  hakuOid,
+}: {
+  oppijaNumero: string;
+  hakuOid?: string;
+}) =>
+  queryOptions({
+    queryKey: ['getValintadata', oppijaNumero, hakuOid],
+    queryFn: () => getValintadata({ oppijaNumero, hakuOid }),
   });

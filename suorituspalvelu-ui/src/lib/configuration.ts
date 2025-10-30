@@ -29,6 +29,7 @@ export const getConfiguration = async () => {
         perusopetuksenOppimaaratUrl: `${suorituspalveluBackendUrl}/ui/perusopetuksenoppimaarat`,
         perusopetuksenOppiaineenOppimaaratUrl: `${suorituspalveluBackendUrl}/ui/perusopetuksenoppiaineenoppimaarat`,
         versioDeleteUrl: `${suorituspalveluBackendUrl}/ui/versiot`,
+        valintadataUrl: `${suorituspalveluBackendUrl}/ui/valintadata`,
       },
     },
   };
