@@ -35,6 +35,14 @@ case class OnrHenkiloPerustiedot(oidHenkilo: String,
 }
 
 trait OnrIntegration {
+
+  /**
+   * Palauttaa henkiloOidin aliakset, ts. muut masterhenkilöön linkatut henkilöoidit sekä itse masteroidin. Kysely
+   * voidaan suorittaa joko masterhenkilön tai jonkin sen duplikaatin oidilla.
+   *
+   * @param personOids  joukko master- tai duplikaattihenkilöoideja joilla halutaan aliakset
+   * @return            duplikaatit per haettu henkilöOid
+   */
   def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases]
 
   def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]]

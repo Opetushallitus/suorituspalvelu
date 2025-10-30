@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, SuoritusJoukko, YOOpiskeluoikeus, YOTutkinto}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, HEALTHCHECK_PATH, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, HEALTHCHECK_PATH, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
@@ -126,8 +126,7 @@ class LegacySuorituksetResource {
     description = "Hakemuspalvelua varten tehty korvike suoritusrekisterin /rest/v1/suoritukset-rajapinnalle jota hakemuspalvelu käyttää" +
       "automaattisen hakukelpoisuuden määrittämiseen kahdella tavalla:\n" +
       "- " + LEGACY_SUORITUKSET_HENKILO_PARAM_NAME + "-parametri määrilteltynä halutaan tietään onko yksittäisellä hakijalla yo- tai ammatillinen tutkinto. Hakemuspalvelu etsii tuloksista vähintään yhtä suoritusta jonka tila on VALMIS\n" +
-      "- " + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "-parametri määriteltynä halutaan tietää hakijat joilla on muuttuneita suorituksia määritellyn aikaleiman jälkeen. Hakemuspalvelu käynnistää palautetuille henkilöille hakukelpoisuuden tarkistuksen\n",
-    parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH))
+      "- " + LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME + "-parametri määriteltynä halutaan tietää hakijat joilla on muuttuneita suorituksia määritellyn aikaleiman jälkeen. Hakemuspalvelu käynnistää palautetuille henkilöille hakukelpoisuuden tarkistuksen\n"
   )
   @ApiResponses(value = Array(
     new ApiResponse(responseCode = "200", description = "Palauttaa suoritukset", content = Array(new Content(

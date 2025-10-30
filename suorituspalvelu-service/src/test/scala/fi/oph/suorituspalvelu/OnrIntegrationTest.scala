@@ -35,7 +35,7 @@ class OnrIntegrationTest {
   }
 
   @Test
-  def testGetAliasesForPersonOidsWithNoAliases(): Unit = {
+  def testGetAliasesForPersonOidsWithNoDuplicates(): Unit = {
     val personOid1 = "1.2.246.562.24.00000000987"
     val personOid2 = "1.2.246.562.24.00000000123"
     val personOids = Set(personOid1, personOid2)
@@ -55,7 +55,7 @@ class OnrIntegrationTest {
   }
 
   @Test
-  def testGetAliasesForPersonOidsWithAliases(): Unit = {
+  def testGetAliasesForPersonOidsWithDuplicates(): Unit = {
     val personOid1 = "1.2.246.562.24.00000000987"
     val aliasForPersonOid1 = "1.2.246.562.24.00000000888"
     val personOids = Set(personOid1)
@@ -76,7 +76,7 @@ class OnrIntegrationTest {
   }
 
   @Test
-  def testGetAliasesForPersonOidsWithMultipleAliases(): Unit = {
+  def testGetAliasesForPersonOidsWithMultipleDuplicates(): Unit = {
     val personOid1 = "1.2.246.562.24.00000000987"
     val personOid2 = "1.2.246.562.24.00000000123"
     val personOid3 = "1.2.246.562.24.00000000456"
