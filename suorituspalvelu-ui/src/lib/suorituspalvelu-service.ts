@@ -86,7 +86,7 @@ export const getSuorituksenOppilaitosVaihtoehdot = async () => {
   const res = await client.get<IOppilaitosSuccessResponse>(
     config.routes.suorituspalvelu.oppilaitosvaihtoehdotUrl,
   );
-  return res.data.oppilaitokset;
+  return res.data?.oppilaitokset ?? [];
 };
 
 export const getValintadata = async ({
