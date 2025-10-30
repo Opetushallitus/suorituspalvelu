@@ -2,4 +2,4 @@ FROM amazoncorretto:21-alpine-jdk
 RUN apk add --no-cache maven
 EXPOSE 8443
 WORKDIR /app/suorituspalvelu-service
-CMD ["mvn", "scala:run", "-DmainClass=fi.oph.suorituspalvelu.DevApp", "-Dmaven.test.skip=true"]
+CMD ["mvn", "exec:java", "-Dexec.mainClass=fi.oph.suorituspalvelu.DevApp", "-Dexec.classpathScope=test", "-Dmaven.test.skip=true", "-am"]

@@ -1,0 +1,383 @@
+{
+  "suoritusTilat": [
+    {
+      "nimi": {
+        "fi": "Suoritus valmis",
+        "sv": "Prestationen slutförd",
+        "en": null
+      },
+      "arvo": "VALMIS"
+    },
+    {
+      "nimi": {
+        "fi": "Suoritus kesken",
+        "sv": "Prestationen icke slutförd",
+        "en": null
+      },
+      "arvo": "KESKEN"
+    }
+  ],
+  "suoritusTyypit": [
+    {
+      "nimi": {
+        "fi": "Perusopetuksen oppimäärä",
+        "sv": "Grundläggande utbildningens lärokurs",
+        "en": "Comprehensive school education syllabus"
+      },
+      "arvo": "perusopetuksenoppimaara"
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen oppiaineen oppimäärä",
+        "sv": "Lärokurs i ett läroämne i grundläggande utbildning",
+        "en": "Subject syllabus in comprehensive school education"
+      },
+      "arvo": "perusopetuksenoppiaineenoppimaara"
+    }
+  ],
+  "oppiaineet": [
+    {
+      "nimi": {
+        "fi": "Äidinkieli ja kirjallisuus",
+        "sv": "Modersmålet och litteratur",
+        "en": "Mother tongue and literature"
+      },
+      "arvo": "AI",
+      "isKieli": false,
+      "isAidinkieli": true
+    },
+    {
+      "nimi": {
+        "fi": "A1-kieli",
+        "sv": "A1-språk",
+        "en": "A1-language"
+      },
+      "arvo": "A1",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "A2-kieli",
+        "sv": "A2-språk",
+        "en": "A2-language"
+      },
+      "arvo": "A2",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "B1-kieli",
+        "sv": "B1-språk",
+        "en": "B1-language"
+      },
+      "arvo": "B1",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "B2-kieli",
+        "sv": "B2-språk",
+        "en": "B2-language"
+      },
+      "arvo": "B2",
+      "isKieli": true,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Matematiikka",
+        "sv": "Matematik",
+        "en": "Mathematics"
+      },
+      "arvo": "MA",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Biologia",
+        "sv": "Biologi",
+        "en": "Biology"
+      },
+      "arvo": "BI",
+      "isKieli": false,
+      "isAidinkieli": false
+    },
+    {
+      "nimi": {
+        "fi": "Maantieto",
+        "sv": "Geografi",
+        "en": "Geography"
+      },
+      "arvo": "GE",
+      "isKieli": false,
+      "isAidinkieli": false
+    }
+  ],
+  "suoritusKielet": [
+    {
+      "nimi": {
+        "fi": "suomi",
+        "sv": "finska",
+        "en": "Finnish"
+      },
+      "arvo": "FI"
+    },
+    {
+      "nimi": {
+        "fi": "ruotsi",
+        "sv": "svenska",
+        "en": "Swedish"
+      },
+      "arvo": "SV"
+    },
+    {
+      "nimi": {
+        "fi": "englanti",
+        "sv": "engelska",
+        "en": "English"
+      },
+      "arvo": "EN"
+    },
+    {
+      "nimi": {
+        "fi": "pohjoissaame",
+        "sv": "samiska",
+        "en": "Northern Sami"
+      },
+      "arvo": "SE"
+    },
+    {
+      "nimi": {
+        "fi": "saksa",
+        "sv": "tyska",
+        "en": "German"
+      },
+      "arvo": "DE"
+    }
+  ],
+  "aidinkielenOppimaarat": [
+    {
+      "nimi": {
+        "fi": "Suomen kieli ja kirjallisuus",
+        "sv": "Finska och litteratur",
+        "en": "Finnish language and literature"
+      },
+      "arvo": "AI1"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsin kieli ja kirjallisuus",
+        "sv": "Svenska och litteratur",
+        "en": "Swedish language and literature"
+      },
+      "arvo": "AI2"
+    },
+    {
+      "nimi": {
+        "fi": "Saamen kieli ja kirjallisuus",
+        "sv": "Samiska och litteratur",
+        "en": "Saami language and literature"
+      },
+      "arvo": "AI3"
+    },
+    {
+      "nimi": {
+        "fi": "Romanikieli ja kirjallisuus",
+        "sv": "Romani och litteratur",
+        "en": "Romani and literature"
+      },
+      "arvo": "AI4"
+    },
+    {
+      "nimi": {
+        "fi": "Viittomakieli ja kirjallisuus",
+        "sv": "Teckenspråk och litteratur",
+        "en": "Sign language and literature"
+      },
+      "arvo": "AI5"
+    },
+    {
+      "nimi": {
+        "fi": "Muu oppilaan äidinkieli",
+        "sv": "Annat modersmål",
+        "en": "Other mother tongue"
+      },
+      "arvo": "AI6"
+    },
+    {
+      "nimi": {
+        "fi": "Suomi toisena kielenä ja kirjallisuus",
+        "sv": "Finska som andraspråk och litteratur",
+        "en": "Finnish as a second language and literature"
+      },
+      "arvo": "AI7"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsi toisena kielenä ja kirjallisuus",
+        "sv": "Svenska som andraspråk och litteratur",
+        "en": "Swedish as a second language and literature"
+      },
+      "arvo": "AI8"
+    },
+    {
+      "nimi": {
+        "fi": "Suomi saamenkielisille",
+        "sv": "Finska för samisktalande",
+        "en": "Finnish for Saami speakers"
+      },
+      "arvo": "AI9"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsi saamenkielisille",
+        "sv": "Svenska för samisktalande",
+        "en": "Swedish for Saami speakers"
+      },
+      "arvo": "AI10"
+    },
+    {
+      "nimi": {
+        "fi": "Suomi viittomakielisille",
+        "sv": "Finska för teckenspråkiga",
+        "en": "Finnish for sign language speakers"
+      },
+      "arvo": "AI11"
+    },
+    {
+      "nimi": {
+        "fi": "Ruotsi viittomakielisille",
+        "sv": "Svenska för teckenspråkiga",
+        "en": "Swedish for sign language speakers"
+      },
+      "arvo": "AI12"
+    },
+    {
+      "nimi": {
+        "fi": "Suomen kieli, äidinkielenomainen suomi",
+        "sv": "Finska, modersmålsinriktad finska",
+        "en": "Suomen kieli, äidinkielenomainen suomi"
+      },
+      "arvo": "AIAI"
+    }
+  ],
+  "vieraatKielet": [
+    {
+      "nimi": {
+        "fi": "Ei suoritusta",
+        "sv": "Ej avlagd",
+        "en": null
+      },
+      "arvo": "97"
+    },
+    {
+      "nimi": {
+        "fi": "ruotsi",
+        "sv": "svenska",
+        "en": "Swedish"
+      },
+      "arvo": "SV"
+    },
+    {
+      "nimi": {
+        "fi": "englanti",
+        "sv": "engelska",
+        "en": "English"
+      },
+      "arvo": "EN"
+    },
+    {
+      "nimi": {
+        "fi": "suomi",
+        "sv": "finska",
+        "en": "Finnish"
+      },
+      "arvo": "FI"
+    },
+    {
+      "nimi": {
+        "fi": "saksa",
+        "sv": "tyska",
+        "en": "German"
+      },
+      "arvo": "DE"
+    }
+  ],
+  "yksilollistaminen": [
+    {
+      "nimi": {
+        "fi": "Perusopetuksen oppimäärä",
+        "sv": "Den grundläggande utbildningens lärokurs",
+        "en": "Basic education"
+      },
+      "arvo": 1
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen osittain yksilöllistetty oppimäärä",
+        "sv": "Delvis individualiserad lärokurs inom den grundläggande utbildningen",
+        "en": "Partially individualized basic education syllabus"
+      },
+      "arvo": 2
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen yksilöllistetty oppimäärä, opetus järjestetty toiminta-alueittain",
+        "sv": "Individualiserad lärokurs inom den grundläggande utbildningen, som utgår från verksamhetsområden",
+        "en": "Individualized syllabus in basic education, with instruction organized according to functional areas"
+      },
+      "arvo": 3
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen pääosin tai kokonaan yksilöllistetty oppimäärä",
+        "sv": "Helt eller i huvudsak individualiserad lärokurs inom den grundläggande utbildningen",
+        "en": "Predominantly or fully individualized basic education syllabus"
+      },
+      "arvo": 6
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen osittain rajattu oppimäärä",
+        "sv": "Delvis avgränsad lärokurs inom den grundläggande utbildningen",
+        "en": "Partially adapted basic education syllabus"
+      },
+      "arvo": 8
+    },
+    {
+      "nimi": {
+        "fi": "Perusopetuksen pääosin tai kokonaan rajattu oppimäärä",
+        "sv": "Helt eller i huvudsak avgränsad lärokurs inom den grundläggande utbildningen",
+        "en": "Predominantly or fully adapted basic education syllabus"
+      },
+      "arvo": 9
+    }
+  ],
+  "arvosanat": [
+    {
+      "arvo": 4
+    },
+    {
+      "arvo": 5
+    },
+    {
+      "arvo": 6
+    },
+    {
+      "arvo": 7
+    },
+    {
+      "arvo": 8
+    },
+    {
+      "arvo": 9
+    },
+    {
+      "arvo": 10
+    }
+  ]
+}

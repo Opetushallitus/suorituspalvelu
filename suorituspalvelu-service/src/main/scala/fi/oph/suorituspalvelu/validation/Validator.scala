@@ -41,7 +41,7 @@ object Validator {
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
-    if (oppijaNumero.isEmpty || oppijaNumero.get.length == 0)
+    if (oppijaNumero.isEmpty || oppijaNumero.get.isEmpty)
       if(pakollinen)
         Set(VALIDATION_OPPIJANUMERO_TYHJA)
       else
@@ -52,7 +52,7 @@ object Validator {
       Set.empty
 
   def validateMuokattujalkeen(aikaleima: Option[String], pakollinen: Boolean): Set[String] =
-    if (aikaleima.isEmpty || aikaleima.get.length == 0)
+    if (aikaleima.isEmpty || aikaleima.get.isEmpty)
       if(pakollinen)
         Set(VALIDATION_MUOKATTUJALKEEN_TYHJA)
       else

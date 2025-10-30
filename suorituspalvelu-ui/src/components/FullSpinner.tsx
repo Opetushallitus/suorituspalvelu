@@ -1,5 +1,10 @@
 import { useTranslations } from '@/hooks/useTranslations';
+import { ophColors, styled } from '@/lib/theme';
 import { CircularProgress } from '@mui/material';
+
+const StyledCircularProgress = styled(CircularProgress)({
+  color: ophColors.blue2,
+});
 
 export const UntranslatedFullSpinner = ({
   ariaLabel,
@@ -21,7 +26,11 @@ export const UntranslatedFullSpinner = ({
         alignItems: 'center',
       }}
     >
-      <CircularProgress aria-label={ariaLabel ?? 'Ladataan...'} />
+      <StyledCircularProgress
+        size={50}
+        thickness={4}
+        aria-label={ariaLabel ?? 'Ladataan...'}
+      />
     </div>
   );
 };

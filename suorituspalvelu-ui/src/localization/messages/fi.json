@@ -4,12 +4,19 @@
   "hae-henkiloa": "Hae henkilöä",
   "oppilaitos": "Oppilaitos",
   "ladataan": "Ladataan...",
+  "ladataan-oppilaitoksia": "Ladataan oppilaitoksia...",
   "kylla": "Kyllä",
   "ei": "Ei",
   "sulje": "Sulje",
   "suoritus": "Suoritus",
+  "peruuta": "Peruuta",
   "select": {
     "valitse": "Valitse..."
+  },
+  "tallentamattomia-muutoksia": {
+    "otsikko": "Tallentamattomia muutoksia",
+    "sisalto": "Olet poistumassa sivulta jolla on tallentamattomia muutoksia. Jatketaanko silti? Tallentamattomat muutokset menetetään.",
+    "jatka": "Jatka"
   },
   "404": {
     "sivua-ei-loytynyt": "Sivua ei löytynyt",
@@ -26,6 +33,68 @@
     "tuntematon": "Tuntematon virhe",
     "virhekoodi": "Virhekoodi",
     "yrita-uudelleen": "Yritä uudelleen"
+  },
+  "backend-virhe": {
+    "oppijanumero": {
+      "tyhja": "Oppijanumero ei saa olla tyhjä!",
+      "ei_validi": "Oppijanumero ei ole validi!"
+    },
+    "oppilaitosoid": {
+      "tyhja": "Oppilaitos ei saa olla tyhjä!",
+      "ei_validi": "Oppilaitoksen OID ei ole validi!"
+    },
+    "hakusana": {
+      "ei_validi": "Hakusana ei ole validi!"
+    },
+    "vuosi": {
+      "tyhja": "Vuosi ei saa olla tyhjä!",
+      "ei_validi": "Vuosi ei ole validi!"
+    },
+    "luokka": {
+      "tyhja": "Luokka ei saa olla tyhjä!",
+      "ei_validi": "Luokka ei ole validi!"
+    },
+    "valmistumispaiva": {
+      "tyhja": "Valmistumispäivä ei saa olla tyhjä!",
+      "ei_validi": "Valmistumispäivä ei ole validi!"
+    },
+    "yksilollistetty": {
+      "tyhja": "Yksilöllistetty ei saa olla tyhjä!",
+      "ei_validi": "Yksilöllistetty ei ole validi!"
+    },
+    "suorituskieli": {
+      "tyhja": "Suorituskieli ei saa olla tyhjä!",
+      "ei_validi": "Suorituskieli ei ole validi!"
+    },
+    "oppiaine": {
+      "tyhja": "Oppiaine ei saa olla tyhjä!",
+      "koodi_tyhja": "Oppiaineen koodi ei saa olla tyhjä!",
+      "koodi.ei_validi": "Oppiaineen koodi ei ole validi!",
+      "kieli": {
+        "maaritelty": "Oppiaineen kieli-oppimäärä on määritelty, vaikka oppiaine ei ole kieli!",
+        "ei_validi": "Oppiaineen kieli ei ole validi!",
+        "ei_maaritelty": "Oppiaineen kieltä ei ole määritelty!"
+      },
+      "valinnaisuus": {
+        "ei_maaritelty": "Oppiaineen valinnaisuutta ei ole määritelty!",
+        "ei_validi": "Oppiaineen valinnaisuus ei ole validi!"
+      },
+      "ai_oppimaara": {
+        "ei_validi": "Äidinkielen oppimäärä ei ole validi!"
+      },
+      "arvosana": {
+        "tyhja": "Arvosana ei saa olla tyhjä!",
+        "ei_validi": "Arvosana ei ole validi!"
+      }
+    },
+    "oppiaineet": {
+      "tyhja": "Oppiaineet ei saa olla tyhjä!",
+      "koodi_tyhja": "Oppiaineiden koodi ei saa olla tyhjä!"
+    },
+    "versiotunniste": {
+      "tyhja": "Suorituksen versiotunniste ei saa olla tyhjä!",
+      "ei_validi": "Suorituksen versiotunniste ei ole validi!"
+    }
   },
   "sivupalkki": {
     "navigaatio": "Henkilövalitsin",
@@ -75,7 +144,7 @@
     "yo-kokeen-tutkintokerta": "Tutkintokerta",
     "arvosana": "Arvosana",
     "oppiaine": "Oppiaine",
-    "valinnainen": "Valinnainen",
+    "valinnainen": "Valinnainen arvosana",
     "eb-written": "Written",
     "eb-oral": "Oral",
     "eb-final": "Final",
@@ -101,7 +170,8 @@
     "lyhenne-yhteensa": "Yht.",
     "syntymaaika": "Syntymäaika",
     "oppijanumero": "Oppijanumero",
-    "henkiloOid": "Henkilö-OID"
+    "henkiloOid": "Henkilö-OID",
+    "lisatieto-kieli": "Lisätieto (oppimäärä)"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",
@@ -113,5 +183,79 @@
   },
   "suoritustapa": {
     "NAYTTOTUTKINTO": "Näyttötutkinto"
+  },
+  "muokkaus": {
+    "suoritus": {
+      "otsikko-lisaa": "Lisää suoritus",
+      "otsikko-muokkaa": "Muokkaa suoritusta",
+      "perusopetus": "Perusopetus",
+      "lisaa": "Lisää suoritus",
+      "tyyppi": "Tyyppi",
+      "oppilaitos": "Oppilaitos",
+      "tila": "Tila",
+      "koulusivistyskieli": "Koulusivistyskieli",
+      "yksilollistetty": "Yksilöllistetty",
+      "valmistumispaiva": "Valmistumispäivä",
+      "suorituskieli": "Suorituskieli",
+      "lisaa-valinnainen": "Lisää arvosana",
+      "tallennetaan": "Tallennetaan suoritusta...",
+      "poistetaan": "Poistetaan suoritusta...",
+      "tallenna": "Tallenna suoritus",
+      "poista": "Poista suoritus",
+      "muokkaa": "Muokkaa suoritusta",
+      "tallennus-onnistui": "Suoritus tallennettiin onnistuneesti!",
+      "tallennus-epaonnistui": "Suorituksen tallennus epäonnistui!",
+      "poisto-onnistui": "Suoritus poistettiin onnistuneesti!",
+      "poisto-epaonnistui": "Suorituksen poisto epäonnistui!",
+      "poisto-vahvistus": "Haluatko varmasti poistaa suorituksen?",
+      "lisaa-uusi-muokattaessa": {
+        "otsikko": "Haluatko keskeyttää suorituksen muokkaamisen?",
+        "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen muokkaamisen ja lisätä uuden suorituksen? Tallentamattomat muutokset menetetään."
+      },
+      "muokkaa-lisattaessa": {
+        "otsikko": "Haluatko keskeyttää suorituksen lisäämisen?",
+        "sisalto": "Uuden suorituksen lisääminen ja olemassaolevan suorituksen muokkaaminen samaan aikaan ei ole mahdollista! Oletko varma, että haluat keskeyttää suorituksen lisäämisen ja muokata suoritusta? Tallentamattomat muutokset menetetään."
+      },
+      "vaihda-suoritusta": {
+        "otsikko": "Haluatko vaihtaa muokattavaa suoritusta?",
+        "sisalto": "Vain yhden suorituksen muokkaaminen kerrallaan on mahdollista. Oletko varma, että haluat keskeyttää suorituksen muokkaamisen ja muokata toista suoritusta? Tallentamattomat muutokset menetetään."
+      },
+      "peruuta-lisays": {
+        "otsikko": "Haluatko peruuttaa suorituksen lisäämisen?",
+        "sisalto": "Oletko varma, että haluat peruuttaa suorituksen lisäämisen? Tallentamattomat muutokset menetetään."
+      },
+      "peruuta-muokkaus": {
+        "otsikko": "Haluatko peruuttaa suorituksen muokkaamisen?",
+        "sisalto": "Oletko varma, että haluat peruuttaa suorituksen muokkaamisen? Tallentamattomat muutokset menetetään."
+      },
+      "luokka": "Luokka",
+      "kieli-label": "Oppimäärä oppiaineelle {oppiaine}",
+      "arvosana-label": "Arvosana oppiaineelle {oppiaine}",
+      "valinnainen-arvosana-label": "Valinnainen arvosana {number} oppiaineelle {oppiaine}",
+      "arvosana-placeholder": "-",
+      "oppiaine-placeholder": "-"
+    },
+    "tallenna": "Tallenna",
+    "poista": "Poista"
+  },
+  "yksilollistetty": {
+    "kylla": "Kyllä",
+    "ei": "Ei"
+  },
+  "arvosana": {
+    "hyvaksytty": "Hyväksytty",
+    "ei-arvosanaa": "Ei arvosanaa"
+  },
+  "kieli": {
+    "suomi": "suomi",
+    "ruotsi": "ruotsi",
+    "englanti": "englanti",
+    "muu": "muu",
+    "FI": "suomi",
+    "SV": "ruotsi",
+    "EN": "englanti"
+  },
+  "datepicker": {
+    "placeholder": "pp.kk.vvvv"
   }
 }

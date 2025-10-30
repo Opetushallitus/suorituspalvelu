@@ -34,7 +34,7 @@ object DevApp {
     System.setProperty("cas-service.sendRenew", "false")
     System.setProperty("cas-service.key", "suorituspalvelu")
 
-    val virkailijaDomain = sys.env.getOrElse("VIRKAILIJA_DOMAIN", "virkailija.untuvapintopolku.fi")
+    val virkailijaDomain = sys.env.getOrElse("VIRKAILIJA_DOMAIN", "virkailija.untuvaopintopolku.fi")
     val virkailijaBaseUrl = s"https://$virkailijaDomain"
     val virkailijaCasUrl = s"$virkailijaBaseUrl/cas"
     System.setProperty("web.url.cas-login", sys.env.getOrElse("CAS_LOGIN_URL", s"$virkailijaCasUrl/login"))

@@ -2,7 +2,7 @@ import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import type { VapaaSivistystyoSuoritus } from '@/types/ui-types';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 import { useTranslations } from '@/hooks/useTranslations';
 
 export const VapaaSivistystyoSuoritusPaper = ({

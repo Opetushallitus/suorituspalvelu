@@ -342,15 +342,17 @@ export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-    await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
+    await expect(paper.getByLabel('Yksilöllistetty')).toHaveText(
+      'Perusopetuksen osittain yksilöllistetty oppimäärä',
+    );
 
     const oppiaineetTable = paper.getByRole('table');
     await checkTable(oppiaineetTable, [
-      ['Oppiaine', 'Arvosana', 'Valinnainen'],
+      ['Oppiaine', 'Arvosana', 'Valinnainen arvosana'],
       ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9', ''],
       ['A1-kieli, englanti', '9', ''],
       ['B1-kieli, ruotsi', '9', ''],
-      ['B2-kieli, saksa', '9', ''],
+      ['B2-kieli, saksa', '', '9'],
       ['Matematiikka', '9', ''],
       ['Biologia', '9', ''],
       ['Maantieto', '9', ''],
@@ -373,7 +375,6 @@ export const PERUSOPETUKSEN_OPPIMAARA_78LUOKKA_SUORITUS: SuoritusSpec = {
   additionalChecks: async (paper) => {
     await expect(paper.getByLabel('Koulusivistyskieli')).toHaveText('suomi');
     await expect(paper.getByLabel('Luokka')).toHaveText('9A');
-    await expect(paper.getByLabel('Yksilöllistetty')).toHaveText('Ei');
   },
 };
 

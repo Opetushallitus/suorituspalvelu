@@ -141,6 +141,7 @@ object ApiConstants {
   final val ESIMERKKI_YKSILOLLISTAMINEN                     = "1"
   final val ESIMERKKI_VIERAS_KIELI_KIELIKOODI               = "DE"
   final val ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA    = "9"
+  final val ESIMERKKI_TILA                                  = "KESKEN"
   final val ESIMERKKI_VALMISTUMISPAIVA                      = "2016-06-01"
   final val ESIMERKKI_VUOSI                                 = "2025"
   final val ESIMERKKI_LUOKKA                                = "9B"

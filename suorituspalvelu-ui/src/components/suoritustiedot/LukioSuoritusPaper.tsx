@@ -9,10 +9,10 @@ import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { SuorituksenPerustiedotIndicator } from './SuorituksenPerustiedotIndicator';
 import { useTranslations } from '@/hooks/useTranslations';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 import { styled } from '@/lib/theme';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { StripedTable } from './StripedTable';
+import { StripedTable } from '../StripedTable';
 import { isEmpty } from 'remeda';
 import { pointToComma, formatFinnishDate } from '@/lib/common';
 

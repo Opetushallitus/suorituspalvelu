@@ -13,7 +13,7 @@ import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
-import io.swagger.v3.oas.annotations.media.{Content, Schema}
+import io.swagger.v3.oas.annotations.media.{ArraySchema, Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
@@ -56,7 +56,10 @@ class DataSyncResource {
     description = "Huomioita:\n" +
       "- Huomio 1",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = Array(new Content(schema = new Schema(implementation = classOf[Array[String]])))),
+      content = Array(new Content(
+        mediaType = MediaType.APPLICATION_JSON_VALUE,
+        array = new ArraySchema(schema = new Schema(implementation = classOf[String]))
+      ))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),

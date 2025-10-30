@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
-import { LabeledInfoItem } from './LabeledInfoItem';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 import {
   type SuorituksenPerustiedot,
   type SuorituksenTila,
@@ -40,7 +40,7 @@ const SuorituksenTilaIndicator = ({ tila }: { tila: SuorituksenTila }) => {
 const ValmistumispaivaIndicator = ({
   valmistumispaiva,
 }: {
-  valmistumispaiva?: Date;
+  valmistumispaiva?: string;
 }) => {
   return (
     <OphTypography>
@@ -74,7 +74,7 @@ export const SuorituksenPerustiedotIndicator = ({
       {perustiedot.suorituskieli && (
         <LabeledInfoItem
           label={t('oppija.suorituskieli')}
-          value={perustiedot.suorituskieli}
+          value={t(`kieli.${perustiedot.suorituskieli}`)}
         />
       )}
     </Stack>

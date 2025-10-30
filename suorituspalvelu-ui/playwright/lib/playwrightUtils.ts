@@ -3,17 +3,32 @@ import { isFunction } from 'remeda';
 
 export async function selectOption({
   page,
-  locator,
   name,
   option,
+  locator,
+  exactOption,
 }: {
   page: Page;
-  name?: string;
+  name: string;
   option: string;
   locator?: Locator;
+  exactOption?: boolean;
 }) {
-  const combobox = (locator ?? page).getByRole(
-    'combobox',
+  const combobox = (locator ?? page)
+    .getByRole('combobox', {
+      name: new RegExp(`^${name}`),
+    })
+    .or(
+      (locator ?? page)
+        .getByLabel(new RegExp(`^${name}`))
+        .filter({ has: page.getByRole('combobox') }),
+    );
+
+  await combobox.click();
+
+  // Selectin listbox rendataan juuritasolle
+  const listbox = page.getByRole(
+    'listbox',
     name
       ? {
           name: new RegExp(`^${name}`),
@@ -21,12 +36,9 @@ export async function selectOption({
       : {},
   );
 
-  await combobox.click();
-
-  // Selectin listbox rendataan juuritasolle
-  const listbox = page.locator('#select-menu').getByRole('listbox');
-
-  await listbox.getByRole('option', { name: option, exact: true }).click();
+  await listbox
+    .getByRole('option', { name: option, exact: exactOption ?? true })
+    .click();
 }
 
 export const checkRow = async (
@@ -68,4 +80,41 @@ export const expectList = async (list: Locator, items: Array<string>) => {
   for (let i = 0; i < items.length; i++) {
     await expect(list.nth(i)).toHaveText(items[i] as string);
   }
+};
+
+export const startEditSuoritus = async (page: Page) => {
+  await expect(
+    page.getByRole('heading', { name: 'Suoritukset' }),
+  ).toBeVisible();
+
+  await page
+    .getByRole('button', { name: 'Muokkaa suoritusta' })
+    .first()
+    .click();
+
+  const region = page.getByRole('region', { name: 'Muokkaa suoritusta' });
+  await expect(region).toBeVisible();
+  return region;
+};
+
+export const selectDateInDatePicker = async (picker: Locator, date: string) => {
+  await picker.getByRole('textbox').fill(date);
+};
+
+export const startAddSuoritus = async (page: Page) => {
+  await expect(
+    page.getByRole('heading', { name: 'Suoritukset' }),
+  ).toBeVisible();
+
+  const addButton = page.getByRole('button', { name: 'Lisää suoritus' });
+  await addButton.click();
+
+  const lisaaSuoritusForm = page.getByRole('region', {
+    name: 'Lisää suoritus',
+  });
+  await expect(
+    lisaaSuoritusForm.getByRole('heading', { name: 'Lisää suoritus' }),
+  ).toBeVisible();
+
+  return lisaaSuoritusForm;
 };

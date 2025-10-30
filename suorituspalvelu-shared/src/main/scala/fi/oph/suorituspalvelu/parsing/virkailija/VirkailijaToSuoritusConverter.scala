@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaineenOppim
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 
 import java.time.LocalDate
-import java.util.{Optional, UUID}
+import java.util.UUID
 import scala.jdk.OptionConverters.*
 import scala.jdk.CollectionConverters.*
 
@@ -49,9 +49,9 @@ object VirkailijaToSuoritusConverter {
             ),
             suoritus.oppilaitosOid.get
           )).get,
-          None,
+          suoritus.luokka.toScala,
           Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), // syötetään vain valmistuneita suorituksia
-          SuoritusTila.VALMIS,
+          SuoritusTila.valueOf(suoritus.tila.get),
           Koodi(suoritus.suorituskieli.get, "kieli", Some(1)),
           Set(Koodi(suoritus.suorituskieli.get, "kieli", Some(1))),
           suoritus.yksilollistetty.toScala,
@@ -62,7 +62,7 @@ object VirkailijaToSuoritusConverter {
             toOppiaineenNimi(oppiaine.koodi.get, koodistoProvider),
             oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
             oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-            suoritus.suorituskieli.toScala.map(k => Koodi(k, "kieli", None)),
+            oppiaine.kieli.toScala.map(k => Koodi(k, if ("AI".equals(oppiaine.koodi.get())) "oppiaineaidinkielijakirjallisuus" else "kielivalikoima", None)),
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None

@@ -529,6 +529,7 @@ class EntityToUIConverterTest {
       )),
       oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaine(
         tunniste = aine.tunniste,
+        koodi = aine.koodi.arvo,
         nimi = PerusopetuksenOppiaineNimi(
           aine.nimi.fi.toJava,
           aine.nimi.sv.toJava,
@@ -537,7 +538,8 @@ class EntityToUIConverterTest {
         kieli = aine.kieli.map(_.arvo).toJava,
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
-      )).toList.asJava
+      )).toList.asJava,
+      syotetty = true
     )), EntityToUIConverter.getOppijanTiedot("1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).get.perusopetuksenOppimaarat)
   }
 
