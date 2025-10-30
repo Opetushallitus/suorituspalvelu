@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import scala.collection.immutable
 
+class UseitaVahvistettujaOppimaariaException(val message: String) extends RuntimeException(message)
+
 //Opiskeluoikeudet sisältävät kaiken lähdedatan, käyttö nykyisellään vain debug-tarkoituksiin.
 case class AvainArvoConverterResults(personOid: String,
                                      containers: Set[AvainArvoContainer],
@@ -312,7 +314,7 @@ object AvainArvoConverter {
 
     if (vahvistetut.size > 1) {
       LOG.error(s"Oppijalle $personOid enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
-      throw new RuntimeException(s"Oppijalle $personOid löytyy enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
+      throw new UseitaVahvistettujaOppimaariaException(s"Oppijalle $personOid enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
     }
 
     val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.headOption
