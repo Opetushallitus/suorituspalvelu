@@ -43,6 +43,19 @@ case class YtrSyncFailureResponse(
   @(Schema @field)(example = VIRTA_DATASYNC_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
 
+case class VirtaPaivitaTiedotHaullePayload(
+  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOid: Optional[String]) {
+
+  def this() = this(Optional.empty())
+}
+
+case class VirtaPaivitaTiedotHenkilollePayload(
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOid: Optional[String]) {
+
+  def this() = this(Optional.empty())
+}
 
 case class KoskiPaivitaTiedotHaullePayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)

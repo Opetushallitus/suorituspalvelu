@@ -3,8 +3,8 @@ package fi.oph.suorituspalvelu.resource
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, VIRTA_DATASYNC_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
-import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YtrSyncFailureResponse, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_PATH}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE
 import fi.oph.suorituspalvelu.resource.ui.{LuoPerusopetuksenOppimaaraFailureResponse, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
@@ -31,7 +31,9 @@ import scala.jdk.OptionConverters.*
 @RestController
 @Tag(
   name = "Manuaalinen tietojen päivitys",
-  description = "Manuaalinen datan haku lähdejärjestelmistä")
+  description = "Tietojen päivitys KOSKI-, VIRTA-, ja YRT-järjestelmissä tapahtuu SUPAssa lähtökohtaiseksi automaattisesti, " +
+    "perustuen joko muuttuneiden tietojen pollaamiseen lähdejärjestelmistä, tai eräajoihin. Nämä rajapinnat tarjoavat " +
+    "kuitenkin mahdollisuuden tehdä tietojen päivitys manuaalisesti virheiden selvittämistä tai korjaamista varten.")
 class DataSyncResource {
 
   val LOG = LoggerFactory.getLogger(classOf[DataSyncResource])
@@ -56,7 +58,8 @@ class DataSyncResource {
     description = "SUPA seuraa KOSKI-tietoihin tapahtuvia muutoksia, ja tietojen päivitys SUPAan tapahtuu normaalisti\n" +
       "näiden muutosten seurauksena. Tämän endpointin avulla päivitys on kuitenkin mahdollista tehdä manuaalisesti esim.\n" +
       "virheiden selvittämistä tai nopeaa korjaamista varten.",
-    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[KoskiPaivitaTiedotHenkiloillePayload])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa listan henkilöOideista joille päivitys onnistui ja listan virheistä",
@@ -122,7 +125,8 @@ class DataSyncResource {
     description = "SUPA seuraa KOSKI-tietoihin tapahtuvia muutoksia, ja tietojen päivitys SUPAan tapahtuu normaalisti\n" +
       "näiden muutosten seurauksena. Tämän endpointin avulla päivitys on kuitenkin mahdollista tehdä manuaalisesti esim.\n" +
       "virheiden selvittämistä tai nopeaa korjaamista varten.",
-    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[KoskiPaivitaTiedotHaullePayload])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
@@ -185,6 +189,7 @@ class DataSyncResource {
       "Tämän endpointin avulla päivitys on kuitenkin mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai " +
       "nopeaa korjaamista varten, tai kun tietoja ladataan SUPAan ensimmäistä kertaa.",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[KoskiHaeMuuttuneetJalkeenPayload])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
@@ -244,6 +249,7 @@ class DataSyncResource {
     description = "KOSKI-järjestelmä tuo massaluovutusrajanpintaan tehtyjen kyselyiden tulokset saataville tiedostoina. " +
       "Mikäli yksittäisten tiedostojen prosessointi epäonnistuu, niitä voi yrittää uudestaan tämän rajapinnan kautta.",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[KoskiRetryPayload])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
@@ -297,24 +303,26 @@ class DataSyncResource {
   }
 
   @PostMapping(
-    path = Array(VIRTA_DATASYNC_PATH),
+    path = Array(VIRTA_DATASYNC_HENKILO_PATH),
     consumes = Array(MediaType.ALL_VALUE),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
     summary = "Päivittää yksittäisen oppijan tiedot Virrasta",
-    description = "Huomioita:\n" +
-      "- Huomio 1",
-    parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH)),
+    description = "Tietojen päivitys SUPAan tapahtuu normaalisti eräajolla. Tämän endpointin avulla päivitys on kuitenkin " +
+      "mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      content = Array(new Content(schema = new Schema(implementation = classOf[VirtaPaivitaTiedotHenkilollePayload])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse]))))
     ))
-  def paivitaVirtaTiedot(@PathVariable(VIRTA_DATASYNC_PARAM_NAME) oppijaNumero: String, @RequestParam(name = "hetu", required = false) hetu: String, request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+  def paivitaVirtaTiedotHenkilolle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
-      LogContext(path = VIRTA_DATASYNC_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      LogContext(path = VIRTA_DATASYNC_HENKILO_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
@@ -323,17 +331,25 @@ class DataSyncResource {
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
           .flatMap(_ =>
+            // deserialisoidaan
+            try
+              Right(objectMapper.readValue(bytes, classOf[VirtaPaivitaTiedotHenkilollePayload]).henkiloOid.toScala)
+            catch
+              case e: Exception =>
+                LOG.error("parametrin deserialisointi KOSKI-tietojen päivittämisessä henkilöille epäonnistui", e)
+                Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
+          .flatMap(henkiloOid =>
             // validoidaan parametri
-            val virheet = Validator.validateOppijanumero(Some(oppijaNumero), true)
+            val virheet = Validator.validateOppijanumero(henkiloOid, true)
             if (virheet.isEmpty)
-              Right(None)
+              Right(henkiloOid.get)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
-          .map(_ =>
+          .map(henkiloOid =>
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map(VIRTA_DATASYNC_PARAM_NAME -> oppijaNumero), AuditOperation.PaivitaVirtaTiedot, None)
-            LOG.info(s"Haetaan Virta-tiedot henkilölle ${oppijaNumero}")
-            val jobId = virtaService.syncVirta(oppijaNumero, Option.apply(hetu))
+            AuditLog.log(user, Map("henkiloOid" -> henkiloOid), AuditOperation.PaivitaVirtaTiedot, None)
+            LOG.info(s"Haetaan Virta-tiedot henkilölle ${henkiloOid}")
+            val jobId = virtaService.syncVirta(henkiloOid)
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
             ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId)))
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
@@ -349,18 +365,18 @@ class DataSyncResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Hakee haun hakijoiden tiedot Virrasta",
-    description = "Huomioita:\n" +
-      "- Huomio 1",
+    summary = "Päivittää yksittäisen haun tiedot Virrasta",
+    description = "Tietojen päivitys SUPAan tapahtuu normaalisti eräajolla. Tämän endpointin avulla päivitys on kuitenkin " +
+      "mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
-      content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
+      content = Array(new Content(schema = new Schema(implementation = classOf[VirtaPaivitaTiedotHaullePayload])))),
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa VersioEntiteettejä (tulevaisuudessa jotain muuta?)"),
-      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+      new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse]))))
     ))
-  def paivitaVirtaTiedotHaulle(@RequestBody hakuOid: Optional[String], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+  def paivitaVirtaTiedotHaulle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
     LogContext(path = VIRTA_DATASYNC_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
       Right(None)
@@ -371,17 +387,25 @@ class DataSyncResource {
           else
             Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
         .flatMap(_ =>
+          // deserialisoidaan
+          try
+            Right(objectMapper.readValue(bytes, classOf[VirtaPaivitaTiedotHaullePayload]).hakuOid.toScala)
+          catch
+            case e: Exception =>
+              LOG.error("parametrin deserialisointi KOSKI-tietojen päivittämisessä haulle epäonnistui", e)
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
+        .flatMap(hakuOid =>
           // validoidaan parametri
-          val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
+          val virheet = Validator.validateHakuOid(hakuOid, true)
           if (virheet.isEmpty)
-            Right(None)
+            Right(hakuOid.get)
           else
             Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
-        .map(_ => {
+        .map(hakuOid => {
           val user = AuditLog.getUser(request)
-          AuditLog.log(user, Map("hakuOid" -> hakuOid.get), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, None)
+          AuditLog.log(user, Map("hakuOid" -> hakuOid), AuditOperation.PaivitaVirtaTiedotHaunHakijoille, None)
           LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
-          val jobId = virtaService.syncVirtaForHaku(hakuOid.get)
+          val jobId = virtaService.syncVirtaForHaku(hakuOid)
           LOG.info(s"Palautetaan rajapintavastaus, $jobId")
           ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId))
         })
@@ -394,7 +418,7 @@ class DataSyncResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Hakee tiedot Ylioppilastutkintorekisteristä",
+    summary = "Päivittää tiedot Ylioppilastutkintorekisteristä",
     description = "Huomioita:\n" +
       "- Huomio 1",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -442,7 +466,7 @@ class DataSyncResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Hakee haun hakijoiden tiedot Ylioppilastutkintorekisteristä",
+    summary = "Päivittää haun hakijoiden tiedot Ylioppilastutkintorekisteristä",
     description = "Huomioita:\n" +
       "- Huomio 1",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(

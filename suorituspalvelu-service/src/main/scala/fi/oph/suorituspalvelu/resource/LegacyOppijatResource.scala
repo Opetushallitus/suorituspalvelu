@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, KantaOperaatiot, YOOpiskeluoikeus, YOTutkinto}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, HEALTHCHECK_PATH, LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_OPPIJAT_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH, VIRTA_DATASYNC_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, HEALTHCHECK_PATH, LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME, LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME, LEGACY_OPPIJAT_HAKU_PARAM_NAME, LEGACY_OPPIJAT_PATH, LEGACY_SUORITUKSET_HAKU_EPAONNISTUI, LEGACY_SUORITUKSET_HENKILO_PARAM_NAME, LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN, LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME, LEGACY_SUORITUKSET_PATH}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{Komot, LegacyOppijatService}
 import fi.oph.suorituspalvelu.util.LogContext
@@ -60,8 +60,7 @@ class LegacyOppijatResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @Operation(
     summary = "Tuottaa valintalaskennalle oppijan tiedot",
-    description = "Valintalaskentakoostepalvelua varten tehty korvike suoritusrekisterin /rest/v1/oppijat-rajapinnalle jota hakemuspalvelu käyttää valintalaskennan lähtötietojen hakuun",
-    parameters = Array(new Parameter(name = VIRTA_DATASYNC_PARAM_NAME, in = ParameterIn.PATH))
+    description = "Valintalaskentakoostepalvelua varten tehty korvike suoritusrekisterin /rest/v1/oppijat-rajapinnalle jota hakemuspalvelu käyttää valintalaskennan lähtötietojen hakuun"
   )
   @ApiResponses(value = Array(
     new ApiResponse(responseCode = "200", description = "Palauttaa oppijat", content = Array(new Content(schema = new Schema(implementation = classOf[LegacyOppija])))),
