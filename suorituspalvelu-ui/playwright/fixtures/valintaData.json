@@ -1,0 +1,632 @@
+{
+  "henkiloOID": "1.2.246.562.24.90405945327",
+  "hakuOID": null,
+  "avainArvot": [
+    {
+      "avain": "PERUSKOULU_ARVOSANA_B2",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_TE",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_B1_OPPIAINEEN_KIELI",
+      "arvo": "SV",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_KE",
+      "arvo": "7",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_A1_OPPIAINEEN_KIELI",
+      "arvo": "EN",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_AI",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "lisapistekoulutus_telma",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": ["Ei löytynyt lainkaan Telma-suoritusta."],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "ammatillinen_suoritettu",
+      "arvo": "true",
+      "metadata": {
+        "selitteet": [
+          "Löytyi yhteensä 1 ammatillista suoritusta. Näistä 1 oli vahvistettu viimeistään 2055-01-01. Vahvistuspäivät: 2016-08-30"
+        ],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_YH",
+      "arvo": "10",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_MA",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_AOM",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "perusopetuksen_kieli",
+      "arvo": "FI",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_FY",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "lisapistekoulutus_opisto",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": ["Ei löytynyt lainkaan Opistovuosi-suoritusta."],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_B1",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_KO",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_AI_OPPIAINEEN_KIELI",
+      "arvo": "AI1",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "lukio_suoritettu",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": [
+          "Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
+        ],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_B2_OPPIAINEEN_KIELI",
+      "arvo": "DE",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "yo_tutkinto_suoritettu",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": ["Löytyi yhteensä 0 YO-opiskeluoikeutta."],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "peruskoulu_suoritusvuosi",
+      "arvo": "2016",
+      "metadata": {
+        "selitteet": [
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+        ],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_MU",
+      "arvo": "7",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "perustutkinto_suoritettu",
+      "arvo": "true",
+      "metadata": {
+        "selitteet": [
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+        ],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_LI",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_KT",
+      "arvo": "10",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_BI",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_A1",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_AOM_OPPIAINEEN_KIELI",
+      "arvo": "FI",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_GE",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_KS",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_KU",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PERUSKOULU_ARVOSANA_HI",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_B2",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_TE",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_B1_OPPIAINE",
+      "arvo": "SV",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_KE",
+      "arvo": "7",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_A1_OPPIAINE",
+      "arvo": "EN",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_AI",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "LISAKOULUTUS_TELMA",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": ["Ei löytynyt lainkaan Telma-suoritusta."],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "AM_TILA",
+      "arvo": "true",
+      "metadata": {
+        "selitteet": [
+          "Löytyi yhteensä 1 ammatillista suoritusta. Näistä 1 oli vahvistettu viimeistään 2055-01-01. Vahvistuspäivät: 2016-08-30"
+        ],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_YH",
+      "arvo": "10",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_MA",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_AOM",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_FY",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "LISAKOULUTUS_OPISTO",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": ["Ei löytynyt lainkaan Opistovuosi-suoritusta."],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_B1",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_KO",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_AI_OPPIAINE",
+      "arvo": "AI1",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "LK_TILA",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": [
+          "Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
+        ],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_B2_OPPIAINE",
+      "arvo": "DE",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "YO_TILA",
+      "arvo": "false",
+      "metadata": {
+        "selitteet": ["Löytyi yhteensä 0 YO-opiskeluoikeutta."],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_SUORITUSVUOSI",
+      "arvo": "2016",
+      "metadata": {
+        "selitteet": [
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+        ],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_MU",
+      "arvo": "7",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_TILA",
+      "arvo": "true",
+      "metadata": {
+        "selitteet": [
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+        ],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_LI",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_BI",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_A1",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_GE",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_KS",
+      "arvo": "9",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_KU",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    },
+    {
+      "avain": "PK_ARVOSANA_HI",
+      "arvo": "8",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": true,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null
+      }
+    }
+  ]
+}
