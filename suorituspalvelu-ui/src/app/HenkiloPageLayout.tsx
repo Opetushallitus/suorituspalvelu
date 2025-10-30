@@ -10,6 +10,7 @@ import { useOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusManagerProvider } from '@/lib/suoritusManager';
 import { TiedotTabNavi } from '@/components/TiedotTabNavi';
 import { Outlet } from 'react-router';
+import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -52,7 +53,9 @@ export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
           </Stack>
         </Stack>
         <TiedotTabNavi />
-        <Outlet />
+        <QuerySuspenseBoundary>
+          <Outlet />
+        </QuerySuspenseBoundary>
       </Stack>
     </SuoritusManagerProvider>
   );
