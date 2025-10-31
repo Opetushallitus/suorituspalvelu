@@ -39,7 +39,21 @@ class UIValidatorTest {
     Assertions.assertEquals(Set.empty, UIValidator.validateOppilaitosOid(Some(ApiConstants.ESIMERKKI_OPPILAITOS_OID), true))
   }
 
-  // oppilaitosoid
+  // hakuoid
+  @Test def testValidateHakuOidRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_HAKUOID_TYHJA), UIValidator.validateHakuOid(None, true))
+  }
+
+  @Test def testValidateHakuOidInvalid(): Unit = {
+    val oppilaitosOid = "tämä ei ole validi hakuOid"
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_HAKUOID_EI_VALIDI), UIValidator.validateHakuOid(Some(oppilaitosOid), true))
+  }
+
+  @Test def testValidateHakuOidValid(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validateHakuOid(Some(ApiConstants.ESIMERKKI_HAKU_OID), true))
+  }
+
+  // vuosi
   @Test def testValidateVuosiRequiredMissing(): Unit = {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_VUOSI_TYHJA), UIValidator.validateVuosi(None, true))
   }

@@ -33,7 +33,8 @@ import scala.jdk.OptionConverters.*
   name = "Manuaalinen tietojen päivitys",
   description = "Tietojen päivitys KOSKI-, VIRTA-, ja YRT-järjestelmissä tapahtuu SUPAssa lähtökohtaiseksi automaattisesti, " +
     "perustuen joko muuttuneiden tietojen pollaamiseen lähdejärjestelmistä, tai eräajoihin. Nämä rajapinnat tarjoavat " +
-    "kuitenkin mahdollisuuden tehdä tietojen päivitys manuaalisesti virheiden selvittämistä tai korjaamista varten.")
+    "kuitenkin mahdollisuuden tehdä tietojen päivitys manuaalisesti virheiden selvittämistä tai korjaamista " +
+    "varten. Vain rekisterinpitäjällä on pääsy näihin rajapintoihin.")
 class DataSyncResource {
 
   val LOG = LoggerFactory.getLogger(classOf[DataSyncResource])

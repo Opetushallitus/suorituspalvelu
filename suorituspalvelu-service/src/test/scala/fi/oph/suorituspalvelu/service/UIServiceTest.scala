@@ -1,10 +1,10 @@
-package fi.oph.suorituspalvelu.ui
+package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuSuccessResponse}
@@ -13,8 +13,8 @@ import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.{Assertions, Test}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -27,13 +27,13 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
   @Autowired var uiService: UIService = null
 
-  @MockBean
+  @MockitoBean
   val onrIntegration: OnrIntegration = null
 
-  @MockBean
+  @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
-  @MockBean
+  @MockitoBean
   var organisaatioProvider: OrganisaatioProvider = null
 
   val OPPIJANUMERO_YSI_KESKEN             = "1.2.246.562.24.21583363334"

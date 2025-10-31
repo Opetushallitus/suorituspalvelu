@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus}
-import fi.oph.suorituspalvelu.ui.UIService.*
+import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern}
+import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -21,6 +21,8 @@ object UIValidator {
   final val VALIDATION_OPPIJANUMERO_EI_VALIDI     = "backend-virhe.oppijanumero.ei_validi"
   final val VALIDATION_OPPILAITOSOID_TYHJA        = "backend-virhe.oppilaitosoid.tyhja"
   final val VALIDATION_OPPILAITOSOID_EI_VALIDI    = "backend-virhe.oppilaitosoid.ei_validi"
+  final val VALIDATION_HAKUOID_TYHJA              = "backend-virhe.hakuoid.tyhja"
+  final val VALIDATION_HAKUOID_EI_VALIDI          = "backend-virhe.hakuoid.ei_validi"
   final val VALIDATION_HAKUSANA_TYHJA             = "backend-virhe.hakusana.tyhja"
   final val VALIDATION_HAKUSANA_EI_VALIDI         = "backend-virhe.hakusana.ei_validi"
   final val VALIDATION_VUOSI_TYHJA                = "backend-virhe.vuosi.tyhja"
@@ -47,8 +49,6 @@ object UIValidator {
   final val VALIDATION_ARVOSANA_EI_VALIDI         = "backend-virhe.oppiaine.arvosana.ei_validi"
   final val VALIDATION_VERSIOTUNNISTE_TYHJA       = "backend-virhe.versiotunniste.tyhja"
   final val VALIDATION_VERSIOTUNNISTE_EI_VALIDI   = "backend-virhe.versiotunniste.ei_validi"
-
-  val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
@@ -89,6 +89,15 @@ object UIValidator {
       Set(VALIDATION_OPPILAITOSOID_TYHJA)
     else if (oppilaitosOid.isDefined && !oppilaitosOidPattern.matches(oppilaitosOid.get))
       Set(VALIDATION_OPPILAITOSOID_EI_VALIDI)
+    else
+      Set.empty
+  }
+
+  def validateHakuOid(hakuOid: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (hakuOid.isEmpty || hakuOid.get.isEmpty))
+      Set(VALIDATION_HAKUOID_TYHJA)
+    else if (hakuOid.isDefined && !hakuOidPattern.matches(hakuOid.get))
+      Set(VALIDATION_HAKUOID_EI_VALIDI)
     else
       Set.empty
   }
