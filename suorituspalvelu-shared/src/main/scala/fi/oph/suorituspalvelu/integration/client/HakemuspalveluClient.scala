@@ -33,9 +33,13 @@ case class AtaruPermissionResponse(accessAllowed: Option[Boolean] = None,
 
 case class AtaruHautRequest(hakijaOids: Seq[String])
 
-case class AtaruHautResponseApplication(personOid: String, applicationSystemId: String)
+//Todo Nämä tiedot haetaan nyt sellaisesta atarun rajapinnasta, joka palauttaa muutakin tietoa.
+//Suorituskykyä voisi parantaa luomalla ataruun rajapinnan, joka palauttaa vain nämä minimitiedot. Kts. OPHSUPA-121
+case class AtaruHakemusBaseFields(oid: String, //hakemusOid
+                                  personOid: String,
+                                  applicationSystemId: String)
 
-case class AtaruHautResponse(applications: Seq[AtaruHautResponseApplication])
+case class AtaruHakemusBaseFieldsResponse(applications: Seq[AtaruHakemusBaseFields])
 
 case class AtaruValintalaskentaHakemus(
                         hakemusOid: String,
@@ -64,6 +68,7 @@ trait HakemuspalveluClient {
   def checkPermission(permissionRequest: AtaruPermissionRequest): Future[AtaruPermissionResponse]
   def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]]
   def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty): Future[Seq[AtaruValintalaskentaHakemus]]
+  def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
 }
 
 class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
@@ -114,17 +119,30 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
     })
   }
 
-  override def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]] = {
-    if(oppijaOids.isEmpty)
+  def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]] = {
+    if (oppijaOids.isEmpty)
       Future.successful(Map.empty)
     else {
       // Atarun rajapinta on sivuttava, tällä hetkellä palauttaa 1000 kerrallaan. Laitetaan oma raja defensiivisesti
       // neljäsosaan tästä ja tehdään kutsut peräjälkeen -
       val (head, rest) = oppijaOids.splitAt(250)
-      doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri", AtaruHautRequest(head)).map(data => mapper.readValue(data, classOf[AtaruHautResponse]))
-        .map(response => response.applications.groupBy(_.personOid).map(a => a._1 -> a._2.map(_.applicationSystemId)))
-        .flatMap(headResult => getHenkilonHaut(rest).map(restResult => headResult ++ restResult))
+      doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri", AtaruHautRequest(head))
+        .map(data => mapper.readValue(data, classOf[AtaruHakemusBaseFieldsResponse]))
+        .map(response => {
+          response.applications.groupBy(_.personOid)
+        })
+        .flatMap(headResult =>
+          getHenkiloidenHakemustenTiedot(rest).map(restResult => headResult ++ restResult)
+        )
     }
+  }
+
+  override def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]] = {
+    getHenkiloidenHakemustenTiedot(oppijaOids).map(hakemuksetHenkiloittain => {
+      hakemuksetHenkiloittain.map((personOid, hakemukset) => {
+        personOid -> hakemukset.map(_.applicationSystemId).distinct
+      })
+    })
   }
 
   //Harkinnanvaraisuustiedot ovat tarpeellisia vain toisen asteen hauille
