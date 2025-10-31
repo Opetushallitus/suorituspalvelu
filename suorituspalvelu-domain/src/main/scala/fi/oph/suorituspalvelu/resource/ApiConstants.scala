@@ -58,17 +58,6 @@ object ApiConstants {
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
 
-  final val LEGACY_SUORITUKSET_HENKILO_PARAM_NAME           = "henkilo"
-  final val LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME  = "muokattuJalkeen"
-  final val LEGACY_SUORITUKSET_PATH                         = VERSIONED_API_PREFIX + "/suoritukset/legacy"
-  final val LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN  = "Joko henkilö tai muokattuJalkeen parametri pitää olla määritelty"
-  final val LEGACY_SUORITUKSET_HAKU_EPAONNISTUI             = "YO tai ammatillisten tutkintojen haku epäonnistui"
-
-  final val LEGACY_OPPIJAT_HAKU_PARAM_NAME                  = "haku"
-  final val LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME             = "hakukohde"
-  final val LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME    = "ensikertalaisuudet"
-  final val LEGACY_OPPIJAT_PATH                             = VERSIONED_API_PREFIX + "/oppijat/legacy"
-
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_NAME               = "oppijaNumero"
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER        = "{" + UI_TIEDOT_OPPIJANUMERO_PARAM_NAME + "}"
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot/" + UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER
@@ -135,7 +124,6 @@ object ApiConstants {
   final val ESIMERKKI_OPPIJANIMI                            = "Olli Oppija"
   final val ESIMERKKI_HETU                                  = "010296-1230"
   final val ESIMERKKI_SYNTYMAIKA                            = "2030-01-01"
-  final val ESIMERKKI_LEGACY_SUORITUSKIELI                  = "fi"
   final val ESIMERKKI_SUORITUSKIELI                         = "FI"
   final val ESIMERKKI_OPPIAINEKOODI                         = "HI"
   final val ESIMERKKI_YKSILOLLISTAMINEN                     = "1"
