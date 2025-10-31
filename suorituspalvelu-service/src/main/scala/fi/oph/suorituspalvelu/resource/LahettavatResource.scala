@@ -24,7 +24,8 @@ import scala.jdk.OptionConverters.*
 @RestController
 @Tag(
   name = "Organisaation rajaimet",
-  description = "Rajapinnat joiden avulla voidaan rajata 2. asteen hakijoihin kohdistuvia hakuja")
+  description = "Hakemuspalvelun tarpeeseen rakennettuja rajapintoja, joiden avulla voidaan rajata hakemuspalvelussa 2. " +
+    "asteen hakijoihin kohdistuvia hakuja")
 class LahettavatResource {
 
   val LOG = LoggerFactory.getLogger(classOf[LahettavatResource])
@@ -37,14 +38,16 @@ class LahettavatResource {
   )
   @Operation(
     summary = "Hakee listan oppilaitoksen luokista joilla on mahdollisia 2. asteen hakijoita",
-    description = "Lista sisältää haetun oppilaitoksen luokat joilla on mahdollisia 2. asteen hakijoita",
+    description = "Hakemuspalvelun käyttöliittymän hakemusten haun rajaimet sisältävät mahdollisuuden rajata hakemuksia " +
+      "tiettyjen pohjakoulutusten lähettävän oppilaitoksen ja valmistumisvuoden perusteella. Tämän endpointin palauttama " +
+      "lista sisältää haetun oppilaitoksen luokat joilla on mahdollisia 2. asteen hakijoita",
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Palauttaa listan oppilaitoksen luokista", content = Array(new Content(schema = new Schema(implementation = classOf[LahettavatLuokatSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = LAHETTAVAT_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LahettavatLuokatFailureResponse])))),
       new ApiResponse(responseCode = "403", description = LAHETTAVAT_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def haeLuokat(@PathVariable(name = LAHETTAVAT_OPPILAITOSOID_PARAM_NAME, required = false) @Parameter(description = "oppilaitoksen oid", example = ESIMERKKI_OPPILAITOS_OID) oppilaitosOid: Optional[String],
-                @PathVariable(name = LAHETTAVAT_VUOSI_PARAM_NAME, required = false) @Parameter(description = "vuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
+  def haeLuokat(@PathVariable(name = LAHETTAVAT_OPPILAITOSOID_PARAM_NAME, required = false) @Parameter(description = "Lähettävän oppilaitoksen oid", example = ESIMERKKI_OPPILAITOS_OID) oppilaitosOid: Optional[String],
+                @PathVariable(name = LAHETTAVAT_VUOSI_PARAM_NAME, required = false) @Parameter(description = "Valmistumisvuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
                 request: HttpServletRequest): ResponseEntity[LahettavatLuokatResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
@@ -91,14 +94,16 @@ class LahettavatResource {
   )
   @Operation(
     summary = "Hakee listan oppilaitoksen mahdollisista 2. asteen hakijoista",
-    description = "Lista sisältää haetun oppilaitoksen opiskelijat jotka ovat mahdollisia 2. asteen hakijoita",
+    description = "Hakemuspalvelun käyttöliittymän hakemusten haun rajaimet sisältävät mahdollisuuden rajata hakemuksia " +
+      "tiettyjen pohjakoulutusten lähettävän oppilaitoksen ja valmistumisvuoden perusteella. Tämän endpointin palauttama " +
+      "lista sisältää haetun oppilaitoksen opiskelijat jotka ovat mahdollisia 2. asteen hakijoita",
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Palauttaa listan opiskelijoista", content = Array(new Content(schema = new Schema(implementation = classOf[LahettavatHenkilotSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = LAHETTAVAT_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LahettavatHenkilotFailureResponse])))),
       new ApiResponse(responseCode = "403", description = LAHETTAVAT_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def haeOpiskelijat(@PathVariable(name = LAHETTAVAT_OPPILAITOSOID_PARAM_NAME, required = false) @Parameter(description = "oppilaitoksen oid", example = ESIMERKKI_OPPILAITOS_OID) oppilaitosOid: Optional[String],
-                     @PathVariable(name = LAHETTAVAT_VUOSI_PARAM_NAME, required = false) @Parameter(description = "vuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
+  def haeOpiskelijat(@PathVariable(name = LAHETTAVAT_OPPILAITOSOID_PARAM_NAME, required = false) @Parameter(description = "Lähettävän oppilaitoksen oid", example = ESIMERKKI_OPPILAITOS_OID) oppilaitosOid: Optional[String],
+                     @PathVariable(name = LAHETTAVAT_VUOSI_PARAM_NAME, required = false) @Parameter(description = "Valmistumisvuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
                      request: HttpServletRequest): ResponseEntity[LahettavatHenkilotResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
