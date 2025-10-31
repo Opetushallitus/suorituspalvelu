@@ -11,7 +11,10 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
+import {
+  queryOptionsGetOppija,
+  queryOptionsGetValintadata,
+} from '@/lib/suorituspalvelu-queries';
 import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationStatusIndicator';
 import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -157,8 +160,10 @@ const useSuoritusManagerState = () => {
     },
     onSuccess: () => {
       if (oppijaOid) {
-        queryClient.invalidateQueries(queryOptionsGetOppija(oppijaOid));
-        queryClient.refetchQueries(queryOptionsGetOppija(oppijaOid));
+        queryClient.resetQueries(queryOptionsGetOppija(oppijaOid));
+        queryClient.resetQueries(
+          queryOptionsGetValintadata({ oppijaNumero: oppijaOid }),
+        );
       }
       if (mutationOperation !== 'delete') {
         setSuoritusState(null);
