@@ -216,7 +216,7 @@ export type GenericBackendError = IPoistaSuoritusFailureResponse;
 
 export type AvainArvo = IAvainArvoContainerUI;
 
-export const isGenericBackendError = (
+export const isGenericBackendErrorResponse = (
   error: unknown,
 ): error is GenericBackendError => {
   return (
@@ -227,7 +227,7 @@ export const isGenericBackendError = (
   );
 };
 
-export const isPerusopetusOppimaaraBackendError = (
+export const isPerusopetusOppimaaraBackendErrorResponse = (
   body: unknown,
 ): body is ILuoPerusopetuksenOppimaaraFailureResponse => {
   return (

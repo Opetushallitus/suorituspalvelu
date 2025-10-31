@@ -6,7 +6,7 @@ import {
 } from '@react-router/dev/routes';
 
 export default [
-  layout('./HenkiloSearchLayout.tsx', [
+  layout('./RootLayout.tsx', [
     index('./HenkiloNotSelectedPage.tsx'),
     route('/henkilo/:oppijaNumero', './HenkiloPageLayout.tsx', [
       index('./HenkiloPageIndex.tsx'),

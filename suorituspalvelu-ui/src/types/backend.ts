@@ -429,7 +429,7 @@ export interface IOppijanTiedotSuccessResponse {
 }
 
 export interface IOppijanValintaDataFailureResponse {
-  virheet: string[];
+  virheAvaimet: string[];
 }
 
 export interface IOppijanValintaDataSuccessResponse {

@@ -94,6 +94,12 @@
     "versiotunniste": {
       "tyhja": "Suorituksen versiotunniste ei saa olla tyhjä!",
       "ei_validi": "Suorituksen versiotunniste ei ole validi!"
+    },
+    "valintadata": {
+      "ei_oikeuksia": "Käyttäjällä ei ole oikeuksia valintatietojen katseluun.",
+      "oppijaa_ei_loytynyt": "Oppijaa ei löytynyt valintatietojen hakua varten.",
+      "geneerinen_virhe": "Tuntematon virhe valintatietojen haussa.",
+      "useita_vahvistettuja_oppimaaria": "Oppijalla on useita vahvistettuja perusopetuksen oppimääriä. Korjaa oppijan tiedot niin, että oppijalla on vain yksi vahvistettu perusopetuksen oppimäärä ja yritä uudelleen."
     }
   },
   "sivupalkki": {
@@ -272,6 +278,7 @@
       "suoritukset": "Suoritukset",
       "lisapistekoulutukset": "Lisäpistekoulutus",
       "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet"
-    }
+    },
+    "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa"
   }
 }

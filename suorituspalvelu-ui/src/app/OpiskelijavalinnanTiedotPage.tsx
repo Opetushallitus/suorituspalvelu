@@ -4,15 +4,21 @@ import {
   OphFormFieldWrapper,
   OphTypography,
 } from '@opetushallitus/oph-design-system';
-import { useApiSuspenseQuery } from '@/lib/http-client';
+import { FetchError, useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsGetValintadata } from '@/lib/suorituspalvelu-queries';
 import type { Route } from './+types/OpiskelijavalinnanTiedotPage';
 import { groupBy, mapValues, pipe, prop, sortBy } from 'remeda';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
 import React, { useState } from 'react';
-import type { AvainArvo } from '@/types/ui-types';
+import {
+  isGenericBackendErrorResponse,
+  type AvainArvo,
+} from '@/types/ui-types';
 import { styled } from '@/lib/theme';
+import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
+import { ErrorView } from '@/components/ErrorView';
+import { ErrorAlert } from '@/components/ErrorAlert';
 
 const OPISKELIJAVALINTADATA_GROUPS = [
   'yleinen',
@@ -170,11 +176,13 @@ const AvainArvotSection = ({
   );
 };
 
-export default function OpiskelijavalinnanTiedotPage({
-  params,
-}: Route.ComponentProps) {
+const OpiskelijavalinnanTiedotPageContent = ({
+  oppijaNumero,
+}: {
+  oppijaNumero: string;
+}) => {
   const { data: valintadata } = useApiSuspenseQuery(
-    queryOptionsGetValintadata({ oppijaNumero: params.oppijaNumero }),
+    queryOptionsGetValintadata({ oppijaNumero }),
   );
 
   const { t } = useTranslations();
@@ -189,10 +197,9 @@ export default function OpiskelijavalinnanTiedotPage({
         value={avainarvoRyhma}
         exclusive
         onChange={(_event, newValue) => {
-          if (!newValue) {
-            return;
+          if (newValue) {
+            setAvainarvoRyhma(newValue);
           }
-          setAvainarvoRyhma(newValue);
         }}
       >
         <ToggleButton value="uudet-avainarvot">
@@ -218,5 +225,38 @@ export default function OpiskelijavalinnanTiedotPage({
         />
       </AccordionBox>
     </Stack>
+  );
+};
+
+const ErrorFallback = ({
+  reset,
+  error,
+}: {
+  reset: () => void;
+  error: Error;
+}) => {
+  const { t } = useTranslations();
+  if (error instanceof FetchError) {
+    const jsonBody = error.jsonBody;
+    if (isGenericBackendErrorResponse(jsonBody)) {
+      return (
+        <ErrorAlert
+          title={t('opiskelijavalinnan-tiedot.virhe-valintadatan-haussa')}
+          message={jsonBody.virheAvaimet.map((virhe) => t(virhe))}
+        />
+      );
+    }
+  }
+
+  return <ErrorView error={error} reset={reset} />;
+};
+
+export default function OpiskelijavalinnanTiedotPage({
+  params,
+}: Route.ComponentProps) {
+  return (
+    <QuerySuspenseBoundary ErrorFallback={ErrorFallback}>
+      <OpiskelijavalinnanTiedotPageContent oppijaNumero={params.oppijaNumero} />
+    </QuerySuspenseBoundary>
   );
 }

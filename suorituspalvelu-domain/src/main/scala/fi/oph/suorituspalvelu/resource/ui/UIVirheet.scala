@@ -6,7 +6,6 @@ object UIVirheet {
   final val UI_TIEDOT_EI_OIKEUKSIA                          = "backend-virhe.oppijantiedot.ei_oikeuksia"
   final val UI_TIEDOT_HAKU_EPAONNISTUI                      = "backend-virhe.oppijantiedot.haku_epaonnistui"
 
-
   final val UI_HAKU_ESIMERKKI_VIRHE                         = "backend-virhe.oppilaitos_oid.ei_validi"
   final val UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS            = "backend-virhe.haku.joko_hakusana_tai_oppilaitos_sallittu"
   final val UI_HAKU_EI_OIKEUKSIA                            = "backend-virhe.haku.ei_oikeuksia"

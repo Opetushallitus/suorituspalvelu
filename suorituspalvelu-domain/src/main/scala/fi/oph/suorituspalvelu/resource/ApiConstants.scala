@@ -120,7 +120,9 @@ object ApiConstants {
   final val UI_POISTA_SUORITUS_PATH                         = UI_API_PREFIX + "/versiot/" + UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER
 
   final val UI_400_DESCRIPTION                              = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val UI_403_DESCRIPTION                              = "Käyttäjällä ei ole suorittaa pyyntöä"
+  final val UI_403_DESCRIPTION                              = "Käyttäjällä ei ole oikeuksia suorittaa pyyntöä"
+
+  final val UI_500_DESCRIPTION                              = "Palvelin kohtasi odottamattoman tilanteen, joka esti pyynnön täyttämisen"
 
   /**
    * Swagger-kuvauksiin liittyvät esimerkkiarvot

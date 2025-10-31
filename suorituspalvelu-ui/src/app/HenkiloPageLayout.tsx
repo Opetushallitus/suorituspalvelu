@@ -7,10 +7,8 @@ import { ExternalLink } from '@/components/ExternalLink';
 import { formatFinnishDate } from '@/lib/common';
 import type { Route } from './+types/HenkiloPageLayout';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
-import { SuoritusManagerProvider } from '@/lib/suoritusManager';
 import { TiedotTabNavi } from '@/components/TiedotTabNavi';
 import { Outlet } from 'react-router';
-import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -27,36 +25,30 @@ export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
   const { data: tiedot } = useOppija(params.oppijaNumero);
   const { t } = useTranslations();
   return (
-    <SuoritusManagerProvider>
-      <Stack spacing={6} sx={{ margin: 2 }}>
-        <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${tiedot.nimi}`}</title>
-        <Stack spacing={2}>
-          <OphTypography variant="h3" component="h2">
-            {tiedot.nimi}{' '}
-            <span style={{ fontWeight: 'normal' }}>
-              ({tiedot.henkiloTunnus})
-            </span>
-          </OphTypography>
-          <Stack direction="row">
-            <LabeledInfoItem
-              label={t('oppija.syntymaaika')}
-              value={formatFinnishDate(tiedot?.syntymaAika)}
-            />
-            <LabeledInfoItem
-              label={t('oppija.oppijanumero')}
-              value={<OppijanumeroLink oppijaNumero={tiedot.oppijaNumero} />}
-            />
-            <LabeledInfoItem
-              label={t('oppija.henkiloOid')}
-              value={tiedot?.henkiloOID}
-            />
-          </Stack>
+    <Stack spacing={6} sx={{ margin: 2 }}>
+      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${tiedot.nimi}`}</title>
+      <Stack spacing={2}>
+        <OphTypography variant="h3" component="h2">
+          {tiedot.nimi}{' '}
+          <span style={{ fontWeight: 'normal' }}>({tiedot.henkiloTunnus})</span>
+        </OphTypography>
+        <Stack direction="row">
+          <LabeledInfoItem
+            label={t('oppija.syntymaaika')}
+            value={formatFinnishDate(tiedot?.syntymaAika)}
+          />
+          <LabeledInfoItem
+            label={t('oppija.oppijanumero')}
+            value={<OppijanumeroLink oppijaNumero={tiedot.oppijaNumero} />}
+          />
+          <LabeledInfoItem
+            label={t('oppija.henkiloOid')}
+            value={tiedot?.henkiloOID}
+          />
         </Stack>
-        <TiedotTabNavi />
-        <QuerySuspenseBoundary>
-          <Outlet />
-        </QuerySuspenseBoundary>
       </Stack>
-    </SuoritusManagerProvider>
+      <TiedotTabNavi />
+      <Outlet />
+    </Stack>
   );
 }
