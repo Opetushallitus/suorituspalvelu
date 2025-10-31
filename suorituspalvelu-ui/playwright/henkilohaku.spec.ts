@@ -19,23 +19,23 @@ const OPPIJAT = [
 
 test.describe('Henkilö-haku', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route('**/ui/oppijat*', async (route) => {
+    await page.route('**/ui/haku/oppijat*', async (route) => {
       const url = new URL(route.request().url());
-      const hakusanaParam = url.searchParams.get('hakusana');
+      const tunnisteParam = url.searchParams.get('tunniste');
       const oppilaitosParam = url.searchParams.get('oppilaitos');
 
       await route.fulfill({
         json: {
           oppijat: OPPIJAT.filter(
             (oppija) =>
-              oppija.nimi.includes(hakusanaParam ?? '') &&
+              oppija.nimi.includes(tunnisteParam ?? '') &&
               (!oppilaitosParam || oppilaitosParam === oppija.oppilaitosOid),
           ),
         },
       });
     });
 
-    await page.route(`**/ui/oppilaitokset`, async (route) => {
+    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
       await route.fulfill({
         json: {
           oppilaitokset: [

@@ -67,42 +67,43 @@ object ApiConstants {
   final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
   final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
 
-  final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/oppijat"
-  final val UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME             = "hakusana"
-  final val UI_HENKILO_HAKU_ESIMERKKI_HAKUKENTAN_ARVO       = "Olli Op"
-
-  final val UI_OPPILAITOS_HAKU_PATH                         = UI_API_PREFIX + "/oppilaitoksenoppijat"
-  final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
-  final val UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME             = "vuosi"
-  final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
+  final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/haku/oppijat"
+  final val UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME             = "tunniste"
 
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
   final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"
 
-  final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
+  final val UI_RAJAIN_PATH                                  = UI_API_PREFIX + "/rajain"
+
+  final val UI_OPPILAITOKSET_PATH                           = UI_RAJAIN_PATH + "/oppilaitokset"
   final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
 
   final val UI_VUODET_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_VUODET_OPPILAITOS_PARAM_NAME + "}"
-  final val UI_VUODET_PATH                                  = UI_API_PREFIX + "/luokat/" + UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER
+  final val UI_VUODET_PATH                                  = UI_RAJAIN_PATH + "/vuodet/" + UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER
   final val UI_VUODET_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa vuosista"
 
   final val UI_LUOKAT_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_LUOKAT_OPPILAITOS_PARAM_NAME + "}"
   final val UI_LUOKAT_VUOSI_PARAM_NAME                      = "vuosi"
   final val UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER               = "{" + UI_LUOKAT_VUOSI_PARAM_NAME + "}"
-  final val UI_LUOKAT_PATH                                  = UI_API_PREFIX + "/luokat/" + UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER + "/" + UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER
+  final val UI_LUOKAT_PATH                                  = UI_RAJAIN_PATH + "/luokat/" + UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER + "/" + UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER
   final val UI_LUOKAT_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa luokista"
+
+  final val UI_OPPILAITOS_HAKU_PATH                         = UI_RAJAIN_PATH + "/oppilaitoksenoppijat"
+  final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
+  final val UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME             = "vuosi"
+  final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
 
   final val UI_KAYTTAJAN_TIEDOT_PATH                        = UI_API_PREFIX + "/kayttaja"
 
-  final val UI_LUO_SUORITUS_PERUSOPETUS_PATH                = UI_API_PREFIX + "/perusopetuksenoppimaarat"
+  final val UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH           = UI_API_PREFIX + "/perusopetuksenoppimaarat"
 
-  final val UI_LUO_SUORITUS_OPPIAINE_PATH                   = UI_API_PREFIX + "/perusopetuksenoppiaineenoppimaarat"
+  final val UI_TALLENNA_SUORITUS_OPPIAINE_PATH              = UI_API_PREFIX + "/perusopetuksenoppiaineenoppimaarat"
 
-  final val UI_LUO_SUORITUS_OPPILAITOKSET_PATH              = UI_API_PREFIX + "/luosuoritusoppilaitokset"
-  final val UI_LUO_SUORITUS_VAIHTOEHDOT_PATH                = UI_API_PREFIX + "/luosuoritusvaihtoehdot"
+  final val UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH         = UI_API_PREFIX + "/tallennasuoritusoppilaitokset"
+  final val UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH           = UI_API_PREFIX + "/tallennasuoritusvaihtoehdot"
 
   final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME    = "versioTunniste"
   final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER = "{" + UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME + "}"
@@ -110,7 +111,6 @@ object ApiConstants {
 
   final val UI_400_DESCRIPTION                              = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val UI_403_DESCRIPTION                              = "Käyttäjällä ei ole oikeuksia suorittaa pyyntöä"
-
   final val UI_500_DESCRIPTION                              = "Palvelin kohtasi odottamattoman tilanteen, joka esti pyynnön täyttämisen"
 
   /**
@@ -127,7 +127,7 @@ object ApiConstants {
   final val ESIMERKKI_HETU                                  = "010296-1230"
   final val ESIMERKKI_SYNTYMAIKA                            = "2030-01-01"
   final val ESIMERKKI_SUORITUSKIELI                         = "FI"
-  final val ESIMERKKI_OPPIAINEKOODI                         = "HI"
+  final val ESIMERKKI_OPPIAINEKOODI                         = "A1"
   final val ESIMERKKI_YKSILOLLISTAMINEN                     = "1"
   final val ESIMERKKI_VIERAS_KIELI_KIELIKOODI               = "DE"
   final val ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA    = "9"

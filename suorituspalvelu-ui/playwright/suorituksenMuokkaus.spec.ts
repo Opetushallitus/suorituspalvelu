@@ -2,8 +2,8 @@ import { expect } from '@playwright/test';
 import { test } from './lib/fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 
-import SUORITUS_OPPILAITOKSET from './fixtures/luoSuoritusOppilaitokset.json' with { type: 'json' };
-import SUORITUSVAIHTOEHDOT from './fixtures/luoSuoritusvaihtoehdot.json' with { type: 'json' };
+import SUORITUS_OPPILAITOKSET from './fixtures/tallennaSuoritusOppilaitokset.json' with { type: 'json' };
+import SUORITUSVAIHTOEHDOT from './fixtures/tallennaSuoritusvaihtoehdot.json' with { type: 'json' };
 import {
   selectDateInDatePicker,
   selectOption,
@@ -23,19 +23,19 @@ test.describe('Suorituksen muokkaus', () => {
       });
     });
 
-    await page.route(`**/ui/oppilaitokset`, async (route) => {
+    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
       await route.fulfill({
         json: SUORITUS_OPPILAITOKSET,
       });
     });
 
-    await page.route(`**/ui/luosuoritusvaihtoehdot`, async (route) => {
+    await page.route(`**/ui/tallennasuoritusvaihtoehdot`, async (route) => {
       await route.fulfill({
         json: SUORITUSVAIHTOEHDOT,
       });
     });
 
-    await page.route(`**/ui/luosuoritusoppilaitokset`, async (route) => {
+    await page.route(`**/ui/tallennasuoritusoppilaitokset`, async (route) => {
       await route.fulfill({
         json: SUORITUS_OPPILAITOKSET,
       });

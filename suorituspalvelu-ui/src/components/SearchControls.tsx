@@ -35,7 +35,7 @@ const OppilaitosSelectField = ({
 export function SearchControls() {
   const { t } = useTranslations();
 
-  const { hakusana, setHakusana, oppilaitos, setOppilaitos } =
+  const { tunniste, setTunniste, oppilaitos, setOppilaitos } =
     useOppijatSearchParamsState();
 
   return (
@@ -53,9 +53,9 @@ export function SearchControls() {
           maxWidth: '400px',
         }}
         label={t('hae-henkiloa')}
-        value={hakusana ?? ''}
+        value={tunniste ?? ''}
         onChange={(e) => {
-          setHakusana(e.target.value);
+          setTunniste(e.target.value);
         }}
       />
       <OppilaitosSelectField

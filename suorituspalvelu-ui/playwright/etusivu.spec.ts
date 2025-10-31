@@ -3,7 +3,7 @@ import { test } from './lib/fixtures';
 
 test.describe('Etusivu', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route(`**/ui/oppilaitokset`, async (route) => {
+    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
       await route.fulfill({
         json: {
           oppilaitokset: [],

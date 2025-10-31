@@ -14,7 +14,7 @@ test.describe('Oppijan tiedot', () => {
       });
     });
 
-    await page.route(`**/ui/oppilaitokset`, async (route) => {
+    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
       await route.fulfill({
         json: {
           oppilaitokset: [],

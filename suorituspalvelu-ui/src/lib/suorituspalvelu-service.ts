@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
 
 export type OppijatSearchParams = {
-  hakusana?: string;
+  tunniste?: string;
   oppilaitos?: string;
   vuosi?: string;
   luokka?: string;

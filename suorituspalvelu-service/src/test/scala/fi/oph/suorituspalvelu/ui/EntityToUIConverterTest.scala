@@ -6,6 +6,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
+import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.junit.jupiter.api.*
 

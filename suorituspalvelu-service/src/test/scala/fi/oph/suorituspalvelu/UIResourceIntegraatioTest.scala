@@ -10,14 +10,14 @@ import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSucc
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.ui.UIService
+import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import fi.oph.suorituspalvelu.validation.UIValidator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -36,13 +36,13 @@ import scala.jdk.CollectionConverters.*
  */
 class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
-  @MockBean
+  @MockitoBean
   val onrIntegration: OnrIntegration = null
 
-  @MockBean
+  @MockitoBean
   val organisaatioProvider: OrganisaatioProvider = null
 
-  @MockBean
+  @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
   final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA + "_1.2.246.562.10.52320123196"
@@ -58,7 +58,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, ""))
       .andExpect(status().is3xxRedirection())
 
-  @WithMockUser(value = "kayttaja", authorities = Array())
+  @WithMockUser(value = "kayttaja", authorities = Array(
+    SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA,
+    ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeKayttajanTiedotNotFound(): Unit =
     // mockataan onr-vastaus
     Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(None))
@@ -73,7 +75,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(KayttajaFailureResponse(java.util.Set.of(UIVirheet.UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array())
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA))
   @Test def testHaeKayttajanTiedotAllowed(): Unit =
     // mockataan onr-vastaus
     Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
@@ -84,8 +86,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk)
       .andReturn()
 
-    // asiointikieli on "fi" ja kyseessä ei organisaation katselija
-    Assertions.assertEquals(KayttajaSuccessResponse("fi", false),
+    // asiointikieli on "fi" ja kyseessä on organisaation katselija
+    Assertions.assertEquals(KayttajaSuccessResponse("fi", true),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA))
@@ -121,7 +123,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .get(ApiConstants.UI_OPPILAITOKSET_PATH, ""))
       .andExpect(status().isForbidden())
 
-  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(
+    SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA,
+    ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeOppilaitoksetAllowedOpo(): Unit =
     val oppilaitosOid = "1.2.246.562.10.52320123196"
 
@@ -326,7 +330,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     val hakusanaOppijanumero = "1.2.246.562.24.21583363331"
     mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?hakusana={hakusana}", hakusanaOppijanumero))
+        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?tunniste={tunniste}", hakusanaOppijanumero))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -336,7 +340,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIValidator.VALIDATION_HAKUSANA_TYHJA)),
+    Assertions.assertEquals(OppijanHakuFailureResponse(java.util.Set.of(UIValidator.VALIDATION_TUNNISTE_TYHJA)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -351,7 +355,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .thenReturn(Future.successful(Seq(onrPerustiedot)))
 
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?hakusana={hakusana}", hakusanaOppijanumero))
+        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?tunniste={tunniste}", hakusanaOppijanumero))
       .andExpect(status().isOk)
       .andReturn()
 
@@ -363,12 +367,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijatUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      ApiConstants.UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME -> hakusanaOppijanumero
+      ApiConstants.UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME -> hakusanaOppijanumero
     ), auditLogEntry.target)
 
-  final val HAKENEIDEN_KATSELIJA = SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA + "_1.2.246.562.10.52320123197"
+  final val ORGANISAATION_1_2_246_562_10_52320123197_HAKENEIDEN_KATSELIJA = SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA + "_1.2.246.562.10.52320123197"
 
-  @WithMockUser(value = "kayttaja", authorities = Array(HAKENEIDEN_KATSELIJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(
+    SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA, ORGANISAATION_1_2_246_562_10_52320123197_HAKENEIDEN_KATSELIJA))
   @Test def testHaeOppijatOppilaitoskayttajaAllowedByHakemus(): Unit =
     val hakusanaOppijanumero = "1.2.246.562.24.21583363333"
     val orgOid = "1.2.246.562.10.52320123197"
@@ -388,7 +393,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(hakemuspalveluClient.checkPermission(permissionRequest)).thenReturn(Future.successful(permissionResponse))
 
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?hakusana={hakusana}", hakusanaOppijanumero))
+        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?tunniste={tunniste}", hakusanaOppijanumero))
       .andExpect(status().isOk)
       .andReturn()
 
@@ -400,10 +405,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijatUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      ApiConstants.UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME -> hakusanaOppijanumero
+      ApiConstants.UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME -> hakusanaOppijanumero
     ), auditLogEntry.target)
 
-  @WithMockUser(value = "kayttaja", authorities = Array(HAKENEIDEN_KATSELIJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(
+    SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA, ORGANISAATION_1_2_246_562_10_52320123197_HAKENEIDEN_KATSELIJA))
   @Test def testHaeOppijatOppilaitoskayttajaNotAllowedByHakemus(): Unit =
     val hakusanaOppijanumero = "1.2.246.562.24.21583363441"
     val orgOid = "1.2.246.562.10.52320123197"
@@ -423,7 +429,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(hakemuspalveluClient.checkPermission(permissionRequest)).thenReturn(Future.successful(permissionResponse))
 
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?hakusana={hakusana}", hakusanaOppijanumero))
+        .get(ApiConstants.UI_HENKILO_HAKU_PATH + "?tunniste={tunniste}", hakusanaOppijanumero))
       .andExpect(status().isOk)
       .andReturn()
 
@@ -435,7 +441,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijatUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      ApiConstants.UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME -> hakusanaOppijanumero
+      ApiConstants.UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME -> hakusanaOppijanumero
     ), auditLogEntry.target)
 
   /*
@@ -677,14 +683,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeSyotettavatOppilaitoksetAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_LUO_SUORITUS_OPPILAITOKSET_PATH))
+        .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testHaeSyotettavatOppilaitoksetNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_LUO_SUORITUS_OPPILAITOKSET_PATH))
+        .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -695,7 +701,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(organisaatioProvider.haeKaikkiOrganisaatiot()).thenReturn(Map(oppilaitosOid -> organisaatio))
 
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_LUO_SUORITUS_OPPILAITOKSET_PATH))
+        .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
       .andExpect(status().isOk)
       .andReturn()
 
@@ -726,7 +732,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppimaaranSuoritusAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus())))
       .andExpect(status().is3xxRedirection())
@@ -735,7 +741,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppimaaranSuoritusNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus())))
       .andExpect(status().isForbidden())
@@ -744,7 +750,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppimaaranSuoritusInvalidJson(): Unit =
     // ei validi json ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content("tämä ei ole validia jsonia"))
       .andExpect(status().isBadRequest)
@@ -758,7 +764,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppimaaranSuoritusInvalidSuoritus(): Unit =
     // ei validi oid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of("tämä ei ole validi oid")))))
       .andExpect(status().isBadRequest)
@@ -777,7 +783,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tuntematon henkilöoid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
       .andExpect(status().isBadRequest)
@@ -799,7 +805,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
     val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_PERUSOPETUS_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(suoritusPayload))
       .andExpect(status().isOk)
@@ -839,7 +845,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
     mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus())))
       .andExpect(status().is3xxRedirection())
@@ -848,7 +854,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus())))
       .andExpect(status().isForbidden())
@@ -857,7 +863,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusInvalidJson(): Unit =
     // ei validi json ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content("tämä ei ole validia jsonia"))
       .andExpect(status().isBadRequest)
@@ -871,7 +877,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusInvalidSuoritus(): Unit =
     // ei validi oid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of("tämä ei ole validi oid")))))
       .andExpect(status().isBadRequest)
@@ -890,7 +896,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tuntematon henkilöoid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
       .andExpect(status().isBadRequest)
@@ -912,7 +918,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
     val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))
     val result = mvc.perform(MockMvcRequestBuilders
-        .post(ApiConstants.UI_LUO_SUORITUS_OPPIAINE_PATH, "")
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(suoritusPayload))
       .andExpect(status().isOk)
