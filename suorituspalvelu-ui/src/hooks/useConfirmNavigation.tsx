@@ -7,7 +7,10 @@ const handleBeforeUnload = (e: BeforeUnloadEvent) => {
   e.preventDefault();
 };
 
-export const useConfirmNavigation = (shouldConfirm: boolean) => {
+export const useConfirmNavigation = (
+  shouldConfirm: boolean,
+  onConfirm?: () => void,
+) => {
   const blocker = useBlocker(shouldConfirm);
   const { showConfirmation } = useGlobalConfirmationModal();
   const { t } = useTranslations();
@@ -30,6 +33,7 @@ export const useConfirmNavigation = (shouldConfirm: boolean) => {
         cancelLabel: t('peruuta'),
         onConfirm: () => {
           blocker.proceed();
+          onConfirm?.();
         },
         onCancel: () => {
           blocker.reset();

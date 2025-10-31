@@ -167,7 +167,10 @@ const useSuoritusManagerState = () => {
     },
   });
 
-  useConfirmNavigation(isDirty);
+  useConfirmNavigation(isDirty, () => {
+    setSuoritusState(null);
+    setIsDirty(false);
+  });
 
   const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
