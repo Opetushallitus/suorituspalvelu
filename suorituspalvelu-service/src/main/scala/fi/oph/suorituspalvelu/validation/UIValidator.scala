@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
-import fi.oph.suorituspalvelu.ui.UIService.*
+import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.validation.Validator.{hetuPattern, oppijaOidPattern, validateHakuOid}
+import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -21,8 +21,10 @@ object UIValidator {
   final val VALIDATION_OPPIJANUMERO_EI_VALIDI     = "backend-virhe.oppijanumero.ei_validi"
   final val VALIDATION_OPPILAITOSOID_TYHJA        = "backend-virhe.oppilaitosoid.tyhja"
   final val VALIDATION_OPPILAITOSOID_EI_VALIDI    = "backend-virhe.oppilaitosoid.ei_validi"
-  final val VALIDATION_HAKUSANA_TYHJA             = "backend-virhe.hakusana.tyhja"
-  final val VALIDATION_HAKUSANA_EI_VALIDI         = "backend-virhe.hakusana.ei_validi"
+  final val VALIDATION_HAKUOID_TYHJA              = "backend-virhe.hakuoid.tyhja"
+  final val VALIDATION_HAKUOID_EI_VALIDI          = "backend-virhe.hakuoid.ei_validi"
+  final val VALIDATION_TUNNISTE_TYHJA             = "backend-virhe.tunniste.tyhja"
+  final val VALIDATION_TUNNISTE_EI_VALIDI         = "backend-virhe.tunniste.ei_validi"
   final val VALIDATION_VUOSI_TYHJA                = "backend-virhe.vuosi.tyhja"
   final val VALIDATION_VUOSI_EI_VALIDI            = "backend-virhe.vuosi.ei_validi"
   final val VALIDATION_LUOKKA_TYHJA               = "backend-virhe.luokka.tyhja"
@@ -53,11 +55,6 @@ object UIValidator {
   final val VALIDATION_AVAIN_EI_VALIDI            = "backend-virhe.avain.ei_validi"
   final val VALIDATION_ARVO_TYHJA                 = "backend-virhe.arvo.tyhja"
   final val VALIDATION_ARVO_EI_VALIDI             = "backend-virhe.arvo.ei_validi"
-  final val VALIDATION_HAKUOID_TYHJA              = "backend-virhe.hakuoid.tyhja"
-  final val VALIDATION_HAKUOID_EI_VALIDI          = "backend-virhe.hakuoid.ei_validi"
-
-  val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
-  val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
 
   //Yliajojen avamissa ja arvoissa vain kirjaimia, numeroita ja alaviivoja.
   val avainArvoStringPattern: Regex = "^[a-zA-Z0-9_]*$".r
@@ -86,12 +83,11 @@ object UIValidator {
     else
       Set.empty
 
-  //Tuetaan tässä vaiheessa hetuja ja oppijanumeroita
-  def validateHakusana(hakusana: Option[String]): Set[String] = {
-    if (hakusana.isEmpty || hakusana.get.isEmpty)
-      Set(VALIDATION_HAKUSANA_TYHJA)
-    else if (!hetuPattern.matches(hakusana.get) && !oppijaOidPattern.matches(hakusana.get))
-      Set(VALIDATION_HAKUSANA_EI_VALIDI)
+  def validateTunniste(tunniste: Option[String]): Set[String] = {
+    if (tunniste.isEmpty || tunniste.get.isEmpty)
+      Set(VALIDATION_TUNNISTE_TYHJA)
+    else if (!hetuPattern.matches(tunniste.get) && !oppijaOidPattern.matches(tunniste.get))
+      Set(VALIDATION_TUNNISTE_EI_VALIDI)
     else
       Set.empty
   }
@@ -289,7 +285,7 @@ object UIValidator {
     if (pakollinen && (hakuOid.isEmpty || hakuOid.get.isEmpty))
       Set(VALIDATION_HAKUOID_TYHJA)
     else if (hakuOid.isDefined && !hakuOidPattern.matches(hakuOid.get))
-      Set(VALIDATION_HAKUOID_EI_VALIDI + hakuOid.get)
+      Set(VALIDATION_HAKUOID_EI_VALIDI)
     else
       Set.empty
   }

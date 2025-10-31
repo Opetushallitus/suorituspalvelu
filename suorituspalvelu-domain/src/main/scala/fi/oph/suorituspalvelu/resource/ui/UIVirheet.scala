@@ -17,6 +17,8 @@ object UIVirheet {
   final val UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT                = "backend-virhe.kayttajan_tiedot.ei_loytynyt"
   final val UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI            = "backend-virhe.kayttajan_tiedot.haku_epaonnistui"
 
+  final val UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI             = "backend-virhe.rajaimen_tiedot.haku_epaonnistui"
+
   final val UI_LUO_SUORITUS_OPPILAITOKSET_ESIMERKKI_VIRHE   = "backend-virhe.luo_suoritus_oppilaitokset.haku_epaonnistui"
   final val UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE     = "backend-virhe.luo_suoritus_vaihtoehdot.haku_epaonnistui"
 

@@ -19,7 +19,7 @@ const OPPIJAT = [
 
 test.describe('Henkilö-haku', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route('**/ui/oppijat*', async (route) => {
+    await page.route('**/ui/haku/oppijat*', async (route) => {
       const url = new URL(route.request().url());
       const oppijaParam = url.searchParams.get('oppija');
       const oppilaitosParam = url.searchParams.get('oppilaitos');
@@ -35,7 +35,7 @@ test.describe('Henkilö-haku', () => {
       });
     });
 
-    await page.route(`**/ui/oppilaitokset`, async (route) => {
+    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
       await route.fulfill({
         json: {
           oppilaitokset: [

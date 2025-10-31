@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
 import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotFailureResponse, LahettavatHenkilotResponse, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatResponse, LahettavatLuokatSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.ui.UIService
+import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
@@ -25,7 +25,7 @@ import scala.jdk.OptionConverters.*
 @Tag(
   name = "Organisaation rajaimet",
   description = "Hakemuspalvelun tarpeeseen rakennettuja rajapintoja, joiden avulla voidaan rajata hakemuspalvelussa 2. " +
-    "asteen hakijoihin kohdistuvia hakuja")
+    "asteen hakijoihin kohdistuvia hakuja. Vain rekisterinpitäjillä ja palvelukäyttäjillä on pääsy näihin rajapintoihin.")
 class LahettavatResource {
 
   val LOG = LoggerFactory.getLogger(classOf[LahettavatResource])

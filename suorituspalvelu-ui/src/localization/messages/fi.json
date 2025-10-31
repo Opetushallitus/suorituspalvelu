@@ -43,8 +43,8 @@
       "tyhja": "Oppilaitos ei saa olla tyhjä!",
       "ei_validi": "Oppilaitoksen OID ei ole validi!"
     },
-    "hakusana": {
-      "ei_validi": "Hakusana ei ole validi!"
+    "tunniste": {
+      "ei_validi": "Tunniste ei ole validi!"
     },
     "vuosi": {
       "tyhja": "Vuosi ei saa olla tyhjä!",
