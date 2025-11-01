@@ -4,7 +4,6 @@
   "hae-henkiloa": "Hae henkilöä",
   "oppilaitos": "Oppilaitos",
   "ladataan": "Ladataan...",
-  "ladataan-oppilaitoksia": "Ladataan oppilaitoksia...",
   "kylla": "Kyllä",
   "ei": "Ei",
   "sulje": "Sulje",
@@ -32,7 +31,9 @@
     "palvelin": "Palvelinvirhe",
     "tuntematon": "Tuntematon virhe",
     "virhekoodi": "Virhekoodi",
-    "yrita-uudelleen": "Yritä uudelleen"
+    "yrita-uudelleen": "Yritä uudelleen",
+    "oppilaitosten-lataus-epaonnistui": "Oppilaitosten lataaminen epäonnistui",
+    "suoritusvaihtoehtojen-lataus-epaonnistui": "Suoritusvaihtoehtojen lataaminen epäonnistui"
   },
   "backend-virhe": {
     "oppijanumero": {

@@ -8,6 +8,7 @@ import { LocalizationProvider } from './LocalizationProvider';
 import { use } from 'react';
 import { configPromise } from '@/lib/configuration';
 import { ConfirmationModalProvider } from './ConfirmationModal';
+import { NotificationProvider } from './NotificationProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <script async src={config.routes.yleiset.raamitUrl}></script>
       <QueryClientProvider client={queryClient}>
         <LocalizationProvider>
-          <ConfirmationModalProvider>{children}</ConfirmationModalProvider>
+          <NotificationProvider>
+            <ConfirmationModalProvider>{children}</ConfirmationModalProvider>
+          </NotificationProvider>
         </LocalizationProvider>
       </QueryClientProvider>
     </SessionExpiredProvider>

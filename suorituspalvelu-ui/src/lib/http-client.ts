@@ -1,4 +1,12 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  useSuspenseQuery,
+  type UseSuspenseQueryOptions,
+  type UseSuspenseQueryResult,
+  type UseQueryOptions,
+  type UseQueryResult,
+  type QueryFunction,
+} from '@tanstack/react-query';
 import { isPlainObject } from 'remeda';
 import { useIsSessionExpired } from '../components/SessionExpired';
 
@@ -231,30 +239,55 @@ export const client = {
     makeRequest<Result>(new Request(url, { method: 'DELETE', ...options })),
 } as const;
 
-export const useApiSuspenseQuery: typeof useSuspenseQuery = (options) => {
+/**
+ * Wraps a query function to handle session expiration and return cached data if available
+ */
+function createSessionAwareQueryFn<
+  TQueryFnData,
+  TQueryKey extends ReadonlyArray<unknown>,
+>(
+  queryFn: QueryFunction<TQueryFnData, TQueryKey>,
+  setIsSessionExpired: (expired: boolean) => void,
+): QueryFunction<TQueryFnData, TQueryKey> {
+  return async (context) => {
+    try {
+      const result = await queryFn(context);
+      return result;
+    } catch (error) {
+      if (error instanceof SessionExpiredError) {
+        console.log({ error });
+        setIsSessionExpired(true);
+
+        // Jos autentikaatio feilasi, mutta data on jo ladattu, palautetaan aiempi data.
+        // Näin voidaan näyttää vanha data UI:ssa kunnes käyttäjä kirjautuu uudelleen.
+        const data = context.client.getQueryData(context.queryKey);
+        if (data) {
+          return data as TQueryFnData;
+        }
+      }
+      throw error;
+    }
+  };
+}
+
+export function useApiSuspenseQuery<
+  TQueryFnData = unknown,
+  TError = Error,
+  TData = TQueryFnData,
+  TQueryKey extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+>(
+  options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+): UseSuspenseQueryResult<TData, TError> {
   const { setIsSessionExpired } = useIsSessionExpired();
 
   const queryResult = useSuspenseQuery({
     ...options,
-    queryFn: async (context) => {
-      try {
-        const result = await options?.queryFn?.(context);
-        return result;
-      } catch (error) {
-        if (error instanceof SessionExpiredError) {
-          setIsSessionExpired(true);
-
-          // Jos autentikaatio feilasi, mutta data on jo ladattu, palautetaan aiempi data.
-          // Näin voidaan näyttää vanha data UI:ssa kunnes käyttäjä kirjautuu uudelleen.
-          const data = context.client.getQueryData(options.queryKey);
-          if (data) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return data as any;
-          }
-        }
-        throw error;
-      }
-    },
+    queryFn: options.queryFn
+      ? createSessionAwareQueryFn(
+          options.queryFn as QueryFunction<TQueryFnData, TQueryKey>,
+          setIsSessionExpired,
+        )
+      : undefined,
   });
 
   if (queryResult.error && !queryResult.isFetching) {
@@ -262,4 +295,28 @@ export const useApiSuspenseQuery: typeof useSuspenseQuery = (options) => {
   }
 
   return queryResult;
-};
+}
+
+export function useApiQuery<
+  TQueryFnData = unknown,
+  TError = Error,
+  TData = TQueryFnData,
+  TQueryKey extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+>(
+  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> & {
+    onError?: (error: TError) => void;
+  },
+): UseQueryResult<TData, TError> {
+  const { setIsSessionExpired } = useIsSessionExpired();
+
+  return useQuery({
+    ...options,
+    queryFn:
+      options.queryFn && typeof options.queryFn === 'function'
+        ? createSessionAwareQueryFn(
+            options.queryFn as QueryFunction<TQueryFnData, TQueryKey>,
+            setIsSessionExpired,
+          )
+        : options.queryFn,
+  });
+}

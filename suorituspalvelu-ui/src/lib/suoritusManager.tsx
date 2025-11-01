@@ -270,6 +270,7 @@ const useSuoritusManagerState = () => {
           });
         } else {
           setSuoritusState(null);
+          setIsDirty(false);
         }
       },
       onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
@@ -322,7 +323,7 @@ const useSuoritusManagerState = () => {
   ]);
 };
 
-export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {
+export const useSuoritusManager = (params?: { oppijaOid?: string }) => {
   const context = React.use(SuoritusManagerContext);
   if (!context) {
     throw new Error(
@@ -331,8 +332,10 @@ export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {
   }
 
   useEffect(() => {
-    context.setOppijaOid(oppijaOid);
-  }, [context, oppijaOid]);
+    if (params?.oppijaOid) {
+      context.setOppijaOid(params.oppijaOid);
+    }
+  }, [context, params?.oppijaOid]);
 
   return context;
 };

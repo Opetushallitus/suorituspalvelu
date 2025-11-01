@@ -237,3 +237,8 @@ export const isPerusopetusOppimaaraBackendErrorResponse = (
     Array.isArray(body.yleisetVirheAvaimet)
   );
 };
+
+export type SelectOption = {
+  label: string;
+  value: string;
+};

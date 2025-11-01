@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { SessionExpiredError } from '@/lib/http-client';
 import { ErrorView } from './ErrorView';
 import { FullSpinner } from './FullSpinner';
+import { SessionExpired } from './SessionExpired';
 
 export const SuspenseBoundary = ({
   children,
@@ -21,7 +22,9 @@ export const SuspenseBoundary = ({
   return (
     <ErrorBoundary
       fallbackRender={({ resetErrorBoundary, error }) =>
-        error instanceof SessionExpiredError ? null : (
+        error instanceof SessionExpiredError ? (
+          <SessionExpired />
+        ) : (
           <ErrorFallback error={error} reset={resetErrorBoundary} />
         )
       }

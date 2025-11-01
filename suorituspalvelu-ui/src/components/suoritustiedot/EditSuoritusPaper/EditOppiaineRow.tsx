@@ -1,14 +1,9 @@
 import { useTranslations } from '@/hooks/useTranslations';
 import { styled } from '@/lib/theme';
-import type { PerusopetusOppiaineFields } from '@/types/ui-types';
+import type { PerusopetusOppiaineFields, SelectOption } from '@/types/ui-types';
 import { Add, DeleteOutline } from '@mui/icons-material';
 import { Stack, TableCell, TableRow } from '@mui/material';
 import { OphButton, OphSelect } from '@opetushallitus/oph-design-system';
-
-export type SelectOption = {
-  label: string;
-  value: string;
-};
 
 const StyledSelect = styled(OphSelect)({
   minWidth: '180px',

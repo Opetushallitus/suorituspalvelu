@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
+import { queryOptions } from '@tanstack/react-query';
 import {
   getOppija,
   getOppilaitokset,
@@ -8,7 +8,7 @@ import {
   searchOppijat,
   type OppijatSearchParams,
 } from './suorituspalvelu-service';
-import { useApiSuspenseQuery } from './http-client';
+import { useApiQuery, useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
 import { prop, sortBy } from 'remeda';
 
@@ -49,7 +49,8 @@ export const useOppilaitoksetOptions = () => {
 
 export const useSuoritusOppilaitosOptions = () => {
   const { translateKielistetty } = useTranslations();
-  return useQuery({
+
+  return useApiQuery({
     ...queryOptionsGetSuorituksenOppilaitosVaihtoehdot(),
     select: (data) =>
       sortBy(
@@ -59,7 +60,7 @@ export const useSuoritusOppilaitosOptions = () => {
         })) ?? [],
         [prop('label'), 'asc'],
       ),
-    throwOnError: true,
+    throwOnError: false,
   });
 };
 
@@ -68,6 +69,7 @@ export const queryOptionsGetSuoritusvaihtoehdot = () =>
     queryKey: ['getSuoritusvaihtoehdot'],
     queryFn: () => getSuoritusvaihtoehdot(),
     staleTime: Infinity, // Pidetään muistissa niin kauan kunnes sivu ladataan uudelleen
+    throwOnError: false,
   });
 
 export const queryOptionsGetSuorituksenOppilaitosVaihtoehdot = () =>
@@ -75,6 +77,7 @@ export const queryOptionsGetSuorituksenOppilaitosVaihtoehdot = () =>
     queryKey: ['getSuorituksenOppilaitosVaihtoehdot'],
     queryFn: () => getSuorituksenOppilaitosVaihtoehdot(),
     staleTime: Infinity, // Pidetään muistissa niin kauan kunnes sivu ladataan uudelleen
+    throwOnError: false,
   });
 
 export const queryOptionsGetValintadata = ({
