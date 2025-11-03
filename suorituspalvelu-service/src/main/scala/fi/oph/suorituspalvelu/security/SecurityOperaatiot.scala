@@ -24,10 +24,10 @@ class SecurityOperaatiot(
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL)
 
   def onPalveluKayttaja(): Boolean =
-    kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA)
+    kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT)
 
   def onOrganisaationKatselija(): Boolean =
-    kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA)
+    kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA)
 
   def onHakeneidenKatselija(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA)
