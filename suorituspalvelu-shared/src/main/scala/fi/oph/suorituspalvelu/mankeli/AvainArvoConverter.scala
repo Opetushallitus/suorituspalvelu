@@ -243,7 +243,7 @@ object AvainArvoConverter {
   def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
 
     //Todo, valintapisteet avain-arvoiksi
-    val convertedHakemus = hakemus.map(h => HakemusConverter.convertHakemus(h))
+    val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
 
     val peruskouluArvot = convertPeruskouluArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)

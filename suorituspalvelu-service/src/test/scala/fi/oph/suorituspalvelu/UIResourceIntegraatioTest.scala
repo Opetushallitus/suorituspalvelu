@@ -3,8 +3,8 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, Organisaatio, OrganisaatioNimi}
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, KoutaHakuaika, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -46,6 +46,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
   final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA + "_1.2.246.562.10.52320123196"
+
+  @MockitoBean
+  val tarjontaIntegration: TarjontaIntegration = null
+
+  final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA + "_1.2.246.562.10.52320123196"
 
   /*
    * Integraatiotestit käyttäjän tietojen haulle
@@ -1086,6 +1091,20 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
+    Mockito.when(tarjontaIntegration.getHaku(hakuOid))
+      .thenReturn(Some(KoutaHaku(
+        oid = hakuOid,
+        tila = "julkaistu",
+        nimi = Map("fi" -> s"Testi haku $hakuOid"),
+        hakutapaKoodiUri = "hakutapa_01",
+        kohdejoukkoKoodiUri = Some("kohdejoukko_01"),
+        hakuajat = List.empty,
+        kohdejoukonTarkenneKoodiUri = None
+      )))
+    Mockito.when(hakemuspalveluClient.getHenkilonHakemustenTiedot(oppijaNumero))
+      .thenReturn(Future.successful(Map.empty))
+    //Todo, lisätään tähän tai toiseen testiin hakemus, ja tarkistetaan että sen tiedot parsiutuvat oikein avain-arvoiksi
+
     // haetaan valintadata
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_VALINTADATA_PATH, "")
@@ -1105,7 +1124,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val parsedResult = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanValintaDataSuccessResponse])
     Assertions.assertEquals(parsedResult.henkiloOID, oppijaNumero)
-    Assertions.assertEquals(parsedResult.hakuOID.get(), hakuOid)
+    Assertions.assertEquals(parsedResult.hakuOID, hakuOid)
 
     //Tarkistetaan, että yliajo, vanha arvo ja selite löytyvät vastauksesta
     val yliajettu = parsedResult.avainArvot.asScala.find(_.avain == yliajettuAvain).get

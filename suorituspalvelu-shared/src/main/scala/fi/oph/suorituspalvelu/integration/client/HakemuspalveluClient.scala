@@ -68,6 +68,7 @@ trait HakemuspalveluClient {
   def checkPermission(permissionRequest: AtaruPermissionRequest): Future[AtaruPermissionResponse]
   def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]]
   def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty): Future[Seq[AtaruValintalaskentaHakemus]]
+  def getHenkilonHakemustenTiedot(oppijaOid: String): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
   def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
 }
 
@@ -119,7 +120,14 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
     })
   }
 
-  def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]] = {
+  override def getHenkilonHakemustenTiedot(oppijaOid: String) = {
+    //Täältä voi palautua myös oppijan aliasten alla olevia hakemuksia; ataru hoitaa aliasten haun. Koska kysyttiin vain yhdellä oidilla,
+    //tiedetään että kaikki palautuvat ovat oikeasti tämän henkilön hakemuksia vaikka hakemuksella olisi eri personOid.
+    //Jos on tarve hakea useammalle, pitää aliaksista huolehtia myös tässä päässä.
+    getHenkiloidenHakemustenTiedot(Seq(oppijaOid))
+  }
+
+  override def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]] = {
     if (oppijaOids.isEmpty)
       Future.successful(Map.empty)
     else {
