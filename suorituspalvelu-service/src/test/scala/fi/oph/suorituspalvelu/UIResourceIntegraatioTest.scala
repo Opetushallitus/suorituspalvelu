@@ -45,7 +45,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
-  final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA + "_1.2.246.562.10.52320123196"
+  final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA + "_1.2.246.562.10.52320123196"
 
   /*
    * Integraatiotestit käyttäjän tietojen haulle
@@ -59,7 +59,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array(
-    SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA,
+    SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA,
     ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeKayttajanTiedotNotFound(): Unit =
     // mockataan onr-vastaus
@@ -75,7 +75,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(KayttajaFailureResponse(java.util.Set.of(UIVirheet.UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA))
   @Test def testHaeKayttajanTiedotAllowed(): Unit =
     // mockataan onr-vastaus
     Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
@@ -90,7 +90,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(KayttajaSuccessResponse("fi", true),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA))
   @Test def testHaeKayttajanTiedotAllowedOrganisaationKatselija(): Unit =
     // mockataan onr-vastaus
     Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
@@ -124,7 +124,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(
-    SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA,
+    SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA,
     ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeOppilaitoksetAllowedOpo(): Unit =
     val oppilaitosOid = "1.2.246.562.10.52320123196"

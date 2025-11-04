@@ -234,7 +234,7 @@ class UIService {
       }), 30.seconds)
 
     def hasOrganisaatioKatseluoikeus(): Boolean =
-      val vastaanottajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
+      val vastaanottajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
       vastaanottajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => allOids.exists(oppijaOid => {
         val opiskeluoikeudet = this.kantaOperaatiot.haeSuoritukset(oppijaOid).values.flatten.toSeq
         val metadata = KoskiUtil.getMetadata(opiskeluoikeudet)

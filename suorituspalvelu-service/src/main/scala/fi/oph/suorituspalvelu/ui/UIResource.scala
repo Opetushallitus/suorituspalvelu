@@ -176,7 +176,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet, ei rekisterinpitäjällä pitää olla organisaation katselija-oikeus valittuun oppilaitokseen
-            if(securityOperaatiot.onRekisterinpitaja() || oppilaitosOid.toScala.exists(oid => securityOperaatiot.getOrganisaatiotOikeuksille(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA)).contains(oid)))
+            if(securityOperaatiot.onRekisterinpitaja() || oppilaitosOid.toScala.exists(oid => securityOperaatiot.getOrganisaatiotOikeuksille(Set(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA)).contains(oid)))
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -333,7 +333,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet, täytyy olla joka rekisterinpitäjä tai vaihtoehtoisesti organisaation katselija valitussa oppilaitoksessa
-            val virkailijaAuth = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider)
+            val virkailijaAuth = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA), organisaatioProvider)
             if(!securityOperaatiot.onRekisterinpitaja() && oppilaitos.toScala.exists(oppilaitos => !virkailijaAuth.oikeudellisetOrganisaatiot.contains(oppilaitos)))
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build)
             else

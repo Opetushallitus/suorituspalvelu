@@ -69,7 +69,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "2025"), ""))
       .andExpect(status().isForbidden)
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
   @Test def testHaeLuokatInvalidParams(): Unit =
     // haetaan virheellisillä parametreilla
     val result = mvc.perform(MockMvcRequestBuilders
@@ -85,7 +85,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
       ),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatLuokatFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
   @Test def testHaeLuokatAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21583363331"
     val vuosi = 2025
@@ -167,7 +167,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "2025"), ""))
       .andExpect(status().isForbidden)
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
   @Test def testHaeHenkilotInvalidParams(): Unit =
     // haetaan virheellisillä parametreilla
     val result = mvc.perform(MockMvcRequestBuilders
@@ -183,7 +183,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
     ),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatLuokatFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
   @Test def testHaeHenkilotAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21583363331"
     val vuosi = 2025
