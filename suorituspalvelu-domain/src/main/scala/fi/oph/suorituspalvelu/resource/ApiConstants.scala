@@ -53,6 +53,20 @@ object ApiConstants {
   final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
   final val LAHETTAVAT_HENKILOT_PATH                        = LAHETTAVAT_PATH + "/opiskelijat"
 
+  final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR        = "5000"
+
+  final val VALINTALASKENTA_PATH                            = VERSIONED_API_PREFIX + "/valintalaskenta/valintadata"
+  final val VALINTALASKENTA_EI_OIKEUKSIA                    = "Käyttäjällä ei ole oikeuksia hakea valintadataa"
+  final val VALINTALASKENTA_JSON_VIRHE                      = "JSON-deserialisointi epäonnistui"
+  final val VALINTALASKENTA_RESPONSE_400_DESCRIPTION        = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val VALINTALASKENTA_RESPONSE_403_DESCRIPTION        = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
+  final val VALINTALASKENTA_HAKEMUKSET_LIIKAA               = "Tiedot voi hakea korkeintaan 5000 hakemukselle kerrallaan"
+  final val VALINTALASKENTA_PUUTTUVA_PARAMETRI              = "Joko hakukohdeOid tai 1-5000 hakemusOidia on annettava"
+  final val VALINTALASKENTA_HAKUOID_PAKOLLINEN              = "HakuOid on pakollinen parametri"
+  final val VALINTALASKENTA_LIIKAA_PARAMETREJA              = "Anna parametrina vain joko hakukohdeOid tai lista hakemusOideja"
+  final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui"
+  final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA            = VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR.toInt
+
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
 
@@ -115,6 +129,7 @@ object ApiConstants {
   final val ESIMERKKI_VERSIOTUNNISTE                        = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
   final val ESIMERKKI_HAKU_OID                              = "1.2.246.562.29.00000000000000044639"
   final val ESIMERKKI_HAKUKOHDE_OID                         = "1.2.246.562.20.00000000000000044758"
+  final val ESIMERKKI_HAKEMUS_OID                           = "1.2.246.562.11.00000000000000061316"
   final val ESIMERKKI_OPPILAITOS_OID                        = "1.2.246.562.10.95136889433"
   final val ESIMERKKI_OPPILAITOS_NIMI                       = "Pitäjänmäen peruskoulu"
   final val ESIMERKKI_OPPIJANUMERO                          = "1.2.246.562.24.40483869857"

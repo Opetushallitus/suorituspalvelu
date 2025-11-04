@@ -182,7 +182,7 @@ case class ValintalaskentaHakutoive(hakuOid: String,
                                     hakukohderyhmaOids: Set[String],
                                     harkinnanvaraisuus: Boolean = false //Onkohan tämä tarpeellinen? Tarkistetaan, kun muuten laitetaan harkinnanvaraisuusasiat kuntoon.
                                    )
-case class ConvertedAtaruHakemus(hakutoiveet: List[ValintalaskentaHakutoive], avainArvot: Set[AvainArvoContainer])
+case class ConvertedAtaruHakemus(hakemusOid: String, hakutoiveet: List[ValintalaskentaHakutoive], avainArvot: Set[AvainArvoContainer])
 
 object HakemusConverter {
 
@@ -226,7 +226,7 @@ object HakemusConverter {
     }).toSet
     val avainArvotHakukohteilta: Set[AvainArvoContainer] = hakutoiveData._2
 
-    ConvertedAtaruHakemus(hakutoiveData._1, avainArvotHakemukselta ++ avainArvotHakukohteilta)
+    ConvertedAtaruHakemus(hakemus.hakemusOid, hakutoiveData._1, avainArvotHakemukselta ++ avainArvotHakukohteilta)
   }
 }
 

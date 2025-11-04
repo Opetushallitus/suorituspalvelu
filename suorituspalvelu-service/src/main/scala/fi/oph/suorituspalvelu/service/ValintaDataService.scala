@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient}
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, ValintalaskentaHakutoive}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -20,27 +20,30 @@ case class AvainArvoMetadata(selitteet: Seq[String],
                              arvoOnHakemukselta: Boolean)
 case class CombinedAvainArvoContainer(avain: String, arvo: String, metadata: AvainArvoMetadata)
 
+case class ValintalaskentaHakemus(hakuOid: String,
+                                  hakemusOid: String,
+                                  hakukohteet: List[ValintalaskentaHakutoive],
+                                  hakijaOid: String,
+                                  etunimi: String = "", //Todo, voiko pudottaa pois?
+                                  sukunimi: String = "", //Todo, voiko pudottaa pois?
+                                  koskiOpiskeluoikeudetJson: String, //Tässä vaiheessa lähinnä placeholder. Ensivaiheessa haetaan erikseen Koostepalvelussa/Valintalaskennassa. Tulevaisuudessa kuitenkin voidaan toimittaa suoraan Supasta.
+                                  avaimet: Seq[AvainArvo],
+                                  avainMetatiedotDTO: Seq[AvainMetatiedotDTO] = Seq.empty //Lisätään nämä myöhemmässä vaiheessa, tai yhdistetään avain-arvoihin (vaatii muutoksia valintaperusteisiin jos yhdistetään)
+)
+
 case class ValintaData(personOid: String, paatellytAvainArvot: Seq[CombinedAvainArvoContainer], hakemus: Option[ConvertedAtaruHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: String, laskennanAlkaminen: String) {
   def getAvainArvoMap: Map[String, String] = paatellytAvainArvot.map(a => (a.avain, a.arvo)).toMap
 
   def hakemuksenAvainArvot = hakemus.map(_.avainArvot).getOrElse(Seq.empty).map(aa => CombinedAvainArvoContainer(aa.avain, aa.arvo, AvainArvoMetadata(aa.selitteet, duplikaatti = false, None, None, arvoOnHakemukselta = true)))
 
-  def toUI(): Seq[CombinedAvainArvoContainer] = paatellytAvainArvot ++ hakemuksenAvainArvot
-  //todo def toValintalaskenta
+  def kaikkiAvainArvotFull(): Seq[CombinedAvainArvoContainer] = paatellytAvainArvot ++ hakemuksenAvainArvot
+
+  def kaikkiAvainArvotMinimal(): Seq[AvainArvo] = kaikkiAvainArvotFull().map(aac => AvainArvo(aac.avain, aac.arvo))
 }
 
 case class HakutoiveenTiedot()
 case class AvainArvo(avain: String, arvo: String)
 case class AvainMetatiedotDTO()
-
-//Pohjautuu fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO, jota Valintalaskenta käyttää
-case class HakemuksenValintatiedot(hakuOid: String,
-                                   hakemusOid: String,
-                                   hakukohteet: List[HakutoiveenTiedot],
-                                   koskiOpiskeluoikeudetJson: String, //Tässä vaiheessa lähinnä placeholder. Ensivaiheessa haetaan erikseen Koostepalvelussa/Valintalaskennassa. Tulevaisuudessa kuitenkin voidaan toimittaa suoraan Supasta.
-                                   avaimet: List[AvainArvo],
-                                   avainMetatiedotDTO: List[AvainMetatiedotDTO] = List.empty //Lisätään nämä myöhemmässä vaiheessa, tai yhdistetään avain-arvoihin (vaatii muutoksia valintaperusteisiin jos yhdistetään)
-)
 
 @Component
 class ValintaDataService {
@@ -109,7 +112,7 @@ class ValintaDataService {
     allOids.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
   }
 
-  def doAvainArvoConversions(personOid: Option[String], hakuOid: Option[String], hakemus: Option[AtaruValintalaskentaHakemus]) = {
+  def doAvainArvoConversions(personOid: Option[String], hakuOid: Option[String], hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
     val usePersonOid = personOid.getOrElse(hakemus.map(_.personOid).get) //personOid tarvitaan tai kaadutaan
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(usePersonOid)), 10.seconds).allOids
     //Todo, aikaleimat haun ohjausparametreista ja defaultit tulevaisuuteen jos hakua ei määritelty
@@ -123,20 +126,35 @@ class ValintaDataService {
     ValintaData(usePersonOid, withAliases, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString)
   }
 
-  def valintalaskentaHakeeAvainArvotHakukohteelle(hakuOid: String, hakukohdeOid: String): Seq[ValintaData] = {
+  //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
+  def getValintalaskentaHakemukset(hakuOid: String, hakukohdeOid: Option[String], hakemusOids: Set[String]): Seq[ValintalaskentaHakemus] = {
     val haku = tarjontaIntegration.getHaku(hakuOid)
     val isToisenAsteenHaku = haku.exists(_.isToisenAsteenHaku())
     val valintaDatat = for {
-      hakemukset <- fetchValintalaskentaHakemukset(Some(hakukohdeOid), Set.empty, isToisenAsteenHaku)
+      hakemukset <- fetchValintalaskentaHakemukset(hakukohdeOid, hakemusOids, isToisenAsteenHaku)
     } yield {
-      hakemukset.map(hakemus => {
-        doAvainArvoConversions(None, Some(hakuOid), Some(hakemus))
+      val convertedHakemukset: Seq[ValintaData] = hakemukset.map(hakemus => {
+          doAvainArvoConversions(None, Some(hakuOid), Some(hakemus))
+        })
+      val valintalaskentaHakemukset = convertedHakemukset.map(vd => {
+        ValintalaskentaHakemus(
+          hakuOid = hakuOid,
+          hakemusOid = vd.hakemus.map(_.hakemusOid).get,
+          hakukohteet = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty),
+          hakijaOid = vd.personOid,
+          etunimi = "mock_etunimi",
+          sukunimi = "mock_sukunimi",
+          koskiOpiskeluoikeudetJson = "",
+          avaimet = vd.kaikkiAvainArvotMinimal(),
+          avainMetatiedotDTO = Seq.empty
+        )
       })
+      valintalaskentaHakemukset
     }
-    Await.result(valintaDatat, 5.minutes) //Todo, missä muodossa annetaan ulos? Ehkä valmiita HakemusDTO:ita.
+    Await.result(valintaDatat, 5.minutes)
   }
 
-  def uiHakeeAvainArvot(personOid: String, hakuOid: String): ValintaData = {
+  def getValintaData(personOid: String, hakuOid: String): ValintaData = {
     LOG.info(s"Haetaan UI:n käyttöön avain-arvot, henkilö $personOid, haku $hakuOid")
     val haku = tarjontaIntegration.getHaku(hakuOid)
     val isToisenAsteenHaku = haku.exists(_.isToisenAsteenHaku())

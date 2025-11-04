@@ -496,7 +496,7 @@ object EntityToUIConverter {
     OppijanValintaDataSuccessResponse(
       oppijaNumero,
       hakuOid,
-      valintaData.toUI().map(aac => {
+      valintaData.kaikkiAvainArvotFull().map(aac => {
         AvainArvoContainerUI(
           aac.avain,
           aac.arvo,

@@ -34,6 +34,7 @@ object Validator {
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
   val hakukohdeOidPattern: Regex = "^1\\.2\\.246\\.562\\.20\\.\\d+$".r
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
+  val hakemusOidPattern: Regex = "^1\\.2\\.246\\.562\\.11\\.\\d+$".r
 
   val hetuPattern: Regex = "^(\\d{6})([-A-FU-Y]{1}(\\d{3})([0-9a-zA-Z]))".r
 
@@ -126,6 +127,15 @@ object Validator {
       Set.empty
     else
       Set(VALIDATION_URL_EI_VALIDI + url)
+  }
+
+  def validateHakemusOid(hakemusOid: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (hakemusOid.isEmpty || hakemusOid.exists(_.isEmpty)))
+      Set(VALIDATION_OPPILAITOSOID_TYHJA)
+    else if (hakemusOid.isDefined && !hakemusOidPattern.matches(hakemusOid.get))
+      Set(VALIDATION_OPPILAITOSOID_EI_VALIDI + hakemusOid.get)
+    else
+      Set.empty
   }
 
 
