@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.resource.ui
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKU_OID, ESIMERKKI_HETU, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_TILA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN, ESIMERKKI_YLIAJO_ARVO, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, ESIMERKKI_YLIAJO_VIRKAILIJA}
 import fi.oph.suorituspalvelu.resource.*
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_EI_OIKEUKSIA, UI_TIEDOT_ESIMERKKI_VIRHE, UI_VALINTADATA_EI_OIKEUKSIA}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_YLIAJO_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE, UI_TIEDOT_HAKU_EPAONNISTUI}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -1199,7 +1199,7 @@ case class OppijanValintaDataSuccessResponse(
                                        ) extends OppijanTiedotResponse
 
 case class OppijanValintaDataFailureResponse(
-                                         @(Schema @field)(example = UI_VALINTADATA_EI_OIKEUKSIA)
+                                         @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
                                          @BeanProperty virheet: java.util.Set[String],
                                        ) extends OppijanTiedotResponse
 
@@ -1439,7 +1439,7 @@ trait PoistaSuoritusResponse()
 case class PoistaSuoritusSuccessResponse() extends PoistaSuoritusResponse
 
 case class PoistaSuoritusFailureResponse(
-  @(Schema @field)(example = UI_POISTA_SUORITUS_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheAvaimet: java.util.Set[String],
 ) extends PoistaSuoritusResponse
 
@@ -1449,7 +1449,7 @@ trait PoistaYliajotResponse()
 case class PoistaYliajoSuccessResponse() extends PoistaYliajotResponse
 
 case class PoistaYliajoFailureResponse(
-                                          @(Schema @field)(example = UI_POISTA_SUORITUS_EI_OIKEUKSIA, requiredMode = RequiredMode.REQUIRED)
+                                          @(Schema @field)(example = UI_POISTA_YLIAJO_VIRHE, requiredMode = RequiredMode.REQUIRED)
                                           @BeanProperty virheAvaimet: java.util.Set[String],
                                         ) extends PoistaYliajotResponse
 

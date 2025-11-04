@@ -460,7 +460,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_OPPILAITOS_HAKU_PATH + "?oppilaitos={oppilaitos}&vuosi=2025", ApiConstants.ESIMERKKI_OPPILAITOS_OID))
-      .andExpect(status().isForbidden())
+      .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array("ROLE_APP_SUORITUSREKISTERI_READ_1.2.246.562.10.52320123197"))
   @Test def testHaeOppilaitoksenOppijatEiOikeuksiaOrganisaatioon(): Unit =
@@ -471,14 +471,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(oppilaitosOidJohonOikeudet, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOidJohonOikeudet)).thenReturn(Some(organisaatio))
 
-    val result = mvc.perform(MockMvcRequestBuilders
+    mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_OPPILAITOS_HAKU_PATH + "?oppilaitos={oppilaitos}&vuosi=2025", oppilaitosOidHaettu))
       .andExpect(status().isForbidden)
       .andReturn()
-
-    Assertions.assertEquals(OppijanHakuFailureResponse(
-      java.util.Set.of(UIVirheet.UI_HAKU_EI_OIKEUKSIA)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppilaitoksenOppijatHakuKriteereitaEiMaaritelty(): Unit =
@@ -614,7 +610,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
-      .andExpect(status().isForbidden())
+      .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijanTiedotMalformedOid(): Unit =
@@ -691,7 +687,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
-      .andExpect(status().isForbidden())
+      .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeSyotettavatOppilaitoksetAllowed(): Unit =
@@ -744,7 +740,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus())))
-      .andExpect(status().isForbidden())
+      .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPerusopetuksenOppimaaranSuoritusInvalidJson(): Unit =
@@ -857,7 +853,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus())))
-      .andExpect(status().isForbidden())
+      .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaPerusopetuksenOppiaineenOppimaaranSuoritusInvalidJson(): Unit =
@@ -954,7 +950,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     mvc.perform(MockMvcRequestBuilders
         .delete(ApiConstants.UI_POISTA_SUORITUS_PATH.replace(ApiConstants.UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER, UUID.randomUUID().toString), "")
         .contentType(MediaType.APPLICATION_JSON_VALUE))
-      .andExpect(status().isForbidden())
+      .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusNotFound(): Unit =

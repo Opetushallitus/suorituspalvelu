@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -30,7 +30,7 @@ case class KoskiSyncSuccessResponse(
 
 @Schema(name = "KoskiSyncFailureResponse")
 case class KoskiSyncFailureResponse(
-  @(Schema @field)(example = "[\"" + DATASYNC_EI_OIKEUKSIA + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "[\"" + KOSKI_DATASYNC_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
 
 @Schema(name = "YtrSyncSuccessResponse")
