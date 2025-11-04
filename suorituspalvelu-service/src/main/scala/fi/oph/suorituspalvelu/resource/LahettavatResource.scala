@@ -58,7 +58,7 @@ class LahettavatResource {
             if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onPalveluKayttaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(LahettavatLuokatFailureResponse(java.util.Set.of(LAHETTAVAT_EI_OIKEUKSIA)))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // validoidaan parametrit
             val virheet: Set[String] = Set(
@@ -114,7 +114,7 @@ class LahettavatResource {
             if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onPalveluKayttaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(LahettavatHenkilotFailureResponse(java.util.Set.of(LAHETTAVAT_EI_OIKEUKSIA)))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // validoidaan parametrit
             val virheet: Set[String] = Set(

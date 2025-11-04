@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_EI_OIKEUKSIA, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE
 import fi.oph.suorituspalvelu.resource.ui.{LuoPerusopetuksenOppimaaraFailureResponse, SyotettyPerusopetuksenOppimaaranSuoritus}
@@ -66,7 +66,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa listan henkilöOideista joille päivitys onnistui ja listan virheistä",
         content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaKoskiTiedotHenkiloille(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -77,7 +77,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try
@@ -133,7 +133,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
         content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaKoskiTiedotHaulle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -144,7 +144,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try
@@ -196,7 +196,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
         content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaKoskiTiedotMuuttuneet(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -207,7 +207,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try
@@ -256,7 +256,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
         content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[KoskiSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaKoskiTiedotRetry(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -267,7 +267,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try
@@ -318,7 +318,7 @@ class DataSyncResource {
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse]))))
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaVirtaTiedotHenkilolle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     try
@@ -330,7 +330,7 @@ class DataSyncResource {
             if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // deserialisoidaan
             try
@@ -375,7 +375,7 @@ class DataSyncResource {
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse]))))
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaVirtaTiedotHaulle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -386,7 +386,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(VirtaSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try
@@ -429,7 +429,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
         content = Array(new Content(schema = new Schema(implementation = classOf[YtrSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[YtrSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[YtrSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaYtrTiedotHenkiloille(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -440,7 +440,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try
@@ -489,7 +489,7 @@ class DataSyncResource {
       new ApiResponse(responseCode = "200", description = "Synkronointi tehty, palauttaa onnistuneiden ja epäonnistuneiden henkilöpäivitysten määrän",
         content = Array(new Content(schema = new Schema(implementation = classOf[YtrSyncSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[YtrSyncFailureResponse])))),
-      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[YtrSyncFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def paivitaYtrTiedotHaulle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
@@ -500,7 +500,7 @@ class DataSyncResource {
           if (securityOperaatiot.onRekisterinpitaja())
             Right(None)
           else
-            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YtrSyncFailureResponse(java.util.List.of(DATASYNC_EI_OIKEUKSIA)))))
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
         .flatMap(_ =>
           // deserialisoidaan
           try

@@ -15,7 +15,6 @@ object ApiConstants {
 
   final val DATASYNC_PATH                                   = VERSIONED_API_PREFIX + "/datasync"
   final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
-  final val DATASYNC_EI_OIKEUKSIA                           = "Käyttäjällä ei ole oikeuksia käynnistää tietojen synkronointia"
   final val DATASYNC_JSON_VIRHE                             = "JSON-deserialisointi epäonnistui"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
@@ -47,7 +46,6 @@ object ApiConstants {
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
   final val LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER              = "{" + LAHETTAVAT_VUOSI_PARAM_NAME + "}"
   final val LAHETTAVAT_PATH                                 = VERSIONED_API_PREFIX + "/lahettavat/" + LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER + "/" + LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER
-  final val LAHETTAVAT_EI_OIKEUKSIA                         = "Käyttäjällä ei ole oikeuksia hakea rajaimien tietoja"
   final val LAHETTAVAT_ESIMERKKI_VIRHE                      = "oppilaitosOid ei ole validi oid"
   final val LAHETTAVAT_500_VIRHE                            = "Tietojen haku epäonnistui"
   final val LAHETTAVAT_HAKU_EPÄONNISTUI                     = "Rajaimien tietojen haku epäonnistui"
@@ -77,19 +75,16 @@ object ApiConstants {
   final val UI_RAJAIN_PATH                                  = UI_API_PREFIX + "/rajain"
 
   final val UI_OPPILAITOKSET_PATH                           = UI_RAJAIN_PATH + "/oppilaitokset"
-  final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
 
   final val UI_VUODET_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_VUODET_OPPILAITOS_PARAM_NAME + "}"
   final val UI_VUODET_PATH                                  = UI_RAJAIN_PATH + "/vuodet/" + UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER
-  final val UI_VUODET_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa vuosista"
 
   final val UI_LUOKAT_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_LUOKAT_OPPILAITOS_PARAM_NAME + "}"
   final val UI_LUOKAT_VUOSI_PARAM_NAME                      = "vuosi"
   final val UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER               = "{" + UI_LUOKAT_VUOSI_PARAM_NAME + "}"
   final val UI_LUOKAT_PATH                                  = UI_RAJAIN_PATH + "/luokat/" + UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER + "/" + UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER
-  final val UI_LUOKAT_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa luokista"
 
   final val UI_OPPILAITOS_HAKU_PATH                         = UI_RAJAIN_PATH + "/oppilaitoksenoppijat"
   final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
