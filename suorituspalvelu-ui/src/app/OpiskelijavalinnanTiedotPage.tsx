@@ -12,7 +12,7 @@ import type { Route } from './+types/OpiskelijavalinnanTiedotPage';
 import { groupBy, mapValues, pipe, prop, sortBy } from 'remeda';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   isGenericBackendErrorResponse,
   type AvainArvo,
@@ -26,7 +26,6 @@ import { Add, EditOutlined } from '@mui/icons-material';
 import { OphModal } from '@/components/OphModal';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { saveYliajot } from '@/lib/suorituspalvelu-service';
-import { useNotifications } from '@/components/NotificationProvider';
 import { SpinnerModal } from '@/components/SpinnerModal';
 
 const OPISKELIJAVALINTADATA_GROUPS = [
@@ -189,11 +188,15 @@ const AvainArvotSection = ({
 }) => {
   const { t } = useTranslations();
 
-  const groupedAvainarvot = pipe(
-    avainarvot,
-    ($) => $.filter(avainArvoFilter),
-    groupBy((item) => getOpiskelijavalintaGroup(item)),
-    (grouped) => sortGroups(grouped),
+  const groupedAvainarvot = useMemo(
+    () =>
+      pipe(
+        avainarvot,
+        ($) => $.filter(avainArvoFilter),
+        groupBy((item) => getOpiskelijavalintaGroup(item)),
+        (grouped) => sortGroups(grouped),
+      ),
+    [avainarvot, avainArvoFilter],
   );
 
   return (
@@ -246,6 +249,41 @@ const AvainArvotSection = ({
 };
 
 type YliajoMode = 'add' | 'edit';
+
+const YliajoErrorModal = ({
+  error,
+  onClose,
+}: {
+  error: Error;
+  onClose: () => void;
+}) => {
+  const { t } = useTranslations();
+
+  let message: React.ReactNode = error.message;
+
+  if (error instanceof FetchError) {
+    const responseJSON = error.jsonBody;
+    if (isGenericBackendErrorResponse(responseJSON)) {
+      message = (
+        <Box>
+          {responseJSON.virheAvaimet.map((virhe) => (
+            <p key={virhe}>{t(virhe)}</p>
+          ))}
+        </Box>
+      );
+    }
+  }
+
+  return (
+    <OphModal
+      open={true}
+      onClose={onClose}
+      title={t('opiskelijavalinnan-tiedot.yliajon-tallennus-epaonnistui')}
+    >
+      {message}
+    </OphModal>
+  );
+};
 
 const YliajoEditModal = ({
   mode,
@@ -381,8 +419,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
 
   const [yliajo, setYliajo] = useState<YliajoParams | null>(null);
 
-  const { showNotification } = useNotifications();
-
   const queryClient = useQueryClient();
 
   const yliajoMutation = useMutation({
@@ -406,12 +442,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
         queryOptionsGetValintadata({ oppijaNumero, hakuOid: DUMMY_HAKU_OID }),
       );
     },
-    onError: () => {
-      showNotification({
-        message: t('opiskelijavalinnan-tiedot.yliajon-tallennus-epaonnistui'),
-        type: 'error',
-      });
-    },
   });
 
   return (
@@ -420,6 +450,11 @@ const OpiskelijavalinnanTiedotPageContent = ({
         <SpinnerModal
           open={yliajoMutation.isPending}
           title={t('opiskelijavalinnan-tiedot.tallennetaan-yliajoa')}
+        />
+      ) : yliajoMutation.isError ? (
+        <YliajoErrorModal
+          error={yliajoMutation.error}
+          onClose={() => yliajoMutation.reset()}
         />
       ) : (
         <YliajoEditModal
