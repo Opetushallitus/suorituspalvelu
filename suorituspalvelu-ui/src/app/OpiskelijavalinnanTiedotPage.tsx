@@ -152,6 +152,9 @@ const EditableField = ({
         {startYliajoEdit && (
           <OphButton
             variant="text"
+            aria-label={t('opiskelijavalinnan-tiedot.muokkaa-kenttaa-avain', {
+              avain: avainArvo.avain,
+            })}
             onClick={() =>
               startYliajoEdit?.({
                 arvo: avainArvo.arvo,
@@ -178,7 +181,7 @@ const AvainArvotSection = ({
   avainArvoFilter,
   startYliajoEdit,
 }: {
-  avainarvot: Array<AvainArvo>;
+  avainarvot?: Array<AvainArvo>;
   avainArvoFilter: (avainArvo: AvainArvo) => boolean;
   startYliajoEdit?: (avainarvo: {
     avain: string;
@@ -191,7 +194,7 @@ const AvainArvotSection = ({
   const groupedAvainarvot = useMemo(
     () =>
       pipe(
-        avainarvot,
+        avainarvot ?? [],
         ($) => $.filter(avainArvoFilter),
         groupBy((item) => getOpiskelijavalintaGroup(item)),
         (grouped) => sortGroups(grouped),
@@ -337,9 +340,10 @@ const YliajoEditModal = ({
             <OphFormFieldWrapper
               label={t('opiskelijavalinnan-tiedot.avain')}
               sx={{ minWidth: '50%', overflow: 'visible' }}
-              renderInput={() => (
+              renderInput={({ labelId }) => (
                 <OphInput
                   value={yliajo?.avain ?? ''}
+                  inputProps={{ 'aria-labelledby': labelId }}
                   onChange={(event) => {
                     setYliajo({
                       ...yliajo,
@@ -357,9 +361,10 @@ const YliajoEditModal = ({
                 : yliajo?.avain
             }
             sx={{ minWidth: '50%', overflow: 'visible' }}
-            renderInput={() => (
+            renderInput={({ labelId }) => (
               <OphInput
                 value={yliajo?.arvo ?? ''}
+                inputProps={{ 'aria-labelledby': labelId }}
                 onChange={(event) => {
                   setYliajo({
                     ...yliajo,
@@ -373,9 +378,10 @@ const YliajoEditModal = ({
             sx={{ alignSelf: 'stretch' }}
             label={t('opiskelijavalinnan-tiedot.selite')}
             helperText={t('opiskelijavalinnan-tiedot.selite-aputeksti')}
-            renderInput={() => (
+            renderInput={({ labelId }) => (
               <OphInput
                 value={yliajo?.selite ?? ''}
+                inputProps={{ 'aria-labelledby': labelId }}
                 onChange={(event) => {
                   setYliajo({
                     ...yliajo,
@@ -426,7 +432,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
       return saveYliajot({
         hakuOid: DUMMY_HAKU_OID,
         henkiloOid: oppijaNumero,
-        virkailijaOid: oppijaNumero,
         yliajot: [
           {
             arvo: updatedYliajo.arvo,

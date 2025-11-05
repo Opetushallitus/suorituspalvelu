@@ -24,7 +24,8 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     });
 
     await page.route(
-      `**/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`,
+      (url) =>
+        url.href.includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
       async (route) => {
         await route.fulfill({
           json: VALINTA_DATA,
@@ -95,16 +96,16 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(tiedot).toBeVisible();
 
     await expectLabeledValues(tiedot, [
-      // Suoritukset (duplicate keys)
+      // Suoritukset
       { label: 'PK_TILA', value: 'true' },
       { label: 'PK_SUORITUSVUOSI', value: '2016' },
       { label: 'AM_TILA', value: 'true' },
       { label: 'LK_TILA', value: 'false' },
       { label: 'YO_TILA', value: 'false' },
-      // Lisäpistekoulutus (duplicate keys)
+      // Lisäpistekoulutus
       { label: 'LISAKOULUTUS_OPISTO', value: 'false' },
       { label: 'LISAKOULUTUS_TELMA', value: 'false' },
-      // Perusopetuksen oppiaineet (duplicate keys)
+      // Perusopetuksen oppiaineet
       { label: 'PK_ARVOSANA_AI', value: '9' },
       { label: 'PK_ARVOSANA_AI_OPPIAINE', value: 'AI1' },
       { label: 'PK_ARVOSANA_MA', value: '9' },
@@ -128,5 +129,172 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_ARVOSANA_TE', value: '8' },
       { label: 'PK_ARVOSANA_YH', value: '10' },
     ]);
+  });
+
+  test('muokkaa kentän arvoa onnistuneesti', async ({ page }) => {
+    let savedYliajoData: unknown = null;
+    await page.route('**/ui/tallennayliajot', async (route) => {
+      savedYliajoData = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        json: {},
+      });
+    });
+
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await tiedot
+      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .click();
+
+    const editModal = page.getByRole('dialog', {
+      name: 'Muokkaa kenttää',
+    });
+    await expect(editModal).toBeVisible();
+
+    const arvoInput = editModal.getByLabel('perusopetuksen_kieli');
+    await expect(arvoInput).toHaveValue('FI');
+
+    await arvoInput.fill('SV');
+
+    const seliteInput = editModal.getByLabel('Selite');
+    await seliteInput.fill('Muutettu testissä');
+
+    await Promise.all([
+      page.waitForRequest('**/ui/tallennayliajot'),
+      page.waitForRequest((request) =>
+        request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
+      ),
+      editModal.getByRole('button', { name: 'Tallenna' }).click(),
+    ]);
+
+    expect(savedYliajoData).toMatchObject({
+      henkiloOid: OPPIJANUMERO,
+      hakuOid: '1.2.246.562.29.00000000000000000000',
+      yliajot: [
+        {
+          avain: 'perusopetuksen_kieli',
+          arvo: 'SV',
+          selite: 'Muutettu testissä',
+        },
+      ],
+    });
+
+    await expect(editModal).toBeHidden();
+  });
+
+  test('lisää uuden kentän onnistuneesti', async ({ page }) => {
+    let savedYliajoData: unknown = null;
+    await page.route('**/ui/tallennayliajot', async (route) => {
+      savedYliajoData = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        json: {},
+      });
+    });
+
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    await page.getByRole('button', { name: 'Lisää kenttä' }).click();
+
+    const addModal = page.getByRole('dialog', {
+      name: 'Lisää kenttä',
+    });
+    await expect(addModal).toBeVisible();
+
+    await addModal.getByLabel('Avain').fill('uusi_kentta');
+    await addModal.getByLabel('Arvo').fill('testiArvo');
+    await addModal.getByLabel('Selite').fill('Lisätty testissä');
+
+    await Promise.all([
+      page.waitForRequest('**/ui/tallennayliajot'),
+      page.waitForRequest((request) =>
+        request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
+      ),
+      addModal.getByRole('button', { name: 'Tallenna' }).click(),
+    ]);
+
+    expect(savedYliajoData).toMatchObject({
+      henkiloOid: OPPIJANUMERO,
+      hakuOid: '1.2.246.562.29.00000000000000000000',
+      yliajot: [
+        {
+          avain: 'uusi_kentta',
+          arvo: 'testiArvo',
+          selite: 'Lisätty testissä',
+        },
+      ],
+    });
+
+    await expect(addModal).toBeHidden();
+  });
+
+  test('peruuttaa kentän muokkauksen', async ({ page }) => {
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await tiedot
+      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .click();
+
+    const editModal = page.getByRole('dialog', {
+      name: 'Muokkaa kenttää',
+    });
+    await expect(editModal).toBeVisible();
+
+    await editModal.getByRole('button', { name: 'Peruuta' }).click();
+
+    await expect(editModal).toBeHidden();
+  });
+
+  test('näyttää virheilmoituksen, jos tallennus epäonnistuu', async ({
+    page,
+  }) => {
+    await page.route('**/ui/tallennayliajot', async (route) => {
+      await route.fulfill({
+        status: 400,
+        json: {
+          virheAvaimet: ['backend-virhe.arvo.ei_validi'],
+        },
+      });
+    });
+
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await tiedot
+      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .click();
+
+    const editModal = page.getByRole('dialog', {
+      name: 'Muokkaa kenttää',
+    });
+    await expect(editModal).toBeVisible();
+
+    await Promise.all([
+      page.waitForRequest('**/ui/tallennayliajot'),
+      editModal.getByRole('button', { name: 'Tallenna' }).click(),
+    ]);
+
+    await expect(editModal).toBeHidden();
+
+    const errorModal = page.getByRole('dialog', {
+      name: 'Kentän tallentaminen epäonnistui',
+    });
+    await expect(errorModal).toBeVisible();
+    await expect(errorModal).toContainText('Arvo ei ole validi');
+
+    await errorModal.getByRole('button', { name: 'Sulje' }).click();
+    await expect(errorModal).toBeHidden();
   });
 });

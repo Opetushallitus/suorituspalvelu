@@ -297,6 +297,7 @@
     "lisaa-kentta": "Lisää kenttä",
     "avain": "Avain",
     "arvo": "Arvo",
-    "yliajon-tallennus-epaonnistui": "Kentän tallentaminen epäonnistui"
+    "yliajon-tallennus-epaonnistui": "Kentän tallentaminen epäonnistui",
+    "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}"
   }
 }
