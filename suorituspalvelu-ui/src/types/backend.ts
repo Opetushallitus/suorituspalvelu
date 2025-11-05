@@ -831,6 +831,19 @@ export interface IYksilollistamisNimi {
   en?: string;
 }
 
+export interface IYliajo {
+  avain?: string;
+  arvo?: string;
+  selite?: string;
+}
+
+export interface IYliajoTallennusContainer {
+  henkiloOid?: string;
+  hakuOid?: string;
+  virkailijaOid?: string;
+  yliajot?: IYliajo[];
+}
+
 export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
 export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';

@@ -1200,7 +1200,7 @@ case class OppijanValintaDataSuccessResponse(
 
 case class OppijanValintaDataFailureResponse(
                                          @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
-                                         @BeanProperty virheet: java.util.Set[String],
+                                         @BeanProperty virheAvaimet: java.util.Set[String],
                                        ) extends OppijanTiedotResponse
 
 case class SyotettavaSuoritusTyyppiVaihtoehtoNimi(
