@@ -1136,7 +1136,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
-      virkailijaOid = Optional.of(virkailijaOid),
       yliajot = Optional.of(yliajot)
     )
 
@@ -1164,7 +1163,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
-      virkailijaOid = Optional.of(virkailijaOid),
       yliajot = Optional.of(yliajot)
     )
 
@@ -1180,10 +1178,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaYliajotOppijalleFailureResponse]))
   }
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @WithMockUser(value = "1.2.246.562.24.21250967987", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaYliajotOppijalleAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967210"
-    val virkailijaOid = "1.2.246.562.24.21250967987"
+    val virkailijaOid = "1.2.246.562.24.21250967987" //Tämä tieto poimitaan sessiosta, katso MockUser
     val hakuOid = "1.2.246.562.29.01000000000000013275"
 
     val yliajot = Range(1, 5).map(i => {
@@ -1196,7 +1194,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
-      virkailijaOid = Optional.of(virkailijaOid),
       yliajot = Optional.of(yliajot)
     )
 
@@ -1224,6 +1221,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // ja yliajot tallentuvat kantaan
     val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(4, tallennetutYliajot.size)
+    Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array())
@@ -1257,10 +1255,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaYliajoFailureResponse]))
   }
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @WithMockUser(value = "1.2.246.562.24.21250967987", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaYliajoAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967210"
-    val virkailijaOid = "1.2.246.562.24.21250967987"
+    val virkailijaOid = "1.2.246.562.24.21250967987" //Tämä tieto poimitaan sessiosta, katso MockUser
     val hakuOid = "1.2.246.562.29.01000000000000013275"
     val poistettavaAvain = "avain2"
 
@@ -1274,7 +1272,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
-      virkailijaOid = Optional.of(virkailijaOid),
       yliajot = Optional.of(yliajot)
     )
 
@@ -1293,6 +1290,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(4, tallennetutYliajot.size)
     Assertions.assertTrue(tallennetutYliajot.exists(_.avain == poistettavaAvain))
+    Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
 
     // poistetaan yksi yliajo
     val poistoResult = mvc.perform(MockMvcRequestBuilders

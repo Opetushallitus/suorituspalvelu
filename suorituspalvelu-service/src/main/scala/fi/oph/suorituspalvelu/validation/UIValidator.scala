@@ -296,7 +296,6 @@ object UIValidator {
     val arvoErrors = yliajot.flatMap(y => validateArvo(y.arvo.toScala, false)) //Todo, onko hyödyllistä voida tallentaa tyhjä arvo?
     val containerErrors = Set(
       validateOppijanumero(container.henkiloOid.toScala, true),
-      validateOppijanumero(container.virkailijaOid.toScala, true),
       validateHakuOid(container.hakuOid.toScala, true)
     ).flatten
     containerErrors ++ avainErrors ++ arvoErrors
