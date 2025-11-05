@@ -1,7 +1,9 @@
 import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import {
+  OphButton,
   ophColors,
   OphFormFieldWrapper,
+  OphInput,
   OphTypography,
 } from '@opetushallitus/oph-design-system';
 import { FetchError, useApiSuspenseQuery } from '@/lib/http-client';
@@ -10,15 +12,22 @@ import type { Route } from './+types/OpiskelijavalinnanTiedotPage';
 import { groupBy, mapValues, pipe, prop, sortBy } from 'remeda';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   isGenericBackendErrorResponse,
   type AvainArvo,
+  type YliajoParams,
 } from '@/types/ui-types';
 import { styled } from '@/lib/theme';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
+import { EditOutlined } from '@mui/icons-material';
+import { OphModal } from '@/components/OphModal';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { saveYliajot } from '@/lib/suorituspalvelu-service';
+import { useNotifications } from '@/components/NotificationProvider';
+import { SpinnerModal } from '@/components/SpinnerModal';
 
 const OPISKELIJAVALINTADATA_GROUPS = [
   'yleinen',
@@ -107,12 +116,72 @@ const BreakFlex = styled('div')({
   height: 0,
 });
 
+const EditableField = ({
+  avainArvo,
+  startYliajoEdit,
+}: {
+  avainArvo: AvainArvo;
+  startYliajoEdit?: (avainarvo: {
+    avain: string;
+    arvo: string;
+    selite: string;
+  }) => void;
+}) => {
+  const { t } = useTranslations();
+  const labelId = `avainarvo-label-${avainArvo.avain}`;
+
+  const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa;
+
+  return (
+    <Box
+      key={avainArvo.avain}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: '0 0 calc(50% - 16px)',
+        gap: 0,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <OphTypography id={labelId} variant="label">
+          {avainArvo.avain}
+        </OphTypography>
+        {startYliajoEdit && (
+          <OphButton
+            variant="text"
+            onClick={() =>
+              startYliajoEdit?.({
+                arvo: avainArvo.arvo,
+                avain: avainArvo.avain,
+                selite: avainArvo.metadata.yliajo?.selite ?? '',
+              })
+            }
+            startIcon={<EditOutlined />}
+          />
+        )}
+      </Box>
+      <OphTypography aria-labelledby={labelId}>
+        {avainArvo.arvo}{' '}
+        {alkuperainenArvo
+          ? `(${t('opiskelijavalinnan-tiedot.alkuperainen')}: ${alkuperainenArvo})`
+          : ''}
+      </OphTypography>
+    </Box>
+  );
+};
+
 const AvainArvotSection = ({
   avainarvot,
   avainArvoFilter,
+  startYliajoEdit,
 }: {
   avainarvot: Array<AvainArvo>;
   avainArvoFilter: (avainArvo: AvainArvo) => boolean;
+  startYliajoEdit?: (avainarvo: {
+    avain: string;
+    arvo: string;
+    selite: string;
+  }) => void;
 }) => {
   const { t } = useTranslations();
 
@@ -155,15 +224,9 @@ const AvainArvotSection = ({
                 {items?.map((avainArvo) => (
                   <React.Fragment key={avainArvo.avain}>
                     {avainArvo.avain.includes('_OPPIAINE') && <BreakFlex />}
-                    <OphFormFieldWrapper
-                      key={avainArvo.avain}
-                      sx={{ flex: '0 0 calc(50% - 16px)', margin: '4px' }}
-                      label={avainArvo.avain}
-                      renderInput={({ labelId }) => (
-                        <OphTypography aria-labelledby={labelId}>
-                          {avainArvo.arvo}
-                        </OphTypography>
-                      )}
+                    <EditableField
+                      avainArvo={avainArvo}
+                      startYliajoEdit={startYliajoEdit}
                     />
                   </React.Fragment>
                 ))}
@@ -176,13 +239,96 @@ const AvainArvotSection = ({
   );
 };
 
+const YliajoEditModal = ({
+  yliajo,
+  setYliajo,
+  saveYliajo,
+}: {
+  henkiloOid: string;
+  yliajo: YliajoParams | null;
+  setYliajo: (yliajo: YliajoParams | null) => void;
+  saveYliajo: (updatedYliajo: YliajoParams) => void;
+}) => {
+  const { t } = useTranslations();
+
+  const onClose = useCallback(() => {
+    setYliajo(null);
+  }, [setYliajo]);
+
+  return (
+    yliajo && (
+      <OphModal
+        open={yliajo !== null}
+        onClose={onClose}
+        title={t('opiskelijavalinnan-tiedot.muokkaa-kenttaa')}
+        maxWidth="sm"
+        actions={
+          <>
+            <OphButton variant="outlined" onClick={onClose}>
+              {t('peruuta')}
+            </OphButton>
+            <OphButton
+              variant="contained"
+              onClick={() => {
+                if (yliajo) {
+                  saveYliajo(yliajo);
+                }
+              }}
+            >
+              {t('opiskelijavalinnan-tiedot.tallenna')}
+            </OphButton>
+          </>
+        }
+      >
+        <Stack sx={{ alignItems: 'flex-start', gap: 2, overflow: 'visible' }}>
+          <OphFormFieldWrapper
+            label={yliajo?.avain ?? ''}
+            sx={{ minWidth: '50%', overflow: 'visible' }}
+            renderInput={() => (
+              <OphInput
+                value={yliajo?.arvo ?? ''}
+                onChange={(event) => {
+                  setYliajo({
+                    ...yliajo,
+                    arvo: event.target.value ?? '',
+                  });
+                }}
+              />
+            )}
+          />
+          <OphFormFieldWrapper
+            sx={{ alignSelf: 'stretch' }}
+            label={t('opiskelijavalinnan-tiedot.selite')}
+            helperText={t('opiskelijavalinnan-tiedot.selite-aputeksti')}
+            renderInput={() => (
+              <OphInput
+                value={yliajo?.selite ?? ''}
+                onChange={(event) => {
+                  setYliajo({
+                    ...yliajo,
+                    selite: event.target.value ?? '',
+                  });
+                }}
+                multiline={true}
+                minRows={3}
+              />
+            )}
+          />
+        </Stack>
+      </OphModal>
+    )
+  );
+};
+
+const DUMMY_HAKU_OID = '1.2.246.562.29.00000000000000000000';
+
 const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
 }: {
   oppijaNumero: string;
 }) => {
   const { data: valintadata } = useApiSuspenseQuery(
-    queryOptionsGetValintadata({ oppijaNumero }),
+    queryOptionsGetValintadata({ oppijaNumero, hakuOid: DUMMY_HAKU_OID }),
   );
 
   const { t } = useTranslations();
@@ -190,8 +336,56 @@ const OpiskelijavalinnanTiedotPageContent = ({
   const [avainarvoRyhma, setAvainarvoRyhma] =
     useState<AvainarvoRyhma>('uudet-avainarvot');
 
+  const [yliajo, setYliajo] = useState<YliajoParams | null>(null);
+
+  const { showNotification } = useNotifications();
+
+  const queryClient = useQueryClient();
+
+  const yliajoMutation = useMutation({
+    mutationFn: (updatedYliajo: YliajoParams) => {
+      return saveYliajot({
+        hakuOid: DUMMY_HAKU_OID,
+        henkiloOid: oppijaNumero,
+        virkailijaOid: oppijaNumero,
+        yliajot: [
+          {
+            arvo: updatedYliajo.arvo,
+            avain: updatedYliajo.avain,
+            selite: updatedYliajo.selite ?? '',
+          },
+        ],
+      });
+    },
+    onSuccess: () => {
+      setYliajo(null);
+      queryClient.resetQueries(
+        queryOptionsGetValintadata({ oppijaNumero, hakuOid: DUMMY_HAKU_OID }),
+      );
+    },
+    onError: () => {
+      showNotification({
+        message: t('opiskelijavalinnan-tiedot.yliajon-tallennus-epaonnistui'),
+        type: 'error',
+      });
+    },
+  });
+
   return (
     <Stack spacing={3}>
+      {yliajoMutation.isPending ? (
+        <SpinnerModal
+          open={yliajoMutation.isPending}
+          title={t('opiskelijavalinnan-tiedot.tallennetaan-yliajoa')}
+        />
+      ) : (
+        <YliajoEditModal
+          henkiloOid={oppijaNumero}
+          yliajo={yliajo}
+          setYliajo={setYliajo}
+          saveYliajo={yliajoMutation.mutate}
+        />
+      )}
       <ToggleButtonGroup
         sx={{ alignSelf: 'flex-end' }}
         value={avainarvoRyhma}
@@ -217,6 +411,20 @@ const OpiskelijavalinnanTiedotPageContent = ({
       >
         <AvainArvotSection
           avainarvot={valintadata.avainArvot}
+          startYliajoEdit={
+            avainarvoRyhma === 'uudet-avainarvot'
+              ? (yliajoParams) => {
+                  setYliajo({
+                    henkiloOid: oppijaNumero,
+                    hakuOid: DUMMY_HAKU_OID,
+                    virkailijaOid: oppijaNumero,
+                    arvo: yliajoParams.arvo,
+                    avain: yliajoParams.avain,
+                    selite: yliajoParams.selite,
+                  });
+                }
+              : undefined
+          }
           avainArvoFilter={(avainArvo) =>
             avainarvoRyhma === 'uudet-avainarvot'
               ? !avainArvo.metadata.duplikaatti

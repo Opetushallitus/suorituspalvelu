@@ -33,6 +33,7 @@ import type {
   IPoistaSuoritusFailureResponse,
   ILuoPerusopetuksenOppimaaraFailureResponse,
   IAvainArvoContainerUI,
+  IYliajo,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -241,4 +242,15 @@ export const isPerusopetusOppimaaraBackendErrorResponse = (
 export type SelectOption = {
   label: string;
   value: string;
+};
+
+export type Yliajo = IYliajo;
+
+export type YliajoParams = {
+  henkiloOid: string;
+  hakuOid: string;
+  virkailijaOid?: string;
+  avain: string;
+  arvo: string;
+  selite: string;
 };

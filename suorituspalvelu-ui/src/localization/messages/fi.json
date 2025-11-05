@@ -280,6 +280,12 @@
       "lisapistekoulutukset": "Lisäpistekoulutus",
       "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet"
     },
-    "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa"
+    "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa",
+    "muokkaa-kenttaa": "Muokkaa kenttää",
+    "tallennetaan-yliajoa": "Tallennetaan kentän arvoa...",
+    "tallenna": "Tallenna",
+    "alkuperainen": "Alkuperäinen",
+    "selite": "Selite",
+    "selite-aputeksti": "Kuvaile tähän miksi muokkasit tietoa"
   }
 }
