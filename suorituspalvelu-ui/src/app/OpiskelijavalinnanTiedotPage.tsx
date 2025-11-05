@@ -508,18 +508,20 @@ const OpiskelijavalinnanTiedotPageContent = ({
               : avainArvo.metadata.duplikaatti
           }
         />
-        <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
-          <OphButton
-            startIcon={<Add />}
-            variant="outlined"
-            onClick={() => {
-              setMode('add');
-              setYliajo(EMPTY_YLIAJO);
-            }}
-          >
-            {t('opiskelijavalinnan-tiedot.lisaa-kentta')}
-          </OphButton>
-        </Stack>
+        {avainarvoRyhma === 'uudet-avainarvot' && (
+          <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
+            <OphButton
+              startIcon={<Add />}
+              variant="outlined"
+              onClick={() => {
+                setMode('add');
+                setYliajo(EMPTY_YLIAJO);
+              }}
+            >
+              {t('opiskelijavalinnan-tiedot.lisaa-kentta')}
+            </OphButton>
+          </Stack>
+        )}
       </AccordionBox>
     </Stack>
   );
