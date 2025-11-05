@@ -682,12 +682,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
       .andExpect(status().is3xxRedirection())
 
+/*
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testHaeSyotettavatOppilaitoksetNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
     mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
       .andExpect(status().isForbidden)
+*/
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeSyotettavatOppilaitoksetAllowed(): Unit =

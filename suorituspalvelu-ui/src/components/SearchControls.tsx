@@ -58,12 +58,6 @@ export function SearchControls() {
           setTunniste(e.target.value);
         }}
       />
-      <OppilaitosSelectField
-        value={oppilaitos ?? ''}
-        onChange={(e) => {
-          setOppilaitos(e.target.value);
-        }}
-      />
     </Stack>
   );
 }

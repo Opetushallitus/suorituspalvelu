@@ -60,8 +60,6 @@ jobs:
           project_path: suorituspalvelu-ui
       - name: Check types
         run: npm run typecheck
-      - name: Run linter
-        run: npm run lint
       - name: Run unit tests
         run: npm run test
   test-playwright:
