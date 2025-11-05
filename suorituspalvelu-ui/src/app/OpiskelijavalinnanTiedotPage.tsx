@@ -22,7 +22,7 @@ import { styled } from '@/lib/theme';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
-import { EditOutlined } from '@mui/icons-material';
+import { Add, EditOutlined } from '@mui/icons-material';
 import { OphModal } from '@/components/OphModal';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { saveYliajot } from '@/lib/suorituspalvelu-service';
@@ -34,6 +34,7 @@ const OPISKELIJAVALINTADATA_GROUPS = [
   'suoritukset',
   'lisapistekoulutukset',
   'perusopetuksen-oppiaineet',
+  'lisatyt',
 ] as const;
 
 type AvainarvoRyhma = 'uudet-avainarvot' | 'vanhat-avainarvot';
@@ -42,8 +43,9 @@ type OpiskelijavalintaDataGroups =
   (typeof OPISKELIJAVALINTADATA_GROUPS)[number];
 
 const getOpiskelijavalintaGroup = (
-  key: string,
+  item: AvainArvo,
 ): OpiskelijavalintaDataGroups => {
+  const key = item.avain;
   if (key.startsWith('PK_ARVOSANA') || key.startsWith('PERUSKOULU_ARVOSANA')) {
     return 'perusopetuksen-oppiaineet';
   } else if (
@@ -57,6 +59,8 @@ const getOpiskelijavalintaGroup = (
     key.endsWith('_TILA')
   ) {
     return 'suoritukset';
+  } else if (item.metadata.arvoEnnenYliajoa == null) {
+    return 'lisatyt';
   } else {
     return 'yleinen';
   }
@@ -188,12 +192,12 @@ const AvainArvotSection = ({
   const groupedAvainarvot = pipe(
     avainarvot,
     ($) => $.filter(avainArvoFilter),
-    groupBy((item) => getOpiskelijavalintaGroup(item.avain)),
+    groupBy((item) => getOpiskelijavalintaGroup(item)),
     (grouped) => sortGroups(grouped),
   );
 
   return (
-    <Stack sx={{ gap: 2 }}>
+    <Stack sx={{ gap: 3 }}>
       {OPISKELIJAVALINTADATA_GROUPS.map((group) => {
         const items = groupedAvainarvot[group];
         return (
@@ -204,7 +208,7 @@ const AvainArvotSection = ({
                   sx={{
                     width: '100%',
                     borderBottom: `1px solid ${ophColors.grey300}`,
-                    marginBottom: 3,
+                    marginBottom: 2,
                   }}
                 >
                   <OphTypography variant="h5">
@@ -221,9 +225,11 @@ const AvainArvotSection = ({
                   gap: 2,
                 }}
               >
-                {items?.map((avainArvo) => (
+                {items?.map((avainArvo, index) => (
                   <React.Fragment key={avainArvo.avain}>
-                    {avainArvo.avain.includes('_OPPIAINE') && <BreakFlex />}
+                    {avainArvo.avain.includes('_OPPIAINE') && index !== 0 && (
+                      <BreakFlex />
+                    )}
                     <EditableField
                       avainArvo={avainArvo}
                       startYliajoEdit={startYliajoEdit}
@@ -239,11 +245,15 @@ const AvainArvotSection = ({
   );
 };
 
+type YliajoMode = 'add' | 'edit';
+
 const YliajoEditModal = ({
+  mode,
   yliajo,
   setYliajo,
   saveYliajo,
 }: {
+  mode: YliajoMode;
   henkiloOid: string;
   yliajo: YliajoParams | null;
   setYliajo: (yliajo: YliajoParams | null) => void;
@@ -260,7 +270,11 @@ const YliajoEditModal = ({
       <OphModal
         open={yliajo !== null}
         onClose={onClose}
-        title={t('opiskelijavalinnan-tiedot.muokkaa-kenttaa')}
+        title={
+          mode === 'add'
+            ? t('opiskelijavalinnan-tiedot.lisaa-kentta')
+            : t('opiskelijavalinnan-tiedot.muokkaa-kenttaa')
+        }
         maxWidth="sm"
         actions={
           <>
@@ -281,8 +295,29 @@ const YliajoEditModal = ({
         }
       >
         <Stack sx={{ alignItems: 'flex-start', gap: 2, overflow: 'visible' }}>
+          {mode === 'add' && (
+            <OphFormFieldWrapper
+              label={t('opiskelijavalinnan-tiedot.avain')}
+              sx={{ minWidth: '50%', overflow: 'visible' }}
+              renderInput={() => (
+                <OphInput
+                  value={yliajo?.avain ?? ''}
+                  onChange={(event) => {
+                    setYliajo({
+                      ...yliajo,
+                      avain: event.target.value ?? '',
+                    });
+                  }}
+                />
+              )}
+            />
+          )}
           <OphFormFieldWrapper
-            label={yliajo?.avain ?? ''}
+            label={
+              mode === 'add'
+                ? t('opiskelijavalinnan-tiedot.arvo')
+                : yliajo?.avain
+            }
             sx={{ minWidth: '50%', overflow: 'visible' }}
             renderInput={() => (
               <OphInput
@@ -322,6 +357,12 @@ const YliajoEditModal = ({
 
 const DUMMY_HAKU_OID = '1.2.246.562.29.00000000000000000000';
 
+const EMPTY_YLIAJO = {
+  avain: '',
+  arvo: '',
+  selite: '',
+} as const;
+
 const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
 }: {
@@ -332,6 +373,8 @@ const OpiskelijavalinnanTiedotPageContent = ({
   );
 
   const { t } = useTranslations();
+
+  const [mode, setMode] = useState<YliajoMode>('edit');
 
   const [avainarvoRyhma, setAvainarvoRyhma] =
     useState<AvainarvoRyhma>('uudet-avainarvot');
@@ -352,7 +395,7 @@ const OpiskelijavalinnanTiedotPageContent = ({
           {
             arvo: updatedYliajo.arvo,
             avain: updatedYliajo.avain,
-            selite: updatedYliajo.selite ?? '',
+            selite: updatedYliajo.selite,
           },
         ],
       });
@@ -380,6 +423,7 @@ const OpiskelijavalinnanTiedotPageContent = ({
         />
       ) : (
         <YliajoEditModal
+          mode={mode}
           henkiloOid={oppijaNumero}
           yliajo={yliajo}
           setYliajo={setYliajo}
@@ -414,10 +458,8 @@ const OpiskelijavalinnanTiedotPageContent = ({
           startYliajoEdit={
             avainarvoRyhma === 'uudet-avainarvot'
               ? (yliajoParams) => {
+                  setMode('edit');
                   setYliajo({
-                    henkiloOid: oppijaNumero,
-                    hakuOid: DUMMY_HAKU_OID,
-                    virkailijaOid: oppijaNumero,
                     arvo: yliajoParams.arvo,
                     avain: yliajoParams.avain,
                     selite: yliajoParams.selite,
@@ -431,6 +473,18 @@ const OpiskelijavalinnanTiedotPageContent = ({
               : avainArvo.metadata.duplikaatti
           }
         />
+        <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
+          <OphButton
+            startIcon={<Add />}
+            variant="outlined"
+            onClick={() => {
+              setMode('add');
+              setYliajo(EMPTY_YLIAJO);
+            }}
+          >
+            {t('opiskelijavalinnan-tiedot.lisaa-kentta')}
+          </OphButton>
+        </Stack>
       </AccordionBox>
     </Stack>
   );

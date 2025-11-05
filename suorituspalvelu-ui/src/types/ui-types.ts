@@ -247,9 +247,6 @@ export type SelectOption = {
 export type Yliajo = IYliajo;
 
 export type YliajoParams = {
-  henkiloOid: string;
-  hakuOid: string;
-  virkailijaOid?: string;
   avain: string;
   arvo: string;
   selite: string;

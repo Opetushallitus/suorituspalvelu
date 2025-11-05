@@ -278,7 +278,8 @@
     "ryhmat": {
       "suoritukset": "Suoritukset",
       "lisapistekoulutukset": "Lisäpistekoulutus",
-      "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet"
+      "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet",
+      "lisatyt": "Manuaalisesti lisätyt tiedot"
     },
     "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa",
     "muokkaa-kenttaa": "Muokkaa kenttää",
@@ -286,6 +287,9 @@
     "tallenna": "Tallenna",
     "alkuperainen": "Alkuperäinen",
     "selite": "Selite",
-    "selite-aputeksti": "Kuvaile tähän miksi muokkasit tietoa"
+    "selite-aputeksti": "Kuvaile tähän miksi muokkasit tietoa",
+    "lisaa-kentta": "Lisää kenttä",
+    "avain": "Avain",
+    "arvo": "Arvo"
   }
 }
