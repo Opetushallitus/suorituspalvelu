@@ -11,7 +11,10 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
+import {
+  queryOptionsGetOppija,
+  queryOptionsGetValintadata,
+} from '@/lib/suorituspalvelu-queries';
 import { SuoritusMutationStatusIndicator } from '@/components/SuoritusMutationStatusIndicator';
 import { useGlobalConfirmationModal } from '@/components/ConfirmationModal';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -157,8 +160,10 @@ const useSuoritusManagerState = () => {
     },
     onSuccess: () => {
       if (oppijaOid) {
-        queryClient.invalidateQueries(queryOptionsGetOppija(oppijaOid));
-        queryClient.refetchQueries(queryOptionsGetOppija(oppijaOid));
+        queryClient.resetQueries(queryOptionsGetOppija(oppijaOid));
+        queryClient.resetQueries(
+          queryOptionsGetValintadata({ oppijaNumero: oppijaOid }),
+        );
       }
       if (mutationOperation !== 'delete') {
         setSuoritusState(null);
@@ -167,7 +172,10 @@ const useSuoritusManagerState = () => {
     },
   });
 
-  useConfirmNavigation(isDirty);
+  useConfirmNavigation(isDirty, () => {
+    setSuoritusState(null);
+    setIsDirty(false);
+  });
 
   const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
 
@@ -262,6 +270,7 @@ const useSuoritusManagerState = () => {
           });
         } else {
           setSuoritusState(null);
+          setIsDirty(false);
         }
       },
       onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
@@ -314,7 +323,7 @@ const useSuoritusManagerState = () => {
   ]);
 };
 
-export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {
+export const useSuoritusManager = (params?: { oppijaOid?: string }) => {
   const context = React.use(SuoritusManagerContext);
   if (!context) {
     throw new Error(
@@ -323,8 +332,10 @@ export const useSuoritusManager = ({ oppijaOid }: { oppijaOid: string }) => {
   }
 
   useEffect(() => {
-    context.setOppijaOid(oppijaOid);
-  }, [context, oppijaOid]);
+    if (params?.oppijaOid) {
+      context.setOppijaOid(params.oppijaOid);
+    }
+  }, [context, params?.oppijaOid]);
 
   return context;
 };

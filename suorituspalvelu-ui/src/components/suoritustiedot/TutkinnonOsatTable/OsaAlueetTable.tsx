@@ -50,7 +50,7 @@ export const OsaAlueetTable = ({
         {osaAlueet.map((osaAlue) => {
           const nimi = translateKielistetty(osaAlue.nimi);
           return (
-            <TableRow key={nimi}>
+            <TableRow key={`${nimi}-${osaAlue.laajuus}`}>
               <TableCell>{nimi}</TableCell>
               <TableCell>{osaAlue.laajuus}</TableCell>
               <TableCell>{osaAlue.arvosana}</TableCell>

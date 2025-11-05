@@ -2,11 +2,12 @@ import { StripedTable } from '@/components/StripedTable';
 import { useTranslations } from '@/hooks/useTranslations';
 import type {
   PerusopetusOppiaineFields,
+  SelectOption,
   SuoritusFields,
   Suoritusvaihtoehdot,
 } from '@/types/ui-types';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { EditOppiaineRow, type SelectOption } from './EditOppiaineRow';
+import { EditOppiaineRow } from './EditOppiaineRow';
 
 export const EditArvosanatTable = ({
   suoritus,

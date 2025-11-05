@@ -119,7 +119,7 @@ class UIService {
     oppilaitosOids
       .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
       .map(organisaatio => Oppilaitos(OppilaitosNimi(
-        Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+        Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
         organisaatio.oid)))
   }
 
@@ -130,14 +130,14 @@ class UIService {
     oppilaitosOids
       .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
       .map(organisaatio => Oppilaitos(OppilaitosNimi(
-        Optional.of(organisaatio.nimi.fi), Optional.of(organisaatio.nimi.sv), Optional.of(organisaatio.nimi.en)),
+        Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
         organisaatio.oid))
   }
 
   def haeSyotettavienSuoritustenOppilaitokset(): List[Oppilaitos] = {
     organisaatioProvider.haeKaikkiOrganisaatiot()
       .values
-      .filter(organisaatio => organisaatio.tyypit.exists(tyyppi => tyyppi=="organisaatiotyyppi_02"))
+      .filter(organisaatio => organisaatio.tyypit.contains("organisaatiotyyppi_02"))
       .map(organisaatio => Oppilaitos(OppilaitosNimi(
         Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
         organisaatio.oid))

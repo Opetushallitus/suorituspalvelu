@@ -32,6 +32,7 @@ import type {
   IYksilollistaminen,
   IPoistaSuoritusFailureResponse,
   ILuoPerusopetuksenOppimaaraFailureResponse,
+  IAvainArvoContainerUI,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -213,7 +214,9 @@ export type Yksilollistaminen = IYksilollistaminen;
 
 export type GenericBackendError = IPoistaSuoritusFailureResponse;
 
-export const isGenericBackendError = (
+export type AvainArvo = IAvainArvoContainerUI;
+
+export const isGenericBackendErrorResponse = (
   error: unknown,
 ): error is GenericBackendError => {
   return (
@@ -224,7 +227,7 @@ export const isGenericBackendError = (
   );
 };
 
-export const isPerusopetusOppimaaraBackendError = (
+export const isPerusopetusOppimaaraBackendErrorResponse = (
   body: unknown,
 ): body is ILuoPerusopetuksenOppimaaraFailureResponse => {
   return (
@@ -233,4 +236,9 @@ export const isPerusopetusOppimaaraBackendError = (
     'yleisetVirheAvaimet' in body &&
     Array.isArray(body.yleisetVirheAvaimet)
   );
+};
+
+export type SelectOption = {
+  label: string;
+  value: string;
 };

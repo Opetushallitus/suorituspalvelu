@@ -1,8 +1,8 @@
 import { FullSpinner } from '@/components/FullSpinner';
 import { OphModal } from '@/components/OphModal';
 import {
-  isGenericBackendError,
-  isPerusopetusOppimaaraBackendError,
+  isGenericBackendErrorResponse,
+  isPerusopetusOppimaaraBackendErrorResponse,
 } from '@/types/ui-types';
 import { Alert, Box, Snackbar, type SnackbarCloseReason } from '@mui/material';
 import React, { useState } from 'react';
@@ -36,7 +36,7 @@ const SuoritusMutationErrorModal = ({
 
   if (error instanceof FetchError) {
     const responseJSON = error.jsonBody;
-    if (isGenericBackendError(responseJSON)) {
+    if (isGenericBackendErrorResponse(responseJSON)) {
       message = (
         <Box>
           {responseJSON.virheAvaimet.map((virhe) => (
@@ -44,7 +44,7 @@ const SuoritusMutationErrorModal = ({
           ))}
         </Box>
       );
-    } else if (isPerusopetusOppimaaraBackendError(responseJSON)) {
+    } else if (isPerusopetusOppimaaraBackendErrorResponse(responseJSON)) {
       message = (
         <Box>
           <Box>

@@ -45,12 +45,8 @@ export const PerusopetusSuoritusAdder = ({
           ref={suoritusPaperRef}
           onSuoritusChange={onSuoritusChange}
           onOppiaineChange={onOppiaineChange}
-          onSave={() => {
-            saveSuoritus();
-          }}
-          onCancel={() => {
-            stopSuoritusEdit();
-          }}
+          onSave={saveSuoritus}
+          onCancel={stopSuoritusEdit}
         />
       )}
     </Stack>

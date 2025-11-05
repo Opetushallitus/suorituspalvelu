@@ -7,10 +7,12 @@ import {
   OphInputFormField,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
-import { useId, type Ref } from 'react';
+import { useEffect, useId, type Ref } from 'react';
 import type {
   PerusopetusOppiaineFields,
+  SelectOption,
   SuoritusFields,
+  Suoritusvaihtoehdot,
 } from '@/types/ui-types';
 import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -20,26 +22,24 @@ import {
   useSuoritusOppilaitosOptions,
 } from '@/lib/suorituspalvelu-queries';
 import { DatePicker } from '@/components/DatePicker';
-import { useApiSuspenseQuery } from '@/lib/http-client';
+import { useApiQuery } from '@/lib/http-client';
 import { EditArvosanatTable } from './EditArvosanatTable';
-import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
-import type { SuoritusEditMode } from '@/lib/suoritusManager';
+import { type SuoritusEditMode } from '@/lib/suoritusManager';
 import { omit } from 'remeda';
+import { useNotifications } from '@/components/NotificationProvider';
+import { FullSpinner } from '@/components/FullSpinner';
 
 const OppilaitosField = ({
   label,
   value,
   onChange,
+  oppilaitoksetOptions,
 }: {
   label: string;
   value: string;
   onChange: (newValue: string) => void;
+  oppilaitoksetOptions: Array<SelectOption>;
 }) => {
-  const { data: oppilaitoksetOptions = [], isLoading } =
-    useSuoritusOppilaitosOptions();
-
-  const { t } = useTranslations();
-
   return (
     <OphFormFieldWrapper
       label={label}
@@ -48,8 +48,6 @@ const OppilaitosField = ({
         return (
           <Autocomplete
             options={oppilaitoksetOptions}
-            loading={isLoading}
-            loadingText={t('ladataan-oppilaitoksia')}
             filterOptions={(options, state) =>
               options.filter((o) => o.label.includes(state.inputValue))
             }
@@ -86,19 +84,19 @@ const EditSuoritusContent = ({
   onCancel,
   onSuoritusChange,
   onOppiaineChange,
+  suoritusvaihtoehdot,
+  suoritusOppilaitosOptions,
 }: {
   mode: SuoritusEditMode;
   suoritus: SuoritusFields;
   onSave: () => void;
-  onCancel?: () => void;
+  onCancel: () => void;
   onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => void;
   onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
+  suoritusvaihtoehdot: Suoritusvaihtoehdot;
+  suoritusOppilaitosOptions: Array<SelectOption>;
 }) => {
   const { t, translateKielistetty } = useTranslations();
-
-  const { data: suoritusvaihtoehdot } = useApiSuspenseQuery(
-    queryOptionsGetSuoritusvaihtoehdot(),
-  );
 
   const suoritusTyyppiOptions =
     suoritusvaihtoehdot?.suoritusTyypit.map((tyyppi) => ({
@@ -154,6 +152,7 @@ const EditSuoritusContent = ({
           onChange={(newValue) => {
             onSuoritusChange({ oppilaitosOid: newValue });
           }}
+          oppilaitoksetOptions={suoritusOppilaitosOptions}
         />
         <OphSelectFormField
           label={t('muokkaus.suoritus.tila')}
@@ -235,12 +234,54 @@ export const EditSuoritusPaper = ({
   onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => void;
   onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => void;
   onSave: () => void;
-  onCancel?: () => void;
+  onCancel: () => void;
   ref: Ref<HTMLDivElement> | null;
 }) => {
-  return (
-    <PaperWithTopColor ref={ref} topColor={ophColors.cyan2}>
-      <QuerySuspenseBoundary>
+  const { t } = useTranslations();
+  const {
+    data: suoritusvaihtoehdot,
+    isLoading: isSuoritusvaihtoehdotLoading,
+    isError: suoritusvaihtoehdotError,
+  } = useApiQuery(queryOptionsGetSuoritusvaihtoehdot());
+
+  const {
+    data: suoritusOppilaitosOptions,
+    isLoading: isSuoritusOppilaitosOptionsLoading,
+    isError: suoritusOppilaitosOptionsError,
+  } = useSuoritusOppilaitosOptions();
+
+  const { showNotification } = useNotifications();
+
+  useEffect(() => {
+    if (suoritusvaihtoehdotError) {
+      showNotification({
+        message: t('virhe.suoritusvaihtoehtojen-lataus-epaonnistui'),
+        type: 'error',
+      });
+      onCancel();
+    } else if (suoritusOppilaitosOptionsError) {
+      showNotification({
+        message: t('virhe.oppilaitosten-lataus-epaonnistui'),
+        type: 'error',
+      });
+      onCancel();
+    }
+  }, [suoritusvaihtoehdotError, suoritusOppilaitosOptionsError]);
+
+  const isLoading =
+    isSuoritusvaihtoehdotLoading || isSuoritusOppilaitosOptionsLoading;
+
+  if (isLoading) {
+    return (
+      <PaperWithTopColor ref={ref} topColor={ophColors.cyan2}>
+        <FullSpinner />
+      </PaperWithTopColor>
+    );
+  }
+
+  if (suoritusvaihtoehdot && suoritusOppilaitosOptions) {
+    return (
+      <PaperWithTopColor ref={ref} topColor={ophColors.cyan2}>
         <EditSuoritusContent
           mode={mode}
           onSave={onSave}
@@ -248,8 +289,10 @@ export const EditSuoritusPaper = ({
           suoritus={suoritus}
           onSuoritusChange={onSuoritusChange}
           onOppiaineChange={onOppiaineChange}
+          suoritusvaihtoehdot={suoritusvaihtoehdot}
+          suoritusOppilaitosOptions={suoritusOppilaitosOptions}
         />
-      </QuerySuspenseBoundary>
-    </PaperWithTopColor>
-  );
+      </PaperWithTopColor>
+    );
+  }
 };
