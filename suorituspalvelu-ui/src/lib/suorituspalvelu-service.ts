@@ -179,7 +179,6 @@ export const deleteSuoritus = async (versioTunniste: string) => {
 export const saveYliajot = async ({
   henkiloOid,
   hakuOid,
-  virkailijaOid,
   yliajot,
 }: IYliajoTallennusContainer) => {
   const config = await configPromise;
@@ -189,7 +188,6 @@ export const saveYliajot = async ({
     {
       henkiloOid,
       hakuOid,
-      virkailijaOid,
       yliajot,
     },
   );
