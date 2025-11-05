@@ -55,9 +55,16 @@ object UIValidator {
   final val VALIDATION_AVAIN_EI_VALIDI            = "backend-virhe.avain.ei_validi"
   final val VALIDATION_ARVO_TYHJA                 = "backend-virhe.arvo.tyhja"
   final val VALIDATION_ARVO_EI_VALIDI             = "backend-virhe.arvo.ei_validi"
+  final val VALIDATION_SELITE_TYHJA               = "backend-virhe.selite.tyhja"
+  final val VALIDATION_SELITE_EI_VALIDI           = "backend-virhe.selite.ei_validi"
+
+  val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
+  val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
 
   //Yliajojen avamissa ja arvoissa vain kirjaimia, numeroita ja alaviivoja.
   val avainArvoStringPattern: Regex = "^[a-zA-Z0-9_]*$".r
+
+  val yliajoSeliteStringPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d_.,:]*$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d \\-_]+$".r
@@ -257,6 +264,18 @@ object UIValidator {
     ).flatten
   }
 
+  def validateSelite(selite: Option[String], pakollinen: Boolean): Set[String] = {
+    if (selite.isEmpty || selite.exists(_.isEmpty))
+      if (pakollinen)
+        Set(VALIDATION_ARVO_TYHJA)
+      else
+        Set.empty
+    else if (!yliajoSeliteStringPattern.matches(selite.get))
+      Set(VALIDATION_ARVO_EI_VALIDI)
+    else
+      Set.empty
+  }
+
   def validateArvo(arvo: Option[String], pakollinen: Boolean): Set[String] = {
     if (arvo.isEmpty || arvo.exists(_.isEmpty))
       if (pakollinen)
@@ -294,6 +313,7 @@ object UIValidator {
     val yliajot = container.yliajot.toScala.map(_.asScala).getOrElse(List.empty)
     val avainErrors = yliajot.flatMap(y => validateAvain(y.avain.toScala, true))
     val arvoErrors = yliajot.flatMap(y => validateArvo(y.arvo.toScala, false)) //Todo, onko hyödyllistä voida tallentaa tyhjä arvo?
+    val seliteErrors = yliajot.flatMap(y => validateSelite(y.selite.toScala, false))
     val containerErrors = Set(
       validateOppijanumero(container.henkiloOid.toScala, true),
       validateHakuOid(container.hakuOid.toScala, true)
