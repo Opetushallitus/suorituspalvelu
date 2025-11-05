@@ -10,14 +10,14 @@ import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.ui.UIService
+import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import fi.oph.suorituspalvelu.validation.{UIValidator, Validator}
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -36,13 +36,13 @@ import scala.jdk.CollectionConverters.*
  */
 class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
 
-  @MockBean
+  @MockitoBean
   val onrIntegration: OnrIntegration = null
 
-  @MockBean
+  @MockitoBean
   val organisaatioProvider: OrganisaatioProvider = null
 
-  @MockBean
+  @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
   val OPPILAITOS_OID = "1.2.246.562.10.52320123196"
@@ -69,7 +69,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "2025"), ""))
       .andExpect(status().isForbidden)
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeLuokatInvalidParams(): Unit =
     // haetaan virheellisillä parametreilla
     val result = mvc.perform(MockMvcRequestBuilders
@@ -85,7 +85,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
       ),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatLuokatFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeLuokatAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21583363331"
     val vuosi = 2025
@@ -167,7 +167,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, "2025"), ""))
       .andExpect(status().isForbidden)
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeHenkilotInvalidParams(): Unit =
     // haetaan virheellisillä parametreilla
     val result = mvc.perform(MockMvcRequestBuilders
@@ -183,7 +183,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
     ),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatLuokatFailureResponse]))
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPH_PALVELUKAYTTAJA))
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeHenkilotAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21583363331"
     val vuosi = 2025

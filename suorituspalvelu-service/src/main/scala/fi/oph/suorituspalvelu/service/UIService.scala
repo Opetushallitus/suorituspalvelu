@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.ui
+package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
@@ -8,16 +8,16 @@ import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuo
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import fi.oph.suorituspalvelu.validation.Validator
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 import java.time.{Instant, LocalDate}
-import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.Optional
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 
 object UIService {
   val EXAMPLE_OPPIJA_OID = "1.2.246.562.24.40483869857"
@@ -115,6 +115,8 @@ class UIService {
 
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
+  val ONR_TIMEOUT = 10.seconds;
+
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
     oppilaitosOids
       .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
@@ -184,6 +186,14 @@ class UIService {
     }
   }
 
+  def haeAliakset(oppijaNumero: String): Set[String] =
+    try
+      Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).allOids).flatten
+    catch
+      case e: Exception =>
+        LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
+        Set(oppijaNumero)
+
   /**
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
    * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
@@ -224,7 +234,7 @@ class UIService {
       }), 30.seconds)
 
     def hasOrganisaatioKatseluoikeus(): Boolean =
-      val vastaanottajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
+      val vastaanottajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
       vastaanottajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => allOids.exists(oppijaOid => {
         val opiskeluoikeudet = this.kantaOperaatiot.haeSuoritukset(oppijaOid).values.flatten.toSeq
         val metadata = KoskiUtil.getMetadata(opiskeluoikeudet)

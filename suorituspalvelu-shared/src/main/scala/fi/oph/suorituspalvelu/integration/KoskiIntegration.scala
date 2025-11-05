@@ -59,18 +59,19 @@ class KoskiIntegration {
 
   @Autowired val koskiClient: KoskiClient = null
 
-  private val KOSKI_BATCH_SIZE = 5000
+  private val KOSKI_BATCH_SIZE = 1000
 
   def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): SaferIterator[KoskiDataForOppija] = {
     new SaferIterator(fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp)))
   }
 
   def fetchKoskiTiedotForOppijat(personOids: Set[String]): SaferIterator[KoskiDataForOppija] = {
+    val size = if(personOids.isEmpty) 0 else Math.ceil(personOids.size.asInstanceOf[Double]/KOSKI_BATCH_SIZE.asInstanceOf[Double]).asInstanceOf[Int]
     val grouped = personOids.grouped(KOSKI_BATCH_SIZE)
     val started = new AtomicInteger(0)
 
     new SaferIterator(grouped.flatMap(group => {
-      LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/${grouped.size}")
+      LOG.info(s"Synkataan ${group.size} henkilön tiedot Koskesta, erä ${started.incrementAndGet()}/$size")
       fetchKoskiBatch(KoskiMassaluovutusQueryParams.forOids(group))
     }))
   }

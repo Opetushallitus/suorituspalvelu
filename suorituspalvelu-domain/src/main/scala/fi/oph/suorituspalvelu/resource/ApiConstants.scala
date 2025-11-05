@@ -15,10 +15,9 @@ object ApiConstants {
 
   final val DATASYNC_PATH                                   = VERSIONED_API_PREFIX + "/datasync"
   final val DATASYNC_ESIMERKKI_JOB_ID                       = "0181a38f-0883-7a0e-8155-83f5d9a3c226"
-  final val DATASYNC_EI_OIKEUKSIA                           = "Käyttäjällä ei ole oikeuksia käynnistää tietojen synkronointia"
   final val DATASYNC_JSON_VIRHE                             = "JSON-deserialisointi epäonnistui"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjälle ei ole rekisterinpitäjä-oikeutta"
+  final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
 
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
 
@@ -27,18 +26,18 @@ object ApiConstants {
   final val KOSKI_DATASYNC_HENKILOT_MAX_MAARA               = KOSKI_DATASYNC_HENKILOT_MAX_MAARA_STR.toInt
   final val KOSKI_DATASYNC_HENKILOT_LIIKAA                  = "Tiedot voi hakea korkeintaan 5000 henkilölle kerrallaan"
   final val KOSKI_DATASYNC_500_VIRHE                        = "Tietojen päivitys KOSKI-järjestelmästä epäonnistui"
+  final val KOSKI_DATASYNC_ESIMERKKI_VIRHE                  = "henkilöOid:" + ESIMERKKI_OPPIJANUMERO + ", virheet: Henkilön tietojen päivitys epäonnistui"
 
   final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
   final val KOSKI_DATASYNC_MUUTTUNEET_PATH                  = KOSKI_DATASYNC_PATH + "/muuttuneet"
   final val KOSKI_DATASYNC_RETRY_PATH                       = KOSKI_DATASYNC_PATH + "/retry"
 
   final val YTR_DATASYNC_PATH                               = DATASYNC_PATH + "/ytr"
+  final val YTR_DATASYNC_HENKILOT_PATH                      = YTR_DATASYNC_PATH + "/henkilot"
   final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
 
-  final val VIRTA_DATASYNC_PARAM_NAME                       = "oppijaNumero"
-  final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
-  final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta" + "/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
-  final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta" + "/haku/"
+  final val VIRTA_DATASYNC_HENKILO_PATH                     = DATASYNC_PATH + "/virta/henkilo"
+  final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta/haku"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
   final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
 
@@ -47,27 +46,15 @@ object ApiConstants {
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
   final val LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER              = "{" + LAHETTAVAT_VUOSI_PARAM_NAME + "}"
   final val LAHETTAVAT_PATH                                 = VERSIONED_API_PREFIX + "/lahettavat/" + LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER + "/" + LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER
-  final val LAHETTAVAT_EI_OIKEUKSIA                         = "Käyttäjällä ei ole oikeuksia hakea rajaimien tietoja"
   final val LAHETTAVAT_ESIMERKKI_VIRHE                      = "oppilaitosOid ei ole validi oid"
   final val LAHETTAVAT_500_VIRHE                            = "Tietojen haku epäonnistui"
   final val LAHETTAVAT_HAKU_EPÄONNISTUI                     = "Rajaimien tietojen haku epäonnistui"
 
   final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
-  final val LAHETTAVAT_HENKILOT_PATH                     = LAHETTAVAT_PATH + "/opiskelijat"
+  final val LAHETTAVAT_HENKILOT_PATH                        = LAHETTAVAT_PATH + "/opiskelijat"
 
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
-
-  final val LEGACY_SUORITUKSET_HENKILO_PARAM_NAME           = "henkilo"
-  final val LEGACY_SUORITUKSET_MUOKATTU_JALKEEN_PARAM_NAME  = "muokattuJalkeen"
-  final val LEGACY_SUORITUKSET_PATH                         = VERSIONED_API_PREFIX + "/suoritukset/legacy"
-  final val LEGACY_SUORITUKSET_JOKO_OID_TAI_PVM_PAKOLLINEN  = "Joko henkilö tai muokattuJalkeen parametri pitää olla määritelty"
-  final val LEGACY_SUORITUKSET_HAKU_EPAONNISTUI             = "YO tai ammatillisten tutkintojen haku epäonnistui"
-
-  final val LEGACY_OPPIJAT_HAKU_PARAM_NAME                  = "haku"
-  final val LEGACY_OPPIJAT_HAKUKOHDE_PARAM_NAME             = "hakukohde"
-  final val LEGACY_OPPIJAT_ENSIKERTALAISUUDET_PARAM_NAME    = "ensikertalaisuudet"
-  final val LEGACY_OPPIJAT_PATH                             = VERSIONED_API_PREFIX + "/oppijat/legacy"
 
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_NAME               = "oppijaNumero"
   final val UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER        = "{" + UI_TIEDOT_OPPIJANUMERO_PARAM_NAME + "}"
@@ -78,42 +65,40 @@ object ApiConstants {
   final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
   final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
 
-  final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/oppijat"
-  final val UI_HENKILO_HAKU_HAKUSANA_PARAM_NAME             = "hakusana"
-  final val UI_HENKILO_HAKU_ESIMERKKI_HAKUKENTAN_ARVO       = "Olli Op"
-
-  final val UI_OPPILAITOS_HAKU_PATH                         = UI_API_PREFIX + "/oppilaitoksenoppijat"
-  final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
-  final val UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME             = "vuosi"
-  final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
+  final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/haku/oppijat"
+  final val UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME             = "tunniste"
 
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
   final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"
 
-  final val UI_OPPILAITOKSET_PATH                           = UI_API_PREFIX + "/oppilaitokset"
-  final val UI_OPPILAITOKSET_EI_OIKEUKSIA                   = "Käyttäjällä ei ole oikeuksia hakea listaa oppilaitoksista"
+  final val UI_RAJAIN_PATH                                  = UI_API_PREFIX + "/rajain"
+
+  final val UI_OPPILAITOKSET_PATH                           = UI_RAJAIN_PATH + "/oppilaitokset"
 
   final val UI_VUODET_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_VUODET_OPPILAITOS_PARAM_NAME + "}"
-  final val UI_VUODET_PATH                                  = UI_API_PREFIX + "/luokat/" + UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER
-  final val UI_VUODET_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa vuosista"
+  final val UI_VUODET_PATH                                  = UI_RAJAIN_PATH + "/vuodet/" + UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER
 
   final val UI_LUOKAT_OPPILAITOS_PARAM_NAME                 = "oppilaitos"
   final val UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER          = "{" + UI_LUOKAT_OPPILAITOS_PARAM_NAME + "}"
   final val UI_LUOKAT_VUOSI_PARAM_NAME                      = "vuosi"
   final val UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER               = "{" + UI_LUOKAT_VUOSI_PARAM_NAME + "}"
-  final val UI_LUOKAT_PATH                                  = UI_API_PREFIX + "/luokat/" + UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER + "/" + UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER
-  final val UI_LUOKAT_EI_OIKEUKSIA                          = "Käyttäjällä ei ole oikeuksia hakea listaa luokista"
+  final val UI_LUOKAT_PATH                                  = UI_RAJAIN_PATH + "/luokat/" + UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER + "/" + UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER
+
+  final val UI_OPPILAITOS_HAKU_PATH                         = UI_RAJAIN_PATH + "/oppilaitoksenoppijat"
+  final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
+  final val UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME             = "vuosi"
+  final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
 
   final val UI_KAYTTAJAN_TIEDOT_PATH                        = UI_API_PREFIX + "/kayttaja"
 
-  final val UI_LUO_SUORITUS_PERUSOPETUS_PATH                = UI_API_PREFIX + "/perusopetuksenoppimaarat"
+  final val UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH           = UI_API_PREFIX + "/perusopetuksenoppimaarat"
 
-  final val UI_LUO_SUORITUS_OPPIAINE_PATH                   = UI_API_PREFIX + "/perusopetuksenoppiaineenoppimaarat"
+  final val UI_TALLENNA_SUORITUS_OPPIAINE_PATH              = UI_API_PREFIX + "/perusopetuksenoppiaineenoppimaarat"
 
-  final val UI_LUO_SUORITUS_OPPILAITOKSET_PATH              = UI_API_PREFIX + "/luosuoritusoppilaitokset"
-  final val UI_LUO_SUORITUS_VAIHTOEHDOT_PATH                = UI_API_PREFIX + "/luosuoritusvaihtoehdot"
+  final val UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH         = UI_API_PREFIX + "/tallennasuoritusoppilaitokset"
+  final val UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH           = UI_API_PREFIX + "/tallennasuoritusvaihtoehdot"
 
   final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME    = "versioTunniste"
   final val UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_PLACEHOLDER = "{" + UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME + "}"
@@ -121,7 +106,6 @@ object ApiConstants {
 
   final val UI_400_DESCRIPTION                              = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val UI_403_DESCRIPTION                              = "Käyttäjällä ei ole oikeuksia suorittaa pyyntöä"
-
   final val UI_500_DESCRIPTION                              = "Palvelin kohtasi odottamattoman tilanteen, joka esti pyynnön täyttämisen"
 
   /**
@@ -137,9 +121,8 @@ object ApiConstants {
   final val ESIMERKKI_OPPIJANIMI                            = "Olli Oppija"
   final val ESIMERKKI_HETU                                  = "010296-1230"
   final val ESIMERKKI_SYNTYMAIKA                            = "2030-01-01"
-  final val ESIMERKKI_LEGACY_SUORITUSKIELI                  = "fi"
   final val ESIMERKKI_SUORITUSKIELI                         = "FI"
-  final val ESIMERKKI_OPPIAINEKOODI                         = "HI"
+  final val ESIMERKKI_OPPIAINEKOODI                         = "A1"
   final val ESIMERKKI_YKSILOLLISTAMINEN                     = "1"
   final val ESIMERKKI_VIERAS_KIELI_KIELIKOODI               = "DE"
   final val ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA    = "9"
