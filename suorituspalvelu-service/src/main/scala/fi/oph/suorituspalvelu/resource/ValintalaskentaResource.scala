@@ -1,6 +1,8 @@
 package fi.oph.suorituspalvelu.resource
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataResponse, ValintalaskentaDataSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
@@ -29,12 +31,18 @@ class ValintalaskentaResource {
 
   val LOG = LoggerFactory.getLogger(classOf[ValintalaskentaResource])
 
-  @Autowired var objectMapper: ObjectMapper = null
+  val objectMapper: ObjectMapper = new ObjectMapper()
+  objectMapper.registerModule(DefaultScalaModule)
+  objectMapper.registerModule(Jdk8Module())
+  objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+  objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+  objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
+  objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
 
   @Autowired val valintaDataService: ValintaDataService = null
 
   @PostMapping(
-    path = Array(VALINTALASKENTA_PATH),
+    path = Array(VALINTALASKENTA_VALINTADATA_PATH),
     consumes = Array(MediaType.APPLICATION_JSON_VALUE),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
@@ -98,8 +106,17 @@ class ValintalaskentaResource {
             )
             LOG.info(s"Haetaan valintalaskennan tarvitsemat tiedot parametreille $payload")
             val result: Seq[ValintalaskentaHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, payload.hakemusOids.asScala.toSet)
-            LOG.info(s"Palautetaan rajapintavastaus, $result")
-            ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(result.map(_.toString).toList.asJava))
+            val parsedResult = result.map(objectMapper.writeValueAsString(_)).toList.asJava
+            LOG.info(s"Palautetaan rajapintavastaus, $parsedResult")
+            //val schematizedResult = ValintalaskentaHakemusConverter.toSchematizedList(result)
+
+            //ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(schematizedResult))
+
+            //ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(result.map(_.toString).toList.asJava))
+
+            ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(parsedResult))
+
+
           } catch {
             case e: Exception =>
               LOG.error(s"ValintaDatan hakeminen haun ${payload.hakuOid.get()} hakukohteen ${payload.hakukohdeOid.toScala.getOrElse("")} hakemuksille ${payload.hakemusOids.asScala} epäonnistui", e)

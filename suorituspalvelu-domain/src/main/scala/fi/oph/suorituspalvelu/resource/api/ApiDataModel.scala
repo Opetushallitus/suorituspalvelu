@@ -144,10 +144,9 @@ case class ValintalaskentaDataPayload(
 
 trait ValintalaskentaDataResponse
 
-//Todo, skeema kuntoon
 case class ValintalaskentaDataSuccessResponse(
-  @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty valintaData: java.util.List[String]
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty valintaHakemukset: java.util.List[String]
 ) extends ValintalaskentaDataResponse
 
 case class ValintalaskentaDataFailureResponse(

@@ -55,7 +55,7 @@ object ApiConstants {
 
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR        = "5000"
 
-  final val VALINTALASKENTA_PATH                            = VERSIONED_API_PREFIX + "/valintalaskenta/valintadata"
+  final val VALINTALASKENTA_VALINTADATA_PATH                = VERSIONED_API_PREFIX + "/valintalaskenta/valintadata"
   final val VALINTALASKENTA_EI_OIKEUKSIA                    = "Käyttäjällä ei ole oikeuksia hakea valintadataa"
   final val VALINTALASKENTA_JSON_VIRHE                      = "JSON-deserialisointi epäonnistui"
   final val VALINTALASKENTA_RESPONSE_400_DESCRIPTION        = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"

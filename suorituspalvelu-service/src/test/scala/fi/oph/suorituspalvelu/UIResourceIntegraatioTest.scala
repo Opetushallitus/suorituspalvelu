@@ -50,8 +50,6 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
 
-  final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_ORGANISAATION_KATSELIJA + "_1.2.246.562.10.52320123196"
-
   /*
    * Integraatiotestit käyttäjän tietojen haulle
    */
