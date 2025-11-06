@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { NAV_LIST_SELECTED_ITEM_CLASS, NavigationList } from './NavigationList';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
+import { formatHenkiloNimi } from '@/lib/common';
 
 const HenkilotSidebarContent = () => {
   const params = useOppijatSearchURLParams();
@@ -44,7 +45,7 @@ const HenkilotSidebarContent = () => {
             }}
           >
             <OphTypography variant="label" color="inherit">
-              {oppija.nimi}
+              {formatHenkiloNimi(oppija, t)}
             </OphTypography>
             <OphTypography color={ophColors.black}>{oppija.hetu}</OphTypography>
           </Link>

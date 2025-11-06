@@ -247,3 +247,8 @@ export type YliajoParams = {
   arvo: string;
   selite: string;
 };
+
+export type Henkilo = {
+  etunimet?: string;
+  sukunimi?: string;
+};

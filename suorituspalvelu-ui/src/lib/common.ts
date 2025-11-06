@@ -1,3 +1,5 @@
+import type { TFunction } from '@/hooks/useTranslations';
+import type { Henkilo } from '@/types/ui-types';
 import { formatDate } from 'date-fns';
 import React from 'react';
 import { isNullish, isTruthy } from 'remeda';
@@ -45,3 +47,9 @@ export const toId = (text?: string | null): string => {
 export function truthyReactNodes(children: Array<React.ReactNode>) {
   return children.filter((child) => isTruthy(child));
 }
+
+export const formatHenkiloNimi = (henkilo: Henkilo, t: TFunction) => {
+  const trimmedNimi =
+    `${henkilo.etunimet ?? ''} ${henkilo.sukunimi ?? ''}`.trim();
+  return trimmedNimi.length === 0 ? t('nimeton-henkilo') : trimmedNimi;
+};
