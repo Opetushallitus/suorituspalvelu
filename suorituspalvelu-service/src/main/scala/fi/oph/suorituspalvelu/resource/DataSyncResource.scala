@@ -305,7 +305,7 @@ class DataSyncResource {
 
   @PostMapping(
     path = Array(VIRTA_DATASYNC_HENKILO_PATH),
-    consumes = Array(MediaType.ALL_VALUE),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
