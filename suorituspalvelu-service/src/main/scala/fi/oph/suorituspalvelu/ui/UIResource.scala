@@ -833,14 +833,14 @@ class UIResource {
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // validoidaan parametrit
-            val virheet: Set[String] = Set(
+            val virheAvaimet: Set[String] = Set(
               UIValidator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true),
               UIValidator.validateHakuOid(hakuOid.toScala, pakollinen = false)
             ).flatten
-            if (virheet.isEmpty)
+            if (virheAvaimet.isEmpty)
               Right(None)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanValintaDataFailureResponse(virheet.asJava))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanValintaDataFailureResponse(virheAvaimet.asJava))))
           .flatMap(_ =>
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME -> oppijaNumero.orElse(null), UI_VALINTADATA_HAKU_PARAM_NAME -> hakuOid.orElse(null)), AuditOperation.HaeOppijaValintaDataUI, None)

@@ -101,6 +101,12 @@
       "oppijaa_ei_loytynyt": "Oppijaa ei löytynyt valintatietojen hakua varten.",
       "geneerinen_virhe": "Tuntematon virhe valintatietojen haussa.",
       "useita_vahvistettuja_oppimaaria": "Oppijalla on useita vahvistettuja perusopetuksen oppimääriä. Korjaa oppijan tiedot niin, että oppijalla on vain yksi vahvistettu perusopetuksen oppimäärä ja yritä uudelleen."
+    },
+    "avain": {
+      "ei_validi": "Avain ei ole validi"
+    },
+    "arvo": {
+      "ei_validi": "Arvo ei ole validi"
     }
   },
   "sivupalkki": {
@@ -278,8 +284,20 @@
     "ryhmat": {
       "suoritukset": "Suoritukset",
       "lisapistekoulutukset": "Lisäpistekoulutus",
-      "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet"
+      "perusopetuksen-oppiaineet": "Perusopetuksen oppiaineet",
+      "lisatyt": "Manuaalisesti lisätyt tiedot"
     },
-    "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa"
+    "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa",
+    "muokkaa-kenttaa": "Muokkaa kenttää",
+    "tallennetaan-yliajoa": "Tallennetaan kentän arvoa...",
+    "tallenna": "Tallenna",
+    "alkuperainen": "Alkuperäinen",
+    "selite": "Selite",
+    "selite-aputeksti": "Kuvaile tähän miksi muokkasit tietoa",
+    "lisaa-kentta": "Lisää kenttä",
+    "avain": "Avain",
+    "arvo": "Arvo",
+    "yliajon-tallennus-epaonnistui": "Kentän tallentaminen epäonnistui",
+    "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}"
   }
 }

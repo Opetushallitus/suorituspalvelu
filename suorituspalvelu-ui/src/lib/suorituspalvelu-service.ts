@@ -7,6 +7,7 @@ import type {
   IOppijanTiedotSuccessResponse,
   IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
+  IYliajoTallennusContainer,
 } from '@/types/backend';
 import type { KayttajaTiedot, SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
@@ -172,5 +173,23 @@ export const deleteSuoritus = async (versioTunniste: string) => {
   const url =
     config.routes.suorituspalvelu.versioDeleteUrl + '/' + versioTunniste;
   const res = await client.delete(url);
+  return res.data;
+};
+
+export const saveYliajot = async ({
+  henkiloOid,
+  hakuOid,
+  yliajot,
+}: IYliajoTallennusContainer) => {
+  const config = await configPromise;
+
+  const res = await client.post(
+    config.routes.suorituspalvelu.tallennaYliajotUrl,
+    {
+      henkiloOid,
+      hakuOid,
+      yliajot,
+    },
+  );
   return res.data;
 };

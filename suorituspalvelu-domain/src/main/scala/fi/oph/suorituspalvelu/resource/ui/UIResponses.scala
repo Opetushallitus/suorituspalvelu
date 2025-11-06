@@ -1200,7 +1200,7 @@ case class OppijanValintaDataSuccessResponse(
 
 case class OppijanValintaDataFailureResponse(
                                          @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
-                                         @BeanProperty virheet: java.util.Set[String],
+                                         @BeanProperty virheAvaimet: java.util.Set[String],
                                        ) extends OppijanTiedotResponse
 
 case class SyotettavaSuoritusTyyppiVaihtoehtoNimi(
@@ -1474,6 +1474,4 @@ case class YliajoTallennusContainer(
   @BeanProperty henkiloOid: Optional[String], //Oppija, jonka arvoihin yliajo vaikuttaa
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakuOid: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_YLIAJO_VIRKAILIJA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty virkailijaOid: Optional[String], //Yliajon tehneen virkailijan oid. Poimitaan käyttäjätiedoista?
   yliajot: Optional[java.util.List[Yliajo]])
