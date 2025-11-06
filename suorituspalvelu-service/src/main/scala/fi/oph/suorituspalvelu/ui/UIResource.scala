@@ -1,17 +1,13 @@
 package fi.oph.suorituspalvelu.ui
 
-import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClient}
 import fi.oph.suorituspalvelu.mankeli.UseitaVahvistettujaOppimaariaException
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, ESIMERKKI_YLIAJO_AVAIN, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_500_DESCRIPTION, UI_HENKILO_HAKU_PATH, UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_POISTA_YLIAJO_PATH, UI_TALLENNA_SUORITUS_OPPIAINE_PATH, UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH, UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH}
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_EPAONNISTUI, UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_VIRHE, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_VIRHE, UI_POISTA_YLIAJO_VIRHE, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_VIRHE, UI_TIEDOT_HAKU_EPAONNISTUI, UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE, UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA}
-import fi.oph.suorituspalvelu.validation.UIValidator.VALIDATION_TUNNISTE_EI_VALIDI
-import fi.oph.suorituspalvelu.validation.Validator
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_VIRHE, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_VIRHE, UI_POISTA_YLIAJO_VIRHE, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_VIRHE, UI_TIEDOT_HAKU_EPAONNISTUI, UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE, UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA}
 import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, PoistaYliajoFailureResponse, PoistaYliajoSuccessResponse, PoistaYliajotResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaArvosanaVaihtoehto, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTilaVaihtoehto, SyotettavaSuoritusTilaVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityConstants, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaDataService}
@@ -377,7 +373,7 @@ class UIResource {
   @Operation(
     summary = "Palauttaa yksittäisen oppijan suoritustiedot käyttöliittymälle",
     description = "Tämä rajapinta palauttaa yksittäisen oppijan suoritustiedot käyttöliittymän suoritustietonäkymää varten. " +
-      "Pääsy on sallitu rekisterinpitäjille ja organisaation katselijoille.",
+      "Pääsy on sallitu rekisterinpitäjille, organisaation katselijoille ja hakijoiden katselijoille.",
     parameters = Array(new Parameter(name = UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää yksittäisen oppijan tiedot", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotSuccessResponse])))),
@@ -745,9 +741,6 @@ class UIResource {
     summary = "Poistaa käsin syötetyn perusopetuksen oppimäärään tai oppiaineen oppimäärän suorituksen.",
     description = "Rekisterinpitäjän on käyttöliittymässä mahdollista lisätä perusopetuksen oppimäärän ja oppiaineen oppimäärän suorituksia " +
       "henkilöille, ja poistaa lisättyjä suorituksia. Tämä rajapinta poistaa lisätyn suorituksen. Pääsy rajapintaan on rajattu rekisterinpitäjille.",
-    requestBody =
-      new io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = Array(new Content(schema = new Schema(implementation = classOf[SyotettyPerusopetuksenOppimaaranSuoritus])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description="Suoritus poistettu", content = Array(new Content(schema = new Schema(implementation = classOf[PoistaSuoritusSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[PoistaSuoritusFailureResponse])))),
@@ -940,9 +933,6 @@ class UIResource {
     summary = "Poistaa tietylle avaimelle tietyssä haussa tehdyn yliajon yksittäiseltä oppijalta",
     description = "Valintoja varten tuotettavia yksittäisiä avain-arvopareja on mahdollista yliajaa hakukohtaisesti. Tämä " +
       "rajapinta yksittäisen yliajon.. Pääsy on (ainakin toistaiseksi) rajattu rekisterinpitäjiin.",
-    requestBody =
-      new io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = Array(new Content(schema = new Schema(implementation = classOf[SyotettyPerusopetuksenOppimaaranSuoritus])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[PoistaYliajoSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[PoistaYliajoFailureResponse])))),

@@ -2,28 +2,24 @@ package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
-import fi.oph.suorituspalvelu.integration.{KoskiIntegration, SyncResultForHenkilo}
+import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
 import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE
-import fi.oph.suorituspalvelu.resource.ui.{LuoPerusopetuksenOppimaaraFailureResponse, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
-import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.{Operation, Parameter}
-import io.swagger.v3.oas.annotations.media.{ArraySchema, Content, Schema}
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
-import org.springframework.web.bind.annotation.{PathVariable, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
+import org.springframework.web.bind.annotation.{PostMapping, RequestBody, RequestMapping, RestController}
 
 import java.time.Instant
-import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
