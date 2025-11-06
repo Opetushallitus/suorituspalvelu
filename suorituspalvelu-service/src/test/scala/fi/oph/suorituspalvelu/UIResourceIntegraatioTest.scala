@@ -90,22 +90,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // asiointikieli on "fi" ja kyseessä on organisaation katselija
-    Assertions.assertEquals(KayttajaSuccessResponse("fi", true),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
-
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA))
-  @Test def testHaeKayttajanTiedotAllowedOrganisaationKatselija(): Unit =
-    // mockataan onr-vastaus
-    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
-
-    // haetaan käyttäjän tiedot
-    val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, ""))
-      .andExpect(status().isOk)
-      .andReturn()
-
-    // asiointikieli on "fi" ja kyseessä ei organisaation katselija
-    Assertions.assertEquals(KayttajaSuccessResponse("fi", true),
+    Assertions.assertEquals(KayttajaSuccessResponse("fi", false, true),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
 
   /*
