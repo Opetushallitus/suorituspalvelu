@@ -11,15 +11,10 @@ import { Stack } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { Outlet } from 'react-router';
 import { NavigationSpinner } from './NavigationSpinner';
-import { useQueryClient } from '@tanstack/react-query';
-import { queryOptionsGetSuorituksenOppilaitosVaihtoehdot } from '@/lib/suorituspalvelu-queries';
 
 export default function HenkiloSearchLayout() {
   const { t } = useTranslate();
   const { isSessionExpired } = useIsSessionExpired();
-
-  const queryClient = useQueryClient();
-  queryClient.prefetchQuery(queryOptionsGetSuorituksenOppilaitosVaihtoehdot());
 
   return (
     <QuerySuspenseBoundary>
