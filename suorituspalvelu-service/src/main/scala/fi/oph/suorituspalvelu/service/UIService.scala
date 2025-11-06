@@ -203,8 +203,8 @@ class UIService {
             Set(oppijaNumero)
 
       val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
-      EntityToUIConverter.getOppijanTiedot(s"${masterHenkilo.get.etunimet.getOrElse("-")} ${masterHenkilo.get.sukunimi.getOrElse("-")}",
-        masterHenkilo.get.hetu.getOrElse(""), oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
+      Some(EntityToUIConverter.getOppijanTiedot(s"${masterHenkilo.get.etunimet.getOrElse("-")} ${masterHenkilo.get.sukunimi.getOrElse("-")}",
+        masterHenkilo.get.hetu.getOrElse(""), oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider))
 
   /**
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita

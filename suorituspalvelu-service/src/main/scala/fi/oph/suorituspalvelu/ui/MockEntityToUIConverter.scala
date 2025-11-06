@@ -1172,8 +1172,8 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getOppijanTiedot(): Option[OppijanTiedotSuccessResponse] = {
-    Some(OppijanTiedotSuccessResponse(
+  def getOppijanTiedot(): OppijanTiedotSuccessResponse = {
+    OppijanTiedotSuccessResponse(
       // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
       nimi =                                      EXAMPLE_NIMI,
       henkiloTunnus =                             EXAMPLE_HETU,
@@ -1201,6 +1201,6 @@ object MockEntityToUIConverter {
       nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat().asJava,
       perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava,
       aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat().asJava
-    ))
+    )
   }
 }
