@@ -19,11 +19,13 @@ import java.util.Optional
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
+import scala.jdk.OptionConverters.*
 
 object UIService {
   val EXAMPLE_OPPIJA_OID = "1.2.246.562.24.40483869857"
   val EXAMPLE_HETU = "010296-1230"
-  val EXAMPLE_NIMI = "Olli Oppija"
+  val EXAMPLE_ETUNIMET = "Olli"
+  val EXAMPLE_SUKUNIMI = "Oppija"
 
   val EXAMPLE_OPPILAITOS_OID = "1.2.246.562.10.56753942459"
   val EXAMPLE_OPPILAITOS_NIMI = "Esimerkki oppilaitos"
@@ -99,7 +101,8 @@ object UIService {
   val EXAMPLE_OPPIJA = Oppija(
     EXAMPLE_OPPIJA_OID,
     Optional.of(EXAMPLE_HETU),
-    EXAMPLE_NIMI
+    Optional.of(EXAMPLE_ETUNIMET),
+    Optional.of(EXAMPLE_SUKUNIMI)
   )
 }
 
@@ -176,7 +179,7 @@ class UIService {
     val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka).map(_._1)
 
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
-      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi)).toSet)
+      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)
 
     Await.result(ornOppijat, 30.seconds)
   }
@@ -203,8 +206,8 @@ class UIService {
             Set(oppijaNumero)
 
       val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
-      Some(EntityToUIConverter.getOppijanTiedot(s"${masterHenkilo.get.etunimet.getOrElse("-")} ${masterHenkilo.get.sukunimi.getOrElse("-")}",
-        masterHenkilo.get.hetu.getOrElse(""), oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider))
+      Some(EntityToUIConverter.getOppijanTiedot(masterHenkilo.get.etunimet, masterHenkilo.get.sukunimi,
+        masterHenkilo.get.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider))
 
   /**
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
@@ -214,7 +217,7 @@ class UIService {
    * @return            oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
    */
   def haeOppija(hakusana: String): Option[Oppija] = {
-    val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.getNimi))), 30.seconds)
+    val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava))), 30.seconds)
     val hasOikeus = oppija.exists(o => hasOppijanKatseluOikeus(o.oppijaNumero))
     (oppija, hasOikeus) match
       case (Some(oppija), true) => Some(oppija)

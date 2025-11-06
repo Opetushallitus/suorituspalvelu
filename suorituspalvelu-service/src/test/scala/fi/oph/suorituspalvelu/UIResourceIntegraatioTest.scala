@@ -335,8 +335,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeOppijatAllowed(): Unit =
     val hakusanaOppijanumero = "1.2.246.562.24.21583363332"
     val onrPerustiedot = OnrHenkiloPerustiedot(oidHenkilo = hakusanaOppijanumero,
-      etunimet = "Teppo Hemmo",
-      sukunimi = "Testinen")
+      etunimet = Some("Teppo Hemmo"),
+      sukunimi = Some("Testinen"))
 
     // mockataan onr-vastaus
     Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(hakusanaOppijanumero)))
@@ -348,7 +348,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // palautuu oppijanumeroa vastaava henkilö
-    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), "Teppo Hemmo Testinen"))),
+    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), Optional.of("Teppo Hemmo"), Optional.of("Testinen")))),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää
@@ -368,8 +368,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val descendantOid = "1.2.246.562.10.52320123198"
     val organisaatio = Organisaatio(orgOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
     val onrPerustiedot = OnrHenkiloPerustiedot(oidHenkilo = hakusanaOppijanumero,
-      etunimet = "Teppo Hemmo",
-      sukunimi = "Testinen")
+      etunimet = Some("Teppo Hemmo"),
+      sukunimi = Some("Testinen"))
 
     // mockataan hakemuksen perusteella auditointiin liittyvä kutsutanssi
     val permissionRequest = AtaruPermissionRequest(Set(hakusanaOppijanumero), Set(orgOid, descendantOid), Set.empty)
@@ -386,7 +386,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // palautuu haettua oidia vastaava henkilö
-    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), "Teppo Hemmo Testinen"))),
+    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), Optional.of("Teppo Hemmo"), Optional.of("Testinen")))),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
     // tarkistetaan että auditloki täsmää
@@ -404,8 +404,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val descendantOid = "1.2.246.562.10.52320123198"
     val organisaatio = Organisaatio(orgOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
     val onrPerustiedot = OnrHenkiloPerustiedot(oidHenkilo = hakusanaOppijanumero,
-      etunimet = "Teppo Hemmo",
-      sukunimi = "Testinen")
+      etunimet = Some("Teppo Hemmo"),
+      sukunimi = Some("Testinen"))
 
     // mockataan hakemuksen perusteella auditointiin liittyvä kutsutanssi
     val permissionRequest = AtaruPermissionRequest(Set(hakusanaOppijanumero), Set(orgOid, descendantOid), Set.empty)
@@ -530,7 +530,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val vuosi = "2025"
 
     // mockataan onr-vastaus
-    val onrPerustiedot = OnrHenkiloPerustiedot(hakusanaOppijanumero, etunimet, sukunimi)
+    val onrPerustiedot = OnrHenkiloPerustiedot(hakusanaOppijanumero, Some(etunimet), Some(sukunimi))
     Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(hakusanaOppijanumero)))
       .thenReturn(Future.successful(Seq(onrPerustiedot)))
 
@@ -570,7 +570,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // palautuu tallennettu oppija
-    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), s"$etunimet $sukunimi"))),
+    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), Optional.of(etunimet), Optional.of(sukunimi)))),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
     // ja auditloki täsmää

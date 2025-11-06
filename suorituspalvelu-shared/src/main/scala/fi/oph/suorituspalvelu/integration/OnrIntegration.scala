@@ -31,10 +31,8 @@ case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
 }
 
 case class OnrHenkiloPerustiedot(oidHenkilo: String,
-                                 etunimet: String,
-                                 sukunimi: String) {
-  def getNimi = etunimet + " " + sukunimi
-}
+                                 etunimet: Option[String],
+                                 sukunimi: Option[String])
 
 trait OnrIntegration {
 

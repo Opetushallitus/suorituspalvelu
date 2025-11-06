@@ -455,14 +455,14 @@ object EntityToUIConverter {
   def getAikuistenPerusopetuksetOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[AikuistenPerusopetuksenOppimaara] =
     List.empty[AikuistenPerusopetuksenOppimaara]
 
-  def getOppijanTiedot(nimi: String, hetu: String, oppijaNumero: String, opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): OppijanTiedotSuccessResponse = {
+  def getOppijanTiedot(etunimet: Option[String], sukunimi: Option[String], hetu: Option[String], oppijaNumero: String, opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): OppijanTiedotSuccessResponse = {
     if(EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
       MockEntityToUIConverter.getOppijanTiedot()
     else
       OppijanTiedotSuccessResponse(
-        // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
-        nimi =                                      nimi,
-        henkiloTunnus =                             hetu,
+        etunimet =                                  etunimet.toJava,
+        sukunimi =                                  sukunimi.toJava,
+        henkiloTunnus =                             hetu.toJava,
         syntymaAika =                               LocalDate.parse(ESIMERKKI_SYNTYMAIKA),
         oppijaNumero =                              oppijaNumero,
         henkiloOID =                                oppijaNumero,

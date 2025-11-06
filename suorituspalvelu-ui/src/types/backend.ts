@@ -394,7 +394,8 @@ export interface IOOOppilaitosNimi {
 export interface IOppija {
   oppijaNumero: string;
   hetu?: string;
-  nimi: string;
+  etunimet?: string;
+  sukunimi?: string;
 }
 
 export interface IOppijanHakuFailureResponse {
@@ -410,8 +411,9 @@ export interface IOppijanTiedotFailureResponse {
 }
 
 export interface IOppijanTiedotSuccessResponse {
-  nimi: string;
-  henkiloTunnus: string;
+  etunimet?: string;
+  sukunimi?: string;
+  henkiloTunnus?: string;
   syntymaAika: string;
   oppijaNumero: string;
   henkiloOID: string;

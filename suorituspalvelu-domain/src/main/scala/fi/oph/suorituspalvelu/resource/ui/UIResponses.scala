@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.ui
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKU_OID, ESIMERKKI_HETU, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANIMI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_TILA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN, ESIMERKKI_YLIAJO_ARVO, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, ESIMERKKI_YLIAJO_VIRKAILIJA}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_ETUNIMET, ESIMERKKI_HAKU_OID, ESIMERKKI_HETU, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUKUNIMI, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_TILA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN, ESIMERKKI_YLIAJO_ARVO, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, ESIMERKKI_YLIAJO_VIRKAILIJA}
 import fi.oph.suorituspalvelu.resource.*
 import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_YLIAJO_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE, UI_TIEDOT_HAKU_EPAONNISTUI}
 import io.swagger.v3.oas.annotations.media.Schema
@@ -86,8 +86,10 @@ case class Oppija(
   @BeanProperty oppijaNumero: String,
   @(Schema @field)(example = ESIMERKKI_HETU)
   @BeanProperty hetu: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_OPPIJANIMI, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: String
+  @(Schema @field)(example = ESIMERKKI_ETUNIMET, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty etunimet: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_SUKUNIMI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty sukunimi: Optional[String]
 )
 
 case class OppijanHakuSuccessResponse(
@@ -1136,10 +1138,12 @@ case class PerusopetuksenOppiaineenOppimaara(
 trait OppijanTiedotResponse()
 
 case class OppijanTiedotSuccessResponse(
-  @(Schema @field)(example = ESIMERKKI_OPPIJANIMI, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: String,
+  @(Schema @field)(example = ESIMERKKI_ETUNIMET, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty etunimet: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_SUKUNIMI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty sukunimi: Optional[String],
   @(Schema @field)(example = ESIMERKKI_HETU, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty henkiloTunnus: String,
+  @BeanProperty henkiloTunnus: Optional[String],
   @(Schema @field)(example = ESIMERKKI_SYNTYMAIKA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty syntymaAika: LocalDate,
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
