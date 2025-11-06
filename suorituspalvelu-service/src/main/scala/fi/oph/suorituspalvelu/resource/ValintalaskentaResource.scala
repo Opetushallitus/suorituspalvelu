@@ -48,7 +48,8 @@ class ValintalaskentaResource {
   )
   @Operation(
     summary = "Hakee Valintalaskennan laskentaa varten tarvitsemat tiedot hakukohteen hakijoille.",
-    description = "Tiedot sisältävät sekä Supan tiedoista pääteltyjä arvoja että Ataru-hakemusten arvoja.",
+    description = "Tiedot sisältävät sekä Supan tiedoista pääteltyjä arvoja että Ataru-hakemusten arvoja.\n" +
+    "Vaatii joko rekisterinpitäjän tai sisäisten rajapintojen palvelukäyttäjän oikeudet.",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = Array(new Content(schema = new Schema(implementation = classOf[ValintalaskentaDataPayload])))),
     responses = Array(
@@ -108,12 +109,6 @@ class ValintalaskentaResource {
             val result: Seq[ValintalaskentaHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, payload.hakemusOids.asScala.toSet)
             val parsedResult = result.map(objectMapper.writeValueAsString(_)).toList.asJava
             LOG.info(s"Palautetaan rajapintavastaus, $parsedResult")
-            //val schematizedResult = ValintalaskentaHakemusConverter.toSchematizedList(result)
-
-            //ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(schematizedResult))
-
-            //ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(result.map(_.toString).toList.asJava))
-
             ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(parsedResult))
 
 
