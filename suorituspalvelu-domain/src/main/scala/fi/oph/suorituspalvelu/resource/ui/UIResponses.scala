@@ -1182,7 +1182,8 @@ case class AvainArvoYliajoUI(@BeanProperty avain: String,
 case class AvainArvoMetadataUI(@BeanProperty selitteet: java.util.List[String],
                                @BeanProperty duplikaatti: Boolean, //Yleisesti ottaen duplikaattiavaimia ei varmaan kannata kälissä näyttää
                                @BeanProperty arvoEnnenYliajoa: Optional[String],
-                               @BeanProperty yliajo: Optional[AvainArvoYliajoUI])
+                               @BeanProperty yliajo: Optional[AvainArvoYliajoUI],
+                               @BeanProperty arvoOnHakemukselta: Boolean) //Hakemukselta tulleita arvoja ei voi muokata Supassa, ja ne halutaan varmaan useimmiten piilottaa kälissä.
 
 
 case class AvainArvoContainerUI(@BeanProperty avain: String,
@@ -1192,7 +1193,7 @@ case class AvainArvoContainerUI(@BeanProperty avain: String,
 case class OppijanValintaDataSuccessResponse(
                                          @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
                                          @BeanProperty henkiloOID: String,
-                                         @BeanProperty hakuOID: Optional[String],
+                                         @BeanProperty hakuOID: String,
                                          //@BeanProperty leikkuriPaiva: LocalDate, lisätään tänne kun saadaan tieto kaivettua ohjausparametreista ja käyttöön
                                          //@BeanProperty laskennanAlkaminen: LocalDate, lisätään tänne kun saadaan tieto kaivettua jostain ja käyttöön
                                          @BeanProperty avainArvot: java.util.List[AvainArvoContainerUI]

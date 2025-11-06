@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -132,3 +132,24 @@ case class LahettavatHenkilotFailureResponse(
   @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LahettavatHenkilotResponse
+
+case class ValintalaskentaDataPayload(
+  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOid: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_HAKUKOHDE_OID, requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty hakukohdeOid: Optional[String],
+  @(Schema @field)(example = "[]", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty hakemusOids: java.util.List[String]
+)
+
+trait ValintalaskentaDataResponse
+
+case class ValintalaskentaDataSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty valintaHakemukset: java.util.List[String]
+) extends ValintalaskentaDataResponse
+
+case class ValintalaskentaDataFailureResponse(
+  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.List[String]
+) extends ValintalaskentaDataResponse

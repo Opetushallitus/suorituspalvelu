@@ -61,4 +61,5 @@ object AuditOperation {
 
   case object PoistaOppijanYliajot extends AuditOperation("POISTA YLIAJO OPPIJALTA UI")
 
+  case object HaeValintadata extends AuditOperation("VALINTADATAN HAKU HAKUKOHTEELLE TAI HAKEMUKSILLE")
 }

@@ -22,7 +22,22 @@ case class KoutaHaku(oid: String,
                      hakutapaKoodiUri: String,
                      kohdejoukkoKoodiUri: Option[String],
                      hakuajat: List[KoutaHakuaika],
-                     kohdejoukonTarkenneKoodiUri: Option[String])
+                     kohdejoukonTarkenneKoodiUri: Option[String]) {
+
+  val toisenAsteenUrit = Set(
+    "haunkohdejoukko_11",
+    "haunkohdejoukko_20",
+    "haunkohdejoukko_21",
+    "haunkohdejoukko_22",
+    "haunkohdejoukko_23",
+    "haunkohdejoukko_24"
+  )
+
+  def isToisenAsteenHaku() = {
+    val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
+    toisenAsteenUrit.contains(kohdejoukkoPrefix)
+  }
+}
 
 
 class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
