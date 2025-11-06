@@ -21,6 +21,8 @@ object Validator {
   final val VALIDATION_HAKUKOHDEOID_EI_VALIDI     = "hakukohdeOid ei ole validi: "
   final val VALIDATION_OPPILAITOSOID_TYHJA        = "oppilaitosOid: Kenttä on pakollinen"
   final val VALIDATION_OPPILAITOSOID_EI_VALIDI    = "oppilaitosOid ei ole validi: "
+  final val VALIDATION_HAKEMUSOID_TYHJA           = "hakemusOid: Kenttä on pakollinen"
+  final val VALIDATION_HAKEMUSOID_EI_VALIDI       = "hakemusOid ei ole validi: "
   final val VALIDATION_VUOSI_TYHJA                = "vuosi: Kenttä on pakollinen"
   final val VALIDATION_VUOSI_EI_VALIDI            = "vuosi ei ole validi: "
   final val VALIDATION_LUOKKA_TYHJA               = "luokka: Kenttä on pakollinen"
@@ -131,12 +133,10 @@ object Validator {
 
   def validateHakemusOid(hakemusOid: Option[String], pakollinen: Boolean): Set[String] = {
     if (pakollinen && (hakemusOid.isEmpty || hakemusOid.exists(_.isEmpty)))
-      Set(VALIDATION_OPPILAITOSOID_TYHJA)
+      Set(VALIDATION_HAKEMUSOID_TYHJA)
     else if (hakemusOid.isDefined && !hakemusOidPattern.matches(hakemusOid.get))
-      Set(VALIDATION_OPPILAITOSOID_EI_VALIDI + hakemusOid.get)
+      Set(VALIDATION_HAKEMUSOID_EI_VALIDI + hakemusOid.get)
     else
       Set.empty
   }
-
-
 }
