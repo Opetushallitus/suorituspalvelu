@@ -1,16 +1,15 @@
 import { expect } from '@playwright/test';
 import { test } from './lib/fixtures';
-import { selectOption } from './lib/playwrightUtils';
 
 const OPPIJAT = [
   {
-    oppijaNumero: '1',
+    oppijaNumero: '1.2.3.4',
     nimi: 'Olli Oppija',
     hetu: '123456-7890',
     oppilaitosOid: '1',
   },
   {
-    oppijaNumero: '2',
+    oppijaNumero: '2.3.4.5',
     nimi: 'Maija Mallikas',
     hetu: '098765-4321',
     oppilaitosOid: '2',
@@ -22,56 +21,30 @@ test.describe('Henkilö-haku', () => {
     await page.route('**/ui/haku/oppijat*', async (route) => {
       const url = new URL(route.request().url());
       const tunnisteParam = url.searchParams.get('tunniste');
-      const oppilaitosParam = url.searchParams.get('oppilaitos');
 
       await route.fulfill({
         json: {
           oppijat: OPPIJAT.filter(
-            (oppija) =>
-              oppija.nimi.includes(tunnisteParam ?? '') &&
-              (!oppilaitosParam || oppilaitosParam === oppija.oppilaitosOid),
+            (oppija) => oppija.oppijaNumero === tunnisteParam,
           ),
-        },
-      });
-    });
-
-    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
-      await route.fulfill({
-        json: {
-          oppilaitokset: [
-            { oid: '1', nimi: { fi: 'Oppilaitos 1' } },
-            { oid: '2', nimi: { fi: 'Oppilaitos 2' } },
-          ],
         },
       });
     });
   });
 
-  test('suodattaa nimellä ja oppilaitoksella', async ({ page }) => {
+  test('suodattaa oppijanumerolla', async ({ page }) => {
     await page.goto('');
     const searchInput = page.getByRole('textbox', { name: 'Hae Henkilöä' });
-
-    await searchInput.fill('Olli');
-    await selectOption({
-      page,
-      name: 'Oppilaitos',
-      option: 'Oppilaitos 1',
-    });
 
     const henkiloNavi = page.getByRole('navigation', {
       name: 'Henkilövalitsin',
     });
-
     const henkiloLinks = henkiloNavi.getByRole('link');
+    await expect(henkiloLinks).toHaveCount(0);
+
+    await searchInput.fill('1.2.3.4');
+
     await expect(henkiloLinks).toHaveCount(1);
     await expect(henkiloLinks.first()).toHaveText('Olli Oppija123456-7890');
-
-    await selectOption({
-      page,
-      name: 'Oppilaitos',
-      option: 'Oppilaitos 2',
-    });
-
-    await expect(henkiloLinks).toHaveCount(0);
   });
 });
