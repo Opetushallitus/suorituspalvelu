@@ -62,7 +62,7 @@ class ValintalaskentaResource {
       Right(None)
         .flatMap(_ =>
           // tarkastetaan oikeudet
-          if (securityOperaatiot.onRekisterinpitaja())
+          if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onPalveluKayttaja())
             Right(None)
           else
             Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(ValintalaskentaDataFailureResponse(java.util.List.of(VALINTALASKENTA_EI_OIKEUKSIA)))))
