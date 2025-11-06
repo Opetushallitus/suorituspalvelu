@@ -43,5 +43,7 @@ trait TypeScriptImplicits extends SharedTsImplicits with ValintaDataTsImplicits 
   implicit val luoSuoritusDropdownDataFailureTsType: TSType[LuoSuoritusDropdownDataFailureResponse] = TSType.fromCaseClass
   implicit val savePerusopetusOppimaaraFailureResponseTsType: TSType[LuoPerusopetuksenOppimaaraFailureResponse] = TSType.fromCaseClass
   implicit val deleteSuoritusFailureResponseTsType: TSType[PoistaSuoritusFailureResponse] = TSType.fromCaseClass
+  implicit val kayttajaSuccessResponseTsType: TSType[KayttajaSuccessResponse] = TSType.fromCaseClass
+  implicit val kayttajaFailureResponseTsType: TSType[KayttajaFailureResponse] = TSType.fromCaseClass
 }
 

@@ -282,6 +282,16 @@ export interface IKKSuoritusNimi {
   en?: string;
 }
 
+export interface IKayttajaFailureResponse {
+  virheet: string[];
+}
+
+export interface IKayttajaSuccessResponse {
+  asiointiKieli: string;
+  isRekisterinpitaja: boolean;
+  isOrganisaationKatselija: boolean;
+}
+
 export interface ILukionOppiaine {
   tunniste: string;
   nimi: ILukionOppiaineNimi;
@@ -843,8 +853,8 @@ export interface IYliajoTallennusContainer {
   yliajot?: IYliajo[];
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';

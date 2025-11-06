@@ -1,6 +1,7 @@
 import { type PerusopetusSuoritus } from '@/types/ui-types';
 import { PerusopetusSuoritusEditor } from './PerusopetusSuoritusEditor';
 import { PerusopetusSuoritusDisplay } from './PerusopetusSuoritusDisplay';
+import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 
 export const PerusopetusSuoritusPaper = ({
   henkiloOID,
@@ -9,7 +10,10 @@ export const PerusopetusSuoritusPaper = ({
   henkiloOID: string;
   suoritus: PerusopetusSuoritus;
 }) => {
-  return suoritus.isEditable &&
+  const { data: kayttaja } = useKayttaja();
+
+  return kayttaja.isRekisterinpitaja &&
+    suoritus.isEditable &&
     'suoritustyyppi' in suoritus &&
     (suoritus.suoritustyyppi === 'perusopetuksenoppimaara' ||
       suoritus.suoritustyyppi === 'perusopetuksenoppiaineenoppimaara') ? (

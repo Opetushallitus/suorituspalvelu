@@ -1,4 +1,5 @@
 import { useTranslations } from '@/hooks/useTranslations';
+import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { last } from 'remeda';
@@ -39,6 +40,8 @@ export const TiedotTabNavi = () => {
   const activeTab = useActiveTiedotTab();
   const [searchParams] = useSearchParams();
 
+  const { data: kayttaja } = useKayttaja();
+
   // Convert URLSearchParams to search string
   const searchString = searchParams.toString();
 
@@ -56,15 +59,18 @@ export const TiedotTabNavi = () => {
         >
           {t('tabs.suoritustiedot')}
         </StyledTab>
-        <StyledTab
-          $active={activeTab === 'opiskelijavalinnan-tiedot'}
-          to={{
-            pathname: 'opiskelijavalinnan-tiedot',
-            search: searchWithPrefix,
-          }}
-        >
-          {t('tabs.opiskelijavalinnan-tiedot')}
-        </StyledTab>
+        {(kayttaja.isRekisterinpitaja ||
+          activeTab === 'opiskelijavalinnan-tiedot') && (
+          <StyledTab
+            $active={activeTab === 'opiskelijavalinnan-tiedot'}
+            to={{
+              pathname: 'opiskelijavalinnan-tiedot',
+              search: searchWithPrefix,
+            }}
+          >
+            {t('tabs.opiskelijavalinnan-tiedot')}
+          </StyledTab>
+        )}
       </StyledTabs>
     </StyledContainer>
   );
