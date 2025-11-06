@@ -19,6 +19,8 @@ case class Kieli(kieliKoodi: String,
 case class Kansalaisuus(kansalaisuusKoodi: String)
 
 case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
+                            etunimet: Option[String],
+                            sukunimi: Option[String],
                             hetu: Option[String],
                             kaikkiHetut: Option[Seq[String]] //Huom. Tämä kenttä ei sisällä hetu-kentän hetua
                             ) {

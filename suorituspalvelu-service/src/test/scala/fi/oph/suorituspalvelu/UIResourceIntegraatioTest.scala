@@ -3,8 +3,8 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, KoutaHakuaika, Organisaatio, OrganisaatioNimi}
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -616,7 +616,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967216"
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map.empty))
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val result = mvc.perform(MockMvcRequestBuilders
@@ -643,6 +643,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ))
 
     // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus

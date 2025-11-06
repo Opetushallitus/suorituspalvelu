@@ -71,7 +71,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967215"
 
     // mockataan ONR- ja VIRTA-vastaukset
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set.empty))))
     Mockito.when(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)).thenReturn(Future.successful(scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString))
 
@@ -101,7 +101,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
 
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set.empty))))
     Mockito.when(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)).thenReturn(Future.successful(virtaXml))
 
@@ -162,7 +162,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
 
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(haunHakijatOids.toSet))
-      .thenReturn(Future.successful(haunHakijatOids.map(oppijaNumero => (oppijaNumero, OnrMasterHenkilo(oppijaNumero, None, None))).toMap))
+      .thenReturn(Future.successful(haunHakijatOids.map(oppijaNumero => (oppijaNumero, OnrMasterHenkilo(oppijaNumero, None, None, None, None))).toMap))
     Mockito.when(onrIntegration.getAliasesForPersonOids(haunHakijatOids.toSet))
       .thenReturn(Future.successful(PersonOidsWithAliases(aliasMap)))
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))

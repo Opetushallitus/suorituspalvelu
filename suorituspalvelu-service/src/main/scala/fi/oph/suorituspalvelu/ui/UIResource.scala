@@ -410,8 +410,7 @@ class UIResource {
             LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero}")
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), AuditOperation.HaeOppijaTiedotUI, None)
-            val suoritukset = uiService.haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
-            val oppijanTiedot = EntityToUIConverter.getOppijanTiedot(oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
+            val oppijanTiedot = uiService.haeOppijanSuoritukset(oppijaNumero)
             if(oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))
             else

@@ -7,7 +7,8 @@ import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_V
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
-import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import fi.oph.suorituspalvelu.ui.EntityToUIConverter
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.validation.Validator
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -115,6 +116,8 @@ class UIService {
 
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
+  @Autowired val koodistoProvider: KoodistoProvider = null
+
   val ONR_TIMEOUT = 10.seconds;
 
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
@@ -186,13 +189,22 @@ class UIService {
     }
   }
 
-  def haeAliakset(oppijaNumero: String): Set[String] =
-    try
-      Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).allOids).flatten
-    catch
-      case e: Exception =>
-        LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
-        Set(oppijaNumero)
+  def haeOppijanSuoritukset(oppijaNumero: String): Option[OppijanTiedotSuccessResponse] =
+    val masterHenkilo = Await.result(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).values.headOption
+    if(masterHenkilo.isEmpty)
+      None
+    else
+      def haeAliakset(oppijaOid: String): Set[String] =
+        try
+          Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.get.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
+        catch
+          case e: Exception =>
+            LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
+            Set(oppijaNumero)
+
+      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
+      EntityToUIConverter.getOppijanTiedot(s"${masterHenkilo.get.etunimet.getOrElse("-")} ${masterHenkilo.get.sukunimi.getOrElse("-")}",
+        masterHenkilo.get.hetu.getOrElse(""), oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
 
   /**
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
