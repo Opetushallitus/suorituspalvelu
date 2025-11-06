@@ -391,8 +391,8 @@ class UIResource {
       LogContext(path = UI_TIEDOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
-            // tarkastetaan että käyttäjällä on hakijoiden katselija oikeudet
-            if(securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onOrganisaationKatselija())
+            // tarkastetaan että käyttäjällä on organisaation- tai hakijoiden katselija oikeudet
+            if(securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onOrganisaationKatselija() || securityOperaatiot.onHakeneidenKatselija())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
