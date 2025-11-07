@@ -89,7 +89,9 @@ export const queryOptionsGetValintadata = ({
   hakuOid?: string;
 }) =>
   queryOptions({
-    queryKey: ['getValintadata', oppijaNumero, hakuOid],
+    queryKey: hakuOid
+      ? ['getValintadata', oppijaNumero, hakuOid]
+      : ['getValintadata', oppijaNumero],
     queryFn: () => getValintadata({ oppijaNumero, hakuOid }),
   });
 
