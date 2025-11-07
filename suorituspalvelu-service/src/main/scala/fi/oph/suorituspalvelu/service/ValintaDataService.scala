@@ -4,10 +4,12 @@ import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiske
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, ValintalaskentaHakutoive}
+import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import scala.jdk.CollectionConverters.*
 import java.time.LocalDate
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -19,17 +21,6 @@ case class AvainArvoMetadata(selitteet: Seq[String],
                              yliajo: Option[AvainArvoYliajo],
                              arvoOnHakemukselta: Boolean)
 case class CombinedAvainArvoContainer(avain: String, arvo: String, metadata: AvainArvoMetadata)
-
-case class ValintalaskentaHakemus(hakuOid: String,
-                                  hakemusOid: String,
-                                  hakukohteet: List[ValintalaskentaHakutoive],
-                                  hakijaOid: String,
-                                  etunimi: String = "", //Todo, voiko pudottaa pois?
-                                  sukunimi: String = "", //Todo, voiko pudottaa pois?
-                                  koskiOpiskeluoikeudetJson: String, //Tässä vaiheessa lähinnä placeholder. Ensivaiheessa haetaan erikseen Koostepalvelussa/Valintalaskennassa. Tulevaisuudessa kuitenkin voidaan toimittaa suoraan Supasta.
-                                  avaimet: Seq[AvainArvo],
-                                  avainMetatiedotDTO: Seq[AvainMetatiedotDTO] = Seq.empty //Lisätään nämä myöhemmässä vaiheessa, tai yhdistetään avain-arvoihin (vaatii muutoksia valintaperusteisiin jos yhdistetään)
-)
 
 case class ValintaData(personOid: String, paatellytAvainArvot: Seq[CombinedAvainArvoContainer], hakemus: Option[ConvertedAtaruHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: String, laskennanAlkaminen: String) {
   def getAvainArvoMap: Map[String, String] = paatellytAvainArvot.map(a => (a.avain, a.arvo)).toMap
@@ -127,7 +118,7 @@ class ValintaDataService {
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
-  def getValintalaskentaHakemukset(hakuOid: String, hakukohdeOid: Option[String], hakemusOids: Set[String]): Seq[ValintalaskentaHakemus] = {
+  def getValintalaskentaHakemukset(hakuOid: String, hakukohdeOid: Option[String], hakemusOids: Set[String]): Seq[ValintalaskentaApiHakemus] = {
     val haku = tarjontaIntegration.getHaku(hakuOid)
     val isToisenAsteenHaku = haku.exists(_.isToisenAsteenHaku())
     val valintaDatat = for {
@@ -137,16 +128,30 @@ class ValintaDataService {
           doAvainArvoConversions(None, Some(hakuOid), Some(hakemus))
         })
       val valintalaskentaHakemukset = convertedHakemukset.map(vd => {
-        ValintalaskentaHakemus(
+        val hakutoiveet: List[ValintalaskentaHakutoive] = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty)
+        val parsedHakutoiveet = hakutoiveet.map(ht => {
+          val hakutoive = ValintalaskentaApiHakutoive(
+            hakuOid = ht.hakuOid,
+            hakukohdeOid = ht.hakukohdeOid,
+            prioriteetti = ht.prioriteetti,
+            hakukohderyhmaOids = ht.hakukohderyhmaOids.toList.asJava,
+            harkinnanvaraisuus = ht.harkinnanvaraisuus
+          )
+          hakutoive
+        })
+        val parsedArvot = vd.kaikkiAvainArvotMinimal().map(aa => {
+          ValintalaskentaApiAvainArvo(avain = aa.avain, arvo = aa.arvo)
+        }).toList
+        ValintalaskentaApiHakemus(
           hakuOid = hakuOid,
           hakemusOid = vd.hakemus.map(_.hakemusOid).get,
-          hakukohteet = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty),
+          hakukohteet = parsedHakutoiveet.asJava,
           hakijaOid = vd.personOid,
-          etunimi = "mock_etunimi",
+          etunimi = "mock_etunimi", //Nimikentät voi mahdollisesti poistaa, mutta toistaiseksi mukana tässä jotta muoto vastaa HakemusDTO:ta.
           sukunimi = "mock_sukunimi",
           koskiOpiskeluoikeudetJson = "",
-          avaimet = vd.kaikkiAvainArvotMinimal(),
-          avainMetatiedotDTO = Seq.empty
+          avaimet = parsedArvot.asJava,
+          avainMetatiedotDTO = Seq.empty.toList.asJava
         )
       })
       valintalaskentaHakemukset
