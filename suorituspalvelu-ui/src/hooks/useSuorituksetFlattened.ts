@@ -54,7 +54,8 @@ export function useSuorituksetFlattened(
 ) {
   return useMemo(() => {
     const suoritusTiedot = omit(oppijanTiedot, [
-      'nimi',
+      'etunimet',
+      'sukunimi',
       'oppijaNumero',
       'henkiloTunnus',
       'syntymaAika',

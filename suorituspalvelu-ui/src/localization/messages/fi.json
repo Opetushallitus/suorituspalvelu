@@ -9,6 +9,7 @@
   "sulje": "Sulje",
   "suoritus": "Suoritus",
   "peruuta": "Peruuta",
+  "nimeton-henkilo": "Nimetön",
   "select": {
     "valitse": "Valitse..."
   },
@@ -298,6 +299,7 @@
     "avain": "Avain",
     "arvo": "Arvo",
     "yliajon-tallennus-epaonnistui": "Kentän tallentaminen epäonnistui",
-    "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}"
+    "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}",
+    "ei-kayttooikeutta": "Käyttöoikeutesi eivät riitä opiskelijavalinnan tietojen katseluun."
   }
 }

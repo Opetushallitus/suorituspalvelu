@@ -282,6 +282,16 @@ export interface IKKSuoritusNimi {
   en?: string;
 }
 
+export interface IKayttajaFailureResponse {
+  virheet: string[];
+}
+
+export interface IKayttajaSuccessResponse {
+  asiointiKieli: string;
+  isRekisterinpitaja: boolean;
+  isOrganisaationKatselija: boolean;
+}
+
 export interface ILukionOppiaine {
   tunniste: string;
   nimi: ILukionOppiaineNimi;
@@ -384,7 +394,8 @@ export interface IOOOppilaitosNimi {
 export interface IOppija {
   oppijaNumero: string;
   hetu?: string;
-  nimi: string;
+  etunimet?: string;
+  sukunimi?: string;
 }
 
 export interface IOppijanHakuFailureResponse {
@@ -400,8 +411,9 @@ export interface IOppijanTiedotFailureResponse {
 }
 
 export interface IOppijanTiedotSuccessResponse {
-  nimi: string;
-  henkiloTunnus: string;
+  etunimet?: string;
+  sukunimi?: string;
+  henkiloTunnus?: string;
   syntymaAika: string;
   oppijaNumero: string;
   henkiloOID: string;
@@ -843,8 +855,8 @@ export interface IYliajoTallennusContainer {
   yliajot?: IYliajo[];
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';

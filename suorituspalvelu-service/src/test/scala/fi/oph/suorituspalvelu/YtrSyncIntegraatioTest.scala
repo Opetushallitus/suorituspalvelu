@@ -138,7 +138,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     val onrData = hetuToPersonOid.values.map(personOid => {
-      personOid -> OnrMasterHenkilo(personOid, hetuToPersonOid.find(_._2 == personOid).map(_._1), None)
+      personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None)
     }).toMap
 
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
@@ -200,7 +200,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       Some("2025-08-15T14:20:57.288401+03:00"), None, None)
 
     val onrData = hetuToPersonOid.values.map(personOid => {
-      personOid -> OnrMasterHenkilo(personOid, hetuToPersonOid.find(_._2 == personOid).map(_._1), None)
+      personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None)
     }).toMap
 
     val hakuOid = "1.2.246.562.29.01000000000000013275"

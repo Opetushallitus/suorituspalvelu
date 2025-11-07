@@ -10,6 +10,7 @@ export const test = base.extend<object>({
       await route.fulfill({
         json: {
           asiointiKieli: 'fi',
+          isRekisterinpitaja: true,
         },
       });
     });

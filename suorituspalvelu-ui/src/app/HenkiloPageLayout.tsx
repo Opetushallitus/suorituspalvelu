@@ -4,7 +4,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { useConfig } from '@/lib/configuration';
 import { ExternalLink } from '@/components/ExternalLink';
-import { formatFinnishDate } from '@/lib/common';
+import { formatFinnishDate, formatHenkiloNimi } from '@/lib/common';
 import type { Route } from './+types/HenkiloPageLayout';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
 import { TiedotTabNavi } from '@/components/TiedotTabNavi';
@@ -26,10 +26,10 @@ export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
   const { t } = useTranslations();
   return (
     <Stack spacing={6} sx={{ margin: 2 }}>
-      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${tiedot.nimi}`}</title>
+      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${formatHenkiloNimi(tiedot, t)}`}</title>
       <Stack spacing={2}>
         <OphTypography variant="h3" component="h2">
-          {tiedot.nimi}{' '}
+          {formatHenkiloNimi(tiedot, t)}{' '}
           <span style={{ fontWeight: 'normal' }}>({tiedot.henkiloTunnus})</span>
         </OphTypography>
         <Stack direction="row">

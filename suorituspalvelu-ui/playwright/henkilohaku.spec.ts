@@ -4,13 +4,15 @@ import { test } from './lib/fixtures';
 const OPPIJAT = [
   {
     oppijaNumero: '1.2.3.4',
-    nimi: 'Olli Oppija',
+    etunimet: 'Olli',
+    sukunimi: 'Oppija',
     hetu: '123456-7890',
     oppilaitosOid: '1',
   },
   {
     oppijaNumero: '2.3.4.5',
-    nimi: 'Maija Mallikas',
+    etunimet: 'Maija',
+    sukunimi: 'Mallikas',
     hetu: '098765-4321',
     oppilaitosOid: '2',
   },

@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_HETU, EXAMPLE_NIMI, EXAMPLE_OPPIJA_OID}
+import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_ETUNIMET, EXAMPLE_HETU, EXAMPLE_OPPIJA_OID, EXAMPLE_SUKUNIMI}
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -1172,11 +1172,12 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getOppijanTiedot(): Option[OppijanTiedotSuccessResponse] = {
-    Some(OppijanTiedotSuccessResponse(
+  def getOppijanTiedot(): OppijanTiedotSuccessResponse = {
+    OppijanTiedotSuccessResponse(
       // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
-      nimi =                                      EXAMPLE_NIMI,
-      henkiloTunnus =                             EXAMPLE_HETU,
+      etunimet =                                  Optional.of(EXAMPLE_ETUNIMET),
+      sukunimi =                                  Optional.of(EXAMPLE_SUKUNIMI),
+      henkiloTunnus =                             Optional.of(EXAMPLE_HETU),
       syntymaAika =                               LocalDate.parse(ESIMERKKI_SYNTYMAIKA),
       oppijaNumero =                              EXAMPLE_OPPIJA_OID,
       henkiloOID =                                EXAMPLE_OPPIJA_OID,
@@ -1201,6 +1202,6 @@ object MockEntityToUIConverter {
       nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat().asJava,
       perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava,
       aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat().asJava
-    ))
+    )
   }
 }

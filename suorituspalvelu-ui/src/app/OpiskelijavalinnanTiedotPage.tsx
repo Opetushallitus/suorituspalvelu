@@ -11,6 +11,9 @@ import {
   OpiskelijavalintaanSiirtyvatTiedot,
   type AvainarvoRyhma,
 } from '@/components/opiskelijavalinnan-tiedot/OpiskelijavalintaanSiirtyvatTiedot';
+import { useKayttaja } from '@/lib/suorituspalvelu-queries';
+import { ResultPlaceholder } from '@/components/ResultPlaceholder';
+import { DoNotDisturb } from '@mui/icons-material';
 
 export const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
@@ -19,10 +22,12 @@ export const OpiskelijavalinnanTiedotPageContent = ({
 }) => {
   const { t } = useTranslations();
 
+  const { data: kayttaja } = useKayttaja();
+
   const [avainarvoRyhma, setAvainarvoRyhma] =
     useState<AvainarvoRyhma>('uudet-avainarvot');
 
-  return (
+  return kayttaja.isRekisterinpitaja ? (
     <Stack spacing={3}>
       <ToggleButtonGroup
         sx={{ alignSelf: 'flex-end' }}
@@ -46,6 +51,11 @@ export const OpiskelijavalinnanTiedotPageContent = ({
         oppijaNumero={oppijaNumero}
       />
     </Stack>
+  ) : (
+    <ResultPlaceholder
+      icon={<DoNotDisturb />}
+      text={t('opiskelijavalinnan-tiedot.ei-kayttooikeutta')}
+    />
   );
 };
 

@@ -1,5 +1,6 @@
-import { queryOptions } from '@tanstack/react-query';
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';
 import {
+  getKayttaja,
   getOppija,
   getOppilaitokset,
   getSuorituksenOppilaitosVaihtoehdot,
@@ -91,3 +92,12 @@ export const queryOptionsGetValintadata = ({
     queryKey: ['getValintadata', oppijaNumero, hakuOid],
     queryFn: () => getValintadata({ oppijaNumero, hakuOid }),
   });
+
+export const queryOptionsGetKayttaja = () =>
+  queryOptions({
+    queryKey: ['getKayttaja'],
+    queryFn: () => getKayttaja(),
+    staleTime: Infinity,
+  });
+
+export const useKayttaja = () => useSuspenseQuery(queryOptionsGetKayttaja());

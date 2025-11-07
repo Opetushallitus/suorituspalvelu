@@ -185,10 +185,6 @@ export type TutkinnonOsanOsaAlue = {
   arvosana?: string;
 };
 
-export type KayttajaTiedot = {
-  asiointiKieli: Language;
-};
-
 export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
 
 export type PerusopetusOppiaineFields = {
@@ -250,4 +246,9 @@ export type YliajoParams = {
   avain: string;
   arvo: string;
   selite: string;
+};
+
+export type Henkilo = {
+  etunimet?: string;
+  sukunimi?: string;
 };

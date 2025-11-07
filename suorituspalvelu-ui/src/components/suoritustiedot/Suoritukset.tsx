@@ -6,6 +6,7 @@ import { useState } from 'react';
 import type { OppijanTiedot } from '@/types/ui-types';
 import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 import { PerusopetusSuoritusAdder } from './PerusopetusSuoritusAdder';
+import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 
 type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
 
@@ -19,6 +20,8 @@ export function Suoritukset({
   const [suoritusOrder, setSuoritusOrder] = useState<SuoritusOrder>(
     'koulutustyypeittain',
   );
+
+  const { data: kayttaja } = useKayttaja();
 
   return (
     <Box data-test-id="suoritukset">
@@ -52,7 +55,9 @@ export function Suoritukset({
           </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-      <PerusopetusSuoritusAdder henkiloOID={oppijanTiedot.henkiloOID} />
+      {kayttaja.isRekisterinpitaja && (
+        <PerusopetusSuoritusAdder henkiloOID={oppijanTiedot.henkiloOID} />
+      )}
       {suoritusOrder === 'koulutustyypeittain' ? (
         <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
       ) : (

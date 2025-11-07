@@ -2,6 +2,7 @@ import { isEmpty, isNullish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client } from './http-client';
 import type {
+  IKayttajaSuccessResponse,
   ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
   IOppijanTiedotSuccessResponse,
@@ -9,7 +10,7 @@ import type {
   IOppilaitosSuccessResponse,
   IYliajoTallennusContainer,
 } from '@/types/backend';
-import type { KayttajaTiedot, SuoritusFields } from '@/types/ui-types';
+import type { Language, SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
 
@@ -61,7 +62,7 @@ export const getOppilaitokset = async () => {
 export const getKayttaja = async () => {
   const config = await configPromise;
 
-  const res = await client.get<KayttajaTiedot>(
+  const res = await client.get<IKayttajaSuccessResponse>(
     config.routes.suorituspalvelu.kayttajanTiedotUrl,
   );
   return res.data;
@@ -69,7 +70,7 @@ export const getKayttaja = async () => {
 
 export const getAsiointiKieli = async () => {
   const kayttaja = await getKayttaja();
-  return kayttaja.asiointiKieli;
+  return kayttaja.asiointiKieli as Language;
 };
 
 export const getSuoritusvaihtoehdot = async () => {

@@ -74,7 +74,7 @@ class YtrIntegration {
       SyncResultForHenkilo(ytrResult.personOid, versio, None)
     } catch {
       case e: Exception =>
-        LOG.error(s"Henkilon ${ytrResult.personOid} VIRTA-tietojen tallentaminen epäonnistui", e)
+        LOG.error(s"Henkilon ${ytrResult.personOid} YTR-tietojen tallentaminen epäonnistui", e)
         SyncResultForHenkilo(ytrResult.personOid, None, Some(e))
     }
   }
