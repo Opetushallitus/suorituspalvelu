@@ -29,7 +29,7 @@ export const getOpiskelijavalintaGroup = (
     key.endsWith('_TILA')
   ) {
     return 'suoritukset';
-  } else if (item.metadata.arvoEnnenYliajoa == null) {
+  } else if (item.metadata.yliajo && item.metadata.arvoEnnenYliajoa == null) {
     return 'lisatyt';
   } else {
     return 'yleinen';
