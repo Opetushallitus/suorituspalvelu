@@ -18,7 +18,7 @@ class JdbcSessionMappingStorage(sessionRepository: SessionRepository[Session], d
     val session = kantaOperaatiot.getSessionIdByMappingId(mappingId)
       .map(s => sessionRepository.findById(s))
     session.foreach(s => {
-      LOG.info("Removed session " + s.getId + " by mapping " + mappingId)
+      LOG.debug("Removed session " + s.getId + " with mapping " + mappingId)
       sessionRepository.deleteById(s.getId)
     })
     null
@@ -26,12 +26,14 @@ class JdbcSessionMappingStorage(sessionRepository: SessionRepository[Session], d
 
   @Override
   def removeBySessionById(sessionId: String) = {
+    LOG.debug("Removing session with id " + sessionId)
     val kantaOperaatiot = new KantaOperaatiot(db)
     kantaOperaatiot.deleteCasMappingBySessionId(sessionId)
   }
 
   @Override
   def addSessionById(mappingId: String, session: HttpSession) = {
+    LOG.debug("Adding session with id " + session.getId + " and mapping " + mappingId)
     val kantaOperaatiot = new KantaOperaatiot(db)
     kantaOperaatiot.addMappingForSessionId(mappingId, session.getId)
   }
