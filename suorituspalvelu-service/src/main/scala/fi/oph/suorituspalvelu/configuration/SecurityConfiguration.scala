@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.configuration
 
 import fi.oph.suorituspalvelu.resource.ApiConstants
+import fi.oph.suorituspalvelu.security.JdbcSessionMappingStorage
 import fi.vm.sade.java_utils.security.OpintopolkuCasAuthenticationFilter
 import fi.vm.sade.javautils.kayttooikeusclient.OphUserDetailsServiceImpl
 import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
@@ -22,8 +23,12 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession
 import org.springframework.session.web.http.{CookieSerializer, DefaultCookieSerializer}
 import jakarta.servlet.Filter
+import org.apereo.cas.client.session.{SessionMappingStorage, SingleSignOutFilter}
 import org.springframework.http.HttpMethod
 import org.springframework.security.web.access.intercept.AuthorizationFilter
+import org.springframework.session.{Session, SessionRepository}
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository
+import slick.jdbc.JdbcBackend
 
 /**
  *
@@ -60,7 +65,7 @@ class SecurityConfiguration {
   }
 
   @Bean
-  def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter): SecurityFilterChain =
+  def casLoginFilterChain(http: HttpSecurity, casAuthenticationEntryPoint: CasAuthenticationEntryPoint, authenticationFilter: CasAuthenticationFilter, singleSignOutFilter: SingleSignOutFilter): SecurityFilterChain =
     http
       .authorizeHttpRequests(requests => requests
         .requestMatchers(HttpMethod.GET, ApiConstants.HEALTHCHECK_PATH, "/static/**", "/actuator/health", "/openapi/v3/api-docs/**")
@@ -70,6 +75,7 @@ class SecurityConfiguration {
       .csrf(c => c.disable())
       .exceptionHandling(c => c.authenticationEntryPoint(casAuthenticationEntryPoint))
       .addFilter(authenticationFilter)
+      .addFilterBefore(singleSignOutFilter, classOf[CasAuthenticationFilter])
       /* Tehdään ohjaukset käyttöliittymään vasta koko CAS-autentikaation (ja mahdollisen login-uudellenohjauksen) jälkeen.
        * Huom! classOf[CasAuthenticationFilter] ei toimi integraatiotesteissä, koska silloin frontendResourceFilter
        * ajetaan ennen kuin koko CAS-autentikaatiota on tehty, ja koska MockMvc ei aja forwardointeja
@@ -135,5 +141,19 @@ class SecurityConfiguration {
     http.getSharedObject(classOf[AuthenticationManagerBuilder])
       .authenticationProvider(casAuthenticationProvider)
       .build()
+
+  @Bean
+  def sessionMappingStorage(sessionRepository: JdbcIndexedSessionRepository, db: JdbcBackend.JdbcDatabaseDef): SessionMappingStorage = {
+    val jdbcSessionMappingStorage = new JdbcSessionMappingStorage(sessionRepository.asInstanceOf[SessionRepository[Session]], db);
+    jdbcSessionMappingStorage
+  }
+
+  @Bean
+  def singleSignOutFilter(sessionMappingStorage: SessionMappingStorage): SingleSignOutFilter = {
+    SingleSignOutFilter.setSessionMappingStorage(sessionMappingStorage)
+    val singleSignOutFilter: SingleSignOutFilter = new SingleSignOutFilter()
+    singleSignOutFilter.setIgnoreInitConfiguration(true)
+    singleSignOutFilter
+  }
 
 }

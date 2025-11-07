@@ -83,6 +83,7 @@ class KantaOperaatiotTest {
     Await.result(database.run(
       sqlu"""
             --DROP FUNCTION get_tyyppi(text, text);
+            DROP TABLE cas_client_session;
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
             DROP TABLE scheduled_tasks;
@@ -787,5 +788,21 @@ class KantaOperaatiotTest {
     // Tarkistetaan että haulle 2 ei enää yliajoa
     val haetutYliajot2After = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid2)
     Assertions.assertEquals(0, haetutYliajot2After.size)
+  }
+
+  @Test def testCasMapping(): Unit = {
+    val CAS_SESSION_ID = "cas-session-id"
+    val SPRING_SESSION_ID = "tomcat-session-id-000000000000000000"
+
+    // kannan foreign key vaatii että lisätään mock spring-sessio
+    Await.result(this.database.run(sqlu"""INSERT INTO spring_session (primary_id, session_id, creation_time, last_access_time, max_inactive_interval, expiry_time, principal_name) VALUES ('primary_id', $SPRING_SESSION_ID, 0, 0, 0, 0, 'principal')"""), 5.seconds)
+
+    // kun lisätään mappaus cas-sessioon niin mappays löytyy
+    this.kantaOperaatiot.addMappingForSessionId(CAS_SESSION_ID, SPRING_SESSION_ID);
+    Assertions.assertEquals(Some(SPRING_SESSION_ID), this.kantaOperaatiot.getSessionIdByMappingId(CAS_SESSION_ID))
+
+    // ja kun mappaus poistetaan sitä ei enää löydy
+    this.kantaOperaatiot.deleteCasMappingBySessionId(SPRING_SESSION_ID)
+    Assertions.assertEquals(None, this.kantaOperaatiot.getSessionIdByMappingId(CAS_SESSION_ID))
   }
 }

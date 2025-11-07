@@ -396,4 +396,39 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       DBIO.seq(updateOldVersionsAction)
     ), DB_TIMEOUT)
   }
+
+  /**
+   * Hakee session CAS-tiketin tunnisteella
+   */
+  def getSessionIdByMappingId(mappingId: String): Option[String] =
+    val action =
+      sql"""
+            SELECT session_id
+            FROM cas_client_session
+            WHERE mapped_ticket_id = $mappingId
+          """.as[String]
+    Await.result(db.run(action), DB_TIMEOUT).find(v => true)
+
+  /**
+   * Poistaa CAS-sessiomappauksen sessio id:n perusteella
+   */
+  def deleteCasMappingBySessionId(sessionId: String): Unit =
+    val action =
+      sqlu"""
+            DELETE
+            FROM cas_client_session
+            WHERE session_id = $sessionId
+          """
+    Await.result(db.run(action), DB_TIMEOUT)
+
+  /**
+   *
+   * Lisää kantaan mappauksen palvelun sessiosta CAS-sessioon
+   */
+  def addMappingForSessionId(mappingId: String, sessionId: String): Unit = {
+    val insertAction =
+      sqlu"""INSERT INTO cas_client_session (mapped_ticket_id, session_id) VALUES ($mappingId, $sessionId)
+             ON CONFLICT (mapped_ticket_id) DO NOTHING"""
+    Await.result(db.run(insertAction), DB_TIMEOUT)
+  }
 }
