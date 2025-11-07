@@ -146,10 +146,53 @@ trait ValintalaskentaDataResponse
 
 case class ValintalaskentaDataSuccessResponse(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty valintaHakemukset: java.util.List[String]
+  @BeanProperty valintaHakemukset: java.util.List[ValintalaskentaApiHakemus]
 ) extends ValintalaskentaDataResponse
 
 case class ValintalaskentaDataFailureResponse(
   @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
   @BeanProperty virheet: java.util.List[String]
 ) extends ValintalaskentaDataResponse
+
+case class ValintalaskentaApiAvainArvo(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty avain: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvo: String
+)
+
+case class ValintalaskentaApiAvainMetatiedotDTO()
+
+case class ValintalaskentaApiHakutoive(
+                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                        @BeanProperty hakuOid: String,
+                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                        @BeanProperty hakukohdeOid: String,
+                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                        @BeanProperty prioriteetti: Int,
+                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                        @BeanProperty hakukohderyhmaOids: java.util.List[String],
+                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                        @BeanProperty harkinnanvaraisuus: Boolean = false //Onkohan tämä tarpeellinen? Tarkistetaan, kun muuten laitetaan harkinnanvaraisuusasiat kuntoon.
+                                      )
+
+case class ValintalaskentaApiHakemus(
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty hakuOid: String,
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty hakemusOid: String,
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty hakukohteet: java.util.List[ValintalaskentaApiHakutoive],
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty hakijaOid: String,
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty etunimi: String = "", //Todo, voiko pudottaa pois?
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty sukunimi: String = "", //Todo, voiko pudottaa pois?
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty koskiOpiskeluoikeudetJson: String, //Tässä vaiheessa lähinnä placeholder. Ensivaiheessa haetaan erikseen Koostepalvelussa/Valintalaskennassa. Tulevaisuudessa kuitenkin voidaan toimittaa suoraan Supasta.
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty avaimet: java.util.List[ValintalaskentaApiAvainArvo],
+                                      @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                      @BeanProperty avainMetatiedotDTO: java.util.List[ValintalaskentaApiAvainMetatiedotDTO] //Lisätään nämä myöhemmässä vaiheessa, tai yhdistetään avain-arvoihin (vaatii muutoksia valintaperusteisiin jos yhdistetään)
+                                    )

@@ -4,21 +4,24 @@ import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, Ser
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
-import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataResponse, ValintalaskentaDataSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiHakemus, ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataResponse, ValintalaskentaDataSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.{ValintaData, ValintaDataService, ValintalaskentaHakemus}
+import fi.oph.suorituspalvelu.service.{ValintaData, ValintaDataService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.*
 
+import scala.annotation.meta.field
+import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
@@ -53,7 +56,7 @@ class ValintalaskentaResource {
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = Array(new Content(schema = new Schema(implementation = classOf[ValintalaskentaDataPayload])))),
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Palauttaa valintadataa Valintalaskennan ymmärtämässä muodossa"),
+      new ApiResponse(responseCode = "200", description = "Palauttaa valintadataa Valintalaskennan ymmärtämässä muodossa", content = Array(new Content(schema = new Schema(implementation = classOf[ValintalaskentaDataSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = VALINTALASKENTA_RESPONSE_400_DESCRIPTION),
       new ApiResponse(responseCode = "403", description = VALINTALASKENTA_RESPONSE_403_DESCRIPTION)
     ))
@@ -106,10 +109,10 @@ class ValintalaskentaResource {
               None
             )
             LOG.info(s"Haetaan valintalaskennan tarvitsemat tiedot parametreille $payload")
-            val result: Seq[ValintalaskentaHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, payload.hakemusOids.asScala.toSet)
+            val result: Seq[ValintalaskentaApiHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, payload.hakemusOids.asScala.toSet)
             val parsedResult = result.map(objectMapper.writeValueAsString(_)).toList.asJava
             LOG.info(s"Palautetaan rajapintavastaus, $parsedResult")
-            ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(parsedResult))
+            ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(result.toList.asJava))
 
 
           } catch {

@@ -5,7 +5,6 @@ import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.service.ValintalaskentaHakemus
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -17,7 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.nio.charset.Charset
 import java.util
-import java.util.{Optional, UUID}
+import java.util.Optional
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
@@ -136,29 +135,28 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
     println(s"result.getResponse.getContentAsString(Charset.forName(\"UTF-8\")): ${result.getResponse.getContentAsString(Charset.forName("UTF-8"))}")
     val parsedResult = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[ValintalaskentaDataSuccessResponse])
 
-    val hakemusStr = parsedResult.valintaHakemukset.asScala.head
-    val hakemus = objectMapper.readValue(hakemusStr, classOf[ValintalaskentaHakemus])
+    val hakemus = parsedResult.valintaHakemukset.asScala.head
 
     //Tarkistetaan hakemukselta löytyvät oidit oidit, ja että suoraan hakemukselta välittyvät avain-arvot ovat mukana
     Assertions.assertEquals(hakemus.hakemusOid, hakemusOid)
     Assertions.assertEquals(hakemus.hakuOid, hakuOid)
     Assertions.assertEquals(hakemus.hakijaOid, personOid)
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "address" && aa.arvo == "Testitie 71794920276"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "30ca1709-db90-46ac-94a0-b3e446932d4c" && aa.arvo == "12"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "address" && aa.arvo == "Testitie 71794920276"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "30ca1709-db90-46ac-94a0-b3e446932d4c" && aa.arvo == "12"))
 
     //Tarkistetaan hakutoiveisiin liittyvät arvot
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference1-Koulutus-id" && aa.arvo == "1.2.246.562.20.00000000000000000001"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference1-Koulutus-id-processingState" && aa.arvo == "UNPROCESSED"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference1-Koulutus-id-paymentObligation" && aa.arvo == "NOT-OBLIGATED"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference1-Koulutus-id-degreeRequirement" && aa.arvo == "UNREVIEWED"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference1-Koulutus-id-eligibility" && aa.arvo == "ELIGIBLE"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference1-Koulutus-id-languageRequirement" && aa.arvo == "UNREVIEWED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference1-Koulutus-id" && aa.arvo == "1.2.246.562.20.00000000000000000001"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference1-Koulutus-id-processingState" && aa.arvo == "UNPROCESSED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference1-Koulutus-id-paymentObligation" && aa.arvo == "NOT-OBLIGATED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference1-Koulutus-id-degreeRequirement" && aa.arvo == "UNREVIEWED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference1-Koulutus-id-eligibility" && aa.arvo == "ELIGIBLE"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference1-Koulutus-id-languageRequirement" && aa.arvo == "UNREVIEWED"))
 
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference2-Koulutus-id" && aa.arvo == "1.2.246.562.20.00000000000000000002"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference2-Koulutus-id-processingState" && aa.arvo == "UNPROCESSED"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference2-Koulutus-id-paymentObligation" && aa.arvo == "NOT-OBLIGATED"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference2-Koulutus-id-degreeRequirement" && aa.arvo == "UNREVIEWED"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference2-Koulutus-id-eligibility" && aa.arvo == "ELIGIBLE"))
-    Assertions.assertTrue(hakemus.avaimet.exists(aa => aa.avain == "preference2-Koulutus-id-languageRequirement" && aa.arvo == "UNREVIEWED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id" && aa.arvo == "1.2.246.562.20.00000000000000000002"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-processingState" && aa.arvo == "UNPROCESSED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-paymentObligation" && aa.arvo == "NOT-OBLIGATED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-degreeRequirement" && aa.arvo == "UNREVIEWED"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-eligibility" && aa.arvo == "ELIGIBLE"))
+    Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-languageRequirement" && aa.arvo == "UNREVIEWED"))
   }
 }
