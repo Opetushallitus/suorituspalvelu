@@ -497,7 +497,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
 
-  @Test def testTelma(): Unit =
+  @Test def testTelma(): Unit = {
     val telma = getFirstSuoritusFromJson(
       """
         |[
@@ -539,7 +539,8 @@ class KoskiParsingTest {
         |              "koodiarvo": "FI",
         |              "koodistoUri": "kieli",
         |              "koodistoVersio": 1
-        |            }
+        |            },
+        |            "osasuoritukset": []
         |          }
         |        ]
         |      }
@@ -555,6 +556,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
     Assertions.assertEquals(2023, telma.suoritusVuosi)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
+  }
 
   @Test def testTelmaOsasuoritukset(): Unit = {
     val fileName = "/telmaosasuoritukset.json"

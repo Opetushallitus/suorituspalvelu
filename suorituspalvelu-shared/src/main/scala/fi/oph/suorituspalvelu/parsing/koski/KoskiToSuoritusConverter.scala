@@ -227,13 +227,22 @@ object KoskiToSuoritusConverter {
   }
 
   def getLisapistekoulutusHyvaksyttyLaajuus(suoritus: Suoritus): Option[Laajuus] = {
-    suoritus.osasuoritukset.map(ost => Laajuus(
-      ost.filter(_.arviointi.exists(a => a.exists(_.hyväksytty)))
-        .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
-      asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
-      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.map(y => y.nimi)))).headOption,
-      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.flatMap(y => y.lyhytNimi)))).headOption
-    ))
+    suoritus.osasuoritukset.flatMap(ost => {
+      val laajuudenYksikot =
+        ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö)))
+      //Oletus, että kaikkien osasuoritusten laajuuksien yksiköt ovat samat.
+      laajuudenYksikot.headOption.map(ly => {
+        val hyvaksyttyLaajuus =
+          ost.filter(_.arviointi.exists(a => a.exists(_.hyväksytty)))
+            .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum
+        Laajuus(
+          hyvaksyttyLaajuus,
+          asKoodiObject(ly),
+          Some(ly.nimi),
+          ly.lyhytNimi
+        )
+      })
+    })
   }
 
   def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma = {
@@ -305,6 +314,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.osasuoritukset.map(ost => Laajuus(
+        //Huom. Tässä ei ole filtteröintiä hyväksytyn arvioinnin perusteella vrt. Telma, koska arviointeja ei ole.
         ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
         asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
         ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.map(y => y.nimi)))).headOption,
