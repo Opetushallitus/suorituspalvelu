@@ -505,7 +505,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(editModal).toBeHidden();
 
     const errorModal = page.getByRole('dialog', {
-      name: 'Yliajon poistaminen epäonnistui',
+      name: 'Kentän muokkauksen poistaminen epäonnistui',
     });
     await expect(errorModal).toBeVisible();
     await expect(errorModal).toContainText('Backend-virhe');

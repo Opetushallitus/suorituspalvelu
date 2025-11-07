@@ -5,34 +5,31 @@ import {
   OphInput,
 } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { AvainArvo, YliajoParams } from '@/types/ui-types';
+import type { AvainArvo } from '@/types/ui-types';
 import { OphModal } from '@/components/OphModal';
 import { useCallback } from 'react';
 import { DeleteOutline } from '@mui/icons-material';
-
-export type YliajoMode = 'add' | 'edit';
+import { useYliajoManager } from '@/lib/yliajoManager';
 
 export const YliajoEditModal = ({
-  mode,
-  yliajo,
   avainArvot,
-  setYliajo,
-  saveYliajo,
-  deleteYliajo,
 }: {
-  mode: YliajoMode;
-  henkiloOid: string;
-  yliajo: YliajoParams | null;
   avainArvot: Array<AvainArvo>;
-  setYliajo: (yliajo: YliajoParams | null) => void;
-  saveYliajo: (updatedYliajo: YliajoParams) => void;
-  deleteYliajo: (avain: string) => void;
 }) => {
   const { t } = useTranslations();
 
+  const {
+    yliajoFields: yliajo,
+    mode,
+    stopYliajoEdit,
+    onYliajoChange,
+    saveYliajo,
+    deleteYliajo,
+  } = useYliajoManager();
+
   const onClose = useCallback(() => {
-    setYliajo(null);
-  }, [setYliajo]);
+    stopYliajoEdit();
+  }, [stopYliajoEdit]);
 
   const originalAvainArvo = avainArvot.find((a) => a.avain === yliajo?.avain);
 
@@ -86,8 +83,7 @@ export const YliajoEditModal = ({
                   value={yliajo?.avain ?? ''}
                   inputProps={{ 'aria-labelledby': labelId }}
                   onChange={(event) => {
-                    setYliajo({
-                      ...yliajo,
+                    onYliajoChange({
                       avain: event.target.value ?? '',
                     });
                   }}
@@ -107,8 +103,7 @@ export const YliajoEditModal = ({
                 value={yliajo?.arvo ?? ''}
                 inputProps={{ 'aria-labelledby': labelId }}
                 onChange={(event) => {
-                  setYliajo({
-                    ...yliajo,
+                  onYliajoChange({
                     arvo: event.target.value ?? '',
                   });
                 }}
@@ -124,8 +119,7 @@ export const YliajoEditModal = ({
                 value={yliajo?.selite ?? ''}
                 inputProps={{ 'aria-labelledby': labelId }}
                 onChange={(event) => {
-                  setYliajo({
-                    ...yliajo,
+                  onYliajoChange({
                     selite: event.target.value ?? '',
                   });
                 }}

@@ -4,25 +4,14 @@ import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsGetValintadata } from '@/lib/suorituspalvelu-queries';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
-import { useCallback, useState } from 'react';
-import type { YliajoParams } from '@/types/ui-types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteYliajo, saveYliajot } from '@/lib/suorituspalvelu-service';
-import { SpinnerModal } from '@/components/SpinnerModal';
 import { Add } from '@mui/icons-material';
 import { AvainArvotSection } from './AvainArvotSection';
-import { YliajoEditModal, type YliajoMode } from './YliajoEditModal';
-import { YliajoErrorModal } from './YliajoErrorModal';
+import { YliajoEditModal } from './YliajoEditModal';
+import { useYliajoManager } from '@/lib/yliajoManager';
 
 export type AvainarvoRyhma = 'uudet-avainarvot' | 'vanhat-avainarvot';
 
 const DUMMY_HAKU_OID = '1.2.246.562.29.00000000000000000000';
-
-const EMPTY_YLIAJO = {
-  avain: '',
-  arvo: '',
-  selite: '',
-} as const;
 
 export const OpiskelijavalintaanSiirtyvatTiedot = ({
   avainarvoRyhma,
@@ -37,84 +26,13 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
 
   const { t } = useTranslations();
 
-  const [operation, setOperation] = useState<'save' | 'delete'>('save');
-
-  const [mode, setMode] = useState<YliajoMode>('edit');
-
-  const [yliajo, setYliajo] = useState<YliajoParams | null>(null);
-
-  const queryClient = useQueryClient();
-
-  const yliajoMutation = useMutation({
-    mutationFn: (updatedYliajo: YliajoParams) => {
-      if (operation === 'save') {
-        return saveYliajot({
-          hakuOid: DUMMY_HAKU_OID,
-          henkiloOid: oppijaNumero,
-          yliajot: [
-            {
-              arvo: updatedYliajo.arvo,
-              avain: updatedYliajo.avain,
-              selite: updatedYliajo.selite,
-            },
-          ],
-        });
-      } else {
-        return deleteYliajo({
-          henkiloOid: oppijaNumero,
-          hakuOid: DUMMY_HAKU_OID,
-          avain: updatedYliajo.avain,
-        });
-      }
-    },
-    onSuccess: () => {
-      setYliajo(null);
-      queryClient.resetQueries(
-        queryOptionsGetValintadata({ oppijaNumero, hakuOid: DUMMY_HAKU_OID }),
-      );
-    },
+  const { startYliajoEdit, startYliajoAdd, yliajoFields } = useYliajoManager({
+    henkiloOid: oppijaNumero,
   });
-
-  const saveYliajoCb = useCallback(
-    (yliajoParams: YliajoParams) => {
-      setOperation('save');
-      yliajoMutation.mutate(yliajoParams);
-    },
-    [yliajoMutation],
-  );
-
-  const deleteYliajoCb = useCallback(
-    (avain: string) => {
-      setOperation('delete');
-      yliajoMutation.mutate({ avain, arvo: '', selite: '' });
-    },
-    [yliajoMutation],
-  );
 
   return (
     <>
-      {yliajoMutation.isPending ? (
-        <SpinnerModal
-          open={yliajoMutation.isPending}
-          title={t('opiskelijavalinnan-tiedot.tallennetaan-yliajoa')}
-        />
-      ) : yliajoMutation.isError ? (
-        <YliajoErrorModal
-          operation={operation}
-          error={yliajoMutation.error}
-          onClose={() => yliajoMutation.reset()}
-        />
-      ) : (
-        <YliajoEditModal
-          mode={mode}
-          henkiloOid={oppijaNumero}
-          avainArvot={valintadata.avainArvot}
-          yliajo={yliajo}
-          setYliajo={setYliajo}
-          saveYliajo={saveYliajoCb}
-          deleteYliajo={deleteYliajoCb}
-        />
-      )}
+      {yliajoFields && <YliajoEditModal avainArvot={valintadata.avainArvot} />}
       <AccordionBox
         id="opiskelijavalintaan-siirtyvat-tiedot"
         title={t(
@@ -126,8 +44,7 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
           startYliajoEdit={
             avainarvoRyhma === 'uudet-avainarvot'
               ? (yliajoParams) => {
-                  setMode('edit');
-                  setYliajo({
+                  startYliajoEdit({
                     arvo: yliajoParams.arvo,
                     avain: yliajoParams.avain,
                     selite: yliajoParams.selite,
@@ -147,8 +64,7 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
               startIcon={<Add />}
               variant="outlined"
               onClick={() => {
-                setMode('add');
-                setYliajo(EMPTY_YLIAJO);
+                startYliajoAdd();
               }}
             >
               {t('opiskelijavalinnan-tiedot.lisaa-kentta')}

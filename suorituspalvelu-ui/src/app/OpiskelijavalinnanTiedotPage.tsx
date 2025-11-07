@@ -14,8 +14,11 @@ import {
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { DoNotDisturb } from '@mui/icons-material';
+import { YliajoManagerProvider } from '@/lib/yliajoManager';
 
-export const OpiskelijavalinnanTiedotPageContent = ({
+const DUMMY_HAKU_OID = '1.2.246.562.29.00000000000000000000';
+
+const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
 }: {
   oppijaNumero: string;
@@ -28,29 +31,31 @@ export const OpiskelijavalinnanTiedotPageContent = ({
     useState<AvainarvoRyhma>('uudet-avainarvot');
 
   return kayttaja.isRekisterinpitaja ? (
-    <Stack spacing={3}>
-      <ToggleButtonGroup
-        sx={{ alignSelf: 'flex-end' }}
-        value={avainarvoRyhma}
-        exclusive
-        onChange={(_event, newValue) => {
-          if (newValue) {
-            setAvainarvoRyhma(newValue);
-          }
-        }}
-      >
-        <ToggleButton value="uudet-avainarvot">
-          {t('opiskelijavalinnan-tiedot.uudet-avainarvot')}
-        </ToggleButton>
-        <ToggleButton value="vanhat-avainarvot">
-          {t('opiskelijavalinnan-tiedot.vanhat-avainarvot')}
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <OpiskelijavalintaanSiirtyvatTiedot
-        avainarvoRyhma={avainarvoRyhma}
-        oppijaNumero={oppijaNumero}
-      />
-    </Stack>
+    <YliajoManagerProvider hakuOid={DUMMY_HAKU_OID}>
+      <Stack spacing={3}>
+        <ToggleButtonGroup
+          sx={{ alignSelf: 'flex-end' }}
+          value={avainarvoRyhma}
+          exclusive
+          onChange={(_event, newValue) => {
+            if (newValue) {
+              setAvainarvoRyhma(newValue);
+            }
+          }}
+        >
+          <ToggleButton value="uudet-avainarvot">
+            {t('opiskelijavalinnan-tiedot.uudet-avainarvot')}
+          </ToggleButton>
+          <ToggleButton value="vanhat-avainarvot">
+            {t('opiskelijavalinnan-tiedot.vanhat-avainarvot')}
+          </ToggleButton>
+        </ToggleButtonGroup>
+        <OpiskelijavalintaanSiirtyvatTiedot
+          avainarvoRyhma={avainarvoRyhma}
+          oppijaNumero={oppijaNumero}
+        />
+      </Stack>
+    </YliajoManagerProvider>
   ) : (
     <ResultPlaceholder
       icon={<DoNotDisturb />}

@@ -4,7 +4,7 @@ import { EditOutlined } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AvainArvo } from '@/types/ui-types';
 
-export const EditableField = ({
+export const AvainArvoDisplay = ({
   avainArvo,
   startYliajoEdit,
 }: {
