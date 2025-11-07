@@ -291,6 +291,7 @@
     "virhe-valintadatan-haussa": "Virhe opiskelijavalinnan tietojen noutamisessa",
     "muokkaa-kenttaa": "Muokkaa kenttää",
     "tallennetaan-yliajoa": "Tallennetaan kentän arvoa...",
+    "poistetaan-yliajoa": "Poistetaan kentän arvoa...",
     "tallenna": "Tallenna",
     "alkuperainen": "Alkuperäinen",
     "selite": "Selite",
@@ -298,8 +299,13 @@
     "lisaa-kentta": "Lisää kenttä",
     "avain": "Avain",
     "arvo": "Arvo",
+    "ei-kayttooikeutta": "Käyttöoikeutesi eivät riitä opiskelijavalinnan tietojen katseluun.",
     "yliajon-tallennus-epaonnistui": "Kentän tallentaminen epäonnistui",
+    "yliajon-poisto-epaonnistui": "Kentän muokkauksen poistaminen epäonnistui",
+    "yliajon-tallennus-onnistui": "Kentän tallentaminen onnistui",
+    "yliajon-poisto-onnistui": "Kentän muokkauksen poistaminen onnistui",
     "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}",
-    "ei-kayttooikeutta": "Käyttöoikeutesi eivät riitä opiskelijavalinnan tietojen katseluun."
+    "poista-kentta": "Poista kenttä",
+    "poista-muokkaus": "Poista muokkaus"
   }
 }

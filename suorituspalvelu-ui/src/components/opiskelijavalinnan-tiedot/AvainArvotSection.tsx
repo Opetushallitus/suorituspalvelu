@@ -4,7 +4,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import type { AvainArvo } from '@/types/ui-types';
 import React, { useMemo } from 'react';
 import { styled } from '@/lib/theme';
-import { EditableField } from './EditableField';
+import { AvainArvoDisplay } from './AvainArvoDisplay';
 import {
   groupAndSortAvainarvot,
   OPISKELIJAVALINTADATA_GROUPS,
@@ -69,7 +69,7 @@ export const AvainArvotSection = ({
                     {avainArvo.avain.includes('_OPPIAINE') && index !== 0 && (
                       <BreakFlex />
                     )}
-                    <EditableField
+                    <AvainArvoDisplay
                       avainArvo={avainArvo}
                       startYliajoEdit={startYliajoEdit}
                     />

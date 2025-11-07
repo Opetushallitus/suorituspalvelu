@@ -297,4 +297,220 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await errorModal.getByRole('button', { name: 'Sulje' }).click();
     await expect(errorModal).toBeHidden();
   });
+
+  test('poistaa muokkauksen onnistuneesti', async ({ page }) => {
+    let deletedYliajoParams: {
+      oppijaNumero?: string;
+      hakuOid?: string;
+      avain?: string;
+    } = {};
+    await page.route('**/ui/poistayliajo*', async (route) => {
+      const url = new URL(route.request().url());
+      deletedYliajoParams = {
+        oppijaNumero: url.searchParams.get('oppijaNumero') || undefined,
+        hakuOid: url.searchParams.get('hakuOid') || undefined,
+        avain: url.searchParams.get('avain') || undefined,
+      };
+      await route.fulfill({
+        status: 200,
+        json: {},
+      });
+    });
+
+    await page.route('**/ui/valintadata*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          avainArvot: [
+            {
+              avain: 'perusopetuksen_kieli',
+              arvo: 'SV',
+              metadata: {
+                arvoEnnenYliajoa: 'FI',
+                duplikaatti: false,
+                yliajo: {
+                  avain: 'perusopetuksen_kieli',
+                  arvo: '10',
+                  selite: '',
+                  henkiloOid: OPPIJANUMERO,
+                  virkailijaOid: '1.2.246.562.24.00000000001',
+                },
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await tiedot
+      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .click();
+
+    const editModal = page.getByRole('dialog', {
+      name: 'Muokkaa kenttää',
+    });
+    await expect(editModal).toBeVisible();
+
+    await Promise.all([
+      page.waitForRequest('**/ui/poistayliajo*'),
+      page.waitForRequest((request) =>
+        request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
+      ),
+      editModal.getByRole('button', { name: 'Poista muokkaus' }).click(),
+    ]);
+
+    expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
+    expect(deletedYliajoParams.hakuOid).toBe(
+      '1.2.246.562.29.00000000000000000000',
+    );
+    expect(deletedYliajoParams.avain).toBe('perusopetuksen_kieli');
+
+    await expect(editModal).toBeHidden();
+  });
+
+  test('poistaa lisätyn kentän onnistuneesti', async ({ page }) => {
+    let deletedYliajoParams: {
+      oppijaNumero?: string;
+      hakuOid?: string;
+      avain?: string;
+    } = {};
+    await page.route('**/ui/poistayliajo*', async (route) => {
+      const url = new URL(route.request().url());
+      deletedYliajoParams = {
+        oppijaNumero: url.searchParams.get('oppijaNumero') || undefined,
+        hakuOid: url.searchParams.get('hakuOid') || undefined,
+        avain: url.searchParams.get('avain') || undefined,
+      };
+      await route.fulfill({
+        status: 200,
+        json: {},
+      });
+    });
+
+    await page.route('**/ui/valintadata*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          ...VALINTA_DATA,
+          avainArvot: [
+            ...VALINTA_DATA.avainArvot,
+            {
+              avain: 'uusi_kentta',
+              arvo: 'testiArvo',
+              metadata: {
+                arvoEnnenYliajoa: null,
+                duplikaatti: false,
+                yliajo: {
+                  avain: 'uusi_kentta',
+                  arvo: 'testiArvo',
+                  selite: 'Lisätty testissä',
+                },
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await tiedot
+      .getByRole('button', { name: 'Muokkaa kenttää uusi_kentta' })
+      .click();
+
+    const editModal = page.getByRole('dialog', {
+      name: 'Muokkaa kenttää',
+    });
+    await expect(editModal).toBeVisible();
+
+    await Promise.all([
+      page.waitForRequest('**/ui/poistayliajo*'),
+      page.waitForRequest((request) =>
+        request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
+      ),
+      editModal.getByRole('button', { name: 'Poista kenttä' }).click(),
+    ]);
+
+    expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
+    expect(deletedYliajoParams.avain).toBe('uusi_kentta');
+
+    await expect(editModal).toBeHidden();
+  });
+
+  test('näyttää virheilmoituksen, jos lisätyn kentän poisto epäonnistuu', async ({
+    page,
+  }) => {
+    await page.route('**/ui/poistayliajo*', async (route) => {
+      await route.fulfill({
+        status: 500,
+        body: 'Backend-virhe',
+      });
+    });
+
+    await page.route('**/ui/valintadata*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          ...VALINTA_DATA,
+          avainArvot: [
+            ...VALINTA_DATA.avainArvot,
+            {
+              avain: 'uusi_kentta',
+              arvo: 'testiArvo',
+              metadata: {
+                arvoEnnenYliajoa: null,
+                duplikaatti: false,
+                yliajo: {
+                  avain: 'uusi_kentta',
+                  arvo: 'testiArvo',
+                  selite: 'Lisätty testissä',
+                },
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await tiedot
+      .getByRole('button', { name: 'Muokkaa kenttää uusi_kentta' })
+      .click();
+
+    const editModal = page.getByRole('dialog', {
+      name: 'Muokkaa kenttää',
+    });
+    await expect(editModal).toBeVisible();
+
+    await Promise.all([
+      page.waitForRequest('**/ui/poistayliajo*'),
+      editModal.getByRole('button', { name: 'Poista kenttä' }).click(),
+    ]);
+
+    await expect(editModal).toBeHidden();
+
+    const errorModal = page.getByRole('dialog', {
+      name: 'Kentän muokkauksen poistaminen epäonnistui',
+    });
+    await expect(errorModal).toBeVisible();
+    await expect(errorModal).toContainText('Backend-virhe');
+
+    await errorModal.getByRole('button', { name: 'Sulje' }).click();
+    await expect(errorModal).toBeHidden();
+  });
 });

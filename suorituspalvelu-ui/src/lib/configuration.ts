@@ -5,9 +5,9 @@ export const isTest = import.meta.env.VITE_TEST === 'true';
 export const localTranslations =
   import.meta.env.VITE_LOCAL_TRANSLATIONS === 'true';
 
-export const getConfiguration = async () => {
-  const DOMAIN = '';
+const DOMAIN = typeof window !== 'undefined' ? window.location.origin : '';
 
+export const getConfiguration = async () => {
   const suorituspalveluBackendUrl = `${DOMAIN}/suorituspalvelu/api`;
 
   return {
@@ -31,6 +31,7 @@ export const getConfiguration = async () => {
         versioDeleteUrl: `${suorituspalveluBackendUrl}/ui/versiot`,
         valintadataUrl: `${suorituspalveluBackendUrl}/ui/valintadata`,
         tallennaYliajotUrl: `${suorituspalveluBackendUrl}/ui/tallennayliajot`,
+        poistaYliajoUrl: `${suorituspalveluBackendUrl}/ui/poistayliajo`,
       },
     },
   };
