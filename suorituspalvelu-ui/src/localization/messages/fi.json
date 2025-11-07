@@ -298,8 +298,11 @@
     "lisaa-kentta": "Lisää kenttä",
     "avain": "Avain",
     "arvo": "Arvo",
-    "yliajon-tallennus-epaonnistui": "Kentän tallentaminen epäonnistui",
+    "ei-kayttooikeutta": "Käyttöoikeutesi eivät riitä opiskelijavalinnan tietojen katseluun.",
+    "yliajon-tallennus-epaonnistui": "Yliajon tallentaminen epäonnistui",
+    "yliajon-poisto-epaonnistui": "Yliajon poistaminen epäonnistui",
     "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}",
-    "ei-kayttooikeutta": "Käyttöoikeutesi eivät riitä opiskelijavalinnan tietojen katseluun."
+    "poista-kentta": "Poista kenttä",
+    "poista-muokkaus": "Poista muokkaus"
   }
 }

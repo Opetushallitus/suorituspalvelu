@@ -5,29 +5,36 @@ import {
   OphInput,
 } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { YliajoParams } from '@/types/ui-types';
+import type { AvainArvo, YliajoParams } from '@/types/ui-types';
 import { OphModal } from '@/components/OphModal';
 import { useCallback } from 'react';
+import { DeleteOutline } from '@mui/icons-material';
 
 export type YliajoMode = 'add' | 'edit';
 
 export const YliajoEditModal = ({
   mode,
   yliajo,
+  avainArvot,
   setYliajo,
   saveYliajo,
+  deleteYliajo,
 }: {
   mode: YliajoMode;
   henkiloOid: string;
   yliajo: YliajoParams | null;
+  avainArvot: Array<AvainArvo>;
   setYliajo: (yliajo: YliajoParams | null) => void;
   saveYliajo: (updatedYliajo: YliajoParams) => void;
+  deleteYliajo: (avain: string) => void;
 }) => {
   const { t } = useTranslations();
 
   const onClose = useCallback(() => {
     setYliajo(null);
   }, [setYliajo]);
+
+  const originalAvainArvo = avainArvot.find((a) => a.avain === yliajo?.avain);
 
   return (
     yliajo && (
@@ -42,6 +49,17 @@ export const YliajoEditModal = ({
         maxWidth="sm"
         actions={
           <>
+            {mode === 'edit' && originalAvainArvo?.metadata.yliajo && (
+              <OphButton
+                variant="outlined"
+                startIcon={<DeleteOutline />}
+                onClick={() => deleteYliajo(yliajo.avain)}
+              >
+                {originalAvainArvo?.metadata.arvoEnnenYliajoa !== null
+                  ? t('opiskelijavalinnan-tiedot.poista-muokkaus')
+                  : t('opiskelijavalinnan-tiedot.poista-kentta')}
+              </OphButton>
+            )}
             <OphButton variant="outlined" onClick={onClose}>
               {t('peruuta')}
             </OphButton>

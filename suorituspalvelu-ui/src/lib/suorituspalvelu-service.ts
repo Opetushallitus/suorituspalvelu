@@ -194,3 +194,23 @@ export const saveYliajot = async ({
   );
   return res.data;
 };
+
+export const deleteYliajo = async ({
+  henkiloOid,
+  hakuOid,
+  avain,
+}: {
+  henkiloOid: string;
+  hakuOid: string;
+  avain: string;
+}) => {
+  const config = await configPromise;
+
+  const url = new URL(config.routes.suorituspalvelu.poistaYliajoUrl);
+  url.searchParams.set('oppijaNumero', henkiloOid);
+  url.searchParams.set('hakuOid', hakuOid);
+  url.searchParams.set('avain', avain);
+
+  const res = await client.delete(url.toString());
+  return res.data;
+};

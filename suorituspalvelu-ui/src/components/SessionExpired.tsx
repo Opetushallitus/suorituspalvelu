@@ -8,10 +8,7 @@ export function SessionExpired() {
   const config = useConfig();
   const { t } = useTranslate();
 
-  const loginUrl = new URL(
-    config.routes.yleiset.casLoginUrl,
-    window.location.origin,
-  );
+  const loginUrl = new URL(config.routes.yleiset.casLoginUrl);
   const serviceUrl = new URL(window.location.href);
   serviceUrl.searchParams.delete('ticket');
   loginUrl.searchParams.set('service', serviceUrl.toString());

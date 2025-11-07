@@ -7,9 +7,11 @@ import React from 'react';
 
 export const YliajoErrorModal = ({
   error,
+  operation,
   onClose,
 }: {
   error: Error;
+  operation: 'save' | 'delete';
   onClose: () => void;
 }) => {
   const { t } = useTranslations();
@@ -33,7 +35,11 @@ export const YliajoErrorModal = ({
     <OphModal
       open={true}
       onClose={onClose}
-      title={t('opiskelijavalinnan-tiedot.yliajon-tallennus-epaonnistui')}
+      title={
+        operation === 'save'
+          ? t('opiskelijavalinnan-tiedot.yliajon-tallennus-epaonnistui')
+          : t('opiskelijavalinnan-tiedot.yliajon-poisto-epaonnistui')
+      }
     >
       {message}
     </OphModal>

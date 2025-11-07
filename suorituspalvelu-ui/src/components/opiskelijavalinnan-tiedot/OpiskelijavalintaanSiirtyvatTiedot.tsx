@@ -4,10 +4,10 @@ import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsGetValintadata } from '@/lib/suorituspalvelu-queries';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { YliajoParams } from '@/types/ui-types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { saveYliajot } from '@/lib/suorituspalvelu-service';
+import { deleteYliajo, saveYliajot } from '@/lib/suorituspalvelu-service';
 import { SpinnerModal } from '@/components/SpinnerModal';
 import { Add } from '@mui/icons-material';
 import { AvainArvotSection } from './AvainArvotSection';
@@ -37,6 +37,8 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
 
   const { t } = useTranslations();
 
+  const [operation, setOperation] = useState<'save' | 'delete'>('save');
+
   const [mode, setMode] = useState<YliajoMode>('edit');
 
   const [yliajo, setYliajo] = useState<YliajoParams | null>(null);
@@ -45,17 +47,25 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
 
   const yliajoMutation = useMutation({
     mutationFn: (updatedYliajo: YliajoParams) => {
-      return saveYliajot({
-        hakuOid: DUMMY_HAKU_OID,
-        henkiloOid: oppijaNumero,
-        yliajot: [
-          {
-            arvo: updatedYliajo.arvo,
-            avain: updatedYliajo.avain,
-            selite: updatedYliajo.selite,
-          },
-        ],
-      });
+      if (operation === 'save') {
+        return saveYliajot({
+          hakuOid: DUMMY_HAKU_OID,
+          henkiloOid: oppijaNumero,
+          yliajot: [
+            {
+              arvo: updatedYliajo.arvo,
+              avain: updatedYliajo.avain,
+              selite: updatedYliajo.selite,
+            },
+          ],
+        });
+      } else {
+        return deleteYliajo({
+          henkiloOid: oppijaNumero,
+          hakuOid: DUMMY_HAKU_OID,
+          avain: updatedYliajo.avain,
+        });
+      }
     },
     onSuccess: () => {
       setYliajo(null);
@@ -64,6 +74,22 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
       );
     },
   });
+
+  const saveYliajoCb = useCallback(
+    (yliajoParams: YliajoParams) => {
+      setOperation('save');
+      yliajoMutation.mutate(yliajoParams);
+    },
+    [yliajoMutation],
+  );
+
+  const deleteYliajoCb = useCallback(
+    (avain: string) => {
+      setOperation('delete');
+      yliajoMutation.mutate({ avain, arvo: '', selite: '' });
+    },
+    [yliajoMutation],
+  );
 
   return (
     <>
@@ -74,6 +100,7 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
         />
       ) : yliajoMutation.isError ? (
         <YliajoErrorModal
+          operation={operation}
           error={yliajoMutation.error}
           onClose={() => yliajoMutation.reset()}
         />
@@ -81,9 +108,11 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
         <YliajoEditModal
           mode={mode}
           henkiloOid={oppijaNumero}
+          avainArvot={valintadata.avainArvot}
           yliajo={yliajo}
           setYliajo={setYliajo}
-          saveYliajo={yliajoMutation.mutate}
+          saveYliajo={saveYliajoCb}
+          deleteYliajo={deleteYliajoCb}
         />
       )}
       <AccordionBox
