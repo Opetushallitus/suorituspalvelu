@@ -82,6 +82,10 @@ object ApiConstants {
   final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/haku/oppijat"
   final val UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME             = "tunniste"
 
+  final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME         = "oppijaNumero"
+  final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER  = "{" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME + "}"
+  final val UI_OPPIJAN_HAUT_PATH                            = UI_API_PREFIX + "/oppijanhaut/" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER
+
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
   final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"

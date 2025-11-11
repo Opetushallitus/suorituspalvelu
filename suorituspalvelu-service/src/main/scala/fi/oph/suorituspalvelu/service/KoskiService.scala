@@ -52,7 +52,7 @@ class KoskiService {
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
 
-  @Autowired val tarjotanIntegration: TarjontaIntegration = null
+  @Autowired val tarjontaIntegration: TarjontaIntegration = null
 
   @Autowired val koskiIntegration: KoskiIntegration = null
   
@@ -74,7 +74,7 @@ class KoskiService {
       val oppijaOids = chunk.map(_.oppijaOid)
       val oppijanHaut = Await.result(hakemuspalveluClient.getHenkilonHaut(oppijaOids), HAKEMUKSET_TIMEOUT)
       val aktiivisetHaut = oppijanHaut.values.flatten.toSet
-        .filter(h => tarjotanIntegration.tarkistaHaunAktiivisuus(h))
+        .filter(h => tarjontaIntegration.tarkistaHaunAktiivisuus(h))
 
       def hasAktiivinenHaku(oppijaOid: String): Boolean =
         oppijanHaut.get(oppijaOid)

@@ -121,6 +121,8 @@ class UIService {
 
   @Autowired val koodistoProvider: KoodistoProvider = null
 
+  @Autowired val tarjontaIntegration: fi.oph.suorituspalvelu.integration.TarjontaIntegration = null
+
   val ONR_TIMEOUT = 10.seconds;
 
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
@@ -257,6 +259,34 @@ class UIService {
       })), 30.seconds)
 
     securityOperaatiot.onRekisterinpitaja() || hasHakijaKatseluoikeus() || hasOrganisaatioKatseluoikeus()
+  }
+
+  /**
+   * Hakee oppijan haut hakemuspalvelusta, jos käyttäjällä on oikeudet nähdä oppijan tiedot
+   *
+   * @param oppijaOid oppijan oid jonka haut haetaan
+   * @return          lista Haku-objekteja (hakuOid ja nimi) jos käyttäjällä on oikeudet, tyhjä lista muuten
+   */
+  def haeOppijanHaut(oppijaOid: String): Seq[Haku] = {
+    if(hasOppijanKatseluOikeus(oppijaOid)) {
+      val hautMap = Await.result(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaOid)), 30.seconds)
+      val hakuOids = hautMap.getOrElse(oppijaOid, Seq.empty)
+      
+      hakuOids.map(hakuOid => {
+        val koutaHaku = tarjontaIntegration.getHaku(hakuOid)
+        val nimi = koutaHaku.map(_.nimi).getOrElse(Map.empty)
+        Haku(
+          hakuOid,
+          fi.oph.suorituspalvelu.resource.ui.HakuNimi(
+            Optional.ofNullable(nimi.get("fi").orNull),
+            Optional.ofNullable(nimi.get("sv").orNull),
+            Optional.ofNullable(nimi.get("en").orNull)
+          )
+        )
+      })
+    } else {
+      Seq.empty
+    }
   }
 
 }
