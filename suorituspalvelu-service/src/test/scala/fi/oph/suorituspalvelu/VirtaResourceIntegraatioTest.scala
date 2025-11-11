@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, Per
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, VirtaSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator
@@ -78,7 +78,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // suoritetaan kutsu ja varmistetaan että saadaan jobId
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HENKILO_PATH, VirtaPaivitaTiedotHenkilollePayload(Optional.of(oppijaNumero))))
       .andExpect(status().isOk).andReturn()
-    Assertions.assertNotNull(objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse]).jobId)
+    Assertions.assertNotNull(objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse]).jobId)
 
     // odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     Thread.sleep(2000)
@@ -107,7 +107,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HENKILO_PATH, VirtaPaivitaTiedotHenkilollePayload(Optional.of(oppijaNumero))))
       .andExpect(status().isOk()).andReturn()
-    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
 
     //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     Thread.sleep(2000)
@@ -183,7 +183,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, VirtaPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
       .andExpect(status().isOk()).andReturn()
 
-    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncSuccessResponse])
+    val virtaSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
 
     //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK_FOR_HAKU ehtii pyörähtää
     Thread.sleep(2000)
