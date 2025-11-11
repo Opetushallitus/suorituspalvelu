@@ -2,6 +2,7 @@ import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';
 import {
   getKayttaja,
   getOppija,
+  getOppijanHaut,
   getOppilaitokset,
   getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
@@ -103,3 +104,9 @@ export const queryOptionsGetKayttaja = () =>
   });
 
 export const useKayttaja = () => useSuspenseQuery(queryOptionsGetKayttaja());
+
+export const queryOptionsGetOppijanHaut = (oppijaOid: string) =>
+  queryOptions({
+    queryKey: ['getOppijanHaut', oppijaOid],
+    queryFn: () => getOppijanHaut(oppijaOid),
+  });

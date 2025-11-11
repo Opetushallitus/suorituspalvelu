@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
@@ -271,13 +271,19 @@ class UIService {
     if(hasOppijanKatseluOikeus(oppijaOid)) {
       val hautMap = Await.result(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaOid)), 30.seconds)
       val hakuOids = hautMap.getOrElse(oppijaOid, Seq.empty)
-      
-      hakuOids.map(hakuOid => {
+      val koutaHaut = hakuOids.flatMap(hakuOid => {
         val koutaHaku = tarjontaIntegration.getHaku(hakuOid)
-        val nimi = koutaHaku.map(_.nimi).getOrElse(Map.empty)
+        if (koutaHaku.isEmpty) {
+          LOG.debug(s"Hakemuspalvelusta löytyi hakemus haulle $hakuOid, mutta hakua ei löytynyt Koutasta.")
+        }
+        koutaHaku
+      }).reverse
+
+      koutaHaut.map(koutaHaku => {
+        val nimi = koutaHaku.nimi
         Haku(
-          hakuOid,
-          fi.oph.suorituspalvelu.resource.ui.HakuNimi(
+          koutaHaku.oid,
+          HakuNimi(
             Optional.ofNullable(nimi.get("fi").orNull),
             Optional.ofNullable(nimi.get("sv").orNull),
             Optional.ofNullable(nimi.get("en").orNull)

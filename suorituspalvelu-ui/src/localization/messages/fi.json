@@ -306,6 +306,8 @@
     "yliajon-poisto-onnistui": "Kentän muokkauksen poistaminen onnistui",
     "muokkaa-kenttaa-avain": "Muokkaa kenttää {avain}",
     "poista-kentta": "Poista kenttä",
-    "poista-muokkaus": "Poista muokkaus"
+    "poista-muokkaus": "Poista muokkaus",
+    "nayta": "Näytä",
+    "haku": "Haku, jota tiedot koskevat"
   }
 }
