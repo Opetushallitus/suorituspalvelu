@@ -5,10 +5,10 @@ import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 
 import java.util.UUID
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
-import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, VirtaSyncSuccessResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, SyncSuccessJobResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService}
+import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService, YTRService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.Operation
@@ -42,6 +42,8 @@ class DataSyncResource {
   @Autowired var koskiService: KoskiService = null
 
   @Autowired var virtaService: VirtaService = null
+
+  @Autowired var ytrService: YTRService = null
 
   @Autowired var ytrIntegration: YtrIntegration = null
 
@@ -314,7 +316,7 @@ class DataSyncResource {
       required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[VirtaPaivitaTiedotHenkilollePayload])))),
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
+      new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[SyncSuccessJobResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
       new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
@@ -350,7 +352,7 @@ class DataSyncResource {
             LOG.info(s"Haetaan Virta-tiedot henkilölle ${henkiloOid}")
             val jobId = virtaService.syncVirta(henkiloOid)
             LOG.info(s"Palautetaan rajapintavastaus, $jobId")
-            ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId)))
+            ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(jobId)))
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
     catch
       case e: Exception =>
@@ -371,7 +373,7 @@ class DataSyncResource {
       required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[VirtaPaivitaTiedotHaullePayload])))),
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncSuccessResponse])))),
+      new ApiResponse(responseCode = "200", description = "Synkkaus käynnistetty, palauttaa job-id:n", content = Array(new Content(schema = new Schema(implementation = classOf[SyncSuccessJobResponse])))),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[VirtaSyncFailureResponse])))),
       new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
@@ -406,7 +408,7 @@ class DataSyncResource {
           LOG.info(s"Haetaan Virta-tiedot haun $hakuOid henkilöille")
           val jobId = virtaService.syncVirtaForHaut(Seq(hakuOid))
           LOG.info(s"Palautetaan rajapintavastaus, $jobId")
-          ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(jobId))
+          ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(jobId))
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
@@ -417,8 +419,8 @@ class DataSyncResource {
   )
   @Operation(
     summary = "Päivittää aktiivisten hakujen hakijoiden tiedot Virrasta",
-    description = "Huomioita:\n" +
-      "- Huomio 1",
+    description = "Tietojen päivitys SUPAan tapahtuu normaalisti eräajolla. Tämän endpointin avulla päivitys on kuitenkin " +
+      "mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa job-id:n"),
       new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
@@ -439,7 +441,7 @@ class DataSyncResource {
           AuditLog.log(user, Map.empty, AuditOperation.PaivitaVirtaTiedotAktiivisille, None)
           LOG.info(s"Päivitetään aktiivisten hakujen hakijoiden tiedot Virrasta")
           val jobIds = virtaService.syncVirtaForAktiivisetHaut()
-          ResponseEntity.status(HttpStatus.OK).body(VirtaSyncSuccessResponse(UUID.randomUUID()))
+          ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(UUID.randomUUID()))
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
@@ -559,5 +561,39 @@ class DataSyncResource {
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
   }
+
+  @PostMapping(
+    path = Array(YTR_DATASYNC_AKTIIVISET_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Päivittää aktiivisten hakujen hakijoiden tiedot YTR:stä",
+    description = "Tietojen päivitys SUPAan tapahtuu normaalisti eräajolla. Tämän endpointin avulla päivitys on kuitenkin " +
+      "mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Synkkaus tehty, palauttaa job-id:n"),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def paivitaYTRTiedotAktiivisetHaut(request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    val securityOperaatiot = new SecurityOperaatiot
+    LogContext(path = YTR_DATASYNC_AKTIIVISET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      Right(None)
+        .flatMap(_ =>
+          // tarkastetaan oikeudet
+          if (securityOperaatiot.onRekisterinpitaja())
+            Right(None)
+          else
+            Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+        .map(_ => {
+          val user = AuditLog.getUser(request)
+          AuditLog.log(user, Map.empty, AuditOperation.PaivitaVirtaTiedotAktiivisille, None)
+          LOG.info(s"Päivitetään aktiivisten hakujen hakijoiden tiedot YTR:stä")
+          val jobId = ytrService.syncYTRForAktiivisetHaut()
+          ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(jobId))
+        })
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+  }
+
 }
 

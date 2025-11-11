@@ -11,8 +11,8 @@ import scala.beans.BeanProperty
 class SyncResponse() {
 }
 
-@Schema(name = "VirtaSyncSuccessResponse")
-case class VirtaSyncSuccessResponse(
+@Schema(name = "SyncSuccessJobResponse")
+case class SyncSuccessJobResponse(
   @(Schema @field)(example = DATASYNC_ESIMERKKI_JOB_ID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty jobId: UUID) extends SyncResponse {}
 
