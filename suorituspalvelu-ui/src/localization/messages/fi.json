@@ -2,6 +2,11 @@
   "suorituspalvelu": "Suorituspalvelu",
   "valitse-henkilo": "Hae ja valitse henkilö",
   "hae-henkiloa": "Hae henkilöä",
+  "henkilohaku": {
+    "vain-tunniste": "Etsi oppijaa tunnisteella",
+    "oppilaitoksen-oppijat": "Hae oppilaitoksen oppijoita",
+    "suodata-oppijoita": "Suodata oppijoita"
+  },
   "oppilaitos": "Oppilaitos",
   "ladataan": "Ladataan...",
   "kylla": "Kyllä",

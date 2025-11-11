@@ -25,11 +25,11 @@ const HenkilotSidebarContent = () => {
     <div>
       <OphTypography variant="body2" sx={{ paddingBottom: 1, margin: 0 }}>
         {t('sivupalkki.henkilo-maara', {
-          count: result.data.oppijat?.length ?? 0,
+          count: result.data?.length ?? 0,
         })}
       </OphTypography>
       <NavigationList tabIndex={0} aria-label={t('sivupalkki.navigaatio')}>
-        {result.data.oppijat?.map((oppija) => (
+        {result.data?.map((oppija) => (
           <Link
             key={oppija.oppijaNumero}
             className={

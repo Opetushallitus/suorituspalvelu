@@ -101,6 +101,7 @@ export interface IAvainArvoMetadataUI {
   duplikaatti: boolean;
   arvoEnnenYliajoa?: string;
   yliajo?: IAvainArvoYliajoUI;
+  arvoOnHakemukselta: boolean;
 }
 
 export interface IAvainArvoYliajoUI {
@@ -446,7 +447,7 @@ export interface IOppijanValintaDataFailureResponse {
 
 export interface IOppijanValintaDataSuccessResponse {
   henkiloOID: string;
-  hakuOID?: string;
+  hakuOID: string;
   avainArvot: IAvainArvoContainerUI[];
 }
 
