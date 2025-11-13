@@ -72,7 +72,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
-            <artifactId>db-scheduler-spring-boot-starter</artifactId>
+            <artifactId>db-scheduler</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback.access</groupId>

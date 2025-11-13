@@ -86,6 +86,7 @@ class KantaOperaatiotTest {
             DROP TABLE cas_client_session;
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
+            DROP TABLE task_status;
             DROP TABLE scheduled_tasks;
             DROP TABLE opiskeluoikeudet;
             DROP TABLE metadata_arvot;
@@ -804,5 +805,15 @@ class KantaOperaatiotTest {
     // ja kun mappaus poistetaan sitä ei enää löydy
     this.kantaOperaatiot.deleteCasMappingBySessionId(SPRING_SESSION_ID)
     Assertions.assertEquals(None, this.kantaOperaatiot.getSessionIdByMappingId(CAS_SESSION_ID))
+  }
+
+  @Test def testJobProgress(): Unit = {
+    val taskName = "test-task"
+    val taskId = UUID.randomUUID()
+
+    this.kantaOperaatiot.updateJobStatus(taskId, taskName, 0.5)
+
+    Assertions.assertEquals(Some(Job(taskId, taskName, 0.5)), this.kantaOperaatiot.getJobStatus(taskId))
+
   }
 }

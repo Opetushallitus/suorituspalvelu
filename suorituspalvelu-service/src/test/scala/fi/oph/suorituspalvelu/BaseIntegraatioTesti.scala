@@ -29,6 +29,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
 
+import javax.sql.DataSource
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
@@ -77,6 +78,7 @@ class BaseIntegraatioTesti {
     ds.setPassword(POSTGRES_PASSWORD)
     ds
 
+  var datasource: DataSource = null
   var database: JdbcDatabaseDef = null
   var kantaOperaatiot: KantaOperaatiot = null
 
@@ -92,7 +94,8 @@ class BaseIntegraatioTesti {
     System.setProperty("web.url.cas-login", "DUMMY_CAS_LOGIN")
     System.setProperty("host.virkailija", "DUMMY")
 
-    database = Database.forDataSource(getDatasource(), None)
+    datasource = getDatasource()
+    database = Database.forDataSource(datasource, None)
     kantaOperaatiot = KantaOperaatiot(database)
     true
   }
@@ -117,6 +120,8 @@ class BaseIntegraatioTesti {
   @AfterEach def teardownTest(): Unit =
     Await.result(database.run(
       sqlu"""
+             DELETE FROM task_status;
+             DELETE FROM scheduled_tasks;
              DELETE FROM opiskeluoikeudet;
              DELETE FROM metadata_arvot;
              DELETE FROM versiot;
