@@ -258,7 +258,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshYtrAktiivisetAllowed(): Unit = {
     val hakuOid = "1.2.246.562.29.01000000000000013275"
-    Mockito.when(tarjontaIntegration.aktiivisetHaut()).thenReturn(Seq(KoutaHaku(hakuOid, "", Map.empty, "", Some("haunkohdejoukko_11"), List.empty, None)))
+    Mockito.when(tarjontaIntegration.aktiivisetHaut()).thenReturn(Seq(KoutaHaku(hakuOid, "", Map.empty, "", Some("haunkohdejoukko_11"), List.empty, None, None)))
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid)).thenReturn(Future.successful(Seq.empty))
 
     val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_AKTIIVISET_PATH, null))

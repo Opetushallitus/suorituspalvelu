@@ -422,7 +422,6 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(action), DB_TIMEOUT)
 
   /**
-   *
    * Lisää kantaan mappauksen palvelun sessiosta CAS-sessioon
    */
   def addMappingForSessionId(mappingId: String, sessionId: String): Unit = {
@@ -431,4 +430,31 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
              ON CONFLICT (mapped_ticket_id) DO NOTHING"""
     Await.result(db.run(insertAction), DB_TIMEOUT)
   }
+
+  /**
+   * Päivittää jobin tilan
+   */
+  def updateJobStatus(id: UUID, name: String, progress: BigDecimal): Unit = {
+    val insertAction =
+      sqlu"""INSERT INTO task_status (task_instance, task_name, progress) VALUES (${id.toString}, $name, $progress)
+             ON CONFLICT (task_instance) DO UPDATE SET progress=$progress"""
+    Await.result(db.run(insertAction), DB_TIMEOUT)
+  }
+
+  /**
+   * Hakee jobin tiedot
+   */
+  def getJobStatus(id: UUID): Option[Job] = {
+    Await.result(db.run(
+      sql"""SELECT task_instance, task_name, progress
+            FROM task_status
+            WHERE task_instance=${id.toString}""".as[(String, String, BigDecimal)]
+        .map(rows => rows.map {
+          case (tunniste, nimi, progress) =>
+            Job(UUID.fromString(tunniste), nimi, progress)
+        })
+    ), DB_TIMEOUT).headOption
+  }
+
+
 }

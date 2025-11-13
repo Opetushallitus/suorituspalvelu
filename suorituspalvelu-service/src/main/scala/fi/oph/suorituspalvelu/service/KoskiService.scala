@@ -1,13 +1,12 @@
 package fi.oph.suorituspalvelu.service
 
-import com.github.kagkarlsson.scheduler.Scheduler
-import com.github.kagkarlsson.scheduler.task.TaskDescriptor
-import com.github.kagkarlsson.scheduler.task.helper.{RecurringTask, Tasks}
-import com.github.kagkarlsson.scheduler.task.schedule.{FixedDelay, Schedules}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.jobs.SupaScheduler
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.InitializingBean
@@ -21,49 +20,31 @@ import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
 
-@Configuration
-class KoskiConfiguration {
-
-  @Autowired var koskiService: KoskiService = null
-
-  val LOG = LoggerFactory.getLogger(classOf[KoskiConfiguration])
-
-  val KOSKI_POLL_CHANGED_TASK: TaskDescriptor[Instant] = TaskDescriptor.of("koski-poll", classOf[Instant]);
-
-  @Bean
-  def koskiPollTask(koskiClient: KoskiClient) = Tasks.recurring(KOSKI_POLL_CHANGED_TASK, Schedules.cron("0 */2 * * * *")).executeStateful((inst, ctx) => {
-    val start = Instant.now()
-    val prevStart = Option.apply(inst.getData)
-    if(prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
-      try
-        koskiService.syncKoskiChangesSince(prevStart.get.minusSeconds(60))
-      catch
-        case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
-    }
-
-    start
-  })
-}
-
 @Component
-class KoskiService {
-
-  @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
-
-  @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
-
-  @Autowired val tarjontaIntegration: TarjontaIntegration = null
-
-  @Autowired val koskiIntegration: KoskiIntegration = null
-  
-  @Autowired val koodistoProvider: KoodistoProvider = null
+class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseDef, hakemuspalveluClient: HakemuspalveluClientImpl,
+                   tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider) {
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
+
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
 
   private val HENKILO_TIMEOUT = 5.minutes
   private val HAKEMUKSET_TIMEOUT = 1.minutes
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
+
+  scheduler.scheduleJob("koski-poll-muuttuneet", (ctx, data) => {
+    val start = Instant.now()
+    val prevStart = Option.apply(data).map(Instant.parse(_))
+    if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
+      try
+        syncKoskiChangesSince(prevStart.get.minusSeconds(60))
+      catch
+        case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
+    }
+    start.toString
+  }, "0 */2 * * * *")
 
   def syncKoskiChangesSince(since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
@@ -121,5 +102,4 @@ class KoskiService {
           SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
       }
     })
-
 }
