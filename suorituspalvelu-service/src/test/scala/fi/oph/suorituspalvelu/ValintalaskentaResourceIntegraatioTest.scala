@@ -142,8 +142,8 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakemus = parsedResult.valintaHakemukset.asScala.head
 
     //Tarkistetaan hakemukselta löytyvät oidit oidit, ja että suoraan hakemukselta välittyvät avain-arvot ovat mukana
-    Assertions.assertEquals(hakemus.hakemusOid, hakemusOid)
-    Assertions.assertEquals(hakemus.hakuOid, hakuOid)
+    Assertions.assertEquals(hakemus.hakemusoid, hakemusOid)
+    Assertions.assertEquals(hakemus.hakuoid, hakuOid)
     Assertions.assertEquals(hakemus.hakijaOid, personOid)
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "address" && aa.arvo == "Testitie 71794920276"))
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "30ca1709-db90-46ac-94a0-b3e446932d4c" && aa.arvo == "12"))

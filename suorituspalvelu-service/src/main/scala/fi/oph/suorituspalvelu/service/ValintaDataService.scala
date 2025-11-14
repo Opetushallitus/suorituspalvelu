@@ -131,10 +131,10 @@ class ValintaDataService {
         val hakutoiveet: List[ValintalaskentaHakutoive] = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty)
         val parsedHakutoiveet = hakutoiveet.map(ht => {
           val hakutoive = ValintalaskentaApiHakutoive(
-            hakuOid = ht.hakuOid,
-            hakukohdeOid = ht.hakukohdeOid,
+            hakuoid = ht.hakuOid,
+            oid = ht.hakukohdeOid,
             prioriteetti = ht.prioriteetti,
-            hakukohderyhmaOids = ht.hakukohderyhmaOids.toList.asJava,
+            hakukohdeRyhmatOids = ht.hakukohderyhmaOids.toList.asJava,
             harkinnanvaraisuus = ht.harkinnanvaraisuus
           )
           hakutoive
@@ -143,8 +143,8 @@ class ValintaDataService {
           ValintalaskentaApiAvainArvo(avain = aa.avain, arvo = aa.arvo)
         }).toList
         ValintalaskentaApiHakemus(
-          hakuOid = hakuOid,
-          hakemusOid = vd.hakemus.map(_.hakemusOid).get,
+          hakuoid = hakuOid,
+          hakemusoid = vd.hakemus.map(_.hakemusOid).get,
           hakukohteet = parsedHakutoiveet.asJava,
           hakijaOid = vd.personOid,
           etunimi = "mock_etunimi", //Nimikentät voi mahdollisesti poistaa, mutta toistaiseksi mukana tässä jotta muoto vastaa HakemusDTO:ta.
