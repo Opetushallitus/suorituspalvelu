@@ -226,14 +226,23 @@ object KoskiToSuoritusConverter {
       .getOrElse(java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate.getYear)
   }
 
-  def getLisapistekoulutusHyvaksyttyLaajuus(suoritus: Suoritus): Option[Laajuus] = {
-    suoritus.osasuoritukset.map(ost => Laajuus(
-      ost.filter(_.arviointi.exists(a => a.exists(_.hyväksytty)))
-        .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
-      asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
-      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.map(y => y.nimi)))).headOption,
-      ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.flatMap(y => y.lyhytNimi)))).headOption
-    ))
+  def getLisapistekoulutusYhteenlaskettuLaajuus(suoritus: Suoritus, vainHyvaksytytArvioinnit: Boolean): Option[Laajuus] = {
+    suoritus.osasuoritukset.flatMap(ost => {
+      val laajuudenYksikot =
+        ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö)))
+      //Oletus, että kaikkien osasuoritusten laajuuksien yksiköt ovat samat.
+      laajuudenYksikot.headOption.map(ly => {
+        val osasuoritustenLaajuudet: Set[BigDecimal] =
+          ost.filter(os => !vainHyvaksytytArvioinnit || os.arviointi.exists(arviointi => arviointi.exists(_.hyväksytty)))
+            .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo)))
+        Laajuus(
+          osasuoritustenLaajuudet.sum,
+          asKoodiObject(ly),
+          Some(ly.nimi),
+          ly.lyhytNimi
+        )
+      })
+    })
   }
 
   def toTelma(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): Telma = {
@@ -257,7 +266,7 @@ object KoskiToSuoritusConverter {
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
-      getLisapistekoulutusHyvaksyttyLaajuus(suoritus)
+      getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true)
     )
   }
 
@@ -304,12 +313,8 @@ object KoskiToSuoritusConverter {
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       getLisapistekoulutusSuoritusvuosi(suoritus),
-      suoritus.osasuoritukset.map(ost => Laajuus(
-        ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo))).sum,
-        asKoodiObject(ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö))).head),
-        ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.map(y => y.nimi)))).headOption,
-        ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö.flatMap(y => y.lyhytNimi)))).headOption
-      )),
+      //Huom. Tässä ei ole filtteröintiä hyväksytyn arvioinnin perusteella vrt. Telma, koska arviointeja ei ole.
+      getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy())
     )
 
