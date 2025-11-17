@@ -890,7 +890,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE), List.empty.asJava),
+    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_EI_VALIDI), List.empty.asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -1003,7 +1003,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE)),
+    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppiaineenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -1134,7 +1134,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA)),
+    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))

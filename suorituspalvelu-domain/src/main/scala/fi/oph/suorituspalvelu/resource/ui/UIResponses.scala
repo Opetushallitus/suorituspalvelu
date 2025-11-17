@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.resource.ui
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_ETUNIMET, ESIMERKKI_HAKU_OID, ESIMERKKI_HETU, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIAINEKOODI, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_NIMI, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, ESIMERKKI_SUKUNIMI, ESIMERKKI_SUORITUSKIELI, ESIMERKKI_SYNTYMAIKA, ESIMERKKI_TILA, ESIMERKKI_VALMISTUMISPAIVA, ESIMERKKI_VIERAS_KIELI_KIELIKOODI, ESIMERKKI_YKSILOLLISTAMINEN, ESIMERKKI_YLIAJO_ARVO, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, ESIMERKKI_YLIAJO_VIRKAILIJA}
 import fi.oph.suorituspalvelu.resource.*
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE, UI_OPPIJAN_HAUT_ESIMERKKI_VIRHE, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_YLIAJO_VIRHE, UI_TIEDOT_ESIMERKKI_VIRHE, UI_TIEDOT_HAKU_EPAONNISTUI}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI, UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_YLIAJO_EPAONNISTUI, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TUNTEMATON_OPPIJA, UI_TIEDOT_HAKU_EPAONNISTUI}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -23,7 +23,7 @@ case class KayttajaSuccessResponse(
 ) extends KayttajaResponse
 
 case class KayttajaFailureResponse(
-  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT)
   @BeanProperty virheet: java.util.Set[String]
 ) extends KayttajaResponse
 
@@ -51,7 +51,7 @@ case class OppilaitosSuccessResponse(
 ) extends OppilaitosResponse
 
 case class OppilaitosFailureResponse(
-  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppilaitosResponse
 
@@ -63,7 +63,7 @@ case class VuodetSuccessResponse(
 ) extends VuodetResponse
 
 case class VuodetFailureResponse(
-  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends VuodetResponse
 
@@ -75,7 +75,7 @@ case class LuokatSuccessResponse(
 ) extends LuokatResponse
 
 case class LuokatFailureResponse(
-  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuokatResponse
 
@@ -98,7 +98,7 @@ case class OppijanHakuSuccessResponse(
 ) extends OppijanHakuResponse
 
 case class OppijanHakuFailureResponse(
-  @(Schema @field)(example = UI_HAKU_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS)
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppijanHakuResponse
 
@@ -126,7 +126,7 @@ case class OppijanHautSuccessResponse(
 ) extends OppijanHautResponse
 
 case class OppijanHautFailureResponse(
-  @(Schema @field)(example = UI_OPPIJAN_HAUT_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppijanHautResponse
 
@@ -1202,7 +1202,7 @@ case class OppijanTiedotSuccessResponse(
 ) extends OppijanTiedotResponse
 
 case class OppijanTiedotFailureResponse(
-  @(Schema @field)(example = UI_TIEDOT_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String],
 ) extends OppijanTiedotResponse
 
@@ -1362,7 +1362,7 @@ case class LuoSuoritusOppilaitoksetSuccessResponse(
 ) extends LuoSuoritusOppilaitoksetResponse
 
 case class LuoSuoritusOppilaitoksetFailureResponse(
-  @(Schema @field)(example = UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuoSuoritusOppilaitoksetResponse
 
@@ -1393,7 +1393,7 @@ case class LuoSuoritusDropdownDataSuccessResponse(
 ) extends LuoSuoritusDropdownDataResponse
 
 case class LuoSuoritusDropdownDataFailureResponse(
-  @(Schema @field)(example = UI_LUO_SUORITUS_VAIHTOEHDOT_ESIMERKKI_VIRHE)
+  @(Schema @field)(example = UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LuoSuoritusDropdownDataResponse
 
@@ -1404,12 +1404,12 @@ case class LuoPerusopetuksenOppimaaraSuccessResponse() extends LuoPerusopetuksen
 case class LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe(
   @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineKoodiArvo: String,
-  @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_OPPIAINE_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheAvaimet : java.util.Set[String],
 )
 
 case class LuoPerusopetuksenOppimaaraFailureResponse(
-  @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty yleisetVirheAvaimet: java.util.Set[String],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineKohtaisetVirheet: java.util.List[LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe]
@@ -1450,7 +1450,7 @@ trait LuoPerusopetuksenOppiaineenOppimaaraResponse()
 case class LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse() extends LuoPerusopetuksenOppiaineenOppimaaraResponse
 
 case class LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(
-  @(Schema @field)(example = UI_LUO_SUORITUS_OPPIAINE_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheAvaimet: java.util.Set[String],
 ) extends LuoPerusopetuksenOppiaineenOppimaaraResponse
 
@@ -1484,7 +1484,7 @@ trait PoistaYliajotResponse()
 case class PoistaYliajoSuccessResponse() extends PoistaYliajotResponse
 
 case class PoistaYliajoFailureResponse(
-                                          @(Schema @field)(example = UI_POISTA_YLIAJO_VIRHE, requiredMode = RequiredMode.REQUIRED)
+                                          @(Schema @field)(example = UI_POISTA_YLIAJO_EPAONNISTUI, requiredMode = RequiredMode.REQUIRED)
                                           @BeanProperty virheAvaimet: java.util.Set[String],
                                         ) extends PoistaYliajotResponse
 
@@ -1493,7 +1493,7 @@ trait TallennaYliajotOppijalleResponse()
 case class TallennaYliajotOppijalleSuccessResponse() extends TallennaYliajotOppijalleResponse
 
 case class TallennaYliajotOppijalleFailureResponse(
-  @(Schema @field)(example = UI_LUO_SUORITUS_PERUSOPETUS_ESIMERKKI_VIRHE, requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = UI_TALLENNA_YLIAJO_OPPIJALLE_TUNTEMATON_OPPIJA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheAvaimet: java.util.Set[String]) extends TallennaYliajotOppijalleResponse
 
 case class Yliajo(
