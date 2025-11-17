@@ -12,7 +12,7 @@ import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.jobs.{SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.stereotype.Component
 
@@ -50,7 +50,8 @@ object VirtaUtil {
 
 @Component
 class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseDef, tarjontaIntegration: TarjontaIntegration,
-                   onrIntegration: OnrIntegration, virtaClient: VirtaClient, hakemuspalveluClient: HakemuspalveluClientImpl) {
+                   onrIntegration: OnrIntegration, virtaClient: VirtaClient, hakemuspalveluClient: HakemuspalveluClientImpl,
+                   @Value("${integrations.virta.cron}") cron: String) {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
 
@@ -79,7 +80,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     versio
   }
 
-  def refreshVirtaForPersonOids(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+  def refreshVirtaForPersonOids(ctx: SupaJobContext, personOids: Set[String]): Seq[SyncResultForHenkilo] = {
     val masterHenkilot = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), TIMEOUT).values.toSet
     val masterOids = masterHenkilot.map(_.oidHenkilo)
     val duplikaatit = Await.result(onrIntegration.getAliasesForPersonOids(masterHenkilot.map(_.oidHenkilo)), TIMEOUT).allOids
@@ -96,7 +97,9 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         .map(xmls => SyncResultForHenkilo(oppijaNumero, persist(oppijaNumero, xmls, Instant.now()), None))
         .recover {
           case e: Exception =>
-            LOG.error(s"Henkilon $oppijaNumero VIRTA-tietojen päivittäminen epäonnistui", e)
+            val message = s"Henkilon $oppijaNumero VIRTA-tietojen päivittäminen epäonnistui"
+            LOG.error(message, e)
+            ctx.reportError(message, Some(e))
             SyncResultForHenkilo(oppijaNumero, None, Some(e))
           case t: Throwable => throw t
         }
@@ -111,7 +114,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     tulokset
   }
 
-  private val refreshOppijaJob = scheduler.registerJob("refresh-virta-for-oppija", (ctx, oppijaNumero) => refreshVirtaForPersonOids(Set(oppijaNumero)), Seq.empty)
+  private val refreshOppijaJob = scheduler.registerJob("refresh-virta-for-oppija", (ctx, oppijaNumero) => refreshVirtaForPersonOids(ctx, Set(oppijaNumero)), Seq.empty)
 
   def syncVirtaForHenkilo(henkiloNumero: String): UUID = refreshOppijaJob.run(henkiloNumero)
 
@@ -120,7 +123,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
-        refreshVirtaForPersonOids(henkiloNumerot)
+        refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
         case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
       ctx.updateProgress((index+1)/hakuOids.size)
@@ -137,7 +140,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     paivitettavatHaut.zipWithIndex.foreach((hakuOid, index) => {
       try
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
-        refreshVirtaForPersonOids(henkiloNumerot)
+        refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
         case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
       ctx.updateProgress((index+1)/paivitettavatHaut.size)
@@ -150,6 +153,6 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
     refreshVirtaForAktiivisetHaut(ctx)
     null
-  }, "0 0 0 30 2 *") // Toistaiseksi "ajetaan" vain 30.2.
+  }, cron)
 
 }

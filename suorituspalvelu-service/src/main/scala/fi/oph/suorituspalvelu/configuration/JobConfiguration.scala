@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.configuration
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.jobs.SupaScheduler
+import fi.oph.suorituspalvelu.service.ErrorService
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.servers.Server
 import org.springframework.beans.factory.annotation.{Autowired, Value}
@@ -15,8 +16,8 @@ import javax.sql.DataSource
 @Configuration
 class JobConfiguration {
 
-  @Bean def getScheduler(dataSource: DataSource, kantaOperaatiot: KantaOperaatiot): SupaScheduler =
-    new SupaScheduler(5, Duration.ofSeconds(2), dataSource, kantaOperaatiot)
+  @Bean def getScheduler(dataSource: DataSource, kantaOperaatiot: KantaOperaatiot, errorService: ErrorService): SupaScheduler =
+    new SupaScheduler(5, Duration.ofSeconds(2), dataSource, kantaOperaatiot, errorService)
 
 }
 

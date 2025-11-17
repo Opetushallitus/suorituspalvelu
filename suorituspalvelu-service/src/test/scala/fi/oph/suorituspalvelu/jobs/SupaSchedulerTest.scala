@@ -10,7 +10,7 @@ class SupaSchedulerTest extends BaseIntegraatioTesti {
 
   @Test def testRunBasicJob(): Unit =
     // luodaan scheduler
-    val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot)
+    val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot, (name, errors) => {})
     val payload = "payload"
     var result: String = null
 
@@ -30,7 +30,7 @@ class SupaSchedulerTest extends BaseIntegraatioTesti {
 
   @Test def testJobRetries(): Unit =
     // luodaan scheduler
-    val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot)
+    val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot, (name, errors) => {})
     var failures: Int = 0
 
     // rekisteröidään jobi joka menee läpi toisella retryllä
@@ -49,7 +49,7 @@ class SupaSchedulerTest extends BaseIntegraatioTesti {
 
   @Test def testScheduledJob(): Unit =
     // luodaan scheduler
-    val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot)
+    val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot, (name, errors) => {})
     var counter: Int = 0
 
     // määritellään jobi joka ajaa joka sekunti ja lisää counterin arvoa yhdellä

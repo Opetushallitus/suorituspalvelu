@@ -33,11 +33,13 @@ integrations:
     username: username
     password: password
     base-url: https://registry.integration.yo-test.ylioppilastutkinto.fi
+    cron: "0 0 0 30 2 *"
   virta:
     jarjestelma:
     tunnus:
     avain:
     base-url:
+    cron: "0 0 0 30 2 *"
 
 db-scheduler:
   enabled: true

@@ -6,6 +6,7 @@ import com.github.kagkarlsson.scheduler.task.helper.{OneTimeTask, Tasks}
 import com.github.kagkarlsson.scheduler.task.schedule.{CronSchedule, Schedules}
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.jobs.SupaScheduler.LOG
+import fi.oph.suorituspalvelu.service.ErrorService
 import org.slf4j.LoggerFactory
 
 import java.time.{Duration, Instant}
@@ -27,6 +28,13 @@ trait SupaJobContext {
    * @param progress  valmiusaste (välillä 0-1)
    */
   def updateProgress(progress: Double): Unit
+
+  def reportError(message: String, exception: Option[Exception]): Unit
+}
+
+val DUMMY_JOB_CTX = new SupaJobContext {
+  override def updateProgress(progress: Double): Unit = {}
+  override def reportError(message: String, exception: Option[Exception]): Unit = {}
 }
 
 trait SupaJob {
@@ -36,6 +44,8 @@ trait SupaJob {
 trait SupaScheduledJob {
   def run(ctx: SupaJobContext, data: String): String
 }
+
+case class SupaJobError(message: String, exception: Option[Exception])
 
 /**
  * DB-Scheduler FailureHandler joka yrittää uudestaan määriteltyjen odotusaikojen jälkeen
@@ -68,7 +78,7 @@ class JobHandle(scheduler: SupaScheduler, name: String) {
  * Ohut wrapperi DB-Schedulerille. Tällä on kaksi tavoitetta, a) tehdä apista hieman simppelimpi, ja b) mahdollistaa toteutuksen
  * vaihtaminen jos löytyy DB-Scheduleria parempi vaihtoehto.
  */
-class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.sql.DataSource, kantaOperaatiot: KantaOperaatiot) {
+class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.sql.DataSource, kantaOperaatiot: KantaOperaatiot, errorService: ErrorService) {
   
   var scheduler: Scheduler = null
   var taskDescriptors: Map[String, TaskDescriptor[String]] = Map.empty
@@ -89,9 +99,14 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
     tasks = tasks :+ Tasks.oneTime(taskDescriptor)
       .onFailure(SupaFailureHandler(retryTimeouts))
       .execute((instance, _) => {
-        val ctx: SupaJobContext = progress => kantaOperaatiot.updateJobStatus(UUID.fromString(instance.getId), name, progress)
+        var errors: List[SupaJobError] = List.empty
+        val ctx: SupaJobContext = new SupaJobContext {
+          override def updateProgress(progress: Double): Unit = kantaOperaatiot.updateJobStatus(UUID.fromString(instance.getId), name, progress)
+          override def reportError(message: String, exception: Option[Exception]): Unit = { errors = errors :+ SupaJobError(message, exception)}
+        }
         job.run(ctx, instance.getData)
         ctx.updateProgress(1.0)
+        errorService.reportErrors(name, errors.map(e => (e.message, e.exception)))
       })
     JobHandle(this, name)
   }

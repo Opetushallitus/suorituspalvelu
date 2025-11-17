@@ -6,9 +6,10 @@ import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioE
 import fi.oph.suorituspalvelu.integration.{SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrIntegration}
-import fi.oph.suorituspalvelu.jobs.{SupaJobContext, SupaScheduler}
+import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import java.time.Instant
@@ -18,7 +19,8 @@ import scala.concurrent.Await
 import scala.jdk.CollectionConverters.*
 
 @Service
-class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluClientImpl, ytrIntegration: YtrIntegration, tarjontaIntegration: TarjontaIntegration, kantaOperaatiot: KantaOperaatiot) {
+class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluClientImpl, ytrIntegration: YtrIntegration,
+                 tarjontaIntegration: TarjontaIntegration, kantaOperaatiot: KantaOperaatiot, @Value("${integrations.ytr.cron}") cron: String) {
 
   val LOG = LoggerFactory.getLogger(classOf[YTRService])
 
@@ -29,21 +31,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  def syncYtrForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
-    val fetchedAt = Instant.now()
-    val syncResult = ytrIntegration.fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
-    LOG.info(s"Ytr-sync haulle $hakuOid valmis. Tallennettiin yhteensä ${syncResult.size} henkilön tiedot.")
-    syncResult
-  }
-
-  def safePersistBatch(ytrResult: Seq[YtrDataForHenkilo], fetchedAt: Instant): Seq[SyncResultForHenkilo] = {
-    ytrResult.map(r => safePersistSingle(r, fetchedAt))
-  }
-
-  def safePersistSingle(ytrResult: YtrDataForHenkilo, fetchedAt: Instant): SyncResultForHenkilo = {
+  def safePersistSingle(ytrResult: YtrDataForHenkilo, fetchedAt: Instant, ctx: SupaJobContext): SyncResultForHenkilo = {
     if(ytrResult.resultJson.isEmpty)
       LOG.info(s"Ytr-dataa ei löytynyt henkilölle ${ytrResult.personOid}")
       SyncResultForHenkilo(ytrResult.personOid, None, None)
@@ -64,19 +52,22 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
       }
   }
 
-  def fetchAndPersistStudents(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+  def fetchAndPersistStudents(personOids: Set[String], ctx: SupaJobContext = DUMMY_JOB_CTX): Seq[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
-    ytrIntegration.fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
+    ytrIntegration.fetchAndProcessStudents(personOids).map(r => safePersistSingle(r, fetchedAt, ctx)).toSeq
   }
 
   def refreshYTRForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
-        fetchAndPersistStudents(personOids)
+        fetchAndPersistStudents(personOids, ctx)
+        ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
       catch
-        case e: Exception => LOG.error(s"YTR-tietojen päivitys haulle $hakuOid epäonnistui",  e)
-      ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
+        case e: Exception =>
+          val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui"
+          LOG.error(message,  e)
+          ctx.reportError(message, Some(e))
     })
   }
 
@@ -100,5 +91,5 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
   scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
     refreshYTRForAktiivisetHaut(ctx)
     null
-  }, "0 0 0 30 2 *") // Toistaiseksi "ajetaan" vain 30.2.
+  }, cron)
 }

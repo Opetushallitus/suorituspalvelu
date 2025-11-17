@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
-import fi.oph.suorituspalvelu.jobs.SupaScheduler
+import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.{Logger, LoggerFactory}
@@ -40,14 +40,14 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     val prevStart = Option.apply(data).map(Instant.parse(_))
     if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
       try
-        refreshKoskiChangesSince(prevStart.get.minusSeconds(60))
+        refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(60))
       catch
         case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
     }
     start.toString
   }, "0 */2 * * * *")
 
-  def refreshKoskiChangesSince(since: Instant): SaferIterator[SyncResultForHenkilo] =
+  def refreshKoskiChangesSince(ctx: SupaJobContext, since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
     val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
 
@@ -67,29 +67,29 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         KoskiUtil.isOponSeurattava(opiskeluoikeudet)
 
       val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
-      processKoskiDataForOppijat(new SaferIterator(filtteroity.iterator), fetchedAt)
+      processKoskiDataForOppijat(ctx, new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
   private val refreshOppijaJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
-    val (changed, exceptions) = refreshKoskiChangesSince(Instant.parse(alkaen))
+    val (changed, exceptions) = refreshKoskiChangesSince(ctx, Instant.parse(alkaen))
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
   }, Seq.empty)
 
   def startRefreshForKoskiChangesSince(alkaen: Instant): UUID = refreshOppijaJob.run(alkaen.toString)
 
-  def syncKoskiForOppijat(personOids: Set[String]): SaferIterator[SyncResultForHenkilo] = {
+  def syncKoskiForOppijat(personOids: Set[String], ctx: SupaJobContext = DUMMY_JOB_CTX): SaferIterator[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
-    processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
+    processKoskiDataForOppijat(ctx, koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
   }
 
-  def refreshKoskiForHaku(hakuOid: String): SaferIterator[SyncResultForHenkilo] =
+  def refreshKoskiForHaku(hakuOid: String, ctx: SupaJobContext): SaferIterator[SyncResultForHenkilo] =
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
-    syncKoskiForOppijat(personOids)
+    syncKoskiForOppijat(personOids, ctx)
 
   private val refreshHakuJob = scheduler.registerJob("refresh-koski-for-haku", (ctx, hakuOid) => {
-    val (changed, exceptions) = refreshKoskiForHaku(hakuOid)
+    val (changed, exceptions) = refreshKoskiForHaku(hakuOid, ctx)
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
   }, Seq.empty)
 
@@ -97,9 +97,9 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
-    new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
+    new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(DUMMY_JOB_CTX, koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
 
-  private def processKoskiDataForOppijat(data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
+  private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
     val kantaOperaatiot = KantaOperaatiot(database)
 
     data.map(oppija => {
@@ -113,7 +113,9 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         SyncResultForHenkilo(oppija.oppijaOid, versio, None)
       } catch {
         case e: Exception =>
-          LOG.error(s"Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui", e)
+          val message = s"Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui" 
+          LOG.error(message, e)
+          ctx.reportError(message, Some(e))
           SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
       }
     })
