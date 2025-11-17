@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
 
 import java.time.Instant
+import java.util.UUID
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
@@ -39,14 +40,14 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     val prevStart = Option.apply(data).map(Instant.parse(_))
     if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
       try
-        syncKoskiChangesSince(prevStart.get.minusSeconds(60))
+        refreshKoskiChangesSince(prevStart.get.minusSeconds(60))
       catch
         case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
     }
     start.toString
   }, "0 */2 * * * *")
 
-  def syncKoskiChangesSince(since: Instant): SaferIterator[SyncResultForHenkilo] =
+  def refreshKoskiChangesSince(since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
     val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
 
@@ -69,16 +70,30 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
       processKoskiDataForOppijat(new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
+  private val refreshOppijaJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
+    val (changed, exceptions) = refreshKoskiChangesSince(Instant.parse(alkaen))
+      .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
+  }, Seq.empty)
+
+  def startRefreshForKoskiChangesSince(alkaen: Instant): UUID = refreshOppijaJob.run(alkaen.toString)
+
   def syncKoskiForOppijat(personOids: Set[String]): SaferIterator[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
     processKoskiDataForOppijat(koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
   }
 
-  def syncKoskiForHaku(hakuOid: String): SaferIterator[SyncResultForHenkilo] =
+  def refreshKoskiForHaku(hakuOid: String): SaferIterator[SyncResultForHenkilo] =
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
     syncKoskiForOppijat(personOids)
+
+  private val refreshHakuJob = scheduler.registerJob("refresh-koski-for-haku", (ctx, hakuOid) => {
+    val (changed, exceptions) = refreshKoskiForHaku(hakuOid)
+      .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
+  }, Seq.empty)
+
+  def startRefreshKoskiForHaku(hakuOid: String): UUID = refreshHakuJob.run(hakuOid)
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()

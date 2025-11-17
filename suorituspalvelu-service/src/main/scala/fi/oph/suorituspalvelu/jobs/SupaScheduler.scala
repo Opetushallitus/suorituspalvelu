@@ -23,7 +23,7 @@ trait SupaJobContext {
 
   /**
    * Päivittää jobin valmiusasteen
-   * 
+   *
    * @param progress  valmiusaste (välillä 0-1)
    */
   def updateProgress(progress: Double): Unit
@@ -77,7 +77,7 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
 
   /**
    * Rekisteröi erikseen ajettavan jobin
-   * 
+   *
    * @param name          jobin nimi
    * @param job           lambda (yleensä) joka sisältää jobin toiminnallisuuden
    * @param retryTimeouts uudelleenyritysten odotusajat
@@ -104,7 +104,7 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
 
   /**
    * Rekisteröi toistuvasti ajettavan jobin
-   * 
+   *
    * @param name      jobin nimi
    * @param job       lambda (yleensä) joka sisältää jobin toiminnallisuuden
    * @param schedule  cron-aikataulu

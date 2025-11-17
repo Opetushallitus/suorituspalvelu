@@ -29,6 +29,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
 
+import java.util.UUID
 import javax.sql.DataSource
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -102,8 +103,6 @@ class BaseIntegraatioTesti {
 
   @Autowired private val context: WebApplicationContext = null
 
-  @Autowired(required = false) private val scheduler: Scheduler = null
-
   var mvc: MockMvc = null
 
   @BeforeAll def setup(): Unit =
@@ -112,8 +111,6 @@ class BaseIntegraatioTesti {
     mvc = intermediate.build()
 
   @AfterAll def teardown(): Unit = {
-    if(scheduler!=null)
-      scheduler.stop()
     postgres.stop()
   }
 
@@ -167,4 +164,10 @@ class BaseIntegraatioTesti {
       .contentType(MediaType.APPLICATION_JSON_VALUE)
       .accept(MediaType.APPLICATION_JSON_VALUE)
       .content(objectMapper.writeValueAsString(body))
+
+  def waitUntilReady(tunniste: UUID, retries: Int = 30): Unit =
+    if(retries == 0) Assertions.fail("Jobi ei valmistunut")
+    if(!this.kantaOperaatiot.getJobStatus(tunniste).map(_.progress==1.0).getOrElse(false))
+      Thread.sleep(200)
+      waitUntilReady(tunniste, retries - 1)
 }

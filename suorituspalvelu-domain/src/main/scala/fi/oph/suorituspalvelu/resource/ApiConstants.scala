@@ -18,6 +18,7 @@ object ApiConstants {
   final val DATASYNC_JSON_VIRHE                             = "JSON-deserialisointi epäonnistui"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
+  final val DATASYNC_JOBIN_LUONTI_EPAONNISTUI               = "Datan virkistysjobin luonti epäonnistui"
 
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
 
@@ -45,7 +46,6 @@ object ApiConstants {
   final val VIRTA_DATASYNC_HENKILO_PATH                     = VIRTA_DATASYNC_PATH + "/henkilo"
   final val VIRTA_DATASYNC_AKTIIVISET_PATH                  = VIRTA_DATASYNC_PATH + "/aktiiviset/"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
-  final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
 
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"

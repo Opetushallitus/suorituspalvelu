@@ -24,8 +24,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  private val refreshHautJob = scheduler.registerJob("refresh-ytr-for-haut", (ctx, data) => {
-    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
+  def refreshYTRForHaut(hakuOids: Seq[String]): Unit =
     hakuOids.foreach(hakuOid => {
       try
         val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
@@ -33,11 +32,24 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
       catch
         case e: Exception => LOG.error(s"YTR-tietojen päivitys haulle $hakuOid epäonnistui",  e)
     })
-  }, Seq.empty)
 
-  def syncYTRForAktiivisetHaut(): UUID = {
+  def refreshYTRForAktiivisetHaut(): Unit =
     val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
       .filter(haku => !haku.kohdejoukkoKoodiUri.contains("12"))
-    refreshHautJob.run(mapper.writeValueAsString(paivitettavatHaut.asJava))
-  }
+    refreshYTRForHaut(paivitettavatHaut.map(_.oid))
+
+  private val refreshHautJob = scheduler.registerJob("refresh-ytr-for-haut", (ctx, data) => {
+    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
+    refreshYTRForHaut(hakuOids)
+  }, Seq.empty)
+
+  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))  
+
+  private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", (ctx, data) => {
+    refreshYTRForAktiivisetHaut()
+  }, Seq.empty)
+
+  def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJob.run(null)
+
+
 }

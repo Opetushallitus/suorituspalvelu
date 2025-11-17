@@ -17,7 +17,7 @@ import org.mockito.Mockito
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{SyncSuccessJobResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import fi.oph.suorituspalvelu.parsing.ytr.Student
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser.MAPPER
@@ -225,7 +225,9 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAKU_PATH, YTRPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
       .andExpect(status().isOk).andReturn()
-    val ytrSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
+    val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(ytrSyncResponse.jobId)
 
     //Tarkistetaan että kaikille oppijanumeroille on muodostunut yksi versio kantaan, ja versio on parseroitu suorituksiksi
     hetuToPersonOid.values.foreach(personOid => {
@@ -258,17 +260,15 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshYtrAktiivisetAllowed(): Unit = {
     val hakuOid = "1.2.246.562.29.01000000000000013275"
-    Mockito.when(tarjontaIntegration.aktiivisetHaut()).thenReturn(Seq(KoutaHaku(hakuOid, "", Map.empty, "", Some("haunkohdejoukko_11"), List.empty, None, None)))
+    Mockito.when(tarjontaIntegration.aktiivisetHaut()).thenReturn(Seq(KoutaHaku(hakuOid, "", Map.empty, "", Some("haunkohdejoukko_12"), List.empty, None, None)))
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid)).thenReturn(Future.successful(Seq.empty))
 
     val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_AKTIIVISET_PATH, null))
       .andExpect(status().isOk).andReturn()
-    val ytrSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
 
     //Odotellaan että tiedot asynkronisesti synkkaava YTR_REFRESH_TASK_FOR_AKTIIVISET ehtii pyörähtää
-    Thread.sleep(2000)
-
-    // TODO: kun on tapa saada jobin tiedot niin tsekataan
+    waitUntilReady(response.jobId)
   }
 
 }

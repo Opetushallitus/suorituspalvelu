@@ -8,12 +8,6 @@ import java.util.UUID
 
 class SupaSchedulerTest extends BaseIntegraatioTesti {
 
-  def waitUntilReady(tunniste: UUID, retries: Int = 20): Unit =
-    if(retries == 0) Assertions.fail("Jobi ei valmistunut")
-    if(!this.kantaOperaatiot.getJobStatus(tunniste).map(_.progress==1.0).getOrElse(false))
-      Thread.sleep(200)
-      waitUntilReady(tunniste, retries - 1)
-
   @Test def testRunBasicJob(): Unit =
     // luodaan scheduler
     val scheduler = SupaScheduler(1, Duration.ofMillis(100), this.datasource, this.kantaOperaatiot)
