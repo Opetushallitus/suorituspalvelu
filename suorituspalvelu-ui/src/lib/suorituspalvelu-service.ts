@@ -5,6 +5,7 @@ import type {
   IKayttajaSuccessResponse,
   ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
+  IOppijanHautSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
@@ -213,4 +214,15 @@ export const deleteYliajo = async ({
 
   const res = await client.delete(url.toString());
   return res.data;
+};
+
+export const getOppijanHaut = async (oppijaOid: string) => {
+  const config = await configPromise;
+
+  const url = new URL(
+    `${config.routes.suorituspalvelu.oppijanHautUrl}/${oppijaOid}`,
+  );
+
+  const res = await client.get<IOppijanHautSuccessResponse>(url.toString());
+  return res.data.haut;
 };
