@@ -5,14 +5,15 @@ import { isGenericBackendErrorResponse } from '@/types/ui-types';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
-import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { useState } from 'react';
+import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useState, useTransition } from 'react';
 import {
   OpiskelijavalintaanSiirtyvatTiedot,
   type AvainarvoRyhma,
 } from '@/components/opiskelijavalinnan-tiedot/OpiskelijavalintaanSiirtyvatTiedot';
 import {
   queryOptionsGetOppijanHaut,
+  queryOptionsGetValintadata,
   useKayttaja,
 } from '@/lib/suorituspalvelu-queries';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
@@ -22,7 +23,13 @@ import {
   OphFormFieldWrapper,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
-import { first } from 'remeda';
+import { only } from 'remeda';
+import { useQueryParam } from '@/hooks/useQueryParam';
+import { FullSpinner } from '@/components/FullSpinner';
+import { queryClient } from '@/lib/queryClient';
+import { redirect } from 'react-router';
+
+const HAKU_QUERY_PARAM = 'haku';
 
 const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
@@ -45,21 +52,23 @@ const OpiskelijavalinnanTiedotPageContent = ({
     label: translateKielistetty(haku.nimi),
   }));
 
-  const firstHakuOid = first(haut)?.hakuOid;
+  const [selectedHakuOid, setSelectedHakuOid] = useQueryParam(HAKU_QUERY_PARAM);
 
-  const [selectedHakuOid, setSelectedHakuOid] = useState<string>(
-    firstHakuOid ?? '',
-  );
+  const [isPending, startTransition] = useTransition();
 
   return kayttaja.isRekisterinpitaja ? (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ height: '100%' }}>
       <Stack direction="row" sx={{ justifyContent: 'stretch', gap: 3 }}>
         <OphSelectFormField
           sx={{ flex: 1 }}
           label={t('opiskelijavalinnan-tiedot.haku')}
-          value={selectedHakuOid}
+          value={selectedHakuOid ?? ''}
           options={hakuOptions}
-          onChange={(event) => setSelectedHakuOid(event.target.value)}
+          onChange={(event) => {
+            startTransition(() => {
+              setSelectedHakuOid(event.target.value);
+            });
+          }}
         />
         <OphFormFieldWrapper
           label={t('opiskelijavalinnan-tiedot.nayta')}
@@ -85,17 +94,27 @@ const OpiskelijavalinnanTiedotPageContent = ({
           )}
         />
       </Stack>
-      {selectedHakuOid ? (
-        <YliajoManagerProvider hakuOid={selectedHakuOid}>
-          <OpiskelijavalintaanSiirtyvatTiedot
-            avainarvoRyhma={avainarvoRyhma}
-            oppijaNumero={oppijaNumero}
-            hakuOid={selectedHakuOid}
-          />
-        </YliajoManagerProvider>
-      ) : (
-        <p>Valitse haku</p>
-      )}
+      <Box sx={{ paddingTop: 1 }}>
+        {isPending ? (
+          <FullSpinner />
+        ) : (
+          <QuerySuspenseBoundary>
+            {selectedHakuOid ? (
+              <YliajoManagerProvider hakuOid={selectedHakuOid}>
+                <OpiskelijavalintaanSiirtyvatTiedot
+                  avainarvoRyhma={avainarvoRyhma}
+                  oppijaNumero={oppijaNumero}
+                  hakuOid={selectedHakuOid}
+                />
+              </YliajoManagerProvider>
+            ) : (
+              <ResultPlaceholder
+                text={t('opiskelijavalinnan-tiedot.valitse-haku')}
+              />
+            )}
+          </QuerySuspenseBoundary>
+        )}
+      </Box>
     </Stack>
   ) : (
     <ResultPlaceholder
@@ -127,6 +146,37 @@ const ErrorFallback = ({
 
   return <ErrorView error={error} reset={reset} />;
 };
+
+// Vältetään awaitin käyttöä tässä, koska SPA-moodissa loadereille voi näyttää vain globaalin latausindikaattorin
+export async function clientLoader({
+  params,
+  request,
+}: Route.ClientLoaderArgs) {
+  const hautPromise = queryClient.ensureQueryData(
+    queryOptionsGetOppijanHaut(params.oppijaNumero),
+  );
+
+  const url = new URL(request.url);
+  const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
+
+  if (hakuOidParam) {
+    queryClient.ensureQueryData(
+      queryOptionsGetValintadata({
+        oppijaNumero: params.oppijaNumero,
+        hakuOid: hakuOidParam,
+      }),
+    );
+  } else {
+    const haut = await hautPromise;
+    const onlyHakuOid = only(haut)?.hakuOid;
+    if (onlyHakuOid) {
+      url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
+      throw redirect(url.search);
+    }
+  }
+
+  return null;
+}
 
 export default function OpiskelijavalinnanTiedotPage({
   params,
