@@ -1182,19 +1182,57 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaYliajotOppijalleFailureResponse]))
   }
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaYliajotOppijalleEiSallittuAvainBadRequest(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.21250967210"
+    val virkailijaOid = "1.2.246.562.24.21250967987"
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    val yliajot =
+      java.util.List.of(Yliajo(
+        avain = Optional.of("hatusta_vetaisty_avain"),
+        arvo = Optional.of("arvo"),
+        selite = Optional.of("selite")))
+    val yliajoContainer = YliajoTallennusContainer(
+      henkiloOid = Optional.of(oppijaNumero),
+      hakuOid = Optional.of(hakuOid),
+      yliajot = Optional.of(yliajot)
+    )
+
+    val yliajotPayload = objectMapper.writeValueAsString(yliajoContainer)
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(yliajotPayload))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(TallennaYliajotOppijalleFailureResponse(java.util.Set.of(UIValidator.VALIDATION_AVAIN_EI_SALLITTU)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaYliajotOppijalleFailureResponse]))
+  }
+
   @WithMockUser(value = "1.2.246.562.24.21250967987", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaYliajotOppijalleAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967210"
     val virkailijaOid = "1.2.246.562.24.21250967987" //Tämä tieto poimitaan sessiosta, katso MockUser
     val hakuOid = "1.2.246.562.29.01000000000000013275"
 
-    val yliajot = Range(1, 5).map(i => {
+    val yliajokey1 = AvainArvoConstants.telmaSuoritettuKey
+    val yliajokey2 = AvainArvoConstants.opistovuosiSuoritettuKey
+
+    val yliajot = Seq(
       Yliajo(
-        avain = Optional.of("avain" + i),
-        arvo = Optional.of("arvo" + i),
-        selite = Optional.of("selite " + i),
+        avain = Optional.of(yliajokey1),
+        arvo = Optional.of("true"),
+        selite = Optional.of("selite 1"),
+      ),
+      Yliajo(
+        avain = Optional.of(yliajokey2),
+        arvo = Optional.of("true"),
+        selite = Optional.of("selite 2"),
       )
-    }).toList.asJava
+    ).toList.asJava
+
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
@@ -1224,7 +1262,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // ja yliajot tallentuvat kantaan
     val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(4, tallennetutYliajot.size)
+    Assertions.assertEquals(2, tallennetutYliajot.size)
     Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
   }
 
@@ -1264,15 +1302,21 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967210"
     val virkailijaOid = "1.2.246.562.24.21250967987" //Tämä tieto poimitaan sessiosta, katso MockUser
     val hakuOid = "1.2.246.562.29.01000000000000013275"
-    val poistettavaAvain = "avain2"
+    val avainJokaPoistetaan = AvainArvoConstants.telmaSuoritettuKey
+    val avainJotaEiPoisteta = AvainArvoConstants.opistovuosiSuoritettuKey
 
-    val yliajot = Range(1, 5).map(i => {
+    val yliajot = Seq(
       Yliajo(
-        avain = Optional.of("avain" + i),
-        arvo = Optional.of("arvo" + i),
-        selite = Optional.of("selite " + i),
+        avain = Optional.of(avainJokaPoistetaan),
+        arvo = Optional.of("true"),
+        selite = Optional.of("poistettavan selite"),
+      ),
+      Yliajo(
+        avain = Optional.of(avainJotaEiPoisteta),
+        arvo = Optional.of("true"),
+        selite = Optional.of("ei-poistettavan selite"),
       )
-    }).toList.asJava
+    ).toList.asJava
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
@@ -1292,8 +1336,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // ja yliajot tallentuvat kantaan, ja myöhemmin poistettava avain on vielä mukana
     val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(4, tallennetutYliajot.size)
-    Assertions.assertTrue(tallennetutYliajot.exists(_.avain == poistettavaAvain))
+    Assertions.assertEquals(2, tallennetutYliajot.size)
+    Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJokaPoistetaan))
+    Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJotaEiPoisteta))
     Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
 
     // poistetaan yksi yliajo
@@ -1301,13 +1346,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .delete(ApiConstants.UI_POISTA_YLIAJO_PATH, "")
         .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
         .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
-        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, poistettavaAvain))
+        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, avainJokaPoistetaan))
       .andExpect(status().isOk)
       .andReturn()
 
     // tarkistetaan että yliajoja on yksi vähemmän, ja poistettava avain on kadonnut
     val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(3, tallennetutYliajotPoistonJalkeen.size)
-    Assertions.assertFalse(tallennetutYliajotPoistonJalkeen.exists(_.avain == poistettavaAvain))
+    Assertions.assertEquals(1, tallennetutYliajotPoistonJalkeen.size)
+    Assertions.assertFalse(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJokaPoistetaan))
+    Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJotaEiPoisteta))
   }
 }

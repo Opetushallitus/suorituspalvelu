@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.validation
 
+import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
@@ -53,6 +54,7 @@ object UIValidator {
   final val VALIDATION_VERSIOTUNNISTE_EI_VALIDI   = "backend-virhe.versiotunniste.ei_validi"
   final val VALIDATION_AVAIN_TYHJA                = "backend-virhe.avain.tyhja"
   final val VALIDATION_AVAIN_EI_VALIDI            = "backend-virhe.avain.ei_validi"
+  final val VALIDATION_AVAIN_EI_SALLITTU          = "backend-virhe.avain.ei_sallittu"
   final val VALIDATION_ARVO_TYHJA                 = "backend-virhe.arvo.tyhja"
   final val VALIDATION_ARVO_EI_VALIDI             = "backend-virhe.arvo.ei_validi"
   final val VALIDATION_SELITE_TYHJA               = "backend-virhe.selite.tyhja"
@@ -294,10 +296,15 @@ object UIValidator {
         Set(VALIDATION_AVAIN_TYHJA)
       else
         Set.empty
-    else if (!avainArvoStringPattern.matches(avain.get))
+    else if (!avainArvoStringPattern.matches(avain.get)) {
       Set(VALIDATION_AVAIN_EI_VALIDI)
-    else
-      Set.empty
+    } else {
+      //Vain sellaisia arvoja voi yliajaa, joita AvainArvoConverter tuottaa
+      if (!AvainArvoConstants.avainToAvaimenSeliteMap.keySet.contains(avain.get))
+        Set(VALIDATION_AVAIN_EI_SALLITTU)
+      else
+        Set.empty
+    }
   }
 
   def validateHakuOid(hakuOid: Option[String], pakollinen: Boolean): Set[String] = {
