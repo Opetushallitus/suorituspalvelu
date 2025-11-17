@@ -2,9 +2,8 @@ package fi.oph.suorituspalvelu.integration.ytr
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
+import fi.oph.suorituspalvelu.integration.client.{YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import slick.jdbc.JdbcBackend
@@ -29,16 +28,11 @@ class YtrIntegration {
   private val LOG: Logger = LoggerFactory.getLogger(classOf[YtrIntegration])
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
-  private val HENKILO_TIMEOUT = 5.minutes
-
   @Autowired val ytrClient: YtrClient = null
 
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
-
-  @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
-
 
   private val pollWaitMillis = 2000
 
@@ -46,38 +40,6 @@ class YtrIntegration {
   mapper.registerModule(DefaultScalaModule)
 
   def YTR_BATCH_SIZE = 5000
-
-  def syncYtrForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
-    val fetchedAt = Instant.now()
-    val syncResult = fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
-    LOG.info(s"Ytr-sync haulle $hakuOid valmis. Tallennettiin yhteensä ${syncResult.size} henkilön tiedot.")
-    syncResult
-  }
-
-  def safePersistBatch(ytrResult: Seq[YtrDataForHenkilo], fetchedAt: Instant): Seq[SyncResultForHenkilo] = {
-    ytrResult.map(r => safePersistSingle(r, fetchedAt))
-  }
-
-  def safePersistSingle(ytrResult: YtrDataForHenkilo, fetchedAt: Instant): SyncResultForHenkilo = {
-    LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
-    try {
-      val kantaOperaatiot = KantaOperaatiot(database)
-      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), fetchedAt)
-      versio.foreach(v => {
-        LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
-        val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
-        kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus))
-      })
-      SyncResultForHenkilo(ytrResult.personOid, versio, None)
-    } catch {
-      case e: Exception =>
-        LOG.error(s"Henkilon ${ytrResult.personOid} YTR-tietojen tallentaminen epäonnistui", e)
-        SyncResultForHenkilo(ytrResult.personOid, None, Some(e))
-    }
-  }
 
   def massFetchForStudents(hetuPostData: Seq[YtrHetuPostData]): Future[Seq[(String, String)]] = {
     ytrClient.createYtrMassOperation(hetuPostData).flatMap(massOp => {
@@ -137,11 +99,6 @@ class YtrIntegration {
         }
       }
     Await.result(resultF, timeout)
-  }
-
-  def fetchAndPersistStudents(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
-    val fetchedAt = Instant.now()
-    fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
   }
 
   def fetchAndProcessStudents[R](personOids: Set[String], processFunction: Seq[YtrDataForHenkilo] => Seq[R]): Seq[R] = {
