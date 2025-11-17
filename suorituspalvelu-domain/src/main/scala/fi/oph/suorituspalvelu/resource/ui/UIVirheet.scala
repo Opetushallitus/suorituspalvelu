@@ -44,4 +44,7 @@ object UIVirheet {
   final val UI_VALINTADATA_OPPIJAA_EI_LOYTYNYT              = "backend-virhe.valintadata.oppijaa_ei_loytynyt"
   final val UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE         = "backend-virhe.valintadata.geneerinen_virhe"
   final val UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA  = "backend-virhe.valintadata.useita_vahvistettuja_oppimaaria"
+
+  final val UI_OPPIJAN_HAUT_ESIMERKKI_VIRHE                 = "backend-virhe.oppijanumero.ei_validi"
+  final val UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI                = "backend-virhe.oppijan_haut.haku_epaonnistui"
 }
