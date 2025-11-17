@@ -63,14 +63,6 @@ class ValintaDataService {
     kantaOperaatiot.tallennaYliajot(overrides)
   }
 
-  def expandWithAvainAliases(originalContainers: Seq[CombinedAvainArvoContainer]): Seq[CombinedAvainArvoContainer] = {
-    val aliasContainers: Seq[CombinedAvainArvoContainer] = originalContainers.flatMap(oc => {
-      val avainAliakset = AvainArvoConstants.avainToRinnakkaisAvaimet.getOrElse(oc.avain, Set.empty)
-      avainAliakset.map(avainAlias => oc.copy(avain = avainAlias, metadata = oc.metadata.copy(duplikaatti = true)))
-    })
-    originalContainers ++ aliasContainers
-  }
-
   def combineBaseAvainArvotWithYliajot(baseResults: AvainArvoConverterResults, yliajot: Set[AvainArvoYliajo]): Set[CombinedAvainArvoContainer] = {
     val yliajotMap: Map[String, AvainArvoYliajo] = yliajot.map(y => (y.avain, y)).toMap
     LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}")
@@ -113,8 +105,7 @@ class ValintaDataService {
 
     val yliajot = hakuOid.map(hakuOid => fetchOverridesForOppijaAliases(allOidsForPerson, hakuOid)).getOrElse(Set.empty)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResults, yliajot)
-    val withAliases = expandWithAvainAliases(combinedWithYliajot.toSeq)
-    ValintaData(usePersonOid, withAliases, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString)
+    ValintaData(usePersonOid, combinedWithYliajot.toSeq, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString)
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO

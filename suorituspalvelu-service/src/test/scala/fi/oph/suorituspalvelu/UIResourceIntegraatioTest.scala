@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -1058,15 +1059,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val virkailijaOid = "1.2.246.562.24.21250967299"
     val hakuOid = "1.2.246.562.29.01000000000000013275"
 
-    val yliajettuAvain = "lisapistekoulutus_telma"
+    val yliajettuAvain = AvainArvoConstants.telmaSuoritettuKey
     val yliajettuArvo = "true"
     val yliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
     val yliajo = AvainArvoYliajo(yliajettuAvain, yliajettuArvo, oppijaNumero, hakuOid, virkailijaOid, yliajoSelite)
 
     val eriHaunOid = "1.2.246.562.29.01000000000000013918"
-    val eriHaunYliajettuAvain = "lisapistekoulutus_opisto"
+    val eriHaunYliajettuAvain = AvainArvoConstants.opistovuosiSuoritettuKey
     val eriHaunYliajettuArvo = "true"
-    val eriHaunYliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
+    val eriHaunYliajoSelite = "Kyllä on Opistovuosikin suoritettu, katsoin toista hakua varten itse eilen."
     val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, eriHaunYliajettuArvo, oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
 
     kantaOperaatiot.tallennaYliajot(Seq(yliajo, eriHaunYliajo))
