@@ -1,0 +1,20 @@
+{
+  "haut": [
+    {
+      "hakuOid": "1.2.246.562.29.00000000000000000000",
+      "nimi": {
+        "fi": "Yhteishaku ammatilliseen koulutukseen",
+        "sv": "Gemensam ansökan till yrkesinriktad utbildning",
+        "en": "Joint application to vocational education"
+      }
+    },
+    {
+      "hakuOid": "1.2.246.562.29.11111111111111111111",
+      "nimi": {
+        "fi": "Lukion kevään 2025 yhteishaku",
+        "sv": "Gymnasiets gemensamma ansökan våren 2025",
+        "en": "Spring 2025 joint application to general upper secondary school"
+      }
+    }
+  ]
+}

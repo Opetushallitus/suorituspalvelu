@@ -1,10 +1,14 @@
-import { expect } from '@playwright/test';
-import { test } from './lib/fixtures';
-import { expectLabeledValues } from './lib/playwrightUtils';
+import { test, expect } from './lib/fixtures';
+import { expectLabeledValues, selectOption } from './lib/playwrightUtils';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 import VALINTA_DATA from './fixtures/valintaData.json' with { type: 'json' };
+import OPPIJAN_HAUT from './fixtures/oppijanHaut.json' with { type: 'json' };
+import VALINTA_DATA_FOR_SECOND_HAKU from './fixtures/valintaDataForSecondHaku.json' with { type: 'json' };
+import type { IHaku } from '@/types/backend';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
+const FIRST_HAKU = OPPIJAN_HAUT?.haut?.[0] as IHaku;
+const SECOND_HAKU = OPPIJAN_HAUT?.haut?.[1] as IHaku;
 
 test.describe('Opiskelijavalinnan tiedot', () => {
   test.beforeEach(async ({ page }) => {
@@ -15,21 +19,33 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       });
     });
 
-    await page.route(`**/ui/oppilaitokset`, async (route) => {
-      await route.fulfill({
-        json: {
-          oppilaitokset: [],
-        },
-      });
-    });
+    await page.route(
+      (url) => url.href.includes(`/ui/oppijanhaut/${OPPIJANUMERO}`),
+      async (route) => {
+        await route.fulfill({
+          json: {
+            haut: [FIRST_HAKU], // Default to single haku for existing tests
+          },
+        });
+      },
+    );
 
     await page.route(
       (url) =>
-        url.href.includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
-      async (route) => {
-        await route.fulfill({
-          json: VALINTA_DATA,
-        });
+        url.pathname.includes('/ui/valintadata') &&
+        url.searchParams.get('oppijaNumero') === OPPIJANUMERO,
+      (route, request) => {
+        const url = new URL(request.url());
+        const hakuParam = url.searchParams.get('hakuOid');
+        if (hakuParam === FIRST_HAKU.hakuOid) {
+          return route.fulfill({
+            json: VALINTA_DATA,
+          });
+        } else if (hakuParam === SECOND_HAKU.hakuOid) {
+          return route.fulfill({
+            json: VALINTA_DATA_FOR_SECOND_HAKU,
+          });
+        }
       },
     );
 
@@ -174,7 +190,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     expect(savedYliajoData).toMatchObject({
       henkiloOid: OPPIJANUMERO,
-      hakuOid: '1.2.246.562.29.00000000000000000000',
+      hakuOid: FIRST_HAKU.hakuOid,
       yliajot: [
         {
           avain: 'perusopetuksen_kieli',
@@ -220,7 +236,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     expect(savedYliajoData).toMatchObject({
       henkiloOid: OPPIJANUMERO,
-      hakuOid: '1.2.246.562.29.00000000000000000000',
+      hakuOid: FIRST_HAKU.hakuOid,
       yliajot: [
         {
           avain: 'uusi_kentta',
@@ -366,9 +382,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     ]);
 
     expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
-    expect(deletedYliajoParams.hakuOid).toBe(
-      '1.2.246.562.29.00000000000000000000',
-    );
+    expect(deletedYliajoParams.hakuOid).toBe(FIRST_HAKU.hakuOid);
     expect(deletedYliajoParams.avain).toBe('perusopetuksen_kieli');
 
     await expect(editModal).toBeHidden();
@@ -512,5 +526,124 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     await errorModal.getByRole('button', { name: 'Sulje' }).click();
     await expect(errorModal).toBeHidden();
+  });
+
+  test('hakua voi vaihtaa, jolloin näytetään valitun haun avainarvot', async ({
+    page,
+  }) => {
+    // Mock multiple haut
+    await page.route(
+      (url) => url.href.includes(`/ui/oppijanhaut/${OPPIJANUMERO}`),
+      async (route) => {
+        await route.fulfill({
+          json: OPPIJAN_HAUT,
+        });
+      },
+    );
+
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
+    // Ei hakua valittuna oletuksena
+    const hakuDropdown = page.getByLabel('Haku, jota tiedot koskevat');
+    await expect(hakuDropdown).toHaveText('');
+
+    await selectOption({
+      page,
+      name: 'Haku, jota tiedot koskevat',
+      option: 'Yhteishaku ammatilliseen koulutukseen',
+    });
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+    await expect(tiedot).toBeVisible();
+
+    await expectLabeledValues(tiedot, [
+      { label: 'perusopetuksen_kieli', value: 'FI' },
+      { label: 'lukio_suoritettu', value: 'false' },
+    ]);
+
+    await selectOption({
+      page,
+      name: 'Haku, jota tiedot koskevat',
+      option: 'Lukion kevään 2025 yhteishaku',
+    });
+
+    await expectLabeledValues(tiedot, [
+      { label: 'perusopetuksen_kieli', value: 'SV' },
+      { label: 'lukio_suoritettu', value: 'true' },
+    ]);
+
+    expect(page.url()).toContain(`haku=${SECOND_HAKU.hakuOid}`);
+  });
+
+  test('kun on vain yksi haku, valitaan se automaattisesti', async ({
+    page,
+  }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
+    await page.waitForURL(
+      (url) =>
+        url.pathname.includes('opiskelijavalinnan-tiedot') &&
+        url.searchParams.get('haku') === FIRST_HAKU.hakuOid,
+    );
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+    await expect(tiedot).toBeVisible();
+
+    await expectLabeledValues(tiedot, [
+      { label: 'perusopetuksen_kieli', value: 'FI' },
+    ]);
+  });
+
+  test('valitaan URL-parametrin mukainen haku', async ({ page }) => {
+    // Mock multiple haut
+    await page.route(
+      (url) => url.href.includes(`/ui/oppijanhaut/${OPPIJANUMERO}`),
+      async (route) => {
+        await route.fulfill({
+          json: OPPIJAN_HAUT,
+        });
+      },
+    );
+
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot?haku=${SECOND_HAKU.hakuOid}`,
+    );
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    const hakuDropdown = page.getByLabel('Haku, jota tiedot koskevat');
+    await expect(hakuDropdown).toHaveText('Lukion kevään 2025 yhteishaku');
+
+    await expectLabeledValues(tiedot, [
+      { label: 'perusopetuksen_kieli', value: 'SV' },
+    ]);
+  });
+
+  test('näytetään virhe modaalissa, jos URL-parametrin haku-oid ei valittavissa', async ({
+    page,
+  }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot?haku=${SECOND_HAKU.hakuOid}`,
+    );
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    await expect(tiedot).toBeHidden();
+    await expect(page.getByLabel('Haku, jota tiedot koskevat')).toHaveText(
+      SECOND_HAKU.hakuOid,
+    );
+    await expect(page.getByText('Valittu haku on virheellinen')).toBeVisible();
   });
 });

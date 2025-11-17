@@ -14,6 +14,15 @@ export const test = base.extend<object>({
         },
       });
     });
+
+    await page.route(`**/ui/oppilaitokset`, async (route) => {
+      await route.fulfill({
+        json: {
+          oppilaitokset: [],
+        },
+      });
+    });
+
     await use(page);
   },
 });
