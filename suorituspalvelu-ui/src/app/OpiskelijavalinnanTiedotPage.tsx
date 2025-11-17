@@ -47,14 +47,33 @@ const OpiskelijavalinnanTiedotPageContent = ({
     queryOptionsGetOppijanHaut(oppijaNumero),
   );
 
-  const hakuOptions = haut?.map((haku) => ({
+  const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM);
+
+  const isValidHakuOid =
+    urlHakuOid == null || haut.find((h) => h.hakuOid === urlHakuOid);
+
+  const hakuError = isValidHakuOid
+    ? undefined
+    : t('opiskelijavalinnan-tiedot.valittu-haku-virheellinen');
+
+  const hakuOptionsBase = haut.map((haku) => ({
     value: haku.hakuOid,
     label: translateKielistetty(haku.nimi),
   }));
 
-  const [selectedHakuOid, setSelectedHakuOid] = useQueryParam(HAKU_QUERY_PARAM);
+  const hakuOptions = isValidHakuOid
+    ? hakuOptionsBase
+    : hakuOptionsBase.concat([
+        {
+          label: urlHakuOid,
+          value: urlHakuOid,
+        },
+      ]);
 
-  const [isPending, startTransition] = useTransition();
+  const selectedHakuOid = urlHakuOid ?? '';
+
+  // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
+  const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
 
   return kayttaja.isRekisterinpitaja ? (
     <Stack spacing={3} sx={{ height: '100%' }}>
@@ -62,11 +81,12 @@ const OpiskelijavalinnanTiedotPageContent = ({
         <OphSelectFormField
           sx={{ flex: 1 }}
           label={t('opiskelijavalinnan-tiedot.haku')}
-          value={selectedHakuOid ?? ''}
+          value={selectedHakuOid}
           options={hakuOptions}
+          errorMessage={hakuError}
           onChange={(event) => {
-            startTransition(() => {
-              setSelectedHakuOid(event.target.value);
+            startHakuSwitchTransition(() => {
+              setUrlHakuOid(event.target.value);
             });
           }}
         />
@@ -95,24 +115,26 @@ const OpiskelijavalinnanTiedotPageContent = ({
         />
       </Stack>
       <Box sx={{ paddingTop: 1 }}>
-        {isPending ? (
+        {isHakuSwitching ? (
           <FullSpinner />
         ) : (
-          <QuerySuspenseBoundary>
-            {selectedHakuOid ? (
-              <YliajoManagerProvider hakuOid={selectedHakuOid}>
-                <OpiskelijavalintaanSiirtyvatTiedot
-                  avainarvoRyhma={avainarvoRyhma}
-                  oppijaNumero={oppijaNumero}
-                  hakuOid={selectedHakuOid}
+          isValidHakuOid && (
+            <QuerySuspenseBoundary>
+              {selectedHakuOid ? (
+                <YliajoManagerProvider hakuOid={selectedHakuOid}>
+                  <OpiskelijavalintaanSiirtyvatTiedot
+                    avainarvoRyhma={avainarvoRyhma}
+                    oppijaNumero={oppijaNumero}
+                    hakuOid={selectedHakuOid}
+                  />
+                </YliajoManagerProvider>
+              ) : (
+                <ResultPlaceholder
+                  text={t('opiskelijavalinnan-tiedot.valitse-haku')}
                 />
-              </YliajoManagerProvider>
-            ) : (
-              <ResultPlaceholder
-                text={t('opiskelijavalinnan-tiedot.valitse-haku')}
-              />
-            )}
-          </QuerySuspenseBoundary>
+              )}
+            </QuerySuspenseBoundary>
+          )
         )}
       </Box>
     </Stack>
@@ -152,6 +174,7 @@ export async function clientLoader({
   params,
   request,
 }: Route.ClientLoaderArgs) {
+  // Aloitetaan oppijan hakujen esilataus
   const hautPromise = queryClient.ensureQueryData(
     queryOptionsGetOppijanHaut(params.oppijaNumero),
   );
@@ -160,6 +183,7 @@ export async function clientLoader({
   const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
 
   if (hakuOidParam) {
+    // Aloitetaan valindatadatan esilataus
     queryClient.ensureQueryData(
       queryOptionsGetValintadata({
         oppijaNumero: params.oppijaNumero,
@@ -169,6 +193,7 @@ export async function clientLoader({
   } else {
     const haut = await hautPromise;
     const onlyHakuOid = only(haut)?.hakuOid;
+    // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
     if (onlyHakuOid) {
       url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
       throw redirect(url.search);
