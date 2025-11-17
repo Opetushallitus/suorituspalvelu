@@ -131,7 +131,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
   private def refreshVirtaForAktiivisetHaut(ctx: SupaJobContext): Unit =
     val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
-      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("12"))
+      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("haunkohdejoukko_12"))
       .map(_.oid)
 
     paivitettavatHaut.zipWithIndex.foreach((hakuOid, index) => {
@@ -146,5 +146,10 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-virta-for-aktiiviset-haut", (ctx, data) => refreshVirtaForAktiivisetHaut(ctx), Seq.empty)
 
   def syncVirtaForAktiivisetHaut(): UUID = refreshAktiivisetHautJob.run("")
+
+  scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
+    refreshVirtaForAktiivisetHaut(ctx)
+    null
+  }, "0 0 0 30 2 *") // Toistaiseksi "ajetaan" vain 30.2.
 
 }

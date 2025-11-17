@@ -80,6 +80,12 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     })
   }
 
+  def refreshYTRForAktiivisetHaut(ctx: SupaJobContext): Unit = {
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
+      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("haunkohdejoukko_12"))
+    refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
+  }
+
   private val refreshHautJob = scheduler.registerJob("refresh-ytr-for-haut", (ctx, data) => {
     val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
     refreshYTRForHaut(ctx, hakuOids)
@@ -87,13 +93,12 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
 
   def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))  
 
-  private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", (ctx, data) => {
-    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
-      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("12"))
-    refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
-  }, Seq.empty)
+  private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", (ctx, data) => refreshYTRForAktiivisetHaut(ctx), Seq.empty)
 
   def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJob.run(null)
 
-
+  scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
+    refreshYTRForAktiivisetHaut(ctx)
+    null
+  }, "0 0 0 30 2 *") // Toistaiseksi "ajetaan" vain 30.2.
 }
