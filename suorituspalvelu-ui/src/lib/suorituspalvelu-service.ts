@@ -214,10 +214,8 @@ export const deleteYliajo = async ({
 export const getOppijanHaut = async (oppijaOid: string) => {
   const config = await configPromise;
 
-  const url = new URL(
-    `${config.routes.suorituspalvelu.oppijanHautUrl}/${oppijaOid}`,
-  );
+  const url = `${config.routes.suorituspalvelu.oppijanHautUrl}/${oppijaOid}`;
 
-  const res = await client.get<IOppijanHautSuccessResponse>(url.toString());
-  return res.data.haut;
+  const res = await client.get<IOppijanHautSuccessResponse>(url);
+  return res.data?.haut ?? [];
 };
