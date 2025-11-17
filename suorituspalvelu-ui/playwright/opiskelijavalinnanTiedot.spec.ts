@@ -48,13 +48,12 @@ test.describe('Opiskelijavalinnan tiedot', () => {
         }
       },
     );
-
-    await page.goto(
-      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
-    );
   });
 
   test('näyttää uudet avainarvot', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
     await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
@@ -103,6 +102,9 @@ test.describe('Opiskelijavalinnan tiedot', () => {
   });
 
   test('näyttää vanhat avainarvot', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
     await page.getByRole('button', { name: 'Vanhat avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
@@ -148,6 +150,9 @@ test.describe('Opiskelijavalinnan tiedot', () => {
   });
 
   test('muokkaa kentän arvoa onnistuneesti', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
     let savedYliajoData: unknown = null;
     await page.route('**/ui/tallennayliajot', async (route) => {
       savedYliajoData = route.request().postDataJSON();
@@ -204,6 +209,9 @@ test.describe('Opiskelijavalinnan tiedot', () => {
   });
 
   test('lisää uuden kentän onnistuneesti', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
     let savedYliajoData: unknown = null;
     await page.route('**/ui/tallennayliajot', async (route) => {
       savedYliajoData = route.request().postDataJSON();
@@ -250,6 +258,9 @@ test.describe('Opiskelijavalinnan tiedot', () => {
   });
 
   test('peruuttaa kentän muokkauksen', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
     await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
@@ -281,6 +292,10 @@ test.describe('Opiskelijavalinnan tiedot', () => {
         },
       });
     });
+
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
 
     await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
@@ -358,6 +373,10 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       });
     });
 
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
     await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
@@ -432,6 +451,10 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       });
     });
 
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
     await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
@@ -495,6 +518,10 @@ test.describe('Opiskelijavalinnan tiedot', () => {
         },
       });
     });
+
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
 
     await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
