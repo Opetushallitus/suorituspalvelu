@@ -11,7 +11,7 @@ import type {
   IOppilaitosSuccessResponse,
   IYliajoTallennusContainer,
 } from '@/types/backend';
-import type { Language, SuoritusFields } from '@/types/ui-types';
+import type { SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
 
@@ -67,11 +67,6 @@ export const getKayttaja = async () => {
     config.routes.suorituspalvelu.kayttajanTiedotUrl,
   );
   return res.data;
-};
-
-export const getAsiointiKieli = async () => {
-  const kayttaja = await getKayttaja();
-  return kayttaja.asiointiKieli as Language;
 };
 
 export const getSuoritusvaihtoehdot = async () => {

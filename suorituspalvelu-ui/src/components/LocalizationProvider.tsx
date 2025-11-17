@@ -6,7 +6,8 @@ import { UntranslatedFullSpinner } from './FullSpinner';
 import { type Language } from '@/types/ui-types';
 import { THEME_OVERRIDES } from '@/lib/theme';
 import { Box } from '@mui/material';
-import { getAsiointiKieli } from '@/lib/suorituspalvelu-service';
+import { queryClient } from '@/lib/queryClient';
+import { queryOptionsGetKayttaja } from '@/lib/suorituspalvelu-queries';
 
 export function LocalizationProvider({
   children,
@@ -23,7 +24,10 @@ export function LocalizationProvider({
     (async () => {
       let k: Language = 'fi';
       try {
-        k = await getAsiointiKieli();
+        const kayttaja = await queryClient.ensureQueryData(
+          queryOptionsGetKayttaja(),
+        );
+        k = kayttaja.asiointiKieli as Language;
       } catch (e) {
         console.error(
           'Asiointikielen noutaminen epäonnistui, käytetään oletuskieltä (suomi)',
