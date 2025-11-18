@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, ValintalaskentaHakutoive}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import org.slf4j.LoggerFactory
@@ -65,7 +65,7 @@ class ValintaDataService {
 
   def combineBaseAvainArvotWithYliajot(baseResults: AvainArvoConverterResults, yliajot: Set[AvainArvoYliajo]): Set[CombinedAvainArvoContainer] = {
     val yliajotMap: Map[String, AvainArvoYliajo] = yliajot.map(y => (y.avain, y)).toMap
-    LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}")
+    LOG.info(s"Käsitellään yhteensä ${yliajotMap.size} yliajoa (${yliajotMap.keySet.mkString(",")}) henkilölle ${baseResults.personOid}: $yliajot")
 
     //Tehdään mahdolliset yliajot sellaisille arvoille, joille on jo tuloksia
     val tuloksetYliajoilla: Set[CombinedAvainArvoContainer] =
@@ -95,15 +95,15 @@ class ValintaDataService {
     allOids.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
   }
 
-  def doAvainArvoConversions(personOid: Option[String], hakuOid: Option[String], hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
+  def doAvainArvoConversions(personOid: Option[String], haku: Option[KoutaHaku], hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
     val usePersonOid = personOid.getOrElse(hakemus.map(_.personOid).get) //personOid tarvitaan tai kaadutaan
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(usePersonOid)), 10.seconds).allOids
     //Todo, aikaleimat haun ohjausparametreista ja defaultit tulevaisuuteen jos hakua ei määritelty
     val vahvistettuViimeistaan = LocalDate.parse("2055-01-01")
     val kaikkiOpiskeluoikeudet = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson)
-    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan)
+    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan, haku)
 
-    val yliajot = hakuOid.map(hakuOid => fetchOverridesForOppijaAliases(allOidsForPerson, hakuOid)).getOrElse(Set.empty)
+    val yliajot = haku.map(haku => fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)).getOrElse(Set.empty)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResults, yliajot)
     ValintaData(usePersonOid, combinedWithYliajot.toSeq, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString)
   }
@@ -116,7 +116,7 @@ class ValintaDataService {
       hakemukset <- fetchValintalaskentaHakemukset(hakukohdeOid, hakemusOids, isToisenAsteenHaku)
     } yield {
       val convertedHakemukset: Seq[ValintaData] = hakemukset.map(hakemus => {
-          doAvainArvoConversions(None, Some(hakuOid), Some(hakemus))
+          doAvainArvoConversions(None, haku, Some(hakemus))
         })
       val valintalaskentaHakemukset = convertedHakemukset.map(vd => {
         val hakutoiveet: List[ValintalaskentaHakutoive] = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty)
@@ -158,7 +158,7 @@ class ValintaDataService {
       hakemusOid: Option[String] <- selvitaHakijanHakemusOidHaussa(hakuOid, personOid)
       hakemus: Seq[AtaruValintalaskentaHakemus] <- fetchValintalaskentaHakemukset(None, Set.empty ++ hakemusOid, isToisenAsteenHaku)
     } yield {
-      doAvainArvoConversions(Some(personOid), Some(hakuOid), hakemus.headOption)
+      doAvainArvoConversions(Some(personOid), haku, hakemus.headOption)
     }
     Await.result(resultF, 1.minute)
   }

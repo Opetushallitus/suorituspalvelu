@@ -1,12 +1,12 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration
-import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakuaika, Ohjausparametrit, DateParam}
+import fi.oph.suorituspalvelu.integration.client.{DateParam, KoutaHaku, KoutaHakuaika, Ohjausparametrit}
 import org.junit.jupiter.api.{Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.Assertions.*
 
-import java.time.{LocalDateTime, ZoneId}
+import java.time.{LocalDate, LocalDateTime, ZoneId}
 import java.time.format.DateTimeFormatter
 
 @Test
@@ -35,7 +35,8 @@ class TarjontaIntegrationTest {
       hakutapaKoodiUri = "hakutapa_01",
       kohdejoukkoKoodiUri = Some("kohdejoukko_01"),
       hakuajat = List(KoutaHakuaika(alkaa = hakuaikaAlkaa, paattyy = hakuaikaPaattyy)),
-      kohdejoukonTarkenneKoodiUri = None
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(LocalDate.now().getYear)
     )
   }
 
@@ -82,7 +83,8 @@ class TarjontaIntegrationTest {
         KoutaHakuaika(alkaa = futureTimeStr, paattyy = None),
         KoutaHakuaika(alkaa = pastTimeStr, paattyy = None)
       ),
-      kohdejoukonTarkenneKoodiUri = None
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(LocalDate.now().getYear)
     )
     val ohjausparametrit = Ohjausparametrit(Some(DateParam(futureTime)))
 

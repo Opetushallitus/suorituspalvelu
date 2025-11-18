@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
-import fi.oph.suorituspalvelu.integration.client.AtaruValintalaskentaHakemus
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
@@ -233,11 +233,11 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
-    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan)
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: Option[KoutaHaku]): AvainArvoConverterResults = {
+    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan, haku)
   }
 
-  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
+  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: Option[KoutaHaku]): AvainArvoConverterResults = {
 
     //Todo, valintapisteet avain-arvoiksi
     val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
@@ -246,20 +246,22 @@ object AvainArvoConverter {
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
-    val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet)
+    val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku)
 
     val paatellytArvot: Set[AvainArvoContainer] = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot ++ lisapistekoulutusArvot
 
     AvainArvoConverterResults(personOid, paatellytArvot, convertedHakemus, opiskeluoikeudet)
   }
 
-  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
+  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
     val telmat = opiskeluoikeudet.collect {
       case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
     }.flatten
-
-    val riittavaLaajuus: Seq[Telma] = telmat.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
-    val tuoreinRiittava: Option[Telma] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
+    val riittavanTuoreetJaLaajat: Seq[Telma] =
+      telmat
+        .filter(t => t.suoritusVuosi >= vuosiVahintaan)
+        .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
+    val tuoreinRiittava: Option[Telma] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
 
     val suoritusSelite = (tuoreinRiittava, telmat) match {
       case (tuorein, _) if tuorein.isDefined =>
@@ -281,14 +283,16 @@ object AvainArvoConverter {
     suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
   }
 
-  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
+  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
     val vstOpistovuodet = opiskeluoikeudet.collect {
       case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: VapaaSivistystyo => s }
     }.flatten
 
-    val riittavaLaajuus: Seq[VapaaSivistystyo] =
-      vstOpistovuodet.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.opistovuosiMinimiLaajuus))
-    val tuoreinRiittava: Option[VapaaSivistystyo] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
+    val riittavanTuoreetJaLaajat =
+      vstOpistovuodet
+        .filter(o => o.suoritusVuosi >= vuosiVahintaan)
+        .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.opistovuosiMinimiLaajuus))
+    val tuoreinRiittava: Option[VapaaSivistystyo] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
 
     val suoritusSelite = (tuoreinRiittava, vstOpistovuodet) match {
       case (tuorein, _) if tuorein.isDefined =>
@@ -307,16 +311,22 @@ object AvainArvoConverter {
       Some(AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
     } else None
 
-    suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
+    Set(suoritusArvo) ++ suoritusVuosiArvo
   }
 
-  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
-    //todo tuva
-    //todo kansanopisto?
-    val telmaArvot = convertTelma(personOid, opiskeluoikeudet)
-    val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet)
+  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: Option[KoutaHaku]): Set[AvainArvoContainer] = {
+    if (haku.exists(_.isToisenAsteenYhteisHaku())) {
+      val vuosiVahintaan = haku.flatMap(h => h.hakuvuosi.map(vuosi => vuosi - 1)).getOrElse(LocalDate.now().getYear)
 
-    telmaArvot ++ opistovuosiArvot
+      //todo tuva
+      //todo kansanopisto?
+      val telmaArvot = convertTelma(personOid, opiskeluoikeudet, vuosiVahintaan)
+      val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet, vuosiVahintaan)
+
+      telmaArvot ++ opistovuosiArvot
+    } else {
+      Set.empty
+    }
   }
 
   def convertAmmatillisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {

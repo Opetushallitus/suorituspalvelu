@@ -1082,9 +1082,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         tila = "julkaistu",
         nimi = Map("fi" -> s"Testi haku $hakuOid"),
         hakutapaKoodiUri = "hakutapa_01",
-        kohdejoukkoKoodiUri = Some("kohdejoukko_01"),
+        kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
         hakuajat = List.empty,
-        kohdejoukonTarkenneKoodiUri = None
+        kohdejoukonTarkenneKoodiUri = None,
+        hakuvuosi = Some(2022)
       )))
     Mockito.when(hakemuspalveluClient.getHenkilonHakemustenTiedot(oppijaNumero))
       .thenReturn(Future.successful(Map.empty))
