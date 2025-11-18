@@ -151,12 +151,10 @@ class BaseIntegraatioTesti {
     mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     mapper
 
-  def jsonPostString(path: String, body: String): MockHttpServletRequestBuilder =
+  def jsonGet(path: String): MockHttpServletRequestBuilder =
     MockMvcRequestBuilders
-      .post(path)
-      .contentType(MediaType.APPLICATION_JSON_VALUE)
+      .get(path)
       .accept(MediaType.APPLICATION_JSON_VALUE)
-      .content(body)
 
   def jsonPost(path: String, body: Any): MockHttpServletRequestBuilder =
     MockMvcRequestBuilders
@@ -167,7 +165,7 @@ class BaseIntegraatioTesti {
 
   def waitUntilReady(tunniste: UUID, retries: Int = 30): Unit =
     if(retries == 0) Assertions.fail("Jobi ei valmistunut")
-    if(!this.kantaOperaatiot.getJobStatus(tunniste).map(_.progress==1.0).getOrElse(false))
+    if(!this.kantaOperaatiot.getLastJobStatuses(None, Some(tunniste), 1).exists(_.progress==1.0))
       Thread.sleep(200)
       waitUntilReady(tunniste, retries - 1)
 }

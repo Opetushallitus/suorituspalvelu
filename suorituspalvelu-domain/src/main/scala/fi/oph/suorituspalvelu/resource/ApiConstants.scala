@@ -20,6 +20,11 @@ object ApiConstants {
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
   final val DATASYNC_JOBIN_LUONTI_EPAONNISTUI               = "Datan virkistysjobin luonti epäonnistui"
 
+  final val DATASYNC_JOBIT_PATH                             = DATASYNC_PATH + "/jobit"
+  final val DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI       = "Jobien tietojen haku epäonnistui"
+  final val DATASYNC_JOBIT_TUNNISTE_PARAM_NAME              = "tunniste"
+  final val DATASYNC_JOBIT_NIMI_PARAM_NAME                  = "nimi"
+
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
 
   final val KOSKI_DATASYNC_HENKILOT_PATH                    = KOSKI_DATASYNC_PATH + "/henkilot"
@@ -164,5 +169,8 @@ object ApiConstants {
   final val ESIMERKKI_YLIAJO_ARVO                           = "true"
   final val ESIMERKKI_YLIAJO_VIRKAILIJA                     = "1.2.246.562.24.40483869921"
   final val ESIMERKKI_YLIAJO_SELITE                         = "Tarkistettu, että Telma-suoritus on tarpeeksi laaja. Tiedot puuttuvat lähdejärjestelmästä."
+
+  final val ESIMERKKI_JOB_NIMI                              = "esimerkki-jobi"
+  final val ESIMERKKI_JOB_TUNNISTE                          = "5cc3b63f-f3f8-40e9-b535-ba4027d490bb"
 
 }

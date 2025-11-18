@@ -286,4 +286,4 @@ case class AvainArvoYliajo(avain: String,
                            virkailijaOid: String,
                            selite: String)
 
-case class Job(tunniste: UUID, nimi: String, progress: BigDecimal)
+case class Job(tunniste: UUID, nimi: String, progress: BigDecimal, lastUpdated: Instant)

@@ -104,6 +104,7 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
           override def updateProgress(progress: Double): Unit = kantaOperaatiot.updateJobStatus(UUID.fromString(instance.getId), name, progress)
           override def reportError(message: String, exception: Option[Exception]): Unit = { errors = errors :+ SupaJobError(message, exception)}
         }
+        ctx.updateProgress(0.0)
         job.run(ctx, instance.getData)
         ctx.updateProgress(1.0)
         errorService.reportErrors(name, errors.map(e => (e.message, e.exception)))

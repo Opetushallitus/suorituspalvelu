@@ -1,17 +1,18 @@
 package fi.oph.suorituspalvelu.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 
-import java.util.UUID
+import java.util.{Optional, UUID}
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
-import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncResponse, SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncJob, SyncJobFailureResponse, SyncJobStatusResponse, SyncResponse, SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService, YTRService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
-import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -19,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
-import org.springframework.web.bind.annotation.{PostMapping, RequestBody, RequestMapping, RestController}
+import org.springframework.web.bind.annotation.{GetMapping, PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
 
 import java.time.Instant
 import scala.jdk.CollectionConverters.*
@@ -48,6 +49,8 @@ class DataSyncResource {
   @Autowired var ytrIntegration: YtrIntegration = null
 
   @Autowired var objectMapper: ObjectMapper = null
+
+  @Autowired var kantaOperaatiot: KantaOperaatiot = null
 
   @PostMapping(
     path = Array(KOSKI_DATASYNC_HENKILOT_PATH),
@@ -615,5 +618,58 @@ class DataSyncResource {
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(YtrSyncFailureResponse(List(DATASYNC_JOBIN_LUONTI_EPAONNISTUI).asJava))
   }
 
+  @GetMapping(
+    path = Array(DATASYNC_JOBIT_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee käynnissä olevien jobien tiedot",
+    description = "Tietojen päivitys SUPAan tapahtuu normaalisti eräajoilla. Tämän endpointin avulla voidaan tarkastella eräajojen " +
+      "tai muiden päivitysjobien tilannetta.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description =  "Palauttaa jobien tiedot",
+        content = Array(new Content(schema = new Schema(implementation = classOf[SyncJobStatusResponse])))),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[SyncJobFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def haeJobit(@RequestParam(name = DATASYNC_JOBIT_NIMI_PARAM_NAME, required = false) @Parameter(description = "jobin nimi", example = ESIMERKKI_JOB_NIMI) nimi: Optional[String],
+               @RequestParam(name = DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, required = false) @Parameter(description = "jobin tunniste (UUID)", example = ESIMERKKI_JOB_TUNNISTE) tunniste: Optional[String],
+               request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = DATASYNC_JOBIT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            // tarkastetaan oikeudet
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            // validoidaan parametrit
+            val virheet = Set(
+              Validator.validateJobinNimi(nimi.toScala, false),
+              Validator.validateTunniste(tunniste.toScala, false)
+            ).flatten
+            if (virheet.isEmpty)
+              Right((nimi.toScala, tunniste.toScala.map(t => UUID.fromString(t))))
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(SyncJobFailureResponse(new java.util.ArrayList(virheet.asJava)))))
+          .map((nimi, tunniste) => {
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map(
+              DATASYNC_JOBIT_NIMI_PARAM_NAME -> nimi.getOrElse(null),
+              DATASYNC_JOBIT_TUNNISTE_PARAM_NAME -> tunniste.map(_.toString).getOrElse(null)
+            ), AuditOperation.HaeJobData, None)
+            LOG.info(s"Haetaan jobien tiedot")
+            val jobit = kantaOperaatiot.getLastJobStatuses(nimi, tunniste, 100)
+            ResponseEntity.status(HttpStatus.OK).body(SyncJobStatusResponse(jobit.map(j => SyncJob(j.tunniste, j.nimi, (j.progress*100).toInt, j.lastUpdated)).asJava))
+          })
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Jobien tietojen haku epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(SyncJobFailureResponse(List(DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI).asJava))
+  }
 }
 

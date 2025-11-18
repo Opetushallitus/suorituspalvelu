@@ -808,12 +808,26 @@ class KantaOperaatiotTest {
   }
 
   @Test def testJobProgress(): Unit = {
-    val taskName = "test-task"
-    val taskId = UUID.randomUUID()
+    val haettuTaskName = "test-task"
+    val haettuTaskId = UUID.randomUUID()
+    val muuTaskName = "muu-task"
+    val muuTaskId = UUID.randomUUID()
+    val lastUpdated = Instant.ofEpochMilli((Instant.now.toEpochMilli/1000)*1000)
 
-    this.kantaOperaatiot.updateJobStatus(taskId, taskName, 0.5)
+    this.kantaOperaatiot.updateJobStatus(haettuTaskId, haettuTaskName, 0.5, lastUpdated)
+    this.kantaOperaatiot.updateJobStatus(muuTaskId, muuTaskName, 0.5, lastUpdated)
 
-    Assertions.assertEquals(Some(Job(taskId, taskName, 0.5)), this.kantaOperaatiot.getJobStatus(taskId))
+    // kun haetaan nimellä saadaan vain haettut jobi
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(Some(haettuTaskName), None, 10))
+
+    // kun haetaan tunnisteella saadaan vain haettu jobi
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(None, Some(haettuTaskId), 10))
+
+    // kun haetaan nimellä ja tunnisteella saadaan vain haettu jobi
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(Some(haettuTaskName), Some(haettuTaskId), 10))
+
+    // kun haetaan ilman parametrejä saadaan kaikki jobit
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated), Job(muuTaskId, muuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(None, None, 10))
 
   }
 }

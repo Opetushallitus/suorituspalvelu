@@ -434,27 +434,29 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   /**
    * Päivittää jobin tilan
    */
-  def updateJobStatus(id: UUID, name: String, progress: BigDecimal): Unit = {
+  def updateJobStatus(id: UUID, name: String, progress: BigDecimal, udpated: Instant = Instant.now()): Unit = {
     val insertAction =
-      sqlu"""INSERT INTO task_status (task_instance, task_name, progress) VALUES (${id.toString}, $name, $progress)
-             ON CONFLICT (task_instance) DO UPDATE SET progress=$progress"""
+      sqlu"""INSERT INTO task_status (task_instance, task_name, progress, lastupdated) VALUES (${id.toString}, $name, $progress, ${udpated.toString}::timestamptz)
+             ON CONFLICT (task_instance) DO UPDATE SET progress=$progress, lastupdated=now()"""
     Await.result(db.run(insertAction), DB_TIMEOUT)
   }
 
   /**
-   * Hakee jobin tiedot
+   * Hakee viimeisimpien jobien tiedot
    */
-  def getJobStatus(id: UUID): Option[Job] = {
+  def getLastJobStatuses(name: Option[String], tunniste: Option[UUID], limit: Int): List[Job] = {
     Await.result(db.run(
-      sql"""SELECT task_instance, task_name, progress
+      sql"""SELECT task_instance, task_name, progress, to_json(lastupdated)#>>'{}'
             FROM task_status
-            WHERE task_instance=${id.toString}""".as[(String, String, BigDecimal)]
+            WHERE (${tunniste.isEmpty} OR task_instance=${tunniste.map(_.toString).getOrElse("NULL")})
+            AND (${name.isEmpty} OR task_name=${name.getOrElse("NULL")})
+            ORDER BY lastupdated DESC
+            LIMIT ${limit}""".as[(String, String, BigDecimal, String)]
         .map(rows => rows.map {
-          case (tunniste, nimi, progress) =>
-            Job(UUID.fromString(tunniste), nimi, progress)
+          case (tunniste, nimi, progress, lastUpdated) =>
+            Job(UUID.fromString(tunniste), nimi, progress, Instant.parse(lastUpdated))
         })
-    ), DB_TIMEOUT).headOption
+    ), DB_TIMEOUT).toList
   }
-
 
 }
