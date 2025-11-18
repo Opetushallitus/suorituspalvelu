@@ -88,10 +88,11 @@ object AvainArvoConstants {
   final val yoSuoritettuKey = "YO_TILA"
   final val ammSuoritettuKey = "AM_TILA"
 
+  //Nämä suoritusavaimet ja suoritusvuosiavaimet poikkeavat toisistaan vähän hämäävästi.
+  // Ne kuitenkin vastaavat nykyistä proxysuoritusrajapinnan mallia.
   final val telmaSuoritettuKey = "LISAKOULUTUS_TELMA"
   final val telmaSuoritusvuosiKey = "LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI"
-
-  final val opistovuosiSuoritettuKey = "LISAKOULUTUS_OPISTO"
+  final val opistovuosiSuoritettuKey = "LISAKOULUTUS_OPISTOVUOSI"
   final val opistovuosiSuoritusvuosiKey = "LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI"
 
   final val peruskouluArvosana_Akieli = "PK_A"
