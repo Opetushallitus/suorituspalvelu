@@ -1,6 +1,8 @@
 import { Outlet, Scripts, ScrollRestoration } from 'react-router';
 import { Providers } from '@/components/Providers';
 import { ErrorView } from '@/components/ErrorView';
+import { queryClient } from '@/lib/queryClient';
+import { queryOptionsGetKayttaja } from '@/lib/suorituspalvelu-queries';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,6 +31,11 @@ export default function App() {
     </Providers>
   );
 }
+
+export const clientLoader = async () => {
+  queryClient.ensureQueryData(queryOptionsGetKayttaja());
+  return null;
+};
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return <ErrorView error={error} />;

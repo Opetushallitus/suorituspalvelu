@@ -11,17 +11,17 @@ import { useYliajoManager } from '@/lib/yliajoManager';
 
 export type AvainarvoRyhma = 'uudet-avainarvot' | 'vanhat-avainarvot';
 
-const DUMMY_HAKU_OID = '1.2.246.562.29.00000000000000000000';
-
 export const OpiskelijavalintaanSiirtyvatTiedot = ({
   avainarvoRyhma,
   oppijaNumero,
+  hakuOid,
 }: {
   avainarvoRyhma: AvainarvoRyhma;
   oppijaNumero: string;
+  hakuOid: string;
 }) => {
   const { data: valintadata } = useApiSuspenseQuery(
-    queryOptionsGetValintadata({ oppijaNumero, hakuOid: DUMMY_HAKU_OID }),
+    queryOptionsGetValintadata({ oppijaNumero, hakuOid }),
   );
 
   const { t } = useTranslations();
@@ -30,9 +30,14 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
     henkiloOid: oppijaNumero,
   });
 
+  const avainArvot =
+    valintadata?.avainArvot.filter(
+      (avainArvo) => !avainArvo.metadata.arvoOnHakemukselta,
+    ) ?? [];
+
   return (
     <>
-      {yliajoFields && <YliajoEditModal avainArvot={valintadata.avainArvot} />}
+      {yliajoFields && <YliajoEditModal avainArvot={avainArvot} />}
       <AccordionBox
         id="opiskelijavalintaan-siirtyvat-tiedot"
         title={t(
@@ -40,7 +45,7 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
         )}
       >
         <AvainArvotSection
-          avainarvot={valintadata.avainArvot}
+          avainarvot={avainArvot}
           startYliajoEdit={
             avainarvoRyhma === 'uudet-avainarvot'
               ? (yliajoParams) => {

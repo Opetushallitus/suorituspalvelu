@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
@@ -121,14 +121,16 @@ class UIService {
 
   @Autowired val koodistoProvider: KoodistoProvider = null
 
+  @Autowired val tarjontaIntegration: fi.oph.suorituspalvelu.integration.TarjontaIntegration = null
+
   val ONR_TIMEOUT = 10.seconds;
 
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
     oppilaitosOids
       .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
-      .map(organisaatio => Oppilaitos(OppilaitosNimi(
-        Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
-        organisaatio.oid)))
+        .map(organisaatio => Oppilaitos(OppilaitosNimi(
+          Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
+          organisaatio.oid)))
   }
 
   def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {
@@ -150,7 +152,7 @@ class UIService {
         Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
         organisaatio.oid))
       .toList
-  } 
+  }
 
   def haeVuodet(oppilaitosOid: String): Set[String] = {
     kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, Some(s"$oppilaitosOid"))
@@ -159,7 +161,7 @@ class UIService {
 
   def haeLuokat(oppilaitosOid: String, vuosi: Int): Set[String] = {
     Set(
-      if(LocalDate.now().getYear==vuosi)
+      if (LocalDate.now().getYear == vuosi)
         Some(kantaOperaatiot.haeMetadataAvaimenArvot(PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN, Some(s"$oppilaitosOid:KESKEN"))
           .map(arvo => new PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo(arvo).luokka))
       else
@@ -194,7 +196,7 @@ class UIService {
 
   def haeOppijanSuoritukset(oppijaNumero: String): Option[OppijanTiedotSuccessResponse] =
     val masterHenkilo = Await.result(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).values.headOption
-    if(masterHenkilo.isEmpty)
+    if (masterHenkilo.isEmpty)
       None
     else
       def haeAliakset(oppijaOid: String): Set[String] =
@@ -213,8 +215,8 @@ class UIService {
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
    * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
    *
-   * @param   hakusana  haettava oppija
-   * @return            oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
+   * @param hakusana haettava oppija
+   * @return oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
    */
   def haeOppija(hakusana: String): Option[Oppija] = {
     val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava))), 30.seconds)
@@ -231,7 +233,7 @@ class UIService {
    * lähettävän ja vastaanottavan organisaation oikeudet.
    *
    * @param oppijaOid oppijan oid jonka tietoja halutaan katsella
-   * @return          true jos käyttäjällä oikeudet nähdä oppijan tiedot
+   * @return true jos käyttäjällä oikeudet nähdä oppijan tiedot
    */
   def hasOppijanKatseluOikeus(oppijaOid: String): Boolean = {
     val securityOperaatiot = new SecurityOperaatiot()
@@ -242,7 +244,7 @@ class UIService {
       hakijaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.flatMap(allOids => {
         hakemuspalveluClient.checkPermission(AtaruPermissionRequest(allOids, hakijaOikeusOrganisaatiot, Set.empty))
           .map(permissionResult => {
-            if(permissionResult.errorMessage.isDefined)
+            if (permissionResult.errorMessage.isDefined)
               LOG.error(s"Virhe atarussa: ${permissionResult.errorMessage.get}")
             permissionResult.accessAllowed.getOrElse(false)
           })
@@ -259,4 +261,32 @@ class UIService {
     securityOperaatiot.onRekisterinpitaja() || hasHakijaKatseluoikeus() || hasOrganisaatioKatseluoikeus()
   }
 
+  /**
+   * Hakee oppijan haut hakemuspalvelusta ja niille nimet koutasta
+   *
+   * @param oppijaOid Oppijan tunniste, jonka haut haetaan
+   * @return Lista Haku-objekteja (hakuOid ja nimi)
+   */
+  def haeOppijanHaut(oppijaOid: String): Seq[Haku] = {
+    val hautMap = Await.result(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaOid)), 30.seconds)
+    val hakuOids = hautMap.getOrElse(oppijaOid, Seq.empty)
+    hakuOids.flatMap(hakuOid => {
+      val koutaHaku = tarjontaIntegration.getHaku(hakuOid)
+      if (koutaHaku.isEmpty) {
+        LOG.debug(s"Hakemuspalvelusta löytyi hakemus haulle $hakuOid, mutta hakua ei löytynyt Koutasta.")
+      }
+
+      koutaHaku.map(haku => {
+        val nimi = haku.nimi
+        Haku(
+          haku.oid,
+          HakuNimi(
+            Optional.ofNullable(nimi.get("fi").orNull),
+            Optional.ofNullable(nimi.get("sv").orNull),
+            Optional.ofNullable(nimi.get("en").orNull)
+          )
+        )
+      })
+    })
+  }
 }

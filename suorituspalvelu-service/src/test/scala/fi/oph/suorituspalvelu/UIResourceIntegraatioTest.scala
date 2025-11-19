@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -661,6 +661,154 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
   /*
+   * Integraatiotestit oppijan hakujen haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeOppijanHautAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPIJAN_HAUT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeOppijanHautNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPIJAN_HAUT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanHautMalformedOid(): Unit =
+    // ei validi oid ei sallittu
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPIJAN_HAUT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(OppijanHautFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHautFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanHautEiHakuja(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967220"
+
+    // mockataan hakemuspalvelun vastaus - ei hakuja
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero)))
+      .thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPIJAN_HAUT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // palautuu tyhjä lista
+    Assertions.assertEquals(OppijanHautSuccessResponse(java.util.List.of()),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHautSuccessResponse]))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijanHautUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanHautAllowed(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967221"
+    val hakuOid1 = "1.2.246.562.29.00000000000000000001"
+    val hakuOid2 = "1.2.246.562.29.00000000000000000002"
+
+    // mockataan hakemuspalvelun vastaus
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero)))
+      .thenReturn(Future.successful(Map(oppijaNumero -> Seq(hakuOid1, hakuOid2))))
+
+    // mockataan Kouta-vastaukset
+    val koutaHaku1 = KoutaHaku(
+      oid = hakuOid1,
+      tila = "julkaistu",
+      nimi = Map("fi" -> "Testihaku 1", "sv" -> "Testansökan 1", "en" -> "Test application 1"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None
+    )
+    val koutaHaku2 = KoutaHaku(
+      oid = hakuOid2,
+      tila = "julkaistu",
+      nimi = Map("fi" -> "Testihaku 2", "sv" -> "Testansökan 2"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_12"),
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None
+    )
+    Mockito.when(tarjontaIntegration.getHaku(hakuOid1)).thenReturn(Some(koutaHaku1))
+    Mockito.when(tarjontaIntegration.getHaku(hakuOid2)).thenReturn(Some(koutaHaku2))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPIJAN_HAUT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHautSuccessResponse])
+    Assertions.assertEquals(2, response.haut.size())
+    val firstHaku = response.haut.get(0)
+    val secondHaku = response.haut.get(1)
+    Assertions.assertEquals(hakuOid1, firstHaku.hakuOid)
+    Assertions.assertEquals("Testihaku 1", firstHaku.nimi.fi.get)
+    Assertions.assertEquals("Testansökan 1", firstHaku.nimi.sv.get)
+    Assertions.assertEquals("Test application 1", firstHaku.nimi.en.get)
+    Assertions.assertEquals(hakuOid2, secondHaku.hakuOid)
+    Assertions.assertEquals("Testihaku 2", secondHaku.nimi.fi.get)
+    Assertions.assertEquals("Testansökan 2", secondHaku.nimi.sv.get)
+    Assertions.assertFalse(secondHaku.nimi.en.isPresent)
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijanHautUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanHautHakuEiLoydyKoutasta(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967222"
+    val hakuOid1 = "1.2.246.562.29.00000000000000000003"
+    val hakuOid2 = "1.2.246.562.29.00000000000000000004"
+
+    // mockataan hakemuspalvelun vastaus
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero)))
+      .thenReturn(Future.successful(Map(oppijaNumero -> Seq(hakuOid1, hakuOid2))))
+
+    // mockataan Kouta-vastaukset - vain ensimmäinen löytyy
+    val koutaHaku1 = KoutaHaku(
+      oid = hakuOid1,
+      tila = "julkaistu",
+      nimi = Map("fi" -> "Testihaku 1"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None
+    )
+    Mockito.when(tarjontaIntegration.getHaku(hakuOid1)).thenReturn(Some(koutaHaku1))
+    Mockito.when(tarjontaIntegration.getHaku(hakuOid2)).thenReturn(None)
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_OPPIJAN_HAUT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // palautuu vain yksi haku (se joka löytyi Koutasta)
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHautSuccessResponse])
+    Assertions.assertEquals(1, response.haut.size())
+    Assertions.assertEquals(hakuOid1, response.haut.get(0).hakuOid)
+    Assertions.assertEquals("Testihaku 1", response.haut.get(0).nimi.fi.get)
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijanHautUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+
+  /*
    * Integraatiotestit suorituksen tallennuksen vaihtoehtojen haulle
    */
 
@@ -742,7 +890,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_VIRHE), List.empty.asJava),
+    Assertions.assertEquals(LuoPerusopetuksenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_PERUSOPETUS_JSON_EI_VALIDI), List.empty.asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -855,7 +1003,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_OPPIAINE_JSON_VIRHE)),
+    Assertions.assertEquals(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(java.util.Set.of(UIVirheet.UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuoPerusopetuksenOppiaineenOppimaaraFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -986,7 +1134,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että virhe täsmää
-    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUSTA_EI_POISTETTAVISSA)),
+    Assertions.assertEquals(PoistaSuoritusFailureResponse(java.util.Set.of(UIVirheet.UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[PoistaSuoritusFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))

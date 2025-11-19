@@ -22,6 +22,7 @@ export function SearchControls() {
       <OphInputFormField
         sx={{
           maxWidth: '400px',
+          flex: 1,
         }}
         label={t('hae-henkiloa')}
         value={tunniste ?? ''}

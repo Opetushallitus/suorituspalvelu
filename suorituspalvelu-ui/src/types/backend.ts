@@ -101,6 +101,7 @@ export interface IAvainArvoMetadataUI {
   duplikaatti: boolean;
   arvoEnnenYliajoa?: string;
   yliajo?: IAvainArvoYliajoUI;
+  arvoOnHakemukselta: boolean;
 }
 
 export interface IAvainArvoYliajoUI {
@@ -208,6 +209,17 @@ export interface IErikoisammattitutkinto {
 }
 
 export interface IErikoisammattitutkintoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IHaku {
+  hakuOid: string;
+  nimi: IHakuNimi;
+}
+
+export interface IHakuNimi {
   fi?: string;
   sv?: string;
   en?: string;
@@ -406,6 +418,14 @@ export interface IOppijanHakuSuccessResponse {
   oppijat: IOppija[];
 }
 
+export interface IOppijanHautFailureResponse {
+  virheet: string[];
+}
+
+export interface IOppijanHautSuccessResponse {
+  haut: IHaku[];
+}
+
 export interface IOppijanTiedotFailureResponse {
   virheet: string[];
 }
@@ -446,7 +466,7 @@ export interface IOppijanValintaDataFailureResponse {
 
 export interface IOppijanValintaDataSuccessResponse {
   henkiloOID: string;
-  hakuOID?: string;
+  hakuOID: string;
   avainArvot: IAvainArvoContainerUI[];
 }
 

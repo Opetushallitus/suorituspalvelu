@@ -25,7 +25,7 @@ export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
   const { data: tiedot } = useOppija(params.oppijaNumero);
   const { t } = useTranslations();
   return (
-    <Stack spacing={6} sx={{ margin: 2 }}>
+    <Stack spacing={3} sx={{ margin: 2 }}>
       <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${formatHenkiloNimi(tiedot, t)}`}</title>
       <Stack spacing={2}>
         <OphTypography variant="h3" component="h2">

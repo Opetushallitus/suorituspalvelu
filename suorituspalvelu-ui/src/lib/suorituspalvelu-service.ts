@@ -5,12 +5,13 @@ import type {
   IKayttajaSuccessResponse,
   ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
+  IOppijanHautSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
   IYliajoTallennusContainer,
 } from '@/types/backend';
-import type { Language, SuoritusFields } from '@/types/ui-types';
+import type { SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
 
@@ -66,11 +67,6 @@ export const getKayttaja = async () => {
     config.routes.suorituspalvelu.kayttajanTiedotUrl,
   );
   return res.data;
-};
-
-export const getAsiointiKieli = async () => {
-  const kayttaja = await getKayttaja();
-  return kayttaja.asiointiKieli as Language;
 };
 
 export const getSuoritusvaihtoehdot = async () => {
@@ -213,4 +209,13 @@ export const deleteYliajo = async ({
 
   const res = await client.delete(url.toString());
   return res.data;
+};
+
+export const getOppijanHaut = async (oppijaOid: string) => {
+  const config = await configPromise;
+
+  const url = `${config.routes.suorituspalvelu.oppijanHautUrl}/${oppijaOid}`;
+
+  const res = await client.get<IOppijanHautSuccessResponse>(url);
+  return res.data?.haut ?? [];
 };
