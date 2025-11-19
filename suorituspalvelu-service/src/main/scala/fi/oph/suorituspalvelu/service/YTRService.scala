@@ -57,6 +57,11 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     ytrIntegration.fetchAndProcessStudents(personOids).map(r => safePersistSingle(r, fetchedAt, ctx)).toSeq
   }
 
+  private val refreshHenkilotJob = scheduler.registerJob("refresh-ytr-for-henkilot", (ctx, oppijaNumerot) => fetchAndPersistStudents(mapper.readValue(oppijaNumerot, classOf[Set[String]]), ctx), Seq.empty)
+
+  def startRefreshForHenkilot(personOids: Set[String]): UUID =
+    refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
+
   def refreshYTRForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try

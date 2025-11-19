@@ -38,7 +38,7 @@ object Validator {
   final val VALIDATION_JOBIN_NIMI_TYHJA           = "jobin nimi: Jobin nimi on pakollinen"
   final val VALIDATION_JOBIN_NIMI_EI_VALIDI       = "jobin nimi: Jobin nimi ei ole validi: "
 
-  val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.24\\.\\d+$".r
+  val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.(24|98)\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
   val hakukohdeOidPattern: Regex = "^1\\.2\\.246\\.562\\.20\\.\\d+$".r
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
