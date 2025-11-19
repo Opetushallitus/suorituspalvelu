@@ -22,7 +22,8 @@ case class KoutaHaku(oid: String,
                      hakutapaKoodiUri: String,
                      kohdejoukkoKoodiUri: Option[String],
                      hakuajat: List[KoutaHakuaika],
-                     kohdejoukonTarkenneKoodiUri: Option[String]) {
+                     kohdejoukonTarkenneKoodiUri: Option[String],
+                     hakuvuosi: Option[Int]) {
 
   val toisenAsteenUrit = Set(
     "haunkohdejoukko_11",
@@ -33,9 +34,16 @@ case class KoutaHaku(oid: String,
     "haunkohdejoukko_24"
   )
 
+  val toisenAsteenYhteishakuUri = "haunkohdejoukko_11"
+
   def isToisenAsteenHaku() = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     toisenAsteenUrit.contains(kohdejoukkoPrefix)
+  }
+
+  def isToisenAsteenYhteisHaku() = {
+    val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
+    kohdejoukkoPrefix.equals(toisenAsteenYhteishakuUri)
   }
 }
 

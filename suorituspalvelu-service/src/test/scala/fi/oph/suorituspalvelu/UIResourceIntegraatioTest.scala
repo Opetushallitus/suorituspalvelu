@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -1206,15 +1207,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val virkailijaOid = "1.2.246.562.24.21250967299"
     val hakuOid = "1.2.246.562.29.01000000000000013275"
 
-    val yliajettuAvain = "lisapistekoulutus_telma"
+    val yliajettuAvain = AvainArvoConstants.telmaSuoritettuKey
     val yliajettuArvo = "true"
     val yliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
     val yliajo = AvainArvoYliajo(yliajettuAvain, yliajettuArvo, oppijaNumero, hakuOid, virkailijaOid, yliajoSelite)
 
     val eriHaunOid = "1.2.246.562.29.01000000000000013918"
-    val eriHaunYliajettuAvain = "lisapistekoulutus_opisto"
+    val eriHaunYliajettuAvain = AvainArvoConstants.opistovuosiSuoritettuKey
     val eriHaunYliajettuArvo = "true"
-    val eriHaunYliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
+    val eriHaunYliajoSelite = "Kyllä on Opistovuosikin suoritettu, katsoin toista hakua varten itse eilen."
     val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, eriHaunYliajettuArvo, oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
 
     kantaOperaatiot.tallennaYliajot(Seq(yliajo, eriHaunYliajo))
@@ -1229,9 +1230,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         tila = "julkaistu",
         nimi = Map("fi" -> s"Testi haku $hakuOid"),
         hakutapaKoodiUri = "hakutapa_01",
-        kohdejoukkoKoodiUri = Some("kohdejoukko_01"),
+        kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
         hakuajat = List.empty,
-        kohdejoukonTarkenneKoodiUri = None
+        kohdejoukonTarkenneKoodiUri = None,
+        hakuvuosi = Some(2022)
       )))
     Mockito.when(hakemuspalveluClient.getHenkilonHakemustenTiedot(oppijaNumero))
       .thenReturn(Future.successful(Map.empty))
@@ -1329,19 +1331,57 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaYliajotOppijalleFailureResponse]))
   }
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaYliajotOppijalleEiSallittuAvainBadRequest(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.21250967210"
+    val virkailijaOid = "1.2.246.562.24.21250967987"
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    val yliajot =
+      java.util.List.of(Yliajo(
+        avain = Optional.of("hatusta_vetaisty_avain"),
+        arvo = Optional.of("arvo"),
+        selite = Optional.of("selite")))
+    val yliajoContainer = YliajoTallennusContainer(
+      henkiloOid = Optional.of(oppijaNumero),
+      hakuOid = Optional.of(hakuOid),
+      yliajot = Optional.of(yliajot)
+    )
+
+    val yliajotPayload = objectMapper.writeValueAsString(yliajoContainer)
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(yliajotPayload))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(TallennaYliajotOppijalleFailureResponse(java.util.Set.of(UIValidator.VALIDATION_AVAIN_EI_SALLITTU)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaYliajotOppijalleFailureResponse]))
+  }
+
   @WithMockUser(value = "1.2.246.562.24.21250967987", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testTallennaYliajotOppijalleAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967210"
     val virkailijaOid = "1.2.246.562.24.21250967987" //Tämä tieto poimitaan sessiosta, katso MockUser
     val hakuOid = "1.2.246.562.29.01000000000000013275"
 
-    val yliajot = Range(1, 5).map(i => {
+    val yliajokey1 = AvainArvoConstants.telmaSuoritettuKey
+    val yliajokey2 = AvainArvoConstants.opistovuosiSuoritettuKey
+
+    val yliajot = Seq(
       Yliajo(
-        avain = Optional.of("avain" + i),
-        arvo = Optional.of("arvo" + i),
-        selite = Optional.of("selite " + i),
+        avain = Optional.of(yliajokey1),
+        arvo = Optional.of("true"),
+        selite = Optional.of("selite 1"),
+      ),
+      Yliajo(
+        avain = Optional.of(yliajokey2),
+        arvo = Optional.of("true"),
+        selite = Optional.of("selite 2"),
       )
-    }).toList.asJava
+    ).toList.asJava
+
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
@@ -1371,7 +1411,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // ja yliajot tallentuvat kantaan
     val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(4, tallennetutYliajot.size)
+    Assertions.assertEquals(2, tallennetutYliajot.size)
     Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
   }
 
@@ -1411,15 +1451,21 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967210"
     val virkailijaOid = "1.2.246.562.24.21250967987" //Tämä tieto poimitaan sessiosta, katso MockUser
     val hakuOid = "1.2.246.562.29.01000000000000013275"
-    val poistettavaAvain = "avain2"
+    val avainJokaPoistetaan = AvainArvoConstants.telmaSuoritettuKey
+    val avainJotaEiPoisteta = AvainArvoConstants.opistovuosiSuoritettuKey
 
-    val yliajot = Range(1, 5).map(i => {
+    val yliajot = Seq(
       Yliajo(
-        avain = Optional.of("avain" + i),
-        arvo = Optional.of("arvo" + i),
-        selite = Optional.of("selite " + i),
+        avain = Optional.of(avainJokaPoistetaan),
+        arvo = Optional.of("true"),
+        selite = Optional.of("poistettavan selite"),
+      ),
+      Yliajo(
+        avain = Optional.of(avainJotaEiPoisteta),
+        arvo = Optional.of("true"),
+        selite = Optional.of("ei-poistettavan selite"),
       )
-    }).toList.asJava
+    ).toList.asJava
     val yliajoContainer = YliajoTallennusContainer(
       henkiloOid = Optional.of(oppijaNumero),
       hakuOid = Optional.of(hakuOid),
@@ -1439,8 +1485,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // ja yliajot tallentuvat kantaan, ja myöhemmin poistettava avain on vielä mukana
     val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(4, tallennetutYliajot.size)
-    Assertions.assertTrue(tallennetutYliajot.exists(_.avain == poistettavaAvain))
+    Assertions.assertEquals(2, tallennetutYliajot.size)
+    Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJokaPoistetaan))
+    Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJotaEiPoisteta))
     Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
 
     // poistetaan yksi yliajo
@@ -1448,13 +1495,14 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .delete(ApiConstants.UI_POISTA_YLIAJO_PATH, "")
         .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
         .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
-        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, poistettavaAvain))
+        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, avainJokaPoistetaan))
       .andExpect(status().isOk)
       .andReturn()
 
     // tarkistetaan että yliajoja on yksi vähemmän, ja poistettava avain on kadonnut
     val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(3, tallennetutYliajotPoistonJalkeen.size)
-    Assertions.assertFalse(tallennetutYliajotPoistonJalkeen.exists(_.avain == poistettavaAvain))
+    Assertions.assertEquals(1, tallennetutYliajotPoistonJalkeen.size)
+    Assertions.assertFalse(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJokaPoistetaan))
+    Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJotaEiPoisteta))
   }
 }

@@ -3,7 +3,8 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClientImpl, Hakutoive}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ui.{OppijanValintaDataSuccessResponse, UIVirheet}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*
@@ -61,13 +62,16 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testHaeValintadataBadRequest(): Unit = {
+  @Test def testHaeValintadataBadRequestTooManyParameters(): Unit = {
     val hakuOid = "1.2.246.562.29.01000000000000013275"
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
     val hakukohdeOid = "1.2.246.562.20.00000000000000044758"
     val result = mvc.perform(jsonPost(ApiConstants.VALINTALASKENTA_VALINTADATA_PATH, ValintalaskentaDataPayload(Optional.of(hakuOid), Optional.of(hakukohdeOid), List(hakemusOid).asJava))
         .contentType(MediaType.APPLICATION_JSON_VALUE))
-      .andExpect(status().isBadRequest)
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(ValintalaskentaDataFailureResponse(java.util.List.of(ApiConstants.VALINTALASKENTA_LIIKAA_PARAMETREJA)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[ValintalaskentaDataFailureResponse]))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -113,12 +117,12 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(tarjontaIntegration.getHaku(hakuOid))
       .thenReturn(None)
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, false, Set(hakemusOid)))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(Some(hakukohdeOid), false, Set.empty))
       .thenReturn(Future.successful(Seq(testHakemus)))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
 
-    val result = mvc.perform(jsonPost(ApiConstants.VALINTALASKENTA_VALINTADATA_PATH, ValintalaskentaDataPayload(Optional.of(hakuOid), Optional.empty(), List(hakemusOid).asJava))
+    val result = mvc.perform(jsonPost(ApiConstants.VALINTALASKENTA_VALINTADATA_PATH, ValintalaskentaDataPayload(Optional.of(hakuOid), Optional.of(hakukohdeOid), null))
         .contentType(MediaType.APPLICATION_JSON_VALUE))
       .andExpect(status().isOk)
       .andReturn()
@@ -128,8 +132,8 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AuditOperation.HaeValintadata.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
       "hakuOid" -> hakuOid,
-      "hakukohdeOid" -> "",
-      "hakemusOids" -> Seq(hakemusOid).mkString("Array(", ", ", ")"),
+      "hakukohdeOid" -> hakukohdeOid,
+      "hakemusOids" -> "Array()",
     ), auditLogEntry.target)
 
     println(s"result.getResponse.getContentAsString(Charset.forName(\"UTF-8\")): ${result.getResponse.getContentAsString(Charset.forName("UTF-8"))}")
@@ -138,8 +142,8 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakemus = parsedResult.valintaHakemukset.asScala.head
 
     //Tarkistetaan hakemukselta löytyvät oidit oidit, ja että suoraan hakemukselta välittyvät avain-arvot ovat mukana
-    Assertions.assertEquals(hakemus.hakemusOid, hakemusOid)
-    Assertions.assertEquals(hakemus.hakuOid, hakuOid)
+    Assertions.assertEquals(hakemus.hakemusoid, hakemusOid)
+    Assertions.assertEquals(hakemus.hakuoid, hakuOid)
     Assertions.assertEquals(hakemus.hakijaOid, personOid)
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "address" && aa.arvo == "Testitie 71794920276"))
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "30ca1709-db90-46ac-94a0-b3e446932d4c" && aa.arvo == "12"))

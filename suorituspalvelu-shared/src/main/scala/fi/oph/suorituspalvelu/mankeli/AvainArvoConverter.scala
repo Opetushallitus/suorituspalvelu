@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Suoritus, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
-import fi.oph.suorituspalvelu.integration.client.AtaruValintalaskentaHakemus
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
@@ -28,118 +28,116 @@ case class AvainArvoContainer(avain: String,
 
 object AvainArvoConstants {
 
-  //Tämä taulukko on olemassa, jotta yliajot saadaan toimitettua myös avain-aliaksille.
-  //Peruskoulun aineiden arvosanojen osalta perustuu koodiston koskioppiaineetyleissivistava koodiarvoille (29 kpl).
-  val avainToRinnakkaisAvaimet = Map(
-    perusopetuksenKieliKey -> Set.empty,
-    peruskouluPaattotodistusvuosiKey -> Set("PK_PAATTOTODISTUSVUOSI"),
-    peruskouluSuoritusvuosiKey -> Set("PK_SUORITUSVUOSI"),
-    peruskouluSuoritettuKey -> Set("PK_TILA"),
-    lukioSuoritettuKey -> Set("LK_TILA"),
-    yoSuoritettuKey -> Set("YO_TILA"),
-    ammSuoritettuKey -> Set("AM_TILA"),
-    telmaSuoritettuKey -> Set("LISAKOULUTUS_TELMA"),
-    telmaSuoritusvuosiKey -> Set("LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI"),
-    opistovuosiSuoritettuKey -> Set("LISAKOULUTUS_OPISTO"),
-    opistovuosiSuoritusvuosiKey -> Set("LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI"),
-    peruskouluArvosana_Akieli -> Set("PK_ARVOSANA_A"),
-    peruskouluArvosana_A1kieli -> Set("PK_ARVOSANA_A1"),
-    peruskouluArvosana_A2kieli -> Set("PK_ARVOSANA_A2"),
-    peruskouluArvosana_A3kieli -> Set("PK_ARVOSANA_B1"),
-    peruskouluArvosana_B1kieli -> Set("PK_ARVOSANA_B2"),
-    peruskouluArvosana_B2kieli -> Set("PK_ARVOSANA_B3"),
-    peruskouluArvosana_biologia -> Set("PK_ARVOSANA_BI"),
-    peruskouluArvosana_eitiedossa -> Set("PK_ARVOSANA_XX"),
-    peruskouluArvosana_filosofia -> Set("PK_ARVOSANA_FI"),
-    peruskouluArvosana_fysiikka -> Set("PK_ARVOSANA_FY"),
-    peruskouluArvosana_historia -> Set("PK_ARVOSANA_HI"),
-    peruskouluArvosana_kemia -> Set("PK_ARVOSANA_KE"),
-    peruskouluArvosana_kotitalous -> Set("PK_ARVOSANA_KO"),
-    peruskouluArvosana_kuvataide -> Set("PK_ARVOSANA_KU"),
-    peruskouluArvosana_kasityo -> Set("PK_ARVOSANA_KS"),
-    peruskouluArvosana_liikunta -> Set("PK_ARVOSANA_LI"),
-    peruskouluArvosana_maantieto -> Set("PK_ARVOSANA_GE"),
-    peruskouluArvosana_matematiikka -> Set("PK_ARVOSANA_MA"),
-    peruskouluArvosana_musiikki -> Set("PK_ARVOSANA_MU"),
-    peruskouluArvosana_opintoohjaus -> Set("PK_ARVOSANA_OP"),
-    peruskouluArvosana_tyoelamataidot -> Set("PK_ARVOSANA_OPA"),
-    peruskouluArvosana_psykologia -> Set("PK_ARVOSANA_PS"),
-    peruskouluArvosana_terveystieto -> Set("PK_ARVOSANA_TE"),
-    peruskouluArvosana_uskontoet -> Set("PK_ARVOSANA_ET"),
-    peruskouluArvosana_uskontoet -> Set("PK_ARVOSANA_KT"),
-    peruskouluArvosana_yhteiskuntaoppi -> Set("PK_ARVOSANA_YH"),
-    peruskouluArvosana_ymparistooppi -> Set("PK_ARVOSANA_YL"),
-    peruskouluArvosana_aidinkielenomainen -> Set("PK_ARVOSANA_AOM"),
-    peruskouluArvosana_aidinkielijakirjallisuus -> Set("PK_ARVOSANA_AI"),
-    peruskouluOppiaineenKieli_A1 -> Set("PK_ARVOSANA_A1_OPPIAINE"),
-    peruskouluOppiaineenKieli_A2 -> Set("PK_ARVOSANA_A2_OPPIAINE"),
-    peruskouluOppiaineenKieli_A3 -> Set("PK_ARVOSANA_A3_OPPIAINE"),
-    peruskouluOppiaineenKieli_B1 -> Set("PK_ARVOSANA_B1_OPPIAINE"),
-    peruskouluOppiaineenKieli_B2 -> Set("PK_ARVOSANA_B2_OPPIAINE"),
-    peruskouluOppiaineenKieli_AI -> Set("PK_ARVOSANA_AI_OPPIAINE")
+  //Tämä taulukko sisältää avainten selitteet, jotka voidaan näyttää käyttöliittymässä. Taulukko sisältää myös kaikki
+  // mahdolliset arvot, joita AvainArvoConverter tuottaa.
+  // Peruskoulun aineiden arvosanojen osalta perustuu koodiston koskioppiaineetyleissivistava koodiarvoille (29 kpl).
+  val avainToAvaimenSeliteMap = Map(
+    perusopetuksenKieliKey -> "Perusopetuksen kieli",
+    peruskouluPaattotodistusvuosiKey -> "Peruskoulun päättötodistusvuosi",
+    peruskouluSuoritusvuosiKey -> "Peruskoulun suoritusvuosi",
+    peruskouluSuoritettuKey -> "Peruskoulu suoritettu",
+    lukioSuoritettuKey -> "Lukio suoritettu",
+    yoSuoritettuKey -> "Ylioppilastutkinto suoritettu",
+    ammSuoritettuKey -> "Ammatillinen tutkinto suoritettu",
+    telmaSuoritettuKey -> "Lisäpistekoulutus Telma suoritettu",
+    telmaSuoritusvuosiKey -> "Lisäpistekoulutus Telma suoritusvuosi",
+    opistovuosiSuoritettuKey -> "Lisäpistekoulutus opistovuosi suoritettu",
+    opistovuosiSuoritusvuosiKey -> "Lisäpistekoulutus opistovuosi suoritusvuosi",
+    peruskouluArvosana_Akieli -> "Peruskoulun arvosana: A-kieli",
+    peruskouluArvosana_A1kieli -> "Peruskoulun arvosana: A1-kieli",
+    peruskouluArvosana_A2kieli -> "Peruskoulun arvosana: A2-kieli",
+    peruskouluArvosana_A3kieli -> "Peruskoulun arvosana: A3-kieli",
+    peruskouluArvosana_B1kieli -> "Peruskoulun arvosana: B1-kieli",
+    peruskouluArvosana_B2kieli -> "Peruskoulun arvosana: B2-kieli",
+    peruskouluArvosana_biologia -> "Peruskoulun arvosana: Biologia",
+    peruskouluArvosana_eitiedossa -> "Peruskoulun arvosana: Ei tiedossa",
+    peruskouluArvosana_filosofia -> "Peruskoulun arvosana: Filosofia",
+    peruskouluArvosana_fysiikka -> "Peruskoulun arvosana: Fysiikka",
+    peruskouluArvosana_historia -> "Peruskoulun arvosana: Historia",
+    peruskouluArvosana_kemia -> "Peruskoulun arvosana: Kemia",
+    peruskouluArvosana_kotitalous -> "Peruskoulun arvosana: Kotitalous",
+    peruskouluArvosana_kuvataide -> "Peruskoulun arvosana: Kuvataide",
+    peruskouluArvosana_kasityo -> "Peruskoulun arvosana: Käsityö",
+    peruskouluArvosana_liikunta -> "Peruskoulun arvosana: Liikunta",
+    peruskouluArvosana_maantieto -> "Peruskoulun arvosana: Maantieto",
+    peruskouluArvosana_matematiikka -> "Peruskoulun arvosana: Matematiikka",
+    peruskouluArvosana_musiikki -> "Peruskoulun arvosana: Musiikki",
+    peruskouluArvosana_opintoohjaus -> "Peruskoulun arvosana: Opinto-ohjaus",
+    peruskouluArvosana_tyoelamataidot -> "Peruskoulun arvosana: Työelämätaidot",
+    peruskouluArvosana_psykologia -> "Peruskoulun arvosana: Psykologia",
+    peruskouluArvosana_terveystieto -> "Peruskoulun arvosana: Terveystieto",
+    peruskouluArvosana_uskontoet -> "Peruskoulun arvosana: Uskonto/ET",
+    peruskouluArvosana_uskontoet2 -> "Peruskoulun arvosana: Katsomusaine",
+    peruskouluArvosana_yhteiskuntaoppi -> "Peruskoulun arvosana: Yhteiskuntaoppi",
+    peruskouluArvosana_ymparistooppi -> "Peruskoulun arvosana: Ympäristöoppi",
+    peruskouluArvosana_aidinkielenomainen -> "Peruskoulun arvosana: Äidinkielenomainen",
+    peruskouluArvosana_aidinkielijakirjallisuus -> "Peruskoulun arvosana: Äidinkieli ja kirjallisuus",
+    peruskouluOppiaineenKieli_A1 -> "Peruskoulun A1-kielen oppiaine",
+    peruskouluOppiaineenKieli_A2 -> "Peruskoulun A2-kielen oppiaine",
+    peruskouluOppiaineenKieli_A3 -> "Peruskoulun A3-kielen oppiaine",
+    peruskouluOppiaineenKieli_B1 -> "Peruskoulun B1-kielen oppiaine",
+    peruskouluOppiaineenKieli_B2 -> "Peruskoulun B2-kielen oppiaine",
+    peruskouluOppiaineenKieli_AI -> "Peruskoulun äidinkielen oppiaine"
   )
 
   final val perusopetuksenKieliKey = "perusopetuksen_kieli"
-  final val peruskouluPaattotodistusvuosiKey = "peruskoulu_paattotodistusvuosi"
-  final val peruskouluSuoritusvuosiKey = "peruskoulu_suoritusvuosi"
-  final val peruskouluSuoritettuKey = "perustutkinto_suoritettu"
-  final val lukioSuoritettuKey = "lukio_suoritettu"
-  final val yoSuoritettuKey = "yo_tutkinto_suoritettu"
-  final val ammSuoritettuKey = "ammatillinen_suoritettu"
+  final val peruskouluPaattotodistusvuosiKey = "PK_PAATTOTODISTUSVUOSI"
+  final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
+  final val peruskouluSuoritettuKey = "PK_TILA"
+  final val lukioSuoritettuKey = "LK_TILA"
+  final val yoSuoritettuKey = "YO_TILA"
+  final val ammSuoritettuKey = "AM_TILA"
 
-  final val telmaSuoritettuKey = "lisapistekoulutus_telma"
-  final val telmaSuoritusvuosiKey = "lisapistekoulutus_telma_vuosi"
+  //Nämä suoritusavaimet ja suoritusvuosiavaimet poikkeavat toisistaan vähän hämäävästi.
+  // Ne kuitenkin vastaavat nykyistä proxysuoritusrajapinnan mallia.
+  final val telmaSuoritettuKey = "LISAKOULUTUS_TELMA"
+  final val telmaSuoritusvuosiKey = "LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI"
+  final val opistovuosiSuoritettuKey = "LISAKOULUTUS_OPISTOVUOSI"
+  final val opistovuosiSuoritusvuosiKey = "LISAPISTEKOULUTUS_OPISTO_SUORITUSVUOSI"
 
-  final val opistovuosiSuoritettuKey = "lisapistekoulutus_opisto"
-  final val opistovuosiSuoritusvuosiKey = "lisapistekoulutus_opisto_vuosi"
-
-  final val peruskouluArvosana_Akieli = "PERUSKOULU_ARVOSANA_A"
-  final val peruskouluArvosana_A1kieli = "PERUSKOULU_ARVOSANA_A1"
-  final val peruskouluArvosana_A2kieli = "PERUSKOULU_ARVOSANA_A2"
-  final val peruskouluArvosana_A3kieli = "PERUSKOULU_ARVOSANA_B1"
-  final val peruskouluArvosana_B1kieli = "PERUSKOULU_ARVOSANA_B2"
-  final val peruskouluArvosana_B2kieli = "PERUSKOULU_ARVOSANA_B3"
-  final val peruskouluArvosana_biologia = "PERUSKOULU_ARVOSANA_BI"
-  final val peruskouluArvosana_eitiedossa = "PERUSKOULU_ARVOSANA_XX"
-  final val peruskouluArvosana_filosofia = "PERUSKOULU_ARVOSANA_FI"
-  final val peruskouluArvosana_fysiikka = "PERUSKOULU_ARVOSANA_FY"
-  final val peruskouluArvosana_historia = "PERUSKOULU_ARVOSANA_HI"
-  final val peruskouluArvosana_kemia = "PERUSKOULU_ARVOSANA_KE"
-  final val peruskouluArvosana_kotitalous = "PERUSKOULU_ARVOSANA_KO"
-  final val peruskouluArvosana_kuvataide = "PERUSKOULU_ARVOSANA_KU"
-  final val peruskouluArvosana_kasityo = "PERUSKOULU_ARVOSANA_KS"
-  final val peruskouluArvosana_liikunta = "PERUSKOULU_ARVOSANA_LI"
-  final val peruskouluArvosana_maantieto = "PERUSKOULU_ARVOSANA_GE"
-  final val peruskouluArvosana_matematiikka = "PERUSKOULU_ARVOSANA_MA"
-  final val peruskouluArvosana_musiikki = "PERUSKOULU_ARVOSANA_MU"
-  final val peruskouluArvosana_opintoohjaus = "PERUSKOULU_ARVOSANA_OP"
-  final val peruskouluArvosana_tyoelamataidot = "PERUSKOULU_ARVOSANA_OPA"
-  final val peruskouluArvosana_psykologia = "PERUSKOULU_ARVOSANA_PS"
-  final val peruskouluArvosana_terveystieto = "PERUSKOULU_ARVOSANA_TE"
-  final val peruskouluArvosana_uskontoet = "PERUSKOULU_ARVOSANA_ET"
-  final val peruskouluArvosana_uskontoet2 = "PERUSKOULU_ARVOSANA_KT"
-  final val peruskouluArvosana_yhteiskuntaoppi = "PERUSKOULU_ARVOSANA_YH"
-  final val peruskouluArvosana_ymparistooppi = "PERUSKOULU_ARVOSANA_YL"
-  final val peruskouluArvosana_aidinkielenomainen = "PERUSKOULU_ARVOSANA_AOM"
-  final val peruskouluArvosana_aidinkielijakirjallisuus = "PERUSKOULU_ARVOSANA_AI"
+  final val peruskouluArvosana_Akieli = "PK_A"
+  final val peruskouluArvosana_A1kieli = "PK_A1"
+  final val peruskouluArvosana_A2kieli = "PK_A2"
+  final val peruskouluArvosana_A3kieli = "PK_B1"
+  final val peruskouluArvosana_B1kieli = "PK_B2"
+  final val peruskouluArvosana_B2kieli = "PK_B3"
+  final val peruskouluArvosana_biologia = "PK_BI"
+  final val peruskouluArvosana_eitiedossa = "PK_XX"
+  final val peruskouluArvosana_filosofia = "PK_FI"
+  final val peruskouluArvosana_fysiikka = "PK_FY"
+  final val peruskouluArvosana_historia = "PK_HI"
+  final val peruskouluArvosana_kemia = "PK_KE"
+  final val peruskouluArvosana_kotitalous = "PK_KO"
+  final val peruskouluArvosana_kuvataide = "PK_KU"
+  final val peruskouluArvosana_kasityo = "PK_KS"
+  final val peruskouluArvosana_liikunta = "PK_LI"
+  final val peruskouluArvosana_maantieto = "PK_GE"
+  final val peruskouluArvosana_matematiikka = "PK_MA"
+  final val peruskouluArvosana_musiikki = "PK_MU"
+  final val peruskouluArvosana_opintoohjaus = "PK_OP"
+  final val peruskouluArvosana_tyoelamataidot = "PK_OPA"
+  final val peruskouluArvosana_psykologia = "PK_PS"
+  final val peruskouluArvosana_terveystieto = "PK_TE"
+  final val peruskouluArvosana_uskontoet = "PK_ET"
+  final val peruskouluArvosana_uskontoet2 = "PK_KT"
+  final val peruskouluArvosana_yhteiskuntaoppi = "PK_YH"
+  final val peruskouluArvosana_ymparistooppi = "PK_YL"
+  final val peruskouluArvosana_aidinkielenomainen = "PK_AOM"
+  final val peruskouluArvosana_aidinkielijakirjallisuus = "PK_AI"
 
   //Todo, varmistettava että tässä on kaikki aineet joille on tarpeen merkitä kieli erillisen avaimen alle
-  final val peruskouluOppiaineenKieli_A1 = "PERUSKOULU_ARVOSANA_A1_OPPIAINEEN_KIELI"
-  final val peruskouluOppiaineenKieli_A2 = "PERUSKOULU_ARVOSANA_A2_OPPIAINEEN_KIELI"
-  final val peruskouluOppiaineenKieli_A3 = "PERUSKOULU_ARVOSANA_A3_OPPIAINEEN_KIELI"
-  final val peruskouluOppiaineenKieli_B1 = "PERUSKOULU_ARVOSANA_B1_OPPIAINEEN_KIELI"
-  final val peruskouluOppiaineenKieli_B2 = "PERUSKOULU_ARVOSANA_B2_OPPIAINEEN_KIELI"
-  final val peruskouluOppiaineenKieli_AI = "PERUSKOULU_ARVOSANA_AI_OPPIAINEEN_KIELI"
+  final val peruskouluOppiaineenKieli_A1 = "PK_A1_OPPIAINE"
+  final val peruskouluOppiaineenKieli_A2 = "PK_A2_OPPIAINE"
+  final val peruskouluOppiaineenKieli_A3 = "PK_A3_OPPIAINE"
+  final val peruskouluOppiaineenKieli_B1 = "PK_B1_OPPIAINE"
+  final val peruskouluOppiaineenKieli_B2 = "PK_B2_OPPIAINE"
+  final val peruskouluOppiaineenKieli_AI = "PK_AI_OPPIAINE"
 
-
-  //Todo, tarkistetaan vielä arvosanojen muoto uudessa mallissa
-  final val peruskouluAineenArvosanaPrefix = "PERUSKOULU_ARVOSANA_"
-  //final val peruskouluAineenArvosanaDuplikaattiPrefix = "PK_"
+  final val peruskouluAineenArvosanaPrefix = "PK_"
 
   //Nämä tulevat aineen arvosanojen perään, eli esimerkiksi jos varsinainen arvosana
-  // on avaimen "PK_B1" alla, tulee kieli avainten "PK_B1_OPPIAINE" ja "PK_B1_OPPIAINEEN_KIELI" alle
-  final val peruskouluAineenKieliPostfix = "_OPPIAINEEN_KIELI"
-  //final val peruskouluAineenKieliDuplikaattiPostfix = "_OPPIAINE"
+  // on avaimen "PK_B1" alla, tulee kieli avaimen "PK_B1_OPPIAINE" alle
+  final val peruskouluAineenKieliPostfix = "_OPPIAINE"
 
   //Lisäpistekoulutusten minimilaajuudet
   final val telmaMinimiLaajuus: BigDecimal = 25
@@ -236,11 +234,11 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
-    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan)
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: Option[KoutaHaku]): AvainArvoConverterResults = {
+    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan, haku)
   }
 
-  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): AvainArvoConverterResults = {
+  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: Option[KoutaHaku]): AvainArvoConverterResults = {
 
     //Todo, valintapisteet avain-arvoiksi
     val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
@@ -249,20 +247,22 @@ object AvainArvoConverter {
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
-    val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet)
+    val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku)
 
     val paatellytArvot: Set[AvainArvoContainer] = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot ++ lisapistekoulutusArvot
 
     AvainArvoConverterResults(personOid, paatellytArvot, convertedHakemus, opiskeluoikeudet)
   }
 
-  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
+  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
     val telmat = opiskeluoikeudet.collect {
       case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
     }.flatten
-
-    val riittavaLaajuus: Seq[Telma] = telmat.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
-    val tuoreinRiittava: Option[Telma] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
+    val riittavanTuoreetJaLaajat: Seq[Telma] =
+      telmat
+        .filter(t => t.suoritusVuosi >= vuosiVahintaan)
+        .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
+    val tuoreinRiittava: Option[Telma] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
 
     val suoritusSelite = (tuoreinRiittava, telmat) match {
       case (tuorein, _) if tuorein.isDefined =>
@@ -284,14 +284,16 @@ object AvainArvoConverter {
     suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
   }
 
-  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
+  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
     val vstOpistovuodet = opiskeluoikeudet.collect {
       case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: VapaaSivistystyo => s }
     }.flatten
 
-    val riittavaLaajuus: Seq[VapaaSivistystyo] =
-      vstOpistovuodet.filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.opistovuosiMinimiLaajuus))
-    val tuoreinRiittava: Option[VapaaSivistystyo] = riittavaLaajuus.maxByOption(_.suoritusVuosi)
+    val riittavanTuoreetJaLaajat =
+      vstOpistovuodet
+        .filter(o => o.suoritusVuosi >= vuosiVahintaan)
+        .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.opistovuosiMinimiLaajuus))
+    val tuoreinRiittava: Option[VapaaSivistystyo] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
 
     val suoritusSelite = (tuoreinRiittava, vstOpistovuodet) match {
       case (tuorein, _) if tuorein.isDefined =>
@@ -310,16 +312,22 @@ object AvainArvoConverter {
       Some(AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
     } else None
 
-    suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
+    Set(suoritusArvo) ++ suoritusVuosiArvo
   }
 
-  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] = {
-    //todo tuva
-    //todo kansanopisto?
-    val telmaArvot = convertTelma(personOid, opiskeluoikeudet)
-    val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet)
+  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: Option[KoutaHaku]): Set[AvainArvoContainer] = {
+    if (haku.exists(_.isToisenAsteenYhteisHaku())) {
+      val vuosiVahintaan = haku.flatMap(h => h.hakuvuosi.map(vuosi => vuosi - 1)).getOrElse(LocalDate.now().getYear)
 
-    telmaArvot ++ opistovuosiArvot
+      //todo tuva
+      //todo kansanopisto?
+      val telmaArvot = convertTelma(personOid, opiskeluoikeudet, vuosiVahintaan)
+      val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet, vuosiVahintaan)
+
+      telmaArvot ++ opistovuosiArvot
+    } else {
+      Set.empty
+    }
   }
 
   def convertAmmatillisetArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {

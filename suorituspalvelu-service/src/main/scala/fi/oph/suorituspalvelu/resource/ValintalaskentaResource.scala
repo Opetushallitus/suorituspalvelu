@@ -80,7 +80,8 @@ class ValintalaskentaResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ValintalaskentaDataFailureResponse(java.util.List.of(VALINTALASKENTA_JSON_VIRHE)))))
         .flatMap(payload =>
           // validoidaan parametrit
-          (payload.hakuOid.toScala, payload.hakukohdeOid.toScala, payload.hakemusOids.asScala) match {
+          val hakemusOids = Option(payload.hakemusOids).map(_.asScala).getOrElse(Seq.empty)
+          (payload.hakuOid.toScala, payload.hakukohdeOid.toScala, hakemusOids) match {
             case (None, _, _) =>
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ValintalaskentaDataFailureResponse(java.util.List.of(VALINTALASKENTA_HAKUOID_PAKOLLINEN))))
             case (_, Some(hakukohdeOid), hakemusOids) if hakemusOids.nonEmpty =>
@@ -99,17 +100,18 @@ class ValintalaskentaResource {
         .map(payload => {
           try {
             val user = AuditLog.getUser(request)
+            val hakemusOids = Option(payload.hakemusOids).map(_.asScala.toSet).getOrElse(Set.empty)
             AuditLog.log(
               user,
               Map(
                 "hakuOid" -> payload.hakuOid.get(),
-                "hakemusOids" -> payload.hakemusOids.asScala.mkString("Array(", ", ", ")"),
+                "hakemusOids" -> hakemusOids.mkString("Array(", ", ", ")"),
                 "hakukohdeOid" -> payload.hakukohdeOid.toScala.getOrElse("")),
               AuditOperation.HaeValintadata,
               None
             )
             LOG.info(s"Haetaan valintalaskennan tarvitsemat tiedot parametreille $payload")
-            val result: Seq[ValintalaskentaApiHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, payload.hakemusOids.asScala.toSet)
+            val result: Seq[ValintalaskentaApiHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, hakemusOids)
             val parsedResult = result.map(objectMapper.writeValueAsString(_)).toList.asJava
             LOG.info(s"Palautetaan rajapintavastaus, $parsedResult")
             ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(result.toList.asJava))
