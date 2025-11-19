@@ -262,10 +262,10 @@ class UIService {
   }
 
   /**
-   * Hakee oppijan haut hakemuspalvelusta, jos käyttäjällä on oikeudet nähdä oppijan tiedot
+   * Hakee oppijan haut hakemuspalvelusta ja niille nimet koutasta
    *
-   * @param oppijaOid oppijan oid jonka haut haetaan
-   * @return lista Haku-objekteja (hakuOid ja nimi) jos käyttäjällä on oikeudet, tyhjä lista muuten
+   * @param oppijaOid Oppijan tunniste, jonka haut haetaan
+   * @return Lista Haku-objekteja (hakuOid ja nimi)
    */
   def haeOppijanHaut(oppijaOid: String): Seq[Haku] = {
     val hautMap = Await.result(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaOid)), 30.seconds)
