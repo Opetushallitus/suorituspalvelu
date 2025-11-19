@@ -731,7 +731,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       hakutapaKoodiUri = "hakutapa_01",
       kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
       hakuajat = List.empty,
-      kohdejoukonTarkenneKoodiUri = None
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(LocalDate.now().getYear)
     )
     val koutaHaku2 = KoutaHaku(
       oid = hakuOid2,
@@ -740,7 +741,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       hakutapaKoodiUri = "hakutapa_01",
       kohdejoukkoKoodiUri = Some("haunkohdejoukko_12"),
       hakuajat = List.empty,
-      kohdejoukonTarkenneKoodiUri = None
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(LocalDate.now().getYear)
     )
     Mockito.when(tarjontaIntegration.getHaku(hakuOid1)).thenReturn(Some(koutaHaku1))
     Mockito.when(tarjontaIntegration.getHaku(hakuOid2)).thenReturn(Some(koutaHaku2))
@@ -787,7 +789,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       hakutapaKoodiUri = "hakutapa_01",
       kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
       hakuajat = List.empty,
-      kohdejoukonTarkenneKoodiUri = None
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(LocalDate.now().getYear)
     )
     Mockito.when(tarjontaIntegration.getHaku(hakuOid1)).thenReturn(Some(koutaHaku1))
     Mockito.when(tarjontaIntegration.getHaku(hakuOid2)).thenReturn(None)
