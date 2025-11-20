@@ -1,18 +1,41 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_JOB_NIMI, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
+import java.time.Instant
 import java.util.{Optional, UUID}
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
 
+@Schema(name = "SyncJob")
+case class SyncJob(
+  @(Schema @field)(example = DATASYNC_ESIMERKKI_JOB_ID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty id: UUID,
+  @(Schema @field)(example = ESIMERKKI_JOB_NIMI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty name: String,
+  @(Schema @field)(example = "55", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty completion: Int,
+  @(Schema @field)(example = "2025-11-18T11:16:01.327249Z", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty lastUpdated: Instant
+) extends SyncResponse {}
+
 class SyncResponse() {
 }
 
-@Schema(name = "VirtaSyncSuccessResponse")
-case class VirtaSyncSuccessResponse(
+@Schema(name = "SyncJobStatusResponse")
+case class SyncJobStatusResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty jobs: java.util.List[SyncJob]) extends SyncResponse {}
+
+@Schema(name = "SyncJobFailureResponse")
+case class SyncJobFailureResponse(
+  @(Schema @field)(example = "[\"" + DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
+
+@Schema(name = "SyncSuccessJobResponse")
+case class SyncSuccessJobResponse(
   @(Schema @field)(example = DATASYNC_ESIMERKKI_JOB_ID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty jobId: UUID) extends SyncResponse {}
 

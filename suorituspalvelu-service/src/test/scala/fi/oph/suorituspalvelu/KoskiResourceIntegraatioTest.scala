@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
-import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.validation.Validator
@@ -145,8 +145,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, KoskiPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
       .andExpect(status().isOk).andReturn()
-    Assertions.assertEquals(KoskiSyncSuccessResponse(1, 0),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse]))
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(response.jobId)
 
     // tarkistetaan että kantaan on tallentunut kolme opiskeluoikeutta
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
@@ -205,7 +206,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima))))
       .andExpect(status().isOk).andReturn()
-    Assertions.assertEquals(KoskiSyncSuccessResponse(1, 0), objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse]))
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(response.jobId)
 
     // tarkistetaan että kantaan on tallennettu opiskeluoikeus
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)

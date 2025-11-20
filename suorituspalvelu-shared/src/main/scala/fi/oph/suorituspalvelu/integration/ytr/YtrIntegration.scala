@@ -2,16 +2,15 @@ package fi.oph.suorituspalvelu.integration.ytr
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, SyncResultForHenkilo}
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, SyncResultForHenkilo, Util}
+import fi.oph.suorituspalvelu.integration.client.{YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import slick.jdbc.JdbcBackend
 
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.ZipUtil
 
@@ -29,16 +28,11 @@ class YtrIntegration {
   private val LOG: Logger = LoggerFactory.getLogger(classOf[YtrIntegration])
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
-  private val HENKILO_TIMEOUT = 5.minutes
-
   @Autowired val ytrClient: YtrClient = null
 
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
-
-  @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
-
 
   private val pollWaitMillis = 2000
 
@@ -46,38 +40,6 @@ class YtrIntegration {
   mapper.registerModule(DefaultScalaModule)
 
   def YTR_BATCH_SIZE = 5000
-
-  def syncYtrForHaku(hakuOid: String): Seq[SyncResultForHenkilo] = {
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
-    val fetchedAt = Instant.now()
-    val syncResult = fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
-    LOG.info(s"Ytr-sync haulle $hakuOid valmis. Tallennettiin yhteensä ${syncResult.size} henkilön tiedot.")
-    syncResult
-  }
-
-  def safePersistBatch(ytrResult: Seq[YtrDataForHenkilo], fetchedAt: Instant): Seq[SyncResultForHenkilo] = {
-    ytrResult.map(r => safePersistSingle(r, fetchedAt))
-  }
-
-  def safePersistSingle(ytrResult: YtrDataForHenkilo, fetchedAt: Instant): SyncResultForHenkilo = {
-    LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
-    try {
-      val kantaOperaatiot = KantaOperaatiot(database)
-      val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), fetchedAt)
-      versio.foreach(v => {
-        LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
-        val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
-        kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus))
-      })
-      SyncResultForHenkilo(ytrResult.personOid, versio, None)
-    } catch {
-      case e: Exception =>
-        LOG.error(s"Henkilon ${ytrResult.personOid} YTR-tietojen tallentaminen epäonnistui", e)
-        SyncResultForHenkilo(ytrResult.personOid, None, Some(e))
-    }
-  }
 
   def massFetchForStudents(hetuPostData: Seq[YtrHetuPostData]): Future[Seq[(String, String)]] = {
     ytrClient.createYtrMassOperation(hetuPostData).flatMap(massOp => {
@@ -115,9 +77,8 @@ class YtrIntegration {
 
   def fetchAndProcessYtrWithSingleApi[R](
                                           personOids: Set[String],
-                                          processFunction: Seq[YtrDataForHenkilo] => Seq[R],
                                           timeout: Duration
-                                        ): Seq[R] = {
+                                        ): Iterator[YtrDataForHenkilo] = {
     val resultF = onrIntegration.getMasterHenkilosForPersonOids(personOids)
       .flatMap { henkiloMap =>
         val withHetu = henkiloMap.values.filter(_.hetu.isDefined)
@@ -133,63 +94,35 @@ class YtrIntegration {
               ytrData.map(data => YtrDataForHenkilo(personOid, Some(YtrParser.sanitize(data)))).getOrElse(YtrDataForHenkilo(postData._1, None))
             })
           })
-          Future.sequence(ytrDataF).map(processFunction)
+          Future.sequence(ytrDataF)
         }
       }
-    Await.result(resultF, timeout)
+    Await.result(resultF, timeout).iterator
   }
 
-  def fetchAndPersistStudents(personOids: Set[String]): Seq[SyncResultForHenkilo] = {
-    val fetchedAt = Instant.now()
-    fetchAndProcessStudents(personOids, ytrDataForBatch => safePersistBatch(ytrDataForBatch, fetchedAt))
-  }
-
-  def fetchAndProcessStudents[R](personOids: Set[String], processFunction: Seq[YtrDataForHenkilo] => Seq[R]): Seq[R] = {
+  def fetchAndProcessStudents(personOids: Set[String]): Iterator[YtrDataForHenkilo] = {
     personOids match {
-      case oids if oids.isEmpty => Seq.empty
-      case oids if oids.size < 5 => fetchAndProcessYtrWithSingleApi(oids, processFunction, 1.minute)
-      case oids => fetchAndProcessYtrInBatchesWithMassaApi(oids, processFunction, 4.hours)
+      case oids if oids.isEmpty => Iterator.empty
+      case oids if oids.size < 5 => fetchAndProcessYtrWithSingleApi(oids, 1.minute)
+      case oids => processHenkilosInBatches(oids, 4.hours)
     }
-  }
-
-  def fetchAndProcessYtrInBatchesWithMassaApi[R](
-                                      personOids: Set[String],
-                                      processFunction: Seq[YtrDataForHenkilo] => Seq[R],
-                                      timeout: Duration
-                                    ): Seq[R] = {
-    val syncResultsF: Future[Seq[R]] =
-      onrIntegration.getMasterHenkilosForPersonOids(personOids)
-        .flatMap { henkiloMap => processHenkilosInBatches(henkiloMap, processFunction)
-        }
-
-    Await.result(syncResultsF, timeout)
   }
 
   private def processHenkilosInBatches[R](
-                                           henkiloMap: Map[String, OnrMasterHenkilo],
-                                           processFunction: Seq[YtrDataForHenkilo] => Seq[R]
-                                         ): Future[Seq[R]] = {
+                                           personOids: Set[String],
+                                           timeout: FiniteDuration
+                                         ): Iterator[YtrDataForHenkilo] = {
+
+    val henkiloMap = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), timeout)
+
     val personsWithHetu = henkiloMap.values.filter(_.hetu.isDefined)
     val personOidByHetu = personsWithHetu.map(h => (h.hetu.get, h.oidHenkilo)).toMap
     val ytrParams = personsWithHetu.map { h => (h.oidHenkilo, YtrHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty)))) }.toSeq
-    val batches = ytrParams.grouped(YTR_BATCH_SIZE).map(_.toSet).toSeq.zipWithIndex
+    val batches = ytrParams.grouped(YTR_BATCH_SIZE).map(_.toSet).toSeq
 
-    processBatchesSequentially(batches, personOidByHetu, processFunction)
-  }
-
-  private def processBatchesSequentially[R](
-                                             batches: Seq[(Set[(String, YtrHetuPostData)], Int)],
-                                             personOidByHetu: Map[String, String],
-                                             processFunction: Seq[YtrDataForHenkilo] => Seq[R]
-                                           ): Future[Seq[R]] = {
-    batches.foldLeft(Future(Seq.empty[R])) {
-      case (accResultF, (batchData, batchIndex)) =>
-        accResultF.flatMap { accResults =>
-          LOG.info(s"Synkataan ${batchData.size} henkilön tiedot Ylioppilastutkintorekisteristä, erä ${batchIndex+1}/${batches.size}")
-          val batchResultF = massFetchForStudents(batchData.map(_._2).toSeq)
-            .map(fetchResult => processFunction(fetchResult.map(r => YtrDataForHenkilo(personOidByHetu.getOrElse(r._1, throw new RuntimeException()), Some(r._2)))))
-          batchResultF.map(batchResults => accResults ++ batchResults)
-        }
-    }
+    Util.toIterator(batches.zipWithIndex.iterator.map((batch, index) => {
+      LOG.info(s"Synkataan ${batch.size} henkilön tiedot Ylioppilastutkintorekisteristä, erä ${index + 1}/${batches.size}")
+      massFetchForStudents(batch.map(_._2).toSeq).map(fetchResult => fetchResult.map(r => YtrDataForHenkilo(personOidByHetu.getOrElse(r._1, throw new RuntimeException()), Some(r._2))))
+    }), 2, timeout).flatten
   }
 }

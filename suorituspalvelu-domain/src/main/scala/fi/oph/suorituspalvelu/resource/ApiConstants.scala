@@ -18,6 +18,12 @@ object ApiConstants {
   final val DATASYNC_JSON_VIRHE                             = "JSON-deserialisointi epäonnistui"
   final val DATASYNC_RESPONSE_400_DESCRIPTION               = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val DATASYNC_RESPONSE_403_DESCRIPTION               = "Käyttäjällä ei ole rekisterinpitäjä-oikeutta"
+  final val DATASYNC_JOBIN_LUONTI_EPAONNISTUI               = "Datan virkistysjobin luonti epäonnistui"
+
+  final val DATASYNC_JOBIT_PATH                             = DATASYNC_PATH + "/jobit"
+  final val DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI       = "Jobien tietojen haku epäonnistui"
+  final val DATASYNC_JOBIT_TUNNISTE_PARAM_NAME              = "tunniste"
+  final val DATASYNC_JOBIT_NIMI_PARAM_NAME                  = "nimi"
 
   final val KOSKI_DATASYNC_PATH                             = DATASYNC_PATH + "/koski"
 
@@ -35,11 +41,17 @@ object ApiConstants {
   final val YTR_DATASYNC_PATH                               = DATASYNC_PATH + "/ytr"
   final val YTR_DATASYNC_HENKILOT_PATH                      = YTR_DATASYNC_PATH + "/henkilot"
   final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
+  final val YTR_DATASYNC_AKTIIVISET_PATH                    = YTR_DATASYNC_PATH + "/aktiiviset/"
+  final val YTR_DATASYNC_500_VIRHE                          = "Tietojen päivitys YTR-järjestelmästä epäonnistui"
 
-  final val VIRTA_DATASYNC_HENKILO_PATH                     = DATASYNC_PATH + "/virta/henkilo"
-  final val VIRTA_DATASYNC_HAKU_PATH                        = DATASYNC_PATH + "/virta/haku"
+  final val VIRTA_DATASYNC_PARAM_NAME                       = "oppijaNumero"
+  final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
+  final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta"
+  final val VIRTA_DATASYNC_PATH_OPPIJA                      = VIRTA_DATASYNC_PATH + "/oppija/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
+  final val VIRTA_DATASYNC_HAKU_PATH                        = VIRTA_DATASYNC_PATH + "/haku/"
+  final val VIRTA_DATASYNC_HENKILO_PATH                     = VIRTA_DATASYNC_PATH + "/henkilo"
+  final val VIRTA_DATASYNC_AKTIIVISET_PATH                  = VIRTA_DATASYNC_PATH + "/aktiiviset/"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
-  final val VIRTA_DATASYNC_JOBIN_LUONTI_EPAONNISTUI         = "Datan virkistysjobin luonti epäonnistui"
 
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"
@@ -157,5 +169,8 @@ object ApiConstants {
   final val ESIMERKKI_YLIAJO_ARVO                           = "true"
   final val ESIMERKKI_YLIAJO_VIRKAILIJA                     = "1.2.246.562.24.40483869921"
   final val ESIMERKKI_YLIAJO_SELITE                         = "Tarkistettu, että Telma-suoritus on tarpeeksi laaja. Tiedot puuttuvat lähdejärjestelmästä."
+
+  final val ESIMERKKI_JOB_NIMI                              = "esimerkki-jobi"
+  final val ESIMERKKI_JOB_TUNNISTE                          = "5cc3b63f-f3f8-40e9-b535-ba4027d490bb"
 
 }

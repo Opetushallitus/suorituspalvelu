@@ -46,7 +46,9 @@ class TarjontaIntegration {
 
   def aktiivisetHaut(): Seq[KoutaHaku] = {
     val haut = allHautCache.get("haut")
-    haut.values.filter(h => hakuOnAktiivinen(h, getOhjausparametrit(h.oid))).toSeq
+    val ohjausparametrit = Await.result(ohjausparametritClient.haeKaikkiOhjausparametrit(), OHJAUSPARAMETRIT_TIMEOUT)
+
+    haut.values.filter(h => hakuOnAktiivinen(h, ohjausparametrit(h.oid))).toSeq
   }
 
   def tarkistaHaunAktiivisuus(hakuOid: String): Boolean = {

@@ -166,4 +166,52 @@ class ValidatorTest {
   @Test def testValidateHakemusOidNotRequired(): Unit = {
     Assertions.assertEquals(Set.empty, Validator.validateHakemusOid(None, false))
   }
+
+  // tunniste
+
+  @Test def testValidateTunnisteOidRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_TUNNISTE_TYHJA), Validator.validateTunniste(None, true))
+  }
+
+  @Test def testValidateTunnisteInvalid(): Unit = {
+    val tunniste = "not-valid-tunniste"
+    Assertions.assertEquals(Set(Validator.VALIDATION_TUNNISTE_EI_VALIDI + tunniste),
+      Validator.validateTunniste(Some(tunniste), true))
+  }
+
+  @Test def testValidateTunnisteValid(): Unit = {
+    Assertions.assertEquals(Set.empty, Validator.validateTunniste(Some(ApiConstants.ESIMERKKI_JOB_TUNNISTE), true))
+  }
+
+  @Test def testValidateTunnisteEmptyString(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_TUNNISTE_TYHJA), Validator.validateTunniste(Some(""), true))
+  }
+
+  @Test def testValidateTunnisteNotRequired(): Unit = {
+    Assertions.assertEquals(Set.empty, Validator.validateTunniste(None, false))
+  }
+
+  // jobin nimi
+
+  @Test def testValidateJobinNimiRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_JOBIN_NIMI_TYHJA), Validator.validateJobinNimi(None, true))
+  }
+
+  @Test def testValidateJobinNimiInvalid(): Unit = {
+    val jobinNimi = "$$$"
+    Assertions.assertEquals(Set(Validator.VALIDATION_JOBIN_NIMI_EI_VALIDI + jobinNimi),
+      Validator.validateJobinNimi(Some(jobinNimi), true))
+  }
+
+  @Test def testValidateJobinNimiValid(): Unit = {
+    Assertions.assertEquals(Set.empty, Validator.validateJobinNimi(Some(ApiConstants.ESIMERKKI_JOB_NIMI), true))
+  }
+
+  @Test def testValidateJobinNimiEmptyString(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_JOBIN_NIMI_TYHJA), Validator.validateJobinNimi(Some(""), true))
+  }
+
+  @Test def testValidateJobinNimiNotRequired(): Unit = {
+    Assertions.assertEquals(Set.empty, Validator.validateJobinNimi(None, false))
+  }
 }

@@ -29,6 +29,8 @@ import org.testcontainers.containers.PostgreSQLContainer
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
 
+import java.util.UUID
+import javax.sql.DataSource
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
@@ -77,6 +79,7 @@ class BaseIntegraatioTesti {
     ds.setPassword(POSTGRES_PASSWORD)
     ds
 
+  var datasource: DataSource = null
   var database: JdbcDatabaseDef = null
   var kantaOperaatiot: KantaOperaatiot = null
 
@@ -92,14 +95,13 @@ class BaseIntegraatioTesti {
     System.setProperty("web.url.cas-login", "DUMMY_CAS_LOGIN")
     System.setProperty("host.virkailija", "DUMMY")
 
-    database = Database.forDataSource(getDatasource(), None)
+    datasource = getDatasource()
+    database = Database.forDataSource(datasource, None)
     kantaOperaatiot = KantaOperaatiot(database)
     true
   }
 
   @Autowired private val context: WebApplicationContext = null
-
-  @Autowired(required = false) private val scheduler: Scheduler = null
 
   var mvc: MockMvc = null
 
@@ -109,14 +111,14 @@ class BaseIntegraatioTesti {
     mvc = intermediate.build()
 
   @AfterAll def teardown(): Unit = {
-    if(scheduler!=null)
-      scheduler.stop()
     postgres.stop()
   }
 
   @AfterEach def teardownTest(): Unit =
     Await.result(database.run(
       sqlu"""
+             DELETE FROM task_status;
+             DELETE FROM scheduled_tasks;
              DELETE FROM opiskeluoikeudet;
              DELETE FROM metadata_arvot;
              DELETE FROM versiot;
@@ -149,12 +151,10 @@ class BaseIntegraatioTesti {
     mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     mapper
 
-  def jsonPostString(path: String, body: String): MockHttpServletRequestBuilder =
+  def jsonGet(path: String): MockHttpServletRequestBuilder =
     MockMvcRequestBuilders
-      .post(path)
-      .contentType(MediaType.APPLICATION_JSON_VALUE)
+      .get(path)
       .accept(MediaType.APPLICATION_JSON_VALUE)
-      .content(body)
 
   def jsonPost(path: String, body: Any): MockHttpServletRequestBuilder =
     MockMvcRequestBuilders
@@ -162,4 +162,10 @@ class BaseIntegraatioTesti {
       .contentType(MediaType.APPLICATION_JSON_VALUE)
       .accept(MediaType.APPLICATION_JSON_VALUE)
       .content(objectMapper.writeValueAsString(body))
+
+  def waitUntilReady(tunniste: UUID, retries: Int = 30): Unit =
+    if(retries == 0) Assertions.fail("Jobi ei valmistunut")
+    if(!this.kantaOperaatiot.getLastJobStatuses(None, Some(tunniste), 1).exists(_.progress==1.0))
+      Thread.sleep(200)
+      waitUntilReady(tunniste, retries - 1)
 }

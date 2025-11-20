@@ -86,6 +86,7 @@ class KantaOperaatiotTest {
             DROP TABLE cas_client_session;
             DROP TABLE spring_session_attributes;
             DROP TABLE spring_session;
+            DROP TABLE task_status;
             DROP TABLE scheduled_tasks;
             DROP TABLE opiskeluoikeudet;
             DROP TABLE metadata_arvot;
@@ -804,5 +805,29 @@ class KantaOperaatiotTest {
     // ja kun mappaus poistetaan sitä ei enää löydy
     this.kantaOperaatiot.deleteCasMappingBySessionId(SPRING_SESSION_ID)
     Assertions.assertEquals(None, this.kantaOperaatiot.getSessionIdByMappingId(CAS_SESSION_ID))
+  }
+
+  @Test def testJobProgress(): Unit = {
+    val haettuTaskName = "test-task"
+    val haettuTaskId = UUID.randomUUID()
+    val muuTaskName = "muu-task"
+    val muuTaskId = UUID.randomUUID()
+    val lastUpdated = Instant.ofEpochMilli((Instant.now.toEpochMilli/1000)*1000)
+
+    this.kantaOperaatiot.updateJobStatus(haettuTaskId, haettuTaskName, 0.5, lastUpdated)
+    this.kantaOperaatiot.updateJobStatus(muuTaskId, muuTaskName, 0.5, lastUpdated)
+
+    // kun haetaan nimellä saadaan vain haettut jobi
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(Some(haettuTaskName), None, 10))
+
+    // kun haetaan tunnisteella saadaan vain haettu jobi
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(None, Some(haettuTaskId), 10))
+
+    // kun haetaan nimellä ja tunnisteella saadaan vain haettu jobi
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(Some(haettuTaskName), Some(haettuTaskId), 10))
+
+    // kun haetaan ilman parametrejä saadaan kaikki jobit
+    Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated), Job(muuTaskId, muuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(None, None, 10))
+
   }
 }

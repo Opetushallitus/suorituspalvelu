@@ -1,8 +1,10 @@
 package fi.oph.suorituspalvelu.validation
 
+import fi.oph.suorituspalvelu.validation.UIValidator.{VALIDATION_VERSIOTUNNISTE_EI_VALIDI, VALIDATION_VERSIOTUNNISTE_TYHJA}
+
 import java.net.{URI, URL}
 import java.time.Instant
-import java.util.Optional
+import java.util.{Optional, UUID}
 import scala.util.matching.Regex
 import scala.util.Try
 import scala.jdk.OptionConverters.*
@@ -31,6 +33,10 @@ object Validator {
   final val VALIDATION_MUOKATTUJALKEEN_TYHJA      = "muokattuJalkeen: Kenttä on pakollinen"
   final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muokattuJalkeen: muokattuJalkeen ei oli validi aikaleima"
   final val VALIDATION_URL_EI_VALIDI              = "tiedostot: Url ei ole validi: "
+  final val VALIDATION_TUNNISTE_TYHJA             = "tunniste: Tunniste on pakollinen"
+  final val VALIDATION_TUNNISTE_EI_VALIDI         = "tunniste: Tunniste ei ole validi UUID: "
+  final val VALIDATION_JOBIN_NIMI_TYHJA           = "jobin nimi: Jobin nimi on pakollinen"
+  final val VALIDATION_JOBIN_NIMI_EI_VALIDI       = "jobin nimi: Jobin nimi ei ole validi: "
 
   val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.24\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
@@ -42,6 +48,8 @@ object Validator {
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[0-9][A-Z]$".r
+
+  val jobinNimiPattern: Regex = "^[0-9A-Za-z_-]+$".r
 
   def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
     if (oppijaNumero.isEmpty || oppijaNumero.get.isEmpty)
@@ -139,4 +147,24 @@ object Validator {
     else
       Set.empty
   }
+
+  def validateTunniste(tunniste: Option[String], pakollinen: Boolean): Set[String] =
+    if (pakollinen && (tunniste.isEmpty || tunniste.get.isEmpty))
+      Set(VALIDATION_TUNNISTE_TYHJA)
+    else
+      try
+        if(tunniste.nonEmpty && tunniste.get.nonEmpty)
+          UUID.fromString(tunniste.get)
+        Set.empty
+      catch
+        case default => Set(VALIDATION_TUNNISTE_EI_VALIDI + tunniste.get)
+
+  def validateJobinNimi(nimi: Option[String], pakollinen: Boolean): Set[String] =
+    if (pakollinen && (nimi.isEmpty || nimi.get.isEmpty))
+      Set(VALIDATION_JOBIN_NIMI_TYHJA)
+    else if (nimi.isDefined && !jobinNimiPattern.matches(nimi.get))
+      Set(VALIDATION_JOBIN_NIMI_EI_VALIDI + nimi.get)
+    else
+      Set.empty
+
 }

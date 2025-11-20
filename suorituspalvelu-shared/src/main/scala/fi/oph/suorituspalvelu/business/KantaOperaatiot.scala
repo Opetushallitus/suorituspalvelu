@@ -422,7 +422,6 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(action), DB_TIMEOUT)
 
   /**
-   *
    * Lisää kantaan mappauksen palvelun sessiosta CAS-sessioon
    */
   def addMappingForSessionId(mappingId: String, sessionId: String): Unit = {
@@ -431,4 +430,33 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
              ON CONFLICT (mapped_ticket_id) DO NOTHING"""
     Await.result(db.run(insertAction), DB_TIMEOUT)
   }
+
+  /**
+   * Päivittää jobin tilan
+   */
+  def updateJobStatus(id: UUID, name: String, progress: BigDecimal, udpated: Instant = Instant.now()): Unit = {
+    val insertAction =
+      sqlu"""INSERT INTO task_status (task_instance, task_name, progress, lastupdated) VALUES (${id.toString}, $name, $progress, ${udpated.toString}::timestamptz)
+             ON CONFLICT (task_instance) DO UPDATE SET progress=$progress, lastupdated=now()"""
+    Await.result(db.run(insertAction), DB_TIMEOUT)
+  }
+
+  /**
+   * Hakee viimeisimpien jobien tiedot
+   */
+  def getLastJobStatuses(name: Option[String], tunniste: Option[UUID], limit: Int): List[Job] = {
+    Await.result(db.run(
+      sql"""SELECT task_instance, task_name, progress, to_json(lastupdated)#>>'{}'
+            FROM task_status
+            WHERE (${tunniste.isEmpty} OR task_instance=${tunniste.map(_.toString).getOrElse("NULL")})
+            AND (${name.isEmpty} OR task_name=${name.getOrElse("NULL")})
+            ORDER BY lastupdated DESC
+            LIMIT ${limit}""".as[(String, String, BigDecimal, String)]
+        .map(rows => rows.map {
+          case (tunniste, nimi, progress, lastUpdated) =>
+            Job(UUID.fromString(tunniste), nimi, progress, Instant.parse(lastUpdated))
+        })
+    ), DB_TIMEOUT).toList
+  }
+
 }
