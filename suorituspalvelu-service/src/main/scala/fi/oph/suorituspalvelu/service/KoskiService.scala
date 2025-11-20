@@ -15,7 +15,7 @@ import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 import java.util.UUID
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
@@ -82,7 +82,7 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     processKoskiDataForOppijat(ctx, koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
   }
 
-  private val refreshHenkilotJob = scheduler.registerJob("refresh-koski-for-henkilot", (ctx, oppijaNumerot) => syncKoskiForHenkilot(mapper.readValue(oppijaNumerot, classOf[Set[String]]), ctx), Seq.empty)
+  private val refreshHenkilotJob = scheduler.registerJob("refresh-koski-for-henkilot", (ctx, oppijaNumerot) => syncKoskiForHenkilot(mapper.readValue(oppijaNumerot, classOf[Set[String]]), ctx), Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
 
   def startRefreshForHenkilot(personOids: Set[String]): UUID = refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
 
