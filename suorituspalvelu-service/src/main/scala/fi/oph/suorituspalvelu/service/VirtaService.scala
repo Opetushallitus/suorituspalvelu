@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
 
 import java.io.ByteArrayInputStream
 import java.time.Duration.ofSeconds
-import java.time.Instant
+import java.time.{Duration, Instant}
 import java.util.UUID
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
@@ -114,9 +114,9 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     tulokset
   }
 
-  private val refreshOppijaJob = scheduler.registerJob("refresh-virta-for-oppija", (ctx, oppijaNumero) => refreshVirtaForPersonOids(ctx, Set(oppijaNumero)), Seq.empty)
+  private val refreshOppijaJob = scheduler.registerJob("refresh-virta-for-oppija", (ctx, oppijaNumerot) => refreshVirtaForPersonOids(ctx, mapper.readValue(oppijaNumerot, classOf[Set[String]])), Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
 
-  def syncVirtaForHenkilo(henkiloNumero: String): UUID = refreshOppijaJob.run(henkiloNumero)
+  def startRefreshForHenkilot(henkiloNumerot: Set[String]): UUID = refreshOppijaJob.run(mapper.writeValueAsString(henkiloNumerot))
 
   private val refreshHautJob = scheduler.registerJob("refresh-virta-for-haut", (ctx, data) => {
     val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, Ser
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.KantaOperaatiot.{KantaEntiteetit, MAPPER}
+import fi.oph.suorituspalvelu.business.KantaOperaatiot.{KantaEntiteetit, MAPPER, XMLMAPPER}
 import org.skyscreamer.jsonassert.{JSONCompare, JSONCompareMode}
 import slick.jdbc.{GetResult, JdbcBackend, SQLActionBuilder, SetParameter}
 import slick.jdbc.PostgresProfile.api.*
@@ -18,15 +18,19 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
 import KantaOperaatiot.KantaEntiteetit.*
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 
 implicit val setStringArray: SetParameter[Seq[String]] = mkArraySetParameter[String]("varchar")
 
 implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
-  r.rs.getArray(r.skip.currentPos)
-    .getArray
-    .asInstanceOf[Array[Any]]
-    .toList
-    .map(_.toString())
+  val array = r.rs.getArray(r.skip.currentPos)
+  if(array==null)
+    List.empty
+  else
+    array.getArray
+      .asInstanceOf[Array[Any]]
+      .toList
+      .map(_.toString())
 )
 
 object KantaOperaatiot {
@@ -56,6 +60,17 @@ object KantaOperaatiot {
     mapper
   }
 
+  val XMLMAPPER: ObjectMapper = {
+    val mapper = new XmlMapper()
+    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(new JavaTimeModule())
+    mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, true)
+    mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
+    mapper
+  }
+
   enum KantaEntiteetit:
     case AMMATILLINEN_TUTKINTO, AMMATILLISEN_TUTKINNON_OSA, AMMATILLISEN_TUTKINNON_OSAALUE, PERUSOPETUKSEN_OPPIMAARA,
     NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA, PERUSOPETUKSEN_VUOSILUOKKA, PERUSOPETUKSEN_OPPIAINE, TUVA, TELMA,
@@ -72,23 +87,33 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def isNewVersion(oppijaNumero: String, suoritusJoukko: SuoritusJoukko, data: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
-            SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json
+            SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json, data_xml
             FROM versiot
             WHERE oppijanumero=${oppijaNumero} AND suoritusjoukko=${suoritusJoukko.nimi} AND upper(voimassaolo)='infinity'::timestamptz
-        """.as[(String, Seq[String])].map(result => {
+        """.as[(String, Seq[String], Seq[String])].map(result => {
       if(result.isEmpty)
         true
       else
-        val (alku, existingData) = result.head
+        val (alku, existingJsonData, existingXmlData) = result.head
         if(fetchedAt.toEpochMilli<=Instant.parse(alku).toEpochMilli)
           LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska aikaisemmin tallennettu versio on uudempi.")
           false
         else
           suoritusJoukko match
-            case SuoritusJoukko.VIRTA => true // TODO: ei toteutettu
+            case SuoritusJoukko.VIRTA =>
+              existingXmlData.length != data.length ||
+              existingXmlData.sorted.zip(data.sorted).exists((existingDataItem, dataItem) => {
+                val existingDataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(existingDataItem, classOf[Map[Any, Any]]))
+                val dataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(dataItem, classOf[Map[Any, Any]]))
+                if (JSONCompare.compareJSON(existingDataAsJson, dataAsJson, JSONCompareMode.NON_EXTENSIBLE).passed())
+                  LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+                  false
+                else
+                  true
+              })
             case default =>
-              existingData.length != data.length ||
-              existingData.sorted.zip(data.sorted).exists((existingDataItem, dataItem) => {
+              existingJsonData.length != data.length ||
+              existingJsonData.sorted.zip(data.sorted).exists((existingDataItem, dataItem) => {
                 if (JSONCompare.compareJSON(existingDataItem, dataItem, JSONCompareMode.NON_EXTENSIBLE).passed())
                   LOG.info(s"Ei tarvetta tallentaa uutta versiota oppijalle $oppijaNumero, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
                   false

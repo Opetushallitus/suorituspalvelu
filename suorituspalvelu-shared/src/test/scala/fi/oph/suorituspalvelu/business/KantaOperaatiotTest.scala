@@ -136,6 +136,32 @@ class KantaOperaatiotTest {
     Assertions.assertTrue(duplicateVersio.isEmpty)
 
   /**
+   * Testataan että xml-datan muuttuessa oppijalle tallennetaan uusi versio.
+   */
+  @Test def testUusiVersioLuodaanKunXmlDataMuuttuu(): Unit =
+    val OPPIJANUMERO = "1.2.3"
+
+    // tallennetaan versio
+    Assertions.assertTrue(this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq("<ulompi><sisempi>arvo1</sisempi><sisempi attr=\"arvo\">arvo2</sisempi></ulompi>"), Instant.now()).isDefined)
+    Assertions.assertTrue(this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq("<ulompi><sisempi>arvo1</sisempi><sisempi attr=\"muuttunut\">arvo2</sisempi></ulompi>"), Instant.now()).isDefined)
+
+  /**
+   * Testataan että jos oppijalle tallennetaan uudestaan viimeisin xml-data niin uutta versiota ei luoda.
+   */
+  @Test def testUuttaVersiotaEiLuodaKunXmlDataEiMuutu(): Unit =
+    val OPPIJANUMERO = "1.2.3"
+
+    // tallennetaan versio
+    val originalData = "<ulompi><sisempi>arvo1</sisempi><sisempi>arvo2</sisempi></ulompi>"
+    val originalVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq(originalData), Instant.now())
+    Assertions.assertTrue(originalVersio.isDefined)
+
+    // yritetään tallentaa uusi versio samalla datalla (vaikka tagien järjestys eri)
+    val duplicateData = "<ulompi><sisempi>arvo2</sisempi><sisempi>arvo1</sisempi></ulompi>"
+    val duplicateVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq(duplicateData), Instant.now())
+    Assertions.assertTrue(duplicateVersio.isEmpty)
+
+  /**
    * Testataan että jos oppijalle tallennetaan uudestaan viimeisin json-data niin uutta versiota ei luoda.
    */
   @Test def testUuttaVersiotaEiLuodaKunUudempiVersioTallennettu(): Unit =
