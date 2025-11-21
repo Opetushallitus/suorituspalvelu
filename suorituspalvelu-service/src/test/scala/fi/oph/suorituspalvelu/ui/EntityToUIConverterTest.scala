@@ -475,16 +475,28 @@ class EntityToUIConverterTest {
       yksilollistaminen = Some(1),
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2020-01-01")),
-      aineet = Set(PerusopetuksenOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = Kielistetty(Some("Historia"), None, None),
-        koodi = Koodi("HI", "koskioppiaineetyleissivistava", Some(1)),
-        arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
-        kieli = Some(Koodi("FI", "kieli", Some(1))),
-        pakollinen = true,
-        yksilollistetty = Some(false),
-        rajattu = Some(false)
-      ))
+      aineet = Set(
+        PerusopetuksenOppiaine(
+          tunniste = UUID.randomUUID(),
+          nimi = Kielistetty(Some("Historia"), None, None),
+          koodi = Koodi("HI", "koskioppiaineetyleissivistava", Some(1)),
+          arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+          kieli = None,
+          pakollinen = true,
+          yksilollistetty = Some(false),
+          rajattu = Some(false)
+        ),
+        PerusopetuksenOppiaine(
+          tunniste = UUID.randomUUID(),
+          nimi = Kielistetty(Some("A1-kieli"), None, None),
+          koodi = Koodi("A1", "koskioppiaineetyleissivistava", Some(1)),
+          arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+          kieli = Some(Koodi("DE", "kielivalikoima", Some(1))),
+          pakollinen = true,
+          yksilollistetty = Some(false),
+          rajattu = Some(false)
+        ),
+      )
     )
 
     val koodistoProvider = new KoodistoProvider {
@@ -495,7 +507,14 @@ class EntityToUIConverterTest {
           List(
             KoodiMetadata("FI", "Perusopetuksen oppimäärä")
           )
-        )
+        ),
+        "DE" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+          "DE",
+          Koodisto("kielivalikoima"),
+          List(
+            KoodiMetadata("FI", "saksa")
+          )
+        ),
       )
     }
 
@@ -532,7 +551,7 @@ class EntityToUIConverterTest {
         tunniste = aine.tunniste,
         koodi = aine.koodi.arvo,
         nimi = PerusopetuksenOppiaineNimi(
-          aine.nimi.fi.toJava,
+          if(aine.koodi.arvo=="A1") Optional.of("A1-kieli, saksa") else aine.nimi.fi.toJava,
           aine.nimi.sv.toJava,
           aine.nimi.en.toJava
         ),
