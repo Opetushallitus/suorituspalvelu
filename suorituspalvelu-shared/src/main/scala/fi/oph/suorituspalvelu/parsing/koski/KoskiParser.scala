@@ -46,6 +46,7 @@ case class OsaSuoritus(tyyppi: SuoritusTyyppi,
                        arviointi: Option[Set[Arviointi]],
                        `yksilöllistettyOppimäärä`: Option[Boolean],
                        `rajattuOppimäärä`: Option[Boolean],
+                       suorituskieli: Option[SuoritusKieli],
                        osasuoritukset: Option[Set[OsaSuoritus]])
 
 case class SuoritusKieli(koodiarvo: String,

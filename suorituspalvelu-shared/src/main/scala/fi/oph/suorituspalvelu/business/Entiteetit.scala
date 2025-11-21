@@ -55,6 +55,31 @@ case class Arvosana(koodi: Koodi, nimi: Kielistetty)
 
 case class Oppilaitos(nimi: Kielistetty, oid: String)
 
+case class EBArvosana(arvosana: Koodi,
+                      hyvaksytty: Boolean)
+
+case class EBTutkinnonAlaOsaSuoritus(nimi: Kielistetty,
+                                     koodi: Koodi,
+                                     arvosana: Option[EBArvosana], //Todo, ei ehkä järkevää että nämä puuttuvat,
+                                     laajuus: Option[Laajuus]) //mutta tietomalli kuitenkin sallii puuttumisen.
+
+case class EBTutkinnonOsasuoritus(nimi: Kielistetty,
+                                  koodi: Koodi,
+                                  suorituskieli: Koodi,
+                                  osasuoritukset: Set[EBTutkinnonAlaOsaSuoritus])
+
+case class EBTutkinto(tunniste: UUID,
+                      nimi: Kielistetty,
+                      koodi: Koodi,
+                      oppilaitos: Oppilaitos,
+                      koskiTila: Koodi,
+                      supaTila: SuoritusTila,
+                      aloitusPaivamaara: Option[LocalDate],
+                      vahvistusPaivamaara: Option[LocalDate],
+                      //suoritusKieli: Koodi, suorituskieli osasuorituksen alla?
+                      osasuoritukset: Set[EBTutkinnonOsasuoritus]) extends Suoritus, Tyypitetty
+
+
 case class ErikoisAmmattiTutkinto(tunniste: UUID,
                                   nimi: Kielistetty,
                                   koodi: Koodi,
