@@ -164,16 +164,15 @@ class UIService {
     ).flatten.flatten
   }
 
-  def haePKOppijaLuokat(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Set[(String, Set[String])] = {
-    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid, vuosi, luokka)
+  def haePKOppijaLuokat(oppilaitosOid: String, vuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Set[(String, Set[String])] = {
+    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid, vuosi, luokka, false, false)
       .flatMap(metadata => kantaOperaatiot.haeVersiotJaMetadata(metadata, Instant.now()).map((versio, metadata) => (versio.oppijaNumero, KoskiUtil.extractLuokat(oppilaitosOid, metadata))))
       .toSet
   }
 
-  def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
-    val oppijaLuokat = haePKOppijaLuokat(oppilaitos, vuosi, luokka)
+  def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Set[Oppija] = {
+    val oppijaLuokat = haePKOppijaLuokat(oppilaitos, vuosi, luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
     val oppijaOids = oppijaLuokat.map(_._1)
-
     val luokatMap = oppijaLuokat.toMap
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
       .map(onrResult =>

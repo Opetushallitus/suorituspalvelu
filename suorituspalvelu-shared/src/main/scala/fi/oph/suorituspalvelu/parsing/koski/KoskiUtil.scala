@@ -139,7 +139,7 @@ object KoskiUtil {
     hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusYli2vvk)
   }
 
-  def getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Seq[Map[String, Set[String]]] = {
+  def getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid: String, vuosi: Int, luokka: Option[String], suoritusKesken: Boolean, arvosanaPuuttuu: Boolean): Seq[Map[String, Set[String]]] = {
     (vuosi, luokka) match
       case (vuosi, None) if LocalDate.now().getYear==vuosi =>
         // jos tämä vuosi mutta luokkaa ei määritelty, niin pitää olla joko kyseisen oppilaitoksen valmis perusopetuksen suoritus
