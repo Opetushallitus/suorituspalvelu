@@ -164,14 +164,14 @@ class UIService {
     ).flatten.flatten
   }
 
-  def haePKOppijaOidit(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Set[(String, Set[String])] = {
-    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid, vuosi, luokka)
+  def haePKOppijaOidit(oppilaitosOid: String, vuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Set[(String, Set[String])] = {
+    KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid, vuosi, luokka, false, false)
       .flatMap(metadata => kantaOperaatiot.haeVersiotJaMetadata(metadata, Instant.now()).map((versio, metadata) => (versio.oppijaNumero, KoskiUtil.extractLuokat(oppilaitosOid, metadata))))
       .toSet
   }
 
-  def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
-    val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka).map(_._1)
+  def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Set[Oppija] = {
+    val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu).map(_._1)
 
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
       .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, onrOppija.hetu.toJava, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)

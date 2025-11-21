@@ -115,6 +115,8 @@ object ApiConstants {
   final val UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME        = "oppilaitos"
   final val UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME             = "vuosi"
   final val UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME            = "luokka"
+  final val UI_OPPILAITOS_HAKU_KESKEN_TAI_KESKEYTYNYT_PARAM_NAME = "keskentaikeskeytynyt"
+  final val UI_OPPILAITOS_HAKU_EI_YHTEISTEN_ARVOSANAA_PARAM_NAME = "yhteistenarvosanapuuttuu"
 
   final val UI_KAYTTAJAN_TIEDOT_PATH                        = UI_API_PREFIX + "/kayttaja"
 
