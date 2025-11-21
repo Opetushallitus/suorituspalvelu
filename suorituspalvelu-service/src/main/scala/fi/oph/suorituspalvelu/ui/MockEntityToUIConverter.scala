@@ -300,8 +300,8 @@ object MockEntityToUIConverter {
       ))
     ))
 
-  def getEBTutkinto(): Option[EBTutkinto] =
-    Some(EBTutkinto(
+  def getEBTutkinto(): Option[EBTutkintoUI] =
+    Some(EBTutkintoUI(
       tunniste = UUID.randomUUID(),
       nimi = EBTutkintoNimi(
         fi = Optional.of("EB-tutkinto"),
@@ -329,15 +329,15 @@ object MockEntityToUIConverter {
         ),
         suorituskieli = "englanti",
         laajuus = 4,
-        written = EBSuoritus(
+        written = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
-        ),
+        )),
         oral = Optional.empty(),
-        `final` = EBSuoritus(
+        `final` = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
-        )
+        ))
       ), EBOppiaine(
         tunniste = UUID.randomUUID(),
         nimi = EBOppiaineNimi(
@@ -347,18 +347,18 @@ object MockEntityToUIConverter {
         ),
         suorituskieli = "englanti",
         laajuus = 3,
-        written = EBSuoritus(
+        written = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
-        ),
+        )),
         oral = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
         )),
-        `final` = EBSuoritus(
+        `final` = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
-        )
+        ))
       ), EBOppiaine(
         tunniste = UUID.randomUUID(),
         nimi = EBOppiaineNimi(
@@ -368,18 +368,18 @@ object MockEntityToUIConverter {
         ),
         suorituskieli = "englanti",
         laajuus = 3,
-        written = EBSuoritus(
+        written = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
-        ),
+        )),
         oral = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
         )),
-        `final` = EBSuoritus(
+        `final` = Optional.of(EBSuoritus(
           tunniste = UUID.randomUUID(),
           arvosana = 8.67,
-        )
+        ))
       ))
     ))
 

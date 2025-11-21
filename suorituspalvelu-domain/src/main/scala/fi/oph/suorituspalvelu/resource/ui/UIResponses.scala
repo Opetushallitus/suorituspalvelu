@@ -472,10 +472,10 @@ case class EBOppiaine(
   @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Int,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty written: EBSuoritus,
+  @BeanProperty written: Optional[EBSuoritus],
   @BeanProperty oral: Optional[EBSuoritus],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty `final`: EBSuoritus
+  @BeanProperty `final`: Optional[EBSuoritus]
 )
 
 case class EBTutkintoNimi(
@@ -487,7 +487,7 @@ case class EBTutkintoNimi(
   @BeanProperty en: Optional[String],
 )
 
-case class EBTutkinto(
+case class EBTutkintoUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -1190,7 +1190,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
   @BeanProperty diaTutkinto: Optional[DIATutkinto],
   @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistus],
-  @BeanProperty ebTutkinto: Optional[EBTutkinto],
+  @BeanProperty ebTutkinto: Optional[EBTutkintoUI],
   @BeanProperty ibTutkinto: Optional[IBTutkinto],
   @BeanProperty preIB: Optional[PreIB],
   @BeanProperty ammatillisetPerusTutkinnot: java.util.List[Ammatillinentutkinto],
