@@ -125,7 +125,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders
@@ -224,7 +224,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders

@@ -18,8 +18,8 @@ import java.util.UUID
 class KoskiUtilTest {
 
   @Test def testIsYsiluokkalainenEiSuoritusta(): Unit =
-    Assertions.assertFalse(KoskiUtil.isOponSeurattava(Seq.empty))
-
+    Assertions.assertFalse(KoskiUtil.isOhjattava(Seq.empty))
+  
   @Test def testIsYsiluokkalainenTrue(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
@@ -54,8 +54,7 @@ class KoskiUtilTest {
       lisatiedot = None,
       tila = KESKEN
     )
-
-    Assertions.assertTrue(KoskiUtil.isOponSeurattava(Seq(opiskeluoikeus)))
+    Assertions.assertTrue(KoskiUtil.isOhjattava(Seq(opiskeluoikeus)))
 
   @Test def testIsYsiluokkalainenValmisPerusopetus(): Unit =
     val vahvistusPaivamaara = LocalDate.parse("2025-06-01")
@@ -93,5 +92,5 @@ class KoskiUtilTest {
       tila = SuoritusTila.VALMIS
     )
 
-    Assertions.assertFalse(KoskiUtil.isOponSeurattava(Seq(opiskeluoikeus)))
+    Assertions.assertFalse(KoskiUtil.isOhjattava(Seq(opiskeluoikeus)))
 }
