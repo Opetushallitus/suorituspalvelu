@@ -130,7 +130,7 @@ class LahettavatResource {
               val user = AuditLog.getUser(request)
               AuditLog.log(user, Map(LAHETTAVAT_OPPILAITOSOID_PARAM_NAME -> oppilaitosOid, LAHETTAVAT_VUOSI_PARAM_NAME -> vuosi.toString), AuditOperation.HaeHenkilotLahettava, None)
               LOG.info(s"Haetaan 2. asteen mahdolliset hakijat oppilaitokselle $oppilaitosOid")
-              val oppijat = uiService.haePKOppijaLuokat(oppilaitosOid, vuosi, None, false, false).map(oppija => LahettavatHenkilo(oppija._1, oppija._2.toList.asJava))
+              val oppijat = uiService.haeOhjattavatJaLuokat(oppilaitosOid, vuosi, None, false, false).map(oppija => LahettavatHenkilo(oppija._1, oppija._2.toList.asJava))
               ResponseEntity.status(HttpStatus.OK).body(LahettavatHenkilotSuccessResponse(oppijat.toList.asJava))
             catch
               case e: Exception =>
