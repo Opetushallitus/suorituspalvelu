@@ -272,13 +272,12 @@ class UIResource {
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[OppijanHakuFailureResponse])))),
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def haeOppilaitoksenOppijat(
-                               @RequestParam(name = UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, required = false) @Parameter(description = "oppilaitoksen tunniste", example = ESIMERKKI_OPPILAITOS_OID) oppilaitos: Optional[String],
-                               @RequestParam(name = UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, required = false) @Parameter(description = "vuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
-                               @RequestParam(name = UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, required = false) @Parameter(description = "luokka", example = ESIMERKKI_LUOKKA) luokka: Optional[String],
-                               @RequestParam(name = UI_OPPILAITOS_HAKU_KESKEN_TAI_KESKEYTYNYT_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritus on Supa-tilassa KESKEN tai KESKEYTYNYT", example = "false") keskenTaiKeskeytynyt: Boolean,
-                               @RequestParam(name = UI_OPPILAITOS_HAKU_EI_YHTEISTEN_ARVOSANAA_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritukselta puuttuu yhteisen aineen arvosana", example = "false") yhteistenArvosanaPuuttuu: Boolean,
-                               request: HttpServletRequest): ResponseEntity[OppijanHakuResponse] =
+  def haeOppilaitoksenOhjattavat(@RequestParam(name = UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, required = true) @Parameter(description = "oppilaitoksen tunniste", example = ESIMERKKI_OPPILAITOS_OID) oppilaitos: Optional[String],
+                                 @RequestParam(name = UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, required = true) @Parameter(description = "vuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
+                                 @RequestParam(name = UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, required = false) @Parameter(description = "luokka", example = ESIMERKKI_LUOKKA) luokka: Optional[String],
+                                 @RequestParam(name = UI_OPPILAITOS_HAKU_KESKEN_TAI_KESKEYTYNYT_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritus on Supa-tilassa KESKEN tai KESKEYTYNYT", example = "false") keskenTaiKeskeytynyt: Boolean,
+                                 @RequestParam(name = UI_OPPILAITOS_HAKU_EI_YHTEISTEN_ARVOSANAA_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritukselta puuttuu yhteisen aineen arvosana", example = "false") yhteistenArvosanaPuuttuu: Boolean,
+                                 request: HttpServletRequest): ResponseEntity[OppijanHakuResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
       LogContext(path = UI_OPPILAITOS_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
@@ -312,7 +311,7 @@ class UIResource {
               UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
               UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME -> luokka.orElse(null),
             ), AuditOperation.HaeOppilaitoksenOppijatUI, None)
-            val oppijat = uiService.haePKOppijat(oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
+            val oppijat = uiService.haeOhjattavat(oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
             Right(ResponseEntity.status(HttpStatus.OK).body(OppijanHakuSuccessResponse(oppijat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanHakuResponse]])
@@ -662,7 +661,7 @@ class UIResource {
               LOG.info(s"Tallennettava perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
-              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPerusopetuksenOppimaaraSuccessResponse())))
           )
@@ -732,7 +731,7 @@ class UIResource {
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else {
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
-              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
             }
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse())))
       )
