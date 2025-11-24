@@ -62,11 +62,11 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         oppijanHaut.get(oppijaOid)
           .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
 
-      def isYsiluokkalainen(koskiData: String): Boolean =
+      def isOhjattava(koskiData: String): Boolean =
         val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData), koodistoProvider)
-        KoskiUtil.isOponSeurattava(opiskeluoikeudet)
+        KoskiUtil.isOhjattava(opiskeluoikeudet)
 
-      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
+      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isOhjattava(r.data))
       processKoskiDataForOppijat(ctx, new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
@@ -108,7 +108,7 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
           val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getMetadata(oikeudet))
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getTallennettavaMetadata(oikeudet))
         })
         SyncResultForHenkilo(oppija.oppijaOid, versio, None)
       } catch {

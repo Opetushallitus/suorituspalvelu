@@ -160,7 +160,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // mockataan organisaatiopalvelun vastaus
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq.empty)
@@ -221,7 +221,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan vuodet ja katsotaan että täsmää
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
@@ -283,7 +283,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan luokat ja katsotaan että täsmää, TODO: toistaiseksi luokka kovakoodattu kunnes saadaan koskesta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
@@ -562,7 +562,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan oppijoita oppilaitoksella ja vuodella
     val result = mvc.perform(MockMvcRequestBuilders

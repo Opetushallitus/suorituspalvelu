@@ -83,7 +83,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       None,
       if (vuosi.isDefined) VALMIS else KESKEN
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
   /*
    * Integraatiotestit metadatapohjaiselle oppijoiden haulle
@@ -107,53 +107,53 @@ class UIServiceTest extends BaseIntegraatioTesti {
       )
     )
 
-  @Test def testHaePKOppijaOiditTamaVuosi(): Unit =
+  @Test def testHaeOhjattavatJaLuokatTamaVuosi(): Unit =
     lisaaSuoritukset()
     
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_KESKEN, Set("9A")), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, Set("9A"))),
-      uiService.haePKOppijaOidit(OPPILAITOS_OID, TAMA_VUOSI, None, false, false))
+      uiService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI, None, false, false))
 
-  @Test def testHaePKOppijaOiditViimevuosi(): Unit =
+  @Test def testHaeOhjattavatJaLuokatViimevuosi(): Unit =
     lisaaSuoritukset()
     
     // palautuu vain oppijat joilla valmis suoritus haetulta vuodelta
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, Set("9A"))),
-      uiService.haePKOppijaOidit(OPPILAITOS_OID, VIIMEVUOSI, None, false, false))
+      uiService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI, None, false, false))
 
-  @Test def testHaePKOppijaOiditToissavuosi(): Unit =
+  @Test def testHaeOhjattavatJaLuokatToissavuosi(): Unit =
     lisaaSuoritukset()
     
     // ei palaudu mitään koska toissavuonna valmistuneita ei ole
     Assertions.assertEquals(
       Set.empty,
-      uiService.haePKOppijaOidit(OPPILAITOS_OID, TOISSAVUOSI, None, false, false))
+      uiService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TOISSAVUOSI, None, false, false))
 
-  @Test def testHaePKOppijaOiditTamaVuosiLuokka(): Unit =
+  @Test def testHaeOhjattavatJaLuokatTamaVuosiLuokka(): Unit =
     lisaaSuoritukset()
 
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta ja luokka täsmää
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_KESKEN, Set("9A")), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, Set("9A"))),
-      uiService.haePKOppijaOidit(OPPILAITOS_OID, TAMA_VUOSI, Some("9A"), false, false))
+      uiService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI, Some("9A"), false, false))
 
-  @Test def testHaePKOppijaOiditViimevuosiLuokka(): Unit =
+  @Test def testHaeOhjattavatJaLuokatViimevuosiLuokka(): Unit =
     lisaaSuoritukset()
 
     // palautuu oppijat joilla valmis suoritus haetulta vuodelta ja luokka täsmää
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, Set("9A"))),
-      uiService.haePKOppijaOidit(OPPILAITOS_OID, VIIMEVUOSI, Some("9A"), false, false))
+      uiService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI, Some("9A"), false, false))
 
-  @Test def testHaePKOppijaOiditToissavuosiLuokka(): Unit =
+  @Test def testHaeOhjattavatJaLuokatToissavuosiLuokka(): Unit =
     lisaaSuoritukset()
     
     // ei palaudu mitään koska toissavuonna valmistuneita ei ole
     Assertions.assertEquals(
       Set.empty,
-      uiService.haePKOppijaOidit(OPPILAITOS_OID, TOISSAVUOSI, Some("9A"), false, false))
+      uiService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TOISSAVUOSI, Some("9A"), false, false))
 
   /*
    * Integraatiotestit oikeuksien tarkistukselle atarusta
@@ -227,7 +227,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // palautuu true koska oppijalla oppilaitoksessa pk-suoritus
     Assertions.assertEquals(true, uiService.hasOppijanKatseluOikeus(oppijaOid))
@@ -266,7 +266,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
 
     // palautuu false koska oppijalla pk-suoritus muuta toisessa oppilaitoksessa kuin oikeus
     Assertions.assertEquals(false, uiService.hasOppijanKatseluOikeus(oppijaOid))
