@@ -1,6 +1,6 @@
-import { isEmpty, isNullish, omitBy } from 'remeda';
+import { isEmpty, isNullish, omitBy, only } from 'remeda';
 import { configPromise } from './configuration';
-import { client } from './http-client';
+import { client, FetchError } from './http-client';
 import type {
   IKayttajaSuccessResponse,
   ILuoSuoritusDropdownDataSuccessResponse,
@@ -14,6 +14,7 @@ import type {
 import type { SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
+import { isHenkiloOid, isHenkilotunnus } from './common';
 
 export type OppijatSearchParams = {
   tunniste?: string;
@@ -21,12 +22,6 @@ export type OppijatSearchParams = {
   vuosi?: string;
   luokka?: string;
 };
-
-const isHenkiloOid = (value?: string) =>
-  value && /^1\.2\.246\.562\.24\.\d+$/.test(value);
-
-const isHenkilotunnus = (value?: string) =>
-  value && /^\d{6}[a-zA-Z-]\d{3}\S{1}$/i.test(value);
 
 export const cleanSearchParams = (params: OppijatSearchParams) => {
   return omitBy(params, (value) => isEmpty(value) || value === '');
@@ -59,33 +54,77 @@ export const searchOppijat = async (params: OppijatSearchParams) => {
   return [];
 };
 
-export const searchOppilaitoksenOppijat = async (
-  oppilaitosOid: string,
-  params: OppijatSearchParams,
-) => {
-  const cleanParams = cleanSearchParams(params);
-  if (isEmpty(cleanParams)) {
-    return { oppijat: [] };
+export const nullWhenErrorMatches = async <T>(
+  promise: Promise<T>,
+  matcher: (error: unknown) => boolean,
+): Promise<T | null> => {
+  try {
+    return await promise;
+  } catch (e: unknown) {
+    if (matcher(e)) {
+      return Promise.resolve(null);
+    }
+    throw e;
+  }
+};
+
+export const searchOppijaByTunniste = async (tunniste?: string | null) => {
+  if (!tunniste) {
+    return null;
   }
 
   const config = await configPromise;
-  const urlSearch = new URLSearchParams(omitBy(params, isNullish));
-  urlSearch.set('oppilaitosOid', oppilaitosOid);
+
+  if (tunniste && (isHenkilotunnus(tunniste) || isHenkiloOid(tunniste))) {
+    const url = new URL(config.routes.suorituspalvelu.oppijatSearchUrl);
+    url.searchParams.set('tunniste', tunniste);
+    return nullWhenErrorMatches(
+      client
+        .get<IOppijanHakuSuccessResponse>(url.toString())
+        .then((res) => only(res.data?.oppijat) ?? null),
+      (error) => {
+        return (
+          error instanceof FetchError &&
+          [404, 410].includes(error?.response?.status)
+        );
+      },
+    );
+  }
+
+  return null;
+};
+
+export const searchOppilaitoksenOppijat = async (
+  params: Omit<OppijatSearchParams, 'tunniste'>,
+) => {
+  const cleanParams = cleanSearchParams(params);
+  const { oppilaitos, vuosi } = cleanParams;
+
+  if (!oppilaitos || !vuosi) {
+    return [];
+  }
+
+  const config = await configPromise;
+  const urlSearch = new URLSearchParams(cleanParams);
 
   const url = `${config.routes.suorituspalvelu.oppilaitoksenOppijatSearchUrl}?${urlSearch.toString()}`;
 
   const res = await client.get<IOppijanHakuSuccessResponse>(url);
-  return res.data;
+  return res.data?.oppijat ?? [];
 };
 
 export const getOppija = async (oppijaNumero: string) => {
   const config = await configPromise;
 
-  const res = await client.get<IOppijanTiedotSuccessResponse>(
-    `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
-  );
+  if (!isHenkiloOid(oppijaNumero)) {
+    throw Error(`OppijaNumero ${oppijaNumero} ei ole kelvollinen henkilö-OID!`);
+  }
 
-  return res.data;
+  return client
+    .get<IOppijanTiedotSuccessResponse>(
+      `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
+    )
+    .then((res) => res.data);
 };
 
 export const getOppilaitokset = async () => {

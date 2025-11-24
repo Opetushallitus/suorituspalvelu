@@ -53,3 +53,9 @@ export const formatHenkiloNimi = (henkilo: Henkilo, t: TFunction) => {
     `${henkilo.etunimet ?? ''} ${henkilo.sukunimi ?? ''}`.trim();
   return trimmedNimi.length === 0 ? t('nimeton-henkilo') : trimmedNimi;
 };
+
+export const isHenkiloOid = (value?: string | null) =>
+  Boolean(value && /^1\.2\.246\.562\.24\.\d+$/.test(value));
+
+export const isHenkilotunnus = (value?: string | null) =>
+  Boolean(value && /^\d{6}[a-zA-Z-]\d{3}\S{1}$/i.test(value));

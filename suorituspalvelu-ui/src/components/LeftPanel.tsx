@@ -65,7 +65,6 @@ export const LeftPanel = ({
             height: '100%',
             flexShrink: 0,
             alignItems: 'stretch',
-            paddingLeft: 2,
           }}
         >
           <Button

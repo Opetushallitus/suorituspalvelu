@@ -1,8 +1,8 @@
 import { useApiSuspenseQuery } from '@/lib/http-client';
-import { queryOptionsSearchOppijat } from '@/lib/suorituspalvelu-queries';
+import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { OppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { isEmpty, isNullish, omitBy, values } from 'remeda';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, type NavigateOptions } from 'react-router';
 import { useMemo } from 'react';
 
 export const useOppijatSearchURLParams = () => {
@@ -20,13 +20,16 @@ export const useOppijatSearchURLParams = () => {
 
 export const useOppijatSearchParamsState = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const vuosi = searchParams.get('vuosi');
   const oppilaitos = searchParams.get('oppilaitos');
+  const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
   const tunniste = searchParams.get('tunniste');
 
   return {
-    setSearchParams: (params: OppijatSearchParams) => {
+    setSearchParams: (
+      params: OppijatSearchParams,
+      options?: NavigateOptions,
+    ) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -39,7 +42,7 @@ export const useOppijatSearchParamsState = () => {
           });
           return next;
         },
-        { replace: false },
+        { replace: false, ...options },
       );
     },
     tunniste,
@@ -61,33 +64,34 @@ const isEmptySearchParams = (searchParams: OppijatSearchParams) => {
   );
 };
 
-export const useOppijatSearch = () => {
+export const useOppilaitoksenOppijatSearch = () => {
   const params = useOppijatSearchParamsState();
 
   const urlParams = useOppijatSearchURLParams();
 
-  const result = useApiSuspenseQuery(queryOptionsSearchOppijat(urlParams));
-
-  const data = useMemo(
-    () =>
-      result.data.filter((oppija) => {
-        if (params.oppilaitos && params.vuosi && params.tunniste) {
-          return (
-            oppija.etunimet
-              ?.toLocaleLowerCase()
-              .includes(params.tunniste.toLowerCase() ?? '') ||
-            oppija.sukunimi
-              ?.toLocaleLowerCase()
-              .includes(params.tunniste.toLowerCase() ?? '')
-          );
-        }
-        return true;
-      }),
-    [params],
+  const result = useApiSuspenseQuery(
+    queryOptionsSearchOppilaitoksenOppijat(urlParams),
   );
 
-  return {
-    ...params,
-    result: { ...result, data },
-  };
+  const data = useMemo(() => {
+    const { oppilaitos, vuosi, tunniste } = params;
+    if (oppilaitos && vuosi && tunniste) {
+      return result.data.filter((oppija) => {
+        return (
+          oppija.etunimet
+            ?.toLocaleLowerCase()
+            .includes(tunniste.toLowerCase() ?? '') ||
+          oppija.sukunimi
+            ?.toLocaleLowerCase()
+            .includes(tunniste.toLowerCase() ?? '') ||
+          oppija?.oppijaNumero.includes(tunniste) ||
+          oppija.hetu?.includes(tunniste)
+        );
+      });
+    } else {
+      return result.data;
+    }
+  }, [params]);
+
+  return { ...result, data };
 };
