@@ -39,16 +39,26 @@ services:
     depends_on:
       - pgdatabase
   frontend:
+    environment:
+      HUSKY: 0
+      NPM_CONFIG_CACHE: /tmp/.npm
+    secrets:
+      - npmrc
+    user: "${USERID}:${GROUPID}"
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    user: "${USERID}:${GROUPID}"
     ports:
       - "3000:3000"
     networks:
       - supanet
     volumes:
+      # Bind mount source code for hot reload
       - ./suorituspalvelu-ui:/app
+      # Use named volume for node_modules to isolate from host
+      - frontend_node_modules:/app/node_modules
+      # Cache npm global cache
+      - frontend_npm_cache:/tmp/.npm
   nginx:
     image: nginx:alpine
     env_file:
@@ -69,3 +79,8 @@ networks:
     driver: bridge
 volumes:
   pgdata:
+  frontend_node_modules:
+  frontend_npm_cache:
+secrets:
+  npmrc:
+    file: ${HOME}/.npmrc
