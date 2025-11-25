@@ -1,10 +1,10 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBTutkinnonOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, VirtaOpiskeluoikeus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBTutkinnonOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, VirtaOpiskeluoikeus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaine, EBOppiaineNimi, EBSuoritus, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOppilaitos, KKOppilaitosNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaara, LukionOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaara, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OOOppilaitos, OOOppilaitosNimi, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaine, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaine, EBOppiaineNimi, EBSuoritus, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOppilaitos, KKOppilaitosNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaara, LukionOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaaraUI, OOOppilaitos, OOOppilaitosNimi, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineenOppimaara, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppimaara, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_HETU, EXAMPLE_OPPIJA_OID}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
@@ -461,7 +461,7 @@ object EntityToUIConverter {
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
             )).get
           )).toJava,
-          oppiaineet = om.aineet.map(a => PerusopetuksenOppiaine(
+          oppiaineet = om.aineet.map(a => PerusopetuksenOppiaineUI(
             tunniste = a.tunniste,
             koodi = a.koodi.arvo,
             nimi = PerusopetuksenOppiaineNimi(
@@ -480,8 +480,85 @@ object EntityToUIConverter {
   def getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PerusopetuksenOppimaara78Luokkalaiset] =
     None
 
-  def getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[NuortenPerusopetuksenOppiaineenOppimaara] =
-    List.empty[NuortenPerusopetuksenOppiaineenOppimaara]
+  def getNuortenPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[NuortenPerusopetuksenOppiaineenOppimaaraUI] = {
+    val opiskeluoikeusToOppimaarat: Map[PerusopetuksenOpiskeluoikeus, Set[NuortenPerusopetuksenOppiaineenOppimaara]] =
+      opiskeluoikeudet
+        .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
+        .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
+        .filter(_.suoritukset.exists(_.isInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]))
+        .map(oo => oo -> oo.suoritukset.filter(_.isInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]).map(_.asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]))
+        .toMap
+
+    val opiskeluoikeudetCombined = opiskeluoikeusToOppimaarat.map((oikeus, oppimaarat) => {
+      val tila = oikeus.tila
+      val oppiaineet = oppimaarat.map((om: NuortenPerusopetuksenOppiaineenOppimaara) => PerusopetuksenOppiaineUI(
+        tunniste = om.tunniste,
+        koodi = om.koodi.arvo,
+        nimi = PerusopetuksenOppiaineNimi(
+          fi = om.nimi.fi.toJava,
+          sv = om.nimi.sv.toJava,
+          en = om.nimi.en.toJava
+        ),
+        kieli = Optional.empty(), //om.suoritusKieli.map(k => k.arvo).toJava,
+        arvosana = om.arvosana.arvo,
+        valinnainen = false //fixme
+      ))
+      NuortenPerusopetuksenOppiaineenOppimaaraUI(
+        tunniste = om.tunniste,
+        nimi = NuortenPerusopetuksenOppiaineenOppimaaraNimi(
+          fi = om.nimi.fi.toJava,
+          sv = om.nimi.sv.toJava,
+          en = om.nimi.en.toJava
+        ),
+        oppilaitos = PKOppilaitos(
+          nimi = PKOppilaitosNimi(
+            fi = om.oppilaitos.nimi.fi.toJava,
+            sv = om.oppilaitos.nimi.sv.toJava,
+            en = om.oppilaitos.nimi.en.toJava
+          ),
+          oid = om.oppilaitos.oid
+        ),
+        tila = "mock-tila", //SuoritusTila.valueOf(om.supaTila.toString),
+        aloituspaiva = om.aloitusPaivamaara.toJava,
+        valmistumispaiva = om.vahvistusPaivamaara.toJava,
+        suorituskieli = om.suoritusKieli.arvo,
+        oppiaineet = oppiaineet.toList.asJava,
+        syotetty = false // Todo, haetaan tieto kannasta suoritusjoukolta
+      )
+    })
+
+    opiskeluoikeudet
+      .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
+      .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
+      .flatMap(o => o.suoritukset)
+      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.NuortenPerusopetuksenOppiaineenOppimaara])
+      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.NuortenPerusopetuksenOppiaineenOppimaara])
+      .map(om => {
+        NuortenPerusopetuksenOppiaineenOppimaaraUI(
+          tunniste = om.tunniste,
+          nimi = NuortenPerusopetuksenOppiaineenOppimaaraNimi(
+            fi = om.nimi.fi.toJava,
+            sv = om.nimi.sv.toJava,
+            en = om.nimi.en.toJava
+          ),
+          oppilaitos = PKOppilaitos(
+            nimi = PKOppilaitosNimi(
+              fi = om.oppilaitos.nimi.fi.toJava,
+              sv = om.oppilaitos.nimi.sv.toJava,
+              en = om.oppilaitos.nimi.en.toJava
+            ),
+            oid = om.oppilaitos.oid
+          ),
+          tila = "mock-tila", //SuoritusTila.valueOf(om.supaTila.toString),
+          aloituspaiva = om.aloitusPaivamaara.toJava,
+          valmistumispaiva = om.vahvistusPaivamaara.toJava,
+          suorituskieli = om.suoritusKieli.arvo,
+          oppiaineet = List.empty.asJava,
+          syotetty = false //Todo, tieto kannasta (suoritusjoukko)
+        )
+      }).toList
+  }
+
 
   def getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppiaineenOppimaara] =
     List.empty[PerusopetuksenOppiaineenOppimaara]

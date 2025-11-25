@@ -363,10 +363,14 @@ object KoskiToSuoritusConverter {
         fi.oph.suorituspalvelu.business.Oppilaitos(
           o.nimi,
           o.oid)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => asKoodiObject(t))).get,
       parasArviointi.map(arviointi => asKoodiObject(arviointi.arvosana)).get, //Yksi arviointi löytyy aina, tai muuten näitä ei edes haluta parsia
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.flatMap(km => km.pakollinen).getOrElse(dummy()),
+      suoritus.koulutusmoduuli.flatMap(km => km.kieli.map(kieli => asKoodiObject(kieli))),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     )

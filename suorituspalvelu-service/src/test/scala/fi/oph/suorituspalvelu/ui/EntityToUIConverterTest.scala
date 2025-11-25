@@ -547,7 +547,7 @@ class EntityToUIConverterTest {
           Optional.empty
         )
       )),
-      oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaine(
+      oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaineUI(
         tunniste = aine.tunniste,
         koodi = aine.koodi.arvo,
         nimi = PerusopetuksenOppiaineNimi(

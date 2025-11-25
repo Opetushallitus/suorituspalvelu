@@ -16,7 +16,7 @@ object SuoritusJoukko {
   final val VIRTA = SuoritusJoukko("VIRTA")
   final val YTR   = SuoritusJoukko("YTR")
   final val SYOTETTY_PERUSOPETUS = SuoritusJoukko("SYOTETTY_PERUSOPETUS")
-  final val SYOTETTY_OPPIAINE = SuoritusJoukko("SYOTETTY_OPPIAINE")
+  final val SYOTETYT_OPPIAINEET = SuoritusJoukko("SYOTETYT_OPPIAINEET")
 
   @JsonCreator
   def fromString(value: String): SuoritusJoukko = SuoritusJoukko(value)
@@ -176,10 +176,14 @@ case class VapaaSivistystyo(tunniste: UUID,
 case class NuortenPerusopetuksenOppiaineenOppimaara(tunniste: UUID,
                                                     versioTunniste: Option[UUID],
                                                     oppilaitos: Oppilaitos,
+                                                    koskiTila: Koodi,
+                                                    supaTila: SuoritusTila,
                                                     nimi: Kielistetty,
                                                     koodi: Koodi,
                                                     arvosana: Koodi,
                                                     suoritusKieli: Koodi,
+                                                    pakollinen: Boolean,
+                                                    kieli: Option[Koodi], //Tämä tieto kertoo äidinkielen tai vieraan kielen tapauksessa opiskellun kielen. Huom. ero suorituskieleen.
                                                     aloitusPaivamaara: Option[LocalDate],
                                                     vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
 
