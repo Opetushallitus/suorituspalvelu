@@ -28,13 +28,13 @@ const ClearButton = styled(OphButton)({
   },
 });
 
-export const SearchInput = (props: SearchInputProps) => {
+export const SearchInput = ({ onClear, ...props }: SearchInputProps) => {
   return (
     <OphInputFormField
       endAdornment={
         <StyledAdornment position="end">
           {props.value ? (
-            <ClearButton startIcon={<Close />} onClick={props.onClear} />
+            <ClearButton startIcon={<Close />} onClick={onClear} />
           ) : null}
           <Search sx={{ '&.MuiSvgIcon-root': { color: ophColors.grey300 } }} />
         </StyledAdornment>

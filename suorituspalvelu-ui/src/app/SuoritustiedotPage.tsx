@@ -13,6 +13,12 @@ export default function SuoritustiedotPage({ params }: Route.ComponentProps) {
 
   const { data: tiedot } = useOppija(params.oppijaNumero);
 
+  if (!tiedot) {
+    throw new Error(
+      `Oppijaa ei löytynyt suorituspalvelusta oppijanumerolla: ${params.oppijaNumero}`,
+    );
+  }
+
   return (
     <QuerySuspenseBoundary>
       <Stack spacing={6}>
