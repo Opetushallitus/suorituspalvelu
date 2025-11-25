@@ -90,10 +90,14 @@ object VirkailijaToSuoritusConverter {
             ),
             suoritus.oppilaitosOid.get
           )).get,
+          Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), // syötetään vain valmistuneita suorituksia
+          SuoritusTila.VALMIS,
           toOppiaineenNimi(suoritus.oppiaine.get().koodi.get(), koodistoProvider),
           Koodi(suoritus.suorituskieli.get, "kieli", None),
           suoritus.oppiaine.get().arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
           Koodi(suoritus.suorituskieli.get(), "kieli", None),
+          suoritus.oppiaine.get().valinnainen.toScala.map(p => !p).getOrElse(dummy()),
+          suoritus.oppiaine.get().kieli.toScala.map(k => Koodi(k, "kielivalikoima", None)),
           None,
           suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp))
         )

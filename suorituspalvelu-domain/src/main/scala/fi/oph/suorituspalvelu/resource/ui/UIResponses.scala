@@ -978,7 +978,7 @@ case class PerusopetuksenOppiaineNimi(
   @BeanProperty en: Optional[String],
 )
 
-case class PerusopetuksenOppiaine(
+case class PerusopetuksenOppiaineUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, description="koskioppiaineetyleissivistävä-koodiston koodi", requiredMode = RequiredMode.REQUIRED)
@@ -1040,7 +1040,7 @@ case class PerusopetuksenOppimaara(
   @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty yksilollistaminen: Optional[Yksilollistaminen],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine],
+  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaineUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty syotetty: Boolean,
 )
@@ -1070,7 +1070,7 @@ case class AikuistenPerusopetuksenOppimaara(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
+  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaineUI]
 )
 
 case class PerusopetuksenOppimaara78LuokkalaisetNimi(
@@ -1114,7 +1114,7 @@ case class NuortenPerusopetuksenOppiaineenOppimaaraNimi(
   @BeanProperty en: Optional[String],
 )
 
-case class NuortenPerusopetuksenOppiaineenOppimaara(
+case class NuortenPerusopetuksenOppiaineenOppimaaraUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -1130,7 +1130,7 @@ case class NuortenPerusopetuksenOppiaineenOppimaara(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine],
+  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaineUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty syotetty: Boolean
 )
@@ -1160,7 +1160,7 @@ case class PerusopetuksenOppiaineenOppimaara(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
+  @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaineUI]
 )
 
 case class OppijanTiedotRequest(
@@ -1201,7 +1201,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty vapaaSivistystyoKoulutukset: java.util.List[VapaaSivistystyoKoulutus],
   @BeanProperty perusopetuksenOppimaarat: java.util.List[PerusopetuksenOppimaara],
   @BeanProperty perusopetuksenOppimaara78Luokkalaiset: Optional[PerusopetuksenOppimaara78Luokkalaiset],
-  @BeanProperty nuortenPerusopetuksenOppiaineenOppimaarat: java.util.List[NuortenPerusopetuksenOppiaineenOppimaara],
+  @BeanProperty nuortenPerusopetuksenOppiaineenOppimaarat: java.util.List[NuortenPerusopetuksenOppiaineenOppimaaraUI],
   @BeanProperty perusopetuksenOppiaineenOppimaarat: java.util.List[PerusopetuksenOppiaineenOppimaara],
   @BeanProperty aikuistenPerusopetuksenOppimaarat: java.util.List[AikuistenPerusopetuksenOppimaara]
 ) extends OppijanTiedotResponse
