@@ -199,7 +199,7 @@ export async function clientLoader({
         // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
         if (onlyHakuOid) {
           url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
-          throw redirect(url.search);
+          return redirect(url.search);
         }
       } catch (e) {
         console.error(e);
