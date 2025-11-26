@@ -11,8 +11,8 @@ import { useTranslate } from '@tolgee/react';
 const MINIMIZED_PANEL_WIDTH = '100px';
 
 const StyledPanel = styled('div')({
-  width: '17vw',
-  minWidth: '300px',
+  width: '19vw',
+  minWidth: '350px',
   display: 'block',
   height: '100vh',
   borderRight: DEFAULT_BOX_BORDER,
