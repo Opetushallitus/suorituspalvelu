@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, PerusopetuksenOppimaaranOppiaineidenSuoritus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski
@@ -874,14 +874,14 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara]
+        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus]
 
     Assertions.assertNotNull(oppimaara.tunniste)
     Assertions.assertTrue(oppimaara.versioTunniste.isEmpty)
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("oppilaitos"), None, None), "1.2.246.562.10.42923230215"), oppimaara.oppilaitos)
-    Assertions.assertEquals(Kielistetty(Some("Matematiikka"), None, None), oppimaara.nimi)
-    Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.koodi)
-    Assertions.assertEquals(Koodi("8", "arviointiasteikkoyleissivistava", Some(1)), oppimaara.arvosana)
+    Assertions.assertEquals(Kielistetty(Some("Matematiikka"), None, None), oppimaara.oppiaineet.head.nimi)
+    Assertions.assertEquals(Koodi("MA", "koskioppiaineetyleissivistava", Some(1)), oppimaara.oppiaineet.head.oppiaineKoodi)
+    Assertions.assertEquals(Koodi("8", "arviointiasteikkoyleissivistava", Some(1)), oppimaara.oppiaineet.head.arvosana)
     Assertions.assertEquals(Some(LocalDate.parse("2022-05-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2022-05-18")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)

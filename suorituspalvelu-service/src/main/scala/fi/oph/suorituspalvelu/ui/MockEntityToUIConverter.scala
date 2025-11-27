@@ -979,14 +979,9 @@ object MockEntityToUIConverter {
       yksilollistetty = false
     ))
 
-  def getNuortenPerusopetuksenOppiaineenOppimaarat(): List[NuortenPerusopetuksenOppiaineenOppimaaraUI] =
-    List(NuortenPerusopetuksenOppiaineenOppimaaraUI(
+  def getNuortenPerusopetuksenOppiaineenOppimaarat(): List[PerusopetuksenOppiaineenOppimaaratUI] = {
+    List(PerusopetuksenOppiaineenOppimaaratUI(
       tunniste = UUID.randomUUID(),
-      nimi = NuortenPerusopetuksenOppiaineenOppimaaraNimi(
-        fi = Optional.of("Nuorten perusopetuksen oppiaineen oppimäärä"),
-        sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning sv"),
-        en = Optional.of("Basic education for youth subject syllabus en")
-      ),
       oppilaitos = PKOppilaitos(
         nimi = PKOppilaitosNimi(
           fi = Optional.of("Keltinmäen koulu"),
@@ -1024,15 +1019,11 @@ object MockEntityToUIConverter {
       )),
       syotetty = false
     ))
+  }
 
-  def getPerusopetuksenOppiaineenOppimaarat(): List[PerusopetuksenOppiaineenOppimaara] =
-    List(PerusopetuksenOppiaineenOppimaara(
+  def getPerusopetuksenOppiaineenOppimaarat(): List[PerusopetuksenOppiaineenOppimaaratUI] =
+    List(PerusopetuksenOppiaineenOppimaaratUI(
       tunniste = UUID.randomUUID(),
-      nimi = PerusopetuksenOppiaineenOppimaaraNimi(
-        fi = Optional.of("Perusopetuksen oppiaineen oppimäärä"),
-        sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning"),
-        en = Optional.of("Basic education subject syllabus")
-      ),
       oppilaitos = PKOppilaitos(
         nimi = PKOppilaitosNimi(
           fi = Optional.of("Keltinmäen koulu"),
@@ -1056,7 +1047,8 @@ object MockEntityToUIConverter {
         kieli = Optional.empty(),
         arvosana = "9",
         valinnainen = false
-      ))
+      )),
+      syotetty = false
     ))
 
   def getAikuistenPerusopetuksetOppimaarat(): List[AikuistenPerusopetuksenOppimaara] =
@@ -1199,9 +1191,7 @@ object MockEntityToUIConverter {
       vapaaSivistystyoKoulutukset =               getVapaaSivistystyoKoulutukset().asJava,
       perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat().asJava,
       perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset().toJava,
-      nuortenPerusopetuksenOppiaineenOppimaarat = getNuortenPerusopetuksenOppiaineenOppimaarat().asJava,
       perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava,
-      aikuistenPerusopetuksenOppimaarat =         getAikuistenPerusopetuksetOppimaarat().asJava
     )
   }
 }
