@@ -6,18 +6,25 @@ import {
   ophColors,
   OphInputFormField,
 } from '@opetushallitus/oph-design-system';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type SearchInputProps = Omit<
   React.ComponentProps<typeof OphInputFormField>,
-  'endAdornment'
+  'endAdornment' | 'onChange' | 'value'
 > & {
   onClear: () => void;
+  onChange?: (value: string) => void;
+  debounceMs?: number;
+  value: string;
 };
 
 const StyledAdornment = styled(InputAdornment)(({ theme }) => ({
   '&.MuiInputAdornment-root': {
     margin: 0,
     padding: theme.spacing(0, 1),
+    '& .MuiSvgIcon-root': {
+      color: ophColors.grey300,
+    },
   },
 }));
 
@@ -28,17 +35,60 @@ const ClearButton = styled(OphButton)({
   },
 });
 
-export const SearchInput = ({ onClear, ...props }: SearchInputProps) => {
+export const SearchInput = ({
+  onClear,
+  onChange,
+  debounceMs = 300,
+  value,
+  ...props
+}: SearchInputProps) => {
+  const [localValue, setLocalValue] = useState(value);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const previousValue = useRef<string>(value);
+
+  const valueHasChanged = previousValue.current !== value;
+  previousValue.current = value;
+
+  // Sync external value changes only when not in the middle of debouncing
+  if (valueHasChanged && !timeoutRef.current) {
+    setLocalValue(value);
+  }
+
+  useEffect(() => {
+    timeoutRef.current = setTimeout(() => {
+      if (onChange) {
+        onChange(localValue);
+      }
+      timeoutRef.current = null;
+    }, debounceMs);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [localValue, debounceMs, onChange]);
+
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalValue(event.target.value);
+    },
+    [setLocalValue],
+  );
+
   return (
     <OphInputFormField
       endAdornment={
         <StyledAdornment position="end">
-          {props.value ? (
+          {localValue ? (
             <ClearButton startIcon={<Close />} onClick={onClear} />
           ) : null}
-          <Search sx={{ '&.MuiSvgIcon-root': { color: ophColors.grey300 } }} />
+          <Search />
         </StyledAdornment>
       }
+      value={localValue}
+      onChange={handleChange}
       {...props}
     />
   );
