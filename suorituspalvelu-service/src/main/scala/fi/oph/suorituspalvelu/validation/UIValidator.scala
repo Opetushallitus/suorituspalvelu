@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
-import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
@@ -171,7 +171,7 @@ object UIValidator {
   def validatePerusopetuksenOppimaaranOppiaineet(oppiaineet: Option[List[SyotettyPerusopetuksenOppiaine]]): Set[String] = {
     if (oppiaineet.isEmpty)
       Set(VALIDATION_OPPIAINEET_TYHJA)
-    else if (oppiaineet.map(oat => oat.exists(oa => oa.koodi.isEmpty)).getOrElse(false))
+    else if (oppiaineet.map(oat => oat.exists(oa => oa.oppiaineKoodi.isEmpty)).getOrElse(false))
       Set(VALIDATION_OPPIAINEET_KOODI_TYHJA)
     else
       Set.empty
@@ -209,17 +209,17 @@ object UIValidator {
   }
 
   def validatePerusopetuksenOppimaaranOppiaineenKieli(oppiaine: SyotettyPerusopetuksenOppiaine, koodistoProvider: KoodistoProvider): Set[String] = {
-    if(oppiaine.kieli.isPresent)
-      if(oppiaine.koodi.isEmpty || (!SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()) && !"AI".equals(oppiaine.koodi.get())))
+    if(oppiaine.kieliLisatieto.isPresent)
+      if(oppiaine.oppiaineKoodi.isEmpty || (!SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.oppiaineKoodi.get()) && !"AI".equals(oppiaine.oppiaineKoodi.get())))
         Set(VALIDATION_KIELI_MAARITELTY)
-      else if(SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()) && koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA).get(oppiaine.kieli.get()).isEmpty)
+      else if(SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.oppiaineKoodi.get()) && koodistoProvider.haeKoodisto(KOODISTO_KIELIVALIKOIMA).get(oppiaine.kieliLisatieto.get()).isEmpty)
         Set(VALIDATION_KIELI_EI_VALIDI)
-      else if("AI".equals(oppiaine.koodi.get()) && koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(oppiaine.kieli.get()).isEmpty)
+      else if("AI".equals(oppiaine.oppiaineKoodi.get()) && koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(oppiaine.kieliLisatieto.get()).isEmpty)
         Set(VALIDATION_AI_OPPIMAARA_EI_VALIDI)
       else
         Set.empty
     else
-      if(oppiaine.koodi.isPresent && (SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.koodi.get()) || "AI".equals(oppiaine.koodi.get())))
+      if(oppiaine.oppiaineKoodi.isPresent && (SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT.contains(oppiaine.oppiaineKoodi.get()) || "AI".equals(oppiaine.oppiaineKoodi.get())))
         Set(VALIDATION_KIELI_EI_MAARITELTY)
       else
         Set.empty
@@ -237,7 +237,7 @@ object UIValidator {
       Set(VALIDATION_OPPIAINE_TYHJA)
     else
       Set(
-        validatePerusopetuksenOppimaaranOppiaineenKoodi(oppiaine.get.koodi.toScala),
+        validatePerusopetuksenOppimaaranOppiaineenKoodi(oppiaine.get.oppiaineKoodi.toScala),
         validatePerusopetuksenOppimaaranOppiaineenArvosana(oppiaine.get.arvosana.toScala),
         validatePerusopetuksenOppimaaranOppiaineenKieli(oppiaine.get, koodistoProvider),
         validatePerusopetuksenOppimaaranOppiaineenValinnainen(oppiaine.get.valinnainen.toScala),
@@ -249,20 +249,20 @@ object UIValidator {
       Map.empty
     else
       oppiaineet.get().asScala
-        .filter(oa => oa.koodi.toScala.isDefined)
-        .map(oa => oa.koodi.get() -> validatePerusopetuksenOppimaaranOppiaine(Some(oa), koodistoProvider))
+        .filter(oa => oa.oppiaineKoodi.toScala.isDefined)
+        .map(oa => oa.oppiaineKoodi.get() -> validatePerusopetuksenOppimaaranOppiaine(Some(oa), koodistoProvider))
         .filter(oa => oa._2.nonEmpty)
         .toMap
   }
 
-  def validatePerusopetuksenOppiaineenOppimaara(suoritus: SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, koodistoProvider: KoodistoProvider): Set[String] = {
+  def validatePerusopetuksenOppiaineenOppimaarat(suoritus: SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer, koodistoProvider: KoodistoProvider): Set[String] = {
     Set(
       validateOppijanumero(suoritus.oppijaOid.toScala, true),
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
       validateValmistumisPaiva(suoritus.valmistumispaiva.toScala),
       validatePerusopetuksenOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
       validatePerusopetuksenOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),
-      validatePerusopetuksenOppimaaranOppiaine(suoritus.oppiaine.toScala, koodistoProvider)
+      suoritus.oppiaineet.asScala.flatMap(o => validatePerusopetuksenOppimaaranOppiaine(Some(o), koodistoProvider))
     ).flatten
   }
 

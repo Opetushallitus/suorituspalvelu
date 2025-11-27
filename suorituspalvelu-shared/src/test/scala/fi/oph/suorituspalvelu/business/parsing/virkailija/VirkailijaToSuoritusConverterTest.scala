@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter.dummy
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
@@ -77,9 +77,9 @@ class VirkailijaToSuoritusConverterTest {
           suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
             converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara].aineet.head.tunniste,
             Kielistetty(Some("matematiikka"), None, None),
-            oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
+            oppiaine.oppiaineKoodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
             oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-            oppiaine.kieli.toScala.map(k => Koodi(k, "kieli", None)),
+            oppiaine.kieliLisatieto.toScala.map(k => Koodi(k, "kieli", None)),
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None
@@ -92,21 +92,21 @@ class VirkailijaToSuoritusConverterTest {
 
     Assertions.assertEquals(expected, converted)
 
-  @Test def testConvertPerusopetuksenOppiaineenOppimaara(): Unit =
+  @Test def testConvertPerusopetuksenOppiaineenOppimaara(): Unit = {
     val versioTunniste = UUID.randomUUID()
 
-    val suoritus = SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus(
-        Optional.of("1.2.246.562.24.21250967212"),
-        Optional.of(ApiConstants.ESIMERKKI_OPPILAITOS_OID),
-        Optional.of(LocalDate.now().toString),
-        Optional.of("FI"),
-        Optional.of(1),
-        Optional.of(SyotettyPerusopetuksenOppiaine(
-          Optional.of("MA"),
-          Optional.empty(),
-          Optional.of(9),
-          Optional.of(false)
-        )))
+    val suoritus = SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer(
+      Optional.of("1.2.246.562.24.21250967212"),
+      Optional.of(ApiConstants.ESIMERKKI_OPPILAITOS_OID),
+      Optional.of(LocalDate.now().toString),
+      Optional.of("FI"),
+      Optional.of(1),
+      java.util.Set.of(SyotettyPerusopetuksenOppiaine(
+        Optional.of("MA"),
+        Optional.empty(),
+        Optional.of(9),
+        Optional.of(false)
+      )))
 
     val organisaatio = Organisaatio(
       ApiConstants.ESIMERKKI_OPPILAITOS_OID,
@@ -126,23 +126,24 @@ class VirkailijaToSuoritusConverterTest {
       None,
       suoritus.oppilaitosOid.get,
       Set(
-        NuortenPerusopetuksenOppiaineenOppimaara(
-          converted.suoritukset.head.asInstanceOf[NuortenPerusopetuksenOppiaineenOppimaara].tunniste,
-          Some(versioTunniste),
-          Oppilaitos(
-            Kielistetty(
-              Some("Oppilaitos"),
-              Some("Oppilaitos"),
-              Some("Oppilaitos")
+        PerusopetuksenOppimaaranOppiaineidenSuoritus(
+          tunniste = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].tunniste,
+          versioTunniste = Some(versioTunniste),
+          oppilaitos =
+            Oppilaitos(
+              Kielistetty(
+                Some("Oppilaitos"),
+                Some("Oppilaitos"),
+                Some("Oppilaitos")
+              ),
+              suoritus.oppilaitosOid.get
             ),
-            suoritus.oppilaitosOid.get
-          ),
-          Kielistetty(Some("matematiikka"), None, None),
-          Koodi(suoritus.suorituskieli.get, "kieli", None),
-          suoritus.oppiaine.get().arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-          Koodi(suoritus.suorituskieli.get(), "kieli", None),
-          None,
-          suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp))
+          koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)),
+          supaTila = SuoritusTila.VALMIS,
+          suoritusKieli = Koodi(suoritus.suorituskieli.get(), "kieli", None),
+          aloitusPaivamaara = None,
+          vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
+          oppiaineet = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].oppiaineet
         )
       ),
       None,
@@ -150,5 +151,6 @@ class VirkailijaToSuoritusConverterTest {
     )
 
     Assertions.assertEquals(expected, converted)
+  }
 
 }
