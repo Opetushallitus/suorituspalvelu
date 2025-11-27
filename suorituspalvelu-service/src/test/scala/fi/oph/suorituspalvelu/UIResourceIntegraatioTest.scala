@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Kout
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -458,22 +458,31 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testHaeOppijanTiedotAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
+    val request = OppijanTiedotRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO))
     mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_TUNNISTE_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testHaeOppijanTiedotNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    val request = OppijanTiedotRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO))
     mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_TUNNISTE_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
       .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijanTiedotMalformedOid(): Unit =
     // ei validi oid ei sallittu
+    val request = OppijanTiedotRequest(Optional.of("tämä ei ole validi oid"))
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_TUNNISTE_PARAM_PLACEHOLDER, "tämä ei ole validi oid"), ""))
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -488,8 +497,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map.empty))
 
     // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_TUNNISTE_PARAM_PLACEHOLDER, oppijaNumero), ""))
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
       .andExpect(status.isGone)
       .andReturn()
 
@@ -516,8 +528,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_TUNNISTE_PARAM_PLACEHOLDER, oppijaNumero), ""))
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
       .andExpect(status().isOk)
       .andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])

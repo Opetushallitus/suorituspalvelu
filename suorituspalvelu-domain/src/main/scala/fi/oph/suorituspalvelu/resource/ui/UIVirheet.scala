@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.resource.ui
 object UIVirheet {
 
   final val UI_TIEDOT_HAKU_EPAONNISTUI                         = "backend-virhe.oppijantiedot.haku_epaonnistui"
+  final val UI_TIEDOT_JSON_EI_VALIDI                           = "backend-virhe.oppijantiedot.json_ei_validi"
 
   final val UI_HAKU_JOKO_HAKUSANA_TAI_OPPILAITOS               = "backend-virhe.haku.joko_hakusana_tai_oppilaitos_sallittu"
   final val UI_HAKU_EPAONNISTUI                                = "backend-virhe.haku.haku_epaonnistui"

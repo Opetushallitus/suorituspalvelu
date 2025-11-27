@@ -32,10 +32,12 @@ const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
 test.describe('Suoritustiedot', () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date('2025-01-01T12:00:00Z'));
-    await page.route(`**/ui/tiedot/${OPPIJANUMERO}`, async (route) => {
-      await route.fulfill({
-        json: OPPIJAN_TIEDOT,
-      });
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          json: OPPIJAN_TIEDOT,
+        });
+      }
     });
 
     await page.route(`**/ui/oppilaitokset`, async (route) => {
