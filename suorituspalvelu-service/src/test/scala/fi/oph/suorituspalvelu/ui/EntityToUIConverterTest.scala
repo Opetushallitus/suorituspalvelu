@@ -496,7 +496,8 @@ class EntityToUIConverterTest {
           yksilollistetty = Some(false),
           rajattu = Some(false)
         ),
-      )
+      ),
+      syotetty = false
     )
 
     val koodistoProvider = new KoodistoProvider {
@@ -518,7 +519,7 @@ class EntityToUIConverterTest {
       )
     }
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppimaara(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppimaaraUI(
       versioTunniste = oppimaara.versioTunniste.toJava,
       tunniste = oppimaara.tunniste,
       nimi = PerusopetuksenOppimaaraNimi(
@@ -559,7 +560,7 @@ class EntityToUIConverterTest {
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
       )).toList.asJava,
-      syotetty = true
+      syotetty = oppimaara.syotetty
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
   }
 

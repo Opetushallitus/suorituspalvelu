@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
-import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
@@ -255,7 +255,7 @@ object UIValidator {
         .toMap
   }
 
-  def validatePerusopetuksenOppiaineenOppimaarat(suoritus: SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer, koodistoProvider: KoodistoProvider): Set[String] = {
+  def validatePerusopetuksenOppiaineenOppimaarat(suoritus: SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, koodistoProvider: KoodistoProvider): Set[String] = {
     Set(
       validateOppijanumero(suoritus.oppijaOid.toScala, true),
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),

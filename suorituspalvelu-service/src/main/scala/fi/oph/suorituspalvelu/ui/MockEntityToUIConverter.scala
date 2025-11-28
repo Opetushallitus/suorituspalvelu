@@ -800,8 +800,8 @@ object MockEntityToUIConverter {
       laajuus = Optional.of(VapaaSivistystyoLaajuus(38, VapaaSivistystyoLaajuusYksikko(Optional.of("op"), Optional.empty(), Optional.empty())))
     ))
 
-  def getPerusopetuksenOppimaarat(): List[PerusopetuksenOppimaara] =
-    List(PerusopetuksenOppimaara(
+  def getPerusopetuksenOppimaarat(): List[PerusopetuksenOppimaaraUI] =
+    List(PerusopetuksenOppimaaraUI(
       versioTunniste = Optional.of(UUID.randomUUID()),
       tunniste = UUID.randomUUID(),
       nimi = PerusopetuksenOppimaaraNimi(

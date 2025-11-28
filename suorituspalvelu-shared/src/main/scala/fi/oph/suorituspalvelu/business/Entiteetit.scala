@@ -189,7 +189,9 @@ case class PerusopetuksenOppimaaranOppiaineidenSuoritus(tunniste: UUID,
                                                         suoritusKieli: Koodi,
                                                         aloitusPaivamaara: Option[LocalDate],
                                                         vahvistusPaivamaara: Option[LocalDate],
-                                                        oppiaineet: Set[PerusopetuksenOppimaaranOppiaine]) extends Suoritus, Tyypitetty
+                                                        oppiaineet: Set[PerusopetuksenOppimaaranOppiaine],
+                                                        syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
+                                                       ) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOppimaara(tunniste: UUID,
                                    versioTunniste: Option[UUID],
@@ -202,7 +204,9 @@ case class PerusopetuksenOppimaara(tunniste: UUID,
                                    yksilollistaminen: Option[Int],
                                    aloitusPaivamaara: Option[LocalDate],
                                    vahvistusPaivamaara: Option[LocalDate],
-                                   aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
+                                   aineet: Set[PerusopetuksenOppiaine],
+                                   syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
+                                  ) extends Suoritus, Tyypitetty
 
 //Kieli määritelty oppiaineille kuten A1, B1 jne.
 case class PerusopetuksenOppiaine(tunniste: UUID,

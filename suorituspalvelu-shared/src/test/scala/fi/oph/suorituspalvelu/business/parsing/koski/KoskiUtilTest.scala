@@ -19,7 +19,7 @@ class KoskiUtilTest {
 
   @Test def testIsYsiluokkalainenEiSuoritusta(): Unit =
     Assertions.assertFalse(KoskiUtil.isOponSeurattava(Seq.empty))
-  
+
   @Test def testIsYsiluokkalainenTrue(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
@@ -38,7 +38,8 @@ class KoskiUtilTest {
           yksilollistaminen = None,
           aloitusPaivamaara = None,
           vahvistusPaivamaara = Some(LocalDate.now()),
-          aineet = Set.empty
+          aineet = Set.empty,
+          syotetty = false
         ),
         PerusopetuksenVuosiluokka(
           tunniste = UUID.randomUUID(),
@@ -53,7 +54,7 @@ class KoskiUtilTest {
       lisatiedot = None,
       tila = KESKEN
     )
-    
+
     Assertions.assertTrue(KoskiUtil.isOponSeurattava(Seq(opiskeluoikeus)))
 
   @Test def testIsYsiluokkalainenValmisPerusopetus(): Unit =
@@ -74,7 +75,8 @@ class KoskiUtilTest {
           yksilollistaminen = None,
           aloitusPaivamaara = None,
           vahvistusPaivamaara = Some(LocalDate.now()),
-          aineet = Set.empty
+          aineet = Set.empty,
+          syotetty = false
         ),
         PerusopetuksenVuosiluokka(
           tunniste = UUID.randomUUID(),
