@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter.dummy
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
@@ -83,7 +83,8 @@ class VirkailijaToSuoritusConverterTest {
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None
-          ))).getOrElse(Set.empty)
+          ))).getOrElse(Set.empty),
+          syotetty = true
         )
       ),
       None,
@@ -95,7 +96,7 @@ class VirkailijaToSuoritusConverterTest {
   @Test def testConvertPerusopetuksenOppiaineenOppimaara(): Unit = {
     val versioTunniste = UUID.randomUUID()
 
-    val suoritus = SyotettyPerusopetuksenOppiaineenOppimaaranSuoritusContainer(
+    val suoritus = SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer(
       Optional.of("1.2.246.562.24.21250967212"),
       Optional.of(ApiConstants.ESIMERKKI_OPPILAITOS_OID),
       Optional.of(LocalDate.now().toString),
@@ -143,7 +144,8 @@ class VirkailijaToSuoritusConverterTest {
           suoritusKieli = Koodi(suoritus.suorituskieli.get(), "kieli", None),
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
-          oppiaineet = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].oppiaineet
+          oppiaineet = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].oppiaineet,
+          syotetty = true
         )
       ),
       None,
