@@ -8,7 +8,7 @@ import type {
   IYOTutkinto,
   IDIATutkinto,
   IDIAVastaavuusTodistus,
-  IEBTutkinto,
+  IEBTutkintoUI,
   IIBTutkinto,
   IPreIB,
   IAmmatillinentutkinto,
@@ -16,11 +16,9 @@ import type {
   IErikoisammattitutkinto,
   IVapaaSivistystyoKoulutus,
   ITuva,
-  IPerusopetuksenOppiaineenOppimaara,
+  IPerusopetuksenOppiaineenOppimaaratUI,
   IPerusopetuksenOppimaara78Luokkalaiset,
-  INuortenPerusopetuksenOppiaineenOppimaara,
-  IAikuistenPerusopetuksenOppimaara,
-  IPerusopetuksenOppimaara,
+  IPerusopetuksenOppimaaraUI,
   IOppijanTiedotSuccessResponse,
   IUIOpiskeluoikeus,
   ITelma,
@@ -86,7 +84,7 @@ export type KorkeakouluSuoritus = IKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';
 };
 
-export type EBSuoritus = IEBTutkinto & {
+export type EBSuoritus = IEBTutkintoUI & {
   koulutustyyppi: 'eb';
 };
 
@@ -124,7 +122,7 @@ export type VapaaSivistystyoSuoritus = IVapaaSivistystyoKoulutus & {
 };
 
 export type PerusopetuksenOppimaara = Omit<
-  IPerusopetuksenOppimaara,
+  IPerusopetuksenOppimaaraUI,
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
@@ -133,8 +131,8 @@ export type PerusopetuksenOppimaara = Omit<
   isEditable: true;
 };
 
-export type PerusopetuksenOppiaineenOppimaara = Omit<
-  IPerusopetuksenOppiaineenOppimaara,
+export type PerusopetuksenOppiaineenOppimaarat = Omit<
+  IPerusopetuksenOppiaineenOppimaaratUI,
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
@@ -144,26 +142,10 @@ export type PerusopetuksenOppiaineenOppimaara = Omit<
   isEditable: true;
 };
 
-type AikuistenPerusopetuksenOppimaara = Omit<
-  IAikuistenPerusopetuksenOppimaara,
-  'oppiaineet'
-> & {
-  oppiaineet: Array<PerusopetuksenOppiaine>;
-};
-
-type NuortenPerusopetuksenOppiaineenOppimaara = Omit<
-  INuortenPerusopetuksenOppiaineenOppimaara,
-  'oppiaineet'
-> & {
-  oppiaineet: Array<PerusopetuksenOppiaine>;
-};
-
 export type PerusopetusSuoritus = (
   | PerusopetuksenOppimaara
-  | PerusopetuksenOppiaineenOppimaara
+  | PerusopetuksenOppiaineenOppimaarat
   | IPerusopetuksenOppimaara78Luokkalaiset
-  | NuortenPerusopetuksenOppiaineenOppimaara
-  | AikuistenPerusopetuksenOppimaara
 ) & { koulutustyyppi: 'perusopetus'; isEditable: boolean };
 
 export type Suoritus =
