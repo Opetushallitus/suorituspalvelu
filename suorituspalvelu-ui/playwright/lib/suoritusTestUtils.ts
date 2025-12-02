@@ -378,25 +378,6 @@ export const PERUSOPETUKSEN_OPPIMAARA_78LUOKKA_SUORITUS: SuoritusSpec = {
   },
 };
 
-export const NUORTEN_PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec =
-  {
-    perustiedot: {
-      title: 'Nuorten perusopetuksen oppiaineen oppimäärä (2016)',
-      oppilaitos: 'Keltinmäen koulu',
-      tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2016',
-      suorituskieli: 'suomi',
-    },
-    additionalChecks: async (paper) => {
-      const oppiaineetTable = paper.getByRole('table');
-      await checkTable(oppiaineetTable, [
-        ['Oppiaine', 'Arvosana'],
-        ['Biologia', '9'],
-        ['Historia', '8'],
-      ]);
-    },
-  };
-
 export const PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
@@ -410,30 +391,6 @@ export const PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
     await checkTable(oppiaineetTable, [
       ['Oppiaine', 'Arvosana'],
       ['matematiikka', '9'],
-    ]);
-  },
-};
-
-export const AIKUISTEN_PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
-  perustiedot: {
-    title: 'Aikuisten perusopetuksen oppimäärä (2016)',
-    oppilaitos: 'Keltinmäen koulu',
-    tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2016',
-    suorituskieli: 'suomi',
-  },
-  additionalChecks: async (paper) => {
-    const oppiaineetTable = paper.getByRole('table');
-    await checkTable(oppiaineetTable, [
-      ['Oppiaine', 'Arvosana'],
-      ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9'],
-      ['A1-kieli, englanti', '9'],
-      ['B1-kieli, ruotsi', '9'],
-      ['B2-kieli, saksa', '9'],
-      ['Matematiikka', '9'],
-      ['Biologia', '9'],
-      ['Maantieto', '9'],
-      ['Fysiikka', '9'],
     ]);
   },
 };
