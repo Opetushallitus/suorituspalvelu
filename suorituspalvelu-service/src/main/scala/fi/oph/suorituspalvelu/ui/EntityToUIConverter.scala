@@ -501,6 +501,7 @@ object EntityToUIConverter {
           })
         PerusopetuksenOppiaineenOppimaaratUI(
           tunniste = oppiaineidenSuoritus.tunniste,
+          versioTunniste = oppiaineidenSuoritus.versioTunniste.toJava,
           oppilaitos = PKOppilaitos(
             PKOppilaitosNimi(
               oppiaineidenSuoritus.oppilaitos.nimi.fi.toJava,

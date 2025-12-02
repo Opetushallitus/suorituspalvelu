@@ -1,5 +1,5 @@
 import { castToArray } from '@/lib/common';
-import type { IPerusopetuksenOppiaine } from '@/types/backend';
+import type { IPerusopetuksenOppiaineUI } from '@/types/backend';
 import type {
   OppijanTiedot,
   PerusopetuksenOppiaine,
@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import { groupBy, isTruthy, omit } from 'remeda';
 
 const convertPerusopetusOppiaineet = (
-  oppiaineet: Array<IPerusopetuksenOppiaine>,
+  oppiaineet: Array<IPerusopetuksenOppiaineUI>,
 ): Array<PerusopetuksenOppiaine> => {
   const groupedOppiaineet = groupBy(
     oppiaineet,
@@ -158,9 +158,7 @@ export function useSuorituksetFlattened(
     );
 
     addSuoritukset(
-      [
-        suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset
-      ]
+      [suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset]
         .filter(isTruthy)
         .map((suoritus) => ({
           ...suoritus,
@@ -175,7 +173,7 @@ export function useSuorituksetFlattened(
           ...suoritus,
           isEditable: suoritus.syotetty,
           koulutustyyppi: 'perusopetus',
-          suoritustyyppi: 'perusopetuksenopiaineenoppimaara',
+          suoritustyyppi: 'perusopetuksenoppiaineenoppimaara',
           // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
           oppiaineet: convertPerusopetusOppiaineet(suoritus.oppiaineet),
         };
