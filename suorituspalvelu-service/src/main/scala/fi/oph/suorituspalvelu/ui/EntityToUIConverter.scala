@@ -391,6 +391,9 @@ object EntityToUIConverter {
         }).toList
 
   def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[PerusopetuksenOppimaara] =
+    def getVieraanKielenNimi(kieli: Option[Koodi], asiointiKieli: String): Option[String] =
+      kieli.flatMap(kieli => koodistoProvider.haeKoodisto(UIService.KOODISTO_KIELIVALIKOIMA).get(kieli.arvo).flatMap(koodi => koodi.metadata.find(m => m.kieli.equalsIgnoreCase(asiointiKieli)).map(m => m.nimi)))
+
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
       .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
@@ -431,9 +434,9 @@ object EntityToUIConverter {
             tunniste = a.tunniste,
             koodi = a.koodi.arvo,
             nimi = PerusopetuksenOppiaineNimi(
-              fi = a.nimi.fi.toJava,
-              sv = a.nimi.sv.toJava,
-              en = a.nimi.en.toJava
+              fi = a.nimi.fi.map(n => n + getVieraanKielenNimi(a.kieli, "fi").map(k => ", " + k).getOrElse("")).toJava,
+              sv = a.nimi.sv.map(n => n + getVieraanKielenNimi(a.kieli, "sv").map(k => ", " + k).getOrElse("")).toJava,
+              en = a.nimi.en.map(n => n + getVieraanKielenNimi(a.kieli, "en").map(k => ", " + k).getOrElse("")).toJava,
             ),
             kieli = a.kieli.map(k => k.arvo).toJava,
             arvosana = a.arvosana.arvo,
