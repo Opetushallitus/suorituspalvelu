@@ -128,7 +128,7 @@ export type PerusopetuksenOppimaara = Omit<
   oppiaineet: Array<PerusopetuksenOppiaine>;
   suoritustyyppi: 'perusopetuksenoppimaara';
   koulutustyyppi: 'perusopetus';
-  isEditable: true;
+  isEditable: boolean;
 };
 
 export type PerusopetuksenOppiaineenOppimaarat = Omit<
@@ -136,10 +136,9 @@ export type PerusopetuksenOppiaineenOppimaarat = Omit<
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
-  versioTunniste?: string; // TODO: Poista, kun versioTunniste tulee backendistä
   suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
   koulutustyyppi: 'perusopetus';
-  isEditable: true;
+  isEditable: boolean;
 };
 
 export type PerusopetusSuoritus = (

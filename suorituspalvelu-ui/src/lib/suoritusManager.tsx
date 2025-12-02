@@ -1,6 +1,6 @@
 import { deleteSuoritus, saveSuoritus } from '@/lib/suorituspalvelu-service';
 import {
-  type PerusopetuksenOppiaineenOppimaara,
+  type PerusopetuksenOppiaineenOppimaarat,
   type PerusopetuksenOppimaara,
   type PerusopetusOppiaineFields,
   type SuoritusFields,
@@ -80,7 +80,7 @@ const createEditableSuoritusFields = ({
   suoritus,
 }: {
   oppijaOid: string;
-  suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara;
+  suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaarat;
 }): SuoritusFields => {
   return {
     versioTunniste:
@@ -189,7 +189,7 @@ const useSuoritusManagerState = () => {
     };
 
     const initializeSuoritusEditState = (
-      suoritus?: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+      suoritus?: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaarat,
     ) => {
       suoritusMutation.reset();
       setMode(suoritus ? 'existing' : 'new');
@@ -212,7 +212,7 @@ const useSuoritusManagerState = () => {
       suoritusMutation,
       setOppijaOid,
       startSuoritusEdit: (
-        suoritus?: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara,
+        suoritus?: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaarat,
       ) => {
         const newEditMode = suoritus ? 'existing' : 'new';
 

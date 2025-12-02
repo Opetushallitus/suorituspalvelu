@@ -3,7 +3,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { EditSuoritusPaper } from './EditSuoritusPaper';
 import { useSuoritusManager } from '@/lib/suoritusManager';
 import {
-  type PerusopetuksenOppiaineenOppimaara,
+  type PerusopetuksenOppiaineenOppimaarat,
   type PerusopetuksenOppimaara,
 } from '@/types/ui-types';
 import { OphButton } from '@opetushallitus/oph-design-system';
@@ -14,7 +14,7 @@ export const PerusopetusSuoritusEditor = ({
   suoritus: suoritusProp,
 }: {
   henkiloOID: string;
-  suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaara;
+  suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaarat;
 }) => {
   const { t } = useTranslations();
 
