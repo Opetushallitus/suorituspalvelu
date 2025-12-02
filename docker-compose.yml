@@ -42,8 +42,8 @@ services:
     environment:
       USER: appuser
       HOME: /home/appuser
+      XDG_CACHE_HOME: /pnpm
       HUSKY: 0
-      NPM_CONFIG_CACHE: /tmp/.npm
     secrets:
       - npmrc
     user: "${USERID}:${GROUPID}"
@@ -55,12 +55,9 @@ services:
     networks:
       - supanet
     volumes:
-      # Bind mount source code for hot reload
       - ./suorituspalvelu-ui:/app
-      # Use named volume for node_modules to isolate from host
       - frontend_node_modules:/app/node_modules
-      # Cache npm global cache
-      - frontend_npm_cache:/home/appuser/.npm
+      - frontend_pnpm:/pnpm
   nginx:
     image: nginx:alpine
     env_file:
@@ -82,7 +79,7 @@ networks:
 volumes:
   pgdata:
   frontend_node_modules:
-  frontend_npm_cache:
+  frontend_pnpm:
 secrets:
   npmrc:
     file: ${HOME}/.npmrc

@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "prepare": "cd .. && husky",
     "dev": "react-router dev --port 3000 --host",
     "build": "react-router build",
-    "dev:test": "VITE_TEST=true npm run dev",
-    "build:test": "VITE_TEST=true npm run build",
-    "start": "npx tsx test-server.ts",
+    "dev:test": "VITE_TEST=true pnpm run dev",
+    "build:test": "VITE_TEST=true pnpm run build",
+    "start": "pnpm exec tsx test-server.ts",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "prettier": "prettier -u -c *",
@@ -17,8 +18,8 @@
     "test": "vitest",
     "typecheck": "react-router typegen && tsc",
     "test-playwright-docker": "./scripts/run-playwright-tests-in-docker.sh",
-    "start-and-test-playwright-docker": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start http://localhost:3000 'npm run test-playwright-docker -- $PLAYWRIGHT_ARGS'",
-    "build-and-copy": "npm run build && ./scripts/copy-ui-bundle-to-backend.sh"
+    "start-and-test-playwright-docker": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start http://localhost:3000 './scripts/run-playwright-tests-in-docker.sh $PLAYWRIGHT_ARGS'",
+    "build-and-copy": "pnpm run build && ./scripts/copy-ui-bundle-to-backend.sh"
   },
   "dependencies": {
     "@date-fns/tz": "^1.4.1",
@@ -27,11 +28,11 @@
     "@fontsource/open-sans": "^5.2.7",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "@opetushallitus/oph-design-system": "^1.0.0",
+    "@mui/system": "^7.3.5",
+    "@opetushallitus/oph-design-system": "^1.1.0",
     "@react-router/dev": "^7.9.5",
     "@react-router/node": "^7.9.5",
     "@react-router/serve": "^7.9.5",
-    "@rollup/rollup-linux-arm64-gnu": "^4.53.3",
     "@tanstack/react-query": "^5.90.5",
     "@tolgee/format-icu": "^6.2.7",
     "@tolgee/react": "^6.2.7",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@eslint-react/eslint-plugin": "^2.2.4",
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.56.1",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@testing-library/jest-dom": "^6.9.1",
@@ -55,7 +57,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-playwright": "^2.2.2",
     "eslint-plugin-react": "^7.37.5",
@@ -67,10 +69,11 @@
     "prettier": "^3.6.2",
     "start-server-and-test": "^2.1.2",
     "tsx": "^4.20.6",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
     "vite": "^7.2.2",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.5"
-  }
+  },
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }
