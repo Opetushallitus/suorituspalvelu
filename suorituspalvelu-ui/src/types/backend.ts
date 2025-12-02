@@ -478,9 +478,16 @@ export interface IPerusopetuksenOppiaineUI {
   valinnainen: boolean;
 }
 
+export interface IPerusopetuksenOppiaineenOppimaaraNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IPerusopetuksenOppiaineenOppimaaratUI {
   tunniste: string;
   oppilaitos: IPKOppilaitos;
+  nimi: IPerusopetuksenOppiaineenOppimaaraNimi;
   tila: SuoritusTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
@@ -832,8 +839,8 @@ export interface IYliajoTallennusContainer {
   yliajot?: IYliajo[];
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";

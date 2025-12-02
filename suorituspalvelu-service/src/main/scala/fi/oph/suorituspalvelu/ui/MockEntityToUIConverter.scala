@@ -990,6 +990,11 @@ object MockEntityToUIConverter {
         ),
         oid = "1.2.3.4"
       ),
+      nimi = PerusopetuksenOppiaineenOppimaaraNimi(
+        fi = Optional.of("Perusopetuksen oppiaineen oppimäärä"),
+        sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning"),
+        en = Optional.of("Basic education subject syllabus")
+      ),
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
@@ -1031,6 +1036,11 @@ object MockEntityToUIConverter {
           en = Optional.of("Keltinmäen koulu en")
         ),
         oid = "1.2.3.4"
+      ),
+      nimi = PerusopetuksenOppiaineenOppimaaraNimi(
+        fi = Optional.of("Perusopetuksen oppiaineen oppimäärä"),
+        sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning"),
+        en = Optional.of("Basic education subject syllabus")
       ),
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),

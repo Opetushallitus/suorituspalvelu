@@ -60,10 +60,10 @@ object VirkailijaToSuoritusConverter {
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           aineet = suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
             UUID.randomUUID(),
-            toOppiaineenNimi(oppiaine.oppiaineKoodi.get, koodistoProvider),
-            oppiaine.oppiaineKoodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
+            toOppiaineenNimi(oppiaine.koodi.get, koodistoProvider),
+            oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
             oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-            oppiaine.kieliLisatieto.toScala.map(k => Koodi(k, if ("AI".equals(oppiaine.oppiaineKoodi.get())) "oppiaineaidinkielijakirjallisuus" else "kielivalikoima", None)),
+            oppiaine.kieli.toScala.map(k => Koodi(k, if ("AI".equals(oppiaine.koodi.get())) "oppiaineaidinkielijakirjallisuus" else "kielivalikoima", None)),
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None
@@ -79,10 +79,10 @@ object VirkailijaToSuoritusConverter {
     val oppiaineet = suoritus.oppiaineet.asScala.map((oppiaine: SyotettyPerusopetuksenOppiaine) => {
       PerusopetuksenOppimaaranOppiaine(
         tunniste = UUID.randomUUID(),
-        nimi = toOppiaineenNimi(oppiaine.oppiaineKoodi.get(), koodistoProvider),
-        oppiaine.oppiaineKoodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
+        nimi = toOppiaineenNimi(oppiaine.koodi.get(), koodistoProvider),
+        oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
         arvosana = oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-        kieli = oppiaine.kieliLisatieto.toScala.map(k => Koodi(k, "kielivalikoima", None)),
+        kieli = oppiaine.kieli.toScala.map(k => Koodi(k, "kielivalikoima", None)),
         pakollinen = oppiaine.valinnainen.toScala.map(p => !p).getOrElse(true) //Fixme, vähän ruma.
       )
     }).toSet

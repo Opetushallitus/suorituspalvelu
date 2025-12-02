@@ -157,7 +157,7 @@ class UIValidatorTest {
 
   @Test def testValidateOppiaineetKoodiRequiredMissing(): Unit = {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_OPPIAINEET_KOODI_TYHJA), UIValidator.validatePerusopetuksenOppimaaranOppiaineet(Some(List(SyotettyPerusopetuksenOppiaine(
-      oppiaineKoodi = Optional.empty(),
+      koodi = Optional.empty(),
       Optional.empty(),
       Optional.empty(),
       Optional.empty()

@@ -509,6 +509,11 @@ object EntityToUIConverter {
             ),
             oppiaineidenSuoritus.oppilaitos.oid
           ),
+          nimi = PerusopetuksenOppiaineenOppimaaraNimi(
+            fi = Optional.of("Perusopetuksen oppiaineen oppimäärä"),
+            sv = Optional.of("Lärokurs i ett läroämne i grundläggande utbildning"),
+            en = Optional.of("Basic education subject syllabus")
+          ),
           tila = SuoritusTila.valueOf(oppiaineidenSuoritus.supaTila.toString),
           aloituspaiva = java.util.Optional.ofNullable(oppiaineidenSuoritus.aloitusPaivamaara.orNull),
           valmistumispaiva = java.util.Optional.ofNullable(oppiaineidenSuoritus.vahvistusPaivamaara.orNull),
