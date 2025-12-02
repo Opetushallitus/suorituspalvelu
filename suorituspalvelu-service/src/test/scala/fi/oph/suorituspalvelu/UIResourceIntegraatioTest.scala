@@ -950,7 +950,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       Optional.of(LocalDate.now().toString),
       Optional.of("FI"),
       Optional.of(1),
-      java.util.Set.of(
+      java.util.List.of(
         SyotettyPerusopetuksenOppiaine(
           Optional.of("MA"),
           Optional.empty(),

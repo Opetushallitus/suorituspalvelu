@@ -159,8 +159,7 @@ export function useSuorituksetFlattened(
 
     addSuoritukset(
       [
-        suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset,
-        ...suoritusTiedot.nuortenPerusopetuksenOppiaineenOppimaarat,
+        suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset
       ]
         .filter(isTruthy)
         .map((suoritus) => ({
@@ -174,21 +173,13 @@ export function useSuorituksetFlattened(
       suoritusTiedot.perusopetuksenOppiaineenOppimaarat.map((suoritus) => {
         return {
           ...suoritus,
-          isEditable: Boolean('syotetty' in suoritus && suoritus.syotetty),
+          isEditable: suoritus.syotetty,
           koulutustyyppi: 'perusopetus',
           suoritustyyppi: 'perusopetuksenopiaineenoppimaara',
           // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
           oppiaineet: convertPerusopetusOppiaineet(suoritus.oppiaineet),
         };
       }),
-    );
-
-    addSuoritukset(
-      suoritusTiedot.aikuistenPerusopetuksenOppimaarat.map((suoritus) => ({
-        ...suoritus,
-        koulutustyyppi: 'perusopetus',
-        isEditable: false,
-      })),
     );
 
     if (sortByDate) {

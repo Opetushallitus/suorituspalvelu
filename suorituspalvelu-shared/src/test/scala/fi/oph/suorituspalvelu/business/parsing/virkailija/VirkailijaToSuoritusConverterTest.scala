@@ -77,9 +77,9 @@ class VirkailijaToSuoritusConverterTest {
           suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
             converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara].aineet.head.tunniste,
             Kielistetty(Some("matematiikka"), None, None),
-            oppiaine.oppiaineKoodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
+            oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
             oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
-            oppiaine.kieliLisatieto.toScala.map(k => Koodi(k, "kieli", None)),
+            oppiaine.kieli.toScala.map(k => Koodi(k, "kieli", None)),
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None
@@ -102,7 +102,7 @@ class VirkailijaToSuoritusConverterTest {
       Optional.of(LocalDate.now().toString),
       Optional.of("FI"),
       Optional.of(1),
-      java.util.Set.of(SyotettyPerusopetuksenOppiaine(
+      java.util.List.of(SyotettyPerusopetuksenOppiaine(
         Optional.of("MA"),
         Optional.empty(),
         Optional.of(9),

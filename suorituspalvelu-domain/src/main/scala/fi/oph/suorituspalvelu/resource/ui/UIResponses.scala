@@ -1121,6 +1121,8 @@ case class PerusopetuksenOppiaineenOppimaaratUI(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: PKOppilaitos,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: PerusopetuksenOppiaineenOppimaaraNimi,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2016-06-01")
@@ -1134,11 +1136,6 @@ case class PerusopetuksenOppiaineenOppimaaratUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty syotetty: Boolean
 )
-
-//Yksi tällainen per opiskeluoikeus. Eli käsin syötetyt oppiaineet tulevat yhden containerin sisällä, Koskesta tuleville container per opiskeluoikeus (eli useimmiten 1).
-case class PerusopetuksenOppiaineenOppimaaraContainerUI(oppimaarat: java.util.List[PerusopetuksenOppiaineenOppimaaratUI],
-                                                        syotetty: Boolean //Tämä boolean kertoo, voiko sisältöä kälissä muokata / poistaa.
-                                                       )
 
 case class PerusopetuksenOppiaineenOppimaaraNimi(
   @(Schema @field)(example = "Perusopetuksen oppiaineen oppimäärä", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -1406,9 +1403,9 @@ case class LuoPerusopetuksenOppimaaraFailureResponse(
 
 case class SyotettyPerusopetuksenOppiaine(
   @(Schema @field)(example = ESIMERKKI_OPPIAINEKOODI, description="koskioppiaineetyleissivistävä-koodiston koodi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineKoodi: Optional[String],
+  @BeanProperty koodi: Optional[String],
   @(Schema @field)(example = ESIMERKKI_VIERAS_KIELI_KIELIKOODI, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty kieliLisatieto: Optional[String], //Vieraan kielen tai äidinkielen kieli
+  @BeanProperty kieli: Optional[String], //Vieraan kielen tai äidinkielen kieli
   @(Schema @field)(example = ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[Int],
   @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
@@ -1455,7 +1452,7 @@ case class SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer(
   @(Schema @field)(example = ESIMERKKI_YKSILOLLISTAMINEN, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty yksilollistetty: Optional[Int],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.Set[SyotettyPerusopetuksenOppiaine]
+  @BeanProperty oppiaineet: java.util.List[SyotettyPerusopetuksenOppiaine]
 )
 
 trait PoistaSuoritusResponse()
