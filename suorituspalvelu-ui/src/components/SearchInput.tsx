@@ -13,7 +13,7 @@ type SearchInputProps = Omit<
   React.ComponentProps<typeof OphInputFormField>,
   'endAdornment' | 'onChange' | 'value'
 > & {
-  onClear: () => void;
+  onClear?: () => void;
   onChange?: (value: string) => void;
   debounceMs?: number;
   value: string;
@@ -54,10 +54,11 @@ export const SearchInput = ({
   }
 
   useEffect(() => {
+    if (localValue === value) {
+      return;
+    }
     timeoutRef.current = setTimeout(() => {
-      if (onChange) {
-        onChange(localValue);
-      }
+      onChange?.(localValue);
       timeoutRef.current = null;
     }, debounceMs);
 
@@ -66,7 +67,7 @@ export const SearchInput = ({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [localValue, debounceMs, onChange]);
+  }, [value, localValue, debounceMs, onChange]);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +86,14 @@ export const SearchInput = ({
             <OphButton
               startIcon={<Close />}
               aria-label={t('search.tyhjenna')}
-              onClick={onClear}
+              onClick={() => {
+                onClear?.();
+                if (timeoutRef.current) {
+                  setLocalValue('');
+                  clearTimeout(timeoutRef.current);
+                  timeoutRef.current = null;
+                }
+              }}
             />
           ) : null}
           <Search className="SearchInput_searchIcon" />
