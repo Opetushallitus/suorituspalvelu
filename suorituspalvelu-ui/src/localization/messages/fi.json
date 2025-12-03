@@ -316,5 +316,17 @@
     "haku": "Haku, jota tiedot koskevat",
     "valitse-haku": "Valitse haku",
     "valittu-haku-virheellinen": "Valittu haku on virheellinen."
+  },
+  "search": {
+    "tabs": {
+      "henkilo": "Henkilöhaku",
+      "tarkistus": "Tarkistusnäkymä"
+    },
+    "navigaatio": "Henkilöhaun tyypin valitsin",
+    "placeholder": "Syötä hakusana...",
+    "henkilo-tunniste-helpertext": "Hae oppijanumerolla tai henkilötunnuksella.",
+    "henkilo-suodata-helpertext": "Suodata nimellä, henkilötunnuksella tai oppijanumerolla.",
+    "hae-henkilo": "Hae henkilö",
+    "hae-ja-valitse-henkilo": "Hae ja valitse henkilö"
   }
 }
