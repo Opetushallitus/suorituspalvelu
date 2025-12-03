@@ -3,12 +3,14 @@ import { configPromise } from './configuration';
 import { client, FetchError } from './http-client';
 import type {
   IKayttajaSuccessResponse,
+  ILuokatSuccessResponse,
   ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
   IOppijanHautSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
+  IVuodetSuccessResponse,
   IYliajoTallennusContainer,
 } from '@/types/backend';
 import type { SuoritusFields } from '@/types/ui-types';
@@ -16,8 +18,7 @@ import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
 import { isHenkiloOid, isHenkilotunnus } from './common';
 
-export type OppijatSearchParams = {
-  tunniste?: string;
+export type BackendOppijatSearchParams = {
   oppilaitos?: string;
   vuosi?: string;
   luokka?: string;
@@ -29,7 +30,7 @@ const isNotFoundError = (error: unknown) => {
   );
 };
 
-export const cleanSearchParams = (params: OppijatSearchParams) => {
+export const cleanSearchParams = (params: BackendOppijatSearchParams) => {
   return omitBy(params, (value) => isEmpty(value) || value === '');
 };
 
@@ -48,7 +49,7 @@ export const nullWhenErrorMatches = async <T>(
 };
 
 export const searchOppilaitoksenOppijat = async (
-  params: Omit<OppijatSearchParams, 'tunniste'>,
+  params: BackendOppijatSearchParams,
 ) => {
   const cleanParams = cleanSearchParams(params);
   const { oppilaitos, vuosi } = cleanParams;
@@ -264,7 +265,7 @@ export const getOppilaitosVuodet = async ({
 }) => {
   const config = await configPromise;
 
-  const res = await client.get<{ vuodet: Array<string> }>(
+  const res = await client.get<IVuodetSuccessResponse>(
     `${config.routes.suorituspalvelu.vuodetUrl}/${oppilaitosOid}`,
   );
   return res.data?.vuodet;
@@ -279,8 +280,8 @@ export const getOppilaitosVuosiLuokat = async ({
 }) => {
   const config = await configPromise;
 
-  const res = await client.get<{ luokat: Array<string> }>(
+  const res = await client.get<ILuokatSuccessResponse>(
     `${config.routes.suorituspalvelu.luokatUrl}/${oppilaitosOid}/${vuosi}`,
   );
-  return res.data?.luokat;
+  return res.data?.luokat ?? [];
 };

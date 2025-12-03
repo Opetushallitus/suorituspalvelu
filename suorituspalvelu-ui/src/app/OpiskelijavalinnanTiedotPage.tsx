@@ -1,5 +1,4 @@
 import { FetchError, useApiSuspenseQuery } from '@/lib/http-client';
-import type { Route } from './+types/OpiskelijavalinnanTiedotPage';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isGenericBackendErrorResponse } from '@/types/ui-types';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
@@ -27,6 +26,11 @@ import { only } from 'remeda';
 import { useQueryParam } from '@/hooks/useQueryParam';
 import { FullSpinner } from '@/components/FullSpinner';
 import { queryClient } from '@/lib/queryClient';
+import {
+  useOutletContext,
+  useSearchParams,
+  type OppijaContext,
+} from 'react-router';
 
 const HAKU_QUERY_PARAM = 'haku';
 
@@ -183,40 +187,26 @@ const ErrorFallback = ({
   return <ErrorView error={error} reset={reset} />;
 };
 
-// Vältetään awaitin käyttöä tässä, koska SPA-moodissa loadereille voi näyttää vain globaalin latausindikaattorin
-export async function clientLoader({
-  params,
-  request,
-}: Route.ClientLoaderArgs) {
-  const { oppijaNumero } = params;
-  if (oppijaNumero) {
-    // Aloitetaan oppijan hakujen esilataus
-    queryClient.ensureQueryData(queryOptionsGetOppijanHaut(oppijaNumero));
+export default function OpiskelijavalinnanTiedotPage() {
+  const { oppijaNumero } = useOutletContext<OppijaContext>();
 
-    const url = new URL(request.url);
-    const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
+  queryClient.ensureQueryData(queryOptionsGetOppijanHaut(oppijaNumero));
+  const [searchParams] = useSearchParams();
+  const hakuOidParam = searchParams.get(HAKU_QUERY_PARAM);
 
-    if (hakuOidParam) {
-      // Aloitetaan valintadatan esilataus
-      queryClient.ensureQueryData(
-        queryOptionsGetValintadata({
-          oppijaNumero,
-          hakuOid: hakuOidParam,
-        }),
-      );
-    }
+  if (hakuOidParam) {
+    // Aloitetaan valintadatan esilataus
+    queryClient.ensureQueryData(
+      queryOptionsGetValintadata({
+        oppijaNumero,
+        hakuOid: hakuOidParam,
+      }),
+    );
   }
-}
 
-export default function OpiskelijavalinnanTiedotPage({
-  params,
-}: Route.ComponentProps) {
-  if (!params.oppijaNumero) {
-    throw new Error('Ei voida näyttää suoritustietoja ilman oppijanumeroa');
-  }
   return (
     <QuerySuspenseBoundary ErrorFallback={ErrorFallback}>
-      <OpiskelijavalinnanTiedotPageContent oppijaNumero={params.oppijaNumero} />
+      <OpiskelijavalinnanTiedotPageContent oppijaNumero={oppijaNumero} />
     </QuerySuspenseBoundary>
   );
 }

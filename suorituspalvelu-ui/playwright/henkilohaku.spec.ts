@@ -1,16 +1,25 @@
-import { expect } from '@playwright/test';
-import { test } from './lib/fixtures';
+import { type Page } from '@playwright/test';
+import { test, expect } from './lib/fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
-const HENKILOTUNNUS = OPPIJAN_TIEDOT.henkiloTunnus;
+const HETU = OPPIJAN_TIEDOT.henkiloTunnus;
+
+const NOT_FOUND_OPPIJANUMERO = '1.2.246.562.24.00000000';
+const NOT_FOUND_HETU = '123456-9999';
+
+const getOppijaHeading = (page: Page) =>
+  page.getByRole('heading', { name: 'Olli Oppija' });
+
+const getSearchInput = (page: Page) =>
+  page.getByRole('textbox', { name: 'Hae Henkilö' });
 
 test.describe('Henkilöhaku', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/ui/tiedot', async (route) => {
       if (route.request().method() === 'POST') {
         const tunniste = (await route.request().postDataJSON())?.tunniste;
-        if (tunniste === OPPIJANUMERO || tunniste === HENKILOTUNNUS) {
+        if (tunniste === OPPIJANUMERO || tunniste === HETU) {
           await route.fulfill({
             json: OPPIJAN_TIEDOT,
           });
@@ -19,53 +28,56 @@ test.describe('Henkilöhaku', () => {
         }
       }
     });
+
+    await page.goto('henkilo');
   });
 
   test('näyttää ilmoituksen, jos ei henkilö löytynyt tai hakutermi ei validi', async ({
     page,
   }) => {
-    await page.goto('');
-    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilö' });
-
-    await searchInput.fill('Olli Oppija');
+    const searchInput = getSearchInput(page);
 
     // Nimellä hakeminen ei ole mahdollista
+    await searchInput.fill('Olli Oppija');
     await expect(
       page.getByText(
         'Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.',
       ),
     ).toBeVisible();
-    await expect(page.getByText('Olli Oppija')).toBeHidden();
-
     await expect(page.getByText('Henkilöä ei löytynyt')).toBeHidden();
-    await expect(page.getByText('Olli Oppija')).toBeHidden();
+    await expect(getOppijaHeading(page)).toBeHidden();
 
-    await searchInput.fill('1.2.246.562.24.40483869850');
-
+    await searchInput.fill(NOT_FOUND_OPPIJANUMERO);
     await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
-    await expect(page.getByText('Olli Oppija')).toBeHidden();
-
-    await searchInput.fill('123456-9999');
-
+    await expect(getOppijaHeading(page)).toBeHidden();
+    await searchInput.fill(NOT_FOUND_HETU);
     await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
-    await expect(page.getByText('Olli Oppija')).toBeHidden();
+    await expect(getOppijaHeading(page)).toBeHidden();
+    await expect(page).toHaveURL((url) =>
+      url.toString().includes(`henkilo/${NOT_FOUND_HETU}`),
+    );
   });
 
-  test('suodattaa oppijanumerolla', async ({ page }) => {
-    await page.goto('');
-    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilö' });
+  test('suodattaa oppijanumerolla ja muuttaa URL:a', async ({ page }) => {
+    const searchInput = getSearchInput(page);
 
     await searchInput.fill(OPPIJANUMERO);
+    await expect(page).toHaveURL((url) =>
+      url.toString().includes(`henkilo/${OPPIJANUMERO}`),
+    );
 
-    await expect(page.getByText('Olli Oppija')).toBeVisible();
+    await expect(getOppijaHeading(page)).toBeVisible();
   });
 
-  test('suodattaa henkilötunnuksella', async ({ page }) => {
-    await page.goto('');
-    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilö' });
+  test('suodattaa henkilötunnuksella ja muuttaa URL:a', async ({ page }) => {
+    const searchInput = getSearchInput(page);
 
-    await searchInput.fill(HENKILOTUNNUS);
+    await searchInput.fill(HETU);
 
-    await expect(page.getByText('Olli Oppija')).toBeVisible();
+    await expect(page).toHaveURL((url) =>
+      url.toString().includes(`henkilo/${HETU}`),
+    );
+
+    await expect(getOppijaHeading(page)).toBeVisible();
   });
 });

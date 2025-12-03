@@ -1,18 +1,17 @@
 import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
-import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import {
   queryOptionsGetOppilaitosVuosiOptions,
   queryOptionsGetOppilaitosVuosiLuokatOptions,
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
-import { InputAdornment, Stack } from '@mui/material';
+import { InputAdornment } from '@mui/material';
 import { OphSelectFormField } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
 import { SpinnerIcon } from './SpinnerIcon';
-import { useCallback, useEffect } from 'react';
-import { SearchInput } from './SearchInput';
+import { useEffect } from 'react';
 import { only } from 'remeda';
+import { StyledSearchControls } from './StyledSearchControls';
 
 const OphSelectWithLoading = ({
   isLoading,
@@ -37,14 +36,6 @@ const OphSelectWithLoading = ({
     />
   );
 };
-
-const StyledSearchControls = styled(Stack)(({ theme }) => ({
-  flexDirection: 'row',
-  gap: theme.spacing(2),
-  margin: theme.spacing(2, 2, 0, 2),
-  paddingBottom: theme.spacing(2),
-  borderBottom: DEFAULT_BOX_BORDER,
-}));
 
 const OppilaitosSelectField = ({
   value,
@@ -177,7 +168,7 @@ export const TarkistusSearchControls = () => {
               oppilaitos: newOppilaitos,
               vuosi: CURRENT_YEAR,
               luokka: '',
-              tunniste: '',
+              suodatus: '',
             });
           }
         }}
@@ -188,7 +179,7 @@ export const TarkistusSearchControls = () => {
         onChange={(e) => {
           const newVuosi = e.target.value;
           if (newVuosi !== vuosi) {
-            setSearchParams({ vuosi: newVuosi, luokka: '', tunniste: '' });
+            setSearchParams({ vuosi: newVuosi, luokka: '', suodatus: '' });
           }
         }}
       />
@@ -197,41 +188,8 @@ export const TarkistusSearchControls = () => {
         vuosi={vuosi}
         oppilaitosOid={oppilaitos}
         onChange={(e) => {
-          setSearchParams({ luokka: e.target.value, tunniste: '' });
+          setSearchParams({ luokka: e.target.value, suodatus: '' });
         }}
-      />
-    </StyledSearchControls>
-  );
-};
-
-export const HenkiloSearchControls = () => {
-  const { t } = useTranslations();
-
-  const { tunniste, setSearchParams } = useOppijatSearchParamsState();
-
-  const onClear = useCallback(() => {
-    setSearchParams({ tunniste: '' });
-  }, [setSearchParams]);
-
-  const onChange = useCallback(
-    (value: string) => {
-      setSearchParams({ tunniste: value });
-    },
-    [setSearchParams],
-  );
-
-  return (
-    <StyledSearchControls>
-      <SearchInput
-        sx={{
-          flex: 1,
-          maxWidth: '400px',
-        }}
-        label={t('search.hae-henkilo')}
-        value={tunniste ?? ''}
-        placeholder={t('search.henkilo-input-placeholder')}
-        onClear={onClear}
-        onChange={onChange}
       />
     </StyledSearchControls>
   );
