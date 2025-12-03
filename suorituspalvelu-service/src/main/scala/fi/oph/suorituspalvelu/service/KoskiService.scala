@@ -15,7 +15,7 @@ import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 import java.util.UUID
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
@@ -70,23 +70,27 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
       processKoskiDataForOppijat(ctx, new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
-  private val refreshOppijaJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
+  private val refreshKoskiChangesSinceJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
     val (changed, exceptions) = refreshKoskiChangesSince(ctx, Instant.parse(alkaen))
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
   }, Seq.empty)
 
-  def startRefreshForKoskiChangesSince(alkaen: Instant): UUID = refreshOppijaJob.run(alkaen.toString)
+  def startRefreshForKoskiChangesSince(alkaen: Instant): UUID = refreshKoskiChangesSinceJob.run(alkaen.toString)
 
-  def syncKoskiForOppijat(personOids: Set[String], ctx: SupaJobContext = DUMMY_JOB_CTX): SaferIterator[SyncResultForHenkilo] = {
+  def syncKoskiForHenkilot(personOids: Set[String], ctx: SupaJobContext = DUMMY_JOB_CTX): SaferIterator[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
     processKoskiDataForOppijat(ctx, koskiIntegration.fetchKoskiTiedotForOppijat(personOids), fetchedAt)
   }
+
+  private val refreshHenkilotJob = scheduler.registerJob("refresh-koski-for-henkilot", (ctx, oppijaNumerot) => syncKoskiForHenkilot(mapper.readValue(oppijaNumerot, classOf[Set[String]]), ctx), Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
+
+  def startRefreshForHenkilot(personOids: Set[String]): UUID = refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
 
   def refreshKoskiForHaku(hakuOid: String, ctx: SupaJobContext): SaferIterator[SyncResultForHenkilo] =
     val personOids =
       Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
         .flatMap(_.personOid).toSet
-    syncKoskiForOppijat(personOids, ctx)
+    syncKoskiForHenkilot(personOids, ctx)
 
   private val refreshHakuJob = scheduler.registerJob("refresh-koski-for-haku", (ctx, hakuOid) => {
     val (changed, exceptions) = refreshKoskiForHaku(hakuOid, ctx)

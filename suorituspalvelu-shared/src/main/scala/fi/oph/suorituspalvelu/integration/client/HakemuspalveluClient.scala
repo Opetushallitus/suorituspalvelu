@@ -8,6 +8,8 @@ import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
 
+import java.time.{Instant, ZoneId}
+import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 
@@ -32,6 +34,8 @@ case class AtaruPermissionResponse(accessAllowed: Option[Boolean] = None,
                                    errorMessage: Option[String] = None)
 
 case class AtaruHautRequest(hakijaOids: Seq[String])
+
+case class AtaruModifiedAfterRequest(modifiedAfter: String, offset: String)
 
 //Todo Nämä tiedot haetaan nyt sellaisesta atarun rajapinnasta, joka palauttaa muutakin tietoa.
 //Suorituskykyä voisi parantaa luomalla ataruun rajapinnan, joka palauttaa vain nämä minimitiedot. Kts. OPHSUPA-121
@@ -70,6 +74,7 @@ trait HakemuspalveluClient {
   def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty): Future[Seq[AtaruValintalaskentaHakemus]]
   def getHenkilonHakemustenTiedot(oppijaOid: String): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
   def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
+  def getMuuttuneetHakemukset(muuttuneetJalkeen: Instant): Future[Seq[AtaruHakemusBaseFields]]
 }
 
 class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String) extends HakemuspalveluClient {
@@ -162,6 +167,26 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
     val url = environmentBaseUrl + s"/lomake-editori/api/external/valintalaskenta?harkinnanvaraisuustiedotHakutoiveille=$haeHarkinnanvaraisuudet$hakukohdeParam"
     LOG.info(s"Fetching hakemukset for hakukohde $hakukohdeOid from $url, hakemusOids: $hakemusOids")
     doPost(url, hakemusOids).map(data => mapper.readValue(data, classOf[Array[AtaruValintalaskentaHakemus]])).map(hakemukset => hakemukset.toSeq)
+  }
+
+  val ataruDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+
+  def getMuuttuneetHakemuksetInternal(muuttuneetJalkeen: String, offset: Int): Future[Seq[AtaruHakemusBaseFields]] = {
+    // Atarun rajapinta on sivuttava, tällä hetkellä palauttaa 1000 kerrallaan, mutta ei oleteta mitään
+    // sivukoosta
+    doPost(environmentBaseUrl + "/lomake-editori/api/external/suoritusrekisteri", AtaruModifiedAfterRequest(muuttuneetJalkeen, offset.toString))
+      .map(data => mapper.readValue(data, classOf[AtaruHakemusBaseFieldsResponse]).applications)
+      .flatMap(headResult =>
+        if(headResult.isEmpty)
+          Future.successful(headResult)
+        else
+          getMuuttuneetHakemuksetInternal(muuttuneetJalkeen, offset + headResult.size).map(restResult => headResult ++ restResult)
+      )
+  }
+
+  override def getMuuttuneetHakemukset(muuttuneetJalkeen: Instant): Future[Seq[AtaruHakemusBaseFields]] = {
+    val formattedDateTime = ataruDateTimeFormatter.format(muuttuneetJalkeen.atZone(ZoneId.of("Europe/Helsinki")))
+    getMuuttuneetHakemuksetInternal(formattedDateTime, 0)
   }
 
   private def doPost(url: String, body: Object): Future[String] = {
