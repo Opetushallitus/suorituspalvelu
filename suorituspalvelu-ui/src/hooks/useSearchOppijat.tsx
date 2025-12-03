@@ -2,7 +2,8 @@ import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppijat } from '@/lib/suorituspalvelu-queries';
 import type { OppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { isEmpty, isNullish, omitBy, values } from 'remeda';
-import { useQueryParam } from './useQueryParam';
+import { useSearchParams } from 'react-router';
+import { useMemo } from 'react';
 
 export const useOppijatSearchURLParams = () => {
   const params = useOppijatSearchParamsState();
@@ -18,20 +19,33 @@ export const useOppijatSearchURLParams = () => {
 };
 
 export const useOppijatSearchParamsState = () => {
-  const [tunniste, setTunniste] = useQueryParam('tunniste');
-  const [oppilaitos, setOppilaitos] = useQueryParam('oppilaitos');
-  const [luokka, setLuokka] = useQueryParam('luokka');
-  const [vuosi, setVuosi] = useQueryParam('vuosi');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const vuosi = searchParams.get('vuosi');
+  const oppilaitos = searchParams.get('oppilaitos');
+  const luokka = searchParams.get('luokka');
+  const tunniste = searchParams.get('tunniste');
 
   return {
-    setTunniste,
+    setSearchParams: (params: OppijatSearchParams) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          Object.entries(params).forEach(([key, value]) => {
+            if (isNullish(value) || value === '') {
+              next.delete(key);
+            } else {
+              next.set(key, value);
+            }
+          });
+          return next;
+        },
+        { replace: false },
+      );
+    },
     tunniste,
     oppilaitos,
-    setOppilaitos,
     luokka,
-    setLuokka,
     vuosi,
-    setVuosi,
     hasEmptySearchParams: isEmptySearchParams({
       tunniste: tunniste ?? undefined,
       oppilaitos: oppilaitos ?? undefined,
@@ -54,8 +68,26 @@ export const useOppijatSearch = () => {
 
   const result = useApiSuspenseQuery(queryOptionsSearchOppijat(urlParams));
 
+  const data = useMemo(
+    () =>
+      result.data.filter((oppija) => {
+        if (params.oppilaitos && params.vuosi && params.tunniste) {
+          return (
+            oppija.etunimet
+              ?.toLocaleLowerCase()
+              .includes(params.tunniste.toLowerCase() ?? '') ||
+            oppija.sukunimi
+              ?.toLocaleLowerCase()
+              .includes(params.tunniste.toLowerCase() ?? '')
+          );
+        }
+        return true;
+      }),
+    [params],
+  );
+
   return {
     ...params,
-    result,
+    result: { ...result, data },
   };
 };
