@@ -97,13 +97,6 @@ object UIService {
   val KOODISTO_YOKOKEET = "koskiyokokeet"
 
   val YTL_ORGANISAATIO_OID = "1.2.246.562.10.43628088406"
-
-  val EXAMPLE_OPPIJA = Oppija(
-    EXAMPLE_OPPIJA_OID,
-    Optional.of(EXAMPLE_HETU),
-    Optional.of(EXAMPLE_ETUNIMET),
-    Optional.of(EXAMPLE_SUKUNIMI)
-  )
 }
 
 @Component
@@ -224,8 +217,7 @@ class UIService {
     (oppija, hasOikeus) match
       case (Some(oppija), true) => Some(oppija)
       case (Some(oppija), false) => None
-      //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
-      case (None, _) => Some(UIService.EXAMPLE_OPPIJA)
+      case (_, _) => None
   }
 
   /**
