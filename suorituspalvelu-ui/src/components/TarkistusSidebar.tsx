@@ -5,7 +5,7 @@ import {
 import { Link, useSearchParams } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { NAV_LIST_SELECTED_ITEM_CLASS, NavigationList } from './NavigationList';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
@@ -45,13 +45,13 @@ const SidebarContent = () => {
   return (
     <Stack
       spacing={1.5}
-      sx={{ paddingLeft: 2 }}
+      sx={{ paddingLeft: 2, paddingTop: 2 }}
       data-test-id="henkilot-sidebar"
     >
       {hasValidSearchParams ? (
         <>
           {totalCount !== 0 && (
-            <Box sx={{ paddingRight: 2, paddingTop: 1 }}>
+            <Box sx={{ paddingRight: 2 }}>
               <SearchInput
                 sx={{ width: '100%' }}
                 placeholder={t('sivupalkki.suodata-nimella-tai-hetulla')}
@@ -102,10 +102,8 @@ const SidebarContent = () => {
 };
 
 export function TarkistusSidebar() {
-  const [isOpen, setIsOpen] = useState(true);
-
   return (
-    <LeftPanel isOpen={isOpen} setIsOpen={setIsOpen}>
+    <LeftPanel>
       <QuerySuspenseBoundary>
         <SidebarContent />
       </QuerySuspenseBoundary>
