@@ -7,14 +7,14 @@ import {
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
 import { InputAdornment, Stack } from '@mui/material';
-import {
-  OphInputFormField,
-  OphSelectFormField,
-} from '@opetushallitus/oph-design-system';
+import { OphSelectFormField } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { SpinnerIcon } from './SpinnerIcon';
+import { useEffect } from 'react';
+import { useParams } from 'react-router';
+import { SearchInput } from './SearchInput';
 
 const OphSelectWithLoading = ({
   isLoading,
@@ -136,7 +136,7 @@ const LuokkaSelectField = ({
   );
 };
 
-const KatselijaSearchControls = () => {
+const OppilaitoksenOppijatSearchControls = () => {
   const { setSearchParams, oppilaitos, luokka, vuosi } =
     useOppijatSearchParamsState();
 
@@ -178,12 +178,45 @@ const KatselijaSearchControls = () => {
   );
 };
 
-export function SearchControls() {
+const HenkiloTunnisteellaSearchControls = () => {
   const { t } = useTranslations();
-
-  const selectedSearchTab = useSelectedSearchTab();
+  const { oppijaNumero } = useParams();
 
   const { tunniste, setSearchParams } = useOppijatSearchParamsState();
+
+  // Asetetaan ensimmäisellä kerralla tunniste oppijanumeroksi, jos tunnistetta ei asetettu
+  useEffect(() => {
+    if (!tunniste && oppijaNumero) {
+      setSearchParams(
+        {
+          tunniste: oppijaNumero,
+        },
+        { replace: true },
+      );
+    }
+  }, []);
+
+  return (
+    <SearchInput
+      sx={{
+        flex: 1,
+        maxWidth: '400px',
+      }}
+      label={t('search.hae-henkilo')}
+      value={tunniste ?? ''}
+      placeholder={t('search.henkilo-input-placeholder')}
+      onClear={() => {
+        setSearchParams({ tunniste: '' });
+      }}
+      onChange={(e) => {
+        setSearchParams({ tunniste: e.target.value });
+      }}
+    />
+  );
+};
+
+export function SearchControls() {
+  const selectedSearchTab = useSelectedSearchTab();
 
   const { data: kayttaja } = useKayttaja();
 
@@ -203,20 +236,12 @@ export function SearchControls() {
       >
         <Stack direction="row" spacing={2}>
           {selectedSearchTab === 'henkilo' && (
-            <OphInputFormField
-              sx={{
-                flex: 1,
-                maxWidth: '400px',
-              }}
-              label={t('hae-henkiloa')}
-              value={tunniste ?? ''}
-              onChange={(e) => {
-                setSearchParams({ tunniste: e.target.value });
-              }}
-            />
+            <HenkiloTunnisteellaSearchControls />
           )}
           {selectedSearchTab === 'tarkistus' &&
-            isOppilaitosOppijaHakuAllowed && <KatselijaSearchControls />}
+            isOppilaitosOppijaHakuAllowed && (
+              <OppilaitoksenOppijatSearchControls />
+            )}
         </Stack>
       </Stack>
     </Stack>

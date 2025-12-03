@@ -4,11 +4,27 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { useConfig } from '@/lib/configuration';
 import { ExternalLink } from '@/components/ExternalLink';
-import { formatFinnishDate, formatHenkiloNimi } from '@/lib/common';
+import {
+  formatFinnishDate,
+  formatHenkiloNimi,
+  isHenkiloOid,
+  isHenkilotunnus,
+} from '@/lib/common';
 import type { Route } from './+types/HenkiloPageLayout';
-import { useOppija } from '@/lib/suorituspalvelu-queries';
+import {
+  queryOptionsGetOppija,
+  queryOptionsGetOppilaitokset,
+  queryOptionsSearchOppijaByTunniste,
+  useOppija,
+} from '@/lib/suorituspalvelu-queries';
 import { TiedotTabNavi } from '@/components/TiedotTabNavi';
-import { Outlet } from 'react-router';
+import {
+  Navigate,
+  Outlet,
+  useLocation,
+  useParams,
+  type Location,
+} from 'react-router';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { HenkilotSidebar } from '@/components/HenkilotSidebar';
 import { SearchControls } from '@/components/SearchControls';
@@ -18,6 +34,10 @@ import { NavigationSpinner } from './NavigationSpinner';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { SearchTabNavi } from './SearchTabNavi';
+import { queryClient } from '@/lib/queryClient';
+import { FetchError, useApiSuspenseQuery } from '@/lib/http-client';
+import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
+import { ErrorView } from '@/components/ErrorView';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -32,6 +52,7 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
 
 const HenkiloContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const { data: tiedot } = useOppija(oppijaNumero);
+
   const { t } = useTranslations();
   return (
     <Stack spacing={3} sx={{ padding: 2 }}>
@@ -62,6 +83,108 @@ const HenkiloContent = ({ oppijaNumero }: { oppijaNumero: string }) => {
   );
 };
 
+export async function clientLoader({
+  params,
+  request,
+}: Route.ClientLoaderArgs) {
+  const oppijaNumero = params.oppijaNumero;
+  if (oppijaNumero && isHenkiloOid(oppijaNumero)) {
+    queryClient.ensureQueryData(queryOptionsGetOppija(oppijaNumero));
+  }
+  const url = request.url;
+  if (url.includes('/tarkistus')) {
+    queryClient.ensureQueryData(queryOptionsGetOppilaitokset());
+  }
+}
+
+const HenkiloOppijanumerolla = ({
+  oppijaNumero,
+  selectHenkiloText,
+}: {
+  oppijaNumero?: string;
+  selectHenkiloText: string;
+}) => {
+  return (
+    <>
+      {oppijaNumero ? (
+        <HenkiloContent oppijaNumero={oppijaNumero} />
+      ) : (
+        <ResultPlaceholder text={selectHenkiloText} />
+      )}
+    </>
+  );
+};
+
+export const getOppijanumeroRedirectURL = (
+  location: Location,
+  oppijaNumero?: string | null,
+) => {
+  const newLocation = { ...location };
+  const pathParts = location.pathname.split('/');
+
+  if (oppijaNumero) {
+    pathParts.splice(2, 1, oppijaNumero);
+    pathParts.splice(3, 1, pathParts[3] ?? 'suoritustiedot');
+  } else {
+    pathParts.splice(2);
+  }
+
+  newLocation.pathname = pathParts.join('/');
+  return newLocation.pathname === location.pathname ? null : newLocation;
+};
+
+const useUpdatedRedirectLocation = ({
+  tunniste,
+}: {
+  tunniste?: string | null;
+}) => {
+  const location = useLocation();
+
+  const { data } = useApiSuspenseQuery(
+    queryOptionsSearchOppijaByTunniste(tunniste),
+  );
+
+  return getOppijanumeroRedirectURL(location, data?.oppijaNumero);
+};
+
+const HenkiloTunnisteella = () => {
+  const { tunniste } = useOppijatSearchParamsState();
+  const { t } = useTranslations();
+  const link = useUpdatedRedirectLocation({ tunniste });
+
+  const { oppijaNumero } = useParams();
+
+  if (link) {
+    return <Navigate to={link} replace={true} />;
+  }
+
+  return tunniste && (isHenkilotunnus(tunniste) || isHenkiloOid(tunniste)) ? (
+    <HenkiloOppijanumerolla
+      oppijaNumero={oppijaNumero}
+      selectHenkiloText={t('search.henkiloa-ei-loytynyt')}
+    />
+  ) : (
+    <ResultPlaceholder text={t('search.ei-validi-tunniste')} />
+  );
+};
+
+const ErrorFallback = ({
+  reset,
+  error,
+}: {
+  reset: () => void;
+  error: Error;
+}) => {
+  const { t } = useTranslations();
+  if (error instanceof FetchError) {
+    if ([404, 410].includes(error.response.status)) {
+      return <ResultPlaceholder text={t('search.ei-loytynyt')} />;
+    }
+  }
+
+  return <ErrorView error={error} reset={reset} />;
+};
+
 export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
   const { t } = useTranslations();
 
@@ -76,16 +199,12 @@ export default function HenkiloPageLayout({ params }: Route.ComponentProps) {
         {selectedSearchTab === 'tarkistus' && <HenkilotSidebar />}
         <main style={{ flexGrow: 1 }}>
           <NavigationSpinner>
-            <QuerySuspenseBoundary>
-              {oppijaNumero ? (
-                <HenkiloContent oppijaNumero={oppijaNumero} />
-              ) : (
-                <ResultPlaceholder
-                  text={t(
-                    selectedSearchTab === 'henkilo'
-                      ? 'search.hae-henkilo'
-                      : 'search.hae-ja-valitse-henkilo',
-                  )}
+            <QuerySuspenseBoundary ErrorFallback={ErrorFallback}>
+              {selectedSearchTab === 'henkilo' && <HenkiloTunnisteella />}
+              {selectedSearchTab === 'tarkistus' && (
+                <HenkiloOppijanumerolla
+                  oppijaNumero={oppijaNumero}
+                  selectHenkiloText={t('search.hae-ja-valitse-henkilo')}
                 />
               )}
             </QuerySuspenseBoundary>

@@ -9,7 +9,9 @@ import {
   getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
   getValintadata,
+  searchOppijaByTunniste,
   searchOppijat,
+  searchOppilaitoksenOppijat,
   type OppijatSearchParams,
 } from './suorituspalvelu-service';
 import { useApiQuery, useApiSuspenseQuery } from './http-client';
@@ -25,6 +27,20 @@ export const queryOptionsGetOppija = (oppijaNumero: string) =>
 export const useOppija = (oppijaNumero: string) => {
   return useApiSuspenseQuery(queryOptionsGetOppija(oppijaNumero));
 };
+
+export const queryOptionsSearchOppijaByTunniste = (tunniste?: string | null) =>
+  queryOptions({
+    queryKey: ['searchOppijaByTunniste', tunniste],
+    queryFn: () => searchOppijaByTunniste(tunniste),
+  });
+
+export const queryOptionsSearchOppilaitoksenOppijat = (
+  params: OppijatSearchParams,
+) =>
+  queryOptions({
+    queryKey: ['searchOppilaitoksenOppijat', params],
+    queryFn: () => searchOppilaitoksenOppijat(params),
+  });
 
 export const queryOptionsSearchOppijat = (params: OppijatSearchParams) =>
   queryOptions({
@@ -111,7 +127,7 @@ export const queryOptionsGetOppijanHaut = (oppijaOid: string) =>
     queryKey: ['getOppijanHaut', oppijaOid],
     queryFn: () => getOppijanHaut(oppijaOid),
   });
-  
+
 export const queryOptionsGetOppilaitosVuodet = ({
   oppilaitosOid,
 }: {
