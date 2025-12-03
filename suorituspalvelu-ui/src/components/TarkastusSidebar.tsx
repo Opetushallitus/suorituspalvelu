@@ -101,7 +101,7 @@ const SidebarContent = () => {
   );
 };
 
-export function TarkistusSidebar() {
+export function TarkastusSidebar() {
   return (
     <LeftPanel>
       <QuerySuspenseBoundary>

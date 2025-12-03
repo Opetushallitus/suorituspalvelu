@@ -21,7 +21,7 @@ const getSuodatusInput = (page: Page) =>
 
 const getHenkilotSidebar = (page: Page) => page.getByTestId('henkilot-sidebar');
 
-test.describe('Tarkistusnäkymä', () => {
+test.describe('Tarkastusnäkymä', () => {
   test.describe('jos käyttäjällä ei oikeuksia', () => {
     test.beforeEach(async ({ page }) => {
       await page.route('**/ui/kayttaja', async (route) => {
@@ -35,7 +35,7 @@ test.describe('Tarkistusnäkymä', () => {
       });
     });
 
-    test('ei näytetä tarkistusnäkymä-välilehteä, jos ei valittu', async ({
+    test('ei näytetä tarkastusnäkymä-välilehteä, jos ei valittu', async ({
       page,
     }) => {
       await page.goto('henkilo');
@@ -50,14 +50,14 @@ test.describe('Tarkistusnäkymä', () => {
         searchTabNavi.getByRole('link', { name: 'Henkilöhaku' }),
       ).toBeVisible();
       await expect(
-        searchTabNavi.getByRole('link', { name: 'Tarkistusnäkymä' }),
+        searchTabNavi.getByRole('link', { name: 'Tarkastusnäkymä' }),
       ).toBeHidden();
     });
 
-    test('suora navigointi tarkistusnäkymään näyttää käyttöoikeusvirheen', async ({
+    test('suora navigointi tarkastusnäkymään näyttää käyttöoikeusvirheen', async ({
       page,
     }) => {
-      await page.goto('tarkistus');
+      await page.goto('tarkastus');
 
       const searchTabNavi = page.getByRole('navigation', {
         name: 'Oppijoiden hakunäkymän valitsin',
@@ -68,11 +68,11 @@ test.describe('Tarkistusnäkymä', () => {
         searchTabNavi.getByRole('link', { name: 'Henkilöhaku' }),
       ).toBeVisible();
       await expect(
-        searchTabNavi.getByRole('link', { name: 'Tarkistusnäkymä' }),
+        searchTabNavi.getByRole('link', { name: 'Tarkastusnäkymä' }),
       ).toBeVisible();
 
       await expect(
-        page.getByText('Sinulla ei ole oikeuksia tarkistusnäkymään'),
+        page.getByText('Sinulla ei ole oikeuksia tarkastusnäkymään'),
       ).toBeVisible();
     });
   });
@@ -142,7 +142,7 @@ test.describe('Tarkistusnäkymä', () => {
         });
       });
 
-      await page.goto('tarkistus');
+      await page.goto('tarkastus');
     });
 
     test('näyttää oikean otsikon ja sivupainikkeen', async ({ page }) => {
@@ -154,7 +154,7 @@ test.describe('Tarkistusnäkymä', () => {
       await expect(
         page.getByRole('link', { name: 'Henkilöhaku' }),
       ).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Tarkistus' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Tarkastus' })).toBeVisible();
     });
 
     test('näyttää oppilaitoksen valintakentän', async ({ page }) => {
@@ -302,7 +302,7 @@ test.describe('Tarkistusnäkymä', () => {
       await page.getByRole('link', { name: 'Olli Oppija 010296-1230' }).click();
 
       await expect(page).toHaveURL((url) =>
-        url.pathname.includes(`tarkistus/${OPPIJANUMERO}`),
+        url.pathname.includes(`tarkastus/${OPPIJANUMERO}`),
       );
 
       await expect(

@@ -319,7 +319,7 @@
   "search": {
     "tabs": {
       "henkilo": "Henkilöhaku",
-      "tarkistus": "Tarkistusnäkymä"
+      "tarkastus": "Tarkastusnäkymä"
     },
     "navigaatio": "Oppijoiden hakunäkymän valitsin",
     "placeholder": "Syötä hakusana...",
@@ -334,6 +334,6 @@
     "luokka": "Luokka",
     "valitse-oppilaitos": "Valitse oppilaitos",
     "tyhjenna": "Tyhjennä",
-    "tarkistus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkistusnäkymään."
+    "tarkastus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkastusnäkymään."
   }
 }
