@@ -7,14 +7,14 @@ import {
 } from '@/lib/suorituspalvelu-queries';
 import { redirect } from 'react-router';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
-import { HenkilotSidebar } from '@/components/HenkilotSidebar';
+import { TarkistusSidebar } from '@/components/TarkistusSidebar';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { queryClient } from '@/lib/queryClient';
 import { OppijanTiedotPage } from './OppijanTiedotPage';
 import {
-  getActiveTiedotTab,
-  setActiveTiedotTab,
-} from '@/hooks/useActiveTiedotTab';
+  getSelectedTiedotTab,
+  setSelectedTiedotTab,
+} from '@/hooks/useSelectedTiedotTab';
 import { TarkistusSearchControls } from '@/components/TarkistusSearchControls';
 import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 import { isHenkilotunnus } from '@/lib/common';
@@ -28,9 +28,9 @@ export async function clientLoader({
   const url = new URL(request.url);
 
   if (oppijaTunniste) {
-    const tiedotTab = getActiveTiedotTab(url.pathname);
+    const tiedotTab = getSelectedTiedotTab(url.pathname);
     if (!tiedotTab) {
-      url.pathname = setActiveTiedotTab(url.pathname, 'suoritustiedot');
+      url.pathname = setSelectedTiedotTab(url.pathname, 'suoritustiedot');
       return redirect(url.toString());
     }
     queryClient.ensureQueryData(queryOptionsGetOppija(oppijaTunniste));
@@ -42,11 +42,11 @@ const TarkistusContent = () => {
 
   const { oppijaTunniste, setOppijaTunniste } = useOppijaTunnisteParamState();
 
-  const { data: oppija } = useOppija(oppijaTunniste ?? '');
+  const { data: oppija } = useOppija(oppijaTunniste);
 
   const oppijaNumero = oppija?.oppijaNumero;
 
-  if (isDefined(oppijaNumero) && isHenkilotunnus(oppijaTunniste ?? '')) {
+  if (isDefined(oppijaNumero) && isHenkilotunnus(oppijaTunniste)) {
     // Asetetaan sama querydata oppijanumerollle, jotta ei tarvitse noutaa uudelleen
     queryClient.setQueryData(
       queryOptionsGetOppija(oppijaNumero).queryKey,
@@ -58,7 +58,7 @@ const TarkistusContent = () => {
   }
 
   return oppijaTunniste ? (
-    <OppijanTiedotPage oppijaNumero={oppijaTunniste} />
+    <OppijanTiedotPage oppijaTunniste={oppijaTunniste} />
   ) : (
     <ResultPlaceholder text={t('search.hae-ja-valitse-henkilo')} />
   );
@@ -69,7 +69,7 @@ export default function TarkistusLayout() {
     <>
       <TarkistusSearchControls />
       <Stack direction="row">
-        <HenkilotSidebar />
+        <TarkistusSidebar />
         <main style={{ flexGrow: 1 }}>
           <QuerySuspenseBoundary>
             <TarkistusContent />

@@ -8,9 +8,9 @@ import { HenkiloSearchControls } from '@/components/HenkiloSearchControls';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { OppijanTiedotPage } from './OppijanTiedotPage';
 import {
-  getActiveTiedotTab,
-  setActiveTiedotTab,
-} from '@/hooks/useActiveTiedotTab';
+  getSelectedTiedotTab,
+  setSelectedTiedotTab,
+} from '@/hooks/useSelectedTiedotTab';
 import { queryClient } from '@/lib/queryClient';
 import type { Route } from './+types/HenkiloLayout';
 
@@ -22,9 +22,9 @@ export const clientLoader = async ({
   const url = new URL(request.url);
 
   if (oppijaTunniste) {
-    const tiedotTab = getActiveTiedotTab(url.pathname);
+    const tiedotTab = getSelectedTiedotTab(url.pathname);
     if (!tiedotTab) {
-      url.pathname = setActiveTiedotTab(url.pathname, 'suoritustiedot');
+      url.pathname = setSelectedTiedotTab(url.pathname, 'suoritustiedot');
       throw redirect(url.toString());
     }
     queryClient.ensureQueryData(queryOptionsGetOppija(oppijaTunniste));
@@ -42,7 +42,7 @@ const HenkiloTunnisteella = () => {
     return <ResultPlaceholder text={t('search.ei-validi-tunniste')} />;
   }
 
-  return <OppijanTiedotPage oppijaNumero={oppijaTunniste} />;
+  return <OppijanTiedotPage oppijaTunniste={oppijaTunniste} />;
 };
 
 export default function HenkiloLayout() {

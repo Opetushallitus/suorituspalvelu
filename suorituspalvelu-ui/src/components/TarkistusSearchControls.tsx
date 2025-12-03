@@ -1,4 +1,4 @@
-import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
+import { useOppilaitoksenOppijatSearchParamsState } from '@/hooks/useOppilaitoksenOppijatSearch';
 import {
   queryOptionsGetOppilaitosVuosiOptions,
   queryOptionsGetOppilaitosVuosiLuokatOptions,
@@ -49,7 +49,7 @@ const OppilaitosSelectField = ({
   const { data: oppilaitoksetOptions = [], isLoading } =
     useOppilaitoksetOptions();
 
-  const { setSearchParams } = useOppijatSearchParamsState();
+  const { setSearchParams } = useOppilaitoksenOppijatSearchParamsState();
 
   useEffect(() => {
     const onlyOppilaitosOption = only(oppilaitoksetOptions);
@@ -96,7 +96,7 @@ const VuosiSelectField = ({
     queryOptionsGetOppilaitosVuosiOptions({ oppilaitosOid }),
   );
 
-  const { setSearchParams } = useOppijatSearchParamsState();
+  const { setSearchParams } = useOppilaitoksenOppijatSearchParamsState();
 
   useEffect(() => {
     if (oppilaitosOid && !value) {
@@ -155,7 +155,7 @@ const LuokkaSelectField = ({
 
 export const TarkistusSearchControls = () => {
   const { setSearchParams, oppilaitos, luokka, vuosi } =
-    useOppijatSearchParamsState();
+    useOppilaitoksenOppijatSearchParamsState();
 
   return (
     <StyledSearchControls>

@@ -1,9 +1,8 @@
 import {
-  useOppilaitoksenOppijatSearch,
-  useOppijatSearchURLParams,
-  useOppijatSearchParamsState,
-} from '@/hooks/useSearchOppijat';
-import { Link, useParams } from 'react-router';
+  useOppilaitoksenOppijatSearchResult,
+  useOppilaitoksenOppijatSearchParamsState,
+} from '@/hooks/useOppilaitoksenOppijatSearch';
+import { Link, useSearchParams } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
 import { useCallback, useState } from 'react';
@@ -14,20 +13,23 @@ import { formatHenkiloNimi } from '@/lib/common';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { SearchInput } from './SearchInput';
 import { Box, Stack } from '@mui/material';
-import { useActiveTiedotTab } from '@/hooks/useActiveTiedotTab';
+import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
+import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 
-const HenkilotSidebarContent = () => {
-  const params = useOppijatSearchURLParams();
-  const { data, totalCount } = useOppilaitoksenOppijatSearch();
+const SidebarContent = () => {
+  const { suodatus, setSearchParams, hasValidSearchParams } =
+    useOppilaitoksenOppijatSearchParamsState();
 
-  const { setSearchParams, hasValidSearchParams } =
-    useOppijatSearchParamsState();
+  const { data, totalCount } = useOppilaitoksenOppijatSearchResult();
 
   const { t } = useTranslate();
 
-  const { oppijaNumero } = useParams();
+  const { oppijaTunniste } = useOppijaTunnisteParamState();
 
   const searchTab = useSelectedSearchTab();
+  const tiedotTab = useSelectedTiedotTab();
+
+  const [urlSearchParams] = useSearchParams();
 
   const onClear = useCallback(() => {
     setSearchParams({ suodatus: '' });
@@ -39,8 +41,6 @@ const HenkilotSidebarContent = () => {
     },
     [setSearchParams],
   );
-
-  const tiedotTab = useActiveTiedotTab();
 
   return (
     <Stack
@@ -55,7 +55,7 @@ const HenkilotSidebarContent = () => {
               <SearchInput
                 sx={{ width: '100%' }}
                 placeholder={t('sivupalkki.suodata-nimella-tai-hetulla')}
-                value={params.suodatus ?? ''}
+                value={suodatus ?? ''}
                 onClear={onClear}
                 onChange={onChange}
               />
@@ -72,13 +72,14 @@ const HenkilotSidebarContent = () => {
                 key={oppija.oppijaNumero}
                 prefetch="intent"
                 className={
-                  oppijaNumero === oppija.oppijaNumero
+                  oppijaTunniste === oppija.oppijaNumero ||
+                  oppijaTunniste === oppija.hetu
                     ? NAV_LIST_SELECTED_ITEM_CLASS
                     : ''
                 }
                 to={{
                   pathname: `/${searchTab}/${oppija.oppijaNumero}/${tiedotTab ?? ''}`,
-                  search: new URLSearchParams(params).toString(),
+                  search: urlSearchParams.toString(),
                 }}
               >
                 <OphTypography variant="label" color="inherit">
@@ -100,13 +101,13 @@ const HenkilotSidebarContent = () => {
   );
 };
 
-export function HenkilotSidebar() {
+export function TarkistusSidebar() {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
     <LeftPanel isOpen={isOpen} setIsOpen={setIsOpen}>
       <QuerySuspenseBoundary>
-        <HenkilotSidebarContent />
+        <SidebarContent />
       </QuerySuspenseBoundary>
     </LeftPanel>
   );

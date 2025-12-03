@@ -22,8 +22,8 @@ export const queryOptionsGetOppija = (tunniste?: string) =>
     queryFn: () => getOppija(tunniste),
   });
 
-export const useOppija = (oppijaNumero: string) => {
-  return useApiSuspenseQuery(queryOptionsGetOppija(oppijaNumero));
+export const useOppija = (oppijaTunniste?: string) => {
+  return useApiSuspenseQuery(queryOptionsGetOppija(oppijaTunniste));
 };
 
 export const queryOptionsSearchOppilaitoksenOppijat = (
