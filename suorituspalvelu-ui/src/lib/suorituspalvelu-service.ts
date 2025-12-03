@@ -1,4 +1,4 @@
-import { isEmpty, omitBy } from 'remeda';
+import { isEmpty, isEmptyish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client, FetchError } from './http-client';
 import type {
@@ -70,12 +70,9 @@ export const getOppija = async (tunniste?: string) => {
   const config = await configPromise;
 
   if (
-    isEmpty(tunniste ?? '') ||
+    isEmptyish(tunniste) ||
     (!isHenkiloOid(tunniste) && !isHenkilotunnus(tunniste))
   ) {
-    console.warn(
-      `Invalid tunniste provided to getOppija: "${tunniste}". Returning null.`,
-    );
     return null;
   }
 

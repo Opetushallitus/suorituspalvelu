@@ -1,3 +1,5 @@
+import { Header } from '@/components/Header';
+import { PageLayout } from '@/components/PageLayout';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import {
   SessionExpired,
@@ -5,8 +7,10 @@ import {
 } from '@/components/SessionExpired';
 import { useTranslate } from '@tolgee/react';
 import { Outlet } from 'react-router';
+import { SearchTabNavi } from './SearchTabNavi';
+import { NavigationSpinner } from './NavigationSpinner';
 
-export default function HenkiloSearchLayout() {
+export default function RootLayout() {
   const { t } = useTranslate();
   const { isSessionExpired } = useIsSessionExpired();
 
@@ -14,7 +18,12 @@ export default function HenkiloSearchLayout() {
     <QuerySuspenseBoundary>
       {isSessionExpired && <SessionExpired />}
       <title>{t('suorituspalvelu')}</title>
-      <Outlet />
+      <PageLayout header={<Header title={t('suorituspalvelu')} />}>
+        <SearchTabNavi />
+        <NavigationSpinner>
+          <Outlet />
+        </NavigationSpinner>
+      </PageLayout>
     </QuerySuspenseBoundary>
   );
 }

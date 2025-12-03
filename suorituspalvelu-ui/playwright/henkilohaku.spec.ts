@@ -9,9 +9,14 @@ test.describe('Henkilöhaku', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/ui/tiedot', async (route) => {
       if (route.request().method() === 'POST') {
-        await route.fulfill({
-          json: OPPIJAN_TIEDOT,
-        });
+        const tunniste = (await route.request().postDataJSON())?.tunniste;
+        if (tunniste === OPPIJANUMERO || tunniste === HENKILOTUNNUS) {
+          await route.fulfill({
+            json: OPPIJAN_TIEDOT,
+          });
+        } else {
+          await route.fulfill({ status: 410 });
+        }
       }
     });
   });

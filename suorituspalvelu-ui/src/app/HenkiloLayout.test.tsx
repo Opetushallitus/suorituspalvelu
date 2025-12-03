@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getOppijanumeroRedirectURL } from './HenkiloPageLayout';
+import { getRedirectedOppijanumeroLocation } from './HenkiloLayout';
 import type { Location } from 'react-router';
 
 describe('getOppijanumeroRedirectURL', () => {
@@ -13,21 +13,21 @@ describe('getOppijanumeroRedirectURL', () => {
 
   it('should add oppijanumero to path with only base segment', () => {
     const location = createLocation('/henkilo');
-    const result = getOppijanumeroRedirectURL(location, 'oid123');
+    const result = getRedirectedOppijanumeroLocation(location, 'oid123');
 
     expect(result?.pathname).toBe('/henkilo/oid123/suoritustiedot');
   });
 
   it('should replace existing oppijanumero in path', () => {
     const location = createLocation('/henkilo/oldOid/suoritustiedot');
-    const result = getOppijanumeroRedirectURL(location, 'newOid');
+    const result = getRedirectedOppijanumeroLocation(location, 'newOid');
 
     expect(result?.pathname).toBe('/henkilo/newOid/suoritustiedot');
   });
 
   it('should remove oppijanumero when newOppijaNumero is null', () => {
     const location = createLocation('/henkilo/oid123/suoritustiedot');
-    const result = getOppijanumeroRedirectURL(location, null);
+    const result = getRedirectedOppijanumeroLocation(location, null);
 
     expect(result).not.toBeNull();
     expect(result?.pathname).toBe('/henkilo');
@@ -35,7 +35,7 @@ describe('getOppijanumeroRedirectURL', () => {
 
   it('should remove oppijanumero when newOppijaNumero is undefined', () => {
     const location = createLocation('/henkilo/oid123/suoritustiedot');
-    const result = getOppijanumeroRedirectURL(location, undefined);
+    const result = getRedirectedOppijanumeroLocation(location, undefined);
 
     expect(result).not.toBeNull();
     expect(result?.pathname).toBe('/henkilo');
@@ -43,14 +43,14 @@ describe('getOppijanumeroRedirectURL', () => {
 
   it('should return null when pathname does not change', () => {
     const location = createLocation('/henkilo/oid123/suoritustiedot');
-    const result = getOppijanumeroRedirectURL(location, 'oid123');
+    const result = getRedirectedOppijanumeroLocation(location, 'oid123');
 
     expect(result).toBeNull();
   });
 
   it('should handle empty oppijanumero string', () => {
     const location = createLocation('/henkilo/oldOid');
-    const result = getOppijanumeroRedirectURL(location, '');
+    const result = getRedirectedOppijanumeroLocation(location, '');
 
     expect(result).not.toBeNull();
     expect(result?.pathname).toBe('/henkilo');
@@ -58,7 +58,7 @@ describe('getOppijanumeroRedirectURL', () => {
 
   it('should preserve "suoritustiedot"-segment tabs when switching oppijanumero', () => {
     const location = createLocation('/henkilo/oldOid/suoritustiedot');
-    const result = getOppijanumeroRedirectURL(location, 'newOid');
+    const result = getRedirectedOppijanumeroLocation(location, 'newOid');
 
     expect(result).not.toBeNull();
     expect(result?.pathname).toBe('/henkilo/newOid/suoritustiedot');
@@ -72,7 +72,7 @@ describe('getOppijanumeroRedirectURL', () => {
       state: { custom: 'data' },
       key: 'test-key',
     };
-    const result = getOppijanumeroRedirectURL(location, 'newOid');
+    const result = getRedirectedOppijanumeroLocation(location, 'newOid');
 
     expect(result).not.toBeNull();
     expect(result?.search).toBe('?query=test');

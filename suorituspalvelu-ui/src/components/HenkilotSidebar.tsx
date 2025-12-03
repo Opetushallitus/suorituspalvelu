@@ -14,6 +14,7 @@ import { formatHenkiloNimi } from '@/lib/common';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { SearchInput } from './SearchInput';
 import { Box, Stack } from '@mui/material';
+import { useActiveTiedotTab } from '@/hooks/useActiveTiedotTab';
 
 const HenkilotSidebarContent = () => {
   const params = useOppijatSearchURLParams();
@@ -39,6 +40,8 @@ const HenkilotSidebarContent = () => {
     [setSearchParams],
   );
 
+  const tiedotTab = useActiveTiedotTab();
+
   return (
     <Stack spacing={1.5} sx={{ paddingLeft: 2 }}>
       {hasValidSearchParams ? (
@@ -63,13 +66,14 @@ const HenkilotSidebarContent = () => {
             {data?.map((oppija) => (
               <Link
                 key={oppija.oppijaNumero}
+                prefetch="intent"
                 className={
                   oppijaNumero === oppija.oppijaNumero
                     ? NAV_LIST_SELECTED_ITEM_CLASS
                     : ''
                 }
                 to={{
-                  pathname: `/${searchTab}/${oppija.oppijaNumero}`,
+                  pathname: `/${searchTab}/${oppija.oppijaNumero}/${tiedotTab ?? ''}`,
                   search: new URLSearchParams(params).toString(),
                 }}
               >

@@ -1,22 +1,18 @@
 import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
-import { DEFAULT_BOX_BORDER } from '@/lib/theme';
+import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import {
   queryOptionsGetOppilaitosVuosiOptions,
   queryOptionsGetOppilaitosVuosiLuokatOptions,
-  useKayttaja,
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
 import { InputAdornment, Stack } from '@mui/material';
 import { OphSelectFormField } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
-import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { SpinnerIcon } from './SpinnerIcon';
 import { useCallback, useEffect } from 'react';
 import { SearchInput } from './SearchInput';
 import { only } from 'remeda';
-import { useParams } from 'react-router';
-import { isHenkiloOid } from '@/lib/common';
 
 const OphSelectWithLoading = ({
   isLoading,
@@ -41,6 +37,14 @@ const OphSelectWithLoading = ({
     />
   );
 };
+
+const StyledSearchControls = styled(Stack)(({ theme }) => ({
+  flexDirection: 'row',
+  gap: theme.spacing(2),
+  margin: theme.spacing(2, 2, 0, 2),
+  paddingBottom: theme.spacing(2),
+  borderBottom: DEFAULT_BOX_BORDER,
+}));
 
 const OppilaitosSelectField = ({
   value,
@@ -158,12 +162,12 @@ const LuokkaSelectField = ({
   );
 };
 
-const OppilaitoksenOppijatSearchControls = () => {
+export const TarkistusSearchControls = () => {
   const { setSearchParams, oppilaitos, luokka, vuosi } =
     useOppijatSearchParamsState();
 
   return (
-    <>
+    <StyledSearchControls>
       <OppilaitosSelectField
         value={oppilaitos ?? ''}
         onChange={(e) => {
@@ -196,27 +200,14 @@ const OppilaitoksenOppijatSearchControls = () => {
           setSearchParams({ luokka: e.target.value, tunniste: '' });
         }}
       />
-    </>
+    </StyledSearchControls>
   );
 };
 
-const HenkiloTunnisteellaSearchControls = () => {
+export const HenkiloSearchControls = () => {
   const { t } = useTranslations();
-  const { oppijaNumero } = useParams();
 
   const { tunniste, setSearchParams } = useOppijatSearchParamsState();
-
-  // Asetetaan ensimmäisellä kerralla tunnisteeksi validi oppijanumero, jos tunnistetta ei asetettu
-  useEffect(() => {
-    if (!tunniste && isHenkiloOid(oppijaNumero)) {
-      setSearchParams(
-        {
-          tunniste: oppijaNumero,
-        },
-        { replace: true },
-      );
-    }
-  }, []);
 
   const onClear = useCallback(() => {
     setSearchParams({ tunniste: '' });
@@ -230,49 +221,18 @@ const HenkiloTunnisteellaSearchControls = () => {
   );
 
   return (
-    <SearchInput
-      sx={{
-        flex: 1,
-        maxWidth: '400px',
-      }}
-      label={t('search.hae-henkilo')}
-      value={tunniste ?? ''}
-      placeholder={t('search.henkilo-input-placeholder')}
-      onClear={onClear}
-      onChange={onChange}
-    />
+    <StyledSearchControls>
+      <SearchInput
+        sx={{
+          flex: 1,
+          maxWidth: '400px',
+        }}
+        label={t('search.hae-henkilo')}
+        value={tunniste ?? ''}
+        placeholder={t('search.henkilo-input-placeholder')}
+        onClear={onClear}
+        onChange={onChange}
+      />
+    </StyledSearchControls>
   );
 };
-
-export function SearchControls() {
-  const selectedSearchTab = useSelectedSearchTab();
-
-  const { data: kayttaja } = useKayttaja();
-
-  const isOppilaitosOppijaHakuAllowed =
-    kayttaja.isRekisterinpitaja || kayttaja.isOrganisaationKatselija;
-
-  return (
-    <Stack>
-      <Stack
-        direction="column"
-        sx={{
-          padding: 2,
-          borderBottom: DEFAULT_BOX_BORDER,
-          justifyContent: 'stretch',
-          gap: 2,
-        }}
-      >
-        <Stack direction="row" spacing={2}>
-          {selectedSearchTab === 'henkilo' && (
-            <HenkiloTunnisteellaSearchControls />
-          )}
-          {selectedSearchTab === 'tarkistus' &&
-            isOppilaitosOppijaHakuAllowed && (
-              <OppilaitoksenOppijatSearchControls />
-            )}
-        </Stack>
-      </Stack>
-    </Stack>
-  );
-}

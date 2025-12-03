@@ -1,7 +1,8 @@
+import { useActiveTiedotTab } from '@/hooks/useActiveTiedotTab';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
-import { Link, useLocation, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 const StyledContainer = styled('div')({
   borderBottom: DEFAULT_BOX_BORDER,
@@ -28,11 +29,6 @@ const StyledTab = styled(Link)<{ $active: boolean }>(({ $active }) => ({
     outlineOffset: '3px',
   },
 }));
-
-const useActiveTiedotTab = () => {
-  const location = useLocation();
-  return location.pathname.split('/')[3];
-};
 
 export const TiedotTabNavi = () => {
   const { t } = useTranslations();
@@ -66,6 +62,7 @@ export const TiedotTabNavi = () => {
               pathname: 'opiskelijavalinnan-tiedot',
               search: searchWithPrefix,
             }}
+            prefetch="intent"
           >
             {t('tabs.opiskelijavalinnan-tiedot')}
           </StyledTab>

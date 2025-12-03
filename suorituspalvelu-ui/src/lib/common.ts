@@ -59,3 +59,5 @@ export const isHenkiloOid = (value?: string | null) =>
 
 export const isHenkilotunnus = (value?: string | null) =>
   Boolean(value && /^\d{6}[a-zA-Z-]\d{3}\S{1}$/i.test(value));
+
+export const BASENAME = '/suorituspalvelu';
