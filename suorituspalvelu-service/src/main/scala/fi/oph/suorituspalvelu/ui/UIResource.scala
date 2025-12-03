@@ -6,9 +6,9 @@ import fi.oph.suorituspalvelu.integration.OnrIntegration
 import fi.oph.suorituspalvelu.mankeli.UseitaVahvistettujaOppimaariaException
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
-import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, ESIMERKKI_YLIAJO_AVAIN, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_500_DESCRIPTION, UI_HENKILO_HAKU_PATH, UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME, UI_OPPIJAN_HAUT_PATH, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_POISTA_YLIAJO_PATH, UI_TALLENNA_SUORITUS_OPPIAINE_PATH, UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH, UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, UI_TIEDOT_PATH, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH}
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_EI_VALIDI, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_EPAONNISTUI, UI_POISTA_YLIAJO_EPAONNISTUI, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_EPAONNISTUI, UI_TIEDOT_HAKU_EPAONNISTUI, UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE, UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHautFailureResponse, OppijanHautResponse, OppijanHautSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, PoistaYliajoFailureResponse, PoistaYliajoSuccessResponse, PoistaYliajotResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaArvosanaVaihtoehto, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTilaVaihtoehto, SyotettavaSuoritusTilaVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, ESIMERKKI_YLIAJO_AVAIN, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_500_DESCRIPTION, UI_OPPIJANUMERO_PARAM_NAME, UI_HENKILO_HAKU_PATH, UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME, UI_OPPIJAN_HAUT_PATH, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_POISTA_YLIAJO_PATH, UI_TALLENNA_SUORITUS_OPPIAINE_PATH, UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH, UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_PATH, UI_TIEDOT_TUNNISTE_PARAM_NAME, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_EI_VALIDI, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI, UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_EPAONNISTUI, UI_POISTA_YLIAJO_EPAONNISTUI, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_EPAONNISTUI, UI_TIEDOT_HAKU_EPAONNISTUI, UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE, UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, PoistaYliajoFailureResponse, PoistaYliajoSuccessResponse, PoistaYliajotResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaArvosanaVaihtoehto, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTilaVaihtoehto, SyotettavaSuoritusTilaVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityConstants, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaDataService}
 import fi.oph.suorituspalvelu.service.UIService.{KOODISTO_KIELIVALIKOIMA, KOODISTO_OPPIAINEET, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUKSENTILAT, KOODISTO_SUORITUKSENTYYPIT, KOODISTO_SUORITUSKIELET, SYOTETTAVAT_OPPIAINEET, SYOTETTAVAT_SUORITUSTILAT, SYOTETTAVAT_SUORITUSTYYPIT, SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT, SYOTETYN_OPPIMAARAN_SUORITUSKIELET, SYOTETYN_OPPIMAARAN_YKSILOLLISTAMINEN}
@@ -374,14 +374,14 @@ class UIResource {
   @Operation(
     summary = "Palauttaa yksittäisen oppijan suoritustiedot käyttöliittymälle",
     description = "Tämä rajapinta palauttaa yksittäisen oppijan suoritustiedot käyttöliittymän suoritustietonäkymää varten. " +
-      "Pääsy on sallitu rekisterinpitäjille, organisaation katselijoille ja hakijoiden katselijoille.",
-    parameters = Array(new Parameter(name = UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
+      "Pääsy on sallittu rekisterinpitäjille, organisaation katselijoille ja hakijoiden katselijoille.",
+    parameters = Array(new Parameter(name = UI_TIEDOT_TUNNISTE_PARAM_NAME, in = ParameterIn.PATH)),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää yksittäisen oppijan tiedot", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotFailureResponse])))),
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
   ))
-  def haeOppijanTiedot(@PathVariable(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME)  @Parameter(description = "Oppijanumero", example = ESIMERKKI_OPPIJANUMERO, required = true) oppijaNumero: Optional[String],
+  def haeOppijanTiedot(@PathVariable(UI_TIEDOT_TUNNISTE_PARAM_NAME)  @Parameter(description = "tunniste (oppijanumero tai hetu)", example = ESIMERKKI_OPPIJANUMERO, required = true) tunniste: Optional[String],
                        request: HttpServletRequest): ResponseEntity[OppijanTiedotResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
@@ -389,27 +389,30 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan että käyttäjällä on organisaation- tai hakijoiden katselija oikeudet
-            if(securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onOrganisaationKatselija() || securityOperaatiot.onHakeneidenKatselija())
+            if(securityOperaatiot.onUIKayttaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // validoidaan parametri
-            val virheet = UIValidator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true)
+            val virheet = UIValidator.validateTunniste(tunniste.toScala)
             if(virheet.isEmpty)
-              Right(oppijaNumero.get)
+              Right(tunniste.get)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(virheet.asJava))))
-          .flatMap(oppijaNumero =>
-            // tarkastetaan oikeudet haetulle oppijanumerolle
-            if(this.uiService.hasOppijanKatseluOikeus(oppijaNumero))
-              Right(oppijaNumero)
-            else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(tunniste => this.uiService.resolveOppijaNumero(tunniste)
+            .toRight(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)))
+          .flatMap(oppijaNumero => {
+              // tarkastetaan oikeudet haetulle oppijanumerolle
+              if (this.uiService.hasOppijanKatseluOikeus(oppijaNumero))
+                Right(oppijaNumero)
+              else
+                Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build)
+            })
           .flatMap(oppijaNumero =>
             LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero}")
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), AuditOperation.HaeOppijaTiedotUI, None)
+            AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), AuditOperation.HaeOppijaTiedotUI, None)
             val oppijanTiedot = uiService.haeOppijanSuoritukset(oppijaNumero)
             if(oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))
@@ -429,7 +432,7 @@ class UIResource {
   @Operation(
     summary = "Palauttaa käyttöliittymälle ne oppijan haut, joilla on hakemuspalvelussa tehty hakemus ja joka löytyy koutasta.",
     description = "Tämä rajapinta palauttaa yksittäisen oppijan haut hakemuspalvelusta. " +
-      "Pääsy on sallittu rekisterinpitäjille, organisaation katselijoille ja hakijoiden katselijoille.",
+      "Pääsy on sallittu vain rekisterinpitäjille.",
     parameters = Array(new Parameter(name = UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Lista hakuja (hakuOid ja nimi)", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanHautSuccessResponse])))),
@@ -475,7 +478,7 @@ class UIResource {
     description = "Rekisterinpitäjän on käyttöliittymässä mahdollista lisätä perusopetuksen oppimäärän ja perusopetuksen " +
       "oppiaineen oppimäärän suorituksia henkilöille. Tämä rajapinta palauttaa listan oppilaitoksista joihin suorituksia " +
       "voi lisätä. Pääsy rajapintaan on rajattu rekisterinpitäjille.",
-    parameters = Array(new Parameter(name = UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
+    parameters = Array(new Parameter(name = UI_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää listan oppilaitoksista", content = Array(new Content(schema = new Schema(implementation = classOf[LuoSuoritusOppilaitoksetSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LuoSuoritusOppilaitoksetFailureResponse])))),
@@ -690,7 +693,7 @@ class UIResource {
           .flatMap(suoritus =>
             LOG.info(s"Tallennetaan perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppimaaranSuoritus, Some(suoritus))
+            AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppimaaranSuoritus, Some(suoritus))
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Instant.now())
 
             if(versio.isEmpty)
@@ -760,7 +763,7 @@ class UIResource {
           .flatMap(suoritus =>
             LOG.info(s"Tallennetaan perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppiaineenOppimaaranSuoritus, Some(suoritus))
+            AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppiaineenOppimaaranSuoritus, Some(suoritus))
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Instant.now())
 
             if(versio.isEmpty)
@@ -848,7 +851,7 @@ class UIResource {
     description = "Käyttöliittymässä on mahdollista tarkastella hakija- ja hakukohtaista valintalaskennalle menevää avain-" +
       "arvopareiksi jalostettua dataa. Tämä rajapinta palauttaa nämä avain-arvoparit. Pääsy on (ainakin toistaiseksi) " +
       "rajattu rekisterinpitäjiin.",
-    parameters = Array(new Parameter(name = UI_TIEDOT_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
+    parameters = Array(new Parameter(name = UI_OPPIJANUMERO_PARAM_NAME, in = ParameterIn.PATH)),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää yksittäisen oppijan tiedot", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanValintaDataSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[OppijanValintaDataFailureResponse])))),
@@ -860,7 +863,7 @@ class UIResource {
                      request: HttpServletRequest): ResponseEntity[OppijanTiedotResponse] = {
     try {
       val securityOperaatiot = new SecurityOperaatiot
-      LogContext(path = UI_TIEDOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      LogContext(path = UI_VALINTADATA_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
@@ -954,7 +957,7 @@ class UIResource {
             val virkailijaOid = SecurityContextHolder.getContext.getAuthentication.getName
             LOG.info(s"Tallennetaan ${yliajoContainer.yliajot.toScala.size} yliajoa oppijalle ${oppijaOid}")
             val user: User = AuditLog.getUser(request)
-            AuditLog.log(user, Map(UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaOid, UI_VALINTADATA_HAKU_PARAM_NAME -> yliajoContainer.hakuOid.get), AuditOperation.TallennaYliajotOppijalle, Some(yliajoContainer))
+            AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> oppijaOid, UI_VALINTADATA_HAKU_PARAM_NAME -> yliajoContainer.hakuOid.get), AuditOperation.TallennaYliajotOppijalle, Some(yliajoContainer))
 
             val yliajotToSave = yliajoContainer.yliajot.toScala.get.asScala.map(y => {
               AvainArvoYliajo(avain = y.avain.get, arvo = y.arvo.get, henkiloOid = yliajoContainer.henkiloOid.get, hakuOid = yliajoContainer.hakuOid.get, virkailijaOid = virkailijaOid, selite = y.selite.get)
