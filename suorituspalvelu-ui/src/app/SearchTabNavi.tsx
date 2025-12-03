@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { join, pipe, splice, split } from 'remeda';
+import { useIsTarkistusnakymaAllowed } from '@/hooks/useIsTarkistusnakymaAllowed';
 
 const TAB_BUTTON_HEIGHT = '48px';
 
@@ -29,7 +30,7 @@ const TABS = ['henkilo', 'tarkistus'];
 
 const TabButton = ({ tabName }: { tabName: string }) => {
   const { t } = useTranslations();
-  const activeTabName = useSelectedSearchTab();
+  const selectedTabName = useSelectedSearchTab();
 
   const location = useLocation();
 
@@ -41,10 +42,21 @@ const TabButton = ({ tabName }: { tabName: string }) => {
     join('/'),
   );
 
+  const isTarkistusNakymaAllowed = useIsTarkistusnakymaAllowed();
+
+  // näytetään tarkistus-välilehti vain jos käyttäjällä oikeus käyttää sitä
+  if (
+    tabName === 'tarkistus' &&
+    selectedTabName !== 'tarkistus' &&
+    !isTarkistusNakymaAllowed
+  ) {
+    return null;
+  }
+
   return (
     <OphButton
       component={Link}
-      variant={activeTabName === tabName ? 'contained' : 'text'}
+      variant={selectedTabName === tabName ? 'contained' : 'text'}
       to={{ pathname, search: location.search }}
     >
       {t(`search.tabs.${tabName}`)}
@@ -54,6 +66,7 @@ const TabButton = ({ tabName }: { tabName: string }) => {
 
 export const SearchTabNavi = () => {
   const { t } = useTranslations();
+
   return (
     <StyledNavi aria-label={t('search.navigaatio')}>
       {TABS.map((tabName) => {
