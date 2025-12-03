@@ -179,14 +179,6 @@ class UIService {
     Await.result(ornOppijat, 30.seconds)
   }
 
-  def haeHenkilonPerustiedot(hakusana: Option[String]): Future[Option[OnrHenkiloPerustiedot]] = {
-    hakusana match {
-      case Some(h) if Validator.hetuPattern.matches(h) => onrIntegration.getPerustiedotByHetus(Set(h)).map(r => r.headOption)
-      case Some(h) if Validator.oppijaOidPattern.matches(h) => onrIntegration.getPerustiedotByPersonOids(Set(h)).map(r => r.headOption)
-      case _ => Future.successful(None)
-    }
-  }
-
   def resolveOppijaNumero(tunniste: String): Option[String] = {
     if (Validator.hetuPattern.matches(tunniste)) {
       Await.result(
@@ -220,21 +212,6 @@ class UIService {
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
         masterHenkilo.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
       })
-
-  /**
-   * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
-   * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
-   *
-   * @param tunniste haettavan oppijan oppijanumero tai hetu
-   * @return oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
-   */
-  def haeOppija(tunniste: String): Option[Oppija] = {
-    val oppija = Await.result(haeHenkilonPerustiedot(Some(tunniste)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava))), 30.seconds)
-    val hasOikeus = oppija.exists(o => hasOppijanKatseluOikeus(o.oppijaNumero))
-    (oppija, hasOikeus) match
-      case (Some(oppija), true) => Some(oppija)
-      case _ => None
-  }
 
   /**
    * Tarkastaa onko käyttäjällä oikeuksia nähdä oppijat tiedot. Tarkastetaan sekä rekisterinpitäjä-status että
