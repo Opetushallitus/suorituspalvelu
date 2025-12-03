@@ -25,32 +25,35 @@ export const useOppijatSearchParamsState = () => {
   const luokka = searchParams.get('luokka');
   const tunniste = searchParams.get('tunniste');
 
-  return {
-    setSearchParams: (
-      params: OppijatSearchParams,
-      options?: NavigateOptions,
-    ) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          Object.entries(params).forEach(([key, value]) => {
-            if (isNullish(value) || value === '') {
-              next.delete(key);
-            } else {
-              next.set(key, value);
-            }
-          });
-          return next;
-        },
-        { replace: false, ...options },
-      );
-    },
-    tunniste,
-    oppilaitos,
-    luokka,
-    vuosi,
-    hasValidSearchParams: oppilaitos !== null && vuosi !== null,
-  };
+  return useMemo(
+    () => ({
+      setSearchParams: (
+        params: OppijatSearchParams,
+        options?: NavigateOptions,
+      ) => {
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev);
+            Object.entries(params).forEach(([key, value]) => {
+              if (isNullish(value) || value === '') {
+                next.delete(key);
+              } else {
+                next.set(key, value);
+              }
+            });
+            return next;
+          },
+          { replace: false, ...options },
+        );
+      },
+      tunniste,
+      oppilaitos,
+      luokka,
+      vuosi,
+      hasValidSearchParams: oppilaitos !== null && vuosi !== null,
+    }),
+    [tunniste, oppilaitos, luokka, vuosi, setSearchParams],
+  );
 };
 
 export const useOppilaitoksenOppijatSearch = () => {

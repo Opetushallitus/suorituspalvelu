@@ -1,3 +1,4 @@
+import { useTranslations } from '@/hooks/useTranslations';
 import { styled } from '@/lib/theme';
 import { Close, Search } from '@mui/icons-material';
 import { InputAdornment } from '@mui/material';
@@ -22,18 +23,15 @@ const StyledAdornment = styled(InputAdornment)(({ theme }) => ({
   '&.MuiInputAdornment-root': {
     margin: 0,
     padding: theme.spacing(0, 1),
-    '& .MuiSvgIcon-root': {
+    '& .SearchInput_searchIcon': {
       color: ophColors.grey300,
+    },
+    '& .MuiButton-root': {
+      margin: 0,
+      padding: '0 3px 0 0',
     },
   },
 }));
-
-const ClearButton = styled(OphButton)({
-  '&.MuiButton-root': {
-    margin: 0,
-    padding: '0 3px 0 0',
-  },
-});
 
 export const SearchInput = ({
   onClear,
@@ -77,14 +75,20 @@ export const SearchInput = ({
     [setLocalValue],
   );
 
+  const { t } = useTranslations();
+
   return (
     <OphInputFormField
       endAdornment={
         <StyledAdornment position="end">
           {localValue ? (
-            <ClearButton startIcon={<Close />} onClick={onClear} />
+            <OphButton
+              startIcon={<Close />}
+              aria-label={t('search.tyhjenna')}
+              onClick={onClear}
+            />
           ) : null}
-          <Search />
+          <Search className="SearchInput_searchIcon" />
         </StyledAdornment>
       }
       value={localValue}

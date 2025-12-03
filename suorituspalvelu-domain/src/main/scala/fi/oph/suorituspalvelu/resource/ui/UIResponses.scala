@@ -1163,6 +1163,11 @@ case class PerusopetuksenOppiaineenOppimaara(
   @BeanProperty oppiaineet: java.util.List[PerusopetuksenOppiaine]
 )
 
+case class OppijanTiedotRequest(
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: Optional[String]
+)
+
 trait OppijanTiedotResponse()
 
 case class OppijanTiedotSuccessResponse(
