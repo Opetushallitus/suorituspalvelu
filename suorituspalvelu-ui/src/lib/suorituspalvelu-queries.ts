@@ -9,8 +9,6 @@ import {
   getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
   getValintadata,
-  searchOppijaByTunniste,
-  searchOppijat,
   searchOppilaitoksenOppijat,
   type OppijatSearchParams,
 } from './suorituspalvelu-service';
@@ -18,21 +16,15 @@ import { useApiQuery, useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
 import { prop, sortBy } from 'remeda';
 
-export const queryOptionsGetOppija = (oppijaNumero: string) =>
+export const queryOptionsGetOppija = (tunniste?: string) =>
   queryOptions({
-    queryKey: ['getOppija', oppijaNumero],
-    queryFn: () => getOppija(oppijaNumero),
+    queryKey: ['getOppija', tunniste],
+    queryFn: () => getOppija(tunniste),
   });
 
 export const useOppija = (oppijaNumero: string) => {
   return useApiSuspenseQuery(queryOptionsGetOppija(oppijaNumero));
 };
-
-export const queryOptionsSearchOppijaByTunniste = (tunniste?: string | null) =>
-  queryOptions({
-    queryKey: ['searchOppijaByTunniste', tunniste],
-    queryFn: () => searchOppijaByTunniste(tunniste),
-  });
 
 export const queryOptionsSearchOppilaitoksenOppijat = (
   params: OppijatSearchParams,
@@ -40,12 +32,6 @@ export const queryOptionsSearchOppilaitoksenOppijat = (
   queryOptions({
     queryKey: ['searchOppilaitoksenOppijat', params],
     queryFn: () => searchOppilaitoksenOppijat(params),
-  });
-
-export const queryOptionsSearchOppijat = (params: OppijatSearchParams) =>
-  queryOptions({
-    queryKey: ['searchOppijat', params],
-    queryFn: () => searchOppijat(params),
   });
 
 export const queryOptionsGetOppilaitokset = () =>

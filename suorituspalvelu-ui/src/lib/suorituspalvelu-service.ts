@@ -1,4 +1,4 @@
-import { isEmpty, isNullish, omitBy, only } from 'remeda';
+import { isEmpty, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client, FetchError } from './http-client';
 import type {
@@ -23,35 +23,14 @@ export type OppijatSearchParams = {
   luokka?: string;
 };
 
-export const cleanSearchParams = (params: OppijatSearchParams) => {
-  return omitBy(params, (value) => isEmpty(value) || value === '');
+const isNotFoundError = (error: unknown) => {
+  return (
+    error instanceof FetchError && [404, 410].includes(error?.response?.status)
+  );
 };
 
-export const searchOppijat = async (params: OppijatSearchParams) => {
-  const cleanParams = cleanSearchParams(params);
-  if (isEmpty(cleanParams)) {
-    return [];
-  }
-
-  const config = await configPromise;
-
-  const { tunniste, oppilaitos, vuosi } = params;
-
-  if (tunniste && (isHenkilotunnus(tunniste) || isHenkiloOid(tunniste))) {
-    const urlSearch = new URLSearchParams(omitBy(params, isNullish));
-    const url = `${config.routes.suorituspalvelu.oppijatSearchUrl}?${urlSearch.toString()}`;
-    const res = await client.get<IOppijanHakuSuccessResponse>(url);
-    return res.data?.oppijat ?? [];
-  } else if (oppilaitos && vuosi) {
-    const urlSearch = new URLSearchParams(omitBy(params, isNullish));
-    // Tunniste jätetään huomiotta, jos haetaan oppilaitoksen oppijoita
-    urlSearch.delete('tunniste');
-    const url = `${config.routes.suorituspalvelu.oppilaitoksenOppijatSearchUrl}?${urlSearch.toString()}`;
-    const res = await client.get<IOppijanHakuSuccessResponse>(url);
-    return res.data?.oppijat ?? [];
-  }
-
-  return [];
+export const cleanSearchParams = (params: OppijatSearchParams) => {
+  return omitBy(params, (value) => isEmpty(value) || value === '');
 };
 
 export const nullWhenErrorMatches = async <T>(
@@ -66,32 +45,6 @@ export const nullWhenErrorMatches = async <T>(
     }
     throw e;
   }
-};
-
-export const searchOppijaByTunniste = async (tunniste?: string | null) => {
-  if (!tunniste) {
-    return null;
-  }
-
-  const config = await configPromise;
-
-  if (tunniste && (isHenkilotunnus(tunniste) || isHenkiloOid(tunniste))) {
-    const url = new URL(config.routes.suorituspalvelu.oppijatSearchUrl);
-    url.searchParams.set('tunniste', tunniste);
-    return nullWhenErrorMatches(
-      client
-        .get<IOppijanHakuSuccessResponse>(url.toString())
-        .then((res) => only(res.data?.oppijat) ?? null),
-      (error) => {
-        return (
-          error instanceof FetchError &&
-          [404, 410].includes(error?.response?.status)
-        );
-      },
-    );
-  }
-
-  return null;
 };
 
 export const searchOppilaitoksenOppijat = async (
@@ -113,27 +66,37 @@ export const searchOppilaitoksenOppijat = async (
   return res.data?.oppijat ?? [];
 };
 
-export const getOppija = async (oppijaNumero: string) => {
+export const getOppija = async (tunniste?: string) => {
   const config = await configPromise;
 
-  if (!isHenkiloOid(oppijaNumero)) {
-    throw Error(`OppijaNumero ${oppijaNumero} ei ole kelvollinen henkilö-OID!`);
+  if (
+    isEmpty(tunniste ?? '') ||
+    (!isHenkiloOid(tunniste) && !isHenkilotunnus(tunniste))
+  ) {
+    console.warn(
+      `Invalid tunniste provided to getOppija: "${tunniste}". Returning null.`,
+    );
+    return null;
   }
 
-  return client
-    .get<IOppijanTiedotSuccessResponse>(
-      `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
-    )
-    .then((res) => res.data);
+  return nullWhenErrorMatches(
+    client
+      .get<IOppijanTiedotSuccessResponse>(
+        `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${tunniste}`,
+      )
+      .then((res) => res.data),
+    isNotFoundError,
+  );
 };
 
 export const getOppilaitokset = async () => {
   const config = await configPromise;
 
-  const res = await client.get<IOppilaitosSuccessResponse>(
-    config.routes.suorituspalvelu.oppilaitoksetUrl,
-  );
-  return res.data;
+  return client
+    .get<IOppilaitosSuccessResponse>(
+      config.routes.suorituspalvelu.oppilaitoksetUrl,
+    )
+    .then((res) => res.data);
 };
 
 export const getKayttaja = async () => {
