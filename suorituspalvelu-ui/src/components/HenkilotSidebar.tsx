@@ -41,8 +41,8 @@ const HenkilotSidebarContent = () => {
                 onClear={() => {
                   setSearchParams({ tunniste: '' });
                 }}
-                onChange={(e) => {
-                  setSearchParams({ tunniste: e.target.value });
+                onChange={(value) => {
+                  setSearchParams({ tunniste: value });
                 }}
               />
             </Box>
