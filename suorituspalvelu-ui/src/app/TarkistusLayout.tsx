@@ -18,6 +18,7 @@ import {
 import { TarkistusSearchControls } from '@/components/TarkistusSearchControls';
 import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 import { isHenkilotunnus } from '@/lib/common';
+import { isDefined } from 'remeda';
 
 export async function clientLoader({
   params,
@@ -43,8 +44,16 @@ const TarkistusContent = () => {
 
   const { data: oppija } = useOppija(oppijaTunniste ?? '');
 
-  if (isHenkilotunnus(oppijaTunniste ?? '') && oppija) {
-    setOppijaTunniste(oppija.oppijaNumero);
+  const oppijaNumero = oppija?.oppijaNumero;
+
+  if (isDefined(oppijaNumero) && isHenkilotunnus(oppijaTunniste ?? '')) {
+    // Asetetaan sama querydata oppijanumerollle, jotta ei tarvitse noutaa uudelleen
+    queryClient.setQueryData(
+      queryOptionsGetOppija(oppijaNumero).queryKey,
+      oppija,
+    );
+    // Uudelleenohjaus henkilötunnus -> oppijanumero
+    setOppijaTunniste(oppijaNumero);
     return null;
   }
 
