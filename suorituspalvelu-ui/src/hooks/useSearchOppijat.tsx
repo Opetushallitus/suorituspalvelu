@@ -1,7 +1,7 @@
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { OppijatSearchParams } from '@/lib/suorituspalvelu-service';
-import { isEmpty, isNullish, omitBy, values } from 'remeda';
+import { isEmpty, isNullish, omitBy } from 'remeda';
 import { useSearchParams, type NavigateOptions } from 'react-router';
 import { useMemo } from 'react';
 
@@ -49,19 +49,8 @@ export const useOppijatSearchParamsState = () => {
     oppilaitos,
     luokka,
     vuosi,
-    hasEmptySearchParams: isEmptySearchParams({
-      tunniste: tunniste ?? undefined,
-      oppilaitos: oppilaitos ?? undefined,
-      luokka: luokka ?? undefined,
-      vuosi: vuosi ?? undefined,
-    }),
+    hasValidSearchParams: oppilaitos !== null && vuosi !== null,
   };
-};
-
-const isEmptySearchParams = (searchParams: OppijatSearchParams) => {
-  return values(searchParams).every(
-    (value) => isNullish(value) || isEmpty(value) || value === '',
-  );
 };
 
 export const useOppilaitoksenOppijatSearch = () => {
@@ -77,15 +66,11 @@ export const useOppilaitoksenOppijatSearch = () => {
     const { oppilaitos, vuosi, tunniste } = params;
     if (oppilaitos && vuosi && tunniste) {
       return result.data.filter((oppija) => {
+        const lowercaseTunniste = tunniste.toLowerCase() ?? '';
         return (
-          oppija.etunimet
-            ?.toLocaleLowerCase()
-            .includes(tunniste.toLowerCase() ?? '') ||
-          oppija.sukunimi
-            ?.toLocaleLowerCase()
-            .includes(tunniste.toLowerCase() ?? '') ||
-          oppija?.oppijaNumero.includes(tunniste) ||
-          oppija.hetu?.includes(tunniste)
+          oppija.etunimet?.toLocaleLowerCase().includes(lowercaseTunniste) ||
+          oppija.sukunimi?.toLocaleLowerCase().includes(lowercaseTunniste) ||
+          oppija?.hetu?.toLowerCase()?.includes(lowercaseTunniste)
         );
       });
     } else {
@@ -93,5 +78,5 @@ export const useOppilaitoksenOppijatSearch = () => {
     }
   }, [params]);
 
-  return { ...result, data };
+  return { ...result, data, totalCount: result.data.length };
 };
