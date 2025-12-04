@@ -1,52 +1,83 @@
-import { expect } from '@playwright/test';
-import { test } from './lib/fixtures';
+import { type Page } from '@playwright/test';
+import { test, expect } from './lib/fixtures';
+import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 
-const OPPIJAT = [
-  {
-    oppijaNumero: '1.2.3.4',
-    etunimet: 'Olli',
-    sukunimi: 'Oppija',
-    hetu: '123456-7890',
-    oppilaitosOid: '1',
-  },
-  {
-    oppijaNumero: '2.3.4.5',
-    etunimet: 'Maija',
-    sukunimi: 'Mallikas',
-    hetu: '098765-4321',
-    oppilaitosOid: '2',
-  },
-];
+const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
+const HETU = OPPIJAN_TIEDOT.henkiloTunnus;
 
-test.describe('Henkilö-haku', () => {
+const NOT_FOUND_OPPIJANUMERO = '1.2.246.562.24.00000000';
+const NOT_FOUND_HETU = '123456-9999';
+
+const getOppijaHeading = (page: Page) =>
+  page.getByRole('heading', { name: 'Olli Oppija' });
+
+const getSearchInput = (page: Page) =>
+  page.getByRole('textbox', { name: 'Hae Henkilö' });
+
+test.describe('Henkilöhaku', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route('**/ui/haku/oppijat*', async (route) => {
-      const url = new URL(route.request().url());
-      const tunnisteParam = url.searchParams.get('tunniste');
-
-      await route.fulfill({
-        json: {
-          oppijat: OPPIJAT.filter(
-            (oppija) => oppija.oppijaNumero === tunnisteParam,
-          ),
-        },
-      });
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        const tunniste = (await route.request().postDataJSON())?.tunniste;
+        if (tunniste === OPPIJANUMERO || tunniste === HETU) {
+          await route.fulfill({
+            json: OPPIJAN_TIEDOT,
+          });
+        } else {
+          await route.fulfill({ status: 410 });
+        }
+      }
     });
+
+    await page.goto('henkilo');
   });
 
-  test('suodattaa oppijanumerolla', async ({ page }) => {
-    await page.goto('');
-    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilöä' });
+  test('näyttää ilmoituksen, jos ei henkilö löytynyt tai hakutermi ei validi', async ({
+    page,
+  }) => {
+    const searchInput = getSearchInput(page);
 
-    const henkiloNavi = page.getByRole('navigation', {
-      name: 'Henkilövalitsin',
-    });
-    const henkiloLinks = henkiloNavi.getByRole('link');
-    await expect(henkiloLinks).toHaveCount(0);
+    // Nimellä hakeminen ei ole mahdollista
+    await searchInput.fill('Olli Oppija');
+    await expect(
+      page.getByText(
+        'Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.',
+      ),
+    ).toBeVisible();
+    await expect(page.getByText('Henkilöä ei löytynyt')).toBeHidden();
+    await expect(getOppijaHeading(page)).toBeHidden();
 
-    await searchInput.fill('1.2.3.4');
+    await searchInput.fill(NOT_FOUND_OPPIJANUMERO);
+    await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
+    await expect(getOppijaHeading(page)).toBeHidden();
+    await searchInput.fill(NOT_FOUND_HETU);
+    await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
+    await expect(getOppijaHeading(page)).toBeHidden();
+    await expect(page).toHaveURL((url) =>
+      url.toString().includes(`henkilo/${NOT_FOUND_HETU}`),
+    );
+  });
 
-    await expect(henkiloLinks).toHaveCount(1);
-    await expect(henkiloLinks.first()).toHaveText('Olli Oppija123456-7890');
+  test('suodattaa oppijanumerolla ja muuttaa URL:a', async ({ page }) => {
+    const searchInput = getSearchInput(page);
+
+    await searchInput.fill(OPPIJANUMERO);
+    await expect(page).toHaveURL((url) =>
+      url.toString().includes(`henkilo/${OPPIJANUMERO}`),
+    );
+
+    await expect(getOppijaHeading(page)).toBeVisible();
+  });
+
+  test('suodattaa henkilötunnuksella ja muuttaa URL:a', async ({ page }) => {
+    const searchInput = getSearchInput(page);
+
+    await searchInput.fill(HETU);
+
+    await expect(page).toHaveURL((url) =>
+      url.toString().includes(`henkilo/${HETU}`),
+    );
+
+    await expect(getOppijaHeading(page)).toBeVisible();
   });
 });

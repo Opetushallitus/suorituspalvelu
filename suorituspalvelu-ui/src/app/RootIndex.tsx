@@ -1,0 +1,7 @@
+import { redirect } from 'react-router';
+
+export const clientLoader = () => redirect('/henkilo');
+
+export default function RootPage() {
+  return null;
+}

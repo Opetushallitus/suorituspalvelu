@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
@@ -97,13 +97,6 @@ object UIService {
   val KOODISTO_YOKOKEET = "koskiyokokeet"
 
   val YTL_ORGANISAATIO_OID = "1.2.246.562.10.43628088406"
-
-  val EXAMPLE_OPPIJA = Oppija(
-    EXAMPLE_OPPIJA_OID,
-    Optional.of(EXAMPLE_HETU),
-    Optional.of(EXAMPLE_ETUNIMET),
-    Optional.of(EXAMPLE_SUKUNIMI)
-  )
 }
 
 @Component
@@ -181,52 +174,44 @@ class UIService {
     val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka).map(_._1)
 
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
-      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)
+      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, onrOppija.hetu.toJava, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)
 
     Await.result(ornOppijat, 30.seconds)
   }
 
-  def haeHenkilonPerustiedot(hakusana: Option[String]): Future[Option[OnrHenkiloPerustiedot]] = {
-    hakusana match {
-      case Some(h) if Validator.hetuPattern.matches(h) => onrIntegration.getPerustiedotByHetus(Set(h)).map(r => r.headOption)
-      case Some(h) if Validator.oppijaOidPattern.matches(h) => onrIntegration.getPerustiedotByPersonOids(Set(h)).map(r => r.headOption)
-      case _ => Future.successful(None)
+  def resolveOppijaNumero(tunniste: String): Option[String] = {
+    if (Validator.hetuPattern.matches(tunniste)) {
+      Await.result(
+        onrIntegration.getPerustiedotByHetus(Set(tunniste)).map(_.headOption.map(_.oidHenkilo)),
+        ONR_TIMEOUT
+      )
+    } else {
+      Some(tunniste)
     }
   }
 
+  private def resolveMasterHenkilo(oppijaNumero: String): Option[OnrMasterHenkilo] = {
+    Await.result(
+      onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)),
+      ONR_TIMEOUT
+    ).values.headOption
+  }
+
   def haeOppijanSuoritukset(oppijaNumero: String): Option[OppijanTiedotSuccessResponse] =
-    val masterHenkilo = Await.result(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).values.headOption
-    if (masterHenkilo.isEmpty)
-      None
-    else
-      def haeAliakset(oppijaOid: String): Set[String] =
+    resolveMasterHenkilo(oppijaNumero).map(masterHenkilo => {
+      def haeAliakset(oppijaOid: String): Set[String] = {
         try
-          Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.get.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
+          Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
         catch
           case e: Exception =>
             LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
             Set(oppijaNumero)
+      }
 
-      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
-      Some(EntityToUIConverter.getOppijanTiedot(masterHenkilo.get.etunimet, masterHenkilo.get.sukunimi,
-        masterHenkilo.get.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider))
-
-  /**
-   * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
-   * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
-   *
-   * @param hakusana haettava oppija
-   * @return oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
-   */
-  def haeOppija(hakusana: String): Option[Oppija] = {
-    val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava))), 30.seconds)
-    val hasOikeus = oppija.exists(o => hasOppijanKatseluOikeus(o.oppijaNumero))
-    (oppija, hasOikeus) match
-      case (Some(oppija), true) => Some(oppija)
-      case (Some(oppija), false) => None
-      //Jos hakusanalla ei löytynyt, palautetaan toistaiseksi esimerkkioppija. Tämän voinee purkaa siinä vaiheessa kun kälille ei ylipäätään palauteta mock-dataa.
-      case (None, _) => Some(UIService.EXAMPLE_OPPIJA)
-  }
+      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oid).values.flatten)
+      EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
+        masterHenkilo.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
+      })
 
   /**
    * Tarkastaa onko käyttäjällä oikeuksia nähdä oppijat tiedot. Tarkastetaan sekä rekisterinpitäjä-status että

@@ -1,12 +1,11 @@
 import { FetchError, useApiSuspenseQuery } from '@/lib/http-client';
-import type { Route } from './+types/OpiskelijavalinnanTiedotPage';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isGenericBackendErrorResponse } from '@/types/ui-types';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import {
   OpiskelijavalintaanSiirtyvatTiedot,
   type AvainarvoRyhma,
@@ -27,9 +26,12 @@ import { only } from 'remeda';
 import { useQueryParam } from '@/hooks/useQueryParam';
 import { FullSpinner } from '@/components/FullSpinner';
 import { queryClient } from '@/lib/queryClient';
-import { redirect } from 'react-router';
-
-const HAKU_QUERY_PARAM = 'haku';
+import {
+  useOutletContext,
+  useSearchParams,
+  type OppijaContext,
+} from 'react-router';
+import { HAKU_QUERY_PARAM_NAME } from '@/lib/common';
 
 const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
@@ -46,8 +48,28 @@ const OpiskelijavalinnanTiedotPageContent = ({
   const { data: haut } = useApiSuspenseQuery(
     queryOptionsGetOppijanHaut(oppijaNumero),
   );
+  const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM_NAME);
 
-  const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM);
+  // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
+  const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
+
+  const setHakuOidWithTransition = useCallback(
+    (hakuOid: string) => {
+      startHakuSwitchTransition(() => {
+        setUrlHakuOid(hakuOid);
+      });
+    },
+    [setUrlHakuOid],
+  );
+
+  const onlyHakuOid = only(haut)?.hakuOid;
+
+  // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
+  useEffect(() => {
+    if (!urlHakuOid && onlyHakuOid) {
+      setHakuOidWithTransition(onlyHakuOid);
+    }
+  }, [urlHakuOid, onlyHakuOid, setHakuOidWithTransition]);
 
   const isValidHakuOid =
     urlHakuOid == null || haut.find((h) => h.hakuOid === urlHakuOid);
@@ -72,9 +94,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
 
   const selectedHakuOid = urlHakuOid ?? '';
 
-  // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
-  const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
-
   return kayttaja.isRekisterinpitaja ? (
     <Stack spacing={3} sx={{ height: '100%' }}>
       <Stack direction="row" sx={{ justifyContent: 'stretch', gap: 3 }}>
@@ -85,9 +104,7 @@ const OpiskelijavalinnanTiedotPageContent = ({
           options={hakuOptions}
           errorMessage={hakuError}
           onChange={(event) => {
-            startHakuSwitchTransition(() => {
-              setUrlHakuOid(event.target.value);
-            });
+            setHakuOidWithTransition(event.target.value);
           }}
         />
         <OphFormFieldWrapper
@@ -169,46 +186,26 @@ const ErrorFallback = ({
   return <ErrorView error={error} reset={reset} />;
 };
 
-// Vältetään awaitin käyttöä tässä, koska SPA-moodissa loadereille voi näyttää vain globaalin latausindikaattorin
-export async function clientLoader({
-  params,
-  request,
-}: Route.ClientLoaderArgs) {
-  // Aloitetaan oppijan hakujen esilataus
-  const hautPromise = queryClient.ensureQueryData(
-    queryOptionsGetOppijanHaut(params.oppijaNumero),
-  );
+export default function OpiskelijavalinnanTiedotPage() {
+  const { oppijaNumero } = useOutletContext<OppijaContext>();
 
-  const url = new URL(request.url);
-  const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
+  queryClient.ensureQueryData(queryOptionsGetOppijanHaut(oppijaNumero));
+  const [searchParams] = useSearchParams();
+  const hakuOidParam = searchParams.get(HAKU_QUERY_PARAM_NAME);
 
   if (hakuOidParam) {
-    // Aloitetaan valindatadatan esilataus
+    // Aloitetaan valintadatan esilataus
     queryClient.ensureQueryData(
       queryOptionsGetValintadata({
-        oppijaNumero: params.oppijaNumero,
+        oppijaNumero,
         hakuOid: hakuOidParam,
       }),
     );
-  } else {
-    const haut = await hautPromise;
-    const onlyHakuOid = only(haut)?.hakuOid;
-    // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
-    if (onlyHakuOid) {
-      url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
-      throw redirect(url.search);
-    }
   }
 
-  return null;
-}
-
-export default function OpiskelijavalinnanTiedotPage({
-  params,
-}: Route.ComponentProps) {
   return (
     <QuerySuspenseBoundary ErrorFallback={ErrorFallback}>
-      <OpiskelijavalinnanTiedotPageContent oppijaNumero={params.oppijaNumero} />
+      <OpiskelijavalinnanTiedotPageContent oppijaNumero={oppijaNumero} />
     </QuerySuspenseBoundary>
   );
 }

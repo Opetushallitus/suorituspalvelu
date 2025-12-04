@@ -1,63 +1,101 @@
-import { isEmpty, isNullish, omitBy } from 'remeda';
+import { isEmptyish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
-import { client } from './http-client';
+import { client, FetchError } from './http-client';
 import type {
   IKayttajaSuccessResponse,
+  ILuokatSuccessResponse,
   ILuoSuoritusDropdownDataSuccessResponse,
   IOppijanHakuSuccessResponse,
   IOppijanHautSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
+  IVuodetSuccessResponse,
   IYliajoTallennusContainer,
 } from '@/types/backend';
 import type { SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
+import { isHenkiloOid, isHenkilotunnus } from './common';
 
-export type OppijatSearchParams = {
-  tunniste?: string;
-  oppilaitos?: string;
-  vuosi?: string;
-  luokka?: string;
+export type BackendOppijatSearchParams = {
+  oppilaitos?: string | null;
+  vuosi?: string | null;
+  luokka?: string | null;
 };
 
-export const cleanSearchParams = (params: OppijatSearchParams) => {
-  return omitBy(params, (value) => isEmpty(value) || value === '');
+const isNotFoundError = (error: unknown) => {
+  return (
+    error instanceof FetchError && [404, 410].includes(error?.response?.status)
+  );
 };
 
-export const searchOppijat = async (params: OppijatSearchParams) => {
+export const cleanSearchParams = (params: BackendOppijatSearchParams) => {
+  return omitBy(params, (value) => isEmptyish(value));
+};
+
+export const nullWhenErrorMatches = async <T>(
+  promise: Promise<T>,
+  matcher: (error: unknown) => boolean,
+): Promise<T | null> => {
+  try {
+    return await promise;
+  } catch (e: unknown) {
+    if (matcher(e)) {
+      return Promise.resolve(null);
+    }
+    throw e;
+  }
+};
+
+export const searchOppilaitoksenOppijat = async (
+  params: BackendOppijatSearchParams,
+) => {
   const cleanParams = cleanSearchParams(params);
-  if (isEmpty(cleanParams)) {
-    return { oppijat: [] };
+  const { oppilaitos, vuosi } = cleanParams;
+
+  if (!oppilaitos || !vuosi) {
+    return [];
   }
 
   const config = await configPromise;
-  const urlSearch = new URLSearchParams(omitBy(params, isNullish));
+  const urlSearch = new URLSearchParams(cleanParams);
 
-  const url = `${config.routes.suorituspalvelu.oppijatSearchUrl}?${urlSearch.toString()}`;
+  const url = `${config.routes.suorituspalvelu.oppilaitoksenOppijatSearchUrl}?${urlSearch.toString()}`;
 
   const res = await client.get<IOppijanHakuSuccessResponse>(url);
-  return res.data;
+  return res.data?.oppijat ?? [];
 };
 
-export const getOppija = async (oppijaNumero: string) => {
+export const getOppija = async (tunniste?: string) => {
   const config = await configPromise;
 
-  const res = await client.get<IOppijanTiedotSuccessResponse>(
-    `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${oppijaNumero}`,
-  );
+  if (
+    isEmptyish(tunniste) ||
+    (!isHenkiloOid(tunniste) && !isHenkilotunnus(tunniste))
+  ) {
+    return null;
+  }
 
-  return res.data;
+  return nullWhenErrorMatches(
+    client
+      .post<IOppijanTiedotSuccessResponse>(
+        config.routes.suorituspalvelu.oppijanTiedotUrl,
+        { tunniste },
+      )
+      .then((res) => res.data),
+    isNotFoundError,
+  );
 };
 
 export const getOppilaitokset = async () => {
   const config = await configPromise;
 
-  const res = await client.get<IOppilaitosSuccessResponse>(
-    config.routes.suorituspalvelu.oppilaitoksetUrl,
-  );
-  return res.data;
+  return client
+    .get<IOppilaitosSuccessResponse>(
+      config.routes.suorituspalvelu.oppilaitoksetUrl,
+    )
+    .then((res) => res.data);
 };
 
 export const getKayttaja = async () => {
@@ -218,4 +256,32 @@ export const getOppijanHaut = async (oppijaOid: string) => {
 
   const res = await client.get<IOppijanHautSuccessResponse>(url);
   return res.data?.haut ?? [];
+};
+
+export const getOppilaitosVuodet = async ({
+  oppilaitosOid,
+}: {
+  oppilaitosOid?: string;
+}) => {
+  const config = await configPromise;
+
+  const res = await client.get<IVuodetSuccessResponse>(
+    `${config.routes.suorituspalvelu.vuodetUrl}/${oppilaitosOid}`,
+  );
+  return res.data?.vuodet ?? [];
+};
+
+export const getOppilaitosVuosiLuokat = async ({
+  oppilaitosOid,
+  vuosi,
+}: {
+  oppilaitosOid?: string;
+  vuosi?: string;
+}) => {
+  const config = await configPromise;
+
+  const res = await client.get<ILuokatSuccessResponse>(
+    `${config.routes.suorituspalvelu.luokatUrl}/${oppilaitosOid}/${vuosi}`,
+  );
+  return res.data?.luokat ?? [];
 };

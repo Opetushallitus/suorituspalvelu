@@ -1,13 +1,21 @@
 import { Stack } from '@mui/material';
 import { Opiskeluoikeudet } from '@/components/suoritustiedot/Opiskeluoikeudet';
 import { Suoritukset } from '@/components/suoritustiedot/Suoritukset';
-import type { Route } from './+types/SuoritustiedotPage';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusManagerProvider } from '@/lib/suoritusManager';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
+import { useOutletContext, type OppijaContext } from 'react-router';
 
-export default function SuoritustiedotPage({ params }: Route.ComponentProps) {
-  const { data: tiedot } = useOppija(params.oppijaNumero);
+export default function SuoritustiedotPage() {
+  const { oppijaNumero } = useOutletContext<OppijaContext>();
+
+  const { data: tiedot } = useOppija(oppijaNumero);
+
+  if (!tiedot) {
+    throw new Error(
+      `Oppijaa ei löytynyt suorituspalvelusta oppijanumerolla: ${oppijaNumero}`,
+    );
+  }
 
   return (
     <QuerySuspenseBoundary>

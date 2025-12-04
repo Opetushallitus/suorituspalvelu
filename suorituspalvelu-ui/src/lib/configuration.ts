@@ -22,7 +22,9 @@ export const getConfiguration = async () => {
       suorituspalvelu: {
         kayttajanTiedotUrl: `${suorituspalveluBackendUrl}/ui/kayttaja`,
         oppijanTiedotUrl: `${suorituspalveluBackendUrl}/ui/tiedot`,
-        oppijatSearchUrl: `${suorituspalveluBackendUrl}/ui/haku/oppijat`,
+        oppilaitoksenOppijatSearchUrl: `${suorituspalveluBackendUrl}/ui/rajain/oppilaitoksenoppijat`,
+        vuodetUrl: `${suorituspalveluBackendUrl}/ui/rajain/vuodet`,
+        luokatUrl: `${suorituspalveluBackendUrl}/ui/rajain/luokat`,
         oppilaitoksetUrl: `${suorituspalveluBackendUrl}/ui/rajain/oppilaitokset`,
         suoritusvaihtoehdotUrl: `${suorituspalveluBackendUrl}/ui/tallennasuoritusvaihtoehdot`,
         oppilaitosvaihtoehdotUrl: `${suorituspalveluBackendUrl}/ui/tallennasuoritusoppilaitokset`,

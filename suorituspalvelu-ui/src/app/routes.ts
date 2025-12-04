@@ -5,14 +5,28 @@ import {
   route,
 } from '@react-router/dev/routes';
 
+const tiedotRoutes = (id: string) => [
+  route('suoritustiedot', './SuoritustiedotPage.tsx', {
+    id: `${id}-suoritustiedot`,
+  }),
+  route('opiskelijavalinnan-tiedot', './OpiskelijavalinnanTiedotPage.tsx', {
+    id: `${id}-opiskelijavalinnan-tiedot`,
+  }),
+];
+
 export default [
   layout('./RootLayout.tsx', [
-    index('./HenkiloNotSelectedPage.tsx'),
-    route('/henkilo/:oppijaNumero', './HenkiloPageLayout.tsx', [
-      index('./HenkiloPageIndex.tsx'),
-      route('suoritustiedot', './SuoritustiedotPage.tsx'),
-      route('opiskelijavalinnan-tiedot', './OpiskelijavalinnanTiedotPage.tsx'),
-    ]),
+    index('./RootIndex.tsx'),
+    route(
+      '/henkilo/:oppijaTunniste?',
+      './HenkiloLayout.tsx',
+      tiedotRoutes('henkilo'),
+    ),
+    route(
+      '/tarkastus/:oppijaTunniste?',
+      './TarkastusLayout.tsx',
+      tiedotRoutes('tarkastus'),
+    ),
   ]),
   route('*', './NotFoundPage.tsx'),
 ] satisfies RouteConfig;
