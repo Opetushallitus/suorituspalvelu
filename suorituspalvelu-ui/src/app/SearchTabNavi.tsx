@@ -6,6 +6,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { join, pipe, splice, split } from 'remeda';
 import { useIsTarkastusnakymaAllowed } from '@/hooks/useIsTarkastusnakymaAllowed';
+import { HAKU_QUERY_PARAM_NAME } from '@/lib/common';
 
 const TAB_BUTTON_HEIGHT = '48px';
 
@@ -53,11 +54,14 @@ const TabButton = ({ tabName }: { tabName: string }) => {
     return null;
   }
 
+  const preservedSearchParams = new URLSearchParams(location.search);
+  preservedSearchParams.delete(HAKU_QUERY_PARAM_NAME);
+
   return (
     <OphButton
       component={Link}
       variant={selectedTabName === tabName ? 'contained' : 'text'}
-      to={{ pathname, search: location.search }}
+      to={{ pathname, search: preservedSearchParams.toString() }}
     >
       {t(`search.tabs.${tabName}`)}
     </OphButton>

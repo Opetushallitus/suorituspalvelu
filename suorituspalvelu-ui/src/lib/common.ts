@@ -65,3 +65,5 @@ export const BASENAME = '/suorituspalvelu';
 export const getCurrentYear = (): string => {
   return new Date().getFullYear().toString();
 };
+
+export const HAKU_QUERY_PARAM_NAME = 'haku';

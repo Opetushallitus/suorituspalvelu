@@ -261,7 +261,7 @@ export const getOppijanHaut = async (oppijaOid: string) => {
 export const getOppilaitosVuodet = async ({
   oppilaitosOid,
 }: {
-  oppilaitosOid: string | null;
+  oppilaitosOid?: string;
 }) => {
   const config = await configPromise;
 
@@ -275,8 +275,8 @@ export const getOppilaitosVuosiLuokat = async ({
   oppilaitosOid,
   vuosi,
 }: {
-  oppilaitosOid: string | null;
-  vuosi: string | null;
+  oppilaitosOid?: string;
+  vuosi?: string;
 }) => {
   const config = await configPromise;
 
