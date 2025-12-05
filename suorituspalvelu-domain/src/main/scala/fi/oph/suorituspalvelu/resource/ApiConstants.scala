@@ -82,8 +82,6 @@ object ApiConstants {
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
 
-  final val UI_TIEDOT_TUNNISTE_PARAM_NAME                   = "tunniste"
-  final val UI_TIEDOT_TUNNISTE_PARAM_PLACEHOLDER           = "{" + UI_TIEDOT_TUNNISTE_PARAM_NAME + "}"
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot"
 
   final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
