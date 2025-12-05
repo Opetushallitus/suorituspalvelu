@@ -31,8 +31,7 @@ import {
   useSearchParams,
   type OppijaContext,
 } from 'react-router';
-
-const HAKU_QUERY_PARAM = 'haku';
+import { HAKU_QUERY_PARAM_NAME } from '@/lib/common';
 
 const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
@@ -49,7 +48,7 @@ const OpiskelijavalinnanTiedotPageContent = ({
   const { data: haut } = useApiSuspenseQuery(
     queryOptionsGetOppijanHaut(oppijaNumero),
   );
-  const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM);
+  const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM_NAME);
 
   // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
   const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
@@ -192,7 +191,7 @@ export default function OpiskelijavalinnanTiedotPage() {
 
   queryClient.ensureQueryData(queryOptionsGetOppijanHaut(oppijaNumero));
   const [searchParams] = useSearchParams();
-  const hakuOidParam = searchParams.get(HAKU_QUERY_PARAM);
+  const hakuOidParam = searchParams.get(HAKU_QUERY_PARAM_NAME);
 
   if (hakuOidParam) {
     // Aloitetaan valintadatan esilataus

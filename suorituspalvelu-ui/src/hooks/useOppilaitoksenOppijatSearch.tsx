@@ -1,7 +1,7 @@
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { BackendOppijatSearchParams } from '@/lib/suorituspalvelu-service';
-import { isNullish } from 'remeda';
+import { isNonNullish, isNullish, pickBy } from 'remeda';
 import { useSearchParams, type NavigateOptions } from 'react-router';
 import { useMemo } from 'react';
 
@@ -9,7 +9,7 @@ type OppijatSearchParams = BackendOppijatSearchParams & {
   suodatus?: string;
 };
 
-export const useOppilaitoksenOppijatSearchParamsState = () => {
+export function useOppilaitoksenOppijatSearchParamsState() {
   const [searchParams, setSearchParams] = useSearchParams();
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
@@ -37,29 +37,29 @@ export const useOppilaitoksenOppijatSearchParamsState = () => {
           { replace: false, ...options }, // Use push to add to history
         );
       },
-      suodatus,
-      oppilaitos,
-      luokka,
-      vuosi,
+      searchParams: pickBy(
+        { suodatus, oppilaitos, luokka, vuosi },
+        isNonNullish,
+      ),
       hasValidSearchParams: oppilaitos !== null && vuosi !== null,
     }),
     [suodatus, oppilaitos, luokka, vuosi],
   );
-};
+}
 
 export const useOppilaitoksenOppijatSearchResult = () => {
-  const params = useOppilaitoksenOppijatSearchParamsState();
+  const { searchParams } = useOppilaitoksenOppijatSearchParamsState();
+  const { oppilaitos, vuosi, luokka, suodatus } = searchParams;
 
   const result = useApiSuspenseQuery(
     queryOptionsSearchOppilaitoksenOppijat({
-      oppilaitos: params.oppilaitos,
-      vuosi: params.vuosi,
-      luokka: params.luokka,
+      oppilaitos,
+      vuosi,
+      luokka,
     }),
   );
 
   const data = useMemo(() => {
-    const { oppilaitos, vuosi, suodatus } = params;
     if (oppilaitos && vuosi && suodatus) {
       return result.data.filter((oppija) => {
         const lowercaseSuodatus = suodatus.toLowerCase() ?? '';
@@ -72,7 +72,7 @@ export const useOppilaitoksenOppijatSearchResult = () => {
     } else {
       return result.data;
     }
-  }, [params]);
+  }, [oppilaitos, vuosi, suodatus, result.data]);
 
   return { ...result, data, totalCount: result.data.length };
 };

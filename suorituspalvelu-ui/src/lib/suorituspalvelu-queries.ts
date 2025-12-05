@@ -121,7 +121,7 @@ export const queryOptionsGetOppijanHaut = (oppijaOid: string) =>
 export const queryOptionsGetOppilaitosVuosiOptions = ({
   oppilaitosOid,
 }: {
-  oppilaitosOid: string | null;
+  oppilaitosOid?: string;
 }) =>
   queryOptions({
     queryKey: ['getOppilaitosVuodet', oppilaitosOid],
@@ -142,8 +142,8 @@ export const queryOptionsGetOppilaitosVuosiLuokatOptions = ({
   oppilaitosOid,
   vuosi,
 }: {
-  oppilaitosOid: string | null;
-  vuosi: string | null;
+  oppilaitosOid?: string;
+  vuosi?: string;
 }) =>
   queryOptions({
     queryKey: ['getOppilaitosVuosiLuokat', oppilaitosOid, vuosi],

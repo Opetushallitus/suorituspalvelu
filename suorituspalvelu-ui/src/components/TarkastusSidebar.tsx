@@ -2,7 +2,7 @@ import {
   useOppilaitoksenOppijatSearchResult,
   useOppilaitoksenOppijatSearchParamsState,
 } from '@/hooks/useOppilaitoksenOppijatSearch';
-import { Link, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
 import { useCallback } from 'react';
@@ -17,7 +17,7 @@ import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 
 const SidebarContent = () => {
-  const { suodatus, setSearchParams, hasValidSearchParams } =
+  const { searchParams, setSearchParams, hasValidSearchParams } =
     useOppilaitoksenOppijatSearchParamsState();
 
   const { data, totalCount } = useOppilaitoksenOppijatSearchResult();
@@ -28,8 +28,6 @@ const SidebarContent = () => {
 
   const searchTab = useSelectedSearchTab();
   const tiedotTab = useSelectedTiedotTab();
-
-  const [urlSearchParams] = useSearchParams();
 
   const onClear = useCallback(() => {
     setSearchParams({ suodatus: '' });
@@ -55,7 +53,7 @@ const SidebarContent = () => {
               <SearchInput
                 sx={{ width: '100%' }}
                 placeholder={t('sivupalkki.suodata-nimella-tai-hetulla')}
-                value={suodatus ?? ''}
+                value={searchParams.suodatus ?? ''}
                 onClear={onClear}
                 onChange={onChange}
               />
@@ -79,7 +77,7 @@ const SidebarContent = () => {
                 }
                 to={{
                   pathname: `/${searchTab}/${oppija.oppijaNumero}/${tiedotTab ?? ''}`,
-                  search: urlSearchParams.toString(),
+                  search: new URLSearchParams(searchParams).toString(),
                 }}
               >
                 <OphTypography variant="label" color="inherit">

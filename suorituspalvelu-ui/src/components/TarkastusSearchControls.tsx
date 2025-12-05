@@ -67,7 +67,7 @@ const OppilaitosSelectField = ({
       sx={{ minWidth: '400px' }}
       options={oppilaitoksetOptions}
       placeholder={t('select.valitse')}
-      value={value}
+      value={value ?? ''}
       label={t('oppilaitos')}
       onChange={onChange}
     />
@@ -81,7 +81,7 @@ const VuosiSelectField = ({
 }: Pick<
   React.ComponentProps<typeof OphSelectFormField>,
   'value' | 'onChange'
-> & { oppilaitosOid: string | null }) => {
+> & { oppilaitosOid?: string }) => {
   const { t } = useTranslations();
 
   const { data: vuodetOptions, isLoading } = useApiQuery(
@@ -104,7 +104,7 @@ const VuosiSelectField = ({
       sx={{ minWidth: '150px' }}
       options={vuodetOptions ?? []}
       placeholder={t('select.valitse')}
-      value={value}
+      value={value ?? ''}
       disabled={!oppilaitosOid}
       label={t('search.valmistumisvuosi')}
       onChange={onChange}
@@ -120,7 +120,7 @@ const LuokkaSelectField = ({
 }: Pick<
   React.ComponentProps<typeof OphSelectFormField>,
   'value' | 'onChange'
-> & { oppilaitosOid: string | null; vuosi: string | null }) => {
+> & { oppilaitosOid?: string; vuosi?: string }) => {
   const { t } = useTranslations();
 
   const { data: luokatOptions = [], isLoading } = useApiQuery(
@@ -137,7 +137,7 @@ const LuokkaSelectField = ({
       options={luokatOptions}
       clearable={true}
       placeholder={t('select.valitse')}
-      value={value}
+      value={value ?? ''}
       disabled={vuosi == null || oppilaitosOid == null}
       label={t('search.luokka')}
       onChange={onChange}
@@ -146,13 +146,14 @@ const LuokkaSelectField = ({
 };
 
 export const TarkastusSearchControls = () => {
-  const { setSearchParams, oppilaitos, luokka, vuosi } =
+  const { setSearchParams, searchParams } =
     useOppilaitoksenOppijatSearchParamsState();
+  const { oppilaitos, vuosi, luokka } = searchParams;
 
   return (
     <StyledSearchControls>
       <OppilaitosSelectField
-        value={oppilaitos ?? ''}
+        value={oppilaitos}
         onChange={(e) => {
           const newOppilaitos = e.target.value;
           if (newOppilaitos !== oppilaitos) {
@@ -167,7 +168,7 @@ export const TarkastusSearchControls = () => {
       />
       <VuosiSelectField
         oppilaitosOid={oppilaitos}
-        value={vuosi ?? ''}
+        value={vuosi}
         onChange={(e) => {
           const newVuosi = e.target.value;
           if (newVuosi !== vuosi) {
@@ -176,7 +177,7 @@ export const TarkastusSearchControls = () => {
         }}
       />
       <LuokkaSelectField
-        value={luokka ?? ''}
+        value={luokka}
         vuosi={vuosi}
         oppilaitosOid={oppilaitos}
         onChange={(e) => {
