@@ -1,28 +1,15 @@
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { BackendOppijatSearchParams } from '@/lib/suorituspalvelu-service';
-import { isEmpty, isNullish, omitBy } from 'remeda';
+import { isNullish } from 'remeda';
 import { useSearchParams, type NavigateOptions } from 'react-router';
 import { useMemo } from 'react';
-
-export const useOppijatSearchURLParams = () => {
-  const params = useOppijatSearchParamsState();
-  return omitBy(
-    {
-      suodatus: params.suodatus ?? undefined,
-      oppilaitos: params.oppilaitos ?? undefined,
-      luokka: params.luokka ?? undefined,
-      vuosi: params.vuosi ?? undefined,
-    },
-    isEmpty,
-  );
-};
 
 type OppijatSearchParams = BackendOppijatSearchParams & {
   suodatus?: string;
 };
 
-export const useOppijatSearchParamsState = () => {
+export const useOppilaitoksenOppijatSearchParamsState = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
@@ -60,13 +47,15 @@ export const useOppijatSearchParamsState = () => {
   );
 };
 
-export const useOppilaitoksenOppijatSearch = () => {
-  const params = useOppijatSearchParamsState();
-
-  const urlParams = useOppijatSearchURLParams();
+export const useOppilaitoksenOppijatSearchResult = () => {
+  const params = useOppilaitoksenOppijatSearchParamsState();
 
   const result = useApiSuspenseQuery(
-    queryOptionsSearchOppilaitoksenOppijat(urlParams),
+    queryOptionsSearchOppilaitoksenOppijat({
+      oppilaitos: params.oppilaitos,
+      vuosi: params.vuosi,
+      luokka: params.luokka,
+    }),
   );
 
   const data = useMemo(() => {

@@ -1,4 +1,4 @@
-import { isEmpty, isEmptyish, omitBy } from 'remeda';
+import { isEmptyish, omitBy } from 'remeda';
 import { configPromise } from './configuration';
 import { client, FetchError } from './http-client';
 import type {
@@ -19,9 +19,9 @@ import { toFinnishDate } from './time-utils';
 import { isHenkiloOid, isHenkilotunnus } from './common';
 
 export type BackendOppijatSearchParams = {
-  oppilaitos?: string;
-  vuosi?: string;
-  luokka?: string;
+  oppilaitos?: string | null;
+  vuosi?: string | null;
+  luokka?: string | null;
 };
 
 const isNotFoundError = (error: unknown) => {
@@ -31,7 +31,7 @@ const isNotFoundError = (error: unknown) => {
 };
 
 export const cleanSearchParams = (params: BackendOppijatSearchParams) => {
-  return omitBy(params, (value) => isEmpty(value) || value === '');
+  return omitBy(params, (value) => isEmptyish(value));
 };
 
 export const nullWhenErrorMatches = async <T>(
@@ -268,7 +268,7 @@ export const getOppilaitosVuodet = async ({
   const res = await client.get<IVuodetSuccessResponse>(
     `${config.routes.suorituspalvelu.vuodetUrl}/${oppilaitosOid}`,
   );
-  return res.data?.vuodet;
+  return res.data?.vuodet ?? [];
 };
 
 export const getOppilaitosVuosiLuokat = async ({

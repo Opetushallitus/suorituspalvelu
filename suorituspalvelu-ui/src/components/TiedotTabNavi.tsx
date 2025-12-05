@@ -1,4 +1,4 @@
-import { useActiveTiedotTab } from '@/hooks/useActiveTiedotTab';
+import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
@@ -32,7 +32,7 @@ const StyledTab = styled(Link)<{ $active: boolean }>(({ $active }) => ({
 
 export const TiedotTabNavi = () => {
   const { t } = useTranslations();
-  const activeTab = useActiveTiedotTab();
+  const activeTab = useSelectedTiedotTab();
   const [searchParams] = useSearchParams();
 
   const { data: kayttaja } = useKayttaja();

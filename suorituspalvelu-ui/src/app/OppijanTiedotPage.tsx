@@ -62,11 +62,11 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
 };
 
 export const OppijanTiedotPage = ({
-  oppijaNumero,
+  oppijaTunniste,
 }: {
-  oppijaNumero?: string;
+  oppijaTunniste?: string;
 }) => {
-  const { data: tiedot } = useOppija(oppijaNumero ?? '');
+  const { data: tiedot } = useOppija(oppijaTunniste);
   const { t } = useTranslations();
   return (
     <>
