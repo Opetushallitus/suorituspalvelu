@@ -464,6 +464,7 @@ object KoskiToSuoritusConverter {
     }
 
     EBOppiaine(
+      tunniste = UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => EBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),

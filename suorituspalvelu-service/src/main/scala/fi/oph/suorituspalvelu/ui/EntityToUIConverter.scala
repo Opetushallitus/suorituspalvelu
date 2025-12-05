@@ -151,6 +151,7 @@ object EntityToUIConverter {
       .map((ebTutkinto: EBTutkinto) =>
         val oppiaineet = ebTutkinto.osasuoritukset.map((o: EBOppiaine) => {
           EBOppiaineUI(
+            tunniste = o.tunniste,
             nimi = EBOppiaineNimiUI(
               fi = o.nimi.fi.toJava,
               sv = o.nimi.sv.toJava,

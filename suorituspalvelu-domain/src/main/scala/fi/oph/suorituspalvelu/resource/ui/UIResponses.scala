@@ -464,6 +464,8 @@ case class EBOppiaineOsasuoritusUI(
 
 case class EBOppiaineUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: EBOppiaineNimiUI,
   @(Schema @field)(example = "englanti", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,

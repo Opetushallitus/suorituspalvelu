@@ -155,6 +155,7 @@ export interface IEBOppiaineOsasuoritusUI {
 }
 
 export interface IEBOppiaineUI {
+  tunniste: string;
   nimi: IEBOppiaineNimiUI;
   suorituskieli: string;
   laajuus: number;
