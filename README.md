@@ -49,10 +49,10 @@ UI-endpointtien käyttämien tyyppien Typescript-vastineet generoidaan ajamalla 
 
 Playwright-testejä voi ajaa lokaalisti komennolla:
 
-`npx playwright test --ui --project=chromium`
+`pnpm exec playwright test --ui --project=chromium`
 
 Tätä ennen täytyy käynnistää ui komennolla:
 
-`npm run dev:test`
+`pnpm run dev:test`
 
 Komennot ajetaan suorituspalvelu-ui -hakemistossa. Testien käyttämä mock-data löytyy `suorituspalvelu-ui/playwright/fixtures` -hakemistosta.

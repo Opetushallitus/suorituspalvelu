@@ -7,19 +7,27 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-node@v4
+    - name: Install Node.js
+      uses: actions/setup-node@v6
       with:
         node-version-file: '.nvmrc'
-        cache: 'npm'
-        cache-dependency-path: ${{ inputs.project_path }}/package-lock.json
+    - name: Enable corepack
+      shell: bash
+      run: corepack enable
+    - name: Configure pnpm dependencies cache
+      uses: actions/setup-node@v6
+      with:
+        cache: 'pnpm'
+        cache-dependency-path: ${{ inputs.project_path }}/pnpm-lock.yaml
         registry-url: 'https://npm.pkg.github.com'
         scope: '@opetushallitus'
-    - uses: actions/cache@v4
+    - name: Cache node_modules
+      uses: actions/cache@v4
       id: node_modules-cache
       with:
         path: ${{ github.workspace }}/${{ inputs.project_path }}/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles(format('{0}/package-lock.json', inputs.project_path)) }}
-    - name: Install npm dependencies
+        key: ${{ runner.os }}-modules-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.project_path)) }}
+    - name: Install dependencies
       if: steps.node_modules-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: cd ${{inputs.project_path}} && npm ci
+      run: cd ${{inputs.project_path}} && pnpm install
