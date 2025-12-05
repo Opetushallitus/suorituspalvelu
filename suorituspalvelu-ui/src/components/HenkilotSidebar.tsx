@@ -1,6 +1,7 @@
 import {
-  useOppijatSearch,
+  useOppilaitoksenOppijatSearch,
   useOppijatSearchURLParams,
+  useOppijatSearchParamsState,
 } from '@/hooks/useSearchOppijat';
 import { Link, useParams } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
@@ -11,10 +12,15 @@ import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { formatHenkiloNimi } from '@/lib/common';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
+import { SearchInput } from './SearchInput';
+import { Box, Stack } from '@mui/material';
 
 const HenkilotSidebarContent = () => {
   const params = useOppijatSearchURLParams();
-  const { result, hasEmptySearchParams } = useOppijatSearch();
+  const { data } = useOppilaitoksenOppijatSearch();
+
+  const { setSearchParams, hasEmptySearchParams } =
+    useOppijatSearchParamsState();
 
   const { t } = useTranslate();
 
@@ -25,14 +31,26 @@ const HenkilotSidebarContent = () => {
   return hasEmptySearchParams ? (
     <div></div>
   ) : (
-    <div>
-      <OphTypography variant="body2" sx={{ paddingBottom: 1, margin: 0 }}>
+    <Stack spacing={1.5} sx={{ paddingLeft: 2 }}>
+      <Box sx={{ paddingRight: 2, paddingTop: 1 }}>
+        <SearchInput
+          sx={{ width: '100%' }}
+          value={params.tunniste ?? ''}
+          onClear={() => {
+            setSearchParams({ tunniste: '' });
+          }}
+          onChange={(e) => {
+            setSearchParams({ tunniste: e.target.value });
+          }}
+        />
+      </Box>
+      <OphTypography variant="body2">
         {t('sivupalkki.henkilo-maara', {
-          count: result.data?.length ?? 0,
+          count: data?.length ?? 0,
         })}
       </OphTypography>
       <NavigationList tabIndex={0} aria-label={t('sivupalkki.navigaatio')}>
-        {result.data?.map((oppija) => (
+        {data?.map((oppija) => (
           <Link
             key={oppija.oppijaNumero}
             className={
@@ -52,7 +70,7 @@ const HenkilotSidebarContent = () => {
           </Link>
         ))}
       </NavigationList>
-    </div>
+    </Stack>
   );
 };
 

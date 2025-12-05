@@ -7,6 +7,10 @@ import { SuoritusManagerProvider } from '@/lib/suoritusManager';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 
 export default function SuoritustiedotPage({ params }: Route.ComponentProps) {
+  if (!params.oppijaNumero) {
+    throw new Error('Ei voida näyttää suoritustietoja ilman oppijanumeroa');
+  }
+
   const { data: tiedot } = useOppija(params.oppijaNumero);
 
   return (

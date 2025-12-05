@@ -174,38 +174,42 @@ export async function clientLoader({
   params,
   request,
 }: Route.ClientLoaderArgs) {
-  // Aloitetaan oppijan hakujen esilataus
-  const hautPromise = queryClient.ensureQueryData(
-    queryOptionsGetOppijanHaut(params.oppijaNumero),
-  );
-
-  const url = new URL(request.url);
-  const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
-
-  if (hakuOidParam) {
-    // Aloitetaan valindatadatan esilataus
-    queryClient.ensureQueryData(
-      queryOptionsGetValintadata({
-        oppijaNumero: params.oppijaNumero,
-        hakuOid: hakuOidParam,
-      }),
+  const { oppijaNumero } = params;
+  if (oppijaNumero) {
+    // Aloitetaan oppijan hakujen esilataus
+    const hautPromise = queryClient.ensureQueryData(
+      queryOptionsGetOppijanHaut(oppijaNumero),
     );
-  } else {
-    const haut = await hautPromise;
-    const onlyHakuOid = only(haut)?.hakuOid;
-    // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
-    if (onlyHakuOid) {
-      url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
-      throw redirect(url.search);
+
+    const url = new URL(request.url);
+    const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
+
+    if (hakuOidParam) {
+      // Aloitetaan valindatadatan esilataus
+      queryClient.ensureQueryData(
+        queryOptionsGetValintadata({
+          oppijaNumero,
+          hakuOid: hakuOidParam,
+        }),
+      );
+    } else {
+      const haut = await hautPromise;
+      const onlyHakuOid = only(haut)?.hakuOid;
+      // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
+      if (onlyHakuOid) {
+        url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
+        throw redirect(url.search);
+      }
     }
   }
-
-  return null;
 }
 
 export default function OpiskelijavalinnanTiedotPage({
   params,
 }: Route.ComponentProps) {
+  if (!params.oppijaNumero) {
+    throw new Error('Ei voida näyttää suoritustietoja ilman oppijanumeroa');
+  }
   return (
     <QuerySuspenseBoundary ErrorFallback={ErrorFallback}>
       <OpiskelijavalinnanTiedotPageContent oppijaNumero={params.oppijaNumero} />

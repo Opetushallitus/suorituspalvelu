@@ -1,7 +1,5 @@
 {
   "suorituspalvelu": "Suorituspalvelu",
-  "valitse-henkilo": "Hae ja valitse henkilö",
-  "hae-henkiloa": "Hae henkilöä",
   "henkilohaku": {
     "vain-tunniste": "Etsi oppijaa tunnisteella",
     "oppilaitoksen-oppijat": "Hae oppilaitoksen oppijoita",
@@ -327,6 +325,9 @@
     "henkilo-tunniste-helpertext": "Hae oppijanumerolla tai henkilötunnuksella.",
     "henkilo-suodata-helpertext": "Suodata nimellä, henkilötunnuksella tai oppijanumerolla.",
     "hae-henkilo": "Hae henkilö",
-    "hae-ja-valitse-henkilo": "Hae ja valitse henkilö"
+    "hae-ja-valitse-henkilo": "Hae ja valitse henkilö",
+    "henkiloa-ei-loytynyt": "Henkilöä ei löytynyt",
+    "henkilo-input-placeholder": "Oppijanumero tai henkilötunnus",
+    "ei-validi-tunniste": "Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus."
   }
 }
