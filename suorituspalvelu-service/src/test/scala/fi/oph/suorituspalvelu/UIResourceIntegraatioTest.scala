@@ -1520,6 +1520,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       Set(
         // L1 oppiaine
         EBOppiaine(
+          UUID.randomUUID(),
           Kielistetty(
             Some("Ensimmäinen kieli (L1)"),
             Some("Första språket (L1)"),
@@ -1572,6 +1573,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         ),
         // L2 oppiaine
         EBOppiaine(
+          UUID.randomUUID(),
           Kielistetty(
             Some("Toinen kieli (L2)"),
             Some("Andra språket (L2)"),

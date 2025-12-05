@@ -65,7 +65,8 @@ case class EBOppiaineenOsasuoritus(nimi: Kielistetty,
 
 case class EBLaajuus(arvo: BigDecimal, yksikko: Koodi)
 
-case class EBOppiaine(nimi: Kielistetty,
+case class EBOppiaine(tunniste: UUID,
+                      nimi: Kielistetty,
                       koodi: Koodi,
                       laajuus: Option[EBLaajuus],
                       suorituskieli: Koodi,
