@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.fasterxml.jackson.annotation.{JsonCreator, JsonTypeInfo, JsonValue}
-import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiLisatiedot, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiArviointi, Kielistetty, KoskiLisatiedot, KoskiOpiskeluoikeusTila}
 
 import java.util.UUID
 import java.time.{Instant, LocalDate}
@@ -242,7 +242,7 @@ case class AmmatillinenOpiskeluoikeus(tunniste: UUID,
                                       oppilaitos: Oppilaitos,
                                       @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                       suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                      tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+                                      tila: Option[KoskiOpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
 case class GeneerinenOpiskeluoikeus(tunniste: UUID,
                                     oid: String,
@@ -250,7 +250,7 @@ case class GeneerinenOpiskeluoikeus(tunniste: UUID,
                                     oppilaitosOid: String,
                                     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                     suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                    tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+                                    tila: Option[KoskiOpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
 case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
 
