@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -611,7 +611,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
+        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME, oppijaNumero), ""))
       .andExpect(status().isOk)
       .andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
@@ -637,7 +637,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
-    Assertions.assertEquals(Map(ApiConstants.UI_TIEDOT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
   }
 
   /*
@@ -1489,4 +1489,190 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertFalse(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJokaPoistetaan))
     Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJotaEiPoisteta))
   }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanEBTutkintoTiedot(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.21583363335"
+    val oppilaitosOid = "1.2.246.562.10.73383452575"
+    val oppilaitosNimi = "European School of Helsinki"
+
+    // Create a generic opiskeluoikeus with EB tutkinto
+    val ebTutkinto = EBTutkinto(
+      UUID.randomUUID(),
+      Kielistetty(
+        Some("Eurooppalainen ylioppilastutkinto (EB)"),
+        Some("Europeisk studentexamen (EB)"),
+        Some("European Baccalaureate (EB)")
+      ),
+      Koodi("301103", "koulutus", Some(12)),
+      fi.oph.suorituspalvelu.business.Oppilaitos(
+        Kielistetty(
+          Some(oppilaitosNimi),
+          Some("Europaskolan i Helsingfors"),
+          Some("European School of Helsinki")
+        ),
+        oppilaitosOid
+      ),
+      Koodi("lasna", "koskiopiskeluoikeudentila", Some(1)),
+      fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2022-08-15")),
+      Some(LocalDate.parse("2023-06-30")),
+      Set(
+        // L1 oppiaine
+        EBOppiaine(
+          Kielistetty(
+            Some("Ensimmäinen kieli (L1)"),
+            Some("Första språket (L1)"),
+            Some("First Language (L1)")
+          ),
+          Koodi("L1", "eboppiaineet", Some(1)),
+          Some(EBLaajuus(4.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          Koodi("FI", "kieli", Some(1)),
+          Set(
+            EBOppiaineenOsasuoritus(
+              Kielistetty(
+                Some("Kirjallinen koe"),
+                Some("Skriftligt förhör"),
+                Some("Written examination")
+              ),
+              Koodi("Written", "ebtutkinnonoppiaineenkomponentti", Some(1)),
+              EBArvosana(
+                Koodi("9.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)),
+                true
+              ),
+              None
+            ),
+            EBOppiaineenOsasuoritus(
+              Kielistetty(
+                Some("Suullinen koe"),
+                Some("Muntligt förhör"),
+                Some("Oral examination")
+              ),
+              Koodi("Oral", "ebtutkinnonoppiaineenkomponentti", Some(1)),
+              EBArvosana(
+                Koodi("8.5", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)),
+                true
+              ),
+              None
+            ),
+            EBOppiaineenOsasuoritus(
+              Kielistetty(
+                Some("Lopullinen arvosana"),
+                Some("Slutligt vitsord"),
+                Some("Final mark")
+              ),
+              Koodi("Final", "ebtutkinnonoppiaineenkomponentti", Some(1)),
+              EBArvosana(
+                Koodi("9.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)),
+                true
+              ),
+              None
+            )
+          )
+        ),
+        // L2 oppiaine
+        EBOppiaine(
+          Kielistetty(
+            Some("Toinen kieli (L2)"),
+            Some("Andra språket (L2)"),
+            Some("Second Language (L2)")
+          ),
+          Koodi("L2", "eboppiaineet", Some(1)),
+          Some(EBLaajuus(3.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          Koodi("EN", "kieli", Some(1)),
+          Set(
+            EBOppiaineenOsasuoritus(
+              Kielistetty(
+                Some("Lopullinen arvosana"),
+                Some("Slutligt vitsord"),
+                Some("Final mark")
+              ),
+              Koodi("Final", "ebtutkinnonoppiaineenkomponentti", Some(1)),
+              EBArvosana(
+                Koodi("8.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)),
+                true
+              ),
+              None
+            )
+          )
+        )
+      )
+    )
+
+    // Save version and EB tutkinto
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
+      GeneerinenOpiskeluoikeus(
+        UUID.randomUUID(),
+        "1.2.3.4.5",
+        Koodi("ebtutkinto", "suorituksentyyppi", Some(1)),
+        oppilaitosOid,
+        Set(ebTutkinto),
+        None
+      )
+    ))
+
+    // Mock ONR & organisaatiopalvelu
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)))
+      .thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(oppilaitosNimi, "Europaskolan i Helsingfors", "European School of Helsinki"), None, Seq.empty, Seq.empty)
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
+
+    Assertions.assertNotNull(response.ebTutkinto)
+    val ebTutkintoResponse = response.ebTutkinto.get()
+
+    Assertions.assertEquals("Eurooppalainen ylioppilastutkinto (EB)", ebTutkintoResponse.nimi.fi.get())
+    Assertions.assertEquals(oppilaitosOid, ebTutkintoResponse.oppilaitos.oid)
+    Assertions.assertEquals(oppilaitosNimi, ebTutkintoResponse.oppilaitos.nimi.fi.get())
+    Assertions.assertEquals(fi.oph.suorituspalvelu.resource.ui.SuoritusTila.VALMIS.toString, ebTutkintoResponse.tila.toString)
+    Assertions.assertEquals("2022-08-15", ebTutkintoResponse.aloituspaiva.get().toString)
+    Assertions.assertEquals("2023-06-30", ebTutkintoResponse.valmistumispaiva.get().toString)
+
+    Assertions.assertEquals(2, ebTutkintoResponse.oppiaineet.size())
+
+    // Validate L1 oppiaine
+    val l1Oppiaine = ebTutkintoResponse.oppiaineet.stream()
+      .filter(a => a.nimi.fi.get().contains("Ensimmäinen kieli"))
+      .findFirst()
+      .orElse(null)
+
+    Assertions.assertNotNull(l1Oppiaine)
+    Assertions.assertEquals("FI", l1Oppiaine.suorituskieli)
+    Assertions.assertEquals(BigDecimal(4.0), l1Oppiaine.laajuus)
+    Assertions.assertTrue(l1Oppiaine.written.isPresent)
+    Assertions.assertEquals(BigDecimal(9.0), l1Oppiaine.written.get().arvosana)
+    Assertions.assertTrue(l1Oppiaine.oral.isPresent)
+    Assertions.assertEquals(BigDecimal(8.5), l1Oppiaine.oral.get().arvosana)
+    Assertions.assertTrue(l1Oppiaine.`final`.isPresent)
+    Assertions.assertEquals(BigDecimal(9.0), l1Oppiaine.`final`.get().arvosana)
+
+    // Validate L2 oppiaine
+    val l2Oppiaine = ebTutkintoResponse.oppiaineet.stream()
+      .filter(a => a.nimi.fi.get().contains("Toinen kieli"))
+      .findFirst()
+      .orElse(null)
+
+    Assertions.assertNotNull(l2Oppiaine)
+    Assertions.assertEquals("EN", l2Oppiaine.suorituskieli)
+    Assertions.assertEquals(BigDecimal(3.0), l2Oppiaine.laajuus)
+    Assertions.assertFalse(l2Oppiaine.written.isPresent)
+    Assertions.assertFalse(l2Oppiaine.oral.isPresent)
+    Assertions.assertTrue(l2Oppiaine.`final`.isPresent)
+    Assertions.assertEquals(BigDecimal(8.0), l2Oppiaine.`final`.get().arvosana)
+
+    // Verify audit log
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+  }
+
 }
