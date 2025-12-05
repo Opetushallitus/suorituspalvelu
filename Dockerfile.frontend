@@ -1,6 +1,14 @@
-FROM node:22-alpine
-WORKDIR /app/suorituspalvelu-ui
+FROM node:24
+WORKDIR /app
 EXPOSE 3000
-RUN mkdir /.cache && chmod -R 777 /.cache
-CMD ["npm", "run", "dev"]
+RUN mkdir -p /home/appuser && chmod -R 777 /home/appuser
+RUN mkdir -p /pnpm && chmod -R 777 /pnpm
 
+# Ensure /app and node_modules directory is writable by any user
+RUN mkdir -p /app/node_modules && chmod -R 777 /app/node_modules
+
+RUN echo "store-dir=/pnpm/store" >> /etc/npmrc
+
+RUN corepack enable pnpm
+
+CMD ["sh", "-c", "cp /run/secrets/npmrc ~/.npmrc && pnpm install && pnpm run dev"]

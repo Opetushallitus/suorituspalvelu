@@ -31,7 +31,7 @@ jobs:
       - name: Build and copy frontend to backend static-dir
         run: |
           cd suorituspalvelu-ui
-          npm run build-and-copy
+          pnpm run build-and-copy
 
       - name: Build Scala projects
         env:
@@ -59,11 +59,11 @@ jobs:
         with:
           project_path: suorituspalvelu-ui
       - name: Check types
-        run: npm run typecheck
+        run: pnpm run typecheck
       - name: Run linter
-        run: npm run lint
+        run: pnpm run lint
       - name: Run unit tests
-        run: npm run test
+        run: pnpm run test
   test-playwright:
     runs-on: ubuntu-latest
     defaults:
@@ -79,11 +79,11 @@ jobs:
         with:
           project_path: suorituspalvelu-ui
       - name: Build app
-        run: npm run build:test
+        run: pnpm run build:test
       - name: Run Playwright tests
         env:
           PLAYWRIGHT_ARGS: --project=${{ matrix.browser }}
-        run: npm run start-and-test-playwright-docker
+        run: pnpm run start-and-test-playwright-docker
       - uses: actions/upload-artifact@v4
         if: always()
         with:
