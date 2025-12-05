@@ -1,52 +1,70 @@
 import { expect } from '@playwright/test';
 import { test } from './lib/fixtures';
+import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 
-const OPPIJAT = [
-  {
-    oppijaNumero: '1.2.3.4',
-    etunimet: 'Olli',
-    sukunimi: 'Oppija',
-    hetu: '123456-7890',
-    oppilaitosOid: '1',
-  },
-  {
-    oppijaNumero: '2.3.4.5',
-    etunimet: 'Maija',
-    sukunimi: 'Mallikas',
-    hetu: '098765-4321',
-    oppilaitosOid: '2',
-  },
-];
+const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
+const HENKILOTUNNUS = OPPIJAN_TIEDOT.henkiloTunnus;
 
-test.describe('Henkilö-haku', () => {
+test.describe('Henkilöhaku', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route('**/ui/haku/oppijat*', async (route) => {
-      const url = new URL(route.request().url());
-      const tunnisteParam = url.searchParams.get('tunniste');
-
+    await page.route(`**/ui/tiedot/${OPPIJANUMERO}`, async (route) => {
       await route.fulfill({
-        json: {
-          oppijat: OPPIJAT.filter(
-            (oppija) => oppija.oppijaNumero === tunnisteParam,
-          ),
-        },
+        json: OPPIJAN_TIEDOT,
+      });
+    });
+
+    await page.route(`**/ui/tiedot/${HENKILOTUNNUS}`, async (route) => {
+      await route.fulfill({
+        json: OPPIJAN_TIEDOT,
       });
     });
   });
 
+  test('näyttää ilmoituksen, jos ei henkilö löytynyt tai hakutermi ei validi', async ({
+    page,
+  }) => {
+    await page.goto('');
+    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilö' });
+
+    await searchInput.fill('Olli Oppija');
+
+    // Nimellä hakeminen ei ole mahdollista
+    await expect(
+      page.getByText(
+        'Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.',
+      ),
+    ).toBeVisible();
+    await expect(page.getByText('Olli Oppija')).toBeHidden();
+
+    await expect(page.getByText('Henkilöä ei löytynyt')).toBeHidden();
+    await expect(page.getByText('Olli Oppija')).toBeHidden();
+
+    await searchInput.fill('1.2.246.562.24.40483869850');
+
+    await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
+    await expect(page.getByText('Olli Oppija')).toBeHidden();
+
+    await searchInput.fill('123456-9999');
+
+    await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
+    await expect(page.getByText('Olli Oppija')).toBeHidden();
+  });
+
   test('suodattaa oppijanumerolla', async ({ page }) => {
     await page.goto('');
-    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilöä' });
+    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilö' });
 
-    const henkiloNavi = page.getByRole('navigation', {
-      name: 'Henkilövalitsin',
-    });
-    const henkiloLinks = henkiloNavi.getByRole('link');
-    await expect(henkiloLinks).toHaveCount(0);
+    await searchInput.fill(OPPIJANUMERO);
 
-    await searchInput.fill('1.2.3.4');
+    await expect(page.getByText('Olli Oppija')).toBeVisible();
+  });
 
-    await expect(henkiloLinks).toHaveCount(1);
-    await expect(henkiloLinks.first()).toHaveText('Olli Oppija123456-7890');
+  test('suodattaa henkilötunnuksella', async ({ page }) => {
+    await page.goto('');
+    const searchInput = page.getByRole('textbox', { name: 'Hae Henkilö' });
+
+    await searchInput.fill(HENKILOTUNNUS);
+
+    await expect(page.getByText('Olli Oppija')).toBeVisible();
   });
 });
