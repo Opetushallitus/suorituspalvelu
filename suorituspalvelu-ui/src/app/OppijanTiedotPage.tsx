@@ -7,7 +7,7 @@ import { LabeledInfoItem } from '../components/LabeledInfoItem';
 import { ExternalLink } from '../components/ExternalLink';
 import { useConfig } from '@/lib/configuration';
 import { TiedotTabNavi } from '../components/TiedotTabNavi';
-import { Outlet } from 'react-router';
+import { Outlet, type OppijaContext } from 'react-router';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
@@ -51,7 +51,11 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
       </Stack>
       <TiedotTabNavi />
       <QuerySuspenseBoundary>
-        <Outlet />
+        <Outlet
+          context={
+            { oppijaNumero: tiedot.oppijaNumero } satisfies OppijaContext
+          }
+        />
       </QuerySuspenseBoundary>
     </Stack>
   );

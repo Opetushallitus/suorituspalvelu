@@ -12,6 +12,11 @@ test.describe('Etusivu', () => {
     });
   });
 
+  test('Juuresta ohjautuu henkilöhakuun', async ({ page }) => {
+    await page.goto('');
+    await expect(page).toHaveURL((url) => url.toString().endsWith('/henkilo'));
+  });
+
   test('Sivu latautuu käyttäjän asiointikielellä', async ({ page }) => {
     await page.goto('');
     await expect(page).toHaveTitle('Suorituspalvelu');

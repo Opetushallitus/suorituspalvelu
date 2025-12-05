@@ -1,0 +1,20 @@
+{
+  "oppilaitokset": [
+    {
+      "oid": "1.2.246.562.10.12345678901",
+      "nimi": {
+        "fi": "Helsingin normaalikoulu",
+        "sv": "Helsingfors normalskola",
+        "en": "Helsinki Normal School"
+      }
+    },
+    {
+      "oid": "1.2.246.562.10.98765432109",
+      "nimi": {
+        "fi": "Tampereen normaalikoulu",
+        "sv": "Tammerfors normalskola",
+        "en": "Tampere Normal School"
+      }
+    }
+  ]
+}

@@ -33,7 +33,7 @@ test.describe('Oppijan tiedot', () => {
       },
     );
 
-    await page.goto(`/suorituspalvelu/henkilo/${OPPIJANUMERO}`);
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
   });
 
   test('näyttää henkilötiedot', async ({ page }) => {
@@ -55,23 +55,19 @@ test.describe('Oppijan tiedot', () => {
   test('navigointi välilehtien välillä toimii', async ({ page }) => {
     // Oletuksena näytetään suoritustiedot
     await expect(page).toHaveURL((url) =>
-      url.pathname.includes(
-        `/suorituspalvelu/henkilo/${OPPIJANUMERO}/suoritustiedot`,
-      ),
+      url.pathname.includes(`henkilo/${OPPIJANUMERO}/suoritustiedot`),
     );
 
     await page.getByRole('link', { name: 'Opiskelijavalinnan tiedot' }).click();
     await expect(page).toHaveURL((url) =>
       url.pathname.includes(
-        `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+        `henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
       ),
     );
 
     await page.getByRole('link', { name: 'Suoritustiedot' }).click();
     await expect(page).toHaveURL((url) =>
-      url.pathname.includes(
-        `/suorituspalvelu/henkilo/${OPPIJANUMERO}/suoritustiedot`,
-      ),
+      url.pathname.includes(`henkilo/${OPPIJANUMERO}/suoritustiedot`),
     );
   });
 });

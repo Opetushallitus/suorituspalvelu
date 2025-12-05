@@ -30,12 +30,12 @@ const HenkilotSidebarContent = () => {
   const searchTab = useSelectedSearchTab();
 
   const onClear = useCallback(() => {
-    setSearchParams({ tunniste: '' });
+    setSearchParams({ suodatus: '' });
   }, [setSearchParams]);
 
   const onChange = useCallback(
     (value: string) => {
-      setSearchParams({ tunniste: value });
+      setSearchParams({ suodatus: value });
     },
     [setSearchParams],
   );
@@ -43,7 +43,11 @@ const HenkilotSidebarContent = () => {
   const tiedotTab = useActiveTiedotTab();
 
   return (
-    <Stack spacing={1.5} sx={{ paddingLeft: 2 }}>
+    <Stack
+      spacing={1.5}
+      sx={{ paddingLeft: 2 }}
+      data-test-id="henkilot-sidebar"
+    >
       {hasValidSearchParams ? (
         <>
           {totalCount !== 0 && (
@@ -51,7 +55,7 @@ const HenkilotSidebarContent = () => {
               <SearchInput
                 sx={{ width: '100%' }}
                 placeholder={t('sivupalkki.suodata-nimella-tai-hetulla')}
-                value={params.tunniste ?? ''}
+                value={params.suodatus ?? ''}
                 onClear={onClear}
                 onChange={onChange}
               />

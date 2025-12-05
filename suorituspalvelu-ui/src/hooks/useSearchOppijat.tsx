@@ -1,20 +1,15 @@
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
-import type { OppijatSearchParams } from '@/lib/suorituspalvelu-service';
+import type { BackendOppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { isEmpty, isNullish, omitBy } from 'remeda';
-import {
-  useLocation,
-  useNavigate,
-  useSearchParams,
-  type NavigateOptions,
-} from 'react-router';
+import { useSearchParams, type NavigateOptions } from 'react-router';
 import { useMemo } from 'react';
 
 export const useOppijatSearchURLParams = () => {
   const params = useOppijatSearchParamsState();
   return omitBy(
     {
-      tunniste: params.tunniste ?? undefined,
+      suodatus: params.suodatus ?? undefined,
       oppilaitos: params.oppilaitos ?? undefined,
       luokka: params.luokka ?? undefined,
       vuosi: params.vuosi ?? undefined,
@@ -23,15 +18,16 @@ export const useOppijatSearchURLParams = () => {
   );
 };
 
+type OppijatSearchParams = BackendOppijatSearchParams & {
+  suodatus?: string;
+};
+
 export const useOppijatSearchParamsState = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
-  const tunniste = searchParams.get('tunniste');
-
-  const navigate = useNavigate();
-  const location = useLocation();
+  const suodatus = searchParams.get('suodatus');
 
   return useMemo(
     () => ({
@@ -39,33 +35,28 @@ export const useOppijatSearchParamsState = () => {
         params: OppijatSearchParams,
         options?: NavigateOptions,
       ) => {
-        let pathname = location.pathname;
-        const locationSearch = new URLSearchParams(location.search);
-        Object.entries(params).forEach(([key, value]) => {
-          if (isNullish(value) || value === '') {
-            locationSearch.delete(key);
-          } else {
-            locationSearch.set(key, value);
-          }
-        });
-        //Jos tyhjennetään tunniste, poistetaan myös oppijanumero polusta
-        if (params.tunniste === '' || params.tunniste === null) {
-          const pathParts = location.pathname.split('/');
-          pathParts.splice(2);
-          pathname = pathParts.join('/');
-        }
-        navigate(
-          { pathname, search: locationSearch.toString() },
-          { replace: false, ...options },
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev);
+            Object.entries(params).forEach(([key, value]) => {
+              if (isNullish(value) || value === '') {
+                next.delete(key);
+              } else {
+                next.set(key, value);
+              }
+            });
+            return next;
+          },
+          { replace: false, ...options }, // Use push to add to history
         );
       },
-      tunniste,
+      suodatus,
       oppilaitos,
       luokka,
       vuosi,
       hasValidSearchParams: oppilaitos !== null && vuosi !== null,
     }),
-    [tunniste, oppilaitos, luokka, vuosi],
+    [suodatus, oppilaitos, luokka, vuosi],
   );
 };
 
@@ -79,14 +70,14 @@ export const useOppilaitoksenOppijatSearch = () => {
   );
 
   const data = useMemo(() => {
-    const { oppilaitos, vuosi, tunniste } = params;
-    if (oppilaitos && vuosi && tunniste) {
+    const { oppilaitos, vuosi, suodatus } = params;
+    if (oppilaitos && vuosi && suodatus) {
       return result.data.filter((oppija) => {
-        const lowercaseTunniste = tunniste.toLowerCase() ?? '';
+        const lowercaseSuodatus = suodatus.toLowerCase() ?? '';
         return (
-          oppija.etunimet?.toLocaleLowerCase().includes(lowercaseTunniste) ||
-          oppija.sukunimi?.toLocaleLowerCase().includes(lowercaseTunniste) ||
-          oppija?.hetu?.toLowerCase()?.includes(lowercaseTunniste)
+          oppija.etunimet?.toLocaleLowerCase().includes(lowercaseSuodatus) ||
+          oppija.sukunimi?.toLocaleLowerCase().includes(lowercaseSuodatus) ||
+          oppija?.hetu?.toLowerCase()?.includes(lowercaseSuodatus)
         );
       });
     } else {

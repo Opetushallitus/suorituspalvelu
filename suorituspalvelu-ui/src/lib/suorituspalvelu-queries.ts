@@ -10,7 +10,7 @@ import {
   getSuoritusvaihtoehdot,
   getValintadata,
   searchOppilaitoksenOppijat,
-  type OppijatSearchParams,
+  type BackendOppijatSearchParams,
 } from './suorituspalvelu-service';
 import { useApiQuery, useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -27,7 +27,7 @@ export const useOppija = (oppijaNumero: string) => {
 };
 
 export const queryOptionsSearchOppilaitoksenOppijat = (
-  params: OppijatSearchParams,
+  params: BackendOppijatSearchParams,
 ) =>
   queryOptions({
     queryKey: ['searchOppilaitoksenOppijat', params],

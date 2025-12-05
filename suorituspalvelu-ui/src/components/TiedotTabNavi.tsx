@@ -37,10 +37,7 @@ export const TiedotTabNavi = () => {
 
   const { data: kayttaja } = useKayttaja();
 
-  // Convert URLSearchParams to search string
-  const searchString = searchParams.toString();
-
-  const searchWithPrefix = searchString ? `?${searchString}` : '';
+  const search = searchParams.toString();
 
   return (
     <StyledContainer>
@@ -49,7 +46,7 @@ export const TiedotTabNavi = () => {
           $active={activeTab === 'suoritustiedot'}
           to={{
             pathname: 'suoritustiedot',
-            search: searchWithPrefix,
+            search,
           }}
         >
           {t('tabs.suoritustiedot')}
@@ -60,7 +57,7 @@ export const TiedotTabNavi = () => {
             $active={activeTab === 'opiskelijavalinnan-tiedot'}
             to={{
               pathname: 'opiskelijavalinnan-tiedot',
-              search: searchWithPrefix,
+              search,
             }}
             prefetch="intent"
           >
