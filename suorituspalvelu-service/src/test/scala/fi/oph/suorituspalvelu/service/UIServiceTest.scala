@@ -70,7 +70,8 @@ class UIServiceTest extends BaseIntegraatioTesti {
       None,
       None,
       if (vuosi.isDefined) Some(LocalDate.parse(s"${vuosi.get}-08-18")) else None,
-      Set.empty
+      Set.empty,
+      false
     )
 
   def tallennaOppimaara(oppijaOid: String, vuosi: Option[Int], suoritukset: Set[Suoritus]): Unit =
@@ -109,7 +110,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
   @Test def testHaePKOppijaOiditTamaVuosi(): Unit =
     lisaaSuoritukset()
-    
+
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_KESKEN, Set("9A")), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, Set("9A"))),
@@ -117,7 +118,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
   @Test def testHaePKOppijaOiditViimevuosi(): Unit =
     lisaaSuoritukset()
-    
+
     // palautuu vain oppijat joilla valmis suoritus haetulta vuodelta
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, Set("9A"))),
@@ -125,7 +126,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
   @Test def testHaePKOppijaOiditToissavuosi(): Unit =
     lisaaSuoritukset()
-    
+
     // ei palaudu mitään koska toissavuonna valmistuneita ei ole
     Assertions.assertEquals(
       Set.empty,
@@ -149,7 +150,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
   @Test def testHaePKOppijaOiditToissavuosiLuokka(): Unit =
     lisaaSuoritukset()
-    
+
     // ei palaudu mitään koska toissavuonna valmistuneita ei ole
     Assertions.assertEquals(
       Set.empty,
@@ -222,7 +223,8 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         None,
         Some(LocalDate.parse("2025-08-18")),
-        Set.empty
+        Set.empty,
+        false
       )),
       None,
       VALMIS
@@ -261,7 +263,8 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         None,
         Some(LocalDate.parse("2025-08-18")),
-        Set.empty
+        Set.empty,
+        false
       )),
       None,
       VALMIS

@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
-import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
@@ -255,14 +255,14 @@ object UIValidator {
         .toMap
   }
 
-  def validatePerusopetuksenOppiaineenOppimaara(suoritus: SyotettyPerusopetuksenOppiaineenOppimaaranSuoritus, koodistoProvider: KoodistoProvider): Set[String] = {
+  def validatePerusopetuksenOppiaineenOppimaarat(suoritus: SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, koodistoProvider: KoodistoProvider): Set[String] = {
     Set(
       validateOppijanumero(suoritus.oppijaOid.toScala, true),
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
       validateValmistumisPaiva(suoritus.valmistumispaiva.toScala),
       validatePerusopetuksenOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
       validatePerusopetuksenOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),
-      validatePerusopetuksenOppimaaranOppiaine(suoritus.oppiaine.toScala, koodistoProvider)
+      suoritus.oppiaineet.asScala.flatMap(o => validatePerusopetuksenOppimaaranOppiaine(Some(o), koodistoProvider))
     ).flatten
   }
 

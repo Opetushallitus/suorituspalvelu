@@ -1,22 +1,5 @@
 /* Scala-koodista automaattisesti generoituja tyyppejä (kts. TypeScriptGenerator.scala). Älä muokkaa käsin! */
 
-export interface IAikuistenPerusopetuksenOppimaara {
-  tunniste: string;
-  nimi: IAikuistenPerusopetuksenOppimaaraNimi;
-  oppilaitos: IPKOppilaitos;
-  tila: SuoritusTila;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
-  oppiaineet: IPerusopetuksenOppiaine[];
-}
-
-export interface IAikuistenPerusopetuksenOppimaaraNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IAmmatillinenOppilaitos {
   nimi: IAmmatillinenOppilaitosNimi;
   oid: string;
@@ -160,28 +143,34 @@ export interface IDIAVastaavuusTodistusNimi {
   en?: string;
 }
 
-export interface IEBOppiaine {
-  tunniste: string;
-  nimi: IEBOppiaineNimi;
-  suorituskieli: string;
-  laajuus: number;
-  written: IEBSuoritus;
-  oral?: IEBSuoritus;
-  final: IEBSuoritus;
-}
-
-export interface IEBOppiaineNimi {
+export interface IEBOppiaineNimiUI {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IEBSuoritus {
-  tunniste: string;
+export interface IEBOppiaineOsasuoritusUI {
+  koodi: string;
   arvosana: number;
 }
 
-export interface IEBTutkinto {
+export interface IEBOppiaineUI {
+  tunniste: string;
+  nimi: IEBOppiaineNimiUI;
+  suorituskieli: string;
+  laajuus: number;
+  written?: IEBOppiaineOsasuoritusUI;
+  oral?: IEBOppiaineOsasuoritusUI;
+  final?: IEBOppiaineOsasuoritusUI;
+}
+
+export interface IEBTutkintoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IEBTutkintoUI {
   tunniste: string;
   nimi: IEBTutkintoNimi;
   oppilaitos: IYOOppilaitos;
@@ -189,13 +178,7 @@ export interface IEBTutkinto {
   aloituspaiva?: string;
   valmistumispaiva?: string;
   suorituskieli: string;
-  oppiaineet: IEBOppiaine[];
-}
-
-export interface IEBTutkintoNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
+  oppiaineet: IEBOppiaineUI[];
 }
 
 export interface IErikoisammattitutkinto {
@@ -374,24 +357,6 @@ export interface ILuoSuoritusDropdownDataSuccessResponse {
   arvosanat: ISyotettavaArvosanaVaihtoehto[];
 }
 
-export interface INuortenPerusopetuksenOppiaineenOppimaara {
-  tunniste: string;
-  nimi: INuortenPerusopetuksenOppiaineenOppimaaraNimi;
-  oppilaitos: IPKOppilaitos;
-  tila: SuoritusTila;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
-  oppiaineet: IPerusopetuksenOppiaine[];
-  syotetty: boolean;
-}
-
-export interface INuortenPerusopetuksenOppiaineenOppimaaraNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IOOOppilaitos {
   nimi: IOOOppilaitosNimi;
   oid: string;
@@ -444,7 +409,7 @@ export interface IOppijanTiedotSuccessResponse {
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
   diaTutkinto?: IDIATutkinto;
   diaVastaavuusTodistus?: IDIAVastaavuusTodistus;
-  ebTutkinto?: IEBTutkinto;
+  ebTutkinto?: IEBTutkintoUI;
   ibTutkinto?: IIBTutkinto;
   preIB?: IPreIB;
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
@@ -453,11 +418,9 @@ export interface IOppijanTiedotSuccessResponse {
   telmat: ITelma[];
   tuvat: ITuva[];
   vapaaSivistystyoKoulutukset: IVapaaSivistystyoKoulutus[];
-  perusopetuksenOppimaarat: IPerusopetuksenOppimaara[];
+  perusopetuksenOppimaarat: IPerusopetuksenOppimaaraUI[];
   perusopetuksenOppimaara78Luokkalaiset?: IPerusopetuksenOppimaara78Luokkalaiset;
-  nuortenPerusopetuksenOppiaineenOppimaarat: INuortenPerusopetuksenOppiaineenOppimaara[];
-  perusopetuksenOppiaineenOppimaarat: IPerusopetuksenOppiaineenOppimaara[];
-  aikuistenPerusopetuksenOppimaarat: IAikuistenPerusopetuksenOppimaara[];
+  perusopetuksenOppiaineenOppimaarat: IPerusopetuksenOppiaineenOppimaaratUI[];
 }
 
 export interface IOppijanValintaDataFailureResponse {
@@ -500,7 +463,13 @@ export interface IPKOppilaitosNimi {
   en?: string;
 }
 
-export interface IPerusopetuksenOppiaine {
+export interface IPerusopetuksenOppiaineNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IPerusopetuksenOppiaineUI {
   tunniste: string;
   koodi: string;
   nimi: IPerusopetuksenOppiaineNimi;
@@ -509,41 +478,22 @@ export interface IPerusopetuksenOppiaine {
   valinnainen: boolean;
 }
 
-export interface IPerusopetuksenOppiaineNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface IPerusopetuksenOppiaineenOppimaara {
-  tunniste: string;
-  nimi: IPerusopetuksenOppiaineenOppimaaraNimi;
-  oppilaitos: IPKOppilaitos;
-  tila: SuoritusTila;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
-  oppiaineet: IPerusopetuksenOppiaine[];
-}
-
 export interface IPerusopetuksenOppiaineenOppimaaraNimi {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IPerusopetuksenOppimaara {
-  versioTunniste?: string;
+export interface IPerusopetuksenOppiaineenOppimaaratUI {
   tunniste: string;
-  nimi: IPerusopetuksenOppimaaraNimi;
+  versioTunniste?: string;
   oppilaitos: IPKOppilaitos;
+  nimi: IPerusopetuksenOppiaineenOppimaaraNimi;
   tila: SuoritusTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
   suorituskieli: string;
-  luokka?: string;
-  yksilollistaminen?: IYksilollistaminen;
-  oppiaineet: IPerusopetuksenOppiaine[];
+  oppiaineet: IPerusopetuksenOppiaineUI[];
   syotetty: boolean;
 }
 
@@ -570,6 +520,21 @@ export interface IPerusopetuksenOppimaaraNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IPerusopetuksenOppimaaraUI {
+  versioTunniste?: string;
+  tunniste: string;
+  nimi: IPerusopetuksenOppimaaraNimi;
+  oppilaitos: IPKOppilaitos;
+  tila: SuoritusTila;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  suorituskieli: string;
+  luokka?: string;
+  yksilollistaminen?: IYksilollistaminen;
+  oppiaineet: IPerusopetuksenOppiaineUI[];
+  syotetty: boolean;
 }
 
 export interface IPoistaSuoritusFailureResponse {

@@ -8,7 +8,7 @@ import type {
   IYOTutkinto,
   IDIATutkinto,
   IDIAVastaavuusTodistus,
-  IEBTutkinto,
+  IEBTutkintoUI,
   IIBTutkinto,
   IPreIB,
   IAmmatillinentutkinto,
@@ -16,15 +16,13 @@ import type {
   IErikoisammattitutkinto,
   IVapaaSivistystyoKoulutus,
   ITuva,
-  IPerusopetuksenOppiaineenOppimaara,
+  IPerusopetuksenOppiaineenOppimaaratUI,
   IPerusopetuksenOppimaara78Luokkalaiset,
-  INuortenPerusopetuksenOppiaineenOppimaara,
-  IAikuistenPerusopetuksenOppimaara,
-  IPerusopetuksenOppimaara,
+  IPerusopetuksenOppimaaraUI,
   IOppijanTiedotSuccessResponse,
   IUIOpiskeluoikeus,
   ITelma,
-  IEBOppiaine,
+  IEBOppiaineUI,
   IIBOppiaine,
   IAmmatillisenTutkinnonOsa,
   IYTO,
@@ -76,17 +74,17 @@ export type PerusopetuksenOppiaine = {
   valinnaisetArvosanat?: Array<string>;
 };
 
-export type LukionOppiaine = ILukionOppiaine | IEBOppiaine | IIBOppiaine;
+export type LukionOppiaine = ILukionOppiaine | IEBOppiaineUI | IIBOppiaine;
 
 export type IBOppiaine = IIBOppiaine;
 
-export type EBOppiaine = IEBOppiaine;
+export type EBOppiaine = IEBOppiaineUI;
 
 export type KorkeakouluSuoritus = IKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';
 };
 
-export type EBSuoritus = IEBTutkinto & {
+export type EBSuoritus = IEBTutkintoUI & {
   koulutustyyppi: 'eb';
 };
 
@@ -124,46 +122,29 @@ export type VapaaSivistystyoSuoritus = IVapaaSivistystyoKoulutus & {
 };
 
 export type PerusopetuksenOppimaara = Omit<
-  IPerusopetuksenOppimaara,
+  IPerusopetuksenOppimaaraUI,
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
   suoritustyyppi: 'perusopetuksenoppimaara';
   koulutustyyppi: 'perusopetus';
-  isEditable: true;
+  isEditable: boolean;
 };
 
-export type PerusopetuksenOppiaineenOppimaara = Omit<
-  IPerusopetuksenOppiaineenOppimaara,
+export type PerusopetuksenOppiaineenOppimaarat = Omit<
+  IPerusopetuksenOppiaineenOppimaaratUI,
   'oppiaineet'
 > & {
   oppiaineet: Array<PerusopetuksenOppiaine>;
-  versioTunniste?: string; // TODO: Poista, kun versioTunniste tulee backendistä
   suoritustyyppi: 'perusopetuksenoppiaineenoppimaara';
   koulutustyyppi: 'perusopetus';
-  isEditable: true;
-};
-
-type AikuistenPerusopetuksenOppimaara = Omit<
-  IAikuistenPerusopetuksenOppimaara,
-  'oppiaineet'
-> & {
-  oppiaineet: Array<PerusopetuksenOppiaine>;
-};
-
-type NuortenPerusopetuksenOppiaineenOppimaara = Omit<
-  INuortenPerusopetuksenOppiaineenOppimaara,
-  'oppiaineet'
-> & {
-  oppiaineet: Array<PerusopetuksenOppiaine>;
+  isEditable: boolean;
 };
 
 export type PerusopetusSuoritus = (
   | PerusopetuksenOppimaara
-  | PerusopetuksenOppiaineenOppimaara
+  | PerusopetuksenOppiaineenOppimaarat
   | IPerusopetuksenOppimaara78Luokkalaiset
-  | NuortenPerusopetuksenOppiaineenOppimaara
-  | AikuistenPerusopetuksenOppimaara
 ) & { koulutustyyppi: 'perusopetus'; isEditable: boolean };
 
 export type Suoritus =
