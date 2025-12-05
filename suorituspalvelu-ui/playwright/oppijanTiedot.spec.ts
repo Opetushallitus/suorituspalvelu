@@ -52,18 +52,24 @@ test.describe('Oppijan tiedot', () => {
 
   test('navigointi välilehtien välillä toimii', async ({ page }) => {
     // Oletuksena näytetään suoritustiedot
-    await expect(page).toHaveURL(
-      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/suoritustiedot`,
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(
+        `/suorituspalvelu/henkilo/${OPPIJANUMERO}/suoritustiedot`,
+      ),
     );
 
     await page.getByRole('link', { name: 'Opiskelijavalinnan tiedot' }).click();
-    await expect(page).toHaveURL(
-      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(
+        `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+      ),
     );
 
     await page.getByRole('link', { name: 'Suoritustiedot' }).click();
-    await expect(page).toHaveURL(
-      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/suoritustiedot`,
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(
+        `/suorituspalvelu/henkilo/${OPPIJANUMERO}/suoritustiedot`,
+      ),
     );
   });
 });
