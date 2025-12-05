@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration}
+import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, PKOppimaaraOppilaitosVuosiLuokkaMetadataArvo, PKOppimaaraOppilaitosVuosiMetadataArvo}
 import fi.oph.suorituspalvelu.resource.ui.*
@@ -187,37 +187,53 @@ class UIService {
     }
   }
 
+  def resolveOppijaNumero(tunniste: String): Option[String] = {
+    if (Validator.hetuPattern.matches(tunniste)) {
+      Await.result(
+        onrIntegration.getPerustiedotByHetus(Set(tunniste)).map(_.headOption.map(_.oidHenkilo)),
+        ONR_TIMEOUT
+      )
+    } else {
+      Some(tunniste)
+    }
+  }
+
+  private def resolveMasterHenkilo(oppijaNumero: String): Option[OnrMasterHenkilo] = {
+    Await.result(
+      onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)),
+      ONR_TIMEOUT
+    ).values.headOption
+  }
+
   def haeOppijanSuoritukset(oppijaNumero: String): Option[OppijanTiedotSuccessResponse] =
-    val masterHenkilo = Await.result(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)), ONR_TIMEOUT).values.headOption
-    if (masterHenkilo.isEmpty)
-      None
-    else
-      def haeAliakset(oppijaOid: String): Set[String] =
+    resolveMasterHenkilo(oppijaNumero).map(masterHenkilo => {
+      def haeAliakset(oppijaOid: String): Set[String] = {
         try
-          Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.get.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
+          Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
         catch
           case e: Exception =>
             LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
             Set(oppijaNumero)
+      }
 
-      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
-      Some(EntityToUIConverter.getOppijanTiedot(masterHenkilo.get.etunimet, masterHenkilo.get.sukunimi,
-        masterHenkilo.get.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider))
+      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oid).values.flatten)
+      EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
+        masterHenkilo.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
+      })
 
   /**
    * Haetaan yksittäisen oppijan tiedot käyttäjän oikeuksilla. HUOM! tätä metodia ei voi kutsua suurelle joukolle oppijoita
    * koska jokaisesta kutsusta seuraa aina ONR- ja atarukutsu.
    *
-   * @param hakusana haettava oppija
+   * @param tunniste haettavan oppijan oppijanumero tai hetu
    * @return oppijan tiedot, None jos oppijaa ei löytynyt tai käyttäjällä ei ole tarvittavia oikeuksia
    */
-  def haeOppija(hakusana: String): Option[Oppija] = {
-    val oppija = Await.result(haeHenkilonPerustiedot(Some(hakusana)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava))), 30.seconds)
+  def haeOppija(tunniste: String): Option[Oppija] = {
+    val oppija = Await.result(haeHenkilonPerustiedot(Some(tunniste)).map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava))), 30.seconds)
     val hasOikeus = oppija.exists(o => hasOppijanKatseluOikeus(o.oppijaNumero))
     (oppija, hasOikeus) match
       case (Some(oppija), true) => Some(oppija)
-      case (Some(oppija), false) => None
-      case (_, _) => None
+      case _ => None
   }
 
   /**
