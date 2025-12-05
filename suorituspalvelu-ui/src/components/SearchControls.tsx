@@ -6,15 +6,38 @@ import {
   useKayttaja,
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
-import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { InputAdornment, Stack } from '@mui/material';
 import {
   OphInputFormField,
   OphSelectFormField,
 } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
-import { useState } from 'react';
-import { FullSpinner } from './FullSpinner';
+import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
+import { SpinnerIcon } from './SpinnerIcon';
+
+const OphSelectWithLoading = ({
+  isLoading,
+  ...props
+}: React.ComponentProps<typeof OphSelectFormField> & {
+  isLoading?: boolean;
+}) => {
+  const { t } = useTranslations();
+  return (
+    <OphSelectFormField
+      {...props}
+      startAdornment={
+        isLoading ? (
+          <InputAdornment position="start" sx={{ paddingLeft: 1 }}>
+            <SpinnerIcon />
+          </InputAdornment>
+        ) : undefined
+      }
+      placeholder={isLoading ? t('ladataan') : props.placeholder}
+      disabled={isLoading}
+    />
+  );
+};
 
 const OppilaitosSelectField = ({
   value,
@@ -27,10 +50,9 @@ const OppilaitosSelectField = ({
 
   const { data: oppilaitoksetOptions, isLoading } = useOppilaitoksetOptions();
 
-  return isLoading ? (
-    <FullSpinner />
-  ) : (
-    <OphSelectFormField
+  return (
+    <OphSelectWithLoading
+      isLoading={isLoading}
       sx={{ minWidth: '250px' }}
       options={oppilaitoksetOptions ?? []}
       clearable={true}
@@ -61,10 +83,9 @@ const VuosiSelectField = ({
     value: vuosi,
   }));
 
-  return isLoading ? (
-    <FullSpinner />
-  ) : (
-    <OphSelectFormField
+  return (
+    <OphSelectWithLoading
+      isLoading={isLoading}
       sx={{ minWidth: '200px' }}
       options={vuodetOptions}
       clearable={true}
@@ -100,10 +121,9 @@ const LuokkaSelectField = ({
     value: luokka,
   }));
 
-  return isLoading ? (
-    <FullSpinner />
-  ) : (
-    <OphSelectFormField
+  return (
+    <OphSelectWithLoading
+      isLoading={isLoading}
       sx={{ minWidth: '200px' }}
       options={luokatOptions}
       clearable={true}
@@ -117,15 +137,8 @@ const LuokkaSelectField = ({
 };
 
 const KatselijaSearchControls = () => {
-  const { t } = useTranslations();
-  const { setSearchParams, tunniste, oppilaitos, luokka, vuosi } =
+  const { setSearchParams, oppilaitos, luokka, vuosi } =
     useOppijatSearchParamsState();
-
-  const onHakusanaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchParams({
-      tunniste: e.target.value,
-    });
-  };
 
   return (
     <>
@@ -161,31 +174,16 @@ const KatselijaSearchControls = () => {
           setSearchParams({ luokka: e.target.value, tunniste: '' });
         }}
       />
-      <OphInputFormField
-        sx={{
-          flex: 1,
-          maxWidth: '400px',
-        }}
-        label={t('henkilohaku.suodata-oppijoita')}
-        disabled={oppilaitos == null || vuosi == null}
-        value={tunniste ?? ''}
-        onChange={onHakusanaChange}
-      />
     </>
   );
 };
 
-type HenkilohakuTyyppi = 'vain-tunniste' | 'oppilaitoksen-oppijat';
-
 export function SearchControls() {
   const { t } = useTranslations();
 
-  const { tunniste, oppilaitos, setSearchParams } =
-    useOppijatSearchParamsState();
+  const selectedSearchTab = useSelectedSearchTab();
 
-  const [henkilohakuTyyppi, setHenkilohakuTyyppi] = useState<HenkilohakuTyyppi>(
-    oppilaitos ? 'oppilaitoksen-oppijat' : 'vain-tunniste',
-  );
+  const { tunniste, setSearchParams } = useOppijatSearchParamsState();
 
   const { data: kayttaja } = useKayttaja();
 
@@ -203,32 +201,8 @@ export function SearchControls() {
           gap: 2,
         }}
       >
-        {isOppilaitosOppijaHakuAllowed && (
-          <ToggleButtonGroup
-            value={henkilohakuTyyppi}
-            exclusive
-            onChange={(_event, newValue) => {
-              if (newValue && newValue !== henkilohakuTyyppi) {
-                setHenkilohakuTyyppi(newValue);
-                setSearchParams({
-                  tunniste: '',
-                  oppilaitos: '',
-                  luokka: '',
-                  vuosi: '',
-                });
-              }
-            }}
-          >
-            <ToggleButton value="vain-tunniste">
-              {t('henkilohaku.vain-tunniste')}
-            </ToggleButton>
-            <ToggleButton value="oppilaitoksen-oppijat">
-              {t('henkilohaku.oppilaitoksen-oppijat')}
-            </ToggleButton>
-          </ToggleButtonGroup>
-        )}
         <Stack direction="row" spacing={2}>
-          {henkilohakuTyyppi === 'vain-tunniste' && (
+          {selectedSearchTab === 'henkilo' && (
             <OphInputFormField
               sx={{
                 flex: 1,
@@ -241,7 +215,7 @@ export function SearchControls() {
               }}
             />
           )}
-          {henkilohakuTyyppi === 'oppilaitoksen-oppijat' &&
+          {selectedSearchTab === 'tarkistus' &&
             isOppilaitosOppijaHakuAllowed && <KatselijaSearchControls />}
         </Stack>
       </Stack>

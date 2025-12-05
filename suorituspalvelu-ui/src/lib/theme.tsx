@@ -1,3 +1,4 @@
+import { type ComponentRef, type ComponentType } from 'react';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import {
   styled as muiStyled,
@@ -7,6 +8,22 @@ import {
 import { shouldForwardProp } from '@mui/system/createStyled';
 
 export { ophColors } from '@opetushallitus/oph-design-system';
+
+// MUI:sta (Emotionista) puuttuu styled-componentsin .attrs
+// Tällä voi asettaa oletus-propsit ilman, että tarvii luoda välikomponenttia
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export function withDefaultProps<P extends React.ComponentPropsWithoutRef<any>>(
+  Component: ComponentType<P>,
+  defaultProps: Partial<P>,
+  displayName: string = 'ComponentWithDefaultProps',
+) {
+  const ComponentWithDefaultProps = (
+    props: P & { ref?: React.Ref<ComponentRef<ComponentType<P>>> },
+  ) => <Component {...defaultProps} {...props} />;
+
+  ComponentWithDefaultProps.displayName = displayName;
+  return ComponentWithDefaultProps;
+}
 
 const withTransientProps = (propName: string) =>
   // Emotion doesn't support transient props by default so add support manually

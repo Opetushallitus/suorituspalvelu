@@ -10,6 +10,7 @@ import { NAV_LIST_SELECTED_ITEM_CLASS, NavigationList } from './NavigationList';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { formatHenkiloNimi } from '@/lib/common';
+import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 
 const HenkilotSidebarContent = () => {
   const params = useOppijatSearchURLParams();
@@ -18,6 +19,8 @@ const HenkilotSidebarContent = () => {
   const { t } = useTranslate();
 
   const { oppijaNumero } = useParams();
+
+  const searchTab = useSelectedSearchTab();
 
   return hasEmptySearchParams ? (
     <div></div>
@@ -38,10 +41,8 @@ const HenkilotSidebarContent = () => {
                 : ''
             }
             to={{
-              pathname: `/henkilo/${oppija.oppijaNumero}`,
-              search: new URLSearchParams({
-                ...params,
-              }).toString(),
+              pathname: `/${searchTab}/${oppija.oppijaNumero}`,
+              search: new URLSearchParams(params).toString(),
             }}
           >
             <OphTypography variant="label" color="inherit">
