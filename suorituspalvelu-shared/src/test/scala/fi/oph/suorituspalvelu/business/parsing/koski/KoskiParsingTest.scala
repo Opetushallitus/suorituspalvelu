@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, PerusopetuksenOppimaaranOppiaineidenSuoritus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski
@@ -1337,4 +1337,294 @@ class KoskiParsingTest {
       KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
     )
   }
+
+  @Test def testEBTutkinto(): Unit = {
+    val tutkinto = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.35986177022",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.73383452575",
+        |          "nimi": {
+        |            "fi": "European School of Helsinki",
+        |            "sv": "Europaskolan i Helsingfors",
+        |            "en": "European School of Helsinki"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-08-15",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "ebtutkinto",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "301103",
+        |                "nimi": {
+        |                  "fi": "Eurooppalainen ylioppilastutkinto (EB)",
+        |                  "sv": "Europeisk studentexamen (EB)",
+        |                  "en": "European Baccalaureate (EB)"
+        |                },
+        |                "koodistoUri": "koulutus",
+        |                "koodistoVersio": 12
+        |              }
+        |            },
+        |            "vahvistus": {
+        |               "päivä": "2023-06-30"
+        |            },
+        |            "osasuoritukset": [
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "L1",
+        |                    "nimi": {
+        |                      "fi": "Ensimmäinen kieli (L1)",
+        |                      "sv": "Första språket (L1)",
+        |                      "en": "First Language (L1)"
+        |                    },
+        |                    "koodistoUri": "eboppiaineet",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "laajuus": {
+        |                    "arvo": 4.0,
+        |                    "yksikkö": {
+        |                      "koodiarvo": "4",
+        |                      "nimi": {
+        |                        "fi": "periodia"
+        |                      },
+        |                      "koodistoUri": "opintojenlaajuusyksikko",
+        |                      "koodistoVersio": 1
+        |                    }
+        |                  }
+        |                },
+        |                "suorituskieli": {
+        |                  "koodiarvo": "FI",
+        |                  "koodistoUri": "kieli",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "osasuoritukset": [
+        |                  {
+        |                    "koulutusmoduuli": {
+        |                      "tunniste": {
+        |                        "koodiarvo": "Written",
+        |                        "nimi": {
+        |                          "fi": "Kirjallinen koe",
+        |                          "sv": "Skriftligt förhör",
+        |                          "en": "Written examination"
+        |                        },
+        |                        "koodistoUri": "ebtutkinnonoppiaineenkomponentti",
+        |                        "koodistoVersio": 1
+        |                      }
+        |                    },
+        |                    "arviointi": [
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "9.0",
+        |                          "nimi": {
+        |                            "fi": "9,0"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoeuropeanschoolofhelsinkifinalmark",
+        |                          "koodistoVersio": 1
+        |                        },
+        |                        "hyväksytty": true
+        |                      }
+        |                    ]
+        |                  },
+        |                  {
+        |                    "koulutusmoduuli": {
+        |                      "tunniste": {
+        |                        "koodiarvo": "Oral",
+        |                        "nimi": {
+        |                          "fi": "Suullinen koe",
+        |                          "sv": "Muntligt förhör",
+        |                          "en": "Oral examination"
+        |                        },
+        |                        "koodistoUri": "ebtutkinnonoppiaineenkomponentti",
+        |                        "koodistoVersio": 1
+        |                      }
+        |                    },
+        |                    "arviointi": [
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "8.5",
+        |                          "nimi": {
+        |                            "fi": "8,5"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoeuropeanschoolofhelsinkifinalmark",
+        |                          "koodistoVersio": 1
+        |                        },
+        |                        "hyväksytty": true
+        |                      }
+        |                    ]
+        |                  },
+        |                  {
+        |                    "koulutusmoduuli": {
+        |                      "tunniste": {
+        |                        "koodiarvo": "Final",
+        |                        "nimi": {
+        |                          "fi": "Lopullinen arvosana",
+        |                          "sv": "Slutligt vitsord",
+        |                          "en": "Final mark"
+        |                        },
+        |                        "koodistoUri": "ebtutkinnonoppiaineenkomponentti",
+        |                        "koodistoVersio": 1
+        |                      }
+        |                    },
+        |                    "arviointi": [
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "9.0",
+        |                          "nimi": {
+        |                            "fi": "9,0"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoeuropeanschoolofhelsinkifinalmark",
+        |                          "koodistoVersio": 1
+        |                        },
+        |                        "hyväksytty": true
+        |                      }
+        |                    ]
+        |                  }
+        |                ]
+        |              },
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "L2",
+        |                    "nimi": {
+        |                      "fi": "Toinen kieli (L2)",
+        |                      "sv": "Andra språket (L2)",
+        |                      "en": "Second Language (L2)"
+        |                    },
+        |                    "koodistoUri": "eboppiaineet",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "laajuus": {
+        |                    "arvo": 3.0,
+        |                    "yksikkö": {
+        |                      "koodiarvo": "4",
+        |                      "nimi": {
+        |                        "fi": "periodia"
+        |                      },
+        |                      "koodistoUri": "opintojenlaajuusyksikko",
+        |                      "koodistoVersio": 1
+        |                    }
+        |                  }
+        |                },
+        |                "suorituskieli": {
+        |                  "koodiarvo": "EN",
+        |                  "koodistoUri": "kieli",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "osasuoritukset": [
+        |                  {
+        |                    "koulutusmoduuli": {
+        |                      "tunniste": {
+        |                        "koodiarvo": "Final",
+        |                        "nimi": {
+        |                          "fi": "Lopullinen arvosana",
+        |                          "sv": "Slutligt vitsord",
+        |                          "en": "Final mark"
+        |                        },
+        |                        "koodistoUri": "ebtutkinnonoppiaineenkomponentti",
+        |                        "koodistoVersio": 1
+        |                      }
+        |                    },
+        |                    "arviointi": [
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "8.0",
+        |                          "nimi": {
+        |                            "fi": "8,0"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoeuropeanschoolofhelsinkifinalmark",
+        |                          "koodistoVersio": 1
+        |                        },
+        |                        "hyväksytty": true
+        |                      }
+        |                    ]
+        |                  }
+        |                ]
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[EBTutkinto]
+
+    // Test basic tutkinto properties
+    Assertions.assertNotNull(tutkinto.tunniste)
+    Assertions.assertEquals(Koodi("301103", "koulutus", Some(12)), tutkinto.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Eurooppalainen ylioppilastutkinto (EB)"), Some("Europeisk studentexamen (EB)"), Some("European Baccalaureate (EB)")), tutkinto.nimi)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("European School of Helsinki"), Some("Europaskolan i Helsingfors"), Some("European School of Helsinki")), "1.2.246.562.10.73383452575"), tutkinto.oppilaitos)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-08-15")), tutkinto.aloitusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2023-06-30")), tutkinto.vahvistusPaivamaara)
+
+    Assertions.assertEquals(2, tutkinto.osasuoritukset.size)
+
+    // Test L1 oppiaine
+    val l1 = tutkinto.osasuoritukset.find(_.koodi.arvo == "L1").get
+    Assertions.assertEquals(Koodi("L1", "eboppiaineet", Some(1)), l1.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Ensimmäinen kieli (L1)"), Some("Första språket (L1)"), Some("First Language (L1)")), l1.nimi)
+    Assertions.assertEquals(Some(EBLaajuus(4.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))), l1.laajuus)
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), l1.suorituskieli)
+
+    // Test L1 osasuoritukset
+    Assertions.assertEquals(3, l1.osasuoritukset.size)
+
+    // Test Written osasuoritus
+    val writtenKoe = l1.osasuoritukset.find(_.koodi.arvo == "Written").get
+    Assertions.assertEquals(Koodi("Written", "ebtutkinnonoppiaineenkomponentti", Some(1)), writtenKoe.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Kirjallinen koe"), Some("Skriftligt förhör"), Some("Written examination")), writtenKoe.nimi)
+    Assertions.assertEquals(EBArvosana(Koodi("9.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)), true), writtenKoe.arvosana)
+
+    // Test Oral osasuoritus
+    val oralKoe = l1.osasuoritukset.find(_.koodi.arvo == "Oral").get
+    Assertions.assertEquals(Koodi("Oral", "ebtutkinnonoppiaineenkomponentti", Some(1)), oralKoe.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Suullinen koe"), Some("Muntligt förhör"), Some("Oral examination")), oralKoe.nimi)
+    Assertions.assertEquals(EBArvosana(Koodi("8.5", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)), true), oralKoe.arvosana)
+
+    // Test Final osasuoritus
+    val finalKoeL1 = l1.osasuoritukset.find(_.koodi.arvo == "Final").get
+    Assertions.assertEquals(Koodi("Final", "ebtutkinnonoppiaineenkomponentti", Some(1)), finalKoeL1.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Lopullinen arvosana"), Some("Slutligt vitsord"), Some("Final mark")), finalKoeL1.nimi)
+    Assertions.assertEquals(EBArvosana(Koodi("9.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)), true), finalKoeL1.arvosana)
+
+    // Test L2 oppiaine
+    val l2 = tutkinto.osasuoritukset.find(_.koodi.arvo == "L2").get
+    Assertions.assertEquals(Koodi("L2", "eboppiaineet", Some(1)), l2.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Toinen kieli (L2)"), Some("Andra språket (L2)"), Some("Second Language (L2)")), l2.nimi)
+    Assertions.assertEquals(Some(EBLaajuus(3.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))), l2.laajuus)
+    Assertions.assertEquals(Koodi("EN", "kieli", Some(1)), l2.suorituskieli)
+
+    // Test L2 osasuoritukset
+    Assertions.assertEquals(1, l2.osasuoritukset.size)
+
+    // Test Final osasuoritus for L2
+    val finalKoeL2 = l2.osasuoritukset.head
+    Assertions.assertEquals(Koodi("Final", "ebtutkinnonoppiaineenkomponentti", Some(1)), finalKoeL2.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Lopullinen arvosana"), Some("Slutligt vitsord"), Some("Final mark")), finalKoeL2.nimi)
+    Assertions.assertEquals(EBArvosana(Koodi("8.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)), true), finalKoeL2.arvosana)
+
+  }
+
+
 }
