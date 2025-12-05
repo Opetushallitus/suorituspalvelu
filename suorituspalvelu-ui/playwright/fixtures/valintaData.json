@@ -627,6 +627,17 @@
         "arvoEnnenYliajoa": null,
         "yliajo": null
       }
+    },
+    {
+      "avain": "hakemuksesta_test",
+      "arvo": "123",
+      "metadata": {
+        "selitteet": [],
+        "duplikaatti": false,
+        "arvoEnnenYliajoa": null,
+        "yliajo": null,
+        "arvoOnHakemukselta": true
+      }
     }
   ]
 }
