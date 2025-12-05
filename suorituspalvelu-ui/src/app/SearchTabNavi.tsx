@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { join, pipe, splice, split } from 'remeda';
-import { useIsTarkistusnakymaAllowed } from '@/hooks/useIsTarkistusnakymaAllowed';
+import { useIsTarkastusnakymaAllowed } from '@/hooks/useIsTarkastusnakymaAllowed';
 
 const TAB_BUTTON_HEIGHT = '48px';
 
@@ -26,7 +26,7 @@ const StyledNavi = styled('nav')({
   },
 });
 
-const TABS = ['henkilo', 'tarkistus'];
+const TABS = ['henkilo', 'tarkastus'];
 
 const TabButton = ({ tabName }: { tabName: string }) => {
   const { t } = useTranslations();
@@ -42,13 +42,13 @@ const TabButton = ({ tabName }: { tabName: string }) => {
     join('/'),
   );
 
-  const isTarkistusNakymaAllowed = useIsTarkistusnakymaAllowed();
+  const isTarkastusNakymaAllowed = useIsTarkastusnakymaAllowed();
 
-  // näytetään tarkistus-välilehti vain jos käyttäjällä oikeus käyttää sitä
+  // näytetään tarkastus-välilehti vain jos käyttäjällä oikeus käyttää sitä
   if (
-    tabName === 'tarkistus' &&
-    selectedTabName !== 'tarkistus' &&
-    !isTarkistusNakymaAllowed
+    tabName === 'tarkastus' &&
+    selectedTabName !== 'tarkastus' &&
+    !isTarkastusNakymaAllowed
   ) {
     return null;
   }

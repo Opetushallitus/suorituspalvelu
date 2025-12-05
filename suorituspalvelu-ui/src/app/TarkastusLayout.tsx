@@ -1,13 +1,13 @@
 import { Stack } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { Route } from './+types/TarkistusLayout';
+import type { Route } from './+types/TarkastusLayout';
 import {
   queryOptionsGetOppija,
   useOppija,
 } from '@/lib/suorituspalvelu-queries';
 import { redirect } from 'react-router';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
-import { TarkistusSidebar } from '@/components/TarkistusSidebar';
+import { TarkastusSidebar } from '@/components/TarkastusSidebar';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { queryClient } from '@/lib/queryClient';
 import { OppijanTiedotPage } from './OppijanTiedotPage';
@@ -15,11 +15,11 @@ import {
   getSelectedTiedotTab,
   setSelectedTiedotTab,
 } from '@/hooks/useSelectedTiedotTab';
-import { TarkistusSearchControls } from '@/components/TarkistusSearchControls';
+import { TarkastusSearchControls } from '@/components/TarkastusSearchControls';
 import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 import { isHenkilotunnus } from '@/lib/common';
 import { isDefined } from 'remeda';
-import { useIsTarkistusnakymaAllowed } from '@/hooks/useIsTarkistusnakymaAllowed';
+import { useIsTarkastusnakymaAllowed } from '@/hooks/useIsTarkastusnakymaAllowed';
 import { DoNotDisturb } from '@mui/icons-material';
 
 export async function clientLoader({
@@ -39,7 +39,7 @@ export async function clientLoader({
   }
 }
 
-const TarkistusContent = () => {
+const TarkastusContent = () => {
   const { t } = useTranslations();
 
   const { oppijaTunniste, setOppijaTunniste } = useOppijaTunnisteParamState();
@@ -66,26 +66,26 @@ const TarkistusContent = () => {
   );
 };
 
-export default function TarkistusLayout() {
+export default function TarkastusLayout() {
   const { t } = useTranslations();
 
-  const isTarkistusNakymaAllowed = useIsTarkistusnakymaAllowed();
-  if (!isTarkistusNakymaAllowed) {
+  const isTarkastusNakymaAllowed = useIsTarkastusnakymaAllowed();
+  if (!isTarkastusNakymaAllowed) {
     return (
       <ResultPlaceholder
         icon={<DoNotDisturb />}
-        text={t('search.tarkistus-ei-oikeuksia')}
+        text={t('search.tarkastus-ei-oikeuksia')}
       />
     );
   }
   return (
     <>
-      <TarkistusSearchControls />
+      <TarkastusSearchControls />
       <Stack direction="row">
-        <TarkistusSidebar />
+        <TarkastusSidebar />
         <main style={{ flexGrow: 1 }}>
           <QuerySuspenseBoundary>
-            <TarkistusContent />
+            <TarkastusContent />
           </QuerySuspenseBoundary>
         </main>
       </Stack>

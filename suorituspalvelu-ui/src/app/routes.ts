@@ -23,9 +23,9 @@ export default [
       tiedotRoutes('henkilo'),
     ),
     route(
-      '/tarkistus/:oppijaTunniste?',
-      './TarkistusLayout.tsx',
-      tiedotRoutes('tarkistus'),
+      '/tarkastus/:oppijaTunniste?',
+      './TarkastusLayout.tsx',
+      tiedotRoutes('tarkastus'),
     ),
   ]),
   route('*', './NotFoundPage.tsx'),

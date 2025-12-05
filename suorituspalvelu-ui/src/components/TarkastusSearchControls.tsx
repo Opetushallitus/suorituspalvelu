@@ -145,7 +145,7 @@ const LuokkaSelectField = ({
   );
 };
 
-export const TarkistusSearchControls = () => {
+export const TarkastusSearchControls = () => {
   const { setSearchParams, oppilaitos, luokka, vuosi } =
     useOppilaitoksenOppijatSearchParamsState();
 
