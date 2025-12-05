@@ -6,7 +6,7 @@ import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import {
   OpiskelijavalintaanSiirtyvatTiedot,
   type AvainarvoRyhma,
@@ -27,7 +27,6 @@ import { only } from 'remeda';
 import { useQueryParam } from '@/hooks/useQueryParam';
 import { FullSpinner } from '@/components/FullSpinner';
 import { queryClient } from '@/lib/queryClient';
-import { redirect } from 'react-router';
 
 const HAKU_QUERY_PARAM = 'haku';
 
@@ -46,8 +45,28 @@ const OpiskelijavalinnanTiedotPageContent = ({
   const { data: haut } = useApiSuspenseQuery(
     queryOptionsGetOppijanHaut(oppijaNumero),
   );
-
   const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM);
+
+  // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
+  const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
+
+  const setHakuOidWithTransition = useCallback(
+    (hakuOid: string) => {
+      startHakuSwitchTransition(() => {
+        setUrlHakuOid(hakuOid);
+      });
+    },
+    [setUrlHakuOid],
+  );
+
+  const onlyHakuOid = only(haut)?.hakuOid;
+
+  // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
+  useEffect(() => {
+    if (!urlHakuOid && onlyHakuOid) {
+      setHakuOidWithTransition(onlyHakuOid);
+    }
+  }, [urlHakuOid, onlyHakuOid, setHakuOidWithTransition]);
 
   const isValidHakuOid =
     urlHakuOid == null || haut.find((h) => h.hakuOid === urlHakuOid);
@@ -72,9 +91,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
 
   const selectedHakuOid = urlHakuOid ?? '';
 
-  // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
-  const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
-
   return kayttaja.isRekisterinpitaja ? (
     <Stack spacing={3} sx={{ height: '100%' }}>
       <Stack direction="row" sx={{ justifyContent: 'stretch', gap: 3 }}>
@@ -85,9 +101,7 @@ const OpiskelijavalinnanTiedotPageContent = ({
           options={hakuOptions}
           errorMessage={hakuError}
           onChange={(event) => {
-            startHakuSwitchTransition(() => {
-              setUrlHakuOid(event.target.value);
-            });
+            setHakuOidWithTransition(event.target.value);
           }}
         />
         <OphFormFieldWrapper
@@ -177,33 +191,19 @@ export async function clientLoader({
   const { oppijaNumero } = params;
   if (oppijaNumero) {
     // Aloitetaan oppijan hakujen esilataus
-    const hautPromise = queryClient.ensureQueryData(
-      queryOptionsGetOppijanHaut(oppijaNumero),
-    );
+    queryClient.ensureQueryData(queryOptionsGetOppijanHaut(oppijaNumero));
 
     const url = new URL(request.url);
     const hakuOidParam = url.searchParams.get(HAKU_QUERY_PARAM);
 
     if (hakuOidParam) {
-      // Aloitetaan valindatadatan esilataus
+      // Aloitetaan valintadatan esilataus
       queryClient.ensureQueryData(
         queryOptionsGetValintadata({
           oppijaNumero,
           hakuOid: hakuOidParam,
         }),
       );
-    } else {
-      try {
-        const haut = await hautPromise;
-        const onlyHakuOid = only(haut)?.hakuOid;
-        // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
-        if (onlyHakuOid) {
-          url.searchParams.set(HAKU_QUERY_PARAM, onlyHakuOid);
-          return redirect(url.search);
-        }
-      } catch (e) {
-        console.error(e);
-      }
     }
   }
 }

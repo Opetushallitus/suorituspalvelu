@@ -33,6 +33,7 @@ const TabButton = ({ tabName }: { tabName: string }) => {
 
   const location = useLocation();
 
+  // Vaihdetaan tabin nimi URL:n polkuun
   const pathname = pipe(
     location.pathname,
     split('/'),

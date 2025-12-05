@@ -2,7 +2,12 @@ import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { OppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { isEmpty, isNullish, omitBy } from 'remeda';
-import { useSearchParams, type NavigateOptions } from 'react-router';
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+  type NavigateOptions,
+} from 'react-router';
 import { useMemo } from 'react';
 
 export const useOppijatSearchURLParams = () => {
@@ -19,11 +24,14 @@ export const useOppijatSearchURLParams = () => {
 };
 
 export const useOppijatSearchParamsState = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
   const tunniste = searchParams.get('tunniste');
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   return useMemo(
     () => ({
@@ -31,18 +39,23 @@ export const useOppijatSearchParamsState = () => {
         params: OppijatSearchParams,
         options?: NavigateOptions,
       ) => {
-        setSearchParams(
-          (prev) => {
-            const next = new URLSearchParams(prev);
-            Object.entries(params).forEach(([key, value]) => {
-              if (isNullish(value) || value === '') {
-                next.delete(key);
-              } else {
-                next.set(key, value);
-              }
-            });
-            return next;
-          },
+        let pathname = location.pathname;
+        const locationSearch = new URLSearchParams(location.search);
+        Object.entries(params).forEach(([key, value]) => {
+          if (isNullish(value) || value === '') {
+            locationSearch.delete(key);
+          } else {
+            locationSearch.set(key, value);
+          }
+        });
+        //Jos tyhjennetään tunniste, poistetaan myös oppijanumero polusta
+        if (params.tunniste === '' || params.tunniste === null) {
+          const pathParts = location.pathname.split('/');
+          pathParts.splice(2);
+          pathname = pathParts.join('/');
+        }
+        navigate(
+          { pathname, search: locationSearch.toString() },
           { replace: false, ...options },
         );
       },
@@ -52,7 +65,7 @@ export const useOppijatSearchParamsState = () => {
       vuosi,
       hasValidSearchParams: oppilaitos !== null && vuosi !== null,
     }),
-    [tunniste, oppilaitos, luokka, vuosi, setSearchParams],
+    [tunniste, oppilaitos, luokka, vuosi],
   );
 };
 
