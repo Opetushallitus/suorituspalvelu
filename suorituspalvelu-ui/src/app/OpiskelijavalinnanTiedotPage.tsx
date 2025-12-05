@@ -6,10 +6,7 @@ import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useCallback, useEffect, useState, useTransition } from 'react';
-import {
-  OpiskelijavalintaanSiirtyvatTiedot,
-  type AvainarvoRyhma,
-} from '@/components/opiskelijavalinnan-tiedot/OpiskelijavalintaanSiirtyvatTiedot';
+import { type AvainarvoRyhma } from '@/components/opiskelijavalinnan-tiedot/OpiskelijavalintaanSiirtyvatTiedot';
 import {
   queryOptionsGetOppijanHaut,
   queryOptionsGetValintadata,
@@ -17,7 +14,6 @@ import {
 } from '@/lib/suorituspalvelu-queries';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { DoNotDisturb } from '@mui/icons-material';
-import { YliajoManagerProvider } from '@/lib/yliajoManager';
 import {
   OphFormFieldWrapper,
   OphSelectFormField,
@@ -32,6 +28,7 @@ import {
   type OppijaContext,
 } from 'react-router';
 import { HAKU_QUERY_PARAM_NAME } from '@/lib/common';
+import { OpiskelijavalinnanTiedotContent } from '@/components/opiskelijavalinnan-tiedot/OpiskelijavalinnanTiedotContent';
 
 const OpiskelijavalinnanTiedotPageContent = ({
   oppijaNumero,
@@ -138,13 +135,11 @@ const OpiskelijavalinnanTiedotPageContent = ({
           isValidHakuOid && (
             <QuerySuspenseBoundary>
               {selectedHakuOid ? (
-                <YliajoManagerProvider hakuOid={selectedHakuOid}>
-                  <OpiskelijavalintaanSiirtyvatTiedot
-                    avainarvoRyhma={avainarvoRyhma}
-                    oppijaNumero={oppijaNumero}
-                    hakuOid={selectedHakuOid}
-                  />
-                </YliajoManagerProvider>
+                <OpiskelijavalinnanTiedotContent
+                  oppijaNumero={oppijaNumero}
+                  hakuOid={selectedHakuOid}
+                  avainarvoRyhma={avainarvoRyhma}
+                />
               ) : (
                 <ResultPlaceholder
                   text={t('opiskelijavalinnan-tiedot.valitse-haku')}

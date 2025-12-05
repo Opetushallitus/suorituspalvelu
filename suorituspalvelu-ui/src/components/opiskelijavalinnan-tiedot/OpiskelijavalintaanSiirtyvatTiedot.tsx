@@ -1,29 +1,25 @@
 import { Stack } from '@mui/material';
 import { OphButton } from '@opetushallitus/oph-design-system';
-import { useApiSuspenseQuery } from '@/lib/http-client';
-import { queryOptionsGetValintadata } from '@/lib/suorituspalvelu-queries';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
 import { Add } from '@mui/icons-material';
 import { AvainArvotSection } from './AvainArvotSection';
 import { YliajoEditModal } from './YliajoEditModal';
 import { useYliajoManager } from '@/lib/yliajoManager';
+import type { ValintaData } from '@/types/ui-types';
 
 export type AvainarvoRyhma = 'uudet-avainarvot' | 'vanhat-avainarvot';
 
 export const OpiskelijavalintaanSiirtyvatTiedot = ({
   avainarvoRyhma,
   oppijaNumero,
-  hakuOid,
+  valintaData,
 }: {
   avainarvoRyhma: AvainarvoRyhma;
   oppijaNumero: string;
   hakuOid: string;
+  valintaData: ValintaData;
 }) => {
-  const { data: valintadata } = useApiSuspenseQuery(
-    queryOptionsGetValintadata({ oppijaNumero, hakuOid }),
-  );
-
   const { t } = useTranslations();
 
   const { startYliajoEdit, startYliajoAdd, yliajoFields } = useYliajoManager({
@@ -31,7 +27,7 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
   });
 
   const avainArvot =
-    valintadata?.avainArvot.filter(
+    valintaData?.avainArvot.filter(
       (avainArvo) => !avainArvo.metadata.arvoOnHakemukselta,
     ) ?? [];
 

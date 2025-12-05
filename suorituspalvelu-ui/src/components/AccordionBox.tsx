@@ -24,12 +24,15 @@ export const AccordionBox = ({
       defaultExpanded={defaultExpanded}
       sx={{
         border: DEFAULT_BOX_BORDER,
+        borderTop: (theme) => `4px solid ${theme.palette.primary.main}`,
+        borderRadius: '4px',
       }}
       slotProps={{ heading: { component: headingComponent } }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore />}
         aria-controls={contentId}
+        sx={{ paddingY: 1 }}
         id={headerId}
       >
         <OphTypography variant={headingComponent} component="span">
