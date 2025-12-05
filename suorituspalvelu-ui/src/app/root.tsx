@@ -1,8 +1,8 @@
 import { Outlet, Scripts, ScrollRestoration } from 'react-router';
 import { Providers } from '@/components/Providers';
-import { ErrorView } from '@/components/ErrorView';
 import { queryClient } from '@/lib/queryClient';
 import { queryOptionsGetKayttaja } from '@/lib/suorituspalvelu-queries';
+import Alert from '@mui/material/Alert';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -38,5 +38,5 @@ export const clientLoader = async () => {
 };
 
 export function ErrorBoundary({ error }: { error: Error }) {
-  return <ErrorView error={error} />;
+  return <Alert severity="error">{error.message}</Alert>;
 }

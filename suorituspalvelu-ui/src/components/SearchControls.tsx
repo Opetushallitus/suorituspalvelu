@@ -15,9 +15,11 @@ import { SpinnerIcon } from './SpinnerIcon';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { SearchInput } from './SearchInput';
+import { isHenkiloOid } from '@/lib/common';
 
 const OphSelectWithLoading = ({
   isLoading,
+  disabled,
   ...props
 }: React.ComponentProps<typeof OphSelectFormField> & {
   isLoading?: boolean;
@@ -34,7 +36,7 @@ const OphSelectWithLoading = ({
         ) : undefined
       }
       placeholder={isLoading ? t('ladataan') : props.placeholder}
-      disabled={isLoading}
+      disabled={disabled || isLoading}
     />
   );
 };
@@ -184,9 +186,9 @@ const HenkiloTunnisteellaSearchControls = () => {
 
   const { tunniste, setSearchParams } = useOppijatSearchParamsState();
 
-  // Asetetaan ensimmäisellä kerralla tunniste oppijanumeroksi, jos tunnistetta ei asetettu
+  // Asetetaan ensimmäisellä kerralla tunnisteeksi validi oppijanumero, jos tunnistetta ei asetettu
   useEffect(() => {
-    if (!tunniste && oppijaNumero) {
+    if (!tunniste && isHenkiloOid(oppijaNumero)) {
       setSearchParams(
         {
           tunniste: oppijaNumero,
