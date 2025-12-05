@@ -1,8 +1,8 @@
 import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
 import { DEFAULT_BOX_BORDER } from '@/lib/theme';
 import {
-  queryOptionsGetOppilaitosVuodet,
-  queryOptionsGetOppilaitosVuosiLuokat,
+  queryOptionsGetOppilaitosVuosiOptions,
+  queryOptionsGetOppilaitosVuosiLuokatOptions,
   useKayttaja,
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { SearchInput } from './SearchInput';
 import { isHenkiloOid } from '@/lib/common';
+import { only } from 'remeda';
 
 const OphSelectWithLoading = ({
   isLoading,
@@ -24,7 +25,6 @@ const OphSelectWithLoading = ({
 }: React.ComponentProps<typeof OphSelectFormField> & {
   isLoading?: boolean;
 }) => {
-  const { t } = useTranslations();
   return (
     <OphSelectFormField
       {...props}
@@ -35,7 +35,8 @@ const OphSelectWithLoading = ({
           </InputAdornment>
         ) : undefined
       }
-      placeholder={isLoading ? t('ladataan') : props.placeholder}
+      value={isLoading ? '' : props.value}
+      placeholder={isLoading ? '' : props.placeholder}
       disabled={disabled || isLoading}
     />
   );
@@ -50,14 +51,25 @@ const OppilaitosSelectField = ({
 >) => {
   const { t } = useTranslations();
 
-  const { data: oppilaitoksetOptions, isLoading } = useOppilaitoksetOptions();
+  const { data: oppilaitoksetOptions = [], isLoading } =
+    useOppilaitoksetOptions();
+
+  const { setSearchParams } = useOppijatSearchParamsState();
+
+  useEffect(() => {
+    const onlyOppilaitosOption = only(oppilaitoksetOptions);
+    if (onlyOppilaitosOption && !value) {
+      setSearchParams({
+        oppilaitos: onlyOppilaitosOption.value,
+      });
+    }
+  }, [oppilaitoksetOptions, value, setSearchParams]);
 
   return (
     <OphSelectWithLoading
       isLoading={isLoading}
-      sx={{ minWidth: '250px' }}
-      options={oppilaitoksetOptions ?? []}
-      clearable={true}
+      sx={{ minWidth: '400px' }}
+      options={oppilaitoksetOptions}
       placeholder={t('select.valitse')}
       value={value}
       label={t('oppilaitos')}
@@ -65,6 +77,15 @@ const OppilaitosSelectField = ({
     />
   );
 };
+
+const CURRENT_YEAR = new Date().getFullYear().toString();
+
+const DEFAULT_YEAR_OPTIONS = [
+  {
+    label: CURRENT_YEAR,
+    value: CURRENT_YEAR,
+  },
+];
 
 const VuosiSelectField = ({
   value,
@@ -76,25 +97,29 @@ const VuosiSelectField = ({
 > & { oppilaitosOid: string | null }) => {
   const { t } = useTranslations();
 
-  const { data: vuodet = [], isLoading } = useApiQuery(
-    queryOptionsGetOppilaitosVuodet({ oppilaitosOid }),
+  const { data: vuodetOptions = DEFAULT_YEAR_OPTIONS, isLoading } = useApiQuery(
+    queryOptionsGetOppilaitosVuosiOptions({ oppilaitosOid }),
   );
 
-  const vuodetOptions = vuodet.map((vuosi) => ({
-    label: vuosi,
-    value: vuosi,
-  }));
+  const { setSearchParams } = useOppijatSearchParamsState();
+
+  useEffect(() => {
+    if (oppilaitosOid && !value) {
+      setSearchParams({
+        vuosi: CURRENT_YEAR,
+      });
+    }
+  }, [oppilaitosOid, value, setSearchParams]);
 
   return (
     <OphSelectWithLoading
       isLoading={isLoading}
-      sx={{ minWidth: '200px' }}
+      sx={{ minWidth: '150px' }}
       options={vuodetOptions}
-      clearable={true}
       placeholder={t('select.valitse')}
       value={value}
       disabled={!oppilaitosOid}
-      label={t('vuosi')}
+      label={t('search.valmistumisvuosi')}
       onChange={onChange}
     />
   );
@@ -111,28 +136,23 @@ const LuokkaSelectField = ({
 > & { oppilaitosOid: string | null; vuosi: string | null }) => {
   const { t } = useTranslations();
 
-  const { data: luokat, isLoading } = useApiQuery(
-    queryOptionsGetOppilaitosVuosiLuokat({
+  const { data: luokatOptions = [], isLoading } = useApiQuery(
+    queryOptionsGetOppilaitosVuosiLuokatOptions({
       vuosi,
       oppilaitosOid,
     }),
   );
 
-  const luokatOptions = (luokat ?? []).map((luokka) => ({
-    label: luokka,
-    value: luokka,
-  }));
-
   return (
     <OphSelectWithLoading
       isLoading={isLoading}
-      sx={{ minWidth: '200px' }}
+      sx={{ minWidth: '150px' }}
       options={luokatOptions}
       clearable={true}
       placeholder={t('select.valitse')}
       value={value}
       disabled={vuosi == null || oppilaitosOid == null}
-      label={t('luokka')}
+      label={t('search.luokka')}
       onChange={onChange}
     />
   );
@@ -151,7 +171,7 @@ const OppilaitoksenOppijatSearchControls = () => {
           if (newOppilaitos !== oppilaitos) {
             setSearchParams({
               oppilaitos: newOppilaitos,
-              vuosi: '',
+              vuosi: CURRENT_YEAR,
               luokka: '',
               tunniste: '',
             });

@@ -118,7 +118,8 @@
     "nayta": "Näytä hakutulos",
     "piilota": "Piilota hakutulos",
     "hakutulos": "Hakutulos",
-    "henkilo-maara": "{count, plural, =0 {Henkilöitä ei löytynyt} one {1 henkilö} other {{count} henkilöä}}"
+    "henkilo-maara": "{count, plural, =0 {Henkilöitä ei löytynyt} one {1 henkilö} other {{count} henkilöä}}",
+    "suodata-nimella-tai-hetulla": "Suodata nimellä tai hetulla"
   },
   "oppija": {
     "otsikko": "Henkilön tiedot",
@@ -328,6 +329,9 @@
     "hae-ja-valitse-henkilo": "Hae ja valitse henkilö",
     "henkiloa-ei-loytynyt": "Henkilöä ei löytynyt",
     "henkilo-input-placeholder": "Oppijanumero tai henkilötunnus",
-    "ei-validi-tunniste": "Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus."
+    "ei-validi-tunniste": "Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.",
+    "valmistumisvuosi": "Valmistumisvuosi",
+    "luokka": "Luokka",
+    "valitse-oppilaitos": "Valitse oppilaitos"
   }
 }

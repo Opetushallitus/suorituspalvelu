@@ -14,7 +14,7 @@ import {
 } from './suorituspalvelu-service';
 import { useApiQuery, useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
-import { prop, sortBy } from 'remeda';
+import { prop, sortBy, unique } from 'remeda';
 
 export const queryOptionsGetOppija = (tunniste?: string) =>
   queryOptions({
@@ -45,10 +45,13 @@ export const useOppilaitoksetOptions = () => {
   return useApiQuery({
     ...queryOptionsGetOppilaitokset(),
     select: (data) =>
-      data?.oppilaitokset?.map(($) => ({
-        value: $.oid,
-        label: translateKielistetty($.nimi),
-      })) ?? [],
+      sortBy(
+        data?.oppilaitokset?.map(($) => ({
+          value: $.oid,
+          label: translateKielistetty($.nimi),
+        })) ?? [],
+        [prop('label'), 'asc'],
+      ),
   });
 };
 
@@ -114,7 +117,7 @@ export const queryOptionsGetOppijanHaut = (oppijaOid: string) =>
     queryFn: () => getOppijanHaut(oppijaOid),
   });
 
-export const queryOptionsGetOppilaitosVuodet = ({
+export const queryOptionsGetOppilaitosVuosiOptions = ({
   oppilaitosOid,
 }: {
   oppilaitosOid: string | null;
@@ -123,9 +126,19 @@ export const queryOptionsGetOppilaitosVuodet = ({
     queryKey: ['getOppilaitosVuodet', oppilaitosOid],
     queryFn: () => getOppilaitosVuodet({ oppilaitosOid }),
     enabled: !!oppilaitosOid,
+    select: (data) => {
+      const vuodet = data ?? [];
+      const currentYear = new Date().getFullYear().toString();
+      vuodet.push(currentYear);
+      vuodet.sort((a, b) => b.localeCompare(a));
+      return unique(vuodet).map((vuosi) => ({
+        label: vuosi,
+        value: vuosi,
+      }));
+    },
   });
 
-export const queryOptionsGetOppilaitosVuosiLuokat = ({
+export const queryOptionsGetOppilaitosVuosiLuokatOptions = ({
   oppilaitosOid,
   vuosi,
 }: {
@@ -136,4 +149,12 @@ export const queryOptionsGetOppilaitosVuosiLuokat = ({
     queryKey: ['getOppilaitosVuosiLuokat', oppilaitosOid, vuosi],
     queryFn: () => getOppilaitosVuosiLuokat({ oppilaitosOid, vuosi }),
     enabled: oppilaitosOid != null && vuosi != null,
+    select: (data) => {
+      const luokat = data ?? [];
+      luokat.sort((a, b) => a.localeCompare(b));
+      return luokat.map((luokka) => ({
+        label: luokka,
+        value: luokka,
+      }));
+    },
   });
