@@ -22,7 +22,7 @@ import type {
   IOppijanTiedotSuccessResponse,
   IUIOpiskeluoikeus,
   ITelma,
-  IEBOppiaine,
+  IEBOppiaineUI,
   IIBOppiaine,
   IAmmatillisenTutkinnonOsa,
   IYTO,
@@ -74,11 +74,11 @@ export type PerusopetuksenOppiaine = {
   valinnaisetArvosanat?: Array<string>;
 };
 
-export type LukionOppiaine = ILukionOppiaine | IEBOppiaine | IIBOppiaine;
+export type LukionOppiaine = ILukionOppiaine | IEBOppiaineUI | IIBOppiaine;
 
 export type IBOppiaine = IIBOppiaine;
 
-export type EBOppiaine = IEBOppiaine;
+export type EBOppiaine = IEBOppiaineUI;
 
 export type KorkeakouluSuoritus = IKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';

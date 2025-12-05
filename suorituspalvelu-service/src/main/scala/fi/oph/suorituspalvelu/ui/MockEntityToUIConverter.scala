@@ -320,64 +320,61 @@ object MockEntityToUIConverter {
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
       suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(EBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = EBOppiaineNimi(
+      oppiaineet = java.util.List.of(EBOppiaineUI(
+        nimi = EBOppiaineNimiUI(
           fi = Optional.of("Mathematics fi"),
           sv = Optional.of("Mathematics sv"),
           en = Optional.of("Mathematics")
         ),
         suorituskieli = "englanti",
         laajuus = 4,
-        written = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        written = Optional.of(EBOppiaineOsasuoritusUI(
+          koodi = "Written",
           arvosana = 8.67,
         )),
         oral = Optional.empty(),
-        `final` = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        `final` = Optional.of(EBOppiaineOsasuoritusUI(
+          koodi = "Final",
           arvosana = 8.67,
         ))
-      ), EBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = EBOppiaineNimi(
+      ), EBOppiaineUI(
+        nimi = EBOppiaineNimiUI(
           fi = Optional.of("First language, ranska fi"),
           sv = Optional.of("First language, ranska sv"),
           en = Optional.of("First language, ranska en")
         ),
         suorituskieli = "englanti",
         laajuus = 3,
-        written = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        written = Optional.of(EBOppiaineOsasuoritusUI(
+          "Written",
           arvosana = 8.67,
         )),
-        oral = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        oral = Optional.of(EBOppiaineOsasuoritusUI(
+          "Oral",
           arvosana = 8.67,
         )),
-        `final` = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        `final` = Optional.of(EBOppiaineOsasuoritusUI(
+          "Final",
           arvosana = 8.67,
         ))
-      ), EBOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = EBOppiaineNimi(
+      ), EBOppiaineUI(
+        nimi = EBOppiaineNimiUI(
           fi = Optional.of("Second language, saksa fi"),
           sv = Optional.of("Second language, saksa sv"),
           en = Optional.of("Second language, saksa en")
         ),
         suorituskieli = "englanti",
         laajuus = 3,
-        written = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        written = Optional.of(EBOppiaineOsasuoritusUI(
+          "Written",
           arvosana = 8.67,
         )),
-        oral = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        oral = Optional.of(EBOppiaineOsasuoritusUI(
+          "Oral",
           arvosana = 8.67,
         )),
-        `final` = Optional.of(EBSuoritus(
-          tunniste = UUID.randomUUID(),
+        `final` = Optional.of(EBOppiaineOsasuoritusUI(
+          "Final",
           arvosana = 8.67,
         ))
       ))
