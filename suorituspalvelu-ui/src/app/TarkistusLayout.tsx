@@ -19,6 +19,8 @@ import { TarkistusSearchControls } from '@/components/TarkistusSearchControls';
 import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 import { isHenkilotunnus } from '@/lib/common';
 import { isDefined } from 'remeda';
+import { useIsTarkistusnakymaAllowed } from '@/hooks/useIsTarkistusnakymaAllowed';
+import { DoNotDisturb } from '@mui/icons-material';
 
 export async function clientLoader({
   params,
@@ -65,6 +67,17 @@ const TarkistusContent = () => {
 };
 
 export default function TarkistusLayout() {
+  const { t } = useTranslations();
+
+  const isTarkistusNakymaAllowed = useIsTarkistusnakymaAllowed();
+  if (!isTarkistusNakymaAllowed) {
+    return (
+      <ResultPlaceholder
+        icon={<DoNotDisturb />}
+        text={t('search.tarkistus-ei-oikeuksia')}
+      />
+    );
+  }
   return (
     <>
       <TarkistusSearchControls />

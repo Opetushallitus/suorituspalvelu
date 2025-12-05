@@ -321,7 +321,7 @@
       "henkilo": "Henkilöhaku",
       "tarkistus": "Tarkistusnäkymä"
     },
-    "navigaatio": "Henkilöhaun tyypin valitsin",
+    "navigaatio": "Oppijoiden hakunäkymän valitsin",
     "placeholder": "Syötä hakusana...",
     "henkilo-tunniste-helpertext": "Hae oppijanumerolla tai henkilötunnuksella.",
     "henkilo-suodata-helpertext": "Suodata nimellä, henkilötunnuksella tai oppijanumerolla.",
@@ -333,6 +333,7 @@
     "valmistumisvuosi": "Valmistumisvuosi",
     "luokka": "Luokka",
     "valitse-oppilaitos": "Valitse oppilaitos",
-    "tyhjenna": "Tyhjennä"
+    "tyhjenna": "Tyhjennä",
+    "tarkistus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkistusnäkymään."
   }
 }
