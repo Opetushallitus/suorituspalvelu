@@ -2,7 +2,6 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
 import { Link, useLocation, useSearchParams } from 'react-router';
-import { last } from 'remeda';
 
 const StyledContainer = styled('div')({
   borderBottom: DEFAULT_BOX_BORDER,
@@ -32,7 +31,7 @@ const StyledTab = styled(Link)<{ $active: boolean }>(({ $active }) => ({
 
 const useActiveTiedotTab = () => {
   const location = useLocation();
-  return last(location.pathname.split('/'));
+  return location.pathname.split('/')[3];
 };
 
 export const TiedotTabNavi = () => {
