@@ -22,6 +22,12 @@ export type OppijatSearchParams = {
   luokka?: string;
 };
 
+const isHenkiloOid = (value?: string) =>
+  value && /^1\.2\.246\.562\.24\.\d+$/.test(value);
+
+const isHenkilotunnus = (value?: string) =>
+  value && /^\d{6}[a-zA-Z-]\d{3}\S{1}$/i.test(value);
+
 export const cleanSearchParams = (params: OppijatSearchParams) => {
   return omitBy(params, (value) => isEmpty(value) || value === '');
 };
@@ -29,13 +35,44 @@ export const cleanSearchParams = (params: OppijatSearchParams) => {
 export const searchOppijat = async (params: OppijatSearchParams) => {
   const cleanParams = cleanSearchParams(params);
   if (isEmpty(cleanParams)) {
+    return [];
+  }
+
+  const config = await configPromise;
+
+  const { tunniste, oppilaitos, vuosi } = params;
+
+  if (tunniste && (isHenkilotunnus(tunniste) || isHenkiloOid(tunniste))) {
+    const urlSearch = new URLSearchParams(omitBy(params, isNullish));
+    const url = `${config.routes.suorituspalvelu.oppijatSearchUrl}?${urlSearch.toString()}`;
+    const res = await client.get<IOppijanHakuSuccessResponse>(url);
+    return res.data?.oppijat ?? [];
+  } else if (oppilaitos && vuosi) {
+    const urlSearch = new URLSearchParams(omitBy(params, isNullish));
+    // Tunniste jätetään huomiotta, jos haetaan oppilaitoksen oppijoita
+    urlSearch.delete('tunniste');
+    const url = `${config.routes.suorituspalvelu.oppilaitoksenOppijatSearchUrl}?${urlSearch.toString()}`;
+    const res = await client.get<IOppijanHakuSuccessResponse>(url);
+    return res.data?.oppijat ?? [];
+  }
+
+  return [];
+};
+
+export const searchOppilaitoksenOppijat = async (
+  oppilaitosOid: string,
+  params: OppijatSearchParams,
+) => {
+  const cleanParams = cleanSearchParams(params);
+  if (isEmpty(cleanParams)) {
     return { oppijat: [] };
   }
 
   const config = await configPromise;
   const urlSearch = new URLSearchParams(omitBy(params, isNullish));
+  urlSearch.set('oppilaitosOid', oppilaitosOid);
 
-  const url = `${config.routes.suorituspalvelu.oppijatSearchUrl}?${urlSearch.toString()}`;
+  const url = `${config.routes.suorituspalvelu.oppilaitoksenOppijatSearchUrl}?${urlSearch.toString()}`;
 
   const res = await client.get<IOppijanHakuSuccessResponse>(url);
   return res.data;
@@ -218,4 +255,32 @@ export const getOppijanHaut = async (oppijaOid: string) => {
 
   const res = await client.get<IOppijanHautSuccessResponse>(url);
   return res.data?.haut ?? [];
+};
+
+export const getOppilaitosVuodet = async ({
+  oppilaitosOid,
+}: {
+  oppilaitosOid: string | null;
+}) => {
+  const config = await configPromise;
+
+  const res = await client.get<{ vuodet: Array<string> }>(
+    `${config.routes.suorituspalvelu.vuodetUrl}/${oppilaitosOid}`,
+  );
+  return res.data?.vuodet;
+};
+
+export const getOppilaitosVuosiLuokat = async ({
+  oppilaitosOid,
+  vuosi,
+}: {
+  oppilaitosOid: string | null;
+  vuosi: string | null;
+}) => {
+  const config = await configPromise;
+
+  const res = await client.get<{ luokat: Array<string> }>(
+    `${config.routes.suorituspalvelu.luokatUrl}/${oppilaitosOid}/${vuosi}`,
+  );
+  return res.data?.luokat;
 };
