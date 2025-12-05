@@ -7,16 +7,12 @@ const HENKILOTUNNUS = OPPIJAN_TIEDOT.henkiloTunnus;
 
 test.describe('Henkilöhaku', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route(`**/ui/tiedot/${OPPIJANUMERO}`, async (route) => {
-      await route.fulfill({
-        json: OPPIJAN_TIEDOT,
-      });
-    });
-
-    await page.route(`**/ui/tiedot/${HENKILOTUNNUS}`, async (route) => {
-      await route.fulfill({
-        json: OPPIJAN_TIEDOT,
-      });
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          json: OPPIJAN_TIEDOT,
+        });
+      }
     });
   });
 

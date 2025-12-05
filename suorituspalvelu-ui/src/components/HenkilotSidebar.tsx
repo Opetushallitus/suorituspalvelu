@@ -6,7 +6,7 @@ import {
 import { Link, useParams } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { NAV_LIST_SELECTED_ITEM_CLASS, NavigationList } from './NavigationList';
 import { useTranslate } from '@tolgee/react';
 import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
@@ -28,6 +28,17 @@ const HenkilotSidebarContent = () => {
 
   const searchTab = useSelectedSearchTab();
 
+  const onClear = useCallback(() => {
+    setSearchParams({ tunniste: '' });
+  }, [setSearchParams]);
+
+  const onChange = useCallback(
+    (value: string) => {
+      setSearchParams({ tunniste: value });
+    },
+    [setSearchParams],
+  );
+
   return (
     <Stack spacing={1.5} sx={{ paddingLeft: 2 }}>
       {hasValidSearchParams ? (
@@ -38,12 +49,8 @@ const HenkilotSidebarContent = () => {
                 sx={{ width: '100%' }}
                 placeholder={t('sivupalkki.suodata-nimella-tai-hetulla')}
                 value={params.tunniste ?? ''}
-                onClear={() => {
-                  setSearchParams({ tunniste: '' });
-                }}
-                onChange={(value) => {
-                  setSearchParams({ tunniste: value });
-                }}
+                onClear={onClear}
+                onChange={onChange}
               />
             </Box>
           )}

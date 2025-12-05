@@ -81,8 +81,9 @@ export const getOppija = async (tunniste?: string) => {
 
   return nullWhenErrorMatches(
     client
-      .get<IOppijanTiedotSuccessResponse>(
-        `${config.routes.suorituspalvelu.oppijanTiedotUrl}/${tunniste}`,
+      .post<IOppijanTiedotSuccessResponse>(
+        config.routes.suorituspalvelu.oppijanTiedotUrl,
+        { tunniste },
       )
       .then((res) => res.data),
     isNotFoundError,

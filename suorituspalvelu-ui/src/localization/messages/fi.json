@@ -332,6 +332,7 @@
     "ei-validi-tunniste": "Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.",
     "valmistumisvuosi": "Valmistumisvuosi",
     "luokka": "Luokka",
-    "valitse-oppilaitos": "Valitse oppilaitos"
+    "valitse-oppilaitos": "Valitse oppilaitos",
+    "tyhjenna": "Tyhjennä"
   }
 }

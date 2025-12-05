@@ -12,11 +12,11 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { SpinnerIcon } from './SpinnerIcon';
-import { useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useCallback, useEffect } from 'react';
 import { SearchInput } from './SearchInput';
-import { isHenkiloOid } from '@/lib/common';
 import { only } from 'remeda';
+import { useParams } from 'react-router';
+import { isHenkiloOid } from '@/lib/common';
 
 const OphSelectWithLoading = ({
   isLoading,
@@ -218,6 +218,17 @@ const HenkiloTunnisteellaSearchControls = () => {
     }
   }, []);
 
+  const onClear = useCallback(() => {
+    setSearchParams({ tunniste: '' });
+  }, [setSearchParams]);
+
+  const onChange = useCallback(
+    (value: string) => {
+      setSearchParams({ tunniste: value });
+    },
+    [setSearchParams],
+  );
+
   return (
     <SearchInput
       sx={{
@@ -227,12 +238,8 @@ const HenkiloTunnisteellaSearchControls = () => {
       label={t('search.hae-henkilo')}
       value={tunniste ?? ''}
       placeholder={t('search.henkilo-input-placeholder')}
-      onClear={() => {
-        setSearchParams({ tunniste: '' });
-      }}
-      onChange={(value) => {
-        setSearchParams({ tunniste: value });
-      }}
+      onClear={onClear}
+      onChange={onChange}
     />
   );
 };
