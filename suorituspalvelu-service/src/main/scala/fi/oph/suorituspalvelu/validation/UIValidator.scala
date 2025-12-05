@@ -319,7 +319,7 @@ object UIValidator {
   def validateYliajot(container: YliajoTallennusContainer): Set[String] = {
     val yliajot = container.yliajot.toScala.map(_.asScala).getOrElse(List.empty)
     val avainErrors = yliajot.flatMap(y => validateAvain(y.avain.toScala, true))
-    val arvoErrors = yliajot.flatMap(y => validateArvo(y.arvo.toScala, false)) //Todo, onko hyödyllistä voida tallentaa tyhjä arvo?
+    val arvoErrors = yliajot.flatMap(y => validateArvo(y.arvo.toScala, true))
     val seliteErrors = yliajot.flatMap(y => validateSelite(y.selite.toScala, false))
     val containerErrors = Set(
       validateOppijanumero(container.henkiloOid.toScala, true),
