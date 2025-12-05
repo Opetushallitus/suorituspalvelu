@@ -334,6 +334,7 @@
     "luokka": "Luokka",
     "valitse-oppilaitos": "Valitse oppilaitos",
     "tyhjenna": "Tyhjennä",
-    "tarkastus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkastusnäkymään."
+    "tarkastus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkastusnäkymään.",
+    "henkilohaku-ei-oikeuksia": "Sinulla ei ole oikeuksia henkilöhakuun."
   }
 }

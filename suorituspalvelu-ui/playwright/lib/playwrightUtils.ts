@@ -1,3 +1,4 @@
+import type { IKayttajaSuccessResponse } from '@/types/backend';
 import { expect, type Locator, type Page } from '@playwright/test';
 import { isFunction } from 'remeda';
 
@@ -126,4 +127,20 @@ export const expectLabeledValues = async (
   for (const { label, value } of values) {
     await expect(locator.getByLabel(label, { exact: true })).toHaveText(value);
   }
+};
+
+export const stubKayttajaResponse = async (
+  page: Page,
+  overrides: Partial<IKayttajaSuccessResponse>,
+) => {
+  await page.route(`**/ui/kayttaja`, async (route) => {
+    await route.fulfill({
+      json: {
+        asiointiKieli: 'fi',
+        isRekisterinpitäjä: true,
+        isOrganisaationKatselija: false,
+        ...overrides,
+      },
+    });
+  });
 };

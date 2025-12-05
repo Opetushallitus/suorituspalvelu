@@ -13,6 +13,7 @@ import {
 } from '@/hooks/useSelectedTiedotTab';
 import { queryClient } from '@/lib/queryClient';
 import type { Route } from './+types/HenkiloLayout';
+import { useIsHenkilohakuAllowed } from '@/hooks/useIsHenkilohakuAllowed';
 
 export const clientLoader = async ({
   params,
@@ -46,6 +47,17 @@ const HenkiloTunnisteella = () => {
 };
 
 export default function HenkiloLayout() {
+  const { t } = useTranslations();
+  const isHenkilohakuAllowed = useIsHenkilohakuAllowed();
+
+  if (!isHenkilohakuAllowed) {
+    return (
+      <Box component="main">
+        <ResultPlaceholder text={t('search.henkilohaku-ei-oikeuksia')} />
+      </Box>
+    );
+  }
+
   return (
     <>
       <HenkiloSearchControls />

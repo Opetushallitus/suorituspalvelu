@@ -1,18 +1,19 @@
 import { test as base } from '@playwright/test';
+import { stubKayttajaResponse } from './playwrightUtils';
 
 export const test = base.extend<object>({
   page: async ({ page }, use) => {
     await page.route('favicon.ico', async (route) => {
       await route.fulfill();
     });
+    await page.route('apply-raamit.js', async (route) => {
+      await route.fulfill();
+    });
 
-    await page.route(`**/ui/kayttaja`, async (route) => {
-      await route.fulfill({
-        json: {
-          asiointiKieli: 'fi',
-          isRekisterinpitaja: true,
-        },
-      });
+    await stubKayttajaResponse(page, {
+      asiointiKieli: 'fi',
+      isRekisterinpitaja: true,
+      isOrganisaationKatselija: false,
     });
 
     await page.route(`**/ui/oppilaitokset`, async (route) => {
