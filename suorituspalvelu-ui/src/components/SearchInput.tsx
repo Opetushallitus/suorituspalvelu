@@ -54,24 +54,24 @@ export const SearchInput = ({
   }
 
   useEffect(() => {
-    if (localValue === value) {
-      return;
-    }
-    timeoutRef.current = setTimeout(() => {
-      onChange?.(localValue);
-      timeoutRef.current = null;
-    }, debounceMs);
-
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [value, localValue, debounceMs, onChange]);
+  }, []);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalValue(event.target.value);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      const newValue = event.target.value;
+      timeoutRef.current = setTimeout(() => {
+        onChange?.(newValue);
+        timeoutRef.current = null;
+      }, debounceMs);
+      setLocalValue(newValue);
     },
     [setLocalValue],
   );
@@ -89,9 +89,9 @@ export const SearchInput = ({
               onClick={() => {
                 onClear?.();
                 if (timeoutRef.current) {
-                  setLocalValue('');
                   clearTimeout(timeoutRef.current);
                   timeoutRef.current = null;
+                  setLocalValue('');
                 }
               }}
             />
