@@ -37,6 +37,46 @@ import { queryClient } from '@/lib/queryClient';
 import { useOppijatSearchParamsState } from '@/hooks/useSearchOppijat';
 import type { OppijanTiedot } from '@/types/ui-types';
 
+/**
+ * Palauttaa uuden Location-objektin, jota on muokattu muuttuneen oppijanumeron mukaisesti.
+ *
+ * @param location React-routerin nykyinen Location-objekti
+ * @param oppijaNumero Uusi oppijanumero, jota ollaan asettamassa
+ * @returns Uusi Location-objekti, jota on muokattu muuttuneen oppijanumeron mukaisesti, tai null jos sijainti ei muuttunut.
+ */
+export const getOppijanumeroRedirectURL = (
+  location: Location,
+  oppijaNumero?: string | null,
+) => {
+  const newLocation = { ...location };
+  const pathParts = location.pathname.split('/');
+
+  if (oppijaNumero) {
+    // Asetetaan oppijanumero polkuun
+    pathParts.splice(2, 1, oppijaNumero);
+    // Asetetaan suoritustiedot-välilehden-polku, jos puuttuu
+    pathParts.splice(3, 1, pathParts[3] ?? 'suoritustiedot');
+  } else {
+    // Poistetaan kaikki polun osat oppijanumerosta lähtien, jos ei oppijanumeroa
+    pathParts.splice(2);
+  }
+
+  newLocation.pathname = pathParts.join('/');
+  return newLocation.pathname === location.pathname ? null : newLocation;
+};
+
+const useUpdatedRedirectLocation = ({
+  tunniste,
+}: {
+  tunniste?: string | null;
+}) => {
+  const location = useLocation();
+
+  const { data } = useOppija(tunniste ?? '');
+
+  return getOppijanumeroRedirectURL(location, data?.oppijaNumero);
+};
+
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
   return (
@@ -102,6 +142,13 @@ const HenkiloOppijanumerolla = ({
   selectHenkiloText: string;
 }) => {
   const { data: tiedot } = useOppija(oppijaNumero ?? '');
+
+  const link = getOppijanumeroRedirectURL(useLocation(), tiedot?.oppijaNumero);
+
+  if (link) {
+    return <Navigate to={link} replace={true} />;
+  }
+
   return (
     <>
       {tiedot ? (
@@ -111,36 +158,6 @@ const HenkiloOppijanumerolla = ({
       )}
     </>
   );
-};
-
-export const getOppijanumeroRedirectURL = (
-  location: Location,
-  oppijaNumero?: string | null,
-) => {
-  const newLocation = { ...location };
-  const pathParts = location.pathname.split('/');
-
-  if (oppijaNumero) {
-    pathParts.splice(2, 1, oppijaNumero);
-    pathParts.splice(3, 1, pathParts[3] ?? 'suoritustiedot');
-  } else {
-    pathParts.splice(2);
-  }
-
-  newLocation.pathname = pathParts.join('/');
-  return newLocation.pathname === location.pathname ? null : newLocation;
-};
-
-const useUpdatedRedirectLocation = ({
-  tunniste,
-}: {
-  tunniste?: string | null;
-}) => {
-  const location = useLocation();
-
-  const { data } = useOppija(tunniste ?? '');
-
-  return getOppijanumeroRedirectURL(location, data?.oppijaNumero);
 };
 
 const HenkiloTunnisteella = () => {
