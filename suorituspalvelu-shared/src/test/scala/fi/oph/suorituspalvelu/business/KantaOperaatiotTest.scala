@@ -571,10 +571,11 @@ class KantaOperaatiotTest {
     val personOid = "1.2.246.562.24.12345678901"
     val hakuOid = "1.2.246.562.29.98765432109"
     val virkailijaOid = "1.2.246.562.24.11223344556"
+    val luotu = Instant.now
 
     val avainArvoYliajo = AvainArvoYliajo(
       avain = "perusopetuksen_kieli",
-      arvo = "FI",
+      arvo = Some("FI"),
       henkiloOid = personOid,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -604,7 +605,7 @@ class KantaOperaatiotTest {
     //Create first override
     val yliajo1 = AvainArvoYliajo(
       avain = avain,
-      arvo = "2022",
+      arvo = Some("2022"),
       henkiloOid = personOid,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -617,12 +618,12 @@ class KantaOperaatiotTest {
     // Verify it's saved correctly
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
     Assertions.assertEquals(1, haetutYliajot1.size)
-    Assertions.assertEquals("2022", haetutYliajot1.head.arvo)
+    Assertions.assertEquals(Some("2022"), haetutYliajot1.head.arvo)
 
     // Create second override for the same key
     val yliajo2 = AvainArvoYliajo(
       avain = avain,
-      arvo = "2023",
+      arvo = Some("2023"),
       henkiloOid = personOid,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -635,7 +636,7 @@ class KantaOperaatiotTest {
     // Verify only the second override is active
     val haetutYliajot2 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
     Assertions.assertEquals(1, haetutYliajot2.size)
-    Assertions.assertEquals("2023", haetutYliajot2.head.arvo)
+    Assertions.assertEquals(Some("2023"), haetutYliajot2.head.arvo)
     Assertions.assertEquals("Toinen yliajo", haetutYliajot2.head.selite)
   }
 
@@ -647,7 +648,7 @@ class KantaOperaatiotTest {
     // Create overrides for different keys
     val yliajo1 = AvainArvoYliajo(
       avain = "perusopetuksen_kieli",
-      arvo = "SV",
+      arvo = Some("SV"),
       henkiloOid = personOid,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -656,7 +657,7 @@ class KantaOperaatiotTest {
 
     val yliajo2 = AvainArvoYliajo(
       avain = "perustutkinto_suoritettu",
-      arvo = "true",
+      arvo = Some("true"),
       henkiloOid = personOid,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -673,11 +674,11 @@ class KantaOperaatiotTest {
 
     //Verify avain, arvo and selite for both overrides
     Assertions.assertTrue(yliajoMap.contains("perusopetuksen_kieli"))
-    Assertions.assertEquals("SV", yliajoMap("perusopetuksen_kieli").arvo)
+    Assertions.assertEquals(Some("SV"), yliajoMap("perusopetuksen_kieli").arvo)
     Assertions.assertEquals("Kieliyliajo", yliajoMap("perusopetuksen_kieli").selite)
 
     Assertions.assertTrue(yliajoMap.contains("perustutkinto_suoritettu"))
-    Assertions.assertEquals("true", yliajoMap("perustutkinto_suoritettu").arvo)
+    Assertions.assertEquals(Some("true"), yliajoMap("perustutkinto_suoritettu").arvo)
     Assertions.assertEquals("Suoritusyliajo", yliajoMap("perustutkinto_suoritettu").selite)
   }
 
@@ -691,7 +692,7 @@ class KantaOperaatiotTest {
     // Create overrides for different persons
     val yliajo1 = AvainArvoYliajo(
       avain = avain,
-      arvo = "FI",
+      arvo = Some("FI"),
       henkiloOid = personOid1,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -700,7 +701,7 @@ class KantaOperaatiotTest {
 
     val yliajo2 = AvainArvoYliajo(
       avain = avain,
-      arvo = "SV",
+      arvo = Some("SV"),
       henkiloOid = personOid2,
       hakuOid = hakuOid,
       virkailijaOid = virkailijaOid,
@@ -713,13 +714,13 @@ class KantaOperaatiotTest {
     // Fetch overrides for person 1
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid1, hakuOid)
     Assertions.assertEquals(1, haetutYliajot1.size)
-    Assertions.assertEquals("FI", haetutYliajot1.head.arvo)
+    Assertions.assertEquals(Some("FI"), haetutYliajot1.head.arvo)
     Assertions.assertEquals("Henkilö 1 yliajo", haetutYliajot1.head.selite)
 
     // Fetch overrides for person 2
     val haetutYliajot2 = this.kantaOperaatiot.haeOppijanYliajot(personOid2, hakuOid)
     Assertions.assertEquals(1, haetutYliajot2.size)
-    Assertions.assertEquals("SV", haetutYliajot2.head.arvo)
+    Assertions.assertEquals(Some("SV"), haetutYliajot2.head.arvo)
     Assertions.assertEquals("Henkilö 2 yliajo", haetutYliajot2.head.selite)
   }
 
@@ -732,7 +733,7 @@ class KantaOperaatiotTest {
 
     val yliajo1 = AvainArvoYliajo(
       avain = avain,
-      arvo = "FI",
+      arvo = Some("FI"),
       henkiloOid = personOid,
       hakuOid = hakuOid1,
       virkailijaOid = virkailijaOid,
@@ -741,7 +742,7 @@ class KantaOperaatiotTest {
 
     val yliajo2 = AvainArvoYliajo(
       avain = avain,
-      arvo = "SV",
+      arvo = Some("SV"),
       henkiloOid = personOid,
       hakuOid = hakuOid2,
       virkailijaOid = virkailijaOid,
@@ -754,13 +755,13 @@ class KantaOperaatiotTest {
     // Check haku 1
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid1)
     Assertions.assertEquals(1, haetutYliajot1.size)
-    Assertions.assertEquals("FI", haetutYliajot1.head.arvo)
+    Assertions.assertEquals(Some("FI"), haetutYliajot1.head.arvo)
     Assertions.assertEquals("Haku 1 yliajo", haetutYliajot1.head.selite)
 
     // Check haku 2
     val haetutYliajot2 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid2)
     Assertions.assertEquals(1, haetutYliajot2.size)
-    Assertions.assertEquals("SV", haetutYliajot2.head.arvo)
+    Assertions.assertEquals(Some("SV"), haetutYliajot2.head.arvo)
     Assertions.assertEquals("Haku 2 yliajo", haetutYliajot2.head.selite)
   }
 
@@ -773,7 +774,7 @@ class KantaOperaatiotTest {
 
     val yliajo1 = AvainArvoYliajo(
       avain = avain,
-      arvo = "FI",
+      arvo = Some("FI"),
       henkiloOid = personOid,
       hakuOid = hakuOid1,
       virkailijaOid = virkailijaOid,
@@ -782,7 +783,7 @@ class KantaOperaatiotTest {
 
     val yliajo2 = AvainArvoYliajo(
       avain = avain,
-      arvo = "SV",
+      arvo = Some("SV"),
       henkiloOid = personOid,
       hakuOid = hakuOid2,
       virkailijaOid = virkailijaOid,
@@ -794,27 +795,53 @@ class KantaOperaatiotTest {
     // Tarkistetaan haun 1 yliajo
     val haetutYliajot1 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid1)
     Assertions.assertEquals(1, haetutYliajot1.size)
-    Assertions.assertEquals("FI", haetutYliajot1.head.arvo)
+    Assertions.assertEquals(Some("FI"), haetutYliajot1.head.arvo)
     Assertions.assertEquals("Haku 1 yliajo", haetutYliajot1.head.selite)
 
     // Tarkistetaan haun 2 yliajo
     val haetutYliajot2 = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid2)
     Assertions.assertEquals(1, haetutYliajot2.size)
-    Assertions.assertEquals("SV", haetutYliajot2.head.arvo)
+    Assertions.assertEquals(Some("SV"), haetutYliajot2.head.arvo)
     Assertions.assertEquals("Haku 2 yliajo", haetutYliajot2.head.selite)
 
-    //Poistetaan yliajo haulta 2
-    this.kantaOperaatiot.poistaYliajo(personOid, hakuOid2, avain)
+    // Poistetaan yliajo haulta 2
+    this.kantaOperaatiot.poistaYliajo(personOid, hakuOid2, avain, virkailijaOid, "ei huvita enää yliajaa")
 
     // Tarkistetaan että haun 1 yliajo edelleen voimassa
     val haetutYliajot1After = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid1)
     Assertions.assertEquals(1, haetutYliajot1After.size)
-    Assertions.assertEquals("FI", haetutYliajot1After.head.arvo)
+    Assertions.assertEquals(Some("FI"), haetutYliajot1After.head.arvo)
     Assertions.assertEquals("Haku 1 yliajo", haetutYliajot1After.head.selite)
 
     // Tarkistetaan että haulle 2 ei enää yliajoa
     val haetutYliajot2After = this.kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid2)
-    Assertions.assertEquals(0, haetutYliajot2After.size)
+    Assertions.assertEquals(None, haetutYliajot2After.head.arvo)
+  }
+
+  @Test def testHaeYliajoMuutokset(): Unit = {
+    val personOid = "1.2.246.562.24.12345678901"
+    val hakuOid = "1.2.246.562.29.98765432109"
+    val virkailijaOid = "1.2.246.562.24.11223344556"
+    val avain = "perusopetuksen_kieli"
+    val luomisHetki = Instant.ofEpochMilli((Instant.now.minusSeconds(1).toEpochMilli/1000)*1000)
+    val poistoHetki = Instant.ofEpochMilli((Instant.now.toEpochMilli/1000)*1000)
+    val luomisselite = "haluan yliajaa"
+    val poistoselite = "ei huvita enää yliajaa"
+
+    this.kantaOperaatiot.tallennaYliajot(Seq(AvainArvoYliajo(
+      avain = avain,
+      arvo = Some("FI"),
+      henkiloOid = personOid,
+      hakuOid = hakuOid,
+      virkailijaOid = virkailijaOid,
+      selite = luomisselite
+    )), luomisHetki)
+    this.kantaOperaatiot.poistaYliajo(personOid, hakuOid, avain, virkailijaOid, poistoselite, poistoHetki)
+
+    Assertions.assertEquals(Seq(
+      AvainArvoYliajoMuutos(None, poistoHetki, virkailijaOid, poistoselite),
+      AvainArvoYliajoMuutos(Some("FI"), luomisHetki, virkailijaOid, luomisselite)
+    ), this.kantaOperaatiot.haeYliajoMuutokset(personOid, hakuOid, avain))
   }
 
   @Test def testCasMapping(): Unit = {
