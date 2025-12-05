@@ -12,6 +12,7 @@ import { SpinnerIcon } from './SpinnerIcon';
 import { useEffect } from 'react';
 import { only } from 'remeda';
 import { StyledSearchControls } from './StyledSearchControls';
+import { getCurrentYear } from '@/lib/common';
 
 const OphSelectWithLoading = ({
   isLoading,
@@ -73,15 +74,6 @@ const OppilaitosSelectField = ({
   );
 };
 
-const CURRENT_YEAR = new Date().getFullYear().toString();
-
-const DEFAULT_YEAR_OPTIONS = [
-  {
-    label: CURRENT_YEAR,
-    value: CURRENT_YEAR,
-  },
-];
-
 const VuosiSelectField = ({
   value,
   onChange,
@@ -92,7 +84,7 @@ const VuosiSelectField = ({
 > & { oppilaitosOid: string | null }) => {
   const { t } = useTranslations();
 
-  const { data: vuodetOptions = DEFAULT_YEAR_OPTIONS, isLoading } = useApiQuery(
+  const { data: vuodetOptions, isLoading } = useApiQuery(
     queryOptionsGetOppilaitosVuosiOptions({ oppilaitosOid }),
   );
 
@@ -101,7 +93,7 @@ const VuosiSelectField = ({
   useEffect(() => {
     if (oppilaitosOid && !value) {
       setSearchParams({
-        vuosi: CURRENT_YEAR,
+        vuosi: getCurrentYear(),
       });
     }
   }, [oppilaitosOid, value, setSearchParams]);
@@ -110,7 +102,7 @@ const VuosiSelectField = ({
     <OphSelectWithLoading
       isLoading={isLoading}
       sx={{ minWidth: '150px' }}
-      options={vuodetOptions}
+      options={vuodetOptions ?? []}
       placeholder={t('select.valitse')}
       value={value}
       disabled={!oppilaitosOid}
@@ -166,7 +158,7 @@ export const TarkistusSearchControls = () => {
           if (newOppilaitos !== oppilaitos) {
             setSearchParams({
               oppilaitos: newOppilaitos,
-              vuosi: CURRENT_YEAR,
+              vuosi: getCurrentYear(),
               luokka: '',
               suodatus: '',
             });

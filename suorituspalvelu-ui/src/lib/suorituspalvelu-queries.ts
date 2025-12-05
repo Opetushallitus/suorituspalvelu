@@ -15,6 +15,7 @@ import {
 import { useApiQuery, useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
 import { prop, sortBy, unique } from 'remeda';
+import { getCurrentYear } from './common';
 
 export const queryOptionsGetOppija = (tunniste?: string) =>
   queryOptions({
@@ -125,11 +126,10 @@ export const queryOptionsGetOppilaitosVuosiOptions = ({
   queryOptions({
     queryKey: ['getOppilaitosVuodet', oppilaitosOid],
     queryFn: () => getOppilaitosVuodet({ oppilaitosOid }),
-    enabled: !!oppilaitosOid,
+    enabled: Boolean(oppilaitosOid),
     select: (data) => {
       const vuodet = data ?? [];
-      const currentYear = new Date().getFullYear().toString();
-      vuodet.push(currentYear);
+      vuodet.push(getCurrentYear());
       vuodet.sort((a, b) => b.localeCompare(a));
       return unique(vuodet).map((vuosi) => ({
         label: vuosi,
