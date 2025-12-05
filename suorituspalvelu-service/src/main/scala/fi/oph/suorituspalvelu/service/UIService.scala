@@ -174,7 +174,7 @@ class UIService {
     val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka).map(_._1)
 
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
-      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, Optional.empty, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)
+      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, onrOppija.hetu.toJava, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)
 
     Await.result(ornOppijat, 30.seconds)
   }

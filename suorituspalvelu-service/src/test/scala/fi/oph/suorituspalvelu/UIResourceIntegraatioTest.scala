@@ -1,6 +1,5 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
@@ -20,12 +19,10 @@ import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.nio.charset.Charset
 import java.time.{Instant, LocalDate}
-import java.util
 import java.util.{Optional, UUID}
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -396,12 +393,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeOppilaitoksenOppijatByOppilaitosAndVuosiValmisPKAllowed(): Unit =
     val etunimet = "Teppo Hemmo"
     val sukunimi = "Testinen"
+    val hetu = "123456-789A"
     val hakusanaOppijanumero = "1.2.246.562.24.21583363334"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
     val vuosi = "2025"
 
     // mockataan onr-vastaus
-    val onrPerustiedot = OnrHenkiloPerustiedot(hakusanaOppijanumero, Some(etunimet), Some(sukunimi))
+    val onrPerustiedot = OnrHenkiloPerustiedot(hakusanaOppijanumero, Some(etunimet), Some(sukunimi), Some(hetu))
     Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(hakusanaOppijanumero)))
       .thenReturn(Future.successful(Seq(onrPerustiedot)))
 
@@ -441,7 +439,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // palautuu tallennettu oppija
-    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.empty(), Optional.of(etunimet), Optional.of(sukunimi)))),
+    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.of(hetu), Optional.of(etunimet), Optional.of(sukunimi)))),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
     // ja auditloki täsmää
