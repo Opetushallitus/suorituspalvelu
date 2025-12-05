@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import java.io.InputStream
 import java.time.LocalDate
 
-trait VersioituTunniste {
+trait KoskiVersioituTunniste {
   def koodiarvo: String
   def koodistoUri: String
   def koodistoVersio: Option[Int]
@@ -32,83 +32,83 @@ case class KoskiKoodi(koodiarvo: String,
                       koodistoUri: String,
                       koodistoVersio: Option[Int],
                       nimi: Kielistetty,
-                      lyhytNimi: Option[Kielistetty]) extends VersioituTunniste
+                      lyhytNimi: Option[Kielistetty]) extends KoskiVersioituTunniste
 
-case class Arviointi(arvosana: KoskiKoodi,
-                     `päivä`: Option[String],
-                     hyväksytty: Boolean)
+case class KoskiArviointi(arvosana: KoskiKoodi,
+                          `päivä`: Option[String],
+                          hyväksytty: Boolean)
 
-case class Laajuus(arvo: BigDecimal,
-                   yksikkö: Option[KoskiKoodi])
+case class KoskiLaajuus(arvo: BigDecimal,
+                        yksikkö: Option[KoskiKoodi])
 
-case class OsaSuoritus(tyyppi: SuoritusTyyppi,
-                       koulutusmoduuli: Option[KoulutusModuuli],
-                       arviointi: Option[Set[Arviointi]],
-                       `yksilöllistettyOppimäärä`: Option[Boolean],
-                       `rajattuOppimäärä`: Option[Boolean],
-                       suorituskieli: Option[SuoritusKieli],
-                       osasuoritukset: Option[Set[OsaSuoritus]])
+case class KoskiOsaSuoritus(tyyppi: KoskiSuoritusTyyppi,
+                            koulutusmoduuli: Option[KoskiKoulutusModuuli],
+                            arviointi: Option[Set[KoskiArviointi]],
+                            `yksilöllistettyOppimäärä`: Option[Boolean],
+                            `rajattuOppimäärä`: Option[Boolean],
+                            suorituskieli: Option[KoskiSuoritusKieli],
+                            osasuoritukset: Option[Set[KoskiOsaSuoritus]])
 
-case class SuoritusKieli(koodiarvo: String,
-                         koodistoUri: String,
-                         koodistoVersio: Option[Int]) extends VersioituTunniste
+case class KoskiSuoritusKieli(koodiarvo: String,
+                              koodistoUri: String,
+                              koodistoVersio: Option[Int]) extends KoskiVersioituTunniste
 
-case class SuoritusTapa(koodiarvo: String,
-                        koodistoUri: String,
-                        koodistoVersio: Option[Int],
-                        nimi: Kielistetty) extends VersioituTunniste
+case class KoskiSuoritusTapa(koodiarvo: String,
+                             koodistoUri: String,
+                             koodistoVersio: Option[Int],
+                             nimi: Kielistetty) extends KoskiVersioituTunniste
 
-case class KoulutusModuuli(tunniste: Option[KoskiKoodi],
-                           koulutustyyppi: Option[KoskiKoodi],
-                           laajuus: Option[Laajuus],
-                           kieli: Option[KoskiKoodi],
-                           pakollinen: Option[Boolean])
+case class KoskiKoulutusModuuli(tunniste: Option[KoskiKoodi],
+                                koulutustyyppi: Option[KoskiKoodi],
+                                laajuus: Option[KoskiLaajuus],
+                                kieli: Option[KoskiKoodi],
+                                pakollinen: Option[Boolean])
 
-case class SuoritusTyyppi(koodiarvo: String,
-                          koodistoUri: String,
-                          nimi: Kielistetty)
+case class KoskiSuoritusTyyppi(koodiarvo: String,
+                               koodistoUri: String,
+                               nimi: Kielistetty)
 
-case class Vahvistus(`päivä`: String)
+case class KoskiVahvistus(`päivä`: String)
 
-case class Suoritus(tyyppi: SuoritusTyyppi,
-                    koulutusmoduuli: Option[KoulutusModuuli],
-                    suorituskieli: Option[SuoritusKieli],
-                    koulusivistyskieli: Option[Set[SuoritusKieli]],
-                    alkamispäivä: Option[String],
-                    vahvistus: Option[Vahvistus],
-                    osasuoritukset: Option[Set[OsaSuoritus]],
-                    arviointi: Option[Set[Arviointi]],
-                    keskiarvo: Option[BigDecimal],
-                    suoritustapa: Option[SuoritusTapa],
-                    `jääLuokalle`: Option[Boolean])
+case class KoskiSuoritus(tyyppi: KoskiSuoritusTyyppi,
+                         koulutusmoduuli: Option[KoskiKoulutusModuuli],
+                         suorituskieli: Option[KoskiSuoritusKieli],
+                         koulusivistyskieli: Option[Set[KoskiSuoritusKieli]],
+                         alkamispäivä: Option[String],
+                         vahvistus: Option[KoskiVahvistus],
+                         osasuoritukset: Option[Set[KoskiOsaSuoritus]],
+                         arviointi: Option[Set[KoskiArviointi]],
+                         keskiarvo: Option[BigDecimal],
+                         suoritustapa: Option[KoskiSuoritusTapa],
+                         `jääLuokalle`: Option[Boolean])
 
-case class OpiskeluoikeusJakso(alku: LocalDate,
-                               tila: KoskiKoodi)
+case class KoskiOpiskeluoikeusJakso(alku: LocalDate,
+                                    tila: KoskiKoodi)
 
-case class OpiskeluoikeusTila(opiskeluoikeusjaksot: List[OpiskeluoikeusJakso])
+case class KoskiOpiskeluoikeusTila(opiskeluoikeusjaksot: List[KoskiOpiskeluoikeusJakso])
 
-case class OpiskeluoikeusTyyppi(koodiarvo: String,
-                                koodistoUri: String,
-                                koodistoVersio: Option[Int]) extends VersioituTunniste
+case class KoskiOpiskeluoikeusTyyppi(koodiarvo: String,
+                                     koodistoUri: String,
+                                     koodistoVersio: Option[Int]) extends KoskiVersioituTunniste
 
-case class Oppilaitos(nimi: Kielistetty,
-                      oid: String)
+case class KoskiOppilaitos(nimi: Kielistetty,
+                           oid: String)
 
 case class KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain: Option[Boolean])
 
-case class Kotiopetusjakso(alku: String,
-                           loppu: Option[String])
+case class KoskiKotiopetusjakso(alku: String,
+                                loppu: Option[String])
 
 case class KoskiLisatiedot(erityisenTuenPäätökset: Option[List[KoskiErityisenTuenPaatos]],
                            vuosiluokkiinSitoutumatonOpetus: Option[Boolean],
-                           kotiopetusjaksot: Option[List[Kotiopetusjakso]])
+                           kotiopetusjaksot: Option[List[KoskiKotiopetusjakso]])
 
-case class Opiskeluoikeus(oid: String,
-                          oppilaitos: Option[Oppilaitos],
-                          tyyppi: OpiskeluoikeusTyyppi,
-                          tila: Option[OpiskeluoikeusTila],
-                          suoritukset: Set[Suoritus],
-                          lisätiedot: Option[KoskiLisatiedot]) {
+case class KoskiOpiskeluoikeus(oid: String,
+                               oppilaitos: Option[KoskiOppilaitos],
+                               tyyppi: KoskiOpiskeluoikeusTyyppi,
+                               tila: Option[KoskiOpiskeluoikeusTila],
+                               suoritukset: Set[KoskiSuoritus],
+                               lisätiedot: Option[KoskiLisatiedot]) {
   def isPerusopetus: Boolean = tyyppi.koodiarvo == "perusopetus" || tyyppi.koodiarvo == "aikuistenperusopetus"
   def isAmmatillinen: Boolean = tyyppi.koodiarvo == "ammatillinenkoulutus"
 }
@@ -130,7 +130,7 @@ object KoskiParser {
     mapper
   }
 
-  def parseKoskiData(data: String): Seq[Opiskeluoikeus] =
-    MAPPER.readValue(data, classOf[Array[Opiskeluoikeus]]).toSeq
+  def parseKoskiData(data: String): Seq[KoskiOpiskeluoikeus] =
+    MAPPER.readValue(data, classOf[Array[KoskiOpiskeluoikeus]]).toSeq
 
 }

@@ -135,7 +135,7 @@ object KoskiUtil {
     Map(OHJATTAVA_METADATA_AVAIN -> getOhjattavuudet(opiskeluoikeudet).map(s => s.toString()))
   }
 
-  def includePerusopetuksenOppiaine(osaSuoritus: OsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
+  def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
 
     val hasArviointi = osaSuoritus.arviointi.isDefined

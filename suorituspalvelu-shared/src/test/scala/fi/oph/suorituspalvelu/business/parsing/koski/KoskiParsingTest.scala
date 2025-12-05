@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski
-import fi.oph.suorituspalvelu.parsing.koski.{Arviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, Kotiopetusjakso, OpiskeluoikeusJakso, OpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiArviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, KoskiKotiopetusjakso, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -95,7 +95,7 @@ class KoskiParsingTest {
 
     Assertions.assertEquals("1.2.246.562.15.24186343661", opiskeluoikeus.oid)
     Assertions.assertEquals("1.2.246.562.10.41945921983", opiskeluoikeus.oppilaitos.oid)
-    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(
+    Assertions.assertEquals(Some(KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(
       LocalDate.parse("2022-06-06"), KoskiKoodi("lasna", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))))), opiskeluoikeus.tila)
 
   @Test def testAmmatillisenTutkinnonTila(): Unit =
@@ -562,7 +562,7 @@ class KoskiParsingTest {
     val fileName = "/telmaosasuoritukset.json"
     val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet: Seq[koski.Opiskeluoikeus] = KoskiParser.parseKoskiData(data)
+      val koskiOpiskeluoikeudet: Seq[koski.KoskiOpiskeluoikeus] = KoskiParser.parseKoskiData(data)
       val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
         .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
         .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
@@ -631,7 +631,7 @@ class KoskiParsingTest {
     Assertions.assertEquals("1.2.246.562.10.19666365424", opiskeluoikeus.oppilaitosOid)
     Assertions.assertEquals(SuoritusTila.KESKEN, opiskeluoikeus.tila)
     Assertions.assertEquals(Some(KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(Some(true)))), Some(false),
-      Some(List(Kotiopetusjakso("2021-08-24", Some("2022-01-23")))))), opiskeluoikeus.lisatiedot)
+      Some(List(KoskiKotiopetusjakso("2021-08-24", Some("2022-01-23")))))), opiskeluoikeus.lisatiedot)
 
   @Test def testPerusopetuksenOppimaarat(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""
@@ -1032,7 +1032,7 @@ class KoskiParsingTest {
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
     Assertions.assertEquals(Koodi("tuva", "opiskeluoikeudentyyppi", Some(1)), opiskeluoikeus.tyyppi)
     Assertions.assertEquals("1.2.246.562.15.30994048939", opiskeluoikeus.oid)
-    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2025-04-16"), KoskiKoodi("valmistunut", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))))), opiskeluoikeus.tila)
+    Assertions.assertEquals(Some(KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(LocalDate.parse("2025-04-16"), KoskiKoodi("valmistunut", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))))), opiskeluoikeus.tila)
     Assertions.assertEquals("1.2.246.562.10.41945921983", opiskeluoikeus.oppilaitosOid)
 
   @Test def testTuvaSuoritus(): Unit =
@@ -1149,7 +1149,7 @@ class KoskiParsingTest {
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
     Assertions.assertEquals(Koodi("vapaansivistystyonkoulutus", "opiskeluoikeudentyyppi", Some(1)), opiskeluoikeus.tyyppi)
     Assertions.assertEquals("1.2.246.562.15.87456579967", opiskeluoikeus.oid)
-    Assertions.assertEquals(Some(OpiskeluoikeusTila(List(OpiskeluoikeusJakso(LocalDate.parse("2024-05-25"), KoskiKoodi("valmistunut", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))))), opiskeluoikeus.tila)
+    Assertions.assertEquals(Some(KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(LocalDate.parse("2024-05-25"), KoskiKoodi("valmistunut", "koskiopiskeluoikeudentila", Some(1), Kielistetty(None, None, None), None))))), opiskeluoikeus.tila)
     Assertions.assertEquals("1.2.246.562.10.63029756333", opiskeluoikeus.oppilaitosOid)
 
   @Test def testVapaaSivistysTyoSuoritus(): Unit =
@@ -1294,46 +1294,46 @@ class KoskiParsingTest {
 
   @Test def testParasArviointiAmmatillinen(): Unit = {
     val arvioinnit = Set(
-      Arviointi(KoskiKoodi("4", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true),
-      Arviointi(KoskiKoodi("2", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true),
-      Arviointi(KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)
+      KoskiArviointi(KoskiKoodi("4", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true),
+      KoskiArviointi(KoskiKoodi("2", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true),
+      KoskiArviointi(KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)
     )
      Assertions.assertEquals(
-       Some(Arviointi(KoskiKoodi("4", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)),
+       Some(KoskiArviointi(KoskiKoodi("4", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)),
        KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
      )
   }
 
   @Test def testParasArviointiAmmatillinenSanalliset(): Unit = {
     val arvioinnit = Set(
-      Arviointi(KoskiKoodi("Hylätty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, false),
-      Arviointi(KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)
+      KoskiArviointi(KoskiKoodi("Hylätty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, false),
+      KoskiArviointi(KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)
     )
     Assertions.assertEquals(
-      Some(Arviointi(KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)),
+      Some(KoskiArviointi(KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)),
       KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
     )
   }
 
   @Test def testParasArviointiPerusopetus(): Unit = {
     val arvioinnit = Set(
-      Arviointi(KoskiKoodi("8", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
-      Arviointi(KoskiKoodi("7", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
-      Arviointi(KoskiKoodi("S", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)
+      KoskiArviointi(KoskiKoodi("8", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
+      KoskiArviointi(KoskiKoodi("7", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
+      KoskiArviointi(KoskiKoodi("S", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)
     )
     Assertions.assertEquals(
-      Some(Arviointi(KoskiKoodi("8", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)),
+      Some(KoskiArviointi(KoskiKoodi("8", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)),
       KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
     )
   }
 
   @Test def testParasArviointiPerusopetusSanalliset(): Unit = {
     val arvioinnit = Set(
-      Arviointi(KoskiKoodi("O", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
-      Arviointi(KoskiKoodi("S", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)
+      KoskiArviointi(KoskiKoodi("O", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
+      KoskiArviointi(KoskiKoodi("S", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)
     )
     Assertions.assertEquals(
-      Some(Arviointi(KoskiKoodi("S", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)),
+      Some(KoskiArviointi(KoskiKoodi("S", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true)),
       KoskiToSuoritusConverter.valitseParasArviointi(arvioinnit)
     )
   }
