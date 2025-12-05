@@ -143,25 +143,24 @@ export interface IDIAVastaavuusTodistusNimi {
   en?: string;
 }
 
-export interface IEBOppiaine {
-  tunniste: string;
-  nimi: IEBOppiaineNimi;
-  suorituskieli: string;
-  laajuus: number;
-  written?: IEBSuoritus;
-  oral?: IEBSuoritus;
-  final?: IEBSuoritus;
-}
-
-export interface IEBOppiaineNimi {
+export interface IEBOppiaineNimiUI {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IEBSuoritus {
-  tunniste: string;
+export interface IEBOppiaineOsasuoritusUI {
+  koodi: string;
   arvosana: number;
+}
+
+export interface IEBOppiaineUI {
+  nimi: IEBOppiaineNimiUI;
+  suorituskieli: string;
+  laajuus: number;
+  written?: IEBOppiaineOsasuoritusUI;
+  oral?: IEBOppiaineOsasuoritusUI;
+  final?: IEBOppiaineOsasuoritusUI;
 }
 
 export interface IEBTutkintoNimi {
@@ -178,7 +177,7 @@ export interface IEBTutkintoUI {
   aloituspaiva?: string;
   valmistumispaiva?: string;
   suorituskieli: string;
-  oppiaineet: IEBOppiaine[];
+  oppiaineet: IEBOppiaineUI[];
 }
 
 export interface IErikoisammattitutkinto {

@@ -446,14 +446,7 @@ case class DIAVastaavuusTodistus(
   @BeanProperty matematiikkaLuonnontieteet: java.util.List[DIAOppiaine]
 )
 
-case class EBSuoritus(
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: UUID,
-  @(Schema @field)(example = "8.67", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: BigDecimal
-)
-
-case class EBOppiaineNimi(
+case class EBOppiaineNimiUI(
   @(Schema @field)(example = "Matematiikka", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Matematiikka sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -462,20 +455,26 @@ case class EBOppiaineNimi(
   @BeanProperty en: Optional[String],
 )
 
-case class EBOppiaine(
+case class EBOppiaineOsasuoritusUI(
+  @(Schema @field)(example = "Final", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty koodi: String, //final, written, oral
+  @(Schema @field)(example = "8.67", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: BigDecimal
+)
+
+case class EBOppiaineUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: UUID,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: EBOppiaineNimi,
+  @BeanProperty nimi: EBOppiaineNimiUI,
   @(Schema @field)(example = "englanti", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Int,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty written: Optional[EBSuoritus],
-  @BeanProperty oral: Optional[EBSuoritus],
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty `final`: Optional[EBSuoritus]
+  @BeanProperty laajuus: BigDecimal,
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty written: Optional[EBOppiaineOsasuoritusUI],
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty oral: Optional[EBOppiaineOsasuoritusUI],
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty `final`: Optional[EBOppiaineOsasuoritusUI]
 )
 
 case class EBTutkintoNimi(
@@ -503,7 +502,7 @@ case class EBTutkintoUI(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[EBOppiaine]
+  @BeanProperty oppiaineet: java.util.List[EBOppiaineUI]
 )
 
 case class IBSuoritusNimi(
