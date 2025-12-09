@@ -23,11 +23,6 @@ test.describe('Etusivu', () => {
     });
 
     test('ohjautuu juuresta henkilöhakuun', async ({ page }) => {
-      await stubKayttajaResponse(page, {
-        isRekisterinpitaja: true,
-        isOrganisaationKatselija: false,
-      });
-      await page.goto('');
       await expect(page).toHaveURL((url) =>
         url.toString().endsWith('/henkilo'),
       );
@@ -56,11 +51,8 @@ test.describe('Etusivu', () => {
         isOrganisaationKatselija: false,
       });
     });
+
     test('ohjautuu juuresta henkilöhakuun', async ({ page }) => {
-      await stubKayttajaResponse(page, {
-        isRekisterinpitaja: false,
-        isOrganisaationKatselija: false,
-      });
       await page.goto('');
       await expect(page).toHaveURL((url) =>
         url.toString().endsWith('/henkilo'),
