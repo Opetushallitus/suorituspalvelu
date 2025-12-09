@@ -176,13 +176,13 @@
     },
     {
       "avain": "lukio_suoritettu",
-      "arvo": "false",
+      "arvo": "true",
       "metadata": {
         "selitteet": [
           "Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
         ],
         "duplikaatti": false,
-        "arvoEnnenYliajoa": null,
+        "arvoEnnenYliajoa": "false",
         "yliajo": null
       }
     },
@@ -211,7 +211,7 @@
       "arvo": "2016",
       "metadata": {
         "selitteet": [
-          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: 2016-06-03"
         ],
         "duplikaatti": false,
         "arvoEnnenYliajoa": null,
@@ -233,7 +233,7 @@
       "arvo": "true",
       "metadata": {
         "selitteet": [
-          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: 2016-06-03"
         ],
         "duplikaatti": false,
         "arvoEnnenYliajoa": null,
@@ -478,7 +478,7 @@
       "metadata": {
         "selitteet": [],
         "duplikaatti": true,
-        "arvoEnnenYliajoa": null,
+        "arvoEnnenYliajoa": "9",
         "yliajo": null
       }
     },
@@ -494,13 +494,13 @@
     },
     {
       "avain": "LK_TILA",
-      "arvo": "false",
+      "arvo": "true",
       "metadata": {
         "selitteet": [
           "Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
         ],
         "duplikaatti": true,
-        "arvoEnnenYliajoa": null,
+        "arvoEnnenYliajoa": "false",
         "yliajo": null
       }
     },
@@ -529,7 +529,7 @@
       "arvo": "2016",
       "metadata": {
         "selitteet": [
-          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: 2016-06-03"
         ],
         "duplikaatti": true,
         "arvoEnnenYliajoa": null,
@@ -551,7 +551,7 @@
       "arvo": "true",
       "metadata": {
         "selitteet": [
-          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: Some(2016-06-03)"
+          "Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: 2016-06-03"
         ],
         "duplikaatti": true,
         "arvoEnnenYliajoa": null,

@@ -3,6 +3,55 @@ import { OphButton, OphTypography } from '@opetushallitus/oph-design-system';
 import { EditOutlined } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AvainArvo } from '@/types/ui-types';
+import { TooltipIcon } from '../TooltipIcon';
+
+const ArvoAndSelitteet = ({
+  arvo,
+  selitteet,
+}: {
+  arvo: string;
+  selitteet?: Array<string>;
+}) => {
+  const { t } = useTranslations();
+  return (
+    <OphTypography component="span">
+      {arvo}
+      {selitteet && selitteet?.length > 0 && (
+        <span>
+          {' '}
+          <TooltipIcon
+            ariaLabel={t('opiskelijavalinnan-tiedot.arvon-selitteet-label')}
+          >
+            <>
+              {selitteet.map((selite) => (
+                <OphTypography key={selite}>{selite}</OphTypography>
+              ))}
+            </>
+          </TooltipIcon>
+        </span>
+      )}
+    </OphTypography>
+  );
+};
+
+const AlkuperainenArvo = ({
+  arvo,
+  selitteet,
+}: {
+  arvo: string;
+  selitteet?: Array<string>;
+}) => {
+  const { t } = useTranslations();
+  return (
+    <OphTypography component="span">
+      <span>{' ('}</span>
+      {t('opiskelijavalinnan-tiedot.alkuperainen')}
+      <span>{': '}</span>
+      <ArvoAndSelitteet arvo={arvo} selitteet={selitteet} />
+      <span>{')'}</span>
+    </OphTypography>
+  );
+};
 
 export const AvainArvoDisplay = ({
   avainArvo,
@@ -19,6 +68,7 @@ export const AvainArvoDisplay = ({
   const labelId = `avainarvo-label-${avainArvo.avain}`;
 
   const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa;
+  const arvonSelitteet = avainArvo.metadata.selitteet ?? [];
 
   return (
     <Box
@@ -31,7 +81,7 @@ export const AvainArvoDisplay = ({
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <OphTypography id={labelId} variant="label">
+        <OphTypography id={labelId} variant="label" component="label">
           {avainArvo.avain}
         </OphTypography>
         {startYliajoEdit && (
@@ -51,12 +101,19 @@ export const AvainArvoDisplay = ({
           />
         )}
       </Box>
-      <OphTypography aria-labelledby={labelId}>
-        {avainArvo.arvo}{' '}
-        {alkuperainenArvo
-          ? `(${t('opiskelijavalinnan-tiedot.alkuperainen')}: ${alkuperainenArvo})`
-          : ''}
-      </OphTypography>
+      <span aria-labelledby={labelId}>
+        {alkuperainenArvo ? (
+          <>
+            <span>{avainArvo.arvo}</span>
+            <AlkuperainenArvo
+              arvo={alkuperainenArvo}
+              selitteet={arvonSelitteet}
+            />
+          </>
+        ) : (
+          <ArvoAndSelitteet arvo={avainArvo.arvo} selitteet={arvonSelitteet} />
+        )}
+      </span>
     </Box>
   );
 };
