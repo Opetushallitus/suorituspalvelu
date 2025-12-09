@@ -32,6 +32,7 @@ import type {
   ILuoPerusopetuksenOppimaaraFailureResponse,
   IAvainArvoContainerUI,
   IYliajo,
+  IOppijanValintaDataSuccessResponse,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTila;
@@ -233,3 +234,5 @@ export type Henkilo = {
   etunimet?: string;
   sukunimi?: string;
 };
+
+export type ValintaData = IOppijanValintaDataSuccessResponse;

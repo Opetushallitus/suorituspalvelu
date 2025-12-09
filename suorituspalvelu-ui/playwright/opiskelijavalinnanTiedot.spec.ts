@@ -675,4 +675,56 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     );
     await expect(page.getByText('Valittu haku on virheellinen')).toBeVisible();
   });
+
+  test('näyttää hakemukselta tulevat tiedot oikein', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+    await page
+      .getByRole('button', {
+        name: 'Hakemuksesta opiskelijavalintaan tulevat tiedot',
+      })
+      .click();
+
+    const hakemuksestaTulevatTiedot = page.getByRole('region', {
+      name: 'Hakemuksesta opiskelijavalintaan tulevat tiedot',
+    });
+    await expect(hakemuksestaTulevatTiedot).toBeVisible();
+
+    await expectLabeledValues(hakemuksestaTulevatTiedot, [
+      {
+        label: 'hakemuksesta_test',
+        value: '123',
+      },
+    ]);
+  });
+
+  test('ei näytä hakemukselta tulevia tietoja, jos niitä ei ole', async ({
+    page,
+  }) => {
+    // Override the route to return data without hakemus fields
+    await page.route(
+      (url) =>
+        url.pathname.includes('/ui/valintadata') &&
+        url.searchParams.get('oppijaNumero') === OPPIJANUMERO,
+      (route) => {
+        return route.fulfill({
+          json: {
+            avainArvot: VALINTA_DATA.avainArvot.filter(
+              (item) => !item.metadata.arvoOnHakemukselta,
+            ),
+          },
+        });
+      },
+    );
+
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
+    const hakemukseltaTiedotButton = page.getByRole('button', {
+      name: 'Hakemuksesta opiskelijavalintaan tulevat tiedot',
+    });
+    await expect(hakemukseltaTiedotButton).toBeHidden();
+  });
 });
