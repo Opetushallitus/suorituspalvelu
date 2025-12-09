@@ -610,10 +610,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME, oppijaNumero), ""))
-      .andExpect(status().isOk)
+      .post(ApiConstants.UI_TIEDOT_PATH)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(objectMapper.writeValueAsBytes(request)))
       .andReturn()
+
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
 
     val POOS = response.perusopetuksenOppiaineenOppimaarat.asScala.toList
@@ -1622,9 +1625,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(oppilaitosNimi, "Europaskolan i Helsingfors", "European School of Helsinki"), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
     val result = mvc.perform(MockMvcRequestBuilders
-        .get(ApiConstants.UI_TIEDOT_PATH.replace(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER, oppijaNumero), ""))
-      .andExpect(status().isOk)
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
       .andReturn()
 
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
