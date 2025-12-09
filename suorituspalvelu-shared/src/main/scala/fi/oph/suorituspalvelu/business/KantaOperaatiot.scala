@@ -52,11 +52,13 @@ object KantaOperaatiot {
       classOf[YOOpiskeluoikeus],
       classOf[PerusopetuksenVuosiluokka],
       classOf[Telma],
-      classOf[NuortenPerusopetuksenOppiaineenOppimaara],
+      classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
       classOf[Tuva],
       classOf[VirtaTutkinto],
       classOf[Opintosuoritus],
-      classOf[VapaaSivistystyo])
+      classOf[VapaaSivistystyo],
+      classOf[EBTutkinto],
+      classOf[ErikoisAmmattiTutkinto])
     mapper
   }
 

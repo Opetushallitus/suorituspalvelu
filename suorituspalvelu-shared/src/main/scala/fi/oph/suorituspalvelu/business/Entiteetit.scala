@@ -16,7 +16,7 @@ object SuoritusJoukko {
   final val VIRTA = SuoritusJoukko("VIRTA")
   final val YTR   = SuoritusJoukko("YTR")
   final val SYOTETTY_PERUSOPETUS = SuoritusJoukko("SYOTETTY_PERUSOPETUS")
-  final val SYOTETTY_OPPIAINE = SuoritusJoukko("SYOTETTY_OPPIAINE")
+  final val SYOTETYT_OPPIAINEET = SuoritusJoukko("SYOTETYT_OPPIAINEET")
 
   @JsonCreator
   def fromString(value: String): SuoritusJoukko = SuoritusJoukko(value)
@@ -54,6 +54,34 @@ case class Laajuus(arvo: BigDecimal, yksikko: Koodi, nimi: Option[Kielistetty], 
 case class Arvosana(koodi: Koodi, nimi: Kielistetty)
 
 case class Oppilaitos(nimi: Kielistetty, oid: String)
+
+case class EBArvosana(arvosana: Koodi,
+                      hyvaksytty: Boolean)
+
+case class EBOppiaineenOsasuoritus(nimi: Kielistetty,
+                                   koodi: Koodi, //Final, Oral, Written.
+                                   arvosana: EBArvosana, //Jos ei ole arvosanaa, ei luoda koko osasuoritusta
+                                   laajuus: Option[Laajuus]) //mutta tietomalli kuitenkin sallii puuttumisen.
+
+case class EBLaajuus(arvo: BigDecimal, yksikko: Koodi)
+
+case class EBOppiaine(tunniste: UUID,
+                      nimi: Kielistetty,
+                      koodi: Koodi,
+                      laajuus: Option[EBLaajuus],
+                      suorituskieli: Koodi,
+                      osasuoritukset: Set[EBOppiaineenOsasuoritus])
+
+case class EBTutkinto(tunniste: UUID,
+                      nimi: Kielistetty,
+                      koodi: Koodi,
+                      oppilaitos: Oppilaitos,
+                      koskiTila: Koodi,
+                      supaTila: SuoritusTila,
+                      aloitusPaivamaara: Option[LocalDate],
+                      vahvistusPaivamaara: Option[LocalDate],
+                      osasuoritukset: Set[EBOppiaine]) extends Suoritus, Tyypitetty
+
 
 case class ErikoisAmmattiTutkinto(tunniste: UUID,
                                   nimi: Kielistetty,
@@ -148,15 +176,25 @@ case class VapaaSivistystyo(tunniste: UUID,
                             hyvaksyttyLaajuus: Option[Laajuus],
                             suoritusKieli: Koodi) extends Suoritus, Tyypitetty
 
-case class NuortenPerusopetuksenOppiaineenOppimaara(tunniste: UUID,
-                                                    versioTunniste: Option[UUID],
-                                                    oppilaitos: Oppilaitos,
-                                                    nimi: Kielistetty,
-                                                    koodi: Koodi,
-                                                    arvosana: Koodi,
-                                                    suoritusKieli: Koodi,
-                                                    aloitusPaivamaara: Option[LocalDate],
-                                                    vahvistusPaivamaara: Option[LocalDate]) extends Suoritus, Tyypitetty
+case class PerusopetuksenOppimaaranOppiaine(tunniste: UUID,
+                                            nimi: Kielistetty,
+                                            oppiaineKoodi: Koodi,
+                                            arvosana: Koodi,
+                                            kieli: Option[Koodi], //Tämä tieto kertoo äidinkielen tai vieraan kielen tapauksessa opiskellun kielen. Huom. ero suorituskieleen.
+                                            pakollinen: Boolean) extends Suoritus, Tyypitetty
+
+//Tähän entiteettiin mallinnetaan sekä NuortenPerusopetuksenOppiaineenOppimaarat että AikuistenPerusopetuksenOppiaineenOppimäärät.
+case class PerusopetuksenOppimaaranOppiaineidenSuoritus(tunniste: UUID,
+                                                        versioTunniste: Option[UUID],
+                                                        oppilaitos: Oppilaitos,
+                                                        koskiTila: Koodi,
+                                                        supaTila: SuoritusTila,
+                                                        suoritusKieli: Koodi,
+                                                        aloitusPaivamaara: Option[LocalDate],
+                                                        vahvistusPaivamaara: Option[LocalDate],
+                                                        oppiaineet: Set[PerusopetuksenOppimaaranOppiaine],
+                                                        syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
+                                                       ) extends Suoritus, Tyypitetty
 
 case class PerusopetuksenOppimaara(tunniste: UUID,
                                    versioTunniste: Option[UUID],
@@ -169,7 +207,9 @@ case class PerusopetuksenOppimaara(tunniste: UUID,
                                    yksilollistaminen: Option[Int],
                                    aloitusPaivamaara: Option[LocalDate],
                                    vahvistusPaivamaara: Option[LocalDate],
-                                   aineet: Set[PerusopetuksenOppiaine]) extends Suoritus, Tyypitetty
+                                   aineet: Set[PerusopetuksenOppiaine],
+                                   syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
+                                  ) extends Suoritus, Tyypitetty
 
 //Kieli määritelty oppiaineille kuten A1, B1 jne.
 case class PerusopetuksenOppiaine(tunniste: UUID,
@@ -189,31 +229,28 @@ case class PerusopetuksenVuosiluokka(tunniste: UUID,
                                      vahvistusPaivamaara: Option[LocalDate],
                                      jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOpiskeluoikeus(
-                                         tunniste: UUID,
-                                         oid: Option[String],
-                                         oppilaitosOid: String,
-                                         @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                                         suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                         lisatiedot: Option[KoskiLisatiedot],
-                                         tila: SuoritusTila) extends Opiskeluoikeus, Tyypitetty
+case class PerusopetuksenOpiskeluoikeus(tunniste: UUID,
+                                        oid: Option[String],
+                                        oppilaitosOid: String,
+                                        @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                                        suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
+                                        lisatiedot: Option[KoskiLisatiedot],
+                                        tila: SuoritusTila) extends Opiskeluoikeus, Tyypitetty
 
-case class AmmatillinenOpiskeluoikeus(
-                                       tunniste: UUID,
-                                       oid: String,
-                                       oppilaitos: Oppilaitos,
-                                       @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                                       suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                       tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+case class AmmatillinenOpiskeluoikeus(tunniste: UUID,
+                                      oid: String,
+                                      oppilaitos: Oppilaitos,
+                                      @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                                      suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
+                                      tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
-case class GeneerinenOpiskeluoikeus(
-                                     tunniste: UUID,
-                                     oid: String,
-                                     tyyppi: Koodi,
-                                     oppilaitosOid: String,
-                                     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                                     suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                     tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+case class GeneerinenOpiskeluoikeus(tunniste: UUID,
+                                    oid: String,
+                                    tyyppi: Koodi,
+                                    oppilaitosOid: String,
+                                    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                                    suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
+                                    tila: Option[OpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
 
 case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
 

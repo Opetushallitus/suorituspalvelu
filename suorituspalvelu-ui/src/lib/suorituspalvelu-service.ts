@@ -195,7 +195,7 @@ export const saveSuoritus = async (
     postData.oppiaineet = oppiaineet;
   } else if (suoritusFields.tyyppi === 'perusopetuksenoppiaineenoppimaara') {
     url = config.routes.suorituspalvelu.perusopetuksenOppiaineenOppimaaratUrl;
-    postData.oppiaine = oppiaineet?.[0];
+    postData.oppiaineet = oppiaineet.filter((oa) => oa.koodi !== undefined);
   } else {
     throw new Error(`Tuntematon suoritustyyppi: ${suoritusFields.tyyppi}`);
   }

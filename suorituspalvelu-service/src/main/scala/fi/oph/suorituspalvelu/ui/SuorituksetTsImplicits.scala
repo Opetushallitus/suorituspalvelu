@@ -10,20 +10,18 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val optionalLukionOppimaara: TSType[Optional[LukionOppimaara]] = TSType.sameAs[Optional[LukionOppimaara], Option[LukionOppimaara]]
   implicit val optionalDIATutkinto: TSType[Optional[DIATutkinto]] = TSType.sameAs[Optional[DIATutkinto], Option[DIATutkinto]]
   implicit val optionalDIAVastaavuusTodistus: TSType[Optional[DIAVastaavuusTodistus]] = TSType.sameAs[Optional[DIAVastaavuusTodistus], Option[DIAVastaavuusTodistus]]
-  implicit val optionalEBSuoritus: TSType[Optional[EBSuoritus]] = TSType.sameAs[Optional[EBSuoritus], Option[EBSuoritus]]
-  implicit val optionalEBTutkinto: TSType[Optional[EBTutkinto]] = TSType.sameAs[Optional[EBTutkinto], Option[EBTutkinto]]
+  implicit val optionalEBSuoritus: TSType[Optional[EBOppiaineOsasuoritusUI]] = TSType.sameAs[Optional[EBOppiaineOsasuoritusUI], Option[EBOppiaineOsasuoritusUI]]
+  implicit val optionalEBTutkinto: TSType[Optional[EBTutkintoUI]] = TSType.sameAs[Optional[EBTutkintoUI], Option[EBTutkintoUI]]
   implicit val optionalIBTutkinto: TSType[Optional[IBTutkinto]] = TSType.sameAs[Optional[IBTutkinto], Option[IBTutkinto]]
   implicit val optionalPreIB: TSType[Optional[PreIB]] = TSType.sameAs[Optional[PreIB], Option[PreIB]]
   implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapa]] = TSType.sameAs[Optional[SuoritusTapa], Option[SuoritusTapa]]
   implicit val optionalYTOArvosana: TSType[Optional[YTOArvosana]] = TSType.sameAs[Optional[YTOArvosana], Option[YTOArvosana]]
   implicit val optionalYksilollistaminen: TSType[Optional[Yksilollistaminen]] = TSType.sameAs[Optional[Yksilollistaminen], Option[Yksilollistaminen]]
   implicit val ammatillisenTutkinnonOsaTSType: TSType[AmmatillisenTutkinnonOsa] = TSType.fromCaseClass
-  implicit val perusopetuksenOppiaineTSType: TSType[PerusopetuksenOppiaine] = TSType.fromCaseClass
+  implicit val perusopetuksenOppiaineTSType: TSType[PerusopetuksenOppiaineUI] = TSType.fromCaseClass
   implicit val optionalPerusopetuksenOppimaara78LuokkalaisetTSType: TSType[Optional[PerusopetuksenOppimaara78Luokkalaiset]] = TSType.sameAs[Optional[PerusopetuksenOppimaara78Luokkalaiset], Option[PerusopetuksenOppimaara78Luokkalaiset]]
-  implicit val perusopetuksenOppiaineenOppimaaraTSType: TSType[PerusopetuksenOppiaineenOppimaara] = TSType.fromCaseClass
-  implicit val aikuistenPerusopetuksenOppimaaraTSType: TSType[AikuistenPerusopetuksenOppimaara] = TSType.fromCaseClass
-  implicit val perusopetuksenOppimaaraTSType: TSType[PerusopetuksenOppimaara] = TSType.fromCaseClass
-  implicit val nuortenPerusopetuksenOppiaineenOppimaaraTSType: TSType[NuortenPerusopetuksenOppiaineenOppimaara] = TSType.fromCaseClass
+  implicit val perusopetuksenOppiaineenOppimaaraTSType: TSType[PerusopetuksenOppiaineenOppimaaratUI] = TSType.fromCaseClass
+  implicit val perusopetuksenOppimaaraTSType: TSType[PerusopetuksenOppimaaraUI] = TSType.fromCaseClass
   implicit val lukionOppiaineenOppimaaraTSType: TSType[LukionOppiaineenOppimaara] = TSType.fromCaseClass
   implicit val optionalTuvaLaajuus: TSType[Optional[TuvaLaajuus]] = TSType.sameAs[Optional[TuvaLaajuus], Option[TuvaLaajuus]]
   implicit val optionalVSTLaajuus: TSType[Optional[VapaaSivistystyoLaajuus]] = TSType.sameAs[Optional[VapaaSivistystyoLaajuus], Option[VapaaSivistystyoLaajuus]]
@@ -37,4 +35,3 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val oppijanTiedotSuccessTSType: TSType[OppijanTiedotSuccessResponse] = TSType.fromCaseClass
   implicit val oppijanTiedotFailureTSType: TSType[OppijanTiedotFailureResponse] = TSType.fromCaseClass
 }
-

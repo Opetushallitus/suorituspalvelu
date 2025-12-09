@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -496,7 +496,8 @@ class EntityToUIConverterTest {
           yksilollistetty = Some(false),
           rajattu = Some(false)
         ),
-      )
+      ),
+      syotetty = false
     )
 
     val koodistoProvider = new KoodistoProvider {
@@ -518,7 +519,7 @@ class EntityToUIConverterTest {
       )
     }
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppimaara(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppimaaraUI(
       versioTunniste = oppimaara.versioTunniste.toJava,
       tunniste = oppimaara.tunniste,
       nimi = PerusopetuksenOppimaaraNimi(
@@ -547,7 +548,7 @@ class EntityToUIConverterTest {
           Optional.empty
         )
       )),
-      oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaine(
+      oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaineUI(
         tunniste = aine.tunniste,
         koodi = aine.koodi.arvo,
         nimi = PerusopetuksenOppiaineNimi(
@@ -559,7 +560,7 @@ class EntityToUIConverterTest {
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
       )).toList.asJava,
-      syotetty = true
+      syotetty = oppimaara.syotetty
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
   }
 

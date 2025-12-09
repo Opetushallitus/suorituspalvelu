@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.{PK_OPPIMAARA_OPPILAITOS_VUOSI_AVAIN, PK_OPPIMAARA_OPPILAITOS_VUOSI_LUOKKA_AVAIN}
