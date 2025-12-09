@@ -283,8 +283,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       .map((versio, suoritukset) => (versio, suoritukset.map(t => t._2).toSet))
   }
 
-  def haeSuoritukset(oppijaNumero: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
-    haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE oppijanumero=${oppijaNumero} AND upper(voimassaolo)='infinity'::timestamptz""")
+  def haeSuorituksetAjanhetkella(oppijaNumero: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+    haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE oppijanumero=${oppijaNumero} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
+  }
+
+  def haeSuoritukset(oppijaNumero: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+    haeSuorituksetAjanhetkella(oppijaNumero, Instant.now())
+  }
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
     Await.result(db.run(

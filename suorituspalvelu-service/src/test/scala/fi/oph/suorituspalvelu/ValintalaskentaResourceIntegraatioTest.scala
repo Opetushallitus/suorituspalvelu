@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClientImpl, Hakutoive}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
@@ -115,8 +115,22 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
       )
     )
 
+    val haku = KoutaHaku(
+      oid = hakuOid,
+      tila = "julkaistu",
+      nimi = Map("fi" -> s"Testi haku 1.2.246.562.29.01000000000000012345"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_14#1"), //Huom. ei toisen asteen yhteishaku
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(2022)
+    )
+
     Mockito.when(tarjontaIntegration.getHaku(hakuOid))
-      .thenReturn(None)
+      .thenReturn(Some(haku))
+    Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
+      .thenReturn(Ohjausparametrit(suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)), valintalaskentapaiva = Some(DateParam(1768290647351L))))
+
     Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(Some(hakukohdeOid), false, Set.empty))
       .thenReturn(Future.successful(Seq(testHakemus)))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))

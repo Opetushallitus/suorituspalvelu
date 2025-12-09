@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 
 case class DateParam(date: Long)
 
-case class Ohjausparametrit(PH_HKP: Option[DateParam])
+case class Ohjausparametrit(PH_HKP: Option[DateParam] = None, suoritustenVahvistuspaiva: Option[DateParam] = None, valintalaskentapaiva: Option[DateParam] = None)
 
 class OhjausparametritClient(environmentBaseUrl: String) {
 

@@ -48,7 +48,7 @@ class AvainArvoConverterTest {
       Assertions.assertEquals(1, oos.size)
 
       val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, DEFAULT_KOUTA_HAKU)
 
       Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
       Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
@@ -66,7 +66,7 @@ class AvainArvoConverterTest {
 
       Assertions.assertEquals(1, oos.size)
       val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, DEFAULT_KOUTA_HAKU)
       val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
         "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
         "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
@@ -133,7 +133,7 @@ class AvainArvoConverterTest {
 
     val leikkuri = LocalDate.parse("2023-05-15")
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritettuKey))
   }
@@ -163,7 +163,7 @@ class AvainArvoConverterTest {
 
     val leikkuri = LocalDate.parse("2023-05-15")
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritettuKey))
 
@@ -177,7 +177,7 @@ class AvainArvoConverterTest {
       Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2024-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(leikkuripaivanJalkeenValmistunutTutkinto), None))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
   }
@@ -190,7 +190,7 @@ class AvainArvoConverterTest {
       Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
   }
@@ -222,7 +222,7 @@ class AvainArvoConverterTest {
       None
     ))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
     Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
@@ -257,7 +257,7 @@ class AvainArvoConverterTest {
       None
     ))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
 
@@ -304,7 +304,7 @@ class AvainArvoConverterTest {
       None
     ))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(haku))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, haku)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
 
@@ -340,7 +340,7 @@ class AvainArvoConverterTest {
       None
     ))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
 
     Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
@@ -377,7 +377,7 @@ class AvainArvoConverterTest {
       None
     ))
 
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
 

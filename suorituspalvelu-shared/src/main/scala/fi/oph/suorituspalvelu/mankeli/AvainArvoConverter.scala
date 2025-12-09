@@ -233,11 +233,11 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: Option[KoutaHaku]): AvainArvoConverterResults = {
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: KoutaHaku): AvainArvoConverterResults = {
     convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan, haku)
   }
 
-  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: Option[KoutaHaku]): AvainArvoConverterResults = {
+  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: KoutaHaku): AvainArvoConverterResults = {
 
     //Todo, valintapisteet avain-arvoiksi
     val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
@@ -314,9 +314,9 @@ object AvainArvoConverter {
     Set(suoritusArvo) ++ suoritusVuosiArvo
   }
 
-  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: Option[KoutaHaku]): Set[AvainArvoContainer] = {
-    if (haku.exists(_.isToisenAsteenYhteisHaku())) {
-      val vuosiVahintaan = haku.flatMap(h => h.hakuvuosi.map(vuosi => vuosi - 1)).getOrElse(LocalDate.now().getYear)
+  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: KoutaHaku): Set[AvainArvoContainer] = {
+    if (haku.isToisenAsteenYhteisHaku()) {
+      val vuosiVahintaan = haku.hakuvuosi.map(vuosi => vuosi - 1).getOrElse(LocalDate.now().getYear)
 
       //todo tuva
       //todo kansanopisto?
