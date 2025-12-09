@@ -13,10 +13,13 @@ const SECOND_HAKU = OPPIJAN_HAUT?.haut?.[1] as IHaku;
 test.describe('Opiskelijavalinnan tiedot', () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date('2025-01-01T12:00:00Z'));
-    await page.route(`**/ui/tiedot/${OPPIJANUMERO}`, async (route) => {
-      await route.fulfill({
-        json: OPPIJAN_TIEDOT,
-      });
+
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          json: OPPIJAN_TIEDOT,
+        });
+      }
     });
 
     await page.route(
@@ -558,7 +561,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
   test('hakua voi vaihtaa, jolloin näytetään valitun haun avainarvot', async ({
     page,
   }) => {
-    // Mock multiple haut
     await page.route(
       (url) => url.href.includes(`/ui/oppijanhaut/${OPPIJANUMERO}`),
       async (route) => {

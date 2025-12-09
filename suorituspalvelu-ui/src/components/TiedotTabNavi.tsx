@@ -1,8 +1,8 @@
+import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
-import { Link, useLocation, useSearchParams } from 'react-router';
-import { last } from 'remeda';
+import { Link, useSearchParams } from 'react-router';
 
 const StyledContainer = styled('div')({
   borderBottom: DEFAULT_BOX_BORDER,
@@ -30,22 +30,14 @@ const StyledTab = styled(Link)<{ $active: boolean }>(({ $active }) => ({
   },
 }));
 
-const useActiveTiedotTab = () => {
-  const location = useLocation();
-  return last(location.pathname.split('/'));
-};
-
 export const TiedotTabNavi = () => {
   const { t } = useTranslations();
-  const activeTab = useActiveTiedotTab();
+  const activeTab = useSelectedTiedotTab();
   const [searchParams] = useSearchParams();
 
   const { data: kayttaja } = useKayttaja();
 
-  // Convert URLSearchParams to search string
-  const searchString = searchParams.toString();
-
-  const searchWithPrefix = searchString ? `?${searchString}` : '';
+  const search = searchParams.toString();
 
   return (
     <StyledContainer>
@@ -54,7 +46,7 @@ export const TiedotTabNavi = () => {
           $active={activeTab === 'suoritustiedot'}
           to={{
             pathname: 'suoritustiedot',
-            search: searchWithPrefix,
+            search,
           }}
         >
           {t('tabs.suoritustiedot')}
@@ -65,8 +57,9 @@ export const TiedotTabNavi = () => {
             $active={activeTab === 'opiskelijavalinnan-tiedot'}
             to={{
               pathname: 'opiskelijavalinnan-tiedot',
-              search: searchWithPrefix,
+              search,
             }}
+            prefetch="intent"
           >
             {t('tabs.opiskelijavalinnan-tiedot')}
           </StyledTab>

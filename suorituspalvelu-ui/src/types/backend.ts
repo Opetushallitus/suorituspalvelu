@@ -374,6 +374,14 @@ export interface ILuoSuoritusDropdownDataSuccessResponse {
   arvosanat: ISyotettavaArvosanaVaihtoehto[];
 }
 
+export interface ILuokatFailureResponse {
+  virheet: string[];
+}
+
+export interface ILuokatSuccessResponse {
+  luokat: string[];
+}
+
 export interface INuortenPerusopetuksenOppiaineenOppimaara {
   tunniste: string;
   nimi: INuortenPerusopetuksenOppiaineenOppimaaraNimi;
@@ -777,6 +785,14 @@ export interface IVapaaSivistystyoOppilaitosNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IVuodetFailureResponse {
+  virheet: string[];
+}
+
+export interface IVuodetSuccessResponse {
+  vuodet: string[];
 }
 
 export interface IYOKoe {

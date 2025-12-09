@@ -17,10 +17,12 @@ test.describe('Suorituksen muokkaus', () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date('2025-01-01T12:00:00Z'));
 
-    await page.route(`**/ui/tiedot/${OPPIJANUMERO}`, async (route) => {
-      await route.fulfill({
-        json: OPPIJAN_TIEDOT,
-      });
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          json: OPPIJAN_TIEDOT,
+        });
+      }
     });
 
     await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
@@ -274,7 +276,10 @@ test.describe('Suorituksen muokkaus', () => {
 
     const [saveRequest] = await Promise.all([
       page.waitForRequest('**/ui/perusopetuksenoppimaarat'), // tallennus
-      page.waitForRequest(`**/ui/tiedot/${OPPIJANUMERO}`), // tietojen uudelleenlataus
+      page.waitForRequest(
+        (request) =>
+          request.url().includes('/ui/tiedot') && request.method() === 'POST',
+      ), // tietojen uudelleenlataus
       editSuoritusForm.getByRole('button', { name: 'Tallenna' }).click(),
     ]);
 
@@ -453,7 +458,10 @@ test.describe('Suorituksen muokkaus', () => {
       page.waitForRequest(
         `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
       ), // poisto
-      page.waitForRequest(`**/ui/tiedot/${OPPIJANUMERO}`), // tietojen uudelleenlataus
+      page.waitForRequest(
+        (request) =>
+          request.url().includes('/ui/tiedot') && request.method() === 'POST',
+      ), // tietojen uudelleenlataus
       confirmationModal.getByRole('button', { name: 'Kyllä' }).click(),
     ]);
   });

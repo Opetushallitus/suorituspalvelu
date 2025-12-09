@@ -4,30 +4,35 @@ import {
   getOppija,
   getOppijanHaut,
   getOppilaitokset,
+  getOppilaitosVuodet,
+  getOppilaitosVuosiLuokat,
   getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
   getValintadata,
-  searchOppijat,
-  type OppijatSearchParams,
+  searchOppilaitoksenOppijat,
+  type BackendOppijatSearchParams,
 } from './suorituspalvelu-service';
 import { useApiQuery, useApiSuspenseQuery } from './http-client';
 import { useTranslations } from '@/hooks/useTranslations';
-import { prop, sortBy } from 'remeda';
+import { prop, sortBy, unique } from 'remeda';
+import { getCurrentYear } from './common';
 
-export const queryOptionsGetOppija = (oppijaNumero: string) =>
+export const queryOptionsGetOppija = (tunniste?: string) =>
   queryOptions({
-    queryKey: ['getOppija', oppijaNumero],
-    queryFn: () => getOppija(oppijaNumero),
+    queryKey: ['getOppija', tunniste],
+    queryFn: () => getOppija(tunniste),
   });
 
-export const useOppija = (oppijaNumero: string) => {
-  return useApiSuspenseQuery(queryOptionsGetOppija(oppijaNumero));
+export const useOppija = (oppijaTunniste?: string) => {
+  return useApiSuspenseQuery(queryOptionsGetOppija(oppijaTunniste));
 };
 
-export const queryOptionsSearchOppijat = (params: OppijatSearchParams) =>
+export const queryOptionsSearchOppilaitoksenOppijat = (
+  params: BackendOppijatSearchParams,
+) =>
   queryOptions({
-    queryKey: ['searchOppijat', params],
-    queryFn: () => searchOppijat(params),
+    queryKey: ['searchOppilaitoksenOppijat', params],
+    queryFn: () => searchOppilaitoksenOppijat(params),
   });
 
 export const queryOptionsGetOppilaitokset = () =>
@@ -38,15 +43,17 @@ export const queryOptionsGetOppilaitokset = () =>
 
 export const useOppilaitoksetOptions = () => {
   const { translateKielistetty } = useTranslations();
-  const { data: oppilaitoksetOptions } = useApiSuspenseQuery({
+  return useApiQuery({
     ...queryOptionsGetOppilaitokset(),
     select: (data) =>
-      data?.oppilaitokset?.map(($) => ({
-        value: $.oid,
-        label: translateKielistetty($.nimi),
-      })) ?? [],
+      sortBy(
+        data?.oppilaitokset?.map(($) => ({
+          value: $.oid,
+          label: translateKielistetty($.nimi),
+        })) ?? [],
+        [prop('label'), 'asc'],
+      ),
   });
-  return oppilaitoksetOptions;
 };
 
 export const useSuoritusOppilaitosOptions = () => {
@@ -109,4 +116,45 @@ export const queryOptionsGetOppijanHaut = (oppijaOid: string) =>
   queryOptions({
     queryKey: ['getOppijanHaut', oppijaOid],
     queryFn: () => getOppijanHaut(oppijaOid),
+  });
+
+export const queryOptionsGetOppilaitosVuosiOptions = ({
+  oppilaitosOid,
+}: {
+  oppilaitosOid?: string;
+}) =>
+  queryOptions({
+    queryKey: ['getOppilaitosVuodet', oppilaitosOid],
+    queryFn: () => getOppilaitosVuodet({ oppilaitosOid }),
+    enabled: Boolean(oppilaitosOid),
+    select: (data) => {
+      const vuodet = data ?? [];
+      vuodet.push(getCurrentYear());
+      vuodet.sort((a, b) => b.localeCompare(a));
+      return unique(vuodet).map((vuosi) => ({
+        label: vuosi,
+        value: vuosi,
+      }));
+    },
+  });
+
+export const queryOptionsGetOppilaitosVuosiLuokatOptions = ({
+  oppilaitosOid,
+  vuosi,
+}: {
+  oppilaitosOid?: string;
+  vuosi?: string;
+}) =>
+  queryOptions({
+    queryKey: ['getOppilaitosVuosiLuokat', oppilaitosOid, vuosi],
+    queryFn: () => getOppilaitosVuosiLuokat({ oppilaitosOid, vuosi }),
+    enabled: oppilaitosOid != null && vuosi != null,
+    select: (data) => {
+      const luokat = data ?? [];
+      luokat.sort((a, b) => a.localeCompare(b));
+      return luokat.map((luokka) => ({
+        label: luokka,
+        value: luokka,
+      }));
+    },
   });

@@ -82,17 +82,12 @@ object ApiConstants {
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
 
-  final val UI_TIEDOT_OPPIJANUMERO_PARAM_NAME               = "oppijaNumero"
-  final val UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER        = "{" + UI_TIEDOT_OPPIJANUMERO_PARAM_NAME + "}"
-  final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot/" + UI_TIEDOT_OPPIJANUMERO_PARAM_PLACEHOLDER
+  final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot"
 
   final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
 
   final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
   final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
-
-  final val UI_HENKILO_HAKU_PATH                            = UI_API_PREFIX + "/haku/oppijat"
-  final val UI_HENKILO_HAKU_TUNNISTE_PARAM_NAME             = "tunniste"
 
   final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME         = "oppijaNumero"
   final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER  = "{" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME + "}"
@@ -137,6 +132,8 @@ object ApiConstants {
   final val UI_400_DESCRIPTION                              = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val UI_403_DESCRIPTION                              = "Käyttäjällä ei ole oikeuksia suorittaa pyyntöä"
   final val UI_500_DESCRIPTION                              = "Palvelin kohtasi odottamattoman tilanteen, joka esti pyynnön täyttämisen"
+
+  final val UI_OPPIJANUMERO_PARAM_NAME                      = "oppijaNumero"
 
   /**
    * Swagger-kuvauksiin liittyvät esimerkkiarvot

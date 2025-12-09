@@ -32,7 +32,8 @@ case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
 
 case class OnrHenkiloPerustiedot(oidHenkilo: String,
                                  etunimet: Option[String],
-                                 sukunimi: Option[String])
+                                 sukunimi: Option[String],
+                                 hetu: Option[String])
 
 trait OnrIntegration {
 

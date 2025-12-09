@@ -1,0 +1,22 @@
+{
+  "oppijat": [
+    {
+      "oppijaNumero": "1.2.246.562.24.40483869857",
+      "hetu": "010296-1230",
+      "etunimet": "Olli",
+      "sukunimi": "Oppija"
+    },
+    {
+      "oppijaNumero": "1.2.246.562.24.11111111111",
+      "hetu": "020397-1231",
+      "etunimet": "Matti",
+      "sukunimi": "Meikäläinen"
+    },
+    {
+      "oppijaNumero": "1.2.246.562.24.22222222222",
+      "hetu": "030498-1232",
+      "etunimet": "Maija",
+      "sukunimi": "Mallikas"
+    }
+  ]
+}

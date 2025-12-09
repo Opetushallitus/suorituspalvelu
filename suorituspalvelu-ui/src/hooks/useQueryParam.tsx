@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useSearchParams, type NavigateOptions } from 'react-router';
 import { useCallback } from 'react';
 
 /**
@@ -10,13 +10,13 @@ import { useCallback } from 'react';
  */
 export function useQueryParam(
   key: string,
-): [string | null, (value: string | null) => void] {
+): [string | null, (value: string | null, options?: NavigateOptions) => void] {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const value = searchParams.get(key);
 
   const setValue = useCallback(
-    (newValue: string | null) => {
+    (newValue: string | null, options?: NavigateOptions) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -27,7 +27,7 @@ export function useQueryParam(
           }
           return next;
         },
-        { replace: false }, // Use push to add to history
+        { replace: false, ...options }, // Use push to add to history
       );
     },
     [key, setSearchParams],
