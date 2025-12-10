@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.integration.client
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrMasterHenkilo}
 import fi.vm.sade.javautils.nio.cas.CasClient
@@ -31,10 +32,10 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
 
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
+  mapper.registerModule(new JavaTimeModule())
   mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
   val onrBatchSize = 5000
-
 
   override def getMasterHenkilosForPersonOids(henkiloOids: Set[String]): Future[Map[String, OnrMasterHenkilo]] = {
     val batches: Seq[(Set[String], Int)] = henkiloOids

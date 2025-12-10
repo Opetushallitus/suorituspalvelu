@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import scala.concurrent.{ExecutionContext, Future}
 import org.slf4j.LoggerFactory
 
+import java.time.LocalDate
 import java.util.concurrent.Executors
 
 //Avaimina oidit joille kysyttiin, arvona setti jossa mukana kaikki aliakset sis. oid jolla kysyttiin
@@ -22,7 +23,8 @@ case class OnrMasterHenkilo(oidHenkilo: String, //Henkilön masterOid
                             etunimet: Option[String],
                             sukunimi: Option[String],
                             hetu: Option[String],
-                            kaikkiHetut: Option[Seq[String]] //Huom. Tämä kenttä ei sisällä hetu-kentän hetua
+                            kaikkiHetut: Option[Seq[String]], //Huom. Tämä kenttä ei sisällä hetu-kentän hetua
+                            syntymaaika: Option[LocalDate],
                             ) {
   def combinedHetut: Set[String] = {
     val hetut = kaikkiHetut.getOrElse(Seq.empty).toSet

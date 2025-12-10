@@ -1164,7 +1164,7 @@ case class OppijanTiedotSuccessResponse(
   @(Schema @field)(example = ESIMERKKI_HETU, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty henkiloTunnus: Optional[String],
   @(Schema @field)(example = ESIMERKKI_SYNTYMAIKA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty syntymaAika: LocalDate,
+  @BeanProperty syntymaAika: Optional[LocalDate],
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppijaNumero: String,
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)

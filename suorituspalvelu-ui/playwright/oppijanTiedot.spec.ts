@@ -45,7 +45,7 @@ test.describe('Oppijan tiedot', () => {
       page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
     ).toBeVisible();
 
-    await expect(page.getByLabel('Syntymäaika')).toHaveText('1.1.2030');
+    await expect(page.getByLabel('Syntymäaika')).toHaveText('1.1.2000');
 
     const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
     await expect(oppijaNumeroLink).toHaveText(OPPIJANUMERO);

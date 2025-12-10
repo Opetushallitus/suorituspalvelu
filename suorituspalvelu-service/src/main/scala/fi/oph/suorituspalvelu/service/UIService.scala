@@ -210,7 +210,7 @@ class UIService {
 
       val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oid).values.flatten)
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
-        masterHenkilo.hetu, oppijaNumero, suoritukset, organisaatioProvider, koodistoProvider)
+        masterHenkilo.hetu, oppijaNumero, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
       })
 
   /**

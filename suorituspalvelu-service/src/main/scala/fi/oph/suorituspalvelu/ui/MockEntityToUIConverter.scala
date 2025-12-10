@@ -1,8 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_ETUNIMET, EXAMPLE_HETU, EXAMPLE_OPPIJA_OID, EXAMPLE_SUKUNIMI}
@@ -1182,7 +1180,7 @@ object MockEntityToUIConverter {
       etunimet =                                  Optional.of(EXAMPLE_ETUNIMET),
       sukunimi =                                  Optional.of(EXAMPLE_SUKUNIMI),
       henkiloTunnus =                             Optional.of(EXAMPLE_HETU),
-      syntymaAika =                               LocalDate.parse(ESIMERKKI_SYNTYMAIKA),
+      syntymaAika =                               Optional.of(LocalDate.parse(ESIMERKKI_SYNTYMAIKA)),
       oppijaNumero =                              EXAMPLE_OPPIJA_OID,
       henkiloOID =                                EXAMPLE_OPPIJA_OID,
       opiskeluoikeudet =                          getOpiskeluoikeudet().asJava,

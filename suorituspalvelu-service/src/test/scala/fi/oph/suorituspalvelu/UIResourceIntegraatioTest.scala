@@ -518,6 +518,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967215"
     val tutkintoKoodi = "123456"
     val suoritusKieli = Koodi("fi", "kieli", Some(1))
+    val syntymaAika = Some(LocalDate.of(2000, 1, 1))
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
@@ -527,7 +528,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ))
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
@@ -540,7 +541,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
 
+
     // TODO: validoidaan vastauksen sisältö kun liitetty oikeisiin suorituksiin
+
+    Assertions.assertEquals(response.syntymaAika.get, syntymaAika.get)
 
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
@@ -562,10 +566,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ))
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, Some(henkilotunnus), None))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, Some(henkilotunnus), None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
     Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.successful(List(OnrHenkiloPerustiedot(oppijaNumero, None, None, Some(henkilotunnus)))))
-
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val request = OppijanTiedotRequest(Optional.of(henkilotunnus))
@@ -606,7 +609,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // mockataan ONR-vastaus tietojen hakua varten
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
@@ -1619,7 +1622,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // Mock ONR & organisaatiopalvelu
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)))
-      .thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))
+      .thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(oppilaitosNimi, "Europaskolan i Helsingfors", "European School of Helsinki"), None, Seq.empty, Seq.empty)
