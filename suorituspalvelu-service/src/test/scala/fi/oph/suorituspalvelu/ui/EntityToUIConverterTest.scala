@@ -176,7 +176,7 @@ class EntityToUIConverterTest {
       java.util.List.of(),
       java.util.List.of(),
       Optional.of(NAYTTOTUTKINTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
 
   @Test def testConvertAmmatillinenTutkintoEnnenReformia(): Unit = {
@@ -258,7 +258,7 @@ class EntityToUIConverterTest {
         ))
         .toList.asJava,
       Optional.of(NAYTTOTUTKINTO)
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
 
   @Test def testConvertAmmattiTutkinto(): Unit = {
@@ -296,7 +296,7 @@ class EntityToUIConverterTest {
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammattitutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammattitutkinnot)
   }
 
   @Test def testConvertErikoisAmmattiTutkinto(): Unit = {
@@ -333,7 +333,7 @@ class EntityToUIConverterTest {
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).erikoisammattitutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).erikoisammattitutkinnot)
   }
 
   @Test def testConvertTelma(): Unit = {
@@ -372,7 +372,7 @@ class EntityToUIConverterTest {
       telma.aloitusPaivamaara.toJava,
       telma.vahvistusPaivamaara.toJava,
       telma.suoritusKieli.arvo
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(telma), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).telmat)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(telma), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).telmat)
   }
 
   @Test def testConvertTuva(): Unit = {
@@ -413,7 +413,7 @@ class EntityToUIConverterTest {
         l.lyhytNimi.get.sv.toJava,
         l.lyhytNimi.get.en.toJava
       ))).toJava,
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).tuvat)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).tuvat)
   }
 
   @Test def testConvertVapaaSivistystyoKoulutus(): Unit = {
@@ -457,7 +457,7 @@ class EntityToUIConverterTest {
         l.lyhytNimi.get.sv.toJava,
         l.lyhytNimi.get.en.toJava
       ))).toJava,
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("", "", None), "", Set(vst), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).vapaaSivistystyoKoulutukset)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("", "", None), "", Set(vst), None)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).vapaaSivistystyoKoulutukset)
   }
 
   @Test def testConvertPerusopetuksenOppimaara(): Unit = {
@@ -561,7 +561,7 @@ class EntityToUIConverterTest {
         valinnainen = !aine.pakollinen
       )).toList.asJava,
       syotetty = oppimaara.syotetty
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
   }
 
   @Test def testConvertOpiskeluoikeudet(): Unit = {
@@ -637,7 +637,7 @@ class EntityToUIConverterTest {
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
       )
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
   }
 
   @Test def testConvertKKTutkinto(): Unit = {
@@ -681,7 +681,7 @@ class EntityToUIConverterTest {
       SuoritusTila.VALMIS,
       Optional.of(virtaTutkinto.aloitusPvm),
       Optional.of(virtaTutkinto.suoritusPvm)
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
 
   @Test def testConvertYlioppilasTutkinto(): Unit = {
@@ -730,7 +730,7 @@ class EntityToUIConverterTest {
         yhteispistemaara = a.pisteet.toJava,
         tutkintokerta = a.tutkintoKerta
       )).toList.asJava
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", Set(YOOpiskeluoikeus(null, yoTutkinto)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).yoTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(YOOpiskeluoikeus(null, yoTutkinto)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).yoTutkinnot)
   }
 
 }
