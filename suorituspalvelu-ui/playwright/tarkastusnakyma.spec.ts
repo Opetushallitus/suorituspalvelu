@@ -80,8 +80,6 @@ test.describe('Tarkastusnäkymä', () => {
         json: { luokat: ['9A', '9B', '9C'] },
       });
     });
-
-    await page.goto('tarkastus');
   });
 
   test('valitsee automaattisesti ainoan oppilaitoksen', async ({ page }) => {
@@ -92,8 +90,7 @@ test.describe('Tarkastusnäkymä', () => {
         },
       });
     });
-
-    await page.reload();
+    await page.goto('tarkastus');
 
     await expect(page).toHaveURL(
       (url) => url.searchParams.get('oppilaitos') === OPPILAITOS_OID,
@@ -110,7 +107,7 @@ test.describe('Tarkastusnäkymä', () => {
       });
     });
 
-    await page.reload();
+    await page.goto('tarkastus');
 
     const vuosiSelect = getVuosiSelect(page);
     const luokkaSelect = getLuokkaSelect(page);
@@ -120,6 +117,7 @@ test.describe('Tarkastusnäkymä', () => {
   });
 
   test('oppilaitoksen valinta lataa oppijoiden listan', async ({ page }) => {
+    await page.goto('tarkastus');
     await selectOption({
       name: 'Oppilaitos',
       page,
@@ -151,6 +149,7 @@ test.describe('Tarkastusnäkymä', () => {
   });
 
   test('vuoden vaihtaminen päivittää oppijoiden listan', async ({ page }) => {
+    await page.goto('tarkastus');
     await selectOption({
       name: 'Oppilaitos',
       page,
@@ -171,6 +170,8 @@ test.describe('Tarkastusnäkymä', () => {
   });
 
   test('suodatuskenttä suodattaa oppijoita nimellä', async ({ page }) => {
+    await page.goto('tarkastus');
+
     await selectOption({
       name: 'Oppilaitos',
       page,
@@ -196,6 +197,8 @@ test.describe('Tarkastusnäkymä', () => {
   });
 
   test('suodatuskenttä tyhjentää suodatuksen', async ({ page }) => {
+    await page.goto('tarkastus');
+
     await selectOption({ page, name: 'Oppilaitos', option: OPPILAITOS_NIMI });
 
     const henkilotSidebar = getHenkilotSidebar(page);
@@ -215,6 +218,8 @@ test.describe('Tarkastusnäkymä', () => {
   });
 
   test('oppijan valinta näyttää oppijan tiedot', async ({ page }) => {
+    await page.goto('tarkastus');
+
     await selectOption({
       name: 'Oppilaitos',
       page,
@@ -238,12 +243,15 @@ test.describe('Tarkastusnäkymä', () => {
   test('näyttää placeholder-tekstin ilman valittua oppijaa', async ({
     page,
   }) => {
+    await page.goto('tarkastus');
     await expect(page.getByText('Hae ja valitse henkilö')).toBeVisible();
   });
 
   test('säilyttää hakuparametrit navigoitaessa oppijan tietoihin', async ({
     page,
   }) => {
+    await page.goto('tarkastus');
+
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
     await selectOption({ page, name: 'Luokka', option: '9A' });
 
@@ -260,11 +268,14 @@ test.describe('Tarkastusnäkymä', () => {
         url.searchParams.get('vuosi') === '2025' &&
         url.searchParams.get('luokka') === '9A',
     );
+    await page.goto('tarkastus');
   });
 
   test('oppilaitoksen vaihtaminen tyhjentää luokan ja suodatuksen', async ({
     page,
   }) => {
+    await page.goto('tarkastus');
+
     await selectOption({
       name: 'Oppilaitos',
       page,
@@ -295,6 +306,8 @@ test.describe('Tarkastusnäkymä', () => {
   test('vuoden vaihtaminen tyhjentää luokan ja suodatuksen', async ({
     page,
   }) => {
+    await page.goto('tarkastus');
+
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
 
     await expect(page.getByText('3 henkilöä')).toBeVisible();
@@ -314,6 +327,16 @@ test.describe('Tarkastusnäkymä', () => {
       (url) =>
         url.searchParams.get('luokka') === null &&
         url.searchParams.get('suodatus') === null,
+    );
+  });
+
+  test('uudelleenohjataan henkilötunnuksesta oppijanumeroon', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus/010296-1230');
+
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes('tarkastus/1.2.246.562.24.40483869857'),
     );
   });
 });
