@@ -445,7 +445,7 @@ object AvainArvoConverter {
 
     val arvot = if (oppimaaraOnVahvistettu) {
       if (vahvistettuAjoissa) {
-        val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${vahvistusPvm.map(_.toString).get}"
+        val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${vahvistusPvm.flatten.getOrElse("-")}"
         val arvosanaArvot: Set[AvainArvoContainer] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, Seq.empty)
 
         val suoritusVuosiArvo: Option[AvainArvoContainer] = perusopetuksenOppimaara
@@ -456,7 +456,7 @@ object AvainArvoConverter {
 
         arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvo ++ Some(suoritusArvo)
       } else {
-        val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.map(_.vahvistusPaivamaara)}"
+        val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).getOrElse("-")}"
         val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, vahvistettuAjoissa.toString, false, Seq(vahvistettuMyohassaSelite))
         Set(suoritusArvo) ++ kieliArvot
       }

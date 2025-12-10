@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams, type NavigateOptions } from 'react-router';
 import { isEmptyish } from 'remeda';
 
 export const useOppijaTunnisteParamState = () => {
@@ -9,7 +9,7 @@ export const useOppijaTunnisteParamState = () => {
   const navigate = useNavigate();
 
   const setOppijaTunniste = useCallback(
-    (newOppijaTunniste: string) => {
+    (newOppijaTunniste: string, options?: NavigateOptions) => {
       const newLocation = { ...location };
       const pathParts = location.pathname.split('/');
       if (isEmptyish(newOppijaTunniste)) {
@@ -19,7 +19,7 @@ export const useOppijaTunnisteParamState = () => {
         pathParts.splice(2, 1, encodedNewOppijanumero);
       }
       newLocation.pathname = pathParts.join('/');
-      navigate(newLocation);
+      navigate(newLocation, options);
     },
     [location, navigate],
   );

@@ -2,7 +2,7 @@ FROM node:24
 WORKDIR /app
 EXPOSE 3000
 RUN mkdir -p /home/appuser && chmod -R 777 /home/appuser
-RUN mkdir -p /pnpm && chmod -R 777 /pnpm
+RUN mkdir -p /pnpm/store && chmod -R 777 /pnpm
 
 # Ensure /app and node_modules directory is writable by any user
 RUN mkdir -p /app/node_modules && chmod -R 777 /app/node_modules

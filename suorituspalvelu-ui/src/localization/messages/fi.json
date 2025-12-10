@@ -297,7 +297,7 @@
     "tallennetaan-yliajoa": "Tallennetaan kentän arvoa...",
     "poistetaan-yliajoa": "Poistetaan kentän arvoa...",
     "tallenna": "Tallenna",
-    "alkuperainen": "Alkuperäinen",
+    "alkuperainen": "Yliajamaton",
     "selite": "Selite",
     "selite-aputeksti": "Kuvaile tähän miksi muokkasit tietoa",
     "lisaa-kentta": "Lisää kenttä",
@@ -315,7 +315,8 @@
     "haku": "Haku, jota tiedot koskevat",
     "valitse-haku": "Valitse haku",
     "valittu-haku-virheellinen": "Valittu haku on virheellinen.",
-    "hakemuksesta-opiskelijavalintaan-tulevat-tiedot": "Hakemuksesta opiskelijavalintaan tulevat tiedot"
+    "hakemuksesta-opiskelijavalintaan-tulevat-tiedot": "Hakemuksesta opiskelijavalintaan tulevat tiedot",
+    "arvon-selitteet-label": "Arvon selitteet"
   },
   "search": {
     "tabs": {
