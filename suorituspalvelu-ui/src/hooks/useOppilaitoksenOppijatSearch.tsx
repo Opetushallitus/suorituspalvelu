@@ -2,7 +2,11 @@ import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { BackendOppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { isNonNullish, isNullish, pickBy } from 'remeda';
-import { useSearchParams, type NavigateOptions } from 'react-router';
+import {
+  useLocation,
+  useSearchParams,
+  type NavigateOptions,
+} from 'react-router';
 import { useMemo } from 'react';
 
 type OppijatSearchParams = BackendOppijatSearchParams & {
@@ -14,7 +18,12 @@ export function useOppilaitoksenOppijatSearchParamsState() {
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
-  const suodatus = searchParams.get('suodatus');
+
+  const location = useLocation();
+
+  const tarkastusSearchTerm = location.state?.tarkastusSearchTerm as
+    | string
+    | undefined;
 
   return useMemo(
     () => ({
@@ -22,10 +31,11 @@ export function useOppilaitoksenOppijatSearchParamsState() {
         params: OppijatSearchParams,
         options?: NavigateOptions,
       ) => {
+        const { suodatus, ...rest } = params;
         setSearchParams(
           (prev) => {
             const next = new URLSearchParams(prev);
-            Object.entries(params).forEach(([key, value]) => {
+            Object.entries(rest).forEach(([key, value]) => {
               if (isNullish(value) || value === '') {
                 next.delete(key);
               } else {
@@ -34,16 +44,20 @@ export function useOppilaitoksenOppijatSearchParamsState() {
             });
             return next;
           },
-          { replace: false, ...options }, // Use push to add to history
+          {
+            replace: false,
+            ...options,
+            state: { ...location.state, tarkastusSearchTerm: suodatus },
+          }, // Use push to add to history
         );
       },
       searchParams: pickBy(
-        { suodatus, oppilaitos, luokka, vuosi },
+        { suodatus: tarkastusSearchTerm, oppilaitos, luokka, vuosi },
         isNonNullish,
       ),
       hasValidSearchParams: oppilaitos !== null && vuosi !== null,
     }),
-    [suodatus, oppilaitos, luokka, vuosi],
+    [tarkastusSearchTerm, oppilaitos, luokka, vuosi],
   );
 }
 

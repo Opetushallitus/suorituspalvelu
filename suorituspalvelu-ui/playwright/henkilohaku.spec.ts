@@ -28,13 +28,12 @@ test.describe('Henkilöhaku', () => {
         }
       }
     });
-
-    await page.goto('henkilo');
   });
 
   test('näyttää ilmoituksen, jos ei henkilö löytynyt tai hakutermi ei validi', async ({
     page,
   }) => {
+    await page.goto('henkilo');
     const searchInput = getSearchInput(page);
 
     // Nimellä hakeminen ei ole mahdollista
@@ -50,32 +49,58 @@ test.describe('Henkilöhaku', () => {
     await searchInput.fill(NOT_FOUND_OPPIJANUMERO);
     await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
     await expect(getOppijaHeading(page)).toBeHidden();
+    await expect(page).toHaveURL((url) => url.toString().endsWith(`/henkilo`));
     await searchInput.fill(NOT_FOUND_HETU);
     await expect(page.getByText('Henkilöä ei löytynyt')).toBeVisible();
     await expect(getOppijaHeading(page)).toBeHidden();
-    await expect(page).toHaveURL((url) =>
-      url.toString().includes(`henkilo/${NOT_FOUND_HETU}`),
-    );
+    await expect(page).toHaveURL((url) => url.toString().endsWith(`/henkilo`));
   });
 
-  test('suodattaa oppijanumerolla ja muuttaa URL:a', async ({ page }) => {
+  test('suodattaa oppijanumerolla ja muuttaa URL:a, jos henkilö löytyy', async ({
+    page,
+  }) => {
+    await page.goto('henkilo');
     const searchInput = getSearchInput(page);
 
     await searchInput.fill(OPPIJANUMERO);
     await expect(page).toHaveURL((url) =>
-      url.toString().includes(`henkilo/${OPPIJANUMERO}`),
+      url.toString().endsWith(`henkilo/${OPPIJANUMERO}/suoritustiedot`),
     );
 
     await expect(getOppijaHeading(page)).toBeVisible();
   });
 
-  test('suodattaa henkilötunnuksella ja muuttaa URL:a', async ({ page }) => {
-    const searchInput = getSearchInput(page);
+  test('näyttää virheen ja poistaa henkilötunnuksen URL:sta, jos yrittää navigoida suoraan henkilötunnuksella', async ({
+    page,
+  }) => {
+    await page.goto(`henkilo/${HETU}`);
 
+    await expect(
+      page
+        .getByRole('alert')
+        .filter({ hasText: 'Suora linkitys henkilötunnukseen on kielletty!' }),
+    ).toBeVisible();
+
+    await expect(page).toHaveURL((url) => url.toString().endsWith('/henkilo'));
+
+    await expect(
+      page.getByText(
+        'Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.',
+      ),
+    ).toBeVisible();
+
+    await expect(getOppijaHeading(page)).toBeHidden();
+  });
+
+  test('suodattaa henkilötunnuksella ja näyttää oppijanumeron URL:ssä, jos oppija löytyy', async ({
+    page,
+  }) => {
+    await page.goto('henkilo');
+    const searchInput = getSearchInput(page);
     await searchInput.fill(HETU);
 
     await expect(page).toHaveURL((url) =>
-      url.toString().includes(`henkilo/${HETU}`),
+      url.toString().endsWith(`henkilo/${OPPIJANUMERO}/suoritustiedot`),
     );
 
     await expect(getOppijaHeading(page)).toBeVisible();

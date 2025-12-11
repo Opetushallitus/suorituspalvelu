@@ -7,6 +7,8 @@ import VALINTA_DATA from './fixtures/valintaData.json' with { type: 'json' };
 import { selectOption, stubKayttajaResponse } from './lib/playwrightUtils';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
+
+const HETU = OPPIJAN_TIEDOT.henkiloTunnus;
 const OPPILAITOS_OID = OPPILAITOKSET.oppilaitokset[0]?.oid ?? '';
 const OPPILAITOS_NIMI = OPPILAITOKSET.oppilaitokset[0]?.nimi.fi ?? '';
 
@@ -16,10 +18,10 @@ const getVuosiSelect = (page: Page) => page.getByLabel('Valmistumisvuosi');
 
 const getLuokkaSelect = (page: Page) => page.getByLabel('Luokka');
 
-const getSuodatusInput = (page: Page) =>
-  page.getByPlaceholder('Suodata nimellä tai hetulla');
-
 const getHenkilotSidebar = (page: Page) => page.getByTestId('henkilot-sidebar');
+
+const getSuodatusInput = (page: Page) =>
+  getHenkilotSidebar(page).getByPlaceholder('Suodata nimellä tai hetulla');
 
 test.describe('Tarkastusnäkymä', () => {
   test.beforeEach(async ({ page }) => {
@@ -186,10 +188,6 @@ test.describe('Tarkastusnäkymä', () => {
 
     await suodatusInput.fill('Olli');
 
-    await expect(page).toHaveURL(
-      (url) => url.searchParams.get('suodatus') === 'Olli',
-    );
-
     await expect(henkilotSidebar.getByText('1 henkilö')).toBeVisible();
     await expect(
       henkilotSidebar.getByRole('link', { name: 'Olli Oppija' }),
@@ -202,19 +200,24 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ page, name: 'Oppilaitos', option: OPPILAITOS_NIMI });
 
     const henkilotSidebar = getHenkilotSidebar(page);
+    const navigationLinks = henkilotSidebar
+      .getByRole('navigation', { name: 'Henkilövalitsin' })
+      .getByRole('link');
+
     await expect(henkilotSidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(navigationLinks).toHaveCount(3);
 
     const suodatusInput = getSuodatusInput(page);
 
     await suodatusInput.fill('Olli');
-    await expect(page).toHaveURL(
-      (url) => url.searchParams.get('suodatus') === 'Olli',
-    );
+    await expect(henkilotSidebar.getByText('1 henkilö')).toBeVisible();
+    await expect(navigationLinks).toHaveCount(1);
+    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija010296-1230');
 
     await suodatusInput.clear();
-    await expect(page).toHaveURL((url) => {
-      return url.searchParams.get('suodatus') === null;
-    });
+
+    await expect(henkilotSidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(navigationLinks).toHaveCount(3);
   });
 
   test('oppijan valinta näyttää oppijan tiedot', async ({ page }) => {
@@ -289,6 +292,7 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ page, name: 'Luokka', option: '9A' });
     const suodatusInput = getSuodatusInput(page);
     await suodatusInput.fill('Olli');
+    await expect(page.getByText('1 henkilö')).toBeVisible();
 
     await selectOption({
       name: 'Oppilaitos',
@@ -297,10 +301,9 @@ test.describe('Tarkastusnäkymä', () => {
     });
 
     await expect(page).toHaveURL(
-      (url) =>
-        url.searchParams.get('luokka') === null &&
-        url.searchParams.get('suodatus') === null,
+      (url) => url.searchParams.get('luokka') === null,
     );
+    await expect(suodatusInput).toHaveValue('');
   });
 
   test('vuoden vaihtaminen tyhjentää luokan ja suodatuksen', async ({
@@ -316,6 +319,7 @@ test.describe('Tarkastusnäkymä', () => {
 
     const suodatusInput = getSuodatusInput(page);
     await suodatusInput.fill('Olli');
+    await expect(page.getByText('1 henkilö')).toBeVisible();
 
     await selectOption({
       page,
@@ -324,19 +328,36 @@ test.describe('Tarkastusnäkymä', () => {
     });
 
     await expect(page).toHaveURL(
-      (url) =>
-        url.searchParams.get('luokka') === null &&
-        url.searchParams.get('suodatus') === null,
+      (url) => url.searchParams.get('luokka') === null,
     );
+    await expect(suodatusInput).toHaveValue('');
   });
 
-  test('uudelleenohjataan henkilötunnuksesta oppijanumeroon', async ({
+  test('näytetään oppijan tiedot oppijanumerolla navigoitaessa', async ({
     page,
   }) => {
-    await page.goto('tarkastus/010296-1230');
+    await page.goto(`tarkastus/${OPPIJANUMERO}`);
+
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+  });
+
+  test('Näytetään virhe, jos henkiön tietoihin yritetään navigoida henkilötunnuksella', async ({
+    page,
+  }) => {
+    await page.goto(`tarkastus/${HETU}`);
+
+    await expect(
+      page.getByText(`Tunniste ${HETU} ei ole oppijanumero.`),
+    ).toBeVisible();
 
     await expect(page).toHaveURL((url) =>
-      url.pathname.includes('tarkastus/1.2.246.562.24.40483869857'),
+      url.pathname.endsWith(`tarkastus/${HETU}`),
     );
+
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeHidden();
   });
 });

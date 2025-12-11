@@ -18,12 +18,12 @@ export default [
   layout('./RootLayout.tsx', [
     index('./RootIndex.tsx'),
     route(
-      '/henkilo/:oppijaTunniste?',
+      '/henkilo/:oppijaNumero?',
       './HenkiloLayout.tsx',
       tiedotRoutes('henkilo'),
     ),
     route(
-      '/tarkastus/:oppijaTunniste?',
+      '/tarkastus/:oppijaNumero?',
       './TarkastusLayout.tsx',
       tiedotRoutes('tarkastus'),
     ),

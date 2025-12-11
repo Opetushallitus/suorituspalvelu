@@ -1,7 +1,6 @@
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import { OphButton, ophColors } from '@opetushallitus/oph-design-system';
-import React from 'react';
-import { Link, useLocation } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { join, pipe, splice, split } from 'remeda';
@@ -49,9 +48,10 @@ const TabButton = ({ tabName }: { tabName: string }) => {
 
   return (
     <OphButton
-      component={Link}
+      component={NavLink}
       variant={selectedTabName === tabName ? 'contained' : 'text'}
       to={{ pathname, search: preservedSearchParams.toString() }}
+      state={location.state}
     >
       {t(`search.tabs.${tabName}`)}
     </OphButton>

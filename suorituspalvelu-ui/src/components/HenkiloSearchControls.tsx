@@ -1,24 +1,72 @@
 import { useTranslations } from '@/hooks/useTranslations';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { SearchInput } from './SearchInput';
-import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 import { StyledSearchControls } from './StyledSearchControls';
+import { useLocation, useNavigate } from 'react-router';
+import type { SearchNavigationState } from '@/types/navigation';
+import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import { isHenkilotunnus, isOppijaNumero } from '@/lib/common';
+import { isEmptyish } from 'remeda';
+import { useNotifications } from './NotificationProvider';
 
 export const HenkiloSearchControls = () => {
   const { t } = useTranslations();
 
-  const { oppijaTunniste, setOppijaTunniste } = useOppijaTunnisteParamState();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const locationState = location.state as SearchNavigationState | undefined;
 
-  const onClear = useCallback(() => {
-    setOppijaTunniste('');
-  }, [setOppijaTunniste]);
+  const { oppijaNumero } = useOppijaNumeroParamState();
+
+  const henkiloSearchTerm = locationState?.henkiloSearchTerm;
+
+  const { showNotification } = useNotifications();
 
   const onChange = useCallback(
     (value: string) => {
-      setOppijaTunniste(value);
+      const newLocation = { ...location };
+      if (
+        isEmptyish(value) ||
+        !isHenkilotunnus(value) ||
+        !isOppijaNumero(value)
+      ) {
+        const pathParts = location.pathname.split('/');
+        pathParts.splice(2);
+        newLocation.pathname = pathParts.join('/');
+      }
+      navigate(newLocation, {
+        state: {
+          ...locationState,
+          henkiloSearchTerm: value,
+        },
+      });
     },
-    [setOppijaTunniste],
+    [location, navigate],
   );
+
+  const onClear = useCallback(() => {
+    onChange('');
+  }, [location, navigate, onChange]);
+
+  useEffect(() => {
+    if (henkiloSearchTerm === undefined && !isEmptyish(oppijaNumero)) {
+      {
+        navigate(location, {
+          state: {
+            ...location.state,
+            henkiloSearchTerm: oppijaNumero,
+          },
+        });
+      }
+    }
+    if (isHenkilotunnus(oppijaNumero)) {
+      onClear();
+      showNotification({
+        message: t('search.henkilotunnukseen-linkitys-kielletty'),
+        type: 'error',
+      });
+    }
+  }, [locationState, oppijaNumero, t]);
 
   return (
     <StyledSearchControls>
@@ -28,7 +76,7 @@ export const HenkiloSearchControls = () => {
           maxWidth: '400px',
         }}
         label={t('search.hae-henkilo')}
-        value={oppijaTunniste ?? ''}
+        value={henkiloSearchTerm ?? ''}
         placeholder={t('search.henkilo-input-placeholder')}
         onClear={onClear}
         onChange={onChange}
