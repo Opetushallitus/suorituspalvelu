@@ -190,16 +190,30 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String])]), DB_TIMEOUT)
       .map((json, data) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), data)).head
 
-  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Map[String, Set[String]] = Map.empty) = {
+  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Seq[Ohjausvastuu]) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
     val deletePrevious = sqlu"""DELETE FROM opiskeluoikeudet WHERE versio_tunniste=${versio.tunniste.toString}::uuid"""
-    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL, metadata=${metadata.map((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).flatten.toSeq} WHERE tunniste=${versio.tunniste.toString}::uuid"""
+    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL WHERE tunniste=${versio.tunniste.toString}::uuid"""
     val dataInserts = opiskeluoikeudet.map(opiskeluoikeus =>
       sqlu"""
             INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb)
             """)
-    val metadataArvotInserts = metadata.flatMap((avain, arvot) => arvot.map(arvo => sqlu"""INSERT INTO metadata_arvot (avain, arvo) VALUES($avain, $arvo) ON CONFLICT DO NOTHING"""))
-    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataArvotInserts).transactionally), DB_TIMEOUT)
+    val metadataInserts = metadata.map(ohjausvastuu =>
+      sqlu"""
+            INSERT INTO ohjausvastuut (versio_tunniste, oppijanumero, versio_voimassaolo, voimassaolo, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, toinenaste)
+            VALUES(
+              ${versio.tunniste.toString}::uuid,
+              ${versio.oppijaNumero},
+              tstzrange(${versio.alku.toString}::timestamptz, ${versio.loppu.map(ov => ov.toString).getOrElse("infinity")}::timestamptz),
+              tstzrange(${ohjausvastuu.alku.toString}::timestamptz, ${ohjausvastuu.loppu.map(ov => ov.toString).getOrElse("infinity")}::timestamptz),
+              ${ohjausvastuu.oppilaitosOid},
+              ${ohjausvastuu.valmistumisvuosi},
+              ${ohjausvastuu.luokka},
+              ${ohjausvastuu.tila.toString},
+              ${ohjausvastuu.arvosanapuuttuu},
+              ${ohjausvastuu.toinenAste})
+            """)
+    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataInserts).transactionally), DB_TIMEOUT)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
@@ -271,6 +285,77 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               FROM versiot
               WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
+
+  def haeOppijat(oppilaitosOid: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean): Set[String] =
+    Await.result(db.run(
+        sql"""
+          WITH
+          -- Haetaan henkilöt jotka oppilaitoksen ja valmistumisvuoden tarkastuslistalla elleivät siirtyneet muualle
+          initial_oppijat AS NOT MATERIALIZED (
+            SELECT oppijanumero
+            FROM ohjausvastuut
+            WHERE oppilaitos_oid=$oppilaitosOid
+            AND valmistumisvuosi=$valmistumisVuosi
+            AND upper(versio_voimassaolo)='infinity'::timestamptz
+          ),
+          -- Konstruoidaan yllä listatuille henkilöille kaikki ohjausvastuut siten että niiden voimassaolo päättyy
+          -- seuraavan ohjausvastuun alkuun. Oletuksena ettei näillä henkilöillä ole aliaksia. Mikäli henkilöllä on
+          -- aliaksia, henkilö on tässä listassa, mutta tarkan tiedon saamiseksi pitää hakea kaikkien aliaksien
+          -- suoritukset ja konstruoida näiden perusteella lista ohjausvastuista
+          paattyvatvastuut AS NOT MATERIALIZED (
+            SELECT
+              oppijanumero,
+              oppilaitos_oid,
+              valmistumisvuosi,
+              luokka,
+              tila,
+              arvosanapuuttuu,
+              toinenaste,
+              -- ohjausvastuun loppu on järjestyksessä seuraavan ohjausvastuun alku jos sellainen löytyy
+              COALESCE(LEAD(lower(ohjausvastuut.voimassaolo)) OVER (PARTITION BY ohjausvastuut.oppijanumero ORDER BY lower(ohjausvastuut.voimassaolo) ASC), upper(ohjausvastuut.voimassaolo)) as loppu
+            FROM ohjausvastuut
+            WHERE upper(versio_voimassaolo)='infinity'::timestamptz
+            AND oppijanumero IN (SELECT oppijanumero FROM initial_oppijat)
+          )
+          -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
+          SELECT oppijanumero
+          FROM paattyvatvastuut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND valmistumisvuosi=$valmistumisVuosi
+          AND (${!luokka.isDefined} OR luokka=$luokka)
+          AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
+          AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
+          AND toinenaste=false
+          AND loppu>=now()
+        """.as[String]), DB_TIMEOUT).toSet
+
+  def haePKOppilaitokset(): Set[String] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT oppilaitos_oid
+          FROM ohjausvastuut
+          WHERE toinenaste=false
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT).toSet
+  
+  def haeVuodet(oppilaitosOid: String): Set[String] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT valmistumisVuosi
+          FROM ohjausvastuut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT).toSet
+
+  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT luokka
+          FROM ohjausvastuut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND valmistumisvuosi=$valmistumisVuosi
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT).toSet
 
   def parseMetadata(avainArvot: Seq[String]): Map[String, Set[String]] =
     avainArvot.map(element => {

@@ -81,9 +81,10 @@ class UIServiceTest extends BaseIntegraatioTesti {
       OPPILAITOS_OID,
       suoritukset,
       None,
-      if (vuosi.isDefined) VALMIS else KESKEN
+      if (vuosi.isDefined) VALMIS else KESKEN,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
   /*
    * Integraatiotestit metadatapohjaiselle oppijoiden haulle
@@ -225,9 +226,10 @@ class UIServiceTest extends BaseIntegraatioTesti {
         Set.empty
       )),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // palautuu true koska oppijalla oppilaitoksessa pk-suoritus
     Assertions.assertEquals(true, uiService.hasOppijanKatseluOikeus(oppijaOid))
@@ -264,9 +266,10 @@ class UIServiceTest extends BaseIntegraatioTesti {
         Set.empty
       )),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // palautuu false koska oppijalla pk-suoritus muuta toisessa oppilaitoksessa kuin oikeus
     Assertions.assertEquals(false, uiService.hasOppijanKatseluOikeus(oppijaOid))

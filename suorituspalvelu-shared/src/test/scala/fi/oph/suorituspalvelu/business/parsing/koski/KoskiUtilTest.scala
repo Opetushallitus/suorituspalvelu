@@ -18,7 +18,7 @@ import java.util.UUID
 class KoskiUtilTest {
 
   @Test def testIsYsiluokkalainenEiSuoritusta(): Unit =
-    Assertions.assertFalse(KoskiUtil.isOhjattava(Seq.empty))
+    Assertions.assertFalse(KoskiUtil.isYsiluokkalainen(Set.empty))
   
   @Test def testIsYsiluokkalainenTrue(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
@@ -45,16 +45,17 @@ class KoskiUtilTest {
           oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
           nimi = Kielistetty(None, None, None),
           koodi = Koodi("9", "perusopetuksenluokkaaste", None),
-          alkamisPaiva = None,
+          alkamisPaiva = Some(LocalDate.now().minusDays(1)),
           vahvistusPaivamaara = Some(LocalDate.now()),
           jaaLuokalle = false
         )
       ),
       lisatiedot = None,
-      tila = KESKEN
+      tila = KESKEN,
+      jaksot = List.empty
     )
     
-    Assertions.assertTrue(KoskiUtil.isOhjattava(Seq(opiskeluoikeus)))
+    Assertions.assertTrue(KoskiUtil.isYsiluokkalainen(Set(opiskeluoikeus)))
 
   @Test def testIsYsiluokkalainenValmisPerusopetus(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
@@ -81,14 +82,15 @@ class KoskiUtilTest {
           oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
           nimi = Kielistetty(None, None, None),
           koodi = Koodi("9", "perusopetuksenluokkaaste", None),
-          alkamisPaiva = None,
+          alkamisPaiva = Some(LocalDate.now().minusDays(1)),
           vahvistusPaivamaara = Some(LocalDate.now()),
           jaaLuokalle = false
         )
       ),
       lisatiedot = None,
-      tila = SuoritusTila.VALMIS
+      tila = SuoritusTila.VALMIS,
+      jaksot = List.empty
     )
 
-    Assertions.assertFalse(KoskiUtil.isOhjattava(Seq(opiskeluoikeus)))
+    Assertions.assertFalse(KoskiUtil.isYsiluokkalainen(Set(opiskeluoikeus)))
 }

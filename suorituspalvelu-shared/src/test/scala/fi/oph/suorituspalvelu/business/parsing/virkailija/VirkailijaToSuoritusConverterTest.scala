@@ -87,7 +87,8 @@ class VirkailijaToSuoritusConverterTest {
         )
       ),
       None,
-      SuoritusTila.VALMIS
+      SuoritusTila.VALMIS,
+      List(OpiskeluoikeusJakso(suoritus.valmistumispaiva.toScala.map(p => LocalDate.parse(p)).get, SuoritusTila.VALMIS))
     )
 
     Assertions.assertEquals(expected, converted)
@@ -146,7 +147,8 @@ class VirkailijaToSuoritusConverterTest {
         )
       ),
       None,
-      SuoritusTila.VALMIS
+      SuoritusTila.VALMIS,
+      List(OpiskeluoikeusJakso(suoritus.valmistumispaiva.toScala.map(p => LocalDate.parse(p)).get, SuoritusTila.VALMIS)  )
     )
 
     Assertions.assertEquals(expected, converted)

@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, NuortenPerusopetuksenOppiaineenOppimaara, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
@@ -51,6 +51,12 @@ object KoskiToSuoritusConverter {
       case "peruutettu"                 => SuoritusTila.KESKEYTYNYT
       case "paattynyt"                  => SuoritusTila.KESKEYTYNYT
       case "mitatoity"                  => throw new RuntimeException("Mitätöidyt suoritukset tulee filtteröidä pois ennen tilakonversiota")
+
+  def convertOpiskeluoikeusJaksot(jaksot: Seq[KoskiOpiskeluoikeusJakso]): List[OpiskeluoikeusJakso] = {
+    jaksot.map(j => OpiskeluoikeusJakso(j.alku, convertKoskiTila(j.tila.koodiarvo)))
+      .sortBy(_.alku)
+      .toList
+  }
 
   def isMitatoitu(tila: KoskiKoodi): Boolean =
     tila.koodiarvo == "mitatoity"
@@ -428,7 +434,8 @@ object KoskiToSuoritusConverter {
         opiskeluoikeus.oppilaitos.get.oid,
         toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
         opiskeluoikeus.lisätiedot,
-        parseTila(opiskeluoikeus, None).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy())))
+        parseTila(opiskeluoikeus, None).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
+        opiskeluoikeus.tila.map(t => convertOpiskeluoikeusJaksot(t.opiskeluoikeusjaksot)).getOrElse(dummy())))
     case opiskeluoikeus if opiskeluoikeus.isAmmatillinen =>
       Some(AmmatillinenOpiskeluoikeus(
         UUID.randomUUID(),
@@ -442,7 +449,8 @@ object KoskiToSuoritusConverter {
             ),
             o.oid)).getOrElse(dummy()),
         toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
-        opiskeluoikeus.tila))
+        opiskeluoikeus.tila,
+        opiskeluoikeus.tila.map(t => convertOpiskeluoikeusJaksot(t.opiskeluoikeusjaksot)).getOrElse(dummy())))
     case opiskeluoikeus =>
       Some(GeneerinenOpiskeluoikeus(
         UUID.randomUUID(),
@@ -450,7 +458,8 @@ object KoskiToSuoritusConverter {
         asKoodiObject(opiskeluoikeus.tyyppi),
         opiskeluoikeus.oppilaitos.get.oid,
         toSuoritukset(Seq(opiskeluoikeus), koodistoProvider),
-        opiskeluoikeus.tila))
+        opiskeluoikeus.tila,
+        opiskeluoikeus.tila.map(t => convertOpiskeluoikeusJaksot(t.opiskeluoikeusjaksot)).getOrElse(dummy())))
   }
 
   val SUORITYSTYYPPI_AMMATILLINENTUTKINTO                     = "ammatillinentutkinto"

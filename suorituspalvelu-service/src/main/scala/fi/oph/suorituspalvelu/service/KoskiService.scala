@@ -22,7 +22,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
 
 @Component
-class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseDef, hakemuspalveluClient: HakemuspalveluClientImpl,
+class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
                    tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider) {
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
@@ -62,11 +62,12 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         oppijanHaut.get(oppijaOid)
           .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
 
-      def isOhjattava(koskiData: String): Boolean =
+      def isYsiluokkalainen(koskiData: String): Boolean =
         val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData), koodistoProvider)
-        KoskiUtil.isOhjattava(opiskeluoikeudet)
+        // TODO: tässä ei oteta huomioon jos aliaksella muita suorituksia jotka katkaisisivat ysiluokkalaisuuden
+        KoskiUtil.isYsiluokkalainen(opiskeluoikeudet.toSet)
 
-      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isOhjattava(r.data))
+      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
       processKoskiDataForOppijat(ctx, new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
@@ -100,15 +101,13 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(DUMMY_JOB_CTX, koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
 
   private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
-    val kantaOperaatiot = KantaOperaatiot(database)
-
     data.map(oppija => {
       try {
         val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, Seq(oppija.data), fetchedAt)
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
           val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getTallennettavaMetadata(oikeudet))
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getOhjausvastuuMetadata(oikeudet.toSet))
         })
         SyncResultForHenkilo(oppija.oppijaOid, versio, None)
       } catch {

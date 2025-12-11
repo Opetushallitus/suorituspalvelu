@@ -158,9 +158,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty
       )),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // mockataan organisaatiopalvelun vastaus
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq.empty)
@@ -219,9 +220,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty
       )),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // haetaan vuodet ja katsotaan että täsmää
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
@@ -281,9 +283,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         false
       )),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // haetaan luokat ja katsotaan että täsmää, TODO: toistaiseksi luokka kovakoodattu kunnes saadaan koskesta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
@@ -560,9 +563,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty
       )),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // haetaan oppijoita oppilaitoksella ja vuodella
     val result = mvc.perform(MockMvcRequestBuilders
@@ -639,9 +643,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
-      AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None),
-    ))
+    val opiskeluoikeudet = Set(
+      AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
+    ).asInstanceOf[Set[Opiskeluoikeus]]
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, opiskeluoikeudet, KoskiUtil.getOhjausvastuuMetadata(opiskeluoikeudet))
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None))))

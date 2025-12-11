@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.fasterxml.jackson.annotation.{JsonCreator, JsonTypeInfo, JsonValue}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiArviointi, Kielistetty, KoskiLisatiedot, KoskiOpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiLisatiedot, KoskiOpiskeluoikeusTila}
 
 import java.util.UUID
 import java.time.{Instant, LocalDate}
@@ -54,6 +54,8 @@ case class Laajuus(arvo: BigDecimal, yksikko: Koodi, nimi: Option[Kielistetty], 
 case class Arvosana(koodi: Koodi, nimi: Kielistetty)
 
 case class Oppilaitos(nimi: Kielistetty, oid: String)
+
+case class OpiskeluoikeusJakso(alku: LocalDate, tila: SuoritusTila)
 
 case class ErikoisAmmattiTutkinto(tunniste: UUID,
                                   nimi: Kielistetty,
@@ -189,14 +191,15 @@ case class PerusopetuksenVuosiluokka(tunniste: UUID,
                                      vahvistusPaivamaara: Option[LocalDate],
                                      jaaLuokalle: Boolean) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOpiskeluoikeus(
+case class  PerusopetuksenOpiskeluoikeus(
                                          tunniste: UUID,
                                          oid: Option[String],
                                          oppilaitosOid: String,
                                          @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                          suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
                                          lisatiedot: Option[KoskiLisatiedot],
-                                         tila: SuoritusTila) extends Opiskeluoikeus, Tyypitetty
+                                         tila: SuoritusTila,
+                                         jaksot: List[OpiskeluoikeusJakso]) extends Opiskeluoikeus, Tyypitetty
 
 case class AmmatillinenOpiskeluoikeus(
                                        tunniste: UUID,
@@ -204,7 +207,8 @@ case class AmmatillinenOpiskeluoikeus(
                                        oppilaitos: Oppilaitos,
                                        @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                        suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                       tila: Option[KoskiOpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+                                       tila: Option[KoskiOpiskeluoikeusTila],
+                                       jaksot: List[OpiskeluoikeusJakso]) extends Opiskeluoikeus, Tyypitetty
 
 case class GeneerinenOpiskeluoikeus(
                                      tunniste: UUID,
@@ -213,7 +217,8 @@ case class GeneerinenOpiskeluoikeus(
                                      oppilaitosOid: String,
                                      @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
                                      suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
-                                     tila: Option[KoskiOpiskeluoikeusTila]) extends Opiskeluoikeus, Tyypitetty
+                                     tila: Option[KoskiOpiskeluoikeusTila],
+                                     jaksot: List[OpiskeluoikeusJakso]) extends Opiskeluoikeus, Tyypitetty
 
 case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
 
@@ -222,6 +227,15 @@ case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi, supaTila: SuoritusTi
 case class Koe(tunniste: UUID, koodi: Koodi, tutkintoKerta: LocalDate, arvosana: Koodi, pisteet: Option[Int])
 
 case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko)
+
+case class Ohjausvastuu(alku: LocalDate,
+                        loppu: Option[LocalDate],
+                        oppilaitosOid: String,
+                        valmistumisvuosi: Option[Int],
+                        luokka: Option[String],
+                        tila: Option[SuoritusTila],
+                        arvosanapuuttuu: Option[Boolean],
+                        toinenAste: Boolean)
 
 enum KKOpiskeluoikeusTila:
   case VOIMASSA
