@@ -85,11 +85,13 @@ export const OppijanTiedotPage = ({
   useEffect(() => {
     if (foundOppijaNumero) {
       if (isHenkilotunnus(oppijaTunniste)) {
+        // Asetetaan oppijanumero-querylle sama data, ettei tarvitse noutaa uudelleen
         queryClient.setQueryData(
           queryOptionsGetOppija(foundOppijaNumero).queryKey,
           tiedot,
         );
       }
+      // Asetetaan oppijanumero-parametri URL:iin, jos oppija löytyi
       setOppijaNumero(foundOppijaNumero, { replace: true });
     }
   }, [foundOppijaNumero, oppijaTunniste, tiedot, setOppijaNumero]);

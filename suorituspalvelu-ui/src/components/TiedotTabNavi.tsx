@@ -1,8 +1,9 @@
 import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 import { useTranslations } from '@/hooks/useTranslations';
+import { setTiedotTabInPath } from '@/lib/navigationPathUtils';
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
 import { DEFAULT_BOX_BORDER, ophColors, styled } from '@/lib/theme';
-import { Link, useSearchParams } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 
 const StyledContainer = styled('div')({
   borderBottom: DEFAULT_BOX_BORDER,
@@ -16,7 +17,7 @@ const StyledTabs = styled('nav')(({ theme }) => ({
   flexWrap: 'wrap',
 }));
 
-const StyledTab = styled(Link)<{ $active: boolean }>(({ $active }) => ({
+const StyledTab = styled(NavLink)<{ $active: boolean }>(({ $active }) => ({
   color: ophColors.blue2,
   cursor: 'pointer',
   borderBottom: '3px solid',
@@ -33,11 +34,10 @@ const StyledTab = styled(Link)<{ $active: boolean }>(({ $active }) => ({
 export const TiedotTabNavi = () => {
   const { t } = useTranslations();
   const activeTab = useSelectedTiedotTab();
-  const [searchParams] = useSearchParams();
 
   const { data: kayttaja } = useKayttaja();
 
-  const search = searchParams.toString();
+  const { pathname, search, state } = useLocation();
 
   return (
     <StyledContainer>
@@ -45,9 +45,11 @@ export const TiedotTabNavi = () => {
         <StyledTab
           $active={activeTab === 'suoritustiedot'}
           to={{
-            pathname: 'suoritustiedot',
+            pathname: setTiedotTabInPath(pathname, 'suoritustiedot'),
             search,
           }}
+          state={state}
+          prefetch="intent"
         >
           {t('tabs.suoritustiedot')}
         </StyledTab>
@@ -56,9 +58,13 @@ export const TiedotTabNavi = () => {
           <StyledTab
             $active={activeTab === 'opiskelijavalinnan-tiedot'}
             to={{
-              pathname: 'opiskelijavalinnan-tiedot',
+              pathname: setTiedotTabInPath(
+                pathname,
+                'opiskelijavalinnan-tiedot',
+              ),
               search,
             }}
+            state={state}
             prefetch="intent"
           >
             {t('tabs.opiskelijavalinnan-tiedot')}

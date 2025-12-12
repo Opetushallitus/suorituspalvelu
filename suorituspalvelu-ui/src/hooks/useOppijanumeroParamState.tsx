@@ -6,7 +6,7 @@ import {
   type NavigateOptions,
 } from 'react-router';
 import { isEmptyish } from 'remeda';
-import { getSelectedTiedotTab } from './useSelectedTiedotTab';
+import { setOppijaNumeroInPath } from '@/lib/navigationPathUtils';
 
 export const useOppijaNumeroParamState = () => {
   const { oppijaNumero } = useParams();
@@ -14,22 +14,17 @@ export const useOppijaNumeroParamState = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { pathname, state, search } = location;
+
   const setOppijaNumero = useCallback(
     (newOppijaNumero: string, options?: NavigateOptions) => {
-      const newLocation = { ...location };
-      const pathParts = location.pathname.split('/');
-      if (isEmptyish(newOppijaNumero)) {
-        pathParts.splice(2);
-      } else {
-        const tiedotTab = getSelectedTiedotTab(location.pathname);
-        const encodedNewOppijanumero = encodeURIComponent(newOppijaNumero);
-        pathParts.splice(2, 1, encodedNewOppijanumero);
-        pathParts.splice(3, 1, tiedotTab ?? 'suoritustiedot');
-      }
-      newLocation.pathname = pathParts.join('/');
-      navigate(newLocation, { state: location.state, ...options });
+      const newPathname = isEmptyish(newOppijaNumero)
+        ? setOppijaNumeroInPath(pathname, null)
+        : setOppijaNumeroInPath(pathname, newOppijaNumero);
+
+      navigate({ pathname: newPathname, search }, { state, ...options });
     },
-    [location, navigate],
+    [pathname, state, search, navigate],
   );
 
   return { oppijaNumero, setOppijaNumero };
