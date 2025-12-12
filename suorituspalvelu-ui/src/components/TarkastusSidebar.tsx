@@ -70,8 +70,7 @@ const SidebarContent = () => {
                 key={oppija.oppijaNumero}
                 prefetch="intent"
                 className={
-                  oppijaNumero === oppija.oppijaNumero ||
-                  oppijaNumero === oppija.hetu
+                  oppijaNumero === oppija.oppijaNumero
                     ? NAV_LIST_SELECTED_ITEM_CLASS
                     : ''
                 }

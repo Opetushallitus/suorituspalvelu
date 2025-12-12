@@ -92,7 +92,7 @@ export const OppijanTiedotPage = ({
       }
       setOppijaNumero(foundOppijaNumero, { replace: true });
     }
-  }, [foundOppijaNumero, oppijaTunniste, tiedot]);
+  }, [foundOppijaNumero, oppijaTunniste, tiedot, setOppijaNumero]);
 
   const { t } = useTranslations();
   return (

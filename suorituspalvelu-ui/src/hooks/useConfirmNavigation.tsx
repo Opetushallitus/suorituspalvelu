@@ -40,5 +40,5 @@ export const useConfirmNavigation = (
         },
       });
     }
-  }, [blocker.state, showConfirmation]);
+  }, [showConfirmation, onConfirm, blocker, t]);
 };

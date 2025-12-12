@@ -15,7 +15,7 @@ export const useLocationState = (key: string) => {
         ...options,
       });
     },
-    [location, navigate],
+    [key, location, navigate],
   );
 
   return [

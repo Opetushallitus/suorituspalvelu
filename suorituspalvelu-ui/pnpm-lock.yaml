@@ -128,6 +128,9 @@ importers:
       eslint-plugin-react:
         specifier: ^7.37.5
         version: 7.37.5(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-react-hooks:
+        specifier: ^7.0.1
+        version: 7.0.1(eslint@9.39.1(jiti@2.6.1))
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -1762,6 +1765,9 @@ packages:
       '@mui/material': ^6 || ^7
       next: ^14 || ^15
       react: ^18 || ^19
+    peerDependenciesMeta:
+      next:
+        optional: true
 
   '@playwright/test@1.57.0':
     resolution:
@@ -3360,6 +3366,15 @@ packages:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <6.0.0'
 
+  eslint-plugin-react-hooks@7.0.1:
+    resolution:
+      {
+        integrity: sha512-O0d0m04evaNzEPoSW+59Mezf8Qt0InfgGIBJnpC0h3NH/WjUAR7BIKUfysC6todmtiZ/A0oUVS8Gce0WhBrHsA==,
+      }
+    engines: { node: '>=18' }
+    peerDependencies:
+      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
+
   eslint-plugin-react-naming-convention@2.3.12:
     resolution:
       {
@@ -3862,6 +3877,18 @@ packages:
         integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==,
       }
     engines: { node: '>= 0.4' }
+
+  hermes-estree@0.25.1:
+    resolution:
+      {
+        integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==,
+      }
+
+  hermes-parser@0.25.1:
+    resolution:
+      {
+        integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==,
+      }
 
   hoist-non-react-statics@3.3.2:
     resolution:
@@ -6170,6 +6197,15 @@ packages:
       }
     engines: { node: '>=10' }
 
+  zod-validation-error@4.0.2:
+    resolution:
+      {
+        integrity: sha512-Q6/nZLe6jxuU80qb/4uJ4t5v2VEZ44lzQjPDhYJNztRQ4wyWc6VF3D3Kb/fAuPetZQnhS3hnajCf9CsWesghLQ==,
+      }
+    engines: { node: '>=18.0.0' }
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
+
   zod@4.1.13:
     resolution:
       {
@@ -7043,7 +7079,8 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  '@next/env@15.5.6': {}
+  '@next/env@15.5.6':
+    optional: true
 
   '@next/swc-darwin-arm64@15.5.6':
     optional: true
@@ -7072,8 +7109,9 @@ snapshots:
   '@opetushallitus/oph-design-system@1.1.0(@mui/material@7.3.6(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.1))(@types/react@19.2.7)(react@19.2.1))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(next@15.5.6(@babel/core@7.28.5)(@playwright/test@1.57.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)':
     dependencies:
       '@mui/material': 7.3.6(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.1))(@types/react@19.2.7)(react@19.2.1))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      next: 15.5.6(@babel/core@7.28.5)(@playwright/test@1.57.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
+    optionalDependencies:
+      next: 15.5.6(@babel/core@7.28.5)(@playwright/test@1.57.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
 
   '@playwright/test@1.57.0':
     dependencies:
@@ -7236,6 +7274,7 @@ snapshots:
   '@swc/helpers@0.5.15':
     dependencies:
       tslib: 2.8.1
+    optional: true
 
   '@tanstack/query-core@5.90.12': {}
 
@@ -7793,7 +7832,8 @@ snapshots:
       slice-ansi: 7.1.2
       string-width: 8.1.0
 
-  client-only@0.0.1: {}
+  client-only@0.0.1:
+    optional: true
 
   clsx@2.1.1: {}
 
@@ -8194,6 +8234,17 @@ snapshots:
       string-ts: 2.3.1
       ts-pattern: 5.9.0
       typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
+  eslint-plugin-react-hooks@7.0.1(eslint@9.39.1(jiti@2.6.1)):
+    dependencies:
+      '@babel/core': 7.28.5
+      '@babel/parser': 7.28.5
+      eslint: 9.39.1(jiti@2.6.1)
+      hermes-parser: 0.25.1
+      zod: 4.1.13
+      zod-validation-error: 4.0.2(zod@4.1.13)
     transitivePeerDependencies:
       - supports-color
 
@@ -8624,6 +8675,12 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  hermes-estree@0.25.1: {}
+
+  hermes-parser@0.25.1:
+    dependencies:
+      hermes-estree: 0.25.1
 
   hoist-non-react-statics@3.3.2:
     dependencies:
@@ -9077,6 +9134,7 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+    optional: true
 
   node-releases@2.0.27: {}
 
@@ -9235,6 +9293,7 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
+    optional: true
 
   postcss@8.5.6:
     dependencies:
@@ -9767,6 +9826,7 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.28.5
       babel-plugin-macros: 3.1.0
+    optional: true
 
   stylis@4.2.0: {}
 
@@ -10114,5 +10174,9 @@ snapshots:
   yaml@2.8.2: {}
 
   yocto-queue@0.1.0: {}
+
+  zod-validation-error@4.0.2(zod@4.1.13):
+    dependencies:
+      zod: 4.1.13
 
   zod@4.1.13: {}
