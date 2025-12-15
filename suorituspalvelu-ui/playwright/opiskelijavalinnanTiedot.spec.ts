@@ -71,7 +71,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'perustutkinto_suoritettu', value: 'true' },
       { label: 'peruskoulu_suoritusvuosi', value: '2016' },
       { label: 'ammatillinen_suoritettu', value: 'true' },
-      { label: 'lukio_suoritettu', value: 'false' },
+      { label: 'lukio_suoritettu', value: 'true (Yliajamaton: false )' },
       { label: 'yo_tutkinto_suoritettu', value: 'false' },
       // Lisäpistekoulutus
       { label: 'lisapistekoulutus_opisto', value: 'false' },
@@ -121,7 +121,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_TILA', value: 'true' },
       { label: 'PK_SUORITUSVUOSI', value: '2016' },
       { label: 'AM_TILA', value: 'true' },
-      { label: 'LK_TILA', value: 'false' },
+      { label: 'LK_TILA', value: 'true (Yliajamaton: false )' },
       { label: 'YO_TILA', value: 'false' },
       // Lisäpistekoulutus
       { label: 'LISAKOULUTUS_OPISTO', value: 'false' },
@@ -142,7 +142,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_ARVOSANA_GE', value: '9' },
       { label: 'PK_ARVOSANA_HI', value: '8' },
       { label: 'PK_ARVOSANA_KE', value: '7' },
-      { label: 'PK_ARVOSANA_KO', value: '8' },
+      { label: 'PK_ARVOSANA_KO', value: '8 (Yliajamaton: 9)' },
       { label: 'PK_ARVOSANA_KS', value: '9' },
       { label: 'PK_ARVOSANA_KU', value: '8' },
       { label: 'PK_ARVOSANA_LI', value: '9' },
@@ -591,7 +591,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     await expectLabeledValues(tiedot, [
       { label: 'perusopetuksen_kieli', value: 'FI' },
-      { label: 'lukio_suoritettu', value: 'false' },
     ]);
 
     await selectOption({
@@ -602,7 +601,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     await expectLabeledValues(tiedot, [
       { label: 'perusopetuksen_kieli', value: 'SV' },
-      { label: 'lukio_suoritettu', value: 'true' },
     ]);
 
     expect(page.url()).toContain(`haku=${SECOND_HAKU.hakuOid}`);
@@ -726,5 +724,29 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       name: 'Hakemuksesta opiskelijavalintaan tulevat tiedot',
     });
     await expect(hakemukseltaTiedotButton).toBeHidden();
+  });
+
+  test('Näytetään arvon selitteet kun klikataan info-ikonia', async ({
+    page,
+  }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    const lukio_suoritettu = tiedot.getByLabel('lukio_suoritettu');
+
+    await lukio_suoritettu
+      .getByRole('img', { name: 'Arvon selitteet' })
+      .hover();
+
+    await expect(
+      lukio_suoritettu.getByRole('tooltip', {
+        name: 'Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta',
+      }),
+    ).toBeVisible();
   });
 });
