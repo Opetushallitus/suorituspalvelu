@@ -407,7 +407,7 @@ export interface IOppijanTiedotSuccessResponse {
   etunimet?: string;
   sukunimi?: string;
   henkiloTunnus?: string;
-  syntymaAika: string;
+  syntymaAika?: string;
   oppijaNumero: string;
   henkiloOID: string;
   opiskeluoikeudet: IUIOpiskeluoikeus[];
