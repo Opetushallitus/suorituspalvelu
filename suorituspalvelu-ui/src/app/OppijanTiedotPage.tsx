@@ -1,5 +1,9 @@
 import { useTranslations } from '@/hooks/useTranslations';
-import { formatFinnishDate, formatHenkiloNimi } from '@/lib/common';
+import {
+  formatFinnishDate,
+  formatHenkiloNimi,
+  isHenkilotunnus,
+} from '@/lib/common';
 import type { OppijanTiedot } from '@/types/ui-types';
 import { Stack } from '@mui/material';
 import { OphTypography } from '@opetushallitus/oph-design-system';
@@ -10,7 +14,13 @@ import { TiedotTabNavi } from '../components/TiedotTabNavi';
 import { Outlet, type OppijaContext } from 'react-router';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
-import { useOppija } from '@/lib/suorituspalvelu-queries';
+import {
+  queryOptionsGetOppija,
+  useOppija,
+} from '@/lib/suorituspalvelu-queries';
+import { useEffect } from 'react';
+import { queryClient } from '@/lib/queryClient';
+import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -67,13 +77,32 @@ export const OppijanTiedotPage = ({
   oppijaTunniste?: string;
 }) => {
   const { data: tiedot } = useOppija(oppijaTunniste);
+
+  const foundOppijaNumero = tiedot?.oppijaNumero;
+
+  const { setOppijaNumero } = useOppijaNumeroParamState();
+
+  useEffect(() => {
+    if (foundOppijaNumero) {
+      if (isHenkilotunnus(oppijaTunniste)) {
+        queryClient.setQueryData(
+          queryOptionsGetOppija(foundOppijaNumero).queryKey,
+          tiedot,
+        );
+      }
+      setOppijaNumero(foundOppijaNumero, { replace: true });
+    }
+  }, [foundOppijaNumero, oppijaTunniste, tiedot]);
+
   const { t } = useTranslations();
   return (
     <>
       {tiedot ? (
         <OppijanTiedotContent tiedot={tiedot} />
       ) : (
-        <ResultPlaceholder text={t('search.henkiloa-ei-loytynyt')} />
+        <ResultPlaceholder
+          text={t('search.henkiloa-ei-loytynyt', { oppijaTunniste })}
+        />
       )}
     </>
   );

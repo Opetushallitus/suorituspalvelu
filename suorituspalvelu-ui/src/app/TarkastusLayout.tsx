@@ -1,70 +1,43 @@
-import { Stack } from '@mui/material';
+import { Alert, Stack } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Route } from './+types/TarkastusLayout';
-import {
-  queryOptionsGetOppija,
-  useOppija,
-} from '@/lib/suorituspalvelu-queries';
-import { redirect } from 'react-router';
+import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { TarkastusSidebar } from '@/components/TarkastusSidebar';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { queryClient } from '@/lib/queryClient';
 import { OppijanTiedotPage } from './OppijanTiedotPage';
-import {
-  getSelectedTiedotTab,
-  setSelectedTiedotTab,
-} from '@/hooks/useSelectedTiedotTab';
 import { TarkastusSearchControls } from '@/components/TarkastusSearchControls';
-import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
-import { isHenkilotunnus } from '@/lib/common';
-import { isDefined } from 'remeda';
+import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import { isOppijaNumero } from '@/lib/common';
 import { useIsTarkastusnakymaAllowed } from '@/hooks/useIsTarkastusnakymaAllowed';
 import { DoNotDisturb } from '@mui/icons-material';
-import { useEffect } from 'react';
+import { Box } from '@mui/system';
 
-export async function clientLoader({
-  params,
-  request,
-}: Route.ClientLoaderArgs) {
-  const { oppijaTunniste } = params;
-  const url = new URL(request.url);
-
-  if (oppijaTunniste) {
-    const tiedotTab = getSelectedTiedotTab(url.pathname);
-    if (!tiedotTab) {
-      url.pathname = setSelectedTiedotTab(url.pathname, 'suoritustiedot');
-      return redirect(url.toString());
-    }
-    queryClient.ensureQueryData(queryOptionsGetOppija(oppijaTunniste));
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  const { oppijaNumero } = params;
+  if (oppijaNumero) {
+    queryClient.ensureQueryData(queryOptionsGetOppija(oppijaNumero));
   }
 }
 
 const TarkastusContent = () => {
   const { t } = useTranslations();
 
-  const { oppijaTunniste, setOppijaTunniste } = useOppijaTunnisteParamState();
+  const { oppijaNumero } = useOppijaNumeroParamState();
 
-  const { data: oppija } = useOppija(oppijaTunniste);
+  if (!oppijaNumero) {
+    return <ResultPlaceholder text={t('search.hae-ja-valitse-henkilo')} />;
+  }
 
-  const oppijaNumero = oppija?.oppijaNumero;
-
-  useEffect(() => {
-    if (isDefined(oppijaNumero) && isHenkilotunnus(oppijaTunniste)) {
-      // Asetetaan sama querydata oppijanumerollle, jotta ei tarvitse noutaa uudelleen
-      queryClient.setQueryData(
-        queryOptionsGetOppija(oppijaNumero).queryKey,
-        oppija,
-      );
-      // Uudelleenohjaus henkilötunnus -> oppijanumero
-      setOppijaTunniste(oppijaNumero, { replace: true });
-    }
-  }, [oppijaNumero, oppijaTunniste, setOppijaTunniste]);
-
-  return oppijaTunniste ? (
-    <OppijanTiedotPage oppijaTunniste={oppijaTunniste} />
+  return isOppijaNumero(oppijaNumero) ? (
+    <OppijanTiedotPage oppijaTunniste={oppijaNumero} />
   ) : (
-    <ResultPlaceholder text={t('search.hae-ja-valitse-henkilo')} />
+    <Box sx={{ padding: 2 }}>
+      <Alert severity="error">
+        {t('search.virheellinen-oppijanumero', { oppijaNumero })}
+      </Alert>
+    </Box>
   );
 };
 

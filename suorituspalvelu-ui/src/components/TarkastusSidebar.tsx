@@ -14,7 +14,7 @@ import { useSelectedSearchTab } from '@/hooks/useSelectedSearchTab';
 import { SearchInput } from './SearchInput';
 import { Box, Stack } from '@mui/material';
 import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
-import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
+import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 
 const SidebarContent = () => {
   const { searchParams, setSearchParams, hasValidSearchParams } =
@@ -24,7 +24,7 @@ const SidebarContent = () => {
 
   const { t } = useTranslate();
 
-  const { oppijaTunniste } = useOppijaTunnisteParamState();
+  const { oppijaNumero } = useOppijaNumeroParamState();
 
   const searchTab = useSelectedSearchTab();
   const tiedotTab = useSelectedTiedotTab();
@@ -70,8 +70,8 @@ const SidebarContent = () => {
                 key={oppija.oppijaNumero}
                 prefetch="intent"
                 className={
-                  oppijaTunniste === oppija.oppijaNumero ||
-                  oppijaTunniste === oppija.hetu
+                  oppijaNumero === oppija.oppijaNumero ||
+                  oppijaNumero === oppija.hetu
                     ? NAV_LIST_SELECTED_ITEM_CLASS
                     : ''
                 }
