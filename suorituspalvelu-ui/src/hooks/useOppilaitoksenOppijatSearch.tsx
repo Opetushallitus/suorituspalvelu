@@ -25,6 +25,8 @@ export function useOppilaitoksenOppijatSearchParamsState() {
     | string
     | undefined;
 
+  const locationState = location.state;
+
   return useMemo(
     () => ({
       setSearchParams: (
@@ -47,7 +49,7 @@ export function useOppilaitoksenOppijatSearchParamsState() {
           {
             replace: false,
             ...options,
-            state: { ...location.state, tarkastusSearchTerm: suodatus },
+            state: { ...locationState, tarkastusSearchTerm: suodatus },
           }, // Use push to add to history
         );
       },
@@ -57,7 +59,14 @@ export function useOppilaitoksenOppijatSearchParamsState() {
       ),
       hasValidSearchParams: oppilaitos !== null && vuosi !== null,
     }),
-    [tarkastusSearchTerm, oppilaitos, luokka, vuosi],
+    [
+      locationState,
+      setSearchParams,
+      tarkastusSearchTerm,
+      oppilaitos,
+      luokka,
+      vuosi,
+    ],
   );
 }
 

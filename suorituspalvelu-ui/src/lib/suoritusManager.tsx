@@ -320,6 +320,10 @@ const useSuoritusManagerState = () => {
     mode,
     setOppijaOid,
     t,
+    isDirty,
+    showConfirmation,
+    mutationOperation,
+    oppijaOid,
   ]);
 };
 

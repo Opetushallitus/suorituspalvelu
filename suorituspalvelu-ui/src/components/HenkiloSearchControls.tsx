@@ -9,20 +9,11 @@ import { isHenkilotunnus, isOppijaNumero } from '@/lib/common';
 import { isEmptyish } from 'remeda';
 import { useNotifications } from './NotificationProvider';
 
-export const HenkiloSearchControls = () => {
-  const { t } = useTranslations();
-
+const useHenkiloSearchTermState = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const locationState = location.state as SearchNavigationState | undefined;
 
-  const { oppijaNumero } = useOppijaNumeroParamState();
-
-  const henkiloSearchTerm = locationState?.henkiloSearchTerm;
-
-  const { showNotification } = useNotifications();
-
-  const onChange = useCallback(
+  const setHenkiloSearchTerm = useCallback(
     (value: string) => {
       const newLocation = { ...location };
       if (
@@ -36,7 +27,7 @@ export const HenkiloSearchControls = () => {
       }
       navigate(newLocation, {
         state: {
-          ...locationState,
+          ...(location.state as SearchNavigationState),
           henkiloSearchTerm: value,
         },
       });
@@ -44,29 +35,48 @@ export const HenkiloSearchControls = () => {
     [location, navigate],
   );
 
+  const henkiloSearchTerm = (location.state as SearchNavigationState)
+    ?.henkiloSearchTerm;
+
+  return [henkiloSearchTerm, setHenkiloSearchTerm] as const;
+};
+
+export const HenkiloSearchControls = () => {
+  const { t } = useTranslations();
+
+  const { oppijaNumero } = useOppijaNumeroParamState();
+  const [henkiloSearchTerm, setHenkiloSearchTerm] = useHenkiloSearchTermState();
+
+  const { showNotification } = useNotifications();
+
+  const onChange = useCallback(
+    (value: string) => {
+      setHenkiloSearchTerm(value);
+    },
+    [setHenkiloSearchTerm],
+  );
+
   const onClear = useCallback(() => {
-    onChange('');
-  }, [location, navigate, onChange]);
+    setHenkiloSearchTerm('');
+  }, [setHenkiloSearchTerm]);
 
   useEffect(() => {
-    if (henkiloSearchTerm === undefined && !isEmptyish(oppijaNumero)) {
-      {
-        navigate(location, {
-          state: {
-            ...location.state,
-            henkiloSearchTerm: oppijaNumero,
-          },
-        });
-      }
-    }
     if (isHenkilotunnus(oppijaNumero)) {
-      onClear();
+      setHenkiloSearchTerm('');
       showNotification({
         message: t('search.henkilotunnukseen-linkitys-kielletty'),
         type: 'error',
       });
+    } else if (henkiloSearchTerm === undefined && !isEmptyish(oppijaNumero)) {
+      setHenkiloSearchTerm(oppijaNumero);
     }
-  }, [locationState, oppijaNumero, t]);
+  }, [
+    oppijaNumero,
+    henkiloSearchTerm,
+    t,
+    setHenkiloSearchTerm,
+    showNotification,
+  ]);
 
   return (
     <StyledSearchControls>

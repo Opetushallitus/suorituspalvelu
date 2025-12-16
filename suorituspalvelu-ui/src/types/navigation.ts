@@ -1,4 +1,4 @@
 export type SearchNavigationState = {
-  henkiloSearchTerm: string;
-  tarkastusSearchTerm: string;
+  henkiloSearchTerm?: string;
+  tarkastusSearchTerm?: string;
 };

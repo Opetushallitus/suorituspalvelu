@@ -266,7 +266,13 @@ export const EditSuoritusPaper = ({
       });
       onCancel();
     }
-  }, [suoritusvaihtoehdotError, suoritusOppilaitosOptionsError]);
+  }, [
+    suoritusvaihtoehdotError,
+    suoritusOppilaitosOptionsError,
+    onCancel,
+    showNotification,
+    t,
+  ]);
 
   const isLoading =
     isSuoritusvaihtoehdotLoading || isSuoritusOppilaitosOptionsLoading;
