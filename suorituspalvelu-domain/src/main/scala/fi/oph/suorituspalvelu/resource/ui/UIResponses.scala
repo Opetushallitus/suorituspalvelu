@@ -1467,15 +1467,14 @@ case class PoistaSuoritusFailureResponse(
   @BeanProperty virheAvaimet: java.util.Set[String],
 ) extends PoistaSuoritusResponse
 
-
 trait PoistaYliajotResponse()
 
 case class PoistaYliajoSuccessResponse() extends PoistaYliajotResponse
 
 case class PoistaYliajoFailureResponse(
-                                          @(Schema @field)(example = UI_POISTA_YLIAJO_EPAONNISTUI, requiredMode = RequiredMode.REQUIRED)
-                                          @BeanProperty virheAvaimet: java.util.Set[String],
-                                        ) extends PoistaYliajotResponse
+  @(Schema @field)(example = UI_POISTA_YLIAJO_EPAONNISTUI, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheAvaimet: java.util.Set[String],
+) extends PoistaYliajotResponse
 
 trait TallennaYliajotOppijalleResponse()
 
@@ -1483,7 +1482,8 @@ case class TallennaYliajotOppijalleSuccessResponse() extends TallennaYliajotOppi
 
 case class TallennaYliajotOppijalleFailureResponse(
   @(Schema @field)(example = UI_TALLENNA_YLIAJO_OPPIJALLE_TUNTEMATON_OPPIJA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty virheAvaimet: java.util.Set[String]) extends TallennaYliajotOppijalleResponse
+  @BeanProperty virheAvaimet: java.util.Set[String]
+) extends TallennaYliajotOppijalleResponse
 
 case class Yliajo(
   @(Schema @field)(example = ESIMERKKI_YLIAJO_AVAIN, requiredMode = RequiredMode.REQUIRED)
@@ -1498,4 +1498,6 @@ case class YliajoTallennusContainer(
   @BeanProperty henkiloOid: Optional[String], //Oppija, jonka arvoihin yliajo vaikuttaa
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakuOid: Optional[String],
-  yliajot: Optional[java.util.List[Yliajo]])
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty yliajot: Optional[java.util.List[Yliajo]]
+)
