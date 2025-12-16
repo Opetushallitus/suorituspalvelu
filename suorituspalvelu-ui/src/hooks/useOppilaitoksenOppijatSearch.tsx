@@ -8,6 +8,7 @@ import {
   type NavigateOptions,
 } from 'react-router';
 import { useMemo } from 'react';
+import type { SearchNavigationState } from '@/types/navigation';
 
 type OppijatSearchParams = BackendOppijatSearchParams & {
   suodatus?: string;
@@ -20,12 +21,8 @@ export function useOppilaitoksenOppijatSearchParamsState() {
   const luokka = searchParams.get('luokka');
 
   const location = useLocation();
-
-  const tarkastusSearchTerm = location.state?.tarkastusSearchTerm as
-    | string
-    | undefined;
-
-  const locationState = location.state;
+  const locationState = location.state as SearchNavigationState;
+  const tarkastusSearchTerm = locationState?.tarkastusSearchTerm;
 
   return useMemo(
     () => ({

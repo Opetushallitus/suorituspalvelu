@@ -60,6 +60,9 @@ export const isOppijaNumero = (value?: string | null) =>
 export const isHenkilotunnus = (value?: string | null) =>
   Boolean(value && /^\d{6}[a-zA-Z-]\d{3}\S{1}$/i.test(value));
 
+export const isValidOppijaTunniste = (value?: string | null) =>
+  isOppijaNumero(value) || isHenkilotunnus(value);
+
 export const BASENAME = '/suorituspalvelu';
 
 export const getCurrentYear = (): string => {

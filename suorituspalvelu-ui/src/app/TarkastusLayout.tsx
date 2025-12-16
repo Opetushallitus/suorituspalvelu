@@ -1,4 +1,4 @@
-import { Alert, Stack } from '@mui/material';
+import { Alert, Stack, Box } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Route } from './+types/TarkastusLayout';
 import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
@@ -12,7 +12,6 @@ import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 import { isOppijaNumero } from '@/lib/common';
 import { useIsTarkastusnakymaAllowed } from '@/hooks/useIsTarkastusnakymaAllowed';
 import { DoNotDisturb } from '@mui/icons-material';
-import { Box } from '@mui/system';
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const { oppijaNumero } = params;
