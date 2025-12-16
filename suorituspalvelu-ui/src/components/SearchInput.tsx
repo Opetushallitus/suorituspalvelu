@@ -40,23 +40,23 @@ export const SearchInput = ({
   value,
   ...props
 }: SearchInputProps) => {
-  const [localValue, setLocalValue] = useState(value);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [localValue, setLocalValue] = useState(value);
 
-  const previousValue = useRef<string>(value);
-
-  const valueHasChanged = previousValue.current !== value;
-  previousValue.current = value;
-
-  // Sync external value changes only when not in the middle of debouncing
-  if (valueHasChanged && !timeoutRef.current) {
-    setLocalValue(value);
-  }
+  useEffect(() => {
+    // Sync external value changes only when not debouncing
+    if (value !== localValue && !timeoutRef.current) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      setLocalValue(value);
+    }
+  }, [value, localValue]);
 
   useEffect(() => {
     return () => {
+      // Clear timeout when unmounting component so don't change state after component is unmounted
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
   }, []);
@@ -73,7 +73,7 @@ export const SearchInput = ({
       }, debounceMs);
       setLocalValue(newValue);
     },
-    [setLocalValue],
+    [setLocalValue, debounceMs, onChange],
   );
 
   const { t } = useTranslations();
