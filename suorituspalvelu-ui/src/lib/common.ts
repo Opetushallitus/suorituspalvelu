@@ -55,7 +55,7 @@ export const formatHenkiloNimi = (henkilo: Henkilo, t: TFunction) => {
 };
 
 export const isHenkiloOid = (value?: string | null) =>
-  Boolean(value && /^1\.2\.246\.562\.24\.\d+$/.test(value));
+  Boolean(value && /^1\.2\.246\.562\.(24|98)\.\d+$/.test(value));
 
 export const isHenkilotunnus = (value?: string | null) =>
   Boolean(value && /^\d{6}[a-zA-Z-]\d{3}\S{1}$/i.test(value));
