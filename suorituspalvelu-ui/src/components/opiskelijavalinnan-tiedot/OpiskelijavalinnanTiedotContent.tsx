@@ -1,8 +1,5 @@
 import { YliajoManagerProvider } from '@/lib/yliajoManager';
-import {
-  OpiskelijavalintaanSiirtyvatTiedot,
-  type AvainarvoRyhma,
-} from './OpiskelijavalintaanSiirtyvatTiedot';
+import { OpiskelijavalintaanSiirtyvatTiedot } from './OpiskelijavalintaanSiirtyvatTiedot';
 import { HakemukseltaTulevatTiedot } from './HakemukseltaTulevatTiedot';
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsGetValintadata } from '@/lib/suorituspalvelu-queries';
@@ -11,11 +8,9 @@ import { Stack } from '@mui/material';
 export function OpiskelijavalinnanTiedotContent({
   oppijaNumero,
   hakuOid,
-  avainarvoRyhma,
 }: {
   oppijaNumero: string;
   hakuOid: string;
-  avainarvoRyhma: AvainarvoRyhma;
 }) {
   const { data: valintaData } = useApiSuspenseQuery(
     queryOptionsGetValintadata({ oppijaNumero, hakuOid }),
@@ -24,7 +19,6 @@ export function OpiskelijavalinnanTiedotContent({
     <YliajoManagerProvider hakuOid={hakuOid}>
       <Stack spacing={3}>
         <OpiskelijavalintaanSiirtyvatTiedot
-          avainarvoRyhma={avainarvoRyhma}
           oppijaNumero={oppijaNumero}
           hakuOid={hakuOid}
           valintaData={valintaData}

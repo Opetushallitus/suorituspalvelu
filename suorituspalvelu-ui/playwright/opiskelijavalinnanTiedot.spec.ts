@@ -53,7 +53,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     );
   });
 
-  test('näyttää uudet avainarvot', async ({ page }) => {
+  test('näyttää avainarvot', async ({ page }) => {
     await page.goto(
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
