@@ -81,7 +81,6 @@ export interface IAvainArvoContainerUI {
 
 export interface IAvainArvoMetadataUI {
   selitteet: string[];
-  duplikaatti: boolean;
   arvoEnnenYliajoa?: string;
   yliajo?: IAvainArvoYliajoUI;
   arvoOnHakemukselta: boolean;

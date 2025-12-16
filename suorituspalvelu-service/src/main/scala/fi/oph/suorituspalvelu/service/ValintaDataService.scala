@@ -16,7 +16,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
 
 case class AvainArvoMetadata(selitteet: Seq[String],
-                             duplikaatti: Boolean,
                              arvoEnnenYliajoa: Option[String],
                              yliajo: Option[AvainArvoYliajo],
                              arvoOnHakemukselta: Boolean)
@@ -25,7 +24,7 @@ case class CombinedAvainArvoContainer(avain: String, arvo: String, metadata: Ava
 case class ValintaData(personOid: String, paatellytAvainArvot: Seq[CombinedAvainArvoContainer], hakemus: Option[ConvertedAtaruHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: String, laskennanAlkaminen: String) {
   def getAvainArvoMap: Map[String, String] = paatellytAvainArvot.map(a => (a.avain, a.arvo)).toMap
 
-  def hakemuksenAvainArvot = hakemus.map(_.avainArvot).getOrElse(Seq.empty).map(aa => CombinedAvainArvoContainer(aa.avain, aa.arvo, AvainArvoMetadata(aa.selitteet, duplikaatti = false, None, None, arvoOnHakemukselta = true)))
+  private def hakemuksenAvainArvot = hakemus.map(_.avainArvot).getOrElse(Seq.empty).map(aa => CombinedAvainArvoContainer(aa.avain, aa.arvo, AvainArvoMetadata(aa.selitteet, None, None, arvoOnHakemukselta = true)))
 
   def kaikkiAvainArvotFull(): Seq[CombinedAvainArvoContainer] = paatellytAvainArvot ++ hakemuksenAvainArvot
 
@@ -73,10 +72,10 @@ class ValintaDataService {
         val yliajo: Option[AvainArvoYliajo] = yliajotMap.get(baseContainer.avain)
         yliajo match {
           case None =>
-            val metadata = AvainArvoMetadata(baseContainer.selitteet, duplikaatti = false, None, None, arvoOnHakemukselta = false)
+            val metadata = AvainArvoMetadata(baseContainer.selitteet, None, None, arvoOnHakemukselta = false)
             CombinedAvainArvoContainer(baseContainer.avain, baseContainer.arvo, metadata)
           case Some(yliajo) =>
-            val metadata = AvainArvoMetadata(baseContainer.selitteet, duplikaatti = false, Some(baseContainer.arvo), Some(yliajo), arvoOnHakemukselta = false)
+            val metadata = AvainArvoMetadata(baseContainer.selitteet, Some(baseContainer.arvo), Some(yliajo), arvoOnHakemukselta = false)
             CombinedAvainArvoContainer(baseContainer.avain, yliajo.arvo, metadata)
         }
       })
@@ -84,7 +83,7 @@ class ValintaDataService {
     //Lisätään synteettiset tulokset sellaisille yliajoille, joille ei ollut valmista tulosta yliajettavaksi.
     val tuloksettomatYliajot: Iterable[AvainArvoYliajo] = yliajotMap.filter(yliajo => !tuloksetYliajoilla.exists(_.avain.equals(yliajo._2.avain))).values
     val synteettisetTulokset: Set[CombinedAvainArvoContainer] = tuloksettomatYliajot.map(yliajo => {
-      CombinedAvainArvoContainer(yliajo.avain, yliajo.arvo, AvainArvoMetadata(Seq.empty, duplikaatti = false, None, Some(yliajo), arvoOnHakemukselta = false))
+      CombinedAvainArvoContainer(yliajo.avain, yliajo.arvo, AvainArvoMetadata(Seq.empty, None, Some(yliajo), arvoOnHakemukselta = false))
     }).toSet
 
     tuloksetYliajoilla ++ synteettisetTulokset

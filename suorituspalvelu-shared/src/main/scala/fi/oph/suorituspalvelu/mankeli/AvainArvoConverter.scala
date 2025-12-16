@@ -23,7 +23,6 @@ case class AvainArvoConverterResults(personOid: String,
 
 case class AvainArvoContainer(avain: String,
                               arvo: String,
-                              duplikaatti: Boolean = false,
                               selitteet: Seq[String] = Seq.empty)
 
 object AvainArvoConstants {
@@ -195,16 +194,16 @@ object HakemusConverter {
       )
 
       val aa = Set(
-        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id", hakutoive.hakukohdeOid, false, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id", hakutoive.hakukohdeOid, Seq.empty),
         AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-eligibility",
           AvainArvoConstants.elibilityAtaruTilaToValintalaskentaTila
             .getOrElse(
               hakutoive.eligibilityState,
-              throw new RuntimeException(s"Unknown state: ${hakutoive.eligibilityState}")), false, Seq.empty),
-        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-processingState", hakutoive.processingState.toUpperCase, false, Seq.empty),
-        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-paymentObligation", hakutoive.paymentObligation.toUpperCase, false, Seq.empty),
-        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-languageRequirement", hakutoive.languageRequirement.toUpperCase, false, Seq.empty),
-        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-degreeRequirement", hakutoive.degreeRequirement.toUpperCase, false, Seq.empty)
+              throw new RuntimeException(s"Unknown state: ${hakutoive.eligibilityState}")), Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-processingState", hakutoive.processingState.toUpperCase, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-paymentObligation", hakutoive.paymentObligation.toUpperCase, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-languageRequirement", hakutoive.languageRequirement.toUpperCase, Seq.empty),
+        AvainArvoContainer("preference" + prioriteetti + "-Koulutus-id-degreeRequirement", hakutoive.degreeRequirement.toUpperCase, Seq.empty)
       )
 
       (valintalaskentaHakutoive, aa)
@@ -220,7 +219,7 @@ object HakemusConverter {
 
     //Todo, arvoille "language" ja "pohjakoulutus_vuosi" erilliskäsittelyä Koostepalvelussa. Päästäänkö nyt eroon?
     val avainArvotHakemukselta: Set[AvainArvoContainer] = hakemus.keyValues.map((k, v) => {
-      AvainArvoContainer(k, v, false, Seq.empty)
+      AvainArvoContainer(k, v, Seq.empty)
     }).toSet
     val avainArvotHakukohteilta: Set[AvainArvoContainer] = hakutoiveData._2
 
@@ -275,7 +274,7 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Telma-suoritusta.")
     }
 
-    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.telmaSuoritettuKey, tuoreinRiittava.isDefined.toString, false, suoritusSelite)
+    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.telmaSuoritettuKey, tuoreinRiittava.isDefined.toString, suoritusSelite)
 
     val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
       Some(AvainArvoContainer(AvainArvoConstants.telmaSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
@@ -306,7 +305,7 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
 
-    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritettuKey, tuoreinRiittava.isDefined.toString, false, suoritusSelite)
+    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritettuKey, tuoreinRiittava.isDefined.toString, suoritusSelite)
 
     val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
       Some(AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
@@ -348,7 +347,7 @@ object AvainArvoConverter {
     val ammSelite = s"Löytyi yhteensä ${allAmmSuoritukset.size} ammatillista suoritusta. " +
       s"Näistä ${validSuoritukset.size} oli vahvistettu viimeistään ${vahvistettuViimeistaan}. Vahvistuspäivät: ${allAmmSuoritukset.flatMap(_._2).distinct.mkString(", ")}"
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ammSuoritettuKey, validSuoritukset.nonEmpty.toString, false, Seq(ammSelite)))
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ammSuoritettuKey, validSuoritukset.nonEmpty.toString, Seq(ammSelite)))
 
     LOG.info(s"Ammatilliset arvot käsitelty henkilölle $personOid. $arvot")
     arvot
@@ -363,7 +362,7 @@ object AvainArvoConverter {
     val valmistumispaivaSelite = if (paivat.nonEmpty) s" Valmistumispaivat: ${paivat.mkString(", ")}" else ""
     val yoSelite = s"Löytyi yhteensä ${yoOpiskeluoikeudet.size} YO-opiskeluoikeutta." + valmistumispaivaSelite
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.yoSuoritettuKey, hasYoSuoritus.toString, false, Seq(yoSelite)))
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.yoSuoritettuKey, hasYoSuoritus.toString, Seq(yoSelite)))
 
     LOG.info(s"Yo-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
@@ -375,7 +374,7 @@ object AvainArvoConverter {
     val hasLukioSuoritus = false
     val lukioSelite = s"Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.lukioSuoritettuKey, hasLukioSuoritus.toString, false, Seq(lukioSelite)))
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.lukioSuoritettuKey, hasLukioSuoritus.toString, Seq(lukioSelite)))
 
     LOG.info(s"Lukioarvot käsitelty henkilölle $personOid. $arvot")
     arvot
@@ -450,14 +449,14 @@ object AvainArvoConverter {
 
         val suoritusVuosiArvo: Option[AvainArvoContainer] = perusopetuksenOppimaara
           .flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear))
-          .map(year => AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, year.toString, false, Seq(vahvistettuAjoissaSelite)))
+          .map(year => AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, year.toString, Seq(vahvistettuAjoissaSelite)))
 
-        val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, vahvistettuAjoissa.toString, false, Seq(vahvistettuAjoissaSelite))
+        val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, vahvistettuAjoissa.toString, Seq(vahvistettuAjoissaSelite))
 
         arvosanaArvot ++ kieliArvot ++ suoritusVuosiArvo ++ Some(suoritusArvo)
       } else {
         val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).getOrElse("-")}"
-        val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, vahvistettuAjoissa.toString, false, Seq(vahvistettuMyohassaSelite))
+        val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, vahvistettuAjoissa.toString, Seq(vahvistettuMyohassaSelite))
         Set(suoritusArvo) ++ kieliArvot
       }
     } else {

@@ -1203,7 +1203,6 @@ case class AvainArvoYliajoUI(@BeanProperty avain: String,
                              @BeanProperty selite: String)
 
 case class AvainArvoMetadataUI(@BeanProperty selitteet: java.util.List[String],
-                               @BeanProperty duplikaatti: Boolean, //Yleisesti ottaen duplikaattiavaimia ei varmaan kannata kälissä näyttää
                                @BeanProperty arvoEnnenYliajoa: Optional[String],
                                @BeanProperty yliajo: Optional[AvainArvoYliajoUI],
                                @BeanProperty arvoOnHakemukselta: Boolean) //Hakemukselta tulleita arvoja ei voi muokata Supassa, ja ne halutaan varmaan useimmiten piilottaa kälissä.

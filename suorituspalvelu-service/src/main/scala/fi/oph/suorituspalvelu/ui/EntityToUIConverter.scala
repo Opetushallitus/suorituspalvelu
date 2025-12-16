@@ -587,7 +587,6 @@ object EntityToUIConverter {
           aac.arvo,
           AvainArvoMetadataUI(
             aac.metadata.selitteet.toList.asJava,
-            aac.metadata.duplikaatti,
             aac.metadata.arvoEnnenYliajoa.toJava,
             aac.metadata.yliajo.map(y => {
               AvainArvoYliajoUI(
