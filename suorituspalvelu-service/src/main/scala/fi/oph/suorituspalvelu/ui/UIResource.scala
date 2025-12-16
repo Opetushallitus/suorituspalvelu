@@ -360,8 +360,9 @@ class UIResource {
               Right(oppijanTiedotRequest.tunniste.get)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(virheet.asJava))))
-          .flatMap(tunniste => this.uiService.resolveOppijaNumero(tunniste)
-            .toRight(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)))
+          .flatMap((tunniste: String) => {
+            this.uiService.resolveOppijaNumero(tunniste).toRight(ResponseEntity.status(HttpStatus.NOT_FOUND).build)
+          })
           .flatMap(oppijaNumero => {
               // tarkastetaan oikeudet haetulle oppijanumerolle
               if (this.uiService.hasOppijanKatseluOikeus(oppijaNumero))
