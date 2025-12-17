@@ -4,9 +4,8 @@ import { isGenericBackendErrorResponse } from '@/types/ui-types';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
-import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { useCallback, useEffect, useState, useTransition } from 'react';
-import { type AvainarvoRyhma } from '@/components/opiskelijavalinnan-tiedot/OpiskelijavalintaanSiirtyvatTiedot';
+import { Box, Stack } from '@mui/material';
+import { useCallback, useEffect, useTransition } from 'react';
 import {
   queryOptionsGetOppijanHaut,
   queryOptionsGetValintadata,
@@ -14,10 +13,7 @@ import {
 } from '@/lib/suorituspalvelu-queries';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { DoNotDisturb } from '@mui/icons-material';
-import {
-  OphFormFieldWrapper,
-  OphSelectFormField,
-} from '@opetushallitus/oph-design-system';
+import { OphSelectFormField } from '@opetushallitus/oph-design-system';
 import { only } from 'remeda';
 import { useQueryParam } from '@/hooks/useQueryParam';
 import { FullSpinner } from '@/components/FullSpinner';
@@ -38,9 +34,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
   const { t, translateKielistetty } = useTranslations();
 
   const { data: kayttaja } = useKayttaja();
-
-  const [avainarvoRyhma, setAvainarvoRyhma] =
-    useState<AvainarvoRyhma>('uudet-avainarvot');
 
   const { data: haut } = useApiSuspenseQuery(
     queryOptionsGetOppijanHaut(oppijaNumero),
@@ -104,29 +97,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
             setHakuOidWithTransition(event.target.value);
           }}
         />
-        <OphFormFieldWrapper
-          label={t('opiskelijavalinnan-tiedot.nayta')}
-          renderInput={({ labelId }) => (
-            <ToggleButtonGroup
-              sx={{ alignSelf: 'flex-end' }}
-              aria-labelledby={labelId}
-              value={avainarvoRyhma}
-              exclusive
-              onChange={(_event, newValue) => {
-                if (newValue) {
-                  setAvainarvoRyhma(newValue);
-                }
-              }}
-            >
-              <ToggleButton value="uudet-avainarvot">
-                {t('opiskelijavalinnan-tiedot.uudet-avainarvot')}
-              </ToggleButton>
-              <ToggleButton value="vanhat-avainarvot">
-                {t('opiskelijavalinnan-tiedot.vanhat-avainarvot')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          )}
-        />
       </Stack>
       <Box sx={{ paddingTop: 1 }}>
         {isHakuSwitching ? (
@@ -138,7 +108,6 @@ const OpiskelijavalinnanTiedotPageContent = ({
                 <OpiskelijavalinnanTiedotContent
                   oppijaNumero={oppijaNumero}
                   hakuOid={selectedHakuOid}
-                  avainarvoRyhma={avainarvoRyhma}
                 />
               ) : (
                 <ResultPlaceholder

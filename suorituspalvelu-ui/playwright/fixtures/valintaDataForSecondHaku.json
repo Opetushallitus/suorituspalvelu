@@ -3,51 +3,10 @@
   "hakuOID": "1.2.246.562.29.11111111111111111111",
   "avainArvot": [
     {
-      "avain": "PERUSKOULU_ARVOSANA_AI",
-      "arvo": "10",
-      "metadata": {
-        "selitteet": [],
-        "duplikaatti": false,
-        "arvoEnnenYliajoa": null,
-        "yliajo": null
-      }
-    },
-    {
-      "avain": "PERUSKOULU_ARVOSANA_MA",
-      "arvo": "10",
-      "metadata": {
-        "selitteet": [],
-        "duplikaatti": false,
-        "arvoEnnenYliajoa": null,
-        "yliajo": null
-      }
-    },
-    {
-      "avain": "perusopetuksen_kieli",
-      "arvo": "SV",
-      "metadata": {
-        "selitteet": [],
-        "duplikaatti": false,
-        "arvoEnnenYliajoa": null,
-        "yliajo": null
-      }
-    },
-    {
-      "avain": "lukio_suoritettu",
-      "arvo": "true",
-      "metadata": {
-        "selitteet": ["Lukiosuoritus löydetty"],
-        "duplikaatti": false,
-        "arvoEnnenYliajoa": null,
-        "yliajo": null
-      }
-    },
-    {
       "avain": "PK_ARVOSANA_AI",
       "arvo": "10",
       "metadata": {
         "selitteet": [],
-        "duplikaatti": true,
         "arvoEnnenYliajoa": null,
         "yliajo": null
       }
@@ -57,7 +16,6 @@
       "arvo": "10",
       "metadata": {
         "selitteet": [],
-        "duplikaatti": true,
         "arvoEnnenYliajoa": null,
         "yliajo": null
       }
@@ -67,7 +25,6 @@
       "arvo": "true",
       "metadata": {
         "selitteet": ["Lukiosuoritus löydetty"],
-        "duplikaatti": true,
         "arvoEnnenYliajoa": null,
         "yliajo": null
       }

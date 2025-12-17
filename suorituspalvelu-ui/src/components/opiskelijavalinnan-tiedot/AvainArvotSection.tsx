@@ -21,7 +21,7 @@ export const AvainArvotSection = ({
   startYliajoEdit,
 }: {
   avainarvot?: Array<AvainArvo>;
-  avainArvoFilter: (avainArvo: AvainArvo) => boolean;
+  avainArvoFilter?: (avainArvo: AvainArvo) => boolean;
   startYliajoEdit?: (avainarvo: {
     avain: string;
     arvo: string;

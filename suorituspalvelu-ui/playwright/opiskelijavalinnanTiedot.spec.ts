@@ -53,63 +53,10 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     );
   });
 
-  test('näyttää uudet avainarvot', async ({ page }) => {
+  test('näyttää avainarvot', async ({ page }) => {
     await page.goto(
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
-
-    const tiedot = page.getByRole('region', {
-      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
-    });
-    await expect(tiedot).toBeVisible();
-
-    await expectLabeledValues(tiedot, [
-      // General fields
-      { label: 'perusopetuksen_kieli', value: 'FI' },
-      // Suoritukset
-      { label: 'perustutkinto_suoritettu', value: 'true' },
-      { label: 'peruskoulu_suoritusvuosi', value: '2016' },
-      { label: 'ammatillinen_suoritettu', value: 'true' },
-      { label: 'lukio_suoritettu', value: 'true (Yliajamaton: false )' },
-      { label: 'yo_tutkinto_suoritettu', value: 'false' },
-      // Lisäpistekoulutus
-      { label: 'lisapistekoulutus_opisto', value: 'false' },
-      { label: 'lisapistekoulutus_telma', value: 'false' },
-      // Perusopetuksen oppiaineet
-      { label: 'PERUSKOULU_ARVOSANA_AI', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_AI_OPPIAINEEN_KIELI', value: 'AI1' },
-      { label: 'PERUSKOULU_ARVOSANA_MA', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_A1', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_A1_OPPIAINEEN_KIELI', value: 'EN' },
-      { label: 'PERUSKOULU_ARVOSANA_B1', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_B1_OPPIAINEEN_KIELI', value: 'SV' },
-      { label: 'PERUSKOULU_ARVOSANA_B2', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_B2_OPPIAINEEN_KIELI', value: 'DE' },
-      { label: 'PERUSKOULU_ARVOSANA_AOM', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_AOM_OPPIAINEEN_KIELI', value: 'FI' },
-      { label: 'PERUSKOULU_ARVOSANA_BI', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_FY', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_GE', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_HI', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_KE', value: '7' },
-      { label: 'PERUSKOULU_ARVOSANA_KO', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_KS', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_KT', value: '10' },
-      { label: 'PERUSKOULU_ARVOSANA_KU', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_LI', value: '9' },
-      { label: 'PERUSKOULU_ARVOSANA_MU', value: '7' },
-      { label: 'PERUSKOULU_ARVOSANA_TE', value: '8' },
-      { label: 'PERUSKOULU_ARVOSANA_YH', value: '10' },
-    ]);
-  });
-
-  test('näyttää vanhat avainarvot', async ({ page }) => {
-    await page.goto(
-      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
-    );
-    await page.getByRole('button', { name: 'Vanhat avainarvot' }).click();
-
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
     });
@@ -165,14 +112,12 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       });
     });
 
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
-
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
     });
 
     await tiedot
-      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .getByRole('button', { name: 'Muokkaa kenttää PK_TILA' })
       .click();
 
     const editModal = page.getByRole('dialog', {
@@ -180,10 +125,10 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     });
     await expect(editModal).toBeVisible();
 
-    const arvoInput = editModal.getByLabel('perusopetuksen_kieli');
-    await expect(arvoInput).toHaveValue('FI');
+    const arvoInput = editModal.getByLabel('PK_TILA');
+    await expect(arvoInput).toHaveValue('true');
 
-    await arvoInput.fill('SV');
+    await arvoInput.fill('false');
 
     const seliteInput = editModal.getByLabel('Selite');
     await seliteInput.fill('Muutettu testissä');
@@ -201,8 +146,8 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       hakuOid: FIRST_HAKU.hakuOid,
       yliajot: [
         {
-          avain: 'perusopetuksen_kieli',
-          arvo: 'SV',
+          avain: 'PK_TILA',
+          arvo: 'false',
           selite: 'Muutettu testissä',
         },
       ],
@@ -223,8 +168,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
         json: {},
       });
     });
-
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     await page.getByRole('button', { name: 'Lisää kenttä' }).click();
 
@@ -264,14 +207,12 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await page.goto(
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
-
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
     });
 
     await tiedot
-      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .getByRole('button', { name: 'Muokkaa kenttää PK_TILA' })
       .click();
 
     const editModal = page.getByRole('dialog', {
@@ -300,14 +241,12 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
 
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
-
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
     });
 
     await tiedot
-      .getByRole('button', { name: 'Muokkaa kenttää perusopetuksen_kieli' })
+      .getByRole('button', { name: 'Muokkaa kenttää PK_TILA' })
       .click();
 
     const editModal = page.getByRole('dialog', {
@@ -361,7 +300,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
               arvo: 'SV',
               metadata: {
                 arvoEnnenYliajoa: 'FI',
-                duplikaatti: false,
                 yliajo: {
                   avain: 'perusopetuksen_kieli',
                   arvo: '10',
@@ -379,8 +317,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await page.goto(
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
-
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
@@ -441,7 +377,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
               arvo: 'testiArvo',
               metadata: {
                 arvoEnnenYliajoa: null,
-                duplikaatti: false,
                 yliajo: {
                   avain: 'uusi_kentta',
                   arvo: 'testiArvo',
@@ -457,8 +392,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await page.goto(
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
-
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
@@ -509,7 +442,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
               arvo: 'testiArvo',
               metadata: {
                 arvoEnnenYliajoa: null,
-                duplikaatti: false,
                 yliajo: {
                   avain: 'uusi_kentta',
                   arvo: 'testiArvo',
@@ -525,8 +457,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await page.goto(
       `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
     );
-
-    await page.getByRole('button', { name: 'Uudet avainarvot' }).click();
 
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
@@ -590,7 +520,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(tiedot).toBeVisible();
 
     await expectLabeledValues(tiedot, [
-      { label: 'perusopetuksen_kieli', value: 'FI' },
+      { label: 'PK_ARVOSANA_AI', value: '9' },
     ]);
 
     await selectOption({
@@ -600,7 +530,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     });
 
     await expectLabeledValues(tiedot, [
-      { label: 'perusopetuksen_kieli', value: 'SV' },
+      { label: 'PK_ARVOSANA_AI', value: '10' },
     ]);
 
     expect(page.url()).toContain(`haku=${SECOND_HAKU.hakuOid}`);
@@ -619,13 +549,18 @@ test.describe('Opiskelijavalinnan tiedot', () => {
         url.searchParams.get('haku') === FIRST_HAKU.hakuOid,
     );
 
+    const hakuDropdown = page.getByLabel('Haku, jota tiedot koskevat');
+    await expect(hakuDropdown).toHaveText(
+      'Yhteishaku ammatilliseen koulutukseen',
+    );
+
     const tiedot = page.getByRole('region', {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
     });
     await expect(tiedot).toBeVisible();
 
     await expectLabeledValues(tiedot, [
-      { label: 'perusopetuksen_kieli', value: 'FI' },
+      { label: 'PK_ARVOSANA_AI', value: '9' },
     ]);
   });
 
@@ -652,7 +587,9 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(hakuDropdown).toHaveText('Lukion kevään 2025 yhteishaku');
 
     await expectLabeledValues(tiedot, [
-      { label: 'perusopetuksen_kieli', value: 'SV' },
+      { label: 'PK_ARVOSANA_AI', value: '10' },
+      { label: 'PK_ARVOSANA_MA', value: '10' },
+      { label: 'LK_TILA', value: 'true' },
     ]);
   });
 
@@ -737,7 +674,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
     });
 
-    const lukio_suoritettu = tiedot.getByLabel('lukio_suoritettu');
+    const lukio_suoritettu = tiedot.getByLabel('LK_TILA');
 
     await lukio_suoritettu
       .getByRole('img', { name: 'Arvon selitteet' })
