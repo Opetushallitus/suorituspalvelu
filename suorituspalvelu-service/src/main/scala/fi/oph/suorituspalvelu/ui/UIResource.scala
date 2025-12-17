@@ -17,6 +17,7 @@ import fi.oph.suorituspalvelu.validation.UIValidator
 import fi.vm.sade.auditlog.User
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
+import io.swagger.v3.oas.annotations.parameters.{RequestBody => SwaggerRequestBody}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -328,12 +329,16 @@ class UIResource {
     summary = "Palauttaa yksittäisen oppijan suoritustiedot käyttöliittymälle",
     description = "Tämä rajapinta palauttaa yksittäisen oppijan suoritustiedot käyttöliittymän suoritustietonäkymää varten. " +
       "Pääsy on sallittu rekisterinpitäjille, organisaation katselijoille ja hakijoiden katselijoille.",
+    requestBody =
+      new SwaggerRequestBody(
+        required = true,
+        content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotRequest])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Sisältää yksittäisen oppijan tiedot", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[OppijanTiedotFailureResponse])))),
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
   ))
-  def haeOppijanTiedot(@RequestBody @Parameter(description = "Tunniste (oppijanumero tai hetu)", required = true) bodyBytes: Array[Byte],
+  def haeOppijanTiedot(@RequestBody bodyBytes: Array[Byte],
                        request: HttpServletRequest): ResponseEntity[OppijanTiedotResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
@@ -360,8 +365,9 @@ class UIResource {
               Right(oppijanTiedotRequest.tunniste.get)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(virheet.asJava))))
-          .flatMap(tunniste => this.uiService.resolveOppijaNumero(tunniste)
-            .toRight(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)))
+          .flatMap((tunniste: String) => {
+            this.uiService.resolveOppijaNumero(tunniste).toRight(ResponseEntity.status(HttpStatus.NOT_FOUND).build)
+          })
           .flatMap(oppijaNumero => {
               // tarkastetaan oikeudet haetulle oppijanumerolle
               if (this.uiService.hasOppijanKatseluOikeus(oppijaNumero))
@@ -604,14 +610,16 @@ class UIResource {
     description = "Rekisterinpitäjän on käyttöliittymässä mahdollista lisätä perusopetuksen oppimäärän suorituksia henkilöille, " +
       "ja muuttaa lisättyjä suorituksia. Tämä rajapinta tallentaa lisäykset/muutokset. Pääsy rajapintaan on rajattu rekisterinpitäjille.",
     requestBody =
-      new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      new SwaggerRequestBody(
+        required = true,
+        description = "Tallennettava suoritus",
         content = Array(new Content(schema = new Schema(implementation = classOf[SyotettyPerusopetuksenOppimaaranSuoritus])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description="Tallennus onnistunut", content = Array(new Content(schema = new Schema(implementation = classOf[LuoPerusopetuksenOppimaaraSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LuoPerusopetuksenOppimaaraFailureResponse])))),
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def tallennaPerusopetuksenOppimaaranSuoritus(@RequestBody @Parameter(description = "Tallennettava suoritus", required = true) suoritusBytes: Array[Byte],
+  def tallennaPerusopetuksenOppimaaranSuoritus(@RequestBody suoritusBytes: Array[Byte],
                                                request: HttpServletRequest): ResponseEntity[LuoPerusopetuksenOppimaaraResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
@@ -679,14 +687,16 @@ class UIResource {
     description = "Rekisterinpitäjän on käyttöliittymässä mahdollista lisätä perusopetuksen oppiaineen oppimäärän suorituksia henkilöille, " +
       "ja muuttaa lisättyjä suorituksia. Tämä rajapinta tallentaa lisäykset/muutokset. Pääsy rajapintaan on rajattu rekisterinpitäjille.",
     requestBody =
-      new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      new SwaggerRequestBody(
+        required = true,
+        description = "Tallennettava suoritus",
         content = Array(new Content(schema = new Schema(implementation = classOf[SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description="Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LuoPerusopetuksenOppiaineenOppimaaraFailureResponse])))),
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def tallennaPerusopetuksenOppiaineenOppimaaraSuoritus(@RequestBody @Parameter(description = "Tallennettava suoritus", required = true) suoritusBytes: Array[Byte],
+  def tallennaPerusopetuksenOppiaineenOppimaaraSuoritus(@RequestBody suoritusBytes: Array[Byte],
                                                         request: HttpServletRequest): ResponseEntity[LuoPerusopetuksenOppiaineenOppimaaraResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
@@ -869,18 +879,20 @@ class UIResource {
       "rajapinta tallentaa joukon yliajoja ja niihin liittyviä selitteitä. Pääsy on (ainakin toistaiseksi) rajattu " +
       "rekisterinpitäjiin.",
     requestBody =
-      new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      new SwaggerRequestBody(
+        required = true,
+        description = "Yliajojen tiedot",
         content = Array(new Content(schema = new Schema(implementation = classOf[YliajoTallennusContainer])))),
     responses = Array(
       new ApiResponse(responseCode = "200", description = "Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[TallennaYliajotOppijalleSuccessResponse])))),
       new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[TallennaYliajotOppijalleFailureResponse])))),
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
-  def tallennaYliajoOppijalle(@RequestBody @Parameter(description = "Suoritukset", required = true) bodyBytes: Array[Byte],
+  def tallennaYliajoOppijalle(@RequestBody bodyBytes: Array[Byte],
                               request: HttpServletRequest): ResponseEntity[TallennaYliajotOppijalleResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
-      LogContext(path = UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      LogContext(path = UI_TALLENNA_YLIAJOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet

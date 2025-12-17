@@ -141,7 +141,7 @@ const useYliajoManagerState = ({ hakuOid }: { hakuOid: string }) => {
         });
       },
     };
-  }, [yliajoState, yliajoMutation, mode, mutationOperation, henkiloOid]);
+  }, [yliajoState, yliajoMutation, mode, mutationOperation]);
 };
 
 export const useYliajoManager = (params?: { henkiloOid?: string }) => {

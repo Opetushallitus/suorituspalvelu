@@ -102,14 +102,13 @@ const PerusopetusOppiaineetTable = ({
 
   const theme = useTheme();
 
-  const columnStyles: React.CSSProperties = {
-    verticalAlign: 'top',
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5),
-    lineHeight: '16px',
-  };
-
   const columns = useMemo(() => {
+    const columnStyles: React.CSSProperties = {
+      verticalAlign: 'top',
+      paddingTop: theme.spacing(1.5),
+      paddingBottom: theme.spacing(1.5),
+      lineHeight: '16px',
+    };
     const cols: Array<{
       key: keyof (typeof oppiaineet)[number];
       title: string;
@@ -139,7 +138,7 @@ const PerusopetusOppiaineetTable = ({
     }
 
     return cols;
-  }, [hasArvosana, hasValinnainen, t]);
+  }, [hasArvosana, hasValinnainen, theme, t]);
 
   return (
     <StripedTable>

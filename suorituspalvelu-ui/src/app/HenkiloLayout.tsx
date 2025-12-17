@@ -1,49 +1,61 @@
 import { Box } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
-import { isHenkiloOid, isHenkilotunnus } from '@/lib/common';
-import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
-import { redirect, useParams } from 'react-router';
+import { isHenkilotunnus, isValidOppijaTunniste } from '@/lib/common';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { HenkiloSearchControls } from '@/components/HenkiloSearchControls';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { OppijanTiedotPage } from './OppijanTiedotPage';
-import {
-  getSelectedTiedotTab,
-  setSelectedTiedotTab,
-} from '@/hooks/useSelectedTiedotTab';
-import { queryClient } from '@/lib/queryClient';
-import type { Route } from './+types/HenkiloLayout';
 import { useIsHenkilohakuAllowed } from '@/hooks/useIsHenkilohakuAllowed';
-
-export const clientLoader = async ({
-  params,
-  request,
-}: Route.ClientLoaderArgs) => {
-  const { oppijaTunniste } = params;
-  const url = new URL(request.url);
-
-  if (oppijaTunniste) {
-    const tiedotTab = getSelectedTiedotTab(url.pathname);
-    if (!tiedotTab) {
-      url.pathname = setSelectedTiedotTab(url.pathname, 'suoritustiedot');
-      throw redirect(url.toString());
-    }
-    queryClient.ensureQueryData(queryOptionsGetOppija(oppijaTunniste));
-  }
-};
+import { useHenkiloSearchTermState } from '@/hooks/useHenkiloSearchTermState';
+import { useNotifications } from '@/components/NotificationProvider';
+import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import { useEffect } from 'react';
+import { isEmptyish } from 'remeda';
+import { FullSpinner } from '@/components/FullSpinner';
 
 const HenkiloTunnisteella = () => {
   const { t } = useTranslations();
-  const { oppijaTunniste } = useParams();
 
-  if (
-    !oppijaTunniste ||
-    (!isHenkiloOid(oppijaTunniste) && !isHenkilotunnus(oppijaTunniste))
-  ) {
+  const { oppijaNumero } = useOppijaNumeroParamState();
+  const [henkiloSearchTerm, setHenkiloSearchTerm] = useHenkiloSearchTermState();
+
+  const { showNotification } = useNotifications();
+
+  const needSyncHenkiloSearchTerm =
+    henkiloSearchTerm === undefined && !isEmptyish(oppijaNumero);
+
+  const urlOppijaNumeroNotInSync =
+    isHenkilotunnus(oppijaNumero) || needSyncHenkiloSearchTerm;
+
+  useEffect(() => {
+    if (isHenkilotunnus(oppijaNumero)) {
+      // Poistetaan henkilotunnus URL:sta ja näytetään virhe
+      setHenkiloSearchTerm('', { replace: true });
+      showNotification({
+        message: t('search.henkilotunnukseen-linkitys-kielletty'),
+        type: 'error',
+      });
+      // Synkronoidaan henkiloSearchTerm ja oppijanumero-parametri
+    } else if (needSyncHenkiloSearchTerm) {
+      setHenkiloSearchTerm(oppijaNumero, { replace: true });
+    }
+  }, [
+    oppijaNumero,
+    needSyncHenkiloSearchTerm,
+    setHenkiloSearchTerm,
+    showNotification,
+    t,
+  ]);
+
+  if (urlOppijaNumeroNotInSync) {
+    return <FullSpinner />;
+  }
+
+  if (!isValidOppijaTunniste(henkiloSearchTerm)) {
     return <ResultPlaceholder text={t('search.ei-validi-tunniste')} />;
   }
 
-  return <OppijanTiedotPage oppijaTunniste={oppijaTunniste} />;
+  return <OppijanTiedotPage oppijaTunniste={henkiloSearchTerm} />;
 };
 
 export default function HenkiloLayout() {

@@ -16,7 +16,7 @@ import type {
 import type { SuoritusFields } from '@/types/ui-types';
 import { format } from 'date-fns';
 import { toFinnishDate } from './time-utils';
-import { isHenkiloOid, isHenkilotunnus } from './common';
+import { isValidOppijaTunniste } from './common';
 
 export type BackendOppijatSearchParams = {
   oppilaitos?: string | null;
@@ -70,10 +70,7 @@ export const searchOppilaitoksenOppijat = async (
 export const getOppija = async (tunniste?: string) => {
   const config = await configPromise;
 
-  if (
-    isEmptyish(tunniste) ||
-    (!isHenkiloOid(tunniste) && !isHenkilotunnus(tunniste))
-  ) {
+  if (!isValidOppijaTunniste(tunniste)) {
     return null;
   }
 

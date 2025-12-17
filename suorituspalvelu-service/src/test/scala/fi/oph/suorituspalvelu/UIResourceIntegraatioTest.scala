@@ -550,8 +550,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijanTiedotHenkilotunnuksellaAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21250967215"
     val tutkintoKoodi = "123456"
@@ -587,6 +587,40 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanTiedotHenkilotunnuksellaNotFound(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967215"
+    val tutkintoKoodi = "123456"
+    val suoritusKieli = Koodi("fi", "kieli", Some(1))
+    val henkilotunnus = "123456-789A"
+
+    // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.successful(List.empty))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanTiedotRequest(Optional.of(henkilotunnus))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isNotFound)
+      .andReturn()
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanTiedotHenkilotunnuksellaONRError(): Unit =
+    val henkilotunnus = "123456-789A"
+
+    // mockataan ONR-vastaus palauttamaan virheen
+    Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.failed(new RuntimeException("ONR connection failed")))
+
+    // suoritetaan kutsu ja tarkistetaan että palautetaan 500
+    val request = OppijanTiedotRequest(Optional.of(henkilotunnus))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isInternalServerError)
+      .andReturn()
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijanTiedotSyotettyOppimaaraAllowed(): Unit = {

@@ -329,7 +329,7 @@
     "henkilo-suodata-helpertext": "Suodata nimellä, henkilötunnuksella tai oppijanumerolla.",
     "hae-henkilo": "Hae henkilö",
     "hae-ja-valitse-henkilo": "Hae ja valitse henkilö",
-    "henkiloa-ei-loytynyt": "Henkilöä ei löytynyt",
+    "henkiloa-ei-loytynyt": "Henkilöä ei löytynyt tunnisteella {oppijaTunniste}",
     "henkilo-input-placeholder": "Oppijanumero tai henkilötunnus",
     "ei-validi-tunniste": "Etsi henkilöä syöttämällä oppijanumero tai henkilötunnus.",
     "valmistumisvuosi": "Valmistumisvuosi",
@@ -337,6 +337,8 @@
     "valitse-oppilaitos": "Valitse oppilaitos",
     "tyhjenna": "Tyhjennä",
     "tarkastus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkastusnäkymään.",
-    "henkilohaku-ei-oikeuksia": "Sinulla ei ole oikeuksia henkilöhakuun."
+    "henkilohaku-ei-oikeuksia": "Sinulla ei ole oikeuksia henkilöhakuun.",
+    "virheellinen-oppijanumero": "Tunniste {oppijaNumero} ei ole oppijanumero.",
+    "henkilotunnukseen-linkitys-kielletty": "Suora linkitys henkilötunnukseen on kielletty!"
   }
 }

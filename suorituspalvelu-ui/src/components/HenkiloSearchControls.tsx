@@ -1,24 +1,24 @@
 import { useTranslations } from '@/hooks/useTranslations';
 import { useCallback } from 'react';
 import { SearchInput } from './SearchInput';
-import { useOppijaTunnisteParamState } from '@/hooks/useOppijanumeroParamState';
 import { StyledSearchControls } from './StyledSearchControls';
+import { useHenkiloSearchTermState } from '@/hooks/useHenkiloSearchTermState';
 
 export const HenkiloSearchControls = () => {
   const { t } = useTranslations();
 
-  const { oppijaTunniste, setOppijaTunniste } = useOppijaTunnisteParamState();
-
-  const onClear = useCallback(() => {
-    setOppijaTunniste('');
-  }, [setOppijaTunniste]);
+  const [henkiloSearchTerm, setHenkiloSearchTerm] = useHenkiloSearchTermState();
 
   const onChange = useCallback(
     (value: string) => {
-      setOppijaTunniste(value);
+      setHenkiloSearchTerm(value);
     },
-    [setOppijaTunniste],
+    [setHenkiloSearchTerm],
   );
+
+  const onClear = useCallback(() => {
+    setHenkiloSearchTerm('');
+  }, [setHenkiloSearchTerm]);
 
   return (
     <StyledSearchControls>
@@ -28,7 +28,7 @@ export const HenkiloSearchControls = () => {
           maxWidth: '400px',
         }}
         label={t('search.hae-henkilo')}
-        value={oppijaTunniste ?? ''}
+        value={henkiloSearchTerm ?? ''}
         placeholder={t('search.henkilo-input-placeholder')}
         onClear={onClear}
         onChange={onChange}
