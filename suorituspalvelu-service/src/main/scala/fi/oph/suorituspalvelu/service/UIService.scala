@@ -274,4 +274,20 @@ class UIService {
       })
     })
   }
+
+  /**
+   * Hakee yksittäisen avain-arvoparin yliajon muutoshistorian 
+   * 
+   * @param personOid henkilö jonka yliajon muutoshistoriaa tarkastellaan
+   * @param hakuOid   haku jonka yliajon muutoshistoriaa tarkastellaan
+   * @param avain     yksittäisen yliajon avain jonka muutoshistoriaa tarkastellaan
+   *                  
+   * @return          yliajon muutoshistoriaa vastaava lista YliajonMuutosUI-objekteja
+   */
+  def haeYliajonMuutosHistoria(personOid: String, hakuOid: String, avain: String): Seq[YliajonMuutosUI] = {
+    val muutokset = this.kantaOperaatiot.haeYliajoMuutokset(personOid, hakuOid, avain)
+    val virkailijaOidit = muutokset.map(_.virkailijaOid).toSet
+    val virkailijat = Await.result(onrIntegration.getPerustiedotByPersonOids(virkailijaOidit), 10.seconds).map(h => h.oidHenkilo -> h).toMap
+    muutokset.map(muutos => YliajonMuutosUI(muutos.arvo.toJava, muutos.luotu, virkailijat.get(muutos.virkailijaOid).map(v => (v.etunimet.getOrElse("") + " " + v.sukunimi.getOrElse("")).trim).toJava, muutos.selite))
+  }
 }

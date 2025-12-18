@@ -317,10 +317,15 @@ case class Opintosuoritus(
                          ) extends Suoritus, Tyypitetty
 
 case class AvainArvoYliajo(avain: String,
-                           arvo: String,
+                           arvo: Option[String],
                            henkiloOid: String,
                            hakuOid: String,
                            virkailijaOid: String,
                            selite: String)
+
+case class AvainArvoYliajoMuutos(arvo: Option[String],
+                                 luotu: Instant,
+                                 virkailijaOid: String,
+                                 selite: String)
 
 case class Job(tunniste: UUID, nimi: String, progress: BigDecimal, lastUpdated: Instant)

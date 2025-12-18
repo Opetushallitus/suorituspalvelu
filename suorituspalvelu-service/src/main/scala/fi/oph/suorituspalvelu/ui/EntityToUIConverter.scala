@@ -591,7 +591,7 @@ object EntityToUIConverter {
             aac.metadata.yliajo.map(y => {
               AvainArvoYliajoUI(
                 avain = y.avain,
-                arvo = y.arvo,
+                arvo = y.arvo.toJava,
                 henkiloOid = y.henkiloOid,
                 hakuOid = y.hakuOid,
                 virkailijaOid = y.virkailijaOid,
