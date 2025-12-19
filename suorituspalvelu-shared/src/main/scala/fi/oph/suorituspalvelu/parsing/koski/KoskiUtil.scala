@@ -93,7 +93,7 @@ object KoskiUtil {
           case (None, None) => None
           case (None, Some(oppimaara)) =>
             o.tila match
-              case VALMIS => Some(OponSeurattavaPerusopetuksenTila(oppimaara.oppilaitos.oid, Some(oppimaara.vahvistusPaivamaara.get.getYear), None))
+              case VALMIS => Some(OponSeurattavaPerusopetuksenTila(oppimaara.oppilaitos.oid, Some(oppimaara.vahvistusPaivamaara.get.getYear), oppimaara.luokka))
               case KESKEN => None // eivät ysillä
               case KESKEYTYNYT => None
           case (Some(ysiluokka), None) =>

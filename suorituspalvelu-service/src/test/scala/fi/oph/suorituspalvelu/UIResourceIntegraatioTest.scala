@@ -417,18 +417,25 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       UUID.randomUUID(),
       None,
       oppilaitosOid,
-      Set(PerusopetuksenVuosiluokka(
+      Set(PerusopetuksenOppimaara(
         UUID.randomUUID(),
+        None,
         fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
-        Kielistetty(None, None, None),
-        Koodi("9", "perusopetuksenluokkaaste", None),
+        Some(luokka),
+        Koodi("", "", None),
+        VALMIS,
+        Koodi("", "", None),
+        Set.empty,
+        None,
         None,
         Some(LocalDate.parse(s"$vuosi-08-18")),
+        Set.empty,
         false
       )),
       None,
       VALMIS
     ))
+
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan oppijoita oppilaitoksella ja vuodella
