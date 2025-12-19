@@ -89,7 +89,9 @@ case class Oppija(
   @(Schema @field)(example = ESIMERKKI_ETUNIMET, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty etunimet: Optional[String],
   @(Schema @field)(example = ESIMERKKI_SUKUNIMI, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty sukunimi: Optional[String]
+  @BeanProperty sukunimi: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_LUOKKA)
+  @BeanProperty luokat: java.util.Set[String]
 )
 
 case class OppijanHakuSuccessResponse(

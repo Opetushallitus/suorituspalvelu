@@ -399,6 +399,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakusanaOppijanumero = "1.2.246.562.24.21583363334"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
     val vuosi = "2025"
+    // Tällä hetkellä luokka kovakoodattu KoskiUtil-moduulissa "9A":ksi
+    val luokka = "9A"
 
     // mockataan onr-vastaus
     val onrPerustiedot = OnrHenkiloPerustiedot(hakusanaOppijanumero, Some(etunimet), Some(sukunimi), Some(hetu))
@@ -419,7 +421,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         UUID.randomUUID(),
         None,
         fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
-        None,
+        Some(luokka),
         Koodi("", "", None),
         VALMIS,
         Koodi("", "", None),
@@ -433,6 +435,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       None,
       VALMIS
     ))
+
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getMetadata(opiskeluoikeudet.toSeq))
 
     // haetaan oppijoita oppilaitoksella ja vuodella
@@ -442,7 +445,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // palautuu tallennettu oppija
-    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.of(hetu), Optional.of(etunimet), Optional.of(sukunimi)))),
+    Assertions.assertEquals(OppijanHakuSuccessResponse(java.util.List.of(Oppija(hakusanaOppijanumero, Optional.of(hetu), Optional.of(etunimet), Optional.of(sukunimi), java.util.Set.of(luokka)))),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanHakuSuccessResponse]))
 
     // ja auditloki täsmää

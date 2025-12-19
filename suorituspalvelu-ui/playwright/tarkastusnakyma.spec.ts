@@ -141,12 +141,21 @@ test.describe('Tarkastusnäkymä', () => {
       .getByRole('navigation', { name: 'Henkilövalitsin' })
       .getByRole('link');
 
-    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija010296-1230');
+    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija 010296-1230');
+    await expect(navigationLinks.nth(0)).toHaveAccessibleName(
+      'Olli Oppija, henkilötunnus: 010296-1230',
+    );
     await expect(navigationLinks.nth(1)).toHaveText(
-      'Matti Meikäläinen020397-1231',
+      'Matti Meikäläinen 020397-1231 9B',
+    );
+    await expect(navigationLinks.nth(1)).toHaveAccessibleName(
+      'Matti Meikäläinen, henkilötunnus: 020397-1231, luokka: 9B',
     );
     await expect(navigationLinks.nth(2)).toHaveText(
-      'Maija Mallikas030498-1232',
+      'Maija Mallikas 030498-1232 9A',
+    );
+    await expect(navigationLinks.nth(2)).toHaveAccessibleName(
+      'Maija Mallikas, henkilötunnus: 030498-1232, luokka: 9A',
     );
   });
 
@@ -212,7 +221,7 @@ test.describe('Tarkastusnäkymä', () => {
     await suodatusInput.fill('Olli');
     await expect(henkilotSidebar.getByText('1 henkilö')).toBeVisible();
     await expect(navigationLinks).toHaveCount(1);
-    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija010296-1230');
+    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija 010296-1230');
 
     await suodatusInput.clear();
 
@@ -232,7 +241,9 @@ test.describe('Tarkastusnäkymä', () => {
     const sidebar = getHenkilotSidebar(page);
     await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
 
-    await page.getByRole('link', { name: 'Olli Oppija 010296-1230' }).click();
+    await page
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
+      .click();
 
     await expect(page).toHaveURL((url) =>
       url.pathname.includes(`tarkastus/${OPPIJANUMERO}`),
@@ -262,7 +273,7 @@ test.describe('Tarkastusnäkymä', () => {
     await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
 
     await sidebar
-      .getByRole('link', { name: 'Olli Oppija 010296-1230' })
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
       .click();
 
     await expect(page).toHaveURL(
