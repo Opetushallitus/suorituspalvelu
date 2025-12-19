@@ -164,17 +164,24 @@ class UIService {
     ).flatten.flatten
   }
 
-  def haePKOppijaOidit(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Set[(String, Set[String])] = {
+  def haePKOppijaLuokat(oppilaitosOid: String, vuosi: Int, luokka: Option[String]): Set[(String, Set[String])] = {
     KoskiUtil.getPeruskoulunOppimaaraHakuMetadata(oppilaitosOid, vuosi, luokka)
       .flatMap(metadata => kantaOperaatiot.haeVersiotJaMetadata(metadata, Instant.now()).map((versio, metadata) => (versio.oppijaNumero, KoskiUtil.extractLuokat(oppilaitosOid, metadata))))
       .toSet
   }
 
   def haePKOppijat(oppilaitos: String, vuosi: Int, luokka: Option[String]): Set[Oppija] = {
-    val oppijaOids = haePKOppijaOidit(oppilaitos, vuosi, luokka).map(_._1)
+    val oppijaLuokat = haePKOppijaLuokat(oppilaitos, vuosi, luokka)
+    val oppijaOids = oppijaLuokat.map(_._1)
 
+    val luokatMap = oppijaLuokat.toMap
     val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
-      .map(onrResult => onrResult.map(onrOppija => Oppija(onrOppija.oidHenkilo, onrOppija.hetu.toJava, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava)).toSet)
+      .map(onrResult =>
+        onrResult.map(onrOppija => {
+          val luokat = luokatMap.getOrElse(onrOppija.oidHenkilo, Set.empty)
+          Oppija(onrOppija.oidHenkilo, onrOppija.hetu.toJava, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava, java.util.Set.of(luokat.toSeq: _*))
+        }).toSet
+      )
 
     Await.result(ornOppijat, 30.seconds)
   }

@@ -65,28 +65,46 @@ const SidebarContent = () => {
             })}
           </OphTypography>
           <NavigationList tabIndex={0} aria-label={t('sivupalkki.navigaatio')}>
-            {data?.map((oppija) => (
-              <Link
-                key={oppija.oppijaNumero}
-                prefetch="intent"
-                className={
-                  oppijaNumero === oppija.oppijaNumero
-                    ? NAV_LIST_SELECTED_ITEM_CLASS
-                    : ''
-                }
-                to={{
-                  pathname: `/${searchTab}/${oppija.oppijaNumero}/${tiedotTab ?? ''}`,
-                  search: new URLSearchParams(searchParams).toString(),
-                }}
-              >
-                <OphTypography variant="label" color="inherit">
-                  {formatHenkiloNimi(oppija, t)}
-                </OphTypography>
-                <OphTypography color={ophColors.black}>
-                  {oppija.hetu}
-                </OphTypography>
-              </Link>
-            ))}
+            {data?.map((oppija) => {
+              const henkiloNimi = formatHenkiloNimi(oppija, t);
+              const luokat = oppija.luokat?.join(', ');
+              const henkiloTunnus = oppija.hetu;
+              const ariaLabel = `${henkiloNimi}${
+                henkiloTunnus
+                  ? ', ' + t('sivupalkki.henkilotunnus') + ': ' + henkiloTunnus
+                  : ''
+              }${luokat ? ', ' + t('sivupalkki.luokka') + ': ' + luokat : ''}`;
+              return (
+                <Link
+                  key={oppija.oppijaNumero}
+                  prefetch="intent"
+                  aria-label={ariaLabel}
+                  className={
+                    oppijaNumero === oppija.oppijaNumero
+                      ? NAV_LIST_SELECTED_ITEM_CLASS
+                      : ''
+                  }
+                  to={{
+                    pathname: `/${searchTab}/${oppija.oppijaNumero}/${tiedotTab ?? ''}`,
+                    search: new URLSearchParams(searchParams).toString(),
+                  }}
+                >
+                  <OphTypography variant="label" color="inherit">
+                    {formatHenkiloNimi(oppija, t)}
+                  </OphTypography>
+                  <Stack
+                    direction="row"
+                    sx={{ justifyContent: 'space-between', gap: 2 }}
+                  >
+                    <OphTypography color={ophColors.black}>
+                      {' '}
+                      {oppija.hetu}
+                    </OphTypography>
+                    <OphTypography> {luokat}</OphTypography>
+                  </Stack>
+                </Link>
+              );
+            })}
           </NavigationList>
         </>
       ) : (

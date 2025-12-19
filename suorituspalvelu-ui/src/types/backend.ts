@@ -380,6 +380,7 @@ export interface IOppija {
   hetu?: string;
   etunimet?: string;
   sukunimi?: string;
+  luokat: string[];
 }
 
 export interface IOppijanHakuFailureResponse {

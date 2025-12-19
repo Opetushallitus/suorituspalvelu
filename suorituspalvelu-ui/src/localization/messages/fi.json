@@ -119,7 +119,9 @@
     "piilota": "Piilota hakutulos",
     "hakutulos": "Hakutulos",
     "henkilo-maara": "{count, plural, =0 {Henkilöitä ei löytynyt} one {1 henkilö} other {{count} henkilöä}}",
-    "suodata-nimella-tai-hetulla": "Suodata nimellä tai hetulla"
+    "suodata-nimella-tai-hetulla": "Suodata nimellä tai hetulla",
+    "luokka": "luokka",
+    "henkilotunnus": "henkilötunnus"
   },
   "oppija": {
     "otsikko": "Henkilön tiedot",
