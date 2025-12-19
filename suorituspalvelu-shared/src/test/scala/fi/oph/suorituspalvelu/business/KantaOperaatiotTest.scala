@@ -883,4 +883,141 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated), Job(muuTaskId, muuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(None, None, 10))
 
   }
+
+
+  @Test
+  def testHaeSuorituksetAjanhetkella(): Unit = {
+    val personOid = "2.3.4"
+    val oppilaitosOid = "1.2.246.562.10.12345678900"
+
+    // tallennetaan versio ja suoritukset
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value111\"}"), Instant.now()).get
+    val suoritus1 = PerusopetuksenOppimaara(
+      UUID.randomUUID(), None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None, Koodi("arvo", "koodisto", Some(1)),
+      SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)),
+      Set.empty, None, None, None,
+      Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
+        Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None)),
+      false
+    )
+
+    val lisatiedot1 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
+    val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("opiskeluoikeusOid"), oppilaitosOid, Set(suoritus1), Some(lisatiedot1), VALMIS)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1))
+
+    val ekaVersioTallennettuna = Instant.now
+
+    Thread.sleep(100)
+
+    // tallennetaan toinen versio ja suoritukset
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value222\"}"), Instant.now()).get
+    val suoritus2 = PerusopetuksenOppimaara(
+      UUID.randomUUID(), None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None, Koodi("arvo", "koodisto", Some(1)),
+      SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)),
+      Set.empty, None, None, None,
+      Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
+        Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None),
+        PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("matematiikka"), None, None),
+          Koodi("MA", "koodisto", None), Koodi("7", "koodisto", None),
+          None, true, None, None)),
+      false
+    )
+    val lisatiedot2 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
+    val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("opiskeluoikeusOid"), oppilaitosOid, Set(suoritus2), Some(lisatiedot2), VALMIS)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus2))
+
+    val tokaVersioTallennettuna = Instant.now
+
+    Thread.sleep(100)
+
+
+    // tallennetaan kolmas versio ja suoritukset
+    val versio3 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value333\"}"), Instant.now()).get
+    val suoritus3 = PerusopetuksenOppimaara(
+      UUID.randomUUID(), None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None, Koodi("arvo", "koodisto", Some(1)),
+      SuoritusTila.VALMIS, Koodi("arvo", "koodisto", Some(1)),
+      Set.empty, None, None, None,
+      Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
+        Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None),
+        PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("matematiikka"), None, None),
+          Koodi("MA", "koodisto", None), Koodi("7", "koodisto", None),
+          None, true, None, None),
+        PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None),
+          Koodi("EN", "koodisto", None), Koodi("9", "koodisto", None),
+          Some(Koodi("EN", "kielivalikoima", None)), true, None, None)),
+      false
+    )
+    val lisatiedot3 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
+    val opiskeluoikeus3 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("opiskeluoikeusOid"), oppilaitosOid, Set(suoritus3), Some(lisatiedot3), VALMIS)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio3, Set(opiskeluoikeus3))
+
+    val kolmasVersioTallennettuna = Instant.now
+
+    Thread.sleep(100)
+
+    //Haetaan uusin sekä voimassaolleet versiot kolmelta ajanhetkeltä
+    val uusin = this.kantaOperaatiot.haeSuoritukset(personOid)
+    val eka = this.kantaOperaatiot.haeSuorituksetAjanhetkella(personOid, ekaVersioTallennettuna)
+    val toka = this.kantaOperaatiot.haeSuorituksetAjanhetkella(personOid, tokaVersioTallennettuna)
+    val kolmas = this.kantaOperaatiot.haeSuorituksetAjanhetkella(personOid, kolmasVersioTallennettuna)
+
+    Assertions.assertNotEquals(eka.head._1.tunniste, toka.head._1.tunniste)
+    Assertions.assertNotEquals(toka.head._1.tunniste, kolmas.head._1.tunniste)
+
+    // Tarkistetaan että uusin versio == kolmasVersio
+    Assertions.assertEquals(1, uusin.size)
+    Assertions.assertTrue(uusin.head._1.tunniste.equals(versio3.tunniste))
+    Assertions.assertEquals(Set(opiskeluoikeus3), uusin.head._2)
+
+    // Tarkistetaan että ensimmäisellä ajanhetkellä tallennettuna ollut versio == versio1
+    Assertions.assertEquals(1, eka.size)
+    println(s"eka: ${eka.head._1}")
+    println(s"v1: ${versio1}")
+    Assertions.assertTrue(eka.head._1.tunniste.equals(versio1.tunniste))
+    Assertions.assertEquals(Set(opiskeluoikeus1), eka.head._2)
+
+    // Tarkistetaan että toisella ajanhetkellä tallennettuna ollut versio == versio2
+    Assertions.assertEquals(1, toka.size)
+    Assertions.assertTrue(toka.head._1.tunniste.equals(versio2.tunniste))
+    Assertions.assertEquals(Set(opiskeluoikeus2), toka.head._2)
+
+    // Tarkistetaan että kolmannella ajanhetkellä tallennettuna ollut versio == versio3
+    Assertions.assertEquals(1, kolmas.size)
+    Assertions.assertTrue(kolmas.head._1.tunniste.equals(versio3.tunniste))
+    Assertions.assertEquals(Set(opiskeluoikeus3), kolmas.head._2)
+
+    // Varmistetaan että oppiaineiden määrät täsmäävät versioittain
+    Assertions.assertEquals(1,
+      eka.head._2
+        .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
+        .flatMap(o => o.suoritukset)
+        .collect { case s: PerusopetuksenOppimaara => s }
+        .flatMap(_.aineet)
+        .size)
+
+    Assertions.assertEquals(2,
+      toka.head._2
+        .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
+        .flatMap(o => o.suoritukset)
+        .collect { case s: PerusopetuksenOppimaara => s }
+        .flatMap(_.aineet)
+        .size)
+
+    Assertions.assertEquals(3,
+      kolmas.head._2
+        .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
+        .flatMap(o => o.suoritukset)
+        .collect { case s: PerusopetuksenOppimaara => s }
+        .flatMap(_.aineet)
+        .size)
+  }
 }

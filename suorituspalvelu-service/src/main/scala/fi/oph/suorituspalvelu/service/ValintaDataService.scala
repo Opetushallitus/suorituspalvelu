@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionResponse, AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, ValintalaskentaHakutoive}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import fi.oph.suorituspalvelu.resource.ui.YliajonMuutosUI
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
-import java.time.LocalDate
+import java.time.{Instant, LocalDate, ZoneId}
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
@@ -95,29 +95,39 @@ class ValintaDataService {
 
   }
 
-  def haeOppijanJaAliastenOpiskeluoikeudet(allOids: Set[String]): Seq[Opiskeluoikeus] = {
-    allOids.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
+  def haeOppijanJaAliastenOpiskeluoikeudet(allOids: Set[String], timestamp: Instant): Seq[Opiskeluoikeus] = {
+    allOids.flatMap(oid => kantaOperaatiot.haeSuorituksetAjanhetkella(oid, timestamp).values.flatten).toSeq
   }
 
-  def doAvainArvoConversions(personOid: Option[String], haku: Option[KoutaHaku], hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
+  def doAvainArvoConversions(personOid: Option[String], haku: KoutaHaku, hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
     val usePersonOid = personOid.getOrElse(hakemus.map(_.personOid).get) //personOid tarvitaan tai kaadutaan
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(usePersonOid)), 10.seconds).allOids
-    //Todo, aikaleimat haun ohjausparametreista ja defaultit tulevaisuuteen jos hakua ei määritelty
-    val vahvistettuViimeistaan = LocalDate.parse("2055-01-01")
-    val kaikkiOpiskeluoikeudet = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson)
+
+    val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(haku.oid)
+    val suoritustenAjanhetki = ohjausparametrit.valintalaskentapaiva.map(vlp => Instant.ofEpochMilli(vlp.date)).getOrElse(Instant.now())
+    //Todo, onko parempi defaultata tulevaisuuteen nykyhetken sijaan, jos vaikka halutaan jossain tilanteessa huomioida tulevaisuuteen merkattuja valmistumisia?
+    val vahvistettuViimeistaan = ohjausparametrit.suoritustenVahvistuspaiva
+      .map(svp => Instant.ofEpochMilli(svp.date)
+        .atZone(ZoneId.of("Europe/Helsinki"))
+        .toLocalDate).getOrElse(LocalDate.now())
+
+    val kaikkiOpiskeluoikeudet = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, suoritustenAjanhetki)
     val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan, haku)
 
-    val yliajot = haku.map(haku => fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)).getOrElse(Set.empty)
+    val yliajot = fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResults, yliajot)
     ValintaData(usePersonOid, combinedWithYliajot.toSeq, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString)
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
   def getValintalaskentaHakemukset(hakuOid: String, hakukohdeOid: Option[String], hakemusOids: Set[String]): Seq[ValintalaskentaApiHakemus] = {
-    val haku = tarjontaIntegration.getHaku(hakuOid)
-    val isToisenAsteenHaku = haku.exists(_.isToisenAsteenHaku())
+    val haku = tarjontaIntegration.getHaku(hakuOid) match {
+      case Some(haku) => haku
+      case None => throw new RuntimeException(s"Hakua oidilla $hakuOid ei löytynyt!")
+    }
+
     val valintaDatat = for {
-      hakemukset <- fetchValintalaskentaHakemukset(hakukohdeOid, hakemusOids, isToisenAsteenHaku)
+      hakemukset <- fetchValintalaskentaHakemukset(hakukohdeOid, hakemusOids, haku.isToisenAsteenHaku())
     } yield {
       val convertedHakemukset: Seq[ValintaData] = hakemukset.map(hakemus => {
           doAvainArvoConversions(None, haku, Some(hakemus))
@@ -156,8 +166,11 @@ class ValintaDataService {
 
   def getValintaData(personOid: String, hakuOid: String): ValintaData = {
     LOG.info(s"Haetaan UI:n käyttöön avain-arvot, henkilö $personOid, haku $hakuOid")
-    val haku = tarjontaIntegration.getHaku(hakuOid)
-    val isToisenAsteenHaku = haku.exists(_.isToisenAsteenHaku())
+    val haku = tarjontaIntegration.getHaku(hakuOid) match {
+      case Some(haku) => haku
+      case None => throw new RuntimeException(s"Hakua oidilla $hakuOid ei löytynyt!")
+    }
+    val isToisenAsteenHaku = haku.isToisenAsteenHaku()
     val resultF = for {
       hakemusOid: Option[String] <- selvitaHakijanHakemusOidHaussa(hakuOid, personOid)
       hakemus: Seq[AtaruValintalaskentaHakemus] <- fetchValintalaskentaHakemukset(None, Set.empty ++ hakemusOid, isToisenAsteenHaku)

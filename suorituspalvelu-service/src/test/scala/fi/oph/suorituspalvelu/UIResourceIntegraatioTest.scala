@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, Ohjausparametrit, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -1264,7 +1264,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
-
+    
     Mockito.when(tarjontaIntegration.getHaku(hakuOid))
       .thenReturn(Some(KoutaHaku(
         oid = hakuOid,
@@ -1279,6 +1279,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(hakemuspalveluClient.getHenkilonHakemustenTiedot(oppijaNumero))
       .thenReturn(Future.successful(Map.empty))
     //Todo, lisätään tähän tai toiseen testiin hakemus, ja tarkistetaan että sen tiedot parsiutuvat oikein avain-arvoiksi
+
+    Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
+      .thenReturn(Ohjausparametrit(suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)), valintalaskentapaiva = Some(DateParam(1768290647351L))))
 
     // haetaan valintadata
     val result = mvc.perform(MockMvcRequestBuilders

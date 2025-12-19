@@ -109,7 +109,7 @@ class KoskiIntegration {
           LOG.info(s"KOSKI-massaluovutushaku valmistui: ${response.getTruncatedLoggable()}")
           Future.successful(response)
         case response if response.isFailed() =>
-          LOG.error(s"KOSKI-massaluovutushaun tulosten pollaus epäonnistui: ${response.getTruncatedLoggable()}")
+          LOG.error(s"KOSKI-massaluovutushaussa virhe Kosken päässä: ${response.error.getOrElse("")}, koko vastaus ${response.getTruncatedLoggable()}")
           Future.failed(new RuntimeException("Koski failure!"))
         case response =>
           LOG.info(s"KOSKI-massaluovutushaun tulokset eivät vielä valmiit, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")

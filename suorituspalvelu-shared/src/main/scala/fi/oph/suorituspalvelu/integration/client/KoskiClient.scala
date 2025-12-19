@@ -30,18 +30,19 @@ case class KoskiMassaluovutusQueryParams(`type`: String,
                                          oppijaOids: Option[Set[String]], //Käytännössä joko oppijaOids tai muuttuneetJälkeen on määritelty
                                          muuttuneetJälkeen: Option[String])
 
-case class KoskiMassaluovutusQueryResponse(
-                                            queryId: String,
-                                            requestedBy: String,
-                                            query: KoskiMassaluovutusQueryParams,
-                                            createdAt: Option[String],
-                                            startedAt: Option[String],
-                                            finishedAt: Option[String],
-                                            files: Seq[String],
-                                            resultsUrl: Option[String],
-                                            progress: Option[Map[String, String]],
-                                            sourceDataUpdatedAt: Option[String],
-                                            status: String
+case class KoskiMassaluovutusQueryResponse(queryId: String,
+                                           requestedBy: String,
+                                           query: KoskiMassaluovutusQueryParams,
+                                           createdAt: Option[String],
+                                           startedAt: Option[String],
+                                           finishedAt: Option[String],
+                                           files: Seq[String],
+                                           resultsUrl: Option[String],
+                                           progress: Option[Map[String, String]],
+                                           sourceDataUpdatedAt: Option[String],
+                                           status: String,
+                                           hint: Option[String],
+                                           error: Option[String]
                                           ) {
   def isFinished() = status.equals("complete") || isFailed()
 

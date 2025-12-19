@@ -44,7 +44,7 @@ class TarjontaIntegrationTest {
   def testHakuOnAktiivinenWhenHakuaikaStartedAndHakukierrosNotEnded(): Unit = {
     val hakuOid = "1.2.246.562.29.01000000000000012345"
     val haku = createHaku(hakuOid, pastTimeStr)
-    val ohjausparametrit = Ohjausparametrit(Some(DateParam(futureTime)))
+    val ohjausparametrit = Ohjausparametrit(PH_HKP = Some(DateParam(futureTime)))
 
     val result = tarjontaIntegration.hakuOnAktiivinen(haku, ohjausparametrit)
     assertTrue(result, "Haku should be active when hakuaika has started and hakukierros has not ended")
@@ -54,7 +54,7 @@ class TarjontaIntegrationTest {
   def testHakuOnAktiivinenWhenHakuaikaHasNotStarted(): Unit = {
     val hakuOid = "1.2.246.562.29.01000000000000054321"
     val haku = createHaku(hakuOid, futureTimeStr)
-    val ohjausparametrit = Ohjausparametrit(Some(DateParam(futureTime)))
+    val ohjausparametrit = Ohjausparametrit(PH_HKP = Some(DateParam(futureTime)))
 
     val result = tarjontaIntegration.hakuOnAktiivinen(haku, ohjausparametrit)
     assertFalse(result, "Haku should not be active when hakuaika has not started.")
@@ -64,7 +64,7 @@ class TarjontaIntegrationTest {
   def testHakuOnAktiivinenWhenHakuaikaHasStartedAndHakukierrosHasEnded(): Unit = {
     val hakuOid = "1.2.246.562.29.01000000000000022222"
     val haku = createHaku(hakuOid, pastTimeStr)
-    val ohjausparametrit = Ohjausparametrit(Some(DateParam(pastTime)))
+    val ohjausparametrit = Ohjausparametrit(PH_HKP = Some(DateParam(pastTime)))
 
     val result = tarjontaIntegration.hakuOnAktiivinen(haku, ohjausparametrit)
     assertFalse(result, "Haku should not be active when hakuaika has started but hakukierros has ended")
@@ -86,7 +86,7 @@ class TarjontaIntegrationTest {
       kohdejoukonTarkenneKoodiUri = None,
       hakuvuosi = Some(LocalDate.now().getYear)
     )
-    val ohjausparametrit = Ohjausparametrit(Some(DateParam(futureTime)))
+    val ohjausparametrit = Ohjausparametrit(PH_HKP = Some(DateParam(futureTime)))
 
     val result = tarjontaIntegration.hakuOnAktiivinen(multiPeriodHaku, ohjausparametrit)
     assertTrue(result, "Haku should be active when at least one hakuaika period has started and hakukierros has not ended")
