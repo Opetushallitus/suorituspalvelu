@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_JOKO_HAKUSANA_TAI_O
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.{Optional, UUID}
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
@@ -1196,7 +1196,7 @@ case class OppijanTiedotFailureResponse(
 ) extends OppijanTiedotResponse
 
 case class AvainArvoYliajoUI(@BeanProperty avain: String,
-                             @BeanProperty arvo: String,
+                             @BeanProperty arvo: Optional[String],
                              @BeanProperty henkiloOid: String,
                              @BeanProperty hakuOid: String,
                              @BeanProperty virkailijaOid: String,
@@ -1225,6 +1225,30 @@ case class OppijanValintaDataFailureResponse(
                                          @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
                                          @BeanProperty virheAvaimet: java.util.Set[String],
                                        ) extends OppijanTiedotResponse
+
+trait YliajonMuutosHistoriaResponse()
+
+case class YliajonMuutosUI(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvo: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luotu: Instant,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virkailija: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty selite: String
+)
+
+case class YliajonMuutosHistoriaSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty muutokset: java.util.List[YliajonMuutosUI],
+) extends YliajonMuutosHistoriaResponse
+
+case class YliajonMuutosHistoriaFailureResponse(
+  @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
+  @BeanProperty virheAvaimet: java.util.Set[String],
+) extends YliajonMuutosHistoriaResponse
+
 
 case class SyotettavaSuoritusTyyppiVaihtoehtoNimi(
   @(Schema @field)(example = "Nuorten perusopetuksen oppiaineen oppimäärä", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -1498,5 +1522,4 @@ case class YliajoTallennusContainer(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakuOid: Optional[String],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty yliajot: Optional[java.util.List[Yliajo]]
-)
+  @BeanProperty yliajot: Optional[java.util.List[Yliajo]])

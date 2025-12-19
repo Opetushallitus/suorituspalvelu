@@ -6,9 +6,9 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruP
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
@@ -1210,6 +1210,23 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(0, suoritukset.size)
 
+  /*
+   * Integraatiotestit valintadatan haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeOppijanValintaDataAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    val oppijaNumero = "1.2.246.562.24.21250967211"
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, "")
+        .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
+        .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().is3xxRedirection())
+
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testHaeOppijanValintaDataNotAllowed(): Unit = {
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
@@ -1234,13 +1251,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val yliajettuAvain = AvainArvoConstants.telmaSuoritettuKey
     val yliajettuArvo = "true"
     val yliajoSelite = "Kyllä on Telma suoritettu, katsoin aivan itse eilen."
-    val yliajo = AvainArvoYliajo(yliajettuAvain, yliajettuArvo, oppijaNumero, hakuOid, virkailijaOid, yliajoSelite)
+    val yliajo = AvainArvoYliajo(yliajettuAvain, Some(yliajettuArvo), oppijaNumero, hakuOid, virkailijaOid, yliajoSelite)
 
     val eriHaunOid = "1.2.246.562.29.01000000000000013918"
     val eriHaunYliajettuAvain = AvainArvoConstants.opistovuosiSuoritettuKey
     val eriHaunYliajettuArvo = "true"
     val eriHaunYliajoSelite = "Kyllä on Opistovuosikin suoritettu, katsoin toista hakua varten itse eilen."
-    val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, eriHaunYliajettuArvo, oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
+    val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, Some(eriHaunYliajettuArvo), oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
 
     kantaOperaatiot.tallennaYliajot(Seq(yliajo, eriHaunYliajo))
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETYT_OPPIAINEET, Seq("{}"), Instant.now())
@@ -1523,10 +1540,10 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk)
       .andReturn()
 
-    // tarkistetaan että yliajoja on yksi vähemmän, ja poistettava avain on kadonnut
+    // tarkistetaan että poistetun avaimen arvo on nyt tyhjä
     val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
-    Assertions.assertEquals(1, tallennetutYliajotPoistonJalkeen.size)
-    Assertions.assertFalse(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJokaPoistetaan))
+    Assertions.assertEquals(2, tallennetutYliajotPoistonJalkeen.size)
+    Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(ya => ya.avain == avainJokaPoistetaan && ya.arvo.isEmpty))
     Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJotaEiPoisteta))
   }
 
@@ -1719,4 +1736,88 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
   }
 
+  /*
+   * Integraatiotestit valintadatan yliajon muutosten haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeYliajonMuutoshistoriaAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_YLIAJOT_HISTORIA_PATH, "")
+        .queryParam(UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME, ApiConstants.ESIMERKKI_OPPIJANUMERO)
+        .queryParam(UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, ApiConstants.ESIMERKKI_HAKU_OID)
+        .queryParam(UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, AvainArvoConstants.perusopetuksenKieliKey)
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeYliajonMuutoshistoriaNotAllowed(): Unit = {
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_YLIAJOT_HISTORIA_PATH, "")
+        .queryParam(UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME, ApiConstants.ESIMERKKI_OPPIJANUMERO)
+        .queryParam(UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, ApiConstants.ESIMERKKI_HAKU_OID)
+        .queryParam(UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, AvainArvoConstants.perusopetuksenKieliKey)
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isForbidden)
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeYliajonMuutoshistoriaBadRequest(): Unit = {
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_YLIAJOT_HISTORIA_PATH, "")
+        .queryParam(UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME, "ei validi oppijanumero")
+        .queryParam(UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, "ei validi hakuoOid")
+        .queryParam(UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, "ei validi avain")
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(YliajonMuutosHistoriaFailureResponse(java.util.Set.of(
+        UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI,
+        UIValidator.VALIDATION_HAKUOID_EI_VALIDI,
+        UIValidator.VALIDATION_AVAIN_EI_VALIDI
+      )),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YliajonMuutosHistoriaFailureResponse]))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeYliajonMuutoshistoriaAllowed(): Unit = {
+    val virkailijaEtunimi = "Veera"
+    val virkailijaSukunimi = "Virkailija"
+    val arvo = "FI"
+    val selite = "selite"
+    val tallennusHetki = Instant.ofEpochMilli((Instant.now.toEpochMilli/1000)*1000)
+
+    // tallennetaan yliajo
+    kantaOperaatiot.tallennaYliajot(Seq(AvainArvoYliajo(AvainArvoConstants.perusopetuksenKieliKey, Some(arvo),
+      ApiConstants.ESIMERKKI_OPPIJANUMERO, ApiConstants.ESIMERKKI_HAKU_OID, ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA, selite)), tallennusHetki)
+
+    // mockataan onr-vastaus ja tehdään kutsu
+    Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA)))
+      .thenReturn(Future.successful(Seq(OnrHenkiloPerustiedot(ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA, Some(virkailijaEtunimi), Some(virkailijaSukunimi), None))))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_YLIAJOT_HISTORIA_PATH, "")
+        .queryParam(UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME, ApiConstants.ESIMERKKI_OPPIJANUMERO)
+        .queryParam(UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, ApiConstants.ESIMERKKI_HAKU_OID)
+        .queryParam(UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, AvainArvoConstants.perusopetuksenKieliKey)
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // tuloksena tulee yksi muutos joka vastaa tallennettua yliajoa
+    Assertions.assertEquals(YliajonMuutosHistoriaSuccessResponse(java.util.List.of(
+      YliajonMuutosUI(Optional.of(arvo), tallennusHetki, Optional.of(s"$virkailijaEtunimi $virkailijaSukunimi"), selite))),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YliajonMuutosHistoriaSuccessResponse]))
+
+    // tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijaValintaDataAvainMuutoksetUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME -> ApiConstants.ESIMERKKI_OPPIJANUMERO,
+      ApiConstants.UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME -> ApiConstants.ESIMERKKI_HAKU_OID,
+      ApiConstants.UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME -> AvainArvoConstants.perusopetuksenKieliKey
+    ), auditLogEntry.target)
+  }
 }

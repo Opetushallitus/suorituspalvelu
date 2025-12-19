@@ -2,14 +2,16 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionResponse, AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, ValintalaskentaHakutoive}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
+import fi.oph.suorituspalvelu.resource.ui.YliajonMuutosUI
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 import java.time.LocalDate
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -71,19 +73,22 @@ class ValintaDataService {
       baseResults.paatellytArvot.map((baseContainer: AvainArvoContainer) => {
         val yliajo: Option[AvainArvoYliajo] = yliajotMap.get(baseContainer.avain)
         yliajo match {
-          case None =>
-            val metadata = AvainArvoMetadata(baseContainer.selitteet, None, None, arvoOnHakemukselta = false)
-            CombinedAvainArvoContainer(baseContainer.avain, baseContainer.arvo, metadata)
           case Some(yliajo) =>
             val metadata = AvainArvoMetadata(baseContainer.selitteet, Some(baseContainer.arvo), Some(yliajo), arvoOnHakemukselta = false)
-            CombinedAvainArvoContainer(baseContainer.avain, yliajo.arvo, metadata)
+            CombinedAvainArvoContainer(baseContainer.avain, yliajo.arvo.getOrElse(baseContainer.arvo), metadata)
+          case default =>
+            val metadata = AvainArvoMetadata(baseContainer.selitteet, None, None, arvoOnHakemukselta = false)
+            CombinedAvainArvoContainer(baseContainer.avain, baseContainer.arvo, metadata)
         }
       })
 
     //Lisätään synteettiset tulokset sellaisille yliajoille, joille ei ollut valmista tulosta yliajettavaksi.
-    val tuloksettomatYliajot: Iterable[AvainArvoYliajo] = yliajotMap.filter(yliajo => !tuloksetYliajoilla.exists(_.avain.equals(yliajo._2.avain))).values
+    val tuloksettomatYliajot: Iterable[AvainArvoYliajo] = yliajotMap
+      .filter(yliajo => yliajo._2.arvo.isDefined)
+      .filter(yliajo => !tuloksetYliajoilla.exists(_.avain.equals(yliajo._2.avain)))
+      .values
     val synteettisetTulokset: Set[CombinedAvainArvoContainer] = tuloksettomatYliajot.map(yliajo => {
-      CombinedAvainArvoContainer(yliajo.avain, yliajo.arvo, AvainArvoMetadata(Seq.empty, None, Some(yliajo), arvoOnHakemukselta = false))
+      CombinedAvainArvoContainer(yliajo.avain, yliajo.arvo.get, AvainArvoMetadata(Seq.empty, None, Some(yliajo), arvoOnHakemukselta = false))
     }).toSet
 
     tuloksetYliajoilla ++ synteettisetTulokset

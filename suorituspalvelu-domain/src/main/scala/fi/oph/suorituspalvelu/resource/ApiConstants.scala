@@ -84,8 +84,6 @@ object ApiConstants {
 
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot"
 
-  final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
-
   final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
   final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
 
@@ -93,9 +91,16 @@ object ApiConstants {
   final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER  = "{" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME + "}"
   final val UI_OPPIJAN_HAUT_PATH                            = UI_API_PREFIX + "/oppijanhaut/" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER
 
+  final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
   final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"
+  final val UI_VALINTADATA_SELITE_PARAM_NAME                = "selite"
+
+  final val UI_YLIAJOT_HISTORIA_PATH                        = UI_API_PREFIX + "/valintadatahistoria"
+  final val UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME     = "oppijaNumero"
+  final val UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME             = "hakuOid"
+  final val UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME            = "avain"
 
   final val UI_RAJAIN_PATH                                  = UI_API_PREFIX + "/rajain"
 
