@@ -2,7 +2,7 @@ import {
   useOppilaitoksenOppijatSearchResult,
   useOppilaitoksenOppijatSearchParamsState,
 } from '@/hooks/useOppilaitoksenOppijatSearch';
-import { Link } from 'react-router';
+import { NavLink } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
 import { useCallback } from 'react';
@@ -66,7 +66,7 @@ const SidebarContent = () => {
           </OphTypography>
           <NavigationList tabIndex={0} aria-label={t('sivupalkki.navigaatio')}>
             {data?.map((oppija) => (
-              <Link
+              <NavLink
                 key={oppija.oppijaNumero}
                 prefetch="intent"
                 className={
@@ -85,7 +85,7 @@ const SidebarContent = () => {
                 <OphTypography color={ophColors.black}>
                   {oppija.hetu}
                 </OphTypography>
-              </Link>
+              </NavLink>
             ))}
           </NavigationList>
         </>

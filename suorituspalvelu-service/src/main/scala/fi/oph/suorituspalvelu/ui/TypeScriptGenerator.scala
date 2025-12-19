@@ -35,7 +35,9 @@ object TypeScriptGenerator extends TypeScriptImplicits {
       "kayttajaSuccessResponse" -> kayttajaSuccessResponseTsType.get,
       "kayttajaFailureResponse" -> kayttajaFailureResponseTsType.get,
       "oppijanHautSuccessResponse" -> oppijanHautSuccessResponseTsType.get,
-      "oppijanHautFailureResponse" -> oppijanHautFailureResponseTsType.get
+      "oppijanHautFailureResponse" -> oppijanHautFailureResponseTsType.get,
+      "valintadataHistoriaSuccessResponse" -> valintadataHistoriaSuccessResponseTsType.get,
+      "valintadataHistoriaFailureResponse" -> valintadataHistoriaFailureResponseTsType.get
     ))
 
     println(s"TypeScript interfaces generated")

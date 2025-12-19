@@ -52,9 +52,9 @@ export const YliajoEditModal = ({
                 startIcon={<DeleteOutline />}
                 onClick={() => deleteYliajo(yliajo.avain)}
               >
-                {originalAvainArvo?.metadata.arvoEnnenYliajoa !== null
-                  ? t('opiskelijavalinnan-tiedot.poista-muokkaus')
-                  : t('opiskelijavalinnan-tiedot.poista-kentta')}
+                {originalAvainArvo.metadata?.arvoEnnenYliajoa == null
+                  ? t('opiskelijavalinnan-tiedot.poista-kentta')
+                  : t('opiskelijavalinnan-tiedot.poista-muokkaus')}
               </OphButton>
             )}
             <OphButton variant="outlined" onClick={onClose}>

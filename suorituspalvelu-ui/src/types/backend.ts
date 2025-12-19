@@ -88,7 +88,7 @@ export interface IAvainArvoMetadataUI {
 
 export interface IAvainArvoYliajoUI {
   avain: string;
-  arvo: string;
+  arvo?: string;
   henkiloOid: string;
   hakuOid: string;
   virkailijaOid: string;
@@ -853,6 +853,21 @@ export interface IYliajoTallennusContainer {
   henkiloOid?: string;
   hakuOid?: string;
   yliajot?: IYliajo[];
+}
+
+export interface IYliajonMuutosHistoriaFailureResponse {
+  virheAvaimet: string[];
+}
+
+export interface IYliajonMuutosHistoriaSuccessResponse {
+  muutokset: IYliajonMuutosUI[];
+}
+
+export interface IYliajonMuutosUI {
+  arvo?: string;
+  luotu: string;
+  virkailija?: string;
+  selite: string;
 }
 
 export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
