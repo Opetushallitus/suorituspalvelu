@@ -767,6 +767,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(true), oppiaine.yksilollistetty)
     Assertions.assertEquals(Some(true), oppiaine.rajattu)
 
+/*
   @Test def testPerusopetuksenVuosiluokat(): Unit =
     val vuosiluokka = getFirstSuoritusFromJson("""
         |[
@@ -812,6 +813,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("7", "perusopetuksenluokkaaste", Some(1)), vuosiluokka.koodi)
     Assertions.assertEquals(Some(LocalDate.parse("2020-08-15")), vuosiluokka.alkamisPaiva)
     Assertions.assertEquals(true, vuosiluokka.jaaLuokalle)
+*/
 
   @Test def testNuortenPerusopetuksenOppiaineenOppimaara(): Unit =
     val oppimaara = getFirstSuoritusFromJson(

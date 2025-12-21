@@ -1,8 +1,9 @@
 package fi.oph.suorituspalvelu
 
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -108,24 +109,17 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           Set.empty,
           None,
           None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Some(LocalDate.parse(s"$vuosi-06-01")),
           Set.empty,
-          false
-        ),
-        PerusopetuksenVuosiluokka(
-          UUID.randomUUID(),
-          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
-          Kielistetty(None, None, None),
-          Koodi("9", "perusopetuksenluokkaaste", None),
-          None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Set(Lahtokoulu(LocalDate.parse(s"${vuosi-1}-08-01"), Some(LocalDate.parse(s"$vuosi-06-01")), OPPILAITOS_OID, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
           false
         )
       ),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
 
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders
@@ -209,22 +203,15 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$vuosi-08-18")),
           Set.empty,
-          false
-        ),
-        PerusopetuksenVuosiluokka(
-          UUID.randomUUID(),
-          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
-          Kielistetty(None, None, None),
-          Koodi("9", "perusopetuksenluokkaaste", None),
-          None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Set(Lahtokoulu(LocalDate.now.minusDays(1), Some(LocalDate.now), OPPILAITOS_OID, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
           false
         )
       ),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
 
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders
@@ -234,7 +221,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
 
     // henkilön luokka vastaa (toistaiseksi hardkoodattua) luokkaa
-    Assertions.assertEquals(LahettavatHenkilotSuccessResponse(List(LahettavatHenkilo(oppijaNumero, List("9A").asJava)).asJava),
+    Assertions.assertEquals(LahettavatHenkilotSuccessResponse(List(LahettavatHenkilo(oppijaNumero, "9A")).asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatHenkilotSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää

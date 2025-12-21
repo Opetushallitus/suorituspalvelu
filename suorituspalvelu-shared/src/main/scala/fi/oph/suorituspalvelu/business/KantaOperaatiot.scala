@@ -15,7 +15,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import org.slf4j.LoggerFactory
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import KantaOperaatiot.KantaEntiteetit.*
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
@@ -217,16 +217,31 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String])]), DB_TIMEOUT)
       .map((json, data) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), data)).head
 
-  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Map[String, Set[String]] = Map.empty) = {
+  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Seq[Lahtokoulu]) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
     val deletePrevious = sqlu"""DELETE FROM opiskeluoikeudet WHERE versio_tunniste=${versio.tunniste.toString}::uuid"""
-    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL, metadata=${metadata.map((avain, arvot) => arvot.map(arvo => avain + ":" + arvo)).flatten.toSeq} WHERE tunniste=${versio.tunniste.toString}::uuid"""
+    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL WHERE tunniste=${versio.tunniste.toString}::uuid"""
     val dataInserts = opiskeluoikeudet.map(opiskeluoikeus =>
       sqlu"""
             INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb)
             """)
-    val metadataArvotInserts = metadata.flatMap((avain, arvot) => arvot.map(arvo => sqlu"""INSERT INTO metadata_arvot (avain, arvo) VALUES($avain, $arvo) ON CONFLICT DO NOTHING"""))
-    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataArvotInserts).transactionally), DB_TIMEOUT)
+    val metadataInserts = metadata.map(lahtokoulu =>
+      sqlu"""
+            INSERT INTO lahtokoulut (versio_tunniste, oppijanumero, versio_voimassaolo, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
+            VALUES(
+              ${versio.tunniste.toString}::uuid,
+              ${versio.oppijaNumero},
+              tstzrange(${versio.alku.toString}::timestamptz, ${versio.loppu.map(ov => ov.toString).getOrElse("infinity")}::timestamptz),
+              ${lahtokoulu.suorituksenAlku.toString}::date,
+              ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).getOrElse(null)}::date,
+              ${lahtokoulu.oppilaitosOid},
+              ${lahtokoulu.valmistumisvuosi},
+              ${lahtokoulu.luokka},
+              ${lahtokoulu.tila.map(t => t.toString).orNull},
+              ${lahtokoulu.arvosanaPuuttuu},
+              ${lahtokoulu.suoritusTyyppi.toString})
+            """)
+    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataInserts).transactionally), DB_TIMEOUT)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
@@ -299,6 +314,146 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
+/*
+  def haeOppijat(oppilaitosOid: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean): Set[String] =
+    Await.result(db.run(
+        sql"""
+          WITH
+          -- Haetaan henkilöt jotka oppilaitoksen ja valmistumisvuoden tarkastuslistalla elleivät siirtyneet muualle
+          initial_oppijat AS NOT MATERIALIZED (
+            SELECT oppijanumero
+            FROM ohjausvastuut
+            WHERE oppilaitos_oid=$oppilaitosOid
+            AND valmistumisvuosi=$valmistumisVuosi
+            AND upper(versio_voimassaolo)='infinity'::timestamptz
+          ),
+          -- Konstruoidaan yllä listatuille henkilöille kaikki ohjausvastuut siten että niiden voimassaolo päättyy
+          -- seuraavan ohjausvastuun alkuun. Oletuksena ettei näillä henkilöillä ole aliaksia. Mikäli henkilöllä on
+          -- aliaksia, henkilö on tässä listassa, mutta tarkan tiedon saamiseksi pitää hakea kaikkien aliaksien
+          -- suoritukset ja konstruoida näiden perusteella lista ohjausvastuista
+          -- (Mikko E:n mukaan yksilöinti ei absoluuttisen välttämätön)
+          paattyvatvastuut AS NOT MATERIALIZED (
+            SELECT
+              oppijanumero,
+              oppilaitos_oid,
+              valmistumisvuosi,
+              luokka,
+              tila,
+              arvosanapuuttuu,
+              peruste,
+              -- ohjausvastuun loppu on järjestyksessä seuraavan ohjausvastuun alku jos sellainen löytyy
+              COALESCE(
+                LEAD(lower(ohjausvastuut.voimassaolo)) OVER (PARTITION BY ohjausvastuut.oppijanumero ORDER BY lower(ohjausvastuut.voimassaolo) ASC),
+                upper(ohjausvastuut.voimassaolo)
+              ) as loppu
+            FROM ohjausvastuut
+            WHERE upper(versio_voimassaolo)='infinity'::timestamptz
+            AND oppijanumero IN (SELECT oppijanumero FROM initial_oppijat)
+          )
+          -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
+          SELECT oppijanumero
+          FROM paattyvatvastuut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND valmistumisvuosi=$valmistumisVuosi
+          AND (${!luokka.isDefined} OR luokka=$luokka)
+          AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
+          AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
+          AND peruste<>'VUOSILUOKKA_7'
+          AND peruste<>'VUOSILUOKKA_8'
+          AND loppu>=now()
+        """.as[String]), DB_TIMEOUT).toSet
+*/
+
+  
+  // TODO: mikä olisi tälle hyvä nimi? LÄHTÖKOULU!
+  // Lähtökoulupäättelyn takia ei ole pakko tässä saada aikaan vain yhtä ohjausvelvollisuutta
+  // yksittäisen henkilön lähtökoulun aikaansaamiseksi prosessoidaan ohjausvelvollisuudet suoritusten alta
+  /**
+   * Palauttaa henkilöt jotka lähettävien katselijalla on oikeus nähdä ohjausvelvollisuuden tai jälkitarkastelun (ks. alla)
+   * perusteella. Haku perustuu seuraaviin oletuksiin:
+   *  - Ohjausvelvollisuudella on alkamispäivä (tämä on tyypillisesti perusteena olevan suorituksen alkamispäivä)
+   *  - Ohjausvelvollisuuden perusteena olevan suorituksen valmistumisen tai keskeytymisen jälkeen lähettävien katselijoilla
+   *    on oikeus tarkastaa henkilön tilanne loppumisvuotta seuraavan vuoden tammikuun loppuun asti (jälkitarkastelu)
+   *  - Jälkitarkastelu ei pääty toisen suorituksen (esim. vuosiluokka, lisäpistekoulutus, lukio, ammatillinen koulutus) aloittamiseen
+   *  - Päivämäärä-parametrin avulla tarkastelu voidaan tehdä tietyllä ajanhetkellä, esim perusopetuksen jälkeisen koulutuksen yhteishaun leikkuripäivänä
+   *  
+   * @param paivamaara            ajanhetki jolloin henkilön on pitänyt olla oppilaitoksen ohjausvelvollisuuden tai jälkitarkastelun (päättymisvuotta seuraavan vuoden tammikuun loppuun asti) piirissä
+   * @param oppilaitosOid         oppilaitoksen tunniste jonka ohjattavia haetaan
+   * @param valmistumisVuosi      henkilöiden valmistumisvuosi (tämä on tyyppillisesti perusopetuksen vuosiluokan tai lisäpistekoulutuksen aloitusvuosi + 1)
+   * @param luokka                luokka (ei luokka-aste)
+   * @param keskenTaiKeskeytynyt  jos tämä true haetaan vain henkilöitä joiden ohjausvelvollisuuden perusteena oleva suoritus on kesken tai keskeytynyt, muutoin haetaan kaikkia
+   * @param arvosanaPuuttuu       jos tämä true haetaan vain henkilöitä joiden ohjausvelvollisuuden perusteena on perusopetuksen suorittaminen ja henkilöllä ei ole perusopetuksen oppimäärän suoritusta jolta löytyvät kaikki yhteisten aineiden arvosanat (ei siis tarvitse olla sama suoritus jos henkilö esim. vaihtanut koulua)
+   *                              jos false niin haetaan kaikkia
+   * 
+   */
+  def haeLahtokoulunOppilaat(paivamaara: LocalDate, oppilaitosOid: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[String] =
+    Await.result(db.run(
+      sql"""
+          WITH
+          -- Generoidaan lista ohjausvastuista joilla oikea näkyvyys (
+          oppijat_loppu AS NOT MATERIALIZED (
+            SELECT
+              oppijanumero,
+              suorituksen_alku as alku,
+              CASE
+                WHEN suorituksen_loppu IS NULL THEN 'infinity'::date
+                ELSE (SELECT DATE_TRUNC('year', suorituksen_loppu) + INTERVAL '1 year 1 months') -- ohjausvastuun loppua seuraavan vuoden tammikuun loppu
+              END as loppu
+            FROM lahtokoulut
+            WHERE oppilaitos_oid=$oppilaitosOid
+            AND valmistumisvuosi=$valmistumisVuosi
+            AND (${!luokka.isDefined} OR luokka=$luokka)
+            AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
+            AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
+            AND suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
+            AND upper(versio_voimassaolo)='infinity'::timestamptz
+          )
+          -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
+          SELECT oppijanumero
+          FROM oppijat_loppu
+          WHERE alku<=${paivamaara.toString}::date
+          AND loppu>=${paivamaara.toString}::date
+         """.as[String]), DB_TIMEOUT).toSet
+  
+  def haePKOppilaitokset(lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[String] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT oppilaitos_oid
+          FROM lahtokoulut
+          WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT).toSet
+  
+  def haeVuodet(oppilaitosOid: String, lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[String] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT valmistumisVuosi
+          FROM lahtokoulut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT).toSet
+
+  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT luokka
+          FROM lahtokoulut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND valmistumisvuosi=$valmistumisVuosi
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[String]), DB_TIMEOUT).toSet
+
+  def haeHenkilotJaLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[(String, String)] =
+    Await.result(db.run(
+      sql"""
+          SELECT DISTINCT oppijanumero, luokka
+          FROM lahtokoulut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND valmistumisvuosi=$valmistumisVuosi
+          AND upper(versio_voimassaolo)='infinity'::timestamptz
+        """.as[(String, String)]), DB_TIMEOUT).toSet
+  
   def parseMetadata(avainArvot: Seq[String]): Map[String, Set[String]] =
     avainArvot.map(element => {
         val key = element.split(":")(0)

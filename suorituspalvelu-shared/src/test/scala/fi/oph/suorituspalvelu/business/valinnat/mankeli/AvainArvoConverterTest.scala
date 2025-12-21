@@ -96,7 +96,7 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kotitalous, osallistuminen"), None, None), Koodi("BI", "koodisto", None), Koodi("O", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta"), None, None), Koodi("LI", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None, true, None, None))
-    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, false)
+    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, Set.empty, false)
 
     val ka: Set[AvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
@@ -175,7 +175,7 @@ class AvainArvoConverterTest {
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val leikkuripaivanJalkeenValmistunutTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
       Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2024-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(leikkuripaivanJalkeenValmistunutTutkinto), None))
+    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(leikkuripaivanJalkeenValmistunutTutkinto), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
 
@@ -188,7 +188,7 @@ class AvainArvoConverterTest {
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val ajoissaValmistunut = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
       Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None))
+    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
 
@@ -219,7 +219,8 @@ class AvainArvoConverterTest {
       "1.2.3",
       Oppilaitos(Kielistetty(None, None, None), ""),
       Set(telmaTutkinto),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
@@ -254,7 +255,8 @@ class AvainArvoConverterTest {
       "1.2.3",
       Oppilaitos(Kielistetty(None, None, None), ""),
       Set(telmaTutkinto),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
@@ -301,7 +303,8 @@ class AvainArvoConverterTest {
       "1.2.3",
       Oppilaitos(Kielistetty(None, None, None), ""),
       Set(telmaTutkinto),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(haku))
@@ -337,7 +340,8 @@ class AvainArvoConverterTest {
       Koodi("", "", None),
       "oppilaitosOid",
       Set(opistovuosiKoulutus),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))
@@ -374,7 +378,8 @@ class AvainArvoConverterTest {
       Koodi("", "", None),
       "oppilaitosOid",
       Set(opistovuosiKoulutus),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, Some(DEFAULT_KOUTA_HAKU))

@@ -73,7 +73,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
       LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
       val parseroidut = hetulessXmls.map(xml => VirtaParser.parseVirtaData(new ByteArrayInputStream(xml.getBytes)))
       val konvertoidut = parseroidut.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p))
-      kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet)
+      kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet, Seq.empty)
       LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle $oppijaNumero, yhteensä ${konvertoidut.size} suoritusta.")
     })
 

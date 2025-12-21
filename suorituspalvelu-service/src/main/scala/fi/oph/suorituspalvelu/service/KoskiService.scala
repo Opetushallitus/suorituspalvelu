@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
@@ -22,7 +23,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
 
 @Component
-class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseDef, hakemuspalveluClient: HakemuspalveluClientImpl,
+class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
                    tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider) {
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
@@ -58,15 +59,28 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
       val aktiivisetHaut = oppijanHaut.values.flatten.toSet
         .filter(h => tarjontaIntegration.tarkistaHaunAktiivisuus(h))
 
+      // Aktiivisen haun loppuminen johtuu ajan kulumisesta eikä KOSKI-tietojen muutoksesta, joten jos halutaan että
+      // suoritustietoihin tehdään muutoksia (esim. merkataan viimeisen version voimassaolo päättyneeksi) ne täytyy tehdä
+      // muulla mekanismilla (esim. toistuva jobi)
       def hasAktiivinenHaku(oppijaOid: String): Boolean =
         oppijanHaut.get(oppijaOid)
           .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
 
-      def isOhjattava(koskiData: String): Boolean =
+      // Huomioita:
+      //  - tiedot lisäpistekoulutuksista saadaan mukaan vain sillä perusteella että henkilöllä on aktiivinen haku
+      //  - vaikka teoriassa yksilöinnit voisivat paljastaa että henkilö on jo muussa koulutuksessa, yksilöintitietoja
+      //    ei voi käyttää tiedon tallennuksesta päätettäessä koska yksilöinnit voivat muuttua
+      def isYsiluokkalainen(koskiData: String): Boolean =
         val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData), koodistoProvider)
-        KoskiUtil.isOhjattava(opiskeluoikeudet)
+        KoskiUtil.onkoJokinLahtokoulu(None, Some(Set(VUOSILUOKKA_9)), opiskeluoikeudet.toSet)
 
-      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isOhjattava(r.data))
+      // TODO: ilmeisesti voi olla tilanne jossa ysiluokka valmistuu ilman että aktiivinen haku on päällä, jolloin tieto "ei ysiluokkalaisuudesta" jää päivittymättä SUPAan ellei "nykyinen" ysiluokkalaisuus ole päivitysperuste
+      
+      // TODO: onko lisäpistekoulutuksessa oleminen päivitysperuste?
+        
+      // TODO: mihin asti päivitetään? Kunnes ei enää aktiivisessa haussa, vai kunnes ohjausvelvollisuuden perusteella tietoja ei saa enää tarkastella (kuluva vuosi + 1 kk)?
+      
+      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainen(r.data))
       processKoskiDataForOppijat(ctx, new SaferIterator(filtteroity.iterator), fetchedAt)
     })
 
@@ -104,15 +118,13 @@ class KoskiService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(DUMMY_JOB_CTX, koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
 
   private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
-    val kantaOperaatiot = KantaOperaatiot(database)
-
     data.map(oppija => {
       try {
         val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, Seq(oppija.data), fetchedAt)
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
           val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getTallennettavaMetadata(oikeudet))
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getLahtokouluMetadata(oikeudet.toSet))
         })
         SyncResultForHenkilo(oppija.oppijaOid, versio, None)
       } catch {
