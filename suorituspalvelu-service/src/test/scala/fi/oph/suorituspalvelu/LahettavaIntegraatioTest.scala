@@ -1,8 +1,9 @@
 package fi.oph.suorituspalvelu
 
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -88,7 +89,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeLuokatAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21583363331"
-    val vuosi = 2025
+    val valmistumisvuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
@@ -108,30 +109,23 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           Set.empty,
           None,
           None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
           Set.empty,
-          false
-        ),
-        PerusopetuksenVuosiluokka(
-          UUID.randomUUID(),
-          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
-          Kielistetty(None, None, None),
-          Koodi("9", "perusopetuksenluokkaaste", None),
-          None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
           false
         )
       ),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
 
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.LAHETTAVAT_LUOKAT_PATH
           .replace(ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER, OPPILAITOS_OID)
-          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, vuosi.toString), ""))
+          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, valmistumisvuosi.toString), ""))
       .andExpect(status().isOk).andReturn()
 
     // vastaa (toistaiseksi hardkoodattua) luokkaa
@@ -143,7 +137,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AuditOperation.HaeLuokatLahettava.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
       ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_NAME -> OPPILAITOS_OID,
-      ApiConstants.LAHETTAVAT_VUOSI_PARAM_NAME -> vuosi.toString
+      ApiConstants.LAHETTAVAT_VUOSI_PARAM_NAME -> valmistumisvuosi.toString
     ), auditLogEntry.target)
 
   /*
@@ -187,7 +181,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeHenkilotAllowed(): Unit =
     val oppijaNumero = "1.2.246.562.24.21583363331"
-    val vuosi = 2025
+    val valmistumisVuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
@@ -207,34 +201,27 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           Set.empty,
           None,
           None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           Set.empty,
-          false
-        ),
-        PerusopetuksenVuosiluokka(
-          UUID.randomUUID(),
-          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
-          Kielistetty(None, None, None),
-          Koodi("9", "perusopetuksenluokkaaste", None),
-          None,
-          Some(LocalDate.parse(s"$vuosi-08-18")),
+          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
           false
         )
       ),
       None,
-      VALMIS
+      VALMIS,
+      List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
 
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.LAHETTAVAT_HENKILOT_PATH
           .replace(ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER, OPPILAITOS_OID)
-          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, vuosi.toString), ""))
+          .replace(ApiConstants.LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER, valmistumisVuosi.toString), ""))
       .andExpect(status().isOk).andReturn()
 
     // henkilön luokka vastaa (toistaiseksi hardkoodattua) luokkaa
-    Assertions.assertEquals(LahettavatHenkilotSuccessResponse(List(LahettavatHenkilo(oppijaNumero, List("9A").asJava)).asJava),
+    Assertions.assertEquals(LahettavatHenkilotSuccessResponse(List(LahettavatHenkilo(oppijaNumero, "9A")).asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahettavatHenkilotSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää
@@ -242,7 +229,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AuditOperation.HaeHenkilotLahettava.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
       ApiConstants.LAHETTAVAT_OPPILAITOSOID_PARAM_NAME -> OPPILAITOS_OID,
-      ApiConstants.LAHETTAVAT_VUOSI_PARAM_NAME -> vuosi.toString
+      ApiConstants.LAHETTAVAT_VUOSI_PARAM_NAME -> valmistumisVuosi.toString
     ), auditLogEntry.target)
 
 }
