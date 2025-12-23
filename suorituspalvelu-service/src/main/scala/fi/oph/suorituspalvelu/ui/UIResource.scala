@@ -29,7 +29,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util
 import java.util.{Optional, UUID}
 import scala.concurrent.Await
@@ -312,7 +312,7 @@ class UIResource {
               UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
               UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME -> luokka.orElse(null),
             ), AuditOperation.HaeOppilaitoksenOppijatUI, None)
-            val oppijat = uiService.haeOhjattavat(oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
+            val oppijat = uiService.haeOhjattavat(if(securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now), oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
             Right(ResponseEntity.status(HttpStatus.OK).body(OppijanHakuSuccessResponse(oppijat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanHakuResponse]])
@@ -673,7 +673,7 @@ class UIResource {
               LOG.info(s"Tallennettava perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
-              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
 
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPerusopetuksenOppimaaraSuccessResponse())))
           )
@@ -745,7 +745,7 @@ class UIResource {
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else {
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
-              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getTallennettavaMetadata(opiskeluoikeudet.toSeq))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
             }
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse())))
       )

@@ -140,8 +140,8 @@ case class LahettavatLuokatFailureResponse(
 case class LahettavatHenkilo(
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty henkiloOid: String,
-  @(Schema @field)(example = "[\"" + ESIMERKKI_LUOKKA + "\"]", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty luokat: java.util.List[String],
+  @(Schema @field)(example = ESIMERKKI_LUOKKA, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luokka: String,
 )
 
 trait LahettavatHenkilotResponse()

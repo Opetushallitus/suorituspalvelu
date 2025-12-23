@@ -59,9 +59,11 @@ class KoskiToSuoritusConverterTest {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
 
-      //Tarkistetaan että löytyy yksi perusopetuksen opiskeluoikeusopiskeluoikeus, joka sisältää neljä suoritusta
+      // Tarkistetaan että löytyy yksi perusopetuksen opiskeluoikeusopiskeluoikeus, joka sisältää neljä suoritusta
+      // (perusopetuksen oppimäärän ja kolme vuosiluokkaa). Tästä seuraa yksi parseroitu suoritus koska vuosiluokista
+      // tarvittavat tiedot (lähtökoulu) yhdistetään oppimäärän parseroituun suoritukseen
       Assertions.assertEquals(oikeudet.size, 1)
-      Assertions.assertEquals(oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size, 4)
+      Assertions.assertEquals(oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size, 1)
      })
   }
 
