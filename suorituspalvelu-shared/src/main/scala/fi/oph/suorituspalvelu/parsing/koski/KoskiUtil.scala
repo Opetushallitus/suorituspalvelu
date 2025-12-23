@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_7}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.OHJATTAVA_METADATA_AVAIN
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
 
@@ -10,130 +10,9 @@ import java.time.{Instant, LocalDate}
 
 val NOT_DEFINED_PLACEHOLDER = "_"
 
-case class Ohjattavuus(oppilaitosOid: String, vahvistusVuosi: Option[Int], luokka: Option[String]) {
-
-  def this(str: String) = this(str.split(":")(0), {
-    str.split(":")(1) match
-      case NOT_DEFINED_PLACEHOLDER => None
-      case vuosi => Some(vuosi.toInt)
-  }, {
-    str.split(":")(2) match
-      case NOT_DEFINED_PLACEHOLDER => None
-      case luokka => Some(luokka)
-  })
-
-  override def toString(): String = s"$oppilaitosOid:${vahvistusVuosi.getOrElse(NOT_DEFINED_PLACEHOLDER)}:${luokka.getOrElse(NOT_DEFINED_PLACEHOLDER)}"
-}
-
 object KoskiUtil {
 
   val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
-
-  val OHJATTAVA_METADATA_AVAIN  = "OHJATTAVA_OPPILAITOS_VUOSI_LUOKKA"
-  
-  def extractLuokat(oppilaitosOid: String, metadata: Map[String, Set[String]]): Set[String] =
-    metadata.get(OHJATTAVA_METADATA_AVAIN)
-      .map(arvot => arvot
-        .map(arvo => new Ohjattavuus(arvo))
-        .filter(arvo => arvo.oppilaitosOid == oppilaitosOid && arvo.luokka.isDefined)
-        .map(arvo => arvo.luokka.get)).getOrElse(Set.empty)
-
-  /**
-   * Henkilö on ysiluokalla jos:
-   * - löytyy opiskeluoikeus joka ei ole eronnut-tilassa
-   * - ja sen alta löytyy vuosiluokka joka on ysiluokka
-   * - ja ei löydy vahvistettua perusopetuksen oppimäärän suoritusta
-   *
-   * @param opiskeluoikeudet
-   */
-  def getOhjattavuudet(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Set[Ohjattavuus] = {
-    opiskeluoikeudet
-      .filter(o => o.isInstanceOf[PerusopetuksenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[PerusopetuksenOpiskeluoikeus])
-      .map(o => {
-        val ysiluokat = o.suoritukset
-          .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenVuosiluokka])
-          .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.PerusopetuksenVuosiluokka])
-          .filter(s => {
-            s.koodi.arvo == "9"
-          })
-        if(ysiluokat.size>1)
-          throw new RuntimeException(s"Opiskeluoikeudessa ${o.oid} on useita ysiluokkia")
-
-        val perusopetuksenOppimaarat = o.suoritukset
-          .filter(s => s.isInstanceOf[PerusopetuksenOppimaara])
-          .map(s => s.asInstanceOf[PerusopetuksenOppimaara])
-        if(perusopetuksenOppimaarat.size>1)
-          throw new RuntimeException(s"Opiskeluoikeudessa ${o.oid} on useita perusopetuksen oppimääriä")
-
-        // TODO: annetaan toistaiseksi kaikille dummy-luokkatieto kunnes saadaan oikea koskesta
-        (ysiluokat.headOption, perusopetuksenOppimaarat.headOption) match
-          case (None, None) => None
-          case (None, Some(oppimaara)) =>
-            o.tila match
-              case VALMIS => Some(Set(Ohjattavuus(oppimaara.oppilaitos.oid, Some(oppimaara.vahvistusPaivamaara.get.getYear), None)))
-              case KESKEN => None // eivät ysillä
-              case KESKEYTYNYT => None
-          case (Some(ysiluokka), None) =>
-            o.tila match
-              case KESKEYTYNYT => None
-              case default => Some(Set(
-                Ohjattavuus(ysiluokka.oppilaitos.oid, None, Some("9A")),
-                Ohjattavuus(ysiluokka.oppilaitos.oid, None, None)
-              ))
-          case (Some(ysiluokka), Some(oppimaara)) =>
-            o.tila match
-              case VALMIS => Some(Set(
-                Ohjattavuus(o.oppilaitosOid, Some(oppimaara.vahvistusPaivamaara.get.getYear), Some("9A")),
-                Ohjattavuus(o.oppilaitosOid, Some(oppimaara.vahvistusPaivamaara.get.getYear), None)
-              ))
-              case KESKEN => Some(Set(
-                Ohjattavuus(o.oppilaitosOid, None, Some("9A")),
-                Ohjattavuus(o.oppilaitosOid, None, None)
-              ))
-              case KESKEYTYNYT => None
-      }).toSet.flatten.flatten
-  }
-
-  def isOhjattava(opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Boolean =
-    getOhjattavuudet(opiskeluoikeudet).exists(t =>
-      t.vahvistusVuosi match {
-        case None => true                                                                                 // ohjattavuuden perusteena oleva suoritus kesken => täytyy ohjata
-        case Some(vuosi) if vuosi == LocalDate.now().getYear && LocalDate.now().getMonthValue < 9 => true // tämän vuoden valmistuneita seurataan elokuun loppuun
-        case default => false                                                                             // suoritus valmistunut aikaisempina vuosina, ei tarvitse ohjausta
-      }
-    )
-
-  def isOrWasOrganisaationOhjattava(organisaatioOid: String, opiskeluoikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): Boolean =
-    getOhjattavuudet(opiskeluoikeudet).exists(t => t.oppilaitosOid==organisaatioOid)
-
-  def getOhjattavienHakuMetadata(oppilaitosOid: String, vuosi: Int, luokka: Option[String], suoritusKesken: Boolean, arvosanaPuuttuu: Boolean): Seq[Map[String, Set[String]]] = {
-    (vuosi, luokka) match
-      case (vuosi, None) if LocalDate.now().getYear==vuosi =>
-        // jos tämä vuosi mutta luokkaa ei määritelty, niin pitää olla joko kyseisen oppilaitoksen valmis perusopetuksen suoritus
-        // tältä vuodelta, tai oppilaitoksen (ei valmis) ysiluokkalainen
-        Seq(
-          Map(OHJATTAVA_METADATA_AVAIN -> Set(Ohjattavuus(oppilaitosOid, Some(vuosi), None).toString())),
-          Map(OHJATTAVA_METADATA_AVAIN -> Set(Ohjattavuus(oppilaitosOid, None, None).toString()))
-        )
-      case (vuosi, Some(luokka)) if LocalDate.now().getYear==vuosi =>
-        // jos tämä vuosi ja luokka määritelty, pitää olla joko kyseisen oppilaitoksen ja luokan valmis tai
-        // kesken olevan ysi
-        Seq(
-          Map(OHJATTAVA_METADATA_AVAIN -> Set(Ohjattavuus(oppilaitosOid, Some(vuosi), Some(luokka)).toString())),
-          Map(OHJATTAVA_METADATA_AVAIN -> Set(Ohjattavuus(oppilaitosOid, None, Some(luokka)).toString()))
-        )
-      case (vuosi, None) =>
-        // jos aikaisempi vuosi ja luokkaa ei määritelty, pitää olla kyseisen oppilaitoksen valmis perusopetuksen suoritus
-        Seq(Map(OHJATTAVA_METADATA_AVAIN -> Set(Ohjattavuus(oppilaitosOid, Some(vuosi), None).toString()())))
-      case (vuosi, Some(luokka)) =>
-        // jos aikaisempi vuosi ja luokka määritelty, pitää olla kyseisen oppilaitoksen ja luokan valmis perusopetuksen suoritus
-        Seq(Map(OHJATTAVA_METADATA_AVAIN -> Set(Ohjattavuus(oppilaitosOid, Some(vuosi), Some(luokka)).toString())))
-  }
-
-  def getTallennettavaMetadata(opiskeluoikeudet: Seq[Opiskeluoikeus]): Map[String, Set[String]] = {
-    Map(OHJATTAVA_METADATA_AVAIN -> getOhjattavuudet(opiskeluoikeudet).map(s => s.toString()))
-  }
 
   def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
@@ -146,4 +25,63 @@ object KoskiUtil {
 
     hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusYli2vvk)
   }
+
+  def getLahtokouluMetadata(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[Lahtokoulu] =
+    opiskeluoikeudet.collect {
+      case oo: PerusopetuksenOpiskeluoikeus => oo.suoritukset.collect {
+        // jos vuosiluokan suoritus on kesken ja tiedot tuotu SUPAan tiedetään että henkilö on 7-9. -luokkalainen. Jos valmis (tai ehkä keskeytynyt?) voi olla esim. kk-hakija
+        // ylimääräiset lähtökoulut eivät kuitenkaan haittaa koska opoille näytetään vain kuluva ja seuraava vuosi
+        case s: PerusopetuksenOppimaara => s.lahtokoulut
+      }.flatten
+      case oo: AmmatillinenOpiskeluoikeus => oo.suoritukset.collect {
+        case s: Telma => s.lahtokoulu
+      }
+      case oo: GeneerinenOpiskeluoikeus => oo.suoritukset.collect {
+        case s: Tuva => s.lahtokoulu
+        case s: VapaaSivistystyo => s.lahtokoulu
+      }
+    }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku).reverse
+
+  // tätä pitää käyttää hakemuksen lähtökoulun yksikäsitteiseen määrittämiseen, muttei katseluoikeuden määrittämiseen
+  def haeViimeisinLahtokoulu(ajanhetki: LocalDate, opiskeluoikeudet: Set[Opiskeluoikeus]): Option[String] =
+    val lahtokouluMetadata = getLahtokouluMetadata(opiskeluoikeudet)
+
+    val rajatut = lahtokouluMetadata.zip(lahtokouluMetadata.tail.map(e => Some(e)) :+ None).map((curr, next) => curr.copy(suorituksenLoppu = {
+      (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
+        case (None, None) => None
+        case (Some(currLoppu), None) => Some(currLoppu)
+        case (None, Some(nextAlku)) => Some(nextAlku)
+        case (Some(currLoppu), Some(nextAlku)) => Some(if currLoppu.isAfter(nextAlku) then nextAlku else currLoppu)
+    }))
+    
+    rajatut.find(lk => !lk.suorituksenAlku.isAfter(ajanhetki) && lk.suorituksenLoppu.forall(pvm => !pvm.isBefore(ajanhetki))).map(lk => lk.oppilaitosOid)
+
+  /**
+   * Kertoo löytyykö suorituksista kriteerit täyttäviä lähtökouluja. Tätä tietoa käytetään ratkaisemaan:
+   *  - Onko lähettävän katselijalla oikeus nähdä henkilön suoritukset SUPAssa
+   *  - Onko lähettävän katselijalla oikeus nähdä henkilön hakemukset Hakemuspalvelussa
+   *  - Pitääkö Muuttuneet KOSKI-tiedot päivittää SUPAan (lähtökohta on että jos henkilön tiedot näkyvät tarkastus-
+   *    näkymässä niin pitää päivittää). Samaa päättelyä käytetään siis siihen saako suoritukset nähdä SUPAssa ja
+   *    päivitetäänkö suoritustieto. Jos tätä halutaan muuttaa niin asiaa kannattaa harkita ainakin kahdesti. Tilanne
+   *    jossa tiedot näkyvät mutta eivät päivity voi aiheuttaa jonkinmoista sekaannusta.
+   *
+   * @param ajanhetki         Ajanhetki jolloin tarkastelu suoritetaan, ts. onko tällä ajanhetkellä kriteerit (oppilaitos, tyyppi)
+   *                          täyttäviä lähtökouluja (eri asia kuin suoritustietojen ajanhetki). Periaatteena on että
+   *                          lähtökoulu on voimassa vielä suorituksen valmistumis- tai keskeytymispäivästä seuraavan vuoden
+   *                          tammikuun loppuun.
+   * @param oppilaitosOids    Jos tämä määritelty, haetaan vain määriteltyjä oppilaitoksia
+   * @param lahtokouluTyypit  Jos tämä määritelty, haetaan vain tietyn tyyppisiä lähtökouluja
+   * @param opiskeluoikeudet  Suoritustiedot joista lähtökouluja haetaan
+   *
+   * @return Löytyykö annetuista suoritustiedoista jokin kriteerit täyttävä lähtökoulu annetulla ajanhetkellä
+   */
+  def onkoJokinLahtokoulu(ajanhetki: LocalDate, oppilaitosOids: Option[Set[String]], lahtokouluTyypit: Option[Set[LahtokouluTyyppi]], opiskeluoikeudet: Set[Opiskeluoikeus]): Boolean =
+    val ohjausvastuut = getLahtokouluMetadata(opiskeluoikeudet)
+
+    ohjausvastuut.exists(o =>
+      (oppilaitosOids.isEmpty || oppilaitosOids.exists(_.contains(o.oppilaitosOid))) &&
+        (lahtokouluTyypit.isEmpty || lahtokouluTyypit.exists(_.contains(o.suoritusTyyppi))) &&
+        // katseluoikeus on suorituksen päättymisvuotta seuraavan vuoden tammikuun loppuun
+        (o.suorituksenLoppu.isEmpty || o.suorituksenLoppu.exists(l => !LocalDate.parse(s"${l.getYear + 1}-01-31").isBefore(LocalDate.now))))
+
 }

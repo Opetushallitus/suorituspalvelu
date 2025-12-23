@@ -1,10 +1,10 @@
 package fi.oph.suorituspalvelu.service
 
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.OHJATTAVA_METADATA_AVAIN
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, NOT_DEFINED_PLACEHOLDER, Ohjattavuus}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
 import fi.oph.suorituspalvelu.ui.EntityToUIConverter
@@ -20,6 +20,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.jdk.OptionConverters.*
+import scala.jdk.CollectionConverters.*
 
 object UIService {
   val EXAMPLE_OPPIJA_OID = "1.2.246.562.24.40483869857"
@@ -118,23 +119,14 @@ class UIService {
 
   val ONR_TIMEOUT = 10.seconds;
 
+  val LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
+
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
     oppilaitosOids
       .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
         .map(organisaatio => Oppilaitos(OppilaitosNimi(
           Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
           organisaatio.oid)))
-  }
-
-  def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {
-    val oppilaitosOids = kantaOperaatiot.haeMetadataAvaimenArvot(KoskiUtil.OHJATTAVA_METADATA_AVAIN)
-      .map(avain => new Ohjattavuus(avain).oppilaitosOid)
-
-    oppilaitosOids
-      .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
-      .map(organisaatio => Oppilaitos(OppilaitosNimi(
-        Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
-        organisaatio.oid))
   }
 
   def haeSyotettavienSuoritustenOppilaitokset(): List[Oppilaitos] = {
@@ -147,43 +139,54 @@ class UIService {
       .toList
   }
 
+  def haeKaikkiOppilaitoksetJoissaPKSuorituksia(): Set[Oppilaitos] = {
+    // haetaan kaikkien suoritustyyppien paitsi 7. ja 8. vuosiluokkien perusteella koska niitä ei haluta näyttää kälissä
+    val oppilaitosOids = kantaOperaatiot.haePKOppilaitokset(LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA)
+
+    oppilaitosOids
+      .flatMap(oppilaitosOid => organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid))
+      .map(organisaatio => Oppilaitos(OppilaitosNimi(
+        Optional.ofNullable(organisaatio.nimi.fi), Optional.ofNullable(organisaatio.nimi.sv), Optional.ofNullable(organisaatio.nimi.en)),
+        organisaatio.oid))
+  }
+
   def haeVuodet(oppilaitosOid: String): Set[String] = {
-    kantaOperaatiot.haeMetadataAvaimenArvot(OHJATTAVA_METADATA_AVAIN, Some(s"$oppilaitosOid"))
-      .map(arvo => new Ohjattavuus(arvo).vahvistusVuosi.getOrElse(LocalDate.now().getYear).toString)
+    // haetaan kaikkien suoritustyyppien paitsi 7. ja 8. vuosiluokkien perusteella koska niitä ei haluta näyttää kälissä
+    kantaOperaatiot.haeVuodet(oppilaitosOid, LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA)
   }
 
-  def haeLuokat(oppilaitosOid: String, vuosi: Int): Set[String] = {
-    Set(
-      if (LocalDate.now().getYear == vuosi)
-        Some(kantaOperaatiot.haeMetadataAvaimenArvot(OHJATTAVA_METADATA_AVAIN, Some(s"$oppilaitosOid:$NOT_DEFINED_PLACEHOLDER:"))
-          .flatMap(arvo => new Ohjattavuus(arvo).luokka))
-      else
-        None,
-      Some(kantaOperaatiot.haeMetadataAvaimenArvot(OHJATTAVA_METADATA_AVAIN, Some(s"$oppilaitosOid:$vuosi:"))
-        .flatMap(arvo => new Ohjattavuus(arvo).luokka))
-    ).flatten.flatten
+  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
+    kantaOperaatiot.haeLuokat(oppilaitosOid, valmistumisVuosi)
   }
 
-  def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Set[(String, Set[String])] = {
-    KoskiUtil.getOhjattavienHakuMetadata(oppilaitosOid, vuosi, luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
-      .flatMap(metadata => kantaOperaatiot.haeVersiotJaMetadata(metadata, Instant.now()).map((versio, metadata) => (versio.oppijaNumero, KoskiUtil.extractLuokat(oppilaitosOid, metadata))))
-      .toSet
+  def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
+    kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi).map((henkilo, luokka) => henkilo -> luokka)
   }
 
-  def haeOhjattavat(oppilaitos: String, vuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Set[Oppija] = {
-    val oppijaLuokat = haeOhjattavatJaLuokat(oppilaitos, vuosi, luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
+  def haeOhjattavat(ajanhetki: Option[LocalDate], oppilaitos: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Seq[Oppija] = {
+    // haetaan oppijat jotka ovat oppilaitoksen halutun valmistumisvuoden ohjattavia, paitsi 7. ja 8. vuosiluokkien perusteella koska niitä ei haluta näyttää kälissä
+    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(ajanhetki, oppilaitos, valmistumisVuosi, luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu, LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA)
     val oppijaOids = oppijaLuokat.map(_._1)
     val luokatMap = oppijaLuokat.toMap
 
-    val ornOppijat = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
-      .map(onrResult =>
-        onrResult.map(onrOppija => {
-          val luokat = luokatMap.getOrElse(onrOppija.oidHenkilo, Set.empty)
-          Oppija(onrOppija.oidHenkilo, onrOppija.hetu.toJava, onrOppija.etunimet.toJava, onrOppija.sukunimi.toJava, java.util.Set.of(luokat.toSeq: _*))
-        }).toSet
-      )
+    val r = onrIntegration.getPerustiedotByPersonOids(oppijaOids)
+      .map(perustiedot => perustiedot.flatMap(henkilo => {
+        val luokat = luokatMap.get(henkilo.oidHenkilo).flatMap(l => l.map(l => Set(l))).getOrElse(Set.empty)
+        Some(Oppija(henkilo.oidHenkilo, henkilo.hetu.toJava, henkilo.etunimet.toJava, henkilo.sukunimi.toJava, luokat.asJava))
+      }))
 
-    Await.result(ornOppijat, 30.seconds)
+    Await.result(r, 30.seconds)
+  }
+
+  def haeLahtokoulu(henkiloOid: String): Option[String] = {
+    val r = onrIntegration.getAliasesForPersonOids(Set(henkiloOid))
+      .map(_.allOidsByQueriedOids(henkiloOid))
+      .map(aliakset => {
+        val suoritukset = aliakset.map(alias => this.kantaOperaatiot.haeSuoritukset(alias)).flatMap(_.values).flatten
+        KoskiUtil.haeViimeisinLahtokoulu(LocalDate.now, suoritukset)
+      })
+
+    Await.result(r, 30.seconds)
   }
 
   def resolveOppijaNumero(tunniste: String): Option[String] = {
@@ -243,11 +246,11 @@ class UIService {
       }), 30.seconds)
 
     def hasOrganisaatioKatseluoikeus(): Boolean =
-      val vastaanottajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
-      vastaanottajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => allOids.exists(oppijaOid => {
-        val opiskeluoikeudet = this.kantaOperaatiot.haeSuoritukset(oppijaOid).values.flatten.toSeq
-        vastaanottajaOikeusOrganisaatiot.exists(organisaatio => KoskiUtil.isOrWasOrganisaationOhjattava(organisaatio, opiskeluoikeudet))
-      })), 30.seconds)
+      val lahettajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
+      lahettajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => {
+        val opiskeluoikeudet = allOids.flatMap(oppijaNumero => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
+        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, Some(lahettajaOikeusOrganisaatiot), None, opiskeluoikeudet)
+      }), 30.seconds)
 
     securityOperaatiot.onRekisterinpitaja() || hasHakijaKatseluoikeus() || hasOrganisaatioKatseluoikeus()
   }
