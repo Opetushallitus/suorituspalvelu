@@ -120,7 +120,6 @@ class BaseIntegraatioTesti {
              DELETE FROM task_status;
              DELETE FROM scheduled_tasks;
              DELETE FROM opiskeluoikeudet;
-             DELETE FROM metadata_arvot;
              DELETE FROM versiot;
           """), 5.seconds)
 

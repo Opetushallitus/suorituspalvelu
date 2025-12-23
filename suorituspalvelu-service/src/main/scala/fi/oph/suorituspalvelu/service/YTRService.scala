@@ -42,7 +42,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
         versio.foreach(v => {
           LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
           val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus))
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus), Seq.empty)
         })
         SyncResultForHenkilo(ytrResult.personOid, versio, None)
       } catch {

@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.*
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
@@ -84,11 +85,13 @@ class VirkailijaToSuoritusConverterTest {
             None,
             None
           ))).getOrElse(Set.empty),
+          Set(Lahtokoulu(LocalDate.now, Some(LocalDate.now), suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.VALMIS), Some(true), VUOSILUOKKA_9)),
           syotetty = true
         )
       ),
       None,
-      SuoritusTila.VALMIS
+      SuoritusTila.VALMIS,
+      List(OpiskeluoikeusJakso(suoritus.valmistumispaiva.toScala.map(p => LocalDate.parse(p)).get, SuoritusTila.VALMIS))
     )
 
     Assertions.assertEquals(expected, converted)
@@ -149,7 +152,8 @@ class VirkailijaToSuoritusConverterTest {
         )
       ),
       None,
-      SuoritusTila.VALMIS
+      SuoritusTila.VALMIS,
+      List(OpiskeluoikeusJakso(suoritus.valmistumispaiva.toScala.map(p => LocalDate.parse(p)).get, SuoritusTila.VALMIS)  )
     )
 
     Assertions.assertEquals(expected, converted)
