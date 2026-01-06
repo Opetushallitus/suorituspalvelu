@@ -464,7 +464,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testHaeOppijanTiedotAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    val request = OppijanTiedotRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val request = OppijanTiedotRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO), Optional.empty())
     mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -474,7 +474,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testHaeOppijanTiedotNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    val request = OppijanTiedotRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val request = OppijanTiedotRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO), Optional.empty())
     mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -482,9 +482,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isForbidden)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testHaeOppijanTiedotMalformedOid(): Unit =
+  @Test def testHaeOppijanTiedotMalformedParameters(): Unit =
     // ei validi oid ei sallittu
-    val request = OppijanTiedotRequest(Optional.of("tämä ei ole validi oid"))
+    val request = OppijanTiedotRequest(Optional.of("tämä ei ole validi oid"), Optional.of("tämä ei ole validi aikaleima"))
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -492,7 +492,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest)
       .andReturn()
 
-    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(UIValidator.VALIDATION_TUNNISTE_EI_VALIDI)),
+    Assertions.assertEquals(OppijanTiedotFailureResponse(java.util.Set.of(UIValidator.VALIDATION_TUNNISTE_EI_VALIDI, UIValidator.VALIDATION_AIKALEIMA_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -503,7 +503,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map.empty))
 
     // suoritetaan kutsu ja parseroidaan vastaus
-    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -535,7 +535,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
-    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -574,7 +574,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.successful(List(OnrHenkiloPerustiedot(oppijaNumero, None, None, Some(henkilotunnus)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
-    val request = OppijanTiedotRequest(Optional.of(henkilotunnus))
+    val request = OppijanTiedotRequest(Optional.of(henkilotunnus), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -601,7 +601,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.successful(List.empty))
 
     // suoritetaan kutsu ja parseroidaan vastaus
-    val request = OppijanTiedotRequest(Optional.of(henkilotunnus))
+    val request = OppijanTiedotRequest(Optional.of(henkilotunnus), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -617,7 +617,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.failed(new RuntimeException("ONR connection failed")))
 
     // suoritetaan kutsu ja tarkistetaan että palautetaan 500
-    val request = OppijanTiedotRequest(Optional.of(henkilotunnus))
+    val request = OppijanTiedotRequest(Optional.of(henkilotunnus), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)
@@ -650,7 +650,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
-    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
       .post(ApiConstants.UI_TIEDOT_PATH)
       .contentType(MediaType.APPLICATION_JSON)
@@ -1685,7 +1685,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(oppilaitosNimi, "Europaskolan i Helsingfors", "European School of Helsinki"), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
-    val request = OppijanTiedotRequest(Optional.of(oppijaNumero))
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
     val result = mvc.perform(MockMvcRequestBuilders
         .post(ApiConstants.UI_TIEDOT_PATH)
         .contentType(MediaType.APPLICATION_JSON)

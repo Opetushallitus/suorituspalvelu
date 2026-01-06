@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
@@ -34,6 +34,8 @@ object UIValidator {
   final val VALIDATION_TILA_EI_VALIDI             = "backend-virhe.tila.ei_validi"
   final val VALIDATION_VALMISTUMISPAIVA_TYHJA     = "backend-virhe.valmistumispaiva.tyhja"
   final val VALIDATION_VALMISTUMISPAIVA_EI_VALIDI = "backend-virhe.valmistumispaiva.ei_validi"
+  final val VALIDATION_AIKALEIMA_TYHJA            = "backend-virhe.ajanhetki.tyhja"
+  final val VALIDATION_AIKALEIMA_EI_VALIDI        = "backend-virhe.ajanhetki.ei_validi"
   final val VALIDATION_YKSILOLLISTETTY_TYHJA      = "backend-virhe.yksilollistetty.tyhja"
   final val VALIDATION_YKSILOLLISTETTY_EI_VALIDI  = "backend-virhe.yksilollistetty.ei_validi"
   final val VALIDATION_SUORITUSKIELI_TYHJA        = "backend-virhe.suorituskieli.tyhja"
@@ -91,6 +93,20 @@ object UIValidator {
       Set(VALIDATION_OPPIJANUMERO_EI_VALIDI)
     else
       Set.empty
+
+  def validateAikaleima(aikaleima: Option[String], pakollinen: Boolean): Set[String] = {
+    if (aikaleima.isEmpty || aikaleima.get.isEmpty)
+      if(pakollinen)
+        Set(VALIDATION_AIKALEIMA_TYHJA)
+      else
+        Set.empty
+    else
+      try
+        Instant.parse(aikaleima.get)
+        Set.empty
+      catch
+        case default => Set(VALIDATION_AIKALEIMA_EI_VALIDI)
+  }
 
   def validateTunniste(tunniste: Option[String]): Set[String] = {
     if (tunniste.isEmpty || tunniste.get.isEmpty)

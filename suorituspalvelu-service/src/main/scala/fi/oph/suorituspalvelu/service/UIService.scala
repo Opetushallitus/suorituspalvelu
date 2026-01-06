@@ -204,7 +204,7 @@ class UIService {
     ).values.headOption
   }
 
-  def haeOppijanSuoritukset(oppijaNumero: String): Option[OppijanTiedotSuccessResponse] =
+  def haeOppijanSuoritukset(oppijaNumero: String, aikaleima: Instant): Option[OppijanTiedotSuccessResponse] =
     resolveMasterHenkilo(oppijaNumero).map(masterHenkilo => {
       def haeAliakset(oppijaOid: String): Set[String] = {
         try
@@ -215,7 +215,7 @@ class UIService {
             Set(oppijaNumero)
       }
 
-      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuoritukset(oid).values.flatten)
+      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
         masterHenkilo.hetu, oppijaNumero, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
       })
