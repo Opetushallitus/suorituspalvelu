@@ -58,6 +58,7 @@ class KoskiUtilTest {
     Assertions.assertTrue(KoskiUtil.isOponSeurattava(Seq(opiskeluoikeus)))
 
   @Test def testIsYsiluokkalainenValmisPerusopetus(): Unit =
+    val vahvistusPaivamaara = LocalDate.parse("2025-06-01")
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
       oid = None,
@@ -74,7 +75,7 @@ class KoskiUtilTest {
           koulusivistyskieli = Set.empty,
           yksilollistaminen = None,
           aloitusPaivamaara = None,
-          vahvistusPaivamaara = Some(LocalDate.now()),
+          vahvistusPaivamaara = Some(vahvistusPaivamaara),
           aineet = Set.empty,
           syotetty = false
         ),
@@ -84,7 +85,7 @@ class KoskiUtilTest {
           nimi = Kielistetty(None, None, None),
           koodi = Koodi("9", "perusopetuksenluokkaaste", None),
           alkamisPaiva = None,
-          vahvistusPaivamaara = Some(LocalDate.now()),
+          vahvistusPaivamaara = Some(vahvistusPaivamaara),
           jaaLuokalle = false
         )
       ),

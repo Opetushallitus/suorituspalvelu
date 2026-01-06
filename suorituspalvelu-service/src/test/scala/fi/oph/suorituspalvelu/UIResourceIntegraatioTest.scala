@@ -262,7 +262,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testHaeLuokatAllowed(): Unit =
     val oppijanumero = "1.2.246.562.24.21583363331"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
-    val valmistumisvuosi = "2025"
+    val valmistumisvuosi = "2026"
 
     // tallennetaan valmis perusopetuksen vuosiluokka
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
