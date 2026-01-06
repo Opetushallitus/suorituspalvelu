@@ -227,6 +227,13 @@ class KantaOperaatiotTest {
     // palautuu aikaleiman jälkeen tallennettu ja käyttöönotettu versio
     Assertions.assertEquals(Seq(uusiVersio.tunniste), this.kantaOperaatiot.haeUusimmatMuuttuneetVersiot(alkaen).map(v => v.tunniste))
 
+  @Test def testHaeVersiot(): Unit =
+    val koskiVersio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Instant.now()).get
+    val koskiVersio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio("2.3.4", SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Instant.now()).get
+    val ytrVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", SuoritusJoukko.YTR, Seq("{\"attr\": \"value1\"}"), Instant.now()).get
+
+    Assertions.assertEquals(Set(koskiVersio1, koskiVersio2), this.kantaOperaatiot.haeVersiot(SuoritusJoukko.KOSKI).toSet)
+
   /**
    * Testataan että minimaalinen suoritus tallentuu ja luetaan oikein.
    */

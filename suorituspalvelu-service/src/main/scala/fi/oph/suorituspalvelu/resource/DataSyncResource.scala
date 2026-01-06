@@ -1,15 +1,16 @@
 package fi.oph.suorituspalvelu.resource
 
+import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 
 import java.util.{Optional, UUID}
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
-import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncJob, SyncJobFailureResponse, SyncJobStatusResponse, SyncResponse, SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROI_PATH, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, ReparseFailureResponse, ReparsePayload, ReparseSuccessResponse, SyncJob, SyncJobFailureResponse, SyncJobStatusResponse, SyncResponse, SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.{KoskiService, VirtaService, YTRService}
+import fi.oph.suorituspalvelu.service.{KoskiService, ReparseService, VirtaService, YTRService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
@@ -45,6 +46,8 @@ class DataSyncResource {
   @Autowired var virtaService: VirtaService = null
 
   @Autowired var ytrService: YTRService = null
+
+  @Autowired var reparseService: ReparseService = null
 
   @Autowired var ytrIntegration: YtrIntegration = null
 
@@ -670,6 +673,63 @@ class DataSyncResource {
       case e: Exception =>
         LOG.error("Jobien tietojen haku epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(SyncJobFailureResponse(List(DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI).asJava))
+  }
+
+  @PostMapping(
+    path = Array(DATASYNC_UUDELLEENPARSEROI_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Parseroi lähdedatan uudelleen vastaamaan nykyistä tietomallia",
+    description = "Jos tietomalliin tulee muutoksia (esim. lähdedatasta halutaan lisää tietoa), täytyy olemassaoleva data parseroida uudestaan. Sen voi tehdä" +
+      " halutussa laajuudessa tämän endpointin avulla",
+    requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      content = Array(new Content(schema = new Schema(implementation = classOf[ReparsePayload])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description =  "Synkkaus käynnistetty, palauttaa job-id:t",
+        content = Array(new Content(schema = new Schema(implementation = classOf[ReparseSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = DATASYNC_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[ReparseFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def uudelleenParseroi(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = DATASYNC_UUDELLEENPARSEROI_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            // tarkastetaan oikeudet
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            // deserialisoidaan
+            try
+              Right(objectMapper.readValue(bytes, classOf[ReparsePayload]))
+            catch
+              case e: Exception =>
+                LOG.error("payloadin deserialisointi uudelleenparserointia varten epäonnistui", e)
+                Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
+          .map(payload => {
+            val user = AuditLog.getUser(request)
+            val typeRef = new TypeReference[java.util.Map[String, String]] {}
+            AuditLog.log(user, objectMapper.readValue(bytes, typeRef).asScala.toMap, AuditOperation.Uudelleenparseroi, None)
+            LOG.info(s"Uudelleenparseroidaan lähdedata koski: ${payload.koski}, virta: ${payload.virta}, ytr: ${payload.ytr}, dry-run: ${payload.dryRun}")
+            val jobIds = List(
+              if(payload.koski) Some(reparseService.reparseKoski(payload.dryRun)) else None,
+              if(payload.virta) Some(reparseService.reparseVirta(payload.dryRun)) else None,
+              if(payload.ytr) Some(reparseService.reparseYTR(payload.dryRun)) else None,
+              if(payload.perusopetuksenOppimaarat) Some(reparseService.reparsePerusopetuksenOppimaarat(payload.dryRun)) else None,
+              if(payload.perusopetuksenOppiaineet) Some(reparseService.reparsePerusopetuksenOppiaineenOppimaarat(payload.dryRun)) else None,
+            ).flatten
+            ResponseEntity.status(HttpStatus.OK).body(ReparseSuccessResponse(jobIds.asJava))
+          })
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Aktiivisten hakujen tietojen YTR-järjestelmästä epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ReparseFailureResponse(List(DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI).asJava))
   }
 }
 

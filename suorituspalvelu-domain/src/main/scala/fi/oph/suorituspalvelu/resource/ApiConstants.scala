@@ -53,6 +53,9 @@ object ApiConstants {
   final val VIRTA_DATASYNC_AKTIIVISET_PATH                  = VIRTA_DATASYNC_PATH + "/aktiiviset/"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"
 
+  final val DATASYNC_UUDELLEENPARSEROI_PATH                 = DATASYNC_PATH + "/uudelleenparseroi"
+  final val DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI       = "Uudelleenparseroinnin käynnistys epäonnistui"
+
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"

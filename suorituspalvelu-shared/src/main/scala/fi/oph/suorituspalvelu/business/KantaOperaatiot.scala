@@ -229,6 +229,18 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String])]), DB_TIMEOUT)
       .map((json, data) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), data)).head
 
+  def haeVersiot(suoritusJoukko: SuoritusJoukko): Seq[VersioEntiteetti] =
+    Await.result(db.run(
+        sql"""SELECT jsonb_build_object('tunniste', tunniste,
+              'oppijaNumero', oppijanumero,
+              'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+              'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+              'suoritusJoukko', suoritusjoukko
+            )::text AS versio
+            FROM versiot
+            WHERE suoritusjoukko=${suoritusJoukko.nimi}""".as[String]), DB_TIMEOUT)
+      .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
+
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Seq[Lahtokoulu]) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
     val deletePrevious = sqlu"""DELETE FROM opiskeluoikeudet WHERE versio_tunniste=${versio.tunniste.toString}::uuid"""

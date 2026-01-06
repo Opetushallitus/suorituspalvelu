@@ -30,11 +30,14 @@ trait SupaJobContext {
   def updateProgress(progress: Double): Unit
 
   def reportError(message: String, exception: Option[Exception]): Unit
+
+  def getJobId: String
 }
 
 val DUMMY_JOB_CTX = new SupaJobContext {
   override def updateProgress(progress: Double): Unit = {}
   override def reportError(message: String, exception: Option[Exception]): Unit = {}
+  override def getJobId: String = "DUMMY JOB"  
 }
 
 trait SupaJob {
@@ -103,6 +106,7 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
         val ctx: SupaJobContext = new SupaJobContext {
           override def updateProgress(progress: Double): Unit = kantaOperaatiot.updateJobStatus(UUID.fromString(instance.getId), name, progress)
           override def reportError(message: String, exception: Option[Exception]): Unit = { errors = errors :+ SupaJobError(message, exception)}
+          override def getJobId: String = instance.getId
         }
         ctx.updateProgress(0.0)
         job.run(ctx, instance.getData)
