@@ -25,6 +25,28 @@ class UIValidatorTest {
     Assertions.assertEquals(Set.empty, UIValidator.validateOppijanumero(Some(ApiConstants.ESIMERKKI_OPPIJANUMERO), true))
   }
 
+  // ajanhetki
+  @Test def testValidateAikaleimaRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_AIKALEIMA_TYHJA), UIValidator.validateAikaleima(None, true))
+  }
+
+  @Test def testValidateAikaleimaEmptyMissing(): Unit = {
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_AIKALEIMA_TYHJA), UIValidator.validateAikaleima(Some(""), true))
+  }
+
+  @Test def testValidateAikaleimaNotRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validateAikaleima(None, false))
+  }
+
+  @Test def testValidateAikaleimaInvalid(): Unit = {
+    val aikaleima = "tämä ei ole validi aikaleima"
+    Assertions.assertEquals(Set(UIValidator.VALIDATION_AIKALEIMA_EI_VALIDI), UIValidator.validateAikaleima(Some(aikaleima), true))
+  }
+
+  @Test def testValidateAikaleimaValid(): Unit = {
+    Assertions.assertEquals(Set.empty, UIValidator.validateAikaleima(Some(ApiConstants.ESIMERKKI_AIKALEIMA), true))
+  }
+
   // oppilaitosoid
   @Test def testValidateOppilaitosOidRequiredMissing(): Unit = {
     Assertions.assertEquals(Set(UIValidator.VALIDATION_OPPILAITOSOID_TYHJA), UIValidator.validateOppilaitosOid(None, true))

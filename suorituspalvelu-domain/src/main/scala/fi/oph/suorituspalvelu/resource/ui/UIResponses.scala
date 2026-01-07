@@ -1153,7 +1153,9 @@ case class PerusopetuksenOppiaineenOppimaaraNimi(
 
 case class OppijanTiedotRequest(
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: Optional[String]
+  @BeanProperty tunniste: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_AIKALEIMA, description = "Jos määritelty, palautetaan tämän ajanhetken tiedot, muuten uusimmat", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty aikaleima: Optional[String]
 )
 
 trait OppijanTiedotResponse()

@@ -360,26 +360,30 @@ class UIResource {
                 Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(java.util.Set.of(UI_TIEDOT_JSON_EI_VALIDI)))))
           .flatMap((oppijanTiedotRequest: OppijanTiedotRequest) =>
             // validoidaan parametri
-            val virheet = UIValidator.validateTunniste(oppijanTiedotRequest.tunniste.toScala)
+            val virheet = Set(
+              UIValidator.validateTunniste(oppijanTiedotRequest.tunniste.toScala),
+              UIValidator.validateAikaleima(oppijanTiedotRequest.aikaleima.toScala, false)
+            ).flatten
             if(virheet.isEmpty)
-              Right(oppijanTiedotRequest.tunniste.get)
+              Right((oppijanTiedotRequest.tunniste.get, oppijanTiedotRequest.aikaleima.toScala.map(Instant.parse)))
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(virheet.asJava))))
-          .flatMap((tunniste: String) => {
-            this.uiService.resolveOppijaNumero(tunniste).toRight(ResponseEntity.status(HttpStatus.NOT_FOUND).build)
+          .flatMap((tunniste, aikaleima) => {
+            this.uiService.resolveOppijaNumero(tunniste).map(oppijaNumero => (oppijaNumero, aikaleima)).toRight(ResponseEntity.status(HttpStatus.NOT_FOUND).build)
           })
-          .flatMap(oppijaNumero => {
+          .flatMap((oppijaNumero, aikaleima) => {
               // tarkastetaan oikeudet haetulle oppijanumerolle
               if (this.uiService.hasOppijanKatseluOikeus(oppijaNumero))
-                Right(oppijaNumero)
+                Right((oppijaNumero, aikaleima))
               else
                 Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build)
             })
-          .flatMap(oppijaNumero =>
-            LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero}")
+          .flatMap((oppijaNumero, aikaleima) =>
+            val ajanhetki = aikaleima.getOrElse(Instant.now)
+            LOG.info(s"Haetaan käyttöliittymälle tiedot oppijasta ${oppijaNumero} hetkellä ${ajanhetki}")
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), AuditOperation.HaeOppijaTiedotUI, None)
-            val oppijanTiedot = uiService.haeOppijanSuoritukset(oppijaNumero)
+            val oppijanTiedot = uiService.haeOppijanSuoritukset(oppijaNumero, ajanhetki)
             if(oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))
             else
