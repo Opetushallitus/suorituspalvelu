@@ -1,16 +1,150 @@
-import { Stack } from '@mui/material';
-import { OphButton } from '@opetushallitus/oph-design-system';
+import {
+  Stack,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@mui/material';
+import { OphButton, OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { AccordionBox } from '@/components/AccordionBox';
-import { Add } from '@mui/icons-material';
+import { Add, History } from '@mui/icons-material';
 import { AvainArvotSection } from './AvainArvotSection';
 import { YliajoEditModal } from './YliajoEditModal';
 import { useYliajoManager } from '@/lib/yliajoManager';
-import type { ValintaData } from '@/types/ui-types';
+import type { AvainArvo, ValintaData } from '@/types/ui-types';
+import { useState } from 'react';
+import { useApiSuspenseQuery } from '@/lib/http-client';
+import { queryOptionsGetValintadataHistoria } from '@/lib/suorituspalvelu-queries';
+import { Box } from '@mui/system';
+import { StripedTable } from '../StripedTable';
+import { formatFinnishDateTime } from '@/lib/common';
+import { QuerySuspenseBoundary } from '../QuerySuspenseBoundary';
+import { OphModal } from '../OphModal';
+
+const MuutoshistoriaContent = ({
+  oppijaNumero,
+  hakuOid,
+  avainArvo,
+  deleteYliajo,
+  onClose,
+}: {
+  oppijaNumero: string;
+  hakuOid: string;
+  avainArvo: AvainArvo;
+  deleteYliajo: (avain: string) => void;
+  onClose: () => void;
+}) => {
+  const { t } = useTranslations();
+
+  const { data } = useApiSuspenseQuery(
+    queryOptionsGetValintadataHistoria({
+      oppijaNumero,
+      hakuOid,
+      avain: avainArvo.avain,
+    }),
+  );
+
+  const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa;
+
+  return (
+    <Stack>
+      {alkuperainenArvo != null && (
+        <Box sx={{ paddingTop: 1, paddingBottom: 3 }}>
+          {t('opiskelijavalinnan-tiedot.alkuperainen')}: {alkuperainenArvo}
+          <OphButton
+            startIcon={<History />}
+            onClick={() => {
+              deleteYliajo(avainArvo.avain);
+              onClose();
+            }}
+          >
+            {t('opiskelijavalinnan-tiedot.muutoshistoria.palauta')}
+          </OphButton>
+        </Box>
+      )}
+      <StripedTable>
+        <TableHead>
+          <TableRow>
+            <TableCell>
+              {t('opiskelijavalinnan-tiedot.muutoshistoria.muokattu')}
+            </TableCell>
+            <TableCell>
+              {t('opiskelijavalinnan-tiedot.muutoshistoria.arvo')}
+            </TableCell>
+            <TableCell>
+              {t('opiskelijavalinnan-tiedot.muutoshistoria.muutoksen-syy')}
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.muutokset.map((muutos) => (
+            <TableRow key={muutos.luotu}>
+              <TableCell>
+                <OphTypography>
+                  {formatFinnishDateTime(muutos.luotu)}
+                </OphTypography>
+                <OphTypography>{muutos.virkailija}</OphTypography>
+              </TableCell>
+              <TableCell>{muutos.arvo}</TableCell>
+              <TableCell>
+                {muutos.arvo === null
+                  ? t(
+                      'opiskelijavalinnan-tiedot.muutoshistoria.yliajo-poistettu',
+                    )
+                  : muutos.selite}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </StripedTable>
+    </Stack>
+  );
+};
+
+const MuutoshistoriaModal = ({
+  avainArvo,
+  hakuOid,
+  oppijaNumero,
+  deleteYliajo,
+  onClose,
+}: {
+  avainArvo: AvainArvo;
+  hakuOid: string;
+  oppijaNumero: string;
+  deleteYliajo: (avain: string) => void;
+  onClose: () => void;
+}) => {
+  const { t } = useTranslations();
+  return (
+    <OphModal
+      open={Boolean(avainArvo)}
+      onClose={onClose}
+      title={avainArvo.avain}
+      maxWidth="md"
+      actions={
+        <OphButton variant="contained" onClick={onClose}>
+          {t('sulje')}
+        </OphButton>
+      }
+    >
+      <QuerySuspenseBoundary>
+        <MuutoshistoriaContent
+          avainArvo={avainArvo}
+          hakuOid={hakuOid}
+          oppijaNumero={oppijaNumero}
+          deleteYliajo={deleteYliajo}
+          onClose={onClose}
+        />
+      </QuerySuspenseBoundary>
+    </OphModal>
+  );
+};
 
 export const OpiskelijavalintaanSiirtyvatTiedot = ({
   oppijaNumero,
   valintaData,
+  hakuOid,
 }: {
   oppijaNumero: string;
   hakuOid: string;
@@ -18,7 +152,13 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
 }) => {
   const { t } = useTranslations();
 
-  const { startYliajoEdit, startYliajoAdd, yliajoFields } = useYliajoManager({
+  const {
+    yliajoMutation,
+    startYliajoEdit,
+    startYliajoAdd,
+    yliajoFields,
+    deleteYliajo,
+  } = useYliajoManager({
     henkiloOid: oppijaNumero,
   });
 
@@ -27,9 +167,23 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
       (avainArvo) => !avainArvo.metadata.arvoOnHakemukselta,
     ) ?? [];
 
+  const [selectedMuutoshistoriaAvainArvo, setSelectedMuutoshistoriaAvainArvo] =
+    useState<AvainArvo | null>(null);
+
   return (
     <>
-      {yliajoFields && <YliajoEditModal avainArvot={avainArvot} />}
+      {selectedMuutoshistoriaAvainArvo && hakuOid && oppijaNumero && (
+        <MuutoshistoriaModal
+          hakuOid={hakuOid}
+          oppijaNumero={oppijaNumero}
+          avainArvo={selectedMuutoshistoriaAvainArvo}
+          deleteYliajo={deleteYliajo}
+          onClose={() => setSelectedMuutoshistoriaAvainArvo(null)}
+        />
+      )}
+      {!yliajoMutation.isPending && yliajoFields && (
+        <YliajoEditModal avainArvot={avainArvot} />
+      )}
       <AccordionBox
         id="opiskelijavalintaan-siirtyvat-tiedot"
         title={t(
@@ -38,6 +192,9 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
       >
         <AvainArvotSection
           avainarvot={avainArvot}
+          showMuutoshistoria={(avainArvo) => {
+            setSelectedMuutoshistoriaAvainArvo(avainArvo);
+          }}
           startYliajoEdit={(yliajoParams) => {
             startYliajoEdit({
               arvo: yliajoParams.arvo,

@@ -17,11 +17,11 @@ const BreakFlex = styled('div')({
 
 export const AvainArvotSection = ({
   avainarvot,
-  avainArvoFilter,
   startYliajoEdit,
+  showMuutoshistoria,
 }: {
   avainarvot?: Array<AvainArvo>;
-  avainArvoFilter?: (avainArvo: AvainArvo) => boolean;
+  showMuutoshistoria?: (avainarvo: AvainArvo) => void;
   startYliajoEdit?: (avainarvo: {
     avain: string;
     arvo: string;
@@ -31,55 +31,60 @@ export const AvainArvotSection = ({
   const { t } = useTranslations();
 
   const groupedAvainarvot = useMemo(
-    () => groupAndSortAvainarvot(avainarvot ?? [], avainArvoFilter),
-    [avainarvot, avainArvoFilter],
+    () => groupAndSortAvainarvot(avainarvot ?? []),
+    [avainarvot],
   );
 
   return (
-    <Stack sx={{ gap: 3 }}>
-      {OPISKELIJAVALINTADATA_GROUPS.map((group) => {
-        const items = groupedAvainarvot[group];
-        return (
-          items && (
-            <Box key={group}>
-              {group !== 'yleinen' && (
-                <Box
+    <>
+      <Stack sx={{ gap: 3 }}>
+        {OPISKELIJAVALINTADATA_GROUPS.map((group) => {
+          const items = groupedAvainarvot[group];
+          return (
+            items && (
+              <Box key={group}>
+                {group !== 'yleinen' && (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      borderBottom: `1px solid ${ophColors.grey300}`,
+                      marginBottom: 2,
+                    }}
+                  >
+                    <OphTypography variant="h5">
+                      {t(`opiskelijavalinnan-tiedot.ryhmat.${group}`)}
+                    </OphTypography>
+                  </Box>
+                )}
+                <Stack
+                  direction="row"
                   sx={{
-                    width: '100%',
-                    borderBottom: `1px solid ${ophColors.grey300}`,
-                    marginBottom: 2,
+                    maxWidth: '100%',
+                    flexWrap: 'wrap',
+                    justifyContent: 'flex-start',
+                    gap: 2,
                   }}
                 >
-                  <OphTypography variant="h5">
-                    {t(`opiskelijavalinnan-tiedot.ryhmat.${group}`)}
-                  </OphTypography>
-                </Box>
-              )}
-              <Stack
-                direction="row"
-                sx={{
-                  maxWidth: '100%',
-                  flexWrap: 'wrap',
-                  justifyContent: 'flex-start',
-                  gap: 2,
-                }}
-              >
-                {items?.map((avainArvo, index) => (
-                  <React.Fragment key={avainArvo.avain}>
-                    {avainArvo.avain.includes('_OPPIAINE') && index !== 0 && (
-                      <BreakFlex />
-                    )}
-                    <AvainArvoDisplay
-                      avainArvo={avainArvo}
-                      startYliajoEdit={startYliajoEdit}
-                    />
-                  </React.Fragment>
-                ))}
-              </Stack>
-            </Box>
-          )
-        );
-      })}
-    </Stack>
+                  {items?.map((avainArvo, index) => (
+                    <React.Fragment key={avainArvo.avain}>
+                      {avainArvo.avain.includes('_OPPIAINE') && index !== 0 && (
+                        <BreakFlex />
+                      )}
+                      <AvainArvoDisplay
+                        avainArvo={avainArvo}
+                        startYliajoEdit={startYliajoEdit}
+                        showMuutoshistoria={() => {
+                          showMuutoshistoria?.(avainArvo);
+                        }}
+                      />
+                    </React.Fragment>
+                  ))}
+                </Stack>
+              </Box>
+            )
+          );
+        })}
+      </Stack>
+    </>
   );
 };

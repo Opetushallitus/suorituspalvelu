@@ -5,7 +5,7 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import { createContext, use, useEffect, useMemo, useState } from 'react';
 import { queryOptionsGetValintadata } from '@/lib/suorituspalvelu-queries';
 import { YliajoMutationStatusIndicator } from '@/components/opiskelijavalinnan-tiedot/YliajoMutationStatusIndicator';
 
@@ -25,7 +25,7 @@ export type YliajoMutationResult = UseMutationResult<
   unknown
 >;
 
-const YliajoManagerContext = React.createContext<ReturnType<
+const YliajoManagerContext = createContext<ReturnType<
   typeof useYliajoManagerState
 > | null>(null);
 
@@ -117,7 +117,7 @@ const useYliajoManagerState = ({ hakuOid }: { hakuOid: string }) => {
         setYliajoState({
           arvo: yliajoParams.arvo,
           avain: yliajoParams.avain,
-          selite: yliajoParams.selite,
+          selite: '',
         });
       },
       startYliajoAdd: () => {
@@ -145,7 +145,7 @@ const useYliajoManagerState = ({ hakuOid }: { hakuOid: string }) => {
 };
 
 export const useYliajoManager = (params?: { henkiloOid?: string }) => {
-  const context = React.use(YliajoManagerContext);
+  const context = use(YliajoManagerContext);
   if (!context) {
     throw new Error(
       'useYliajoManager must be used within a YliajoManagerProvider',
