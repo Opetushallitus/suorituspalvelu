@@ -183,7 +183,7 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
           onClose={() => setSelectedMuutoshistoriaAvainArvo(null)}
         />
       )}
-      {!yliajoMutation.isPending && yliajoFields && (
+      {!yliajoMutation.isPending && !yliajoMutation.isError && yliajoFields && (
         <YliajoEditModal avainArvot={avainArvot} />
       )}
       <AccordionBox
