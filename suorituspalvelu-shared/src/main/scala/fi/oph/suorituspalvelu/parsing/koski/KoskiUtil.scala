@@ -89,19 +89,20 @@ object KoskiUtil {
       getVSTLahtokouluMetadata(opiskeluoikeudet),
     ).flatten.sortBy(ov => ov.suorituksenAlku).reverse
 
-  // tätä pitää käyttää hakemuksen lähtökoulun yksikäsitteiseen määrittämiseen, muttei katseluoikeuden määrittämiseen
-  def haeViimeisinLahtokoulu(ajanhetki: LocalDate, opiskeluoikeudet: Set[Opiskeluoikeus]): Option[String] =
+  def haeLahtokoulut(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[Lahtokoulu] =
     val lahtokouluMetadata = getLahtokouluMetadata(opiskeluoikeudet)
 
-    val rajatut = lahtokouluMetadata.zip(lahtokouluMetadata.tail.map(e => Some(e)) :+ None).map((curr, next) => curr.copy(suorituksenLoppu = {
+    lahtokouluMetadata.zip(lahtokouluMetadata.tail.map(e => Some(e)) :+ None).map((curr, next) => curr.copy(suorituksenLoppu = {
       (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
         case (None, None) => None
         case (Some(currLoppu), None) => Some(currLoppu)
         case (None, Some(nextAlku)) => Some(nextAlku)
         case (Some(currLoppu), Some(nextAlku)) => Some(if currLoppu.isAfter(nextAlku) then nextAlku else currLoppu)
     }))
-    
-    rajatut.find(lk => !lk.suorituksenAlku.isAfter(ajanhetki) && lk.suorituksenLoppu.forall(pvm => !pvm.isBefore(ajanhetki))).map(lk => lk.oppilaitosOid)
+
+  // tätä pitää käyttää hakemuksen lähtökoulun yksikäsitteiseen määrittämiseen, muttei katseluoikeuden määrittämiseen
+  def haeViimeisinLahtokoulu(ajanhetki: LocalDate, opiskeluoikeudet: Set[Opiskeluoikeus]): Option[String] =
+    haeLahtokoulut(opiskeluoikeudet).find(lk => !lk.suorituksenAlku.isAfter(ajanhetki) && lk.suorituksenLoppu.forall(pvm => !pvm.isBefore(ajanhetki))).map(lk => lk.oppilaitosOid)
 
   /**
    * Kertoo löytyykö suorituksista kriteerit täyttäviä lähtökouluja. Tätä tietoa käytetään ratkaisemaan:

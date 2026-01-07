@@ -79,6 +79,45 @@ class KoskiUtilTest {
     )
     Assertions.assertTrue(KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(Set(VUOSILUOKKA_9)), Set(opiskeluoikeus)))
 
+  @Test def testHaeLahtokoulut(): Unit =
+    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-08-18")), "ensimmäinen", Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, VUOSILUOKKA_9)
+    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-01-01"), None, "toinen", Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.KESKEN), None, VUOSILUOKKA_9)
+
+    val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = None,
+      oppilaitosOid = "1.2.3",
+      suoritukset = Set(
+        PerusopetuksenOppimaara(
+          tunniste = UUID.randomUUID(),
+          versioTunniste = None,
+          oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
+          luokka = None,
+          koskiTila = null,
+          supaTila = SuoritusTila.VALMIS,
+          suoritusKieli = null,
+          koulusivistyskieli = Set.empty,
+          yksilollistaminen = None,
+          aloitusPaivamaara = Some(LocalDate.now()),
+          vahvistusPaivamaara = Some(LocalDate.now()),
+          aineet = Set.empty,
+          lahtokoulut = Set(
+            lahtokoulu1,
+            lahtokoulu2
+          ),
+          syotetty = false
+        ),
+      ),
+      lisatiedot = None,
+      tila = SuoritusTila.VALMIS,
+      jaksot = List.empty
+    )
+
+    Assertions.assertEquals(Seq(
+      lahtokoulu1.copy(suorituksenLoppu = Some(lahtokoulu2.suorituksenAlku)),
+      lahtokoulu2
+    ), KoskiUtil.haeLahtokoulut(Set(opiskeluoikeus)))
+
   @Test def testHaeviimeisinLahtokoulu(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
       tunniste = UUID.randomUUID(),

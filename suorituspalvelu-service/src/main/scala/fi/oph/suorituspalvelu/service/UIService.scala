@@ -117,7 +117,7 @@ class UIService {
 
   @Autowired val tarjontaIntegration: fi.oph.suorituspalvelu.integration.TarjontaIntegration = null
 
-  val ONR_TIMEOUT = 10.seconds;
+  val ONR_TIMEOUT = 10.seconds
 
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
     oppilaitosOids
