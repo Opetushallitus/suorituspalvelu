@@ -117,7 +117,7 @@ class UIService {
 
   @Autowired val tarjontaIntegration: fi.oph.suorituspalvelu.integration.TarjontaIntegration = null
 
-  val ONR_TIMEOUT = 10.seconds;
+  val ONR_TIMEOUT = 10.seconds
 
   val LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
 

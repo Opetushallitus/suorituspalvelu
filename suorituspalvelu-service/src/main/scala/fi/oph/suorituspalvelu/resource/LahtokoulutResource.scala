@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
-import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotFailureResponse, LahettavatHenkilotResponse, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatResponse, LahettavatLuokatSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotFailureResponse, LahettavatHenkilotResponse, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatResponse, LahettavatLuokatSuccessResponse, Lahtokoulu, LahtokouluFailureResponse, LahtokouluResponse, LahtokouluSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.UIService
+import fi.oph.suorituspalvelu.service.LahtokoulutService
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
@@ -23,14 +23,15 @@ import scala.jdk.OptionConverters.*
 @RequestMapping(path = Array(""))
 @RestController
 @Tag(
-  name = "Organisaation rajaimet",
+  name = "Lähtökoulut",
   description = "Hakemuspalvelun tarpeeseen rakennettuja rajapintoja, joiden avulla voidaan rajata hakemuspalvelussa 2. " +
-    "asteen hakijoihin kohdistuvia hakuja. Vain rekisterinpitäjillä ja palvelukäyttäjillä on pääsy näihin rajapintoihin.")
-class LahettavatResource {
+    "asteen hakijoihin kohdistuvia hakuja ja tarkastaakäyttöoikeuksia. Vain rekisterinpitäjillä ja palvelukäyttäjillä on " +
+    "pääsy näihin rajapintoihin.")
+class LahtokoulutResource {
 
-  val LOG = LoggerFactory.getLogger(classOf[LahettavatResource])
+  val LOG = LoggerFactory.getLogger(classOf[LahtokoulutResource])
 
-  @Autowired var uiService: UIService = null
+  @Autowired var lahtokoulutService: LahtokoulutService = null
 
   @GetMapping(
     path = Array(LAHETTAVAT_LUOKAT_PATH),
@@ -74,7 +75,7 @@ class LahettavatResource {
               val user = AuditLog.getUser(request)
               AuditLog.log(user, Map(LAHETTAVAT_OPPILAITOSOID_PARAM_NAME -> oppilaitosOid, LAHETTAVAT_VUOSI_PARAM_NAME -> vuosi.toString), AuditOperation.HaeLuokatLahettava, None)
               LOG.info(s"Haetaan 2. asteen mahdollisten hakijoiden luokat oppilaitokselle $oppilaitosOid")
-              val luokat = uiService.haeLuokat(oppilaitosOid, vuosi)
+              val luokat = lahtokoulutService.haeLuokat(oppilaitosOid, vuosi)
               ResponseEntity.status(HttpStatus.OK).body(LahettavatLuokatSuccessResponse(luokat.toList.asJava))
             catch
               case e: Exception =>
@@ -130,7 +131,7 @@ class LahettavatResource {
               val user = AuditLog.getUser(request)
               AuditLog.log(user, Map(LAHETTAVAT_OPPILAITOSOID_PARAM_NAME -> oppilaitosOid, LAHETTAVAT_VUOSI_PARAM_NAME -> vuosi.toString), AuditOperation.HaeHenkilotLahettava, None)
               LOG.info(s"Haetaan 2. asteen mahdolliset hakijat oppilaitokselle $oppilaitosOid")
-              val oppijat = uiService.haeOhjattavatJaLuokat(oppilaitosOid, vuosi).map(oppija => LahettavatHenkilo(oppija._1, oppija._2))
+              val oppijat = lahtokoulutService.haeOhjattavatJaLuokat(oppilaitosOid, vuosi).map(oppija => LahettavatHenkilo(oppija._1, oppija._2))
               ResponseEntity.status(HttpStatus.OK).body(LahettavatHenkilotSuccessResponse(oppijat.toList.asJava))
             catch
               case e: Exception =>
@@ -142,6 +143,63 @@ class LahettavatResource {
       case e: Exception =>
         LOG.error("Henkilöiden haku epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahettavatHenkilotFailureResponse(java.util.Set.of(LAHETTAVAT_HAKU_EPÄONNISTUI)))
+  }
+
+  @GetMapping(
+    path = Array(OPISKELIJAT_LAHTOKOULUT_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee henkilön lähtökoulut",
+    description = "Lähtökoulutietoja käytetään hakemuspalvelussa pääsyn rajaamiseen ja tilastointiin.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Palauttaa listan henkilön lähtökouluista", content = Array(new Content(schema = new Schema(implementation = classOf[LahtokouluSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = LAHETTAVAT_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LahtokouluFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = LAHETTAVAT_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def haeLahtokoulu(@PathVariable(name = OPISKELIJAT_HENKILOOID_PARAM_NAME, required = false) @Parameter(description = "Henkilön tunniste", example = ESIMERKKI_OPPIJANUMERO) henkiloOid: Optional[String],
+                    request: HttpServletRequest): ResponseEntity[LahtokouluResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = OPISKELIJAT_LAHTOKOULUT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            // tarkastetaan oikeudet
+            if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onPalveluKayttaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            // validoidaan parametrit
+            val virheet: Set[String] = Validator.validateOppijanumero(henkiloOid.toScala, true)
+            if (virheet.isEmpty)
+              Right(henkiloOid.get)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LahtokouluFailureResponse(virheet.asJava))))
+          .map(henkiloOid => {
+            try
+              val user = AuditLog.getUser(request)
+              AuditLog.log(user, Map(OPISKELIJAT_HENKILOOID_PARAM_NAME -> henkiloOid), AuditOperation.HaeLahtokoulut, None)
+              LOG.info(s"Haetaan lähtökoulut henkilölle $henkiloOid")
+
+              val lahtokoulut = lahtokoulutService.haeLahtokoulut(henkiloOid)
+              ResponseEntity.status(HttpStatus.OK).body(LahtokouluSuccessResponse(lahtokoulut.map(l => Lahtokoulu(
+                l.oppilaitosOid,
+                l.suorituksenAlku,
+                l.suorituksenLoppu.toJava,
+                l.luokka.toJava,
+                l.suoritusTyyppi.toString
+              )).toList.asJava))
+            catch
+              case e: Exception =>
+                LOG.error(s"Lähtökoulujen haku henkilölle $henkiloOid epäonnistui", e)
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahtokouluFailureResponse(Set(LAHETTAVAT_500_VIRHE).asJava))
+          })
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[LahtokouluResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Henkilöiden haku epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahtokouluFailureResponse(java.util.Set.of(LAHETTAVAT_500_VIRHE)))
   }
 }
 

@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, 
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.{Optional, UUID}
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
@@ -155,6 +155,31 @@ case class LahettavatHenkilotFailureResponse(
   @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.Set[String]
 ) extends LahettavatHenkilotResponse
+
+trait LahtokouluResponse()
+
+case class Lahtokoulu(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppilaitosOid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty alkuPaivamaara: LocalDate,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty loppuPaivamaara: Optional[LocalDate],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luokka: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tyyppi: String
+)
+
+case class LahtokouluSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty lahtokoulut: java.util.List[Lahtokoulu]
+) extends LahtokouluResponse
+
+case class LahtokouluFailureResponse(
+  @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheet: java.util.Set[String]
+) extends LahtokouluResponse
 
 case class ValintalaskentaDataPayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)

@@ -65,6 +65,14 @@ object ApiConstants {
   final val LAHETTAVAT_LUOKAT_PATH                          = LAHETTAVAT_PATH + "/luokat"
   final val LAHETTAVAT_HENKILOT_PATH                        = LAHETTAVAT_PATH + "/opiskelijat"
 
+  final val OPISKELIJAT_HENKILOOID_PARAM_NAME               = "henkiloOid"
+  final val OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER        = "{" + OPISKELIJAT_HENKILOOID_PARAM_NAME + "}"
+  final val OPISKELIJAT_PATH                                = VERSIONED_API_PREFIX + "/opiskelijat/" + OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER
+  final val OPISKELIJAT_LAHTOKOULUT_PATH                    = OPISKELIJAT_PATH + "/lahtokoulut"
+
+  final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
+
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR        = "5000"
 
   final val VALINTALASKENTA_VALINTADATA_PATH                = VERSIONED_API_PREFIX + "/valintalaskenta/valintadata"
@@ -78,9 +86,6 @@ object ApiConstants {
   final val VALINTALASKENTA_LIIKAA_PARAMETREJA              = "Anna parametrina vain joko hakukohdeOid tai lista hakemusOideja"
   final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui"
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA            = VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR.toInt
-
-  final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
-  final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
 
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot"
 

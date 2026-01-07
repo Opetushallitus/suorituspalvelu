@@ -40,21 +40,24 @@ object KoskiUtil {
         case s: Tuva => s.lahtokoulu
         case s: VapaaSivistystyo => s.lahtokoulu
       }
-    }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku).reverse
+    }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku)
+
+  def haeLahtokoulut(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[Lahtokoulu] =
+    val lahtokouluMetadata = getLahtokouluMetadata(opiskeluoikeudet)
+
+    if(lahtokouluMetadata.isEmpty)
+      Seq.empty
+    else
+      lahtokouluMetadata.zip(lahtokouluMetadata.tail.map(e => Some(e)) :+ None).map((curr, next) => curr.copy(suorituksenLoppu = {
+        (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
+          case (None, None) => None
+          case (Some(currLoppu), None) => Some(LocalDate.parse(s"${currLoppu.getYear+1}-01-31"))
+          case (_, Some(nextAlku)) => Some(nextAlku)
+      }))
 
   // tätä pitää käyttää hakemuksen lähtökoulun yksikäsitteiseen määrittämiseen, muttei katseluoikeuden määrittämiseen
   def haeViimeisinLahtokoulu(ajanhetki: LocalDate, opiskeluoikeudet: Set[Opiskeluoikeus]): Option[String] =
-    val lahtokouluMetadata = getLahtokouluMetadata(opiskeluoikeudet)
-
-    val rajatut = lahtokouluMetadata.zip(lahtokouluMetadata.tail.map(e => Some(e)) :+ None).map((curr, next) => curr.copy(suorituksenLoppu = {
-      (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
-        case (None, None) => None
-        case (Some(currLoppu), None) => Some(currLoppu)
-        case (None, Some(nextAlku)) => Some(nextAlku)
-        case (Some(currLoppu), Some(nextAlku)) => Some(if currLoppu.isAfter(nextAlku) then nextAlku else currLoppu)
-    }))
-    
-    rajatut.find(lk => !lk.suorituksenAlku.isAfter(ajanhetki) && lk.suorituksenLoppu.forall(pvm => !pvm.isBefore(ajanhetki))).map(lk => lk.oppilaitosOid)
+    haeLahtokoulut(opiskeluoikeudet).find(lk => !lk.suorituksenAlku.isAfter(ajanhetki) && lk.suorituksenLoppu.forall(pvm => !pvm.isBefore(ajanhetki))).map(lk => lk.oppilaitosOid)
 
   /**
    * Kertoo löytyykö suorituksista kriteerit täyttäviä lähtökouluja. Tätä tietoa käytetään ratkaisemaan:
