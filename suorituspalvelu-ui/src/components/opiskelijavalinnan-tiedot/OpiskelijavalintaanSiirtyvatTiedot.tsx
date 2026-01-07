@@ -49,9 +49,11 @@ const MuutoshistoriaContent = ({
 
   return (
     <Stack>
-      {alkuperainenArvo != null && (
+      {avainArvo.metadata.yliajo?.arvo !== null && (
         <Box sx={{ paddingTop: 1, paddingBottom: 3 }}>
-          {t('opiskelijavalinnan-tiedot.alkuperainen')}: {alkuperainenArvo}
+          {t('opiskelijavalinnan-tiedot.alkuperainen')}:{' '}
+          {alkuperainenArvo ??
+            t('opiskelijavalinnan-tiedot.muutoshistoria.ei-arvoa')}
           <OphButton
             startIcon={<History />}
             onClick={() => {
