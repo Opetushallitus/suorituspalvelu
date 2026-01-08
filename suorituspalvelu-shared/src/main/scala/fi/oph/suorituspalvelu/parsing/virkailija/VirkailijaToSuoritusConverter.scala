@@ -68,7 +68,8 @@ object VirkailijaToSuoritusConverter {
             None,
             None
           ))).getOrElse(Set.empty),
-          syotetty = true
+          syotetty = true,
+          false //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
         )
       ),
       None,

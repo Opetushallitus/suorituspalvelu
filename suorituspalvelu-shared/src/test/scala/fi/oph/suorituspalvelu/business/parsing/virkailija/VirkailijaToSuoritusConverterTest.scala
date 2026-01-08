@@ -84,7 +84,8 @@ class VirkailijaToSuoritusConverterTest {
             None,
             None
           ))).getOrElse(Set.empty),
-          syotetty = true
+          syotetty = true,
+          vuosiluokkiinSitoutumatonOpetus = false
         )
       ),
       None,

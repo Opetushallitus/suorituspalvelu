@@ -399,7 +399,8 @@ object KoskiToSuoritusConverter {
       aloitusPaivamaara = parseAloitus(opiskeluoikeus),
       vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty),
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
     )
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara =
@@ -419,7 +420,8 @@ object KoskiToSuoritusConverter {
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty),
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
     )
 
   def toPerusopetuksenVuosiluokka(opiskeluoikeus: Opiskeluoikeus, suoritus: Suoritus): PerusopetuksenVuosiluokka =

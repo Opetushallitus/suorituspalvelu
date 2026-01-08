@@ -39,7 +39,8 @@ class KoskiUtilTest {
           aloitusPaivamaara = None,
           vahvistusPaivamaara = Some(LocalDate.now()),
           aineet = Set.empty,
-          syotetty = false
+          syotetty = false,
+          vuosiluokkiinSitoutumatonOpetus = false
         ),
         PerusopetuksenVuosiluokka(
           tunniste = UUID.randomUUID(),
@@ -77,7 +78,8 @@ class KoskiUtilTest {
           aloitusPaivamaara = None,
           vahvistusPaivamaara = Some(vahvistusPaivamaara),
           aineet = Set.empty,
-          syotetty = false
+          syotetty = false,
+          vuosiluokkiinSitoutumatonOpetus = false
         ),
         PerusopetuksenVuosiluokka(
           tunniste = UUID.randomUUID(),

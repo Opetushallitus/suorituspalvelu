@@ -497,7 +497,8 @@ class EntityToUIConverterTest {
           rajattu = Some(false)
         ),
       ),
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = false
     )
 
     val koodistoProvider = new KoodistoProvider {

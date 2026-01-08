@@ -153,6 +153,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"2025-08-18")),
         Set.empty,
+        false,
         false
       )),
       None,
@@ -215,6 +216,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-08-18")),
         Set.empty,
+        false,
         false
       )),
       None,
@@ -430,6 +432,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$vuosi-08-18")),
         Set.empty,
+        false,
         false
       )),
       None,
