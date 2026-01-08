@@ -364,7 +364,7 @@ object EntityToUIConverter {
             t.oppilaitos.oid,
           ),
           tila = SuoritusTila.valueOf(t.supaTila.toString),
-          aloituspaiva = t.aloitusPaivamaara.toJava,
+          aloituspaiva = Optional.of(t.aloitusPaivamaara),
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )
@@ -395,7 +395,7 @@ object EntityToUIConverter {
               t.oppilaitos.oid,
             ),
             tila = SuoritusTila.valueOf(t.supaTila.toString),
-            aloituspaiva = t.aloitusPaivamaara.toJava,
+            aloituspaiva = Optional.of(t.aloitusPaivamaara),
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
             laajuus = t.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
               l.lyhytNimi.get.fi.toJava,
@@ -429,7 +429,7 @@ object EntityToUIConverter {
               t.oppilaitos.oid,
             ),
             tila = SuoritusTila.valueOf(t.supaTila.toString),
-            aloituspaiva = t.aloitusPaivamaara.toJava,
+            aloituspaiva = Optional.of(t.aloitusPaivamaara),
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
             laajuus = t.hyvaksyttyLaajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
               l.lyhytNimi.get.fi.toJava,

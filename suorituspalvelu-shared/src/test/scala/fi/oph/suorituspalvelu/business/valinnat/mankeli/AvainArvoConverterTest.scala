@@ -1,9 +1,11 @@
 package fi.oph.suorituspalvelu.business.valinnat.mankeli
 
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, VAPAA_SIVISTYSTYO}
+import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{Koodisto, KoutaHaku, KoutaHakuaika}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -96,7 +98,7 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kotitalous, osallistuminen"), None, None), Koodi("BI", "koodisto", None), Koodi("O", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta"), None, None), Koodi("LI", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None, true, None, None))
-    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, false)
+    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, Set.empty, false)
 
     val ka: Set[AvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
@@ -175,7 +177,7 @@ class AvainArvoConverterTest {
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val leikkuripaivanJalkeenValmistunutTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
       Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2024-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(leikkuripaivanJalkeenValmistunutTutkinto), None))
+    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(leikkuripaivanJalkeenValmistunutTutkinto), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
@@ -188,7 +190,7 @@ class AvainArvoConverterTest {
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val ajoissaValmistunut = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
       Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
-    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None))
+    val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
 
@@ -207,11 +209,12 @@ class AvainArvoConverterTest {
       Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
       Koodi("valmistunut", "suorituksentila", Some(1)),
       SuoritusTila.VALMIS,
-      Some(LocalDate.parse("2021-01-01")),
+      LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
-      Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+      Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(VALMIS), None, TELMA)
     )
 
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(
@@ -219,7 +222,8 @@ class AvainArvoConverterTest {
       "1.2.3",
       Oppilaitos(Kielistetty(None, None, None), ""),
       Set(telmaTutkinto),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
@@ -242,11 +246,12 @@ class AvainArvoConverterTest {
       Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
       Koodi("valmistunut", "suorituksentila", Some(1)),
       SuoritusTila.VALMIS,
-      Some(LocalDate.parse("2021-01-01")),
+      LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
-      Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+      Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(VALMIS), None, TELMA)
     )
 
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(
@@ -254,7 +259,8 @@ class AvainArvoConverterTest {
       "1.2.3",
       Oppilaitos(Kielistetty(None, None, None), ""),
       Set(telmaTutkinto),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
@@ -278,11 +284,12 @@ class AvainArvoConverterTest {
       Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
       Koodi("valmistunut", "suorituksentila", Some(1)),
       SuoritusTila.VALMIS,
-      Some(LocalDate.parse("2021-01-01")),
+      LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
-      Some(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+      Some(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(VALMIS), None, TELMA)
     )
 
     val haku = KoutaHaku(
@@ -301,7 +308,8 @@ class AvainArvoConverterTest {
       "1.2.3",
       Oppilaitos(Kielistetty(None, None, None), ""),
       Set(telmaTutkinto),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, haku)
@@ -324,11 +332,12 @@ class AvainArvoConverterTest {
       Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
       Koodi("valmistunut", "suorituksentila", Some(1)),
       SuoritusTila.VALMIS,
-      Some(LocalDate.parse("2021-01-01")),
+      LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Some(Laajuus(28, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Koodi("FI", "kieli", Some(1))
+      Koodi("FI", "kieli", Some(1)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
@@ -337,7 +346,8 @@ class AvainArvoConverterTest {
       Koodi("", "", None),
       "oppilaitosOid",
       Set(opistovuosiKoulutus),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)
@@ -361,11 +371,12 @@ class AvainArvoConverterTest {
       Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
       Koodi("valmistunut", "suorituksentila", Some(1)),
       SuoritusTila.VALMIS,
-      Some(LocalDate.parse("2021-01-01")),
+      LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Some(Laajuus(22, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Koodi("FI", "kieli", Some(1))
+      Koodi("FI", "kieli", Some(1)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
@@ -374,7 +385,8 @@ class AvainArvoConverterTest {
       Koodi("", "", None),
       "oppilaitosOid",
       Set(opistovuosiKoulutus),
-      None
+      None,
+      List.empty
     ))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU)

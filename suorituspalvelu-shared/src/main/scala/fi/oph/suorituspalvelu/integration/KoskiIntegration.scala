@@ -12,7 +12,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByOppija
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, Opiskeluoikeus}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiOpiskeluoikeus}
 import slick.jdbc.JdbcBackend
 
 import java.io.{ByteArrayInputStream, InputStream}
