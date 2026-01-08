@@ -48,7 +48,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
     }
     start.toString
-  }, "0 */2 * * * *")
+  }, "0 0 0 30 2 *")
 
   def refreshKoskiChangesSince(ctx: SupaJobContext, since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()

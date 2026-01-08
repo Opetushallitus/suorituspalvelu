@@ -32,7 +32,7 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
           prevStart.toString
     else
       start.toString
-  }, "0 */2 * * * *")
+  }, "0 0 0 30 2 *")
 
   def prosessoiMuuttuneetHakemukset(hakemukset: Seq[AtaruHakemusBaseFields]): Unit =
     if(hakemukset.nonEmpty)
