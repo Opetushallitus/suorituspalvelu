@@ -503,7 +503,8 @@ class EntityToUIConverterTest {
         ),
       ),
       lahtokoulut = Set.empty,
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = false
     )
 
     val koodistoProvider = new KoodistoProvider {

@@ -75,7 +75,8 @@ object VirkailijaToSuoritusConverter {
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           aineet = aineet,
           lahtokoulut = Set(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka, Some(supaTila), Some(yhteisenAineenArvosanaPuuttuu(aineet)), VUOSILUOKKA_9)),
-          syotetty = true
+          syotetty = true,
+          false //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
         )
       ),
       None,

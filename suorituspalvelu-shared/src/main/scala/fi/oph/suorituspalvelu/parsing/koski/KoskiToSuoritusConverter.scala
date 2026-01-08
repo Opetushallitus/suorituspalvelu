@@ -452,7 +452,8 @@ object KoskiToSuoritusConverter {
           val luokkaAste = s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).getOrElse(dummy())
           Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), Some("9A"), supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste"))
         }),
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
     )
 
   val YHTEISET_AINEET = List(
@@ -510,7 +511,8 @@ object KoskiToSuoritusConverter {
       vahvistus,
       aineet,
       Set(Lahtokoulu(aloitus.get, vahvistus, oppilaitos.oid, aloitus.map(_.getYear + 1), Some("Aikuisten perusopetus"), supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), AIKUISTEN_PERUSOPETUS)),
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
     )
   }
 

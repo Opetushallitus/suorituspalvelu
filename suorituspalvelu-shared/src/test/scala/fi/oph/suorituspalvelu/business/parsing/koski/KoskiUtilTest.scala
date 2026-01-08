@@ -20,7 +20,7 @@ class KoskiUtilTest {
 
   @Test def testIsYsiluokkalainenEiSuoritusta(): Unit =
     Assertions.assertFalse(KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(Set(LahtokouluTyyppi.VUOSILUOKKA_9)), Set.empty))
-  
+
   @Test def testIsYsiluokkalainenTrue(): Unit =
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
@@ -41,7 +41,17 @@ class KoskiUtilTest {
           vahvistusPaivamaara = Some(LocalDate.now()),
           aineet = Set.empty,
           lahtokoulut = Set(Lahtokoulu(LocalDate.now().minusDays(1), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.KESKEN), None, VUOSILUOKKA_9)),
-          syotetty = false
+          syotetty = false,
+          vuosiluokkiinSitoutumatonOpetus = false
+        ),
+        PerusopetuksenVuosiluokka(
+          tunniste = UUID.randomUUID(),
+          oppilaitos = Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
+          nimi = Kielistetty(None, None, None),
+          koodi = Koodi("9", "perusopetuksenluokkaaste", None),
+          alkamisPaiva = None,
+          vahvistusPaivamaara = Some(LocalDate.now()),
+          jaaLuokalle = false
         )
       ),
       lisatiedot = None,
@@ -71,7 +81,8 @@ class KoskiUtilTest {
           vahvistusPaivamaara = Some(LocalDate.now()),
           aineet = Set.empty,
           lahtokoulut = Set(Lahtokoulu(LocalDate.now(), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.VALMIS), None, VUOSILUOKKA_9)),
-          syotetty = false
+          syotetty = false,
+          vuosiluokkiinSitoutumatonOpetus = false
         ),
       ),
       lisatiedot = None,
@@ -101,7 +112,8 @@ class KoskiUtilTest {
             vahvistusPaivamaara = Some(LocalDate.parse("2025-08-18")),
             aineet = Set.empty,
             lahtokoulut = Set(Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-08-18")), "ensimmäinen", Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, VUOSILUOKKA_9)),
-            syotetty = false
+            syotetty = false,
+            vuosiluokkiinSitoutumatonOpetus = false
           ),
         ),
         lisatiedot = None,
@@ -127,7 +139,8 @@ class KoskiUtilTest {
             vahvistusPaivamaara = None,
             aineet = Set.empty,
             lahtokoulut = Set(Lahtokoulu(LocalDate.parse("2024-01-01"), None, "toinen", Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.KESKEN), None, VUOSILUOKKA_9)),
-            syotetty = false
+            syotetty = false,
+            vuosiluokkiinSitoutumatonOpetus = false
           ),
         ),
         lisatiedot = None,
@@ -135,7 +148,7 @@ class KoskiUtilTest {
         jaksot = List.empty
       )
     )
-    
+
     // seuraava koulutus alkanut ennen kuin edellinen keskeytynyt => lähtökoulu helmikuussa 2025 on "toinen"
     Assertions.assertEquals(Some("toinen"), KoskiUtil.haeViimeisinLahtokoulu(LocalDate.parse("2025-02-20"), opiskeluoikeudet))
 

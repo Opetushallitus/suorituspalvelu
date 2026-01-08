@@ -129,7 +129,7 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kotitalous, osallistuminen"), None, None), Koodi("BI", "koodisto", None), Koodi("O", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta"), None, None), Koodi("LI", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None, true, None, None))
-    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, Set.empty, false)
+    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, Set.empty, false, false)
 
     val ka: Set[AvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq.empty)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
@@ -446,7 +446,7 @@ class AvainArvoConverterTest {
       Assertions.assertEquals(1, oos.size)
 
       val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), oos, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), oos, leikkuri, DEFAULT_KOUTA_HAKU)
 
       Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
 
@@ -464,7 +464,7 @@ class AvainArvoConverterTest {
       AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2020"
     ))
     val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
   }
@@ -476,7 +476,7 @@ class AvainArvoConverterTest {
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017"
       ))
       val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, Some(DEFAULT_KOUTA_HAKU))
+      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
 
       Assertions.assertEquals(Some(hakemuksenPohjakoulutus), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
     })

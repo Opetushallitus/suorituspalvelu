@@ -231,7 +231,8 @@ case class PerusopetuksenOppimaara(tunniste: UUID,
                                    vahvistusPaivamaara: Option[LocalDate],
                                    aineet: Set[PerusopetuksenOppiaine],
                                    lahtokoulut: Set[Lahtokoulu],
-                                   syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
+                                   syotetty: Boolean, //Käsin tallennetulle tiedolle true, muutoin false.
+                                   vuosiluokkiinSitoutumatonOpetus: Boolean
                                   ) extends Suoritus, Tyypitetty
 
 //Kieli määritelty oppiaineille kuten A1, B1 jne.

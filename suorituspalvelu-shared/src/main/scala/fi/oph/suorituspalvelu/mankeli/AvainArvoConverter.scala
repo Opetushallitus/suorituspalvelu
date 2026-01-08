@@ -248,7 +248,7 @@ object AvainArvoConverter {
     //Todo, valintapisteet avain-arvoiksi
     val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
 
-    val toisenAsteenPk: Option[AvainArvoContainer] = if (haku.exists(_.isToisenAsteenHaku()))
+    val toisenAsteenPk: Option[AvainArvoContainer] = if (haku.isToisenAsteenHaku())
       hakemus.map(h => toisenAsteenPohjakoulutus(h, opiskeluoikeudet, vahvistettuViimeistaan)) else None
     val peruskouluArvot = convertPeruskouluArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
@@ -304,7 +304,7 @@ object AvainArvoConverter {
       case _ => ("7", Seq("Supasta tai hakemukselta ei löytynyt sopivaa pohjakoulutusta."))
     }
 
-    AvainArvoContainer(AvainArvoConstants.pohjakoulutusToinenAste, pkResult, false, pkSelite)
+    AvainArvoContainer(AvainArvoConstants.pohjakoulutusToinenAste, pkResult, pkSelite)
   }
 
   def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
