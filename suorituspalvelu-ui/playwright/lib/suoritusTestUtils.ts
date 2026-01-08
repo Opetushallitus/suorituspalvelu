@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { checkTable, expectList } from './playwrightUtils';
+import { expectTableValues, expectList } from './playwrightUtils';
 import { NDASH } from '@/lib/common';
 
 type Perustiedot = {
@@ -33,7 +33,7 @@ export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     const yoTable = paper.getByRole('table');
-    await checkTable(yoTable, [
+    await expectTableValues(yoTable, [
       ['Aine', 'Arvosana', 'Yhteispistemäärä', 'Tutkintokerta'],
       ['Psykologia', 'E', '28', '21.12.2018'],
       ['Englanti', 'E', '259', '1.6.2019'],
@@ -103,7 +103,7 @@ export const DIA_VASTAAVUUSTODISTUS_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     const diaTable = paper.getByRole('table');
-    await checkTable(diaTable, [
+    await expectTableValues(diaTable, [
       ['Oppiaine', 'Laajuus (vvt)', 'Keskiarvo'],
       ['Kielet, kirjallisuus, taide'],
       ['A-kieli, englanti', '3', '8,5'],
@@ -125,7 +125,7 @@ export const EB_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     const ebTable = paper.getByRole('table');
-    await checkTable(ebTable, [
+    await expectTableValues(ebTable, [
       ['Oppiaine', 'Suorituskieli', 'Laajuus (vvt)', 'Arvosana'],
       ['Mathematics fi', 'englanti', '4', ''],
       ['Written', '8,67'],
@@ -153,7 +153,7 @@ export const IB_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     const ibTable = paper.getByRole('table');
-    await checkTable(ibTable, [
+    await expectTableValues(ibTable, [
       ['Oppiaine', 'Laajuus (vvt)', 'Predicted grade', 'Arvosana'],
       ['Studies in language and literature fi'],
       ['Language A: literature, suomi fi', '9', '7', '7'],
@@ -188,7 +188,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     const ytoTable = paper.getByTestId('yhteiset-tutkinnon-osat-table');
-    await checkTable(ytoTable, [
+    await expectTableValues(ytoTable, [
       ['Yhteiset tutkinnon osat', 'Laajuus (osp)', 'Arvosana'],
       ['Viestintä- ja vuorovaikutusosaaminen', '11', 'Hyväksytty'],
       ['Matemaattis-luonnontieteellinen osaaminen', '11', 'Hyväksytty'],
@@ -203,7 +203,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
     });
     await expect(viestintaRegion).toBeVisible();
     const viestintaOsaAlueetTable = viestintaRegion.getByRole('table');
-    await checkTable(viestintaOsaAlueetTable, [
+    await expectTableValues(viestintaOsaAlueetTable, [
       ['Osa-alue', 'Laajuus (osp)', 'Arvosana'],
       ['Viestintä ja vuorovaikutus äidinkielellä', '4', '1'],
       ['Viestintä ja vuorovaikutus toisella kotimaisella kielellä', '1', '1'],
@@ -226,7 +226,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       'ammatilliset-tutkinnon-osat-table',
     );
 
-    await checkTable(ammatillisetTutkinnonOsatTable, [
+    await expectTableValues(ammatillisetTutkinnonOsatTable, [
       ['Ammatilliset tutkinnon osat', 'Laajuus (osp)', 'Arvosana'],
       ['Audiovisuaalisen kulttuurin perusteet', '11', '4'],
       ['Äänimaailman suunnittelu', '11', '4'],
@@ -244,7 +244,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
 
     const audioVisuaalisenKulltuurinOsaAlueetTable =
       audiovisuaalisenKulttuurinPerusteetRegion.getByRole('table');
-    await checkTable(audioVisuaalisenKulltuurinOsaAlueetTable, [
+    await expectTableValues(audioVisuaalisenKulltuurinOsaAlueetTable, [
       ['Osa-alue', 'Laajuus (osp)', 'Arvosana'],
       ['Audiovisuaalisen kulttuurin perusteet 1', '2', '1'],
       ['Audiovisuaalisen kulttuurin perusteet 2', '3', '1'],
@@ -347,7 +347,7 @@ export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
     );
 
     const oppiaineetTable = paper.getByRole('table');
-    await checkTable(oppiaineetTable, [
+    await expectTableValues(oppiaineetTable, [
       ['Oppiaine', 'Arvosana', 'Valinnainen arvosana'],
       ['Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus', '9', ''],
       ['A1-kieli, englanti', '9', ''],
@@ -388,7 +388,7 @@ export const PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     const oppiaineetTable = paper.getByRole('table');
-    await checkTable(oppiaineetTable, [
+    await expectTableValues(oppiaineetTable, [
       ['Oppiaine', 'Arvosana'],
       ['matematiikka', '9'],
     ]);

@@ -9,6 +9,7 @@ import {
   getSuorituksenOppilaitosVaihtoehdot,
   getSuoritusvaihtoehdot,
   getValintadata,
+  getValintadataHistoria,
   searchOppilaitoksenOppijat,
   type BackendOppijatSearchParams,
 } from './suorituspalvelu-service';
@@ -157,4 +158,20 @@ export const queryOptionsGetOppilaitosVuosiLuokatOptions = ({
         value: luokka,
       }));
     },
+  });
+
+export const queryOptionsGetValintadataHistoria = ({
+  oppijaNumero,
+  hakuOid,
+  avain,
+}: {
+  oppijaNumero: string;
+  hakuOid: string;
+  avain: string;
+}) =>
+  queryOptions({
+    queryKey: ['getValintadataHistoria', oppijaNumero, hakuOid, avain],
+    queryFn: () => getValintadataHistoria({ oppijaNumero, hakuOid, avain }),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });

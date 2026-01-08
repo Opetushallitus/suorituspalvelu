@@ -11,6 +11,7 @@ import type {
   IOppijanValintaDataSuccessResponse,
   IOppilaitosSuccessResponse,
   IVuodetSuccessResponse,
+  IYliajonMuutosHistoriaSuccessResponse,
   IYliajoTallennusContainer,
 } from '@/types/backend';
 import type { SuoritusFields } from '@/types/ui-types';
@@ -281,4 +282,26 @@ export const getOppilaitosVuosiLuokat = async ({
     `${config.routes.suorituspalvelu.luokatUrl}/${oppilaitosOid}/${vuosi}`,
   );
   return res.data?.luokat ?? [];
+};
+
+export const getValintadataHistoria = async ({
+  oppijaNumero,
+  hakuOid,
+  avain,
+}: {
+  oppijaNumero: string;
+  hakuOid: string;
+  avain: string;
+}) => {
+  const config = await configPromise;
+
+  const url = new URL(config.routes.suorituspalvelu.valintadataHistoriaUrl);
+  url.searchParams.set('oppijaNumero', oppijaNumero);
+  url.searchParams.set('hakuOid', hakuOid);
+  url.searchParams.set('avain', avain);
+
+  const res = await client.get<IYliajonMuutosHistoriaSuccessResponse>(
+    url.toString(),
+  );
+  return res.data;
 };

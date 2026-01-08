@@ -1,0 +1,16 @@
+{
+  "muutokset": [
+    {
+      "arvo": null,
+      "luotu": "2024-01-16T10:30:00Z",
+      "virkailija": "Matti Meikäläinen",
+      "selite": null
+    },
+    {
+      "arvo": "test",
+      "luotu": "2024-01-15T10:30:00Z",
+      "virkailija": "Matti Meikäläinen",
+      "selite": "Vaihdettu testiksi"
+    }
+  ]
+}

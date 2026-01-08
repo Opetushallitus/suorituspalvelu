@@ -16,5 +16,7 @@ trait ValintaDataTsImplicits extends SharedTsImplicits {
   implicit val yliajoTallennusContainerTsType: TSType[YliajoTallennusContainer] = TSType.fromCaseClass
   implicit val oppijanHautSuccessResponseTsType: TSType[OppijanHautSuccessResponse] = TSType.fromCaseClass
   implicit val oppijanHautFailureResponseTsType: TSType[OppijanHautFailureResponse] = TSType.fromCaseClass
+  implicit val valintadataHistoriaSuccessResponseTsType: TSType[YliajonMuutosHistoriaSuccessResponse] = TSType.fromCaseClass
+  implicit val valintadataHistoriaFailureResponseTsType: TSType[YliajonMuutosHistoriaFailureResponse] = TSType.fromCaseClass
 }
 

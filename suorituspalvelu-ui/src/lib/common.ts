@@ -28,6 +28,10 @@ export const formatFinnishDate = (date?: Date | string | null): string => {
   return date ? formatDate(date, 'd.M.y') : '';
 };
 
+export const formatFinnishDateTime = (date?: Date | string | null): string => {
+  return date ? formatDate(date, 'd.M.y H:mm:ss') : '';
+};
+
 export const formatYear = (date?: Date | string | null): string | undefined => {
   return date ? formatDate(date, 'y') : '';
 };

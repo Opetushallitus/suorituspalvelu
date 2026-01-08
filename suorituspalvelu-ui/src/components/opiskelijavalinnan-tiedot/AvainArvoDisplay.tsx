@@ -4,6 +4,7 @@ import { EditOutlined } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { AvainArvo } from '@/types/ui-types';
 import { TooltipIcon } from '../TooltipIcon';
+import { styled } from '@/lib/theme';
 
 const ArvoAndSelitteet = ({
   arvo,
@@ -53,11 +54,38 @@ const AlkuperainenArvo = ({
   );
 };
 
+const TextButton = styled(OphButton)(({ theme }) => ({
+  fontWeight: theme.typography.body1.fontWeight,
+  display: 'inline',
+  border: 'none',
+  margin: 0,
+  padding: 0,
+  verticalAlign: 'top',
+  marginLeft: theme.spacing(1),
+}));
+
+const MuutoshistoriaButton = ({
+  showMuutoshistoria,
+}: {
+  showMuutoshistoria?: () => void;
+}) => {
+  const { t } = useTranslations();
+
+  return (
+    <TextButton variant="text" onClick={showMuutoshistoria}>
+      {' '}
+      {t('opiskelijavalinnan-tiedot.nayta-muutoshistoria')}
+    </TextButton>
+  );
+};
+
 export const AvainArvoDisplay = ({
   avainArvo,
   startYliajoEdit,
+  showMuutoshistoria,
 }: {
   avainArvo: AvainArvo;
+  showMuutoshistoria?: () => void;
   startYliajoEdit?: (avainarvo: {
     avain: string;
     arvo: string;
@@ -66,9 +94,14 @@ export const AvainArvoDisplay = ({
 }) => {
   const { t } = useTranslations();
   const labelId = `avainarvo-label-${avainArvo.avain}`;
+  const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa ?? '';
 
-  const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa;
+  const hasChangedArvo =
+    avainArvo.metadata.arvoEnnenYliajoa != null &&
+    avainArvo.metadata.yliajo &&
+    avainArvo.metadata.yliajo.arvo != null;
   const arvonSelitteet = avainArvo.metadata.selitteet ?? [];
+  const hasMuutoshistoria = Boolean(avainArvo.metadata.yliajo);
 
   return (
     <Box
@@ -101,8 +134,8 @@ export const AvainArvoDisplay = ({
           />
         )}
       </Box>
-      <span aria-labelledby={labelId}>
-        {alkuperainenArvo ? (
+      <OphTypography component="span" aria-labelledby={labelId}>
+        {hasChangedArvo ? (
           <>
             <span>{avainArvo.arvo}</span>
             <AlkuperainenArvo
@@ -113,7 +146,10 @@ export const AvainArvoDisplay = ({
         ) : (
           <ArvoAndSelitteet arvo={avainArvo.arvo} selitteet={arvonSelitteet} />
         )}
-      </span>
+        {hasMuutoshistoria && (
+          <MuutoshistoriaButton showMuutoshistoria={showMuutoshistoria} />
+        )}
+      </OphTypography>
     </Box>
   );
 };

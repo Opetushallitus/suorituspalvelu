@@ -6,11 +6,14 @@ import { Add } from '@mui/icons-material';
 import { AvainArvotSection } from './AvainArvotSection';
 import { YliajoEditModal } from './YliajoEditModal';
 import { useYliajoManager } from '@/lib/yliajoManager';
-import type { ValintaData } from '@/types/ui-types';
+import type { AvainArvo, ValintaData } from '@/types/ui-types';
+import { useState } from 'react';
+import { MuutoshistoriaModal } from './MuutoshistoriaModal';
 
 export const OpiskelijavalintaanSiirtyvatTiedot = ({
   oppijaNumero,
   valintaData,
+  hakuOid,
 }: {
   oppijaNumero: string;
   hakuOid: string;
@@ -18,7 +21,13 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
 }) => {
   const { t } = useTranslations();
 
-  const { startYliajoEdit, startYliajoAdd, yliajoFields } = useYliajoManager({
+  const {
+    yliajoMutation,
+    startYliajoEdit,
+    startYliajoAdd,
+    yliajoFields,
+    deleteYliajo,
+  } = useYliajoManager({
     henkiloOid: oppijaNumero,
   });
 
@@ -27,9 +36,23 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
       (avainArvo) => !avainArvo.metadata.arvoOnHakemukselta,
     ) ?? [];
 
+  const [selectedMuutoshistoriaAvainArvo, setSelectedMuutoshistoriaAvainArvo] =
+    useState<AvainArvo | null>(null);
+
   return (
     <>
-      {yliajoFields && <YliajoEditModal avainArvot={avainArvot} />}
+      {selectedMuutoshistoriaAvainArvo && hakuOid && oppijaNumero && (
+        <MuutoshistoriaModal
+          hakuOid={hakuOid}
+          oppijaNumero={oppijaNumero}
+          avainArvo={selectedMuutoshistoriaAvainArvo}
+          deleteYliajo={deleteYliajo}
+          onClose={() => setSelectedMuutoshistoriaAvainArvo(null)}
+        />
+      )}
+      {!yliajoMutation.isPending && !yliajoMutation.isError && yliajoFields && (
+        <YliajoEditModal avainArvot={avainArvot} />
+      )}
       <AccordionBox
         id="opiskelijavalintaan-siirtyvat-tiedot"
         title={t(
@@ -38,6 +61,9 @@ export const OpiskelijavalintaanSiirtyvatTiedot = ({
       >
         <AvainArvotSection
           avainarvot={avainArvot}
+          showMuutoshistoria={(avainArvo) => {
+            setSelectedMuutoshistoriaAvainArvo(avainArvo);
+          }}
           startYliajoEdit={(yliajoParams) => {
             startYliajoEdit({
               arvo: yliajoParams.arvo,

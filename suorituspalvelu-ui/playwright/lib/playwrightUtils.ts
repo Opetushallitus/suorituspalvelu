@@ -63,7 +63,7 @@ export const checkRow = async (
   }
 };
 
-export const checkTable = async (
+export const expectTableValues = async (
   table: Locator,
   expectedValues: Array<Array<string | ((cell: Locator) => Promise<void>)>>,
 ) => {
