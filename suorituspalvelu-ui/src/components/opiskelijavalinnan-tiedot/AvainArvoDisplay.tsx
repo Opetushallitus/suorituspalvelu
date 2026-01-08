@@ -73,6 +73,7 @@ const MuutoshistoriaButton = ({
 
   return (
     <TextButton variant="text" onClick={showMuutoshistoria}>
+      {' '}
       {t('opiskelijavalinnan-tiedot.nayta-muutoshistoria')}
     </TextButton>
   );
@@ -96,9 +97,9 @@ export const AvainArvoDisplay = ({
   const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa ?? '';
 
   const hasChangedArvo =
-    avainArvo.metadata.arvoEnnenYliajoa !== null &&
+    avainArvo.metadata.arvoEnnenYliajoa != null &&
     avainArvo.metadata.yliajo &&
-    avainArvo.metadata.yliajo.arvo !== null;
+    avainArvo.metadata.yliajo.arvo != null;
   const arvonSelitteet = avainArvo.metadata.selitteet ?? [];
   const hasMuutoshistoria = Boolean(avainArvo.metadata.yliajo);
 
@@ -140,7 +141,7 @@ export const AvainArvoDisplay = ({
             <AlkuperainenArvo
               arvo={alkuperainenArvo}
               selitteet={arvonSelitteet}
-            />{' '}
+            />
           </>
         ) : (
           <ArvoAndSelitteet arvo={avainArvo.arvo} selitteet={arvonSelitteet} />
