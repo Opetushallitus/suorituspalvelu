@@ -901,6 +901,7 @@ class KantaOperaatiotTest {
       Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
         Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
         Some(Koodi("FI", "kielivalikoima", None)), true, None, None)),
+      false,
       false
     )
 
@@ -926,6 +927,7 @@ class KantaOperaatiotTest {
         PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("matematiikka"), None, None),
           Koodi("MA", "koodisto", None), Koodi("7", "koodisto", None),
           None, true, None, None)),
+      false,
       false
     )
     val lisatiedot2 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
@@ -954,6 +956,7 @@ class KantaOperaatiotTest {
         PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None),
           Koodi("EN", "koodisto", None), Koodi("9", "koodisto", None),
           Some(Koodi("EN", "kielivalikoima", None)), true, None, None)),
+      false,
       false
     )
     val lisatiedot3 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
