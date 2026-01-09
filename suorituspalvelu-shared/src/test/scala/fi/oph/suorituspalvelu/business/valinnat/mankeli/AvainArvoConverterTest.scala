@@ -5,9 +5,9 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku, KoutaHakuaika}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
@@ -456,6 +456,61 @@ class AvainArvoConverterTest {
       Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
 
     })
+  }
+
+  //Testataan seuraavat tapaukset:
+  //Perusopetuksen oppimäärän suoritus kesken ja:
+  //-vuosiluokkiinSitoutumatonOpetus true, arvosanoissa nelosia
+  //-vuosiluokkiinSitoutumatonOpetus false, arvosanoissa nelosia
+  //-vuosiluokkiinSitoutumatonOpetus true, arvosanoissa ei nelosia
+  //-vuosiluokkiinSitoutumatonOpetus false, arvosanoissa ei nelosia
+  @Test def testAvainArvoConverterForToisenAsteenPohjakoulutusArvosanoissaNelosiaSuoritusKesken(): Unit = {
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
+      AvainArvoConstants.ataruPohjakoulutusKey -> "6",
+      AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2020"
+    ))
+
+    val opiskeluoikeusOid = "1.2.246.562.15.09876543210"
+    val oppilaitosOid = "1.2.246.562.10.00000000234"
+    val oppiaineetArvosanoissaNelosia = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("4", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None))
+    val oppiaineetArvosanoissaEiNelosia = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None))
+    val perusopetuksenOppimaaraBase = PerusopetuksenOppimaara(
+      UUID.randomUUID(),
+      None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None,
+      Koodi("toinenarvo", "koodisto", Some(1)),
+      SuoritusTila.KESKEN,
+      Koodi("FI", "kielikoodisto", Some(1)),
+      Set.empty,
+      None,
+      None,
+      None,
+      oppiaineetArvosanoissaNelosia,
+      Set.empty,
+      false,
+      vuosiluokkiinSitoutumatonOpetus = false)
+
+    val leikkuriDeadlineOhitettu =
+      java.time.Instant.ofEpochMilli(System.currentTimeMillis())
+        .atZone(java.time.ZoneId.systemDefault())
+        .minusDays(1)
+        .toLocalDate
+
+    val lisatiedot = KoskiLisatiedot(None, Some(true), None)
+    val opiskeluoikeusVSOPNelosia = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraBase.copy(aineet = oppiaineetArvosanoissaNelosia, vuosiluokkiinSitoutumatonOpetus = true)), Some(lisatiedot), SuoritusTila.KESKEN, List.empty)
+    val opiskeluoikeusVSOPEiNelosia = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraBase.copy(aineet = oppiaineetArvosanoissaEiNelosia, vuosiluokkiinSitoutumatonOpetus = true)), Some(lisatiedot), SuoritusTila.KESKEN, List.empty)
+    val opiskeluoikeusNelosia = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraBase.copy(aineet = oppiaineetArvosanoissaNelosia, vuosiluokkiinSitoutumatonOpetus = false)), Some(lisatiedot), SuoritusTila.KESKEN, List.empty)
+    val opiskeluoikeusEiNelosia = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraBase.copy(aineet = oppiaineetArvosanoissaEiNelosia, vuosiluokkiinSitoutumatonOpetus = false)), Some(lisatiedot), SuoritusTila.KESKEN, List.empty)
+
+    val converterResultVSOPNelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusVSOPNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
+    val converterResult2VSOPEiNelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusVSOPEiNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
+    val converterResult3Nelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
+    val converterResult4EiNelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusEiNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
+    Assertions.assertEquals(Some("7"), converterResultVSOPNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some("7"), converterResult2VSOPEiNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some("1"), converterResult3Nelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some("7"), converterResult4EiNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
   }
 
   @Test def testAvainArvoConverterForToisenAsteenPohjakoulutusUskotaanHakemukseenUlkomainen(): Unit = {

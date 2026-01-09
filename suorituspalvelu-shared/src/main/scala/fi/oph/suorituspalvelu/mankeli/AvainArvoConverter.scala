@@ -262,49 +262,72 @@ object AvainArvoConverter {
   }
 
   def toisenAsteenPohjakoulutus(hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], deadline: LocalDate): AvainArvoContainer = {
+    val perusopetuksenOppimaarat = opiskeluoikeudet
+      .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
+      .flatMap(_.suoritukset)
+      .collect { case po: PerusopetuksenOppimaara => po }
+
+    val vahvistetutOppimaarat = perusopetuksenOppimaarat.filter(_.vahvistusPaivamaara.isDefined)
+    if (vahvistetutOppimaarat.size > 1) {
+      throw new RuntimeException(s"Hakemuksen ${hakemus.hakemusOid} oppijalta ${hakemus.personOid} löytyi ${vahvistetutOppimaarat.size} vahvistettua perusopetuksen suoritusta.")
+    }
+    val keskenOppimaarat = perusopetuksenOppimaarat.filter(_.supaTila.equals(SuoritusTila.KESKEN))
+    val keskeytyneetOppimaarat = perusopetuksenOppimaarat.filter(_.supaTila.equals(SuoritusTila.KESKEYTYNYT))
+
+    val viimeisinOppimaara =
+      vahvistetutOppimaarat.headOption
+        .orElse(keskenOppimaarat.maxByOption(_.aloitusPaivamaara))
+        .orElse(keskeytyneetOppimaarat.maxByOption(_.aloitusPaivamaara))
+    val kelpaavaOppimaara = viimeisinOppimaara.filter(onKelpaavaOppimaara(_, deadline))
+
+    val hakemusPohjakoulutus = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey)
+    val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt)
+
+    val (pkResult, pkSelite) = getPohjakoulutusResult(kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi)
+
+    AvainArvoContainer(AvainArvoConstants.pohjakoulutusToinenAste, pkResult, pkSelite)
+  }
+
+  private def onKelpaavaOppimaara(oppimaara: PerusopetuksenOppimaara, deadline: LocalDate): Boolean = {
     val deadlineOhitettu = LocalDate.now().isAfter(deadline)
-    val perusopetusOO: Seq[PerusopetuksenOpiskeluoikeus] = opiskeluoikeudet.collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
-    val perusopetuksenOppimaarat: Seq[PerusopetuksenOppimaara] = perusopetusOO.flatMap(_.suoritukset).collect { case po: PerusopetuksenOppimaara => po }
-    val kelpaava: Option[PerusopetuksenOppimaara] = perusopetuksenOppimaarat.find(po => {
-      val arvosanoissaNelosia = po.aineet.exists(a => a.pakollinen && a.arvosana.equals("4"))
-      val suoritusValmis = po.supaTila.equals(SuoritusTila.VALMIS)
-      val suoritusKesken = po.supaTila.equals(SuoritusTila.KESKEN)
-      val vahvistettuAjoissa = po.vahvistusPaivamaara.exists(vp => vp.isBefore(deadline) || vp.equals(deadline))
-      if (deadlineOhitettu) {
-        //Todo, lisätään vielä tarkistus siitä, onko suoritus vuosiluokkiin sitomatonta opetusta.
-        // Jos on, kesken-tilaiset suoritukset eivät kelpaa deadlinen jälkeen vaikka olisi nelosia.
-        (suoritusValmis && vahvistettuAjoissa) || (suoritusKesken && arvosanoissaNelosia)
-      } else {
-        suoritusValmis || suoritusKesken
-      }
-    })
+    val arvosanoissaNelosia = oppimaara.aineet.exists(a => a.pakollinen && a.arvosana.arvo.equals("4"))
+    val suoritusValmis = oppimaara.vahvistusPaivamaara.isDefined
+    val suoritusKesken = oppimaara.supaTila.equals(SuoritusTila.KESKEN)
+    val vahvistettuAjoissa = oppimaara.vahvistusPaivamaara.exists(vp => vp.isBefore(deadline) || vp.equals(deadline))
 
-    val hakemusPohjakoulutus: Option[String] = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey)
-    val hakemusPohjakoulutusVuosi: Option[Int] = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt)
+    if (deadlineOhitettu) {
+      (suoritusValmis && vahvistettuAjoissa) || (suoritusKesken && arvosanoissaNelosia && !oppimaara.vuosiluokkiinSitoutumatonOpetus)
+    } else {
+      suoritusValmis || suoritusKesken
+    }
+  }
 
-    val (pkResult: String, pkSelite: Seq[String]) = (kelpaava, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi) match {
-      case (Some(kelpaava), _, _) =>
-        val modYks = kelpaava.yksilollistaminen match {
+  private def getPohjakoulutusResult(kelpaavaOppimaara: Option[PerusopetuksenOppimaara],
+                              hakemusPohjakoulutus: Option[String],
+                              hakemusPohjakoulutusVuosi: Option[Int]): (String, Seq[String]) = {
+    (kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi) match {
+      case (Some(oppimaara), _, _) =>
+        val modYks = oppimaara.yksilollistaminen match {
           case Some(1) => "1"
           case Some(2) => "2"
           case Some(3) => "3"
           case Some(6) => "6"
           case Some(8) => "8"
           case Some(9) => "9"
-          case None => "1" //Fixme, onko tämä hyvä fallback? Kaadutaanko mieluummin?
-          case _ => throw new RuntimeException(s"Tuntematon yksilöllistämisen arvo: ${kelpaava.yksilollistaminen}")
+          case None => "1"
+          case value => throw new RuntimeException(s"Tuntematon yksilöllistämisen arvo: $value")
         }
+        (modYks, Seq(s"Supasta löytyi suoritettu perusopetuksen oppimäärä. Vahvistuspäivä ${oppimaara.vahvistusPaivamaara.map(_.toString).getOrElse("")}."))
 
-        (modYks, Seq(s"Supasta löytyi suoritettu perusopetuksen oppimäärä. Vahvistuspäivä ${kelpaava.vahvistusPaivamaara.map(_.toString).getOrElse("")}."))
-      case (_, Some(pohjakolutusHakemukselta), _) if pohjakolutusHakemukselta.equals("0") =>
+      case (_, Some(pohjakolutus), _) if pohjakolutus == "0" =>
         ("0", Seq("Hakemuksella on ilmoitettu ulkomainen tutkinto."))
-      case (_, Some(pkHakemukselta), Some(pkVuosiHakemukselta))
-        if (pkVuosiHakemukselta <= 2017) && Seq("1", "2", "3", "6", "8", "9").contains(pkHakemukselta) =>
-          (pkHakemukselta, Seq(s"Hakemuksen pohjakoulutusvuosi on 2017 tai aiemmin, joten käytettiin hakemuksella ilmoitettua pohjakoulutusta $pkHakemukselta."))
-      case _ => ("7", Seq("Supasta tai hakemukselta ei löytynyt sopivaa pohjakoulutusta."))
-    }
 
-    AvainArvoContainer(AvainArvoConstants.pohjakoulutusToinenAste, pkResult, pkSelite)
+      case (_, Some(pohjakoulutus), Some(vuosi)) if vuosi <= 2017 && Seq("1", "2", "3", "6", "8", "9").contains(pohjakoulutus) =>
+        (pohjakoulutus, Seq(s"Hakemuksen pohjakoulutusvuosi on 2017 tai aiemmin, joten käytettiin hakemuksella ilmoitettua pohjakoulutusta $pohjakoulutus."))
+
+      case _ =>
+        ("7", Seq("Supasta tai hakemukselta ei löytynyt sopivaa pohjakoulutusta."))
+    }
   }
 
   def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
