@@ -448,7 +448,8 @@ class AvainArvoConverterTest {
       val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
       val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), oos, leikkuri, DEFAULT_KOUTA_HAKU)
 
-      Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+      //Osittain yksilöllistetty, koska on yksi yksilöllistetty oppiaine
+      Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
 
 
       Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
