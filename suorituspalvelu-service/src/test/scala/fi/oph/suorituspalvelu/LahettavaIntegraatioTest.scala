@@ -110,6 +110,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$vuosi-08-18")),
           Set.empty,
+          false,
           false
         ),
         PerusopetuksenVuosiluokka(
@@ -209,6 +210,7 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$vuosi-08-18")),
           Set.empty,
+          false,
           false
         ),
         PerusopetuksenVuosiluokka(

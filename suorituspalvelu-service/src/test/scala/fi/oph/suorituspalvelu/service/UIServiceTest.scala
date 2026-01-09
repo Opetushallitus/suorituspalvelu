@@ -71,6 +71,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       None,
       if (vuosi.isDefined) Some(LocalDate.parse(s"${vuosi.get}-08-18")) else None,
       Set.empty,
+      false,
       false
     )
 
@@ -224,6 +225,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse("2025-08-18")),
         Set.empty,
+        false,
         false
       )),
       None,
@@ -264,6 +266,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse("2025-08-18")),
         Set.empty,
+        false,
         false
       )),
       None,
