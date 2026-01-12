@@ -469,7 +469,7 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq(opiskeluoikeus), leikkuri, DEFAULT_KOUTA_HAKU)
 
     //Suoritukselta poimittu yksilöllistämistieto välittyy
-    Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
 
     Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
     Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
@@ -525,21 +525,21 @@ class AvainArvoConverterTest {
     val converterResult2VSOPEiNelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusVSOPEiNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
     val converterResult3Nelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
     val converterResult4EiNelosia = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusEiNelosia), leikkuriDeadlineOhitettu, DEFAULT_KOUTA_HAKU)
-    Assertions.assertEquals(Some("7"), converterResultVSOPNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
-    Assertions.assertEquals(Some("7"), converterResult2VSOPEiNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
-    Assertions.assertEquals(Some("1"), converterResult3Nelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
-    Assertions.assertEquals(Some("7"), converterResult4EiNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), converterResultVSOPNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), converterResult2VSOPEiNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), converterResult3Nelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), converterResult4EiNelosia.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
   }
 
   @Test def testAvainArvoConverterForToisenAsteenPohjakoulutusUskotaanHakemukseenUlkomainen(): Unit = {
     val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
-      AvainArvoConstants.ataruPohjakoulutusKey -> "0",
+      AvainArvoConstants.ataruPohjakoulutusKey -> AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS,
       AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2020"
     ))
     val leikkuri = LocalDate.now
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
 
-    Assertions.assertEquals(Some("0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
   }
 
   @Test def testAvainArvoConverterForToisenAsteenPohjakoulutusUskotaanHakemukseen2017TaiEnnen(): Unit = {

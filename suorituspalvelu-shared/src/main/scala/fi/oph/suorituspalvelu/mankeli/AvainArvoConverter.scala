@@ -156,6 +156,18 @@ object AvainArvoConstants {
   val ataruPohjakoulutusKey = "base-education-2nd"
   val ataruPohjakoulutusVuosiKey = "pohjakoulutus_vuosi"
 
+  val POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS = "0"
+  val POHJAKOULUTUS_PERUSKOULU = "1"
+  val POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY = "2"
+  val POHJAKOULUTUS_PERUSKOULU_TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY = "3"
+  val POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY = "6"
+  val POHJAKOULUTUS_PERUSKOULU_OSITTAIN_RAJOITETTU = "8"
+  val POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU = "9"
+  val POHJAKOULUTUS_EI_PAATTOTODISTUSTA = "7"
+
+  val hakemuksenPohjakoulutuksetUskotaanHakemusta = Set(POHJAKOULUTUS_PERUSKOULU, POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY,
+    POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY, POHJAKOULUTUS_PERUSKOULU_TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY,
+    POHJAKOULUTUS_PERUSKOULU_OSITTAIN_RAJOITETTU, POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU)
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -308,17 +320,17 @@ object AvainArvoConverter {
                               hakemusPohjakoulutusVuosi: Option[Int]): (String, Seq[String]) = {
     (kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi) match {
       case (Some(oppimaara), _, _) =>
-        val modYks = oppimaara.yksilollistaminen.map(toIntValue).getOrElse(1).toString
-        (modYks, Seq(s"Supasta löytyi suoritettu perusopetuksen oppimäärä. Vahvistuspäivä ${oppimaara.vahvistusPaivamaara.map(_.toString).getOrElse("")}."))
+        val yksilollistaminenIntValue = oppimaara.yksilollistaminen.map(toIntValue).getOrElse(1).toString
+        (yksilollistaminenIntValue, Seq(s"Supasta löytyi suoritettu perusopetuksen oppimäärä. Vahvistuspäivä ${oppimaara.vahvistusPaivamaara.map(_.toString).getOrElse("")}."))
 
-      case (_, Some(pohjakolutus), _) if pohjakolutus == "0" =>
-        ("0", Seq("Hakemuksella on ilmoitettu ulkomainen tutkinto."))
+      case (_, Some(pohjakolutus), _) if pohjakolutus == AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS =>
+        (AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS, Seq("Hakemuksella on ilmoitettu ulkomainen tutkinto."))
 
-      case (_, Some(pohjakoulutus), Some(vuosi)) if vuosi <= 2017 && Seq("1", "2", "3", "6", "8", "9").contains(pohjakoulutus) =>
+      case (_, Some(pohjakoulutus), Some(vuosi)) if vuosi <= 2017 && AvainArvoConstants.hakemuksenPohjakoulutuksetUskotaanHakemusta.contains(pohjakoulutus) =>
         (pohjakoulutus, Seq(s"Hakemuksen pohjakoulutusvuosi on 2017 tai aiemmin, joten käytettiin hakemuksella ilmoitettua pohjakoulutusta $pohjakoulutus."))
 
       case _ =>
-        ("7", Seq("Supasta tai hakemukselta ei löytynyt sopivaa pohjakoulutusta."))
+        (AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA, Seq("Supasta tai hakemukselta ei löytynyt sopivaa pohjakoulutusta."))
     }
   }
 
