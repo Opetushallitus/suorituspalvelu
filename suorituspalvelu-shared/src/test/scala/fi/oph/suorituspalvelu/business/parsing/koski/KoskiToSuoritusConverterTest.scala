@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.KantaOperaatiot.KantaEntiteetit.{AMMATILL
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, KoulutusModuuli, Opiskeluoikeus, OsaSuoritus, Suoritus}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -15,7 +15,7 @@ class KoskiToSuoritusConverterTest {
 
   val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map().empty
 
-  def getOikeudetByType(oikeudet: Seq[Opiskeluoikeus]): (Seq[PerusopetuksenOpiskeluoikeus], Seq[AmmatillinenOpiskeluoikeus], Seq[GeneerinenOpiskeluoikeus]) = {
+  def getOikeudetByType(oikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): (Seq[PerusopetuksenOpiskeluoikeus], Seq[AmmatillinenOpiskeluoikeus], Seq[GeneerinenOpiskeluoikeus]) = {
     val perusopetukset = oikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
     val ammatilliset = oikeudet.collect { case am: AmmatillinenOpiskeluoikeus => am }
     val geneeriset = oikeudet.collect { case g: GeneerinenOpiskeluoikeus => g }
@@ -84,4 +84,67 @@ class KoskiToSuoritusConverterTest {
     })
   }
 
+  @Test
+  def testGetYksilollistaminen(): Unit = {
+    val baseSuoritus = Suoritus(
+      null, null, null, null, null, null,
+      osasuoritukset = Some(Set.empty), null, null, null, null
+    )
+
+    val baseOikeus =  Opiskeluoikeus(
+      null, null, null, null, null, lisätiedot = None
+    )
+
+    def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): OsaSuoritus = {
+      OsaSuoritus(
+        null, koulutusmoduuli = Some(KoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, null)), null,
+        `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
+        `rajattuOppimäärä` = if (rajattu) Some(true) else None,
+        null, null
+      )
+    }
+
+    // Case 1: Ei yksilöllistettyjä tai rajattuja
+    val suoritusVainTavallisia = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("HI", false, false))))
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusVainTavallisia))
+
+    // Case 2: Alle puolet yksilöllistettyjä
+    val suoritusAllePuoletYks = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("BI", false, false), createOsaSuoritus("MA", true, false), createOsaSuoritus("LI", false, false))))
+    Assertions.assertEquals(Some(2), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusAllePuoletYks))
+
+    // Case 3: Tasan puolet suorituksista yksilöllistettyjä
+    val suoritusPuoletYks = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("HI", true, false), createOsaSuoritus("MA", true, false), createOsaSuoritus("LI", false, false), createOsaSuoritus("GE", false, false))))
+    Assertions.assertEquals(Some(2), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusPuoletYks))
+
+    // Case 4: Yli puolet yksilöllistettyjä
+    val suoritusYliPuoletYks = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("LI", true, false), createOsaSuoritus("AI", true, false), createOsaSuoritus("A1", false, false))))
+    Assertions.assertEquals(Some(6), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusYliPuoletYks))
+
+    // Case 5: Alle puolet rajattuja
+    val suoritusAllePuoletRajattu = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("GE", false, false), createOsaSuoritus("BI", false, true), createOsaSuoritus("HI",false, false))))
+    Assertions.assertEquals(Some(8), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusAllePuoletRajattu))
+
+    // Case 6: Puolet suorituksista rajattuja
+    val suoritusPuoletRajattu = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("AI", false, true), createOsaSuoritus("MA", false, true), createOsaSuoritus("GE", false, false), createOsaSuoritus("LI", false, false))))
+    Assertions.assertEquals(Some(8), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusPuoletRajattu))
+
+    // Case 7: Yli puolet rajattuja
+    val suoritusYliPuoletRajattu = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("LI", false, true), createOsaSuoritus("B2", false, true), createOsaSuoritus("A1", false, false))))
+    Assertions.assertEquals(Some(9),    KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusYliPuoletRajattu))
+
+    // Case 8: Sekä yksilöllistettyjä että rajattuja, mutta yksilöllistettyjä on enemmän
+    val suoritusEnemmanYksilollistettyja = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", true, false), createOsaSuoritus("GE", false, false), createOsaSuoritus("FY", true, false))))
+    Assertions.assertEquals(Some(2), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusEnemmanYksilollistettyja))
+
+    // Case 9: Sekä yhtä paljon yksilöllistettyjä ja rajattuja
+    val suoritusYhtaPaljonYksRaj = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", false, false), createOsaSuoritus("FY", true, false))))
+    Assertions.assertEquals(Some(2), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusYhtaPaljonYksRaj))
+
+    // Case 10: Toiminta-alueittain
+    val opiskeluoikeusToimintaAlueittain = baseOikeus.copy(lisätiedot = Some(KoskiLisatiedot(erityisenTuenPäätökset = Some(List(KoskiErityisenTuenPaatos(Some(true)))), vuosiluokkiinSitoutumatonOpetus = None, kotiopetusjaksot = None)))
+    Assertions.assertEquals(Some(6), KoskiToSuoritusConverter.getYksilollistaminen(opiskeluoikeusToimintaAlueittain, baseSuoritus))
+
+    // Case 11: Ei osasuorituksia
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus))
+  }
 }
