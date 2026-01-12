@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku, KoutaHakuaika}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -80,7 +80,7 @@ class AvainArvoConverterTest {
 
       Assertions.assertEquals(1, oos.size)
 
-      val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
+      val leikkuri = LocalDate.now
       val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, DEFAULT_KOUTA_HAKU)
 
       Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
@@ -98,7 +98,7 @@ class AvainArvoConverterTest {
       val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
 
       Assertions.assertEquals(1, oos.size)
-      val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
+      val leikkuri = LocalDate.now
       val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, DEFAULT_KOUTA_HAKU)
       val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
         "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
@@ -429,34 +429,51 @@ class AvainArvoConverterTest {
   }
 
   @Test def testAvainArvoConverterForToisenAsteenPohjakoulutusLoytyySupasta(): Unit = {
-    val fileName = "/1_2_246_562_98_69863082363.json"
-    val hakemusOid = "1.2.246.562.11.00000000000000006321"
-    val personOid = "1.2.246.562.24.21250967211"
-    val hakuOid = "1.2.246.562.29.01000000000000013275"
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    val opiskeluoikeusOid = "1.2.246.562.15.09876543210"
+    val oppilaitosOid = "1.2.246.562.10.00000000234"
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val oppiaineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None),
+        Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None),
+        None, true, None, None),
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("biologia"), None, None),
+        Koodi("BI", "koodisto", None), Koodi("9", "koodisto", None),
+        None, true, None, None))
+    val perusopetuksenOppimaaraValmis = PerusopetuksenOppimaara(
+      UUID.randomUUID(),
+      None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None,
+      Koodi("toinenarvo", "koodisto", Some(1)),
+      SuoritusTila.VALMIS,
+      Koodi("FI", "kielikoodisto", Some(1)),
+      Set.empty,
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
+      None,
+      vahvistusPaivamaara = Some(LocalDate.parse("2025-05-30")),
+      oppiaineet,
+      Set.empty,
+      false,
+      vuosiluokkiinSitoutumatonOpetus = false)
+
+    val lisatiedot = KoskiLisatiedot(None, Some(true), None)
+    val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraValmis), Some(lisatiedot), SuoritusTila.VALMIS, List.empty)
+
     val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
       AvainArvoConstants.ataruPohjakoulutusKey -> "0",
       AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2020"
     ))
 
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
+    val leikkuri = LocalDate.now
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq(opiskeluoikeus), leikkuri, DEFAULT_KOUTA_HAKU)
 
-      Assertions.assertEquals(1, oos.size)
+    //Suoritukselta poimittu yksilöllistämistieto välittyy
+    Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
 
-      val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), oos, leikkuri, DEFAULT_KOUTA_HAKU)
-
-      //Osittain yksilöllistetty, koska on yksi yksilöllistetty oppiaine
-      Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
-
-
-      Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
-      Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
-      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
-
-    })
+    Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
+    Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
   }
 
   //Testataan seuraavat tapaukset:
@@ -519,7 +536,7 @@ class AvainArvoConverterTest {
       AvainArvoConstants.ataruPohjakoulutusKey -> "0",
       AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2020"
     ))
-    val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
+    val leikkuri = LocalDate.now
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
 
     Assertions.assertEquals(Some("0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
@@ -531,7 +548,7 @@ class AvainArvoConverterTest {
         AvainArvoConstants.ataruPohjakoulutusKey -> hakemuksenPohjakoulutus,
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017"
       ))
-      val leikkuri = java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate
+      val leikkuri = LocalDate.now
       val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
 
       Assertions.assertEquals(Some(hakemuksenPohjakoulutus), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))

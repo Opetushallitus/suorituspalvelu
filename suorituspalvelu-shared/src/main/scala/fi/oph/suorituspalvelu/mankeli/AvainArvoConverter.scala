@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, Suoritus, SuoritusTila, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, AvainArvoYliajo, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku}
 import org.slf4j.LoggerFactory
 
@@ -307,16 +308,7 @@ object AvainArvoConverter {
                               hakemusPohjakoulutusVuosi: Option[Int]): (String, Seq[String]) = {
     (kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi) match {
       case (Some(oppimaara), _, _) =>
-        val modYks = oppimaara.yksilollistaminen match {
-          case Some(1) => "1"
-          case Some(2) => "2"
-          case Some(3) => "3"
-          case Some(6) => "6"
-          case Some(8) => "8"
-          case Some(9) => "9"
-          case None => "1"
-          case value => throw new RuntimeException(s"Tuntematon yksilöllistämisen arvo: $value")
-        }
+        val modYks = oppimaara.yksilollistaminen.map(toIntValue).getOrElse(1).toString
         (modYks, Seq(s"Supasta löytyi suoritettu perusopetuksen oppimäärä. Vahvistuspäivä ${oppimaara.vahvistusPaivamaara.map(_.toString).getOrElse("")}."))
 
       case (_, Some(pohjakolutus), _) if pohjakolutus == "0" =>

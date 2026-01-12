@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, VirtaOpiskeluoikeus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, VirtaOpiskeluoikeus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
@@ -470,9 +471,9 @@ object EntityToUIConverter {
           valmistumispaiva = om.vahvistusPaivamaara.toJava,
           suorituskieli = om.suoritusKieli.arvo,
           luokka = om.luokka.toJava,
-          yksilollistaminen = om.yksilollistaminen.map(y => Yksilollistaminen(
-            y,
-            koodistoProvider.haeKoodisto(UIService.KOODISTO_POHJAKOULUTUS).get(y.toString).map(ya => YksilollistamisNimi(
+          yksilollistaminen = om.yksilollistaminen.map((y: PerusopetuksenYksilollistaminen) => Yksilollistaminen(
+            PerusopetuksenYksilollistaminen.toIntValue(y),
+            koodistoProvider.haeKoodisto(UIService.KOODISTO_POHJAKOULUTUS).get(PerusopetuksenYksilollistaminen.toIntValue(y).toString).map(ya => YksilollistamisNimi(
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava

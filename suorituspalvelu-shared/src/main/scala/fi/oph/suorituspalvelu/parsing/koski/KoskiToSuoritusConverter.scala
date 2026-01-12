@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaine, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenVuosiluokka, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaine, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenVuosiluokka, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
@@ -243,7 +243,7 @@ object KoskiToSuoritusConverter {
   //Suunniteltu käyttöön suoritustyypeille Tuva, Telma, Opistovuosi
   def getLisapistekoulutusSuoritusvuosi(suoritus: KoskiSuoritus): Int = {
     suoritus.vahvistus.map(_.`päivä`).map(p => LocalDate.parse(p).getYear)
-      .getOrElse(java.time.Instant.ofEpochMilli(System.currentTimeMillis()).atZone(java.time.ZoneId.systemDefault()).toLocalDate.getYear)
+      .getOrElse(LocalDate.now.getYear)
   }
 
   def getLisapistekoulutusYhteenlaskettuLaajuus(suoritus: KoskiSuoritus, vainHyvaksytytArvioinnit: Boolean): Option[Laajuus] = {
@@ -424,7 +424,7 @@ object KoskiToSuoritusConverter {
   }
 
   //Tämän tuottamat numeeriset arvot ovat käytännössä koodiston 2asteenpohjakoulutus2021 arvoja.
-  def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[Int] = {
+  def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[PerusopetuksenYksilollistaminen] = {
     val yksilollistettyja = suoritus.osasuoritukset.getOrElse(Set.empty).count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
     val rajattuja = suoritus.osasuoritukset.getOrElse(Set.empty).count(_.`rajattuOppimäärä`.exists(_.equals(true)))
     val yhteensa = suoritus.osasuoritukset.getOrElse(Set.empty).size
@@ -437,15 +437,15 @@ object KoskiToSuoritusConverter {
     (yksilollistettyja, rajattuja, yhteensa, opiskeleeToimintaAlueittain) match {
       case (yks, raj, yhteensa, _) if yks >= 1 && yks >= raj =>
         if (yks > yhteensa / 2)
-          Some(6) //pääosin tai kokonaan yksilöllistetty
+          Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
         else
-          Some(2) //osittain yksilöllistetty
+          Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
       case (yks, raj, yhteensa, _) if raj >= 1 =>
         if (raj > yhteensa / 2)
-          Some(9) //pääosin tai kokonaan rajattu
+          Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU)
         else
-          Some(8) //osittain rajattu
-      case (_, _, _, true) => Some(6) //yksilöllistetty toiminta-alueittain
+          Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU)
+      case (_, _, _, true) => Some(PerusopetuksenYksilollistaminen.TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY)
       case _ => None
     }
   }
