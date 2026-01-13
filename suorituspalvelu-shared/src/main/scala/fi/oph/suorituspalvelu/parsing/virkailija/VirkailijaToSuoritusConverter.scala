@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, OpiskeluoikeusJakso, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaine, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila, PerusopetuksenYksilollistaminen}
+import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, OpiskeluoikeusJakso, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila, PerusopetuksenYksilollistaminen}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.{allowMissingFields, yhteisenAineenArvosanaPuuttuu}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiOpiskeluoikeusJakso}
 import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
@@ -87,13 +87,15 @@ object VirkailijaToSuoritusConverter {
 
   def toPerusopetuksenOppiaineenOppimaara(versioTunniste: UUID, suoritus: SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, koodistoProvider: KoodistoProvider, organisaatioProvider: OrganisaatioProvider): PerusopetuksenOpiskeluoikeus = {
     val oppiaineet = suoritus.oppiaineet.asScala.map((oppiaine: SyotettyPerusopetuksenOppiaine) => {
-      PerusopetuksenOppimaaranOppiaine(
+      PerusopetuksenOppiaine(
         tunniste = UUID.randomUUID(),
         nimi = toOppiaineenNimi(oppiaine.koodi.get(), koodistoProvider),
         oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
         arvosana = oppiaine.arvosana.toScala.map(a => Koodi(a.toString.toLowerCase(), "arviointiasteikkoyleissivistava", Some(1))).getOrElse(dummy()),
         kieli = oppiaine.kieli.toScala.map(k => Koodi(k, "kielivalikoima", None)),
-        pakollinen = oppiaine.valinnainen.toScala.map(p => !p).getOrElse(true) //Fixme, vähän ruma.
+        pakollinen = oppiaine.valinnainen.toScala.map(p => !p).getOrElse(true),
+        yksilollistetty = None,
+        rajattu = None
       )
     }).toSet
 

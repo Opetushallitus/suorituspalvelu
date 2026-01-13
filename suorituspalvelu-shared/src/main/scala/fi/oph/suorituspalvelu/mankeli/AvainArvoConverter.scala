@@ -462,7 +462,7 @@ object AvainArvoConverter {
   }
 
   //Mahdolliset oppiaineen oppimäärät palautetaan vain, jos perusopetuksen oppimäärä löytyi.
-  def filterForPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): (Option[PerusopetuksenOppimaara], Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus]) = {
+  def etsiViimeisinPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): (Option[PerusopetuksenOppimaara], Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus]) = {
     val perusopetuksenOpiskeluoikeudet = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
     val (vahvistetut, eiVahvistetut) =
       perusopetuksenOpiskeluoikeudet
@@ -477,21 +477,21 @@ object AvainArvoConverter {
     }
 
     val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.headOption
-    //Todo, tämän käsittelyyn tarvitaan jotain päivämäärätietoa suorituksille, jotta voidaan poimia tuorein. Periaatteessa ei-vahvistettuja voisi olla useita.
-    // Toisaalta voi olla että riittää tieto siitä, että jotain keskeneräistä löytyy. Halutaan ehkä filtteröidä selkeästi keskeytyneet (eronnut, erotettu jne) pois.
-    val keskenOppimaara: Option[PerusopetuksenOppimaara] = eiVahvistetut.headOption
+
+    //Jos kesken-tilaisia on useita, käytetään sitä jonka alkamispävä on myöhäisin.
+    val keskenOppimaara: Option[PerusopetuksenOppimaara] = eiVahvistetut.filter(s => !SuoritusTila.KESKEYTYNYT.equals(s.supaTila)).maxByOption(_.aloitusPaivamaara)
 
     val useOppimaara = valmisOppimaara.orElse(keskenOppimaara)
     val useOppiaineenOppimaarat = if (valmisOppimaara.isDefined) oppiaineeOppimaarat else Seq.empty
     (useOppimaara, useOppiaineenOppimaarat)
   }
 
-  //Ottaa huomioon ensi vaiheessa PerusopetuksenOppimaarat ja myöhemmin myös PerusopetuksenOppiaineenOppimaarien sisältämät arvosanat JOS löytyy suoritettu PerusopetuksenOppimaara
   def korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus]): Set[AvainArvoContainer] = {
     val aineet: Set[PerusopetuksenOppiaine] = perusopetuksenOppimaara.map(om => om.aineet).getOrElse(Set.empty)
-    val byAineKey: Map[String, Set[PerusopetuksenOppiaine]] = aineet.groupBy(_.koodi.arvo)
+    val kaikkiOppiaineenSuoritukset = perusopetuksenOppimaara.map(om => om.aineet).getOrElse(Set.empty) ++ oppiaineenOppimaarat.flatMap(_.oppiaineet)
+    val kaikkiOppiaineenSuorituksetByAineKey: Map[String, Set[PerusopetuksenOppiaine]] = kaikkiOppiaineenSuoritukset.groupBy(_.koodi.arvo)
 
-    val aineidenKorkeimmatArvosanat = byAineKey.map((key, arvosanat) => {
+    val aineidenKorkeimmatArvosanat = kaikkiOppiaineenSuorituksetByAineKey.map((key, arvosanat) => {
       val highestGrade = arvosanat.maxBy(_.arvosana)(Ordering.fromLessThan((a, b) =>
         PerusopetuksenArvosanaOrdering.compareArvosana(a.arvo, b.arvo) < 0))
       (key, highestGrade)
@@ -513,7 +513,7 @@ object AvainArvoConverter {
   }
 
   def convertPeruskouluArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
-    val (perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus]) = filterForPeruskoulu(personOid, opiskeluoikeudet)
+    val (perusopetuksenOppimaara: Option[PerusopetuksenOppimaara], oppiaineenOppimaarat: Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus]) = etsiViimeisinPeruskoulu(personOid, opiskeluoikeudet)
 
     val oppimaaraOnVahvistettu: Boolean = perusopetuksenOppimaara.exists(_.vahvistusPaivamaara.isDefined)
     val vahvistusPvm = perusopetuksenOppimaara.map(_.vahvistusPaivamaara)
@@ -526,7 +526,7 @@ object AvainArvoConverter {
     val arvot = if (oppimaaraOnVahvistettu) {
       if (vahvistettuAjoissa) {
         val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${vahvistusPvm.flatten.getOrElse("-")}"
-        val arvosanaArvot: Set[AvainArvoContainer] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, Seq.empty)
+        val arvosanaArvot: Set[AvainArvoContainer] = korkeimmatPerusopetuksenArvosanatAineittain(perusopetuksenOppimaara, oppiaineenOppimaarat)
 
         val suoritusVuosiArvo: Option[AvainArvoContainer] = perusopetuksenOppimaara
           .flatMap(vo => vo.vahvistusPaivamaara.map(_.getYear))
