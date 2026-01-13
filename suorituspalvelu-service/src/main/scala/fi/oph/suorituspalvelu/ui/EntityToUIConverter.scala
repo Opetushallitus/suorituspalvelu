@@ -508,7 +508,7 @@ object EntityToUIConverter {
           oppiaineidenSuoritus.oppiaineet.map(oppiaine => {
             PerusopetuksenOppiaineUI(
               tunniste = oppiaine.tunniste,
-              koodi = oppiaine.oppiaineKoodi.arvo,
+              koodi = oppiaine.koodi.arvo,
               nimi = PerusopetuksenOppiaineNimi(
                 oppiaine.nimi.fi.toJava,
                 oppiaine.nimi.sv.toJava,

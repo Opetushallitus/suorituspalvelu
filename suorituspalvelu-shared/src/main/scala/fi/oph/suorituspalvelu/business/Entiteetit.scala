@@ -180,12 +180,6 @@ case class VapaaSivistystyo(tunniste: UUID,
                             suoritusKieli: Koodi,
                             lahtokoulu: Lahtokoulu) extends Suoritus, Tyypitetty
 
-case class PerusopetuksenOppimaaranOppiaine(tunniste: UUID,
-                                            nimi: Kielistetty,
-                                            oppiaineKoodi: Koodi,
-                                            arvosana: Koodi,
-                                            kieli: Option[Koodi], //Tämä tieto kertoo äidinkielen tai vieraan kielen tapauksessa opiskellun kielen. Huom. ero suorituskieleen.
-                                            pakollinen: Boolean) extends Suoritus, Tyypitetty
 
 //Tähän entiteettiin mallinnetaan sekä NuortenPerusopetuksenOppiaineenOppimaarat että AikuistenPerusopetuksenOppiaineenOppimäärät.
 case class PerusopetuksenOppimaaranOppiaineidenSuoritus(tunniste: UUID,
@@ -196,7 +190,7 @@ case class PerusopetuksenOppimaaranOppiaineidenSuoritus(tunniste: UUID,
                                                         suoritusKieli: Koodi,
                                                         aloitusPaivamaara: Option[LocalDate],
                                                         vahvistusPaivamaara: Option[LocalDate],
-                                                        oppiaineet: Set[PerusopetuksenOppimaaranOppiaine],
+                                                        oppiaineet: Set[PerusopetuksenOppiaine],
                                                         syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
                                                        ) extends Suoritus, Tyypitetty
 
