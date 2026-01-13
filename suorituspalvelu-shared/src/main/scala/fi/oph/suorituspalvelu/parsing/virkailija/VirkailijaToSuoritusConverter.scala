@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, OpiskeluoikeusJakso, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaine, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, OpiskeluoikeusJakso, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaine, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila, PerusopetuksenYksilollistaminen}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.{allowMissingFields, yhteisenAineenArvosanaPuuttuu}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiOpiskeluoikeusJakso}
 import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
@@ -70,12 +70,13 @@ object VirkailijaToSuoritusConverter {
           supaTila = supaTila,
           suoritusKieli = Koodi(suoritus.suorituskieli.get, "kieli", Some(1)),
           koulusivistyskieli = Set(Koodi(suoritus.suorituskieli.get, "kieli", Some(1))),
-          yksilollistaminen = suoritus.yksilollistetty.toScala,
+          yksilollistaminen = suoritus.yksilollistetty.toScala.map(intValue => PerusopetuksenYksilollistaminen.fromIntValue(intValue)),
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           aineet = aineet,
           lahtokoulut = Set(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka, Some(supaTila), Some(yhteisenAineenArvosanaPuuttuu(aineet)), VUOSILUOKKA_9)),
-          syotetty = true
+          syotetty = true,
+          false //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
         )
       ),
       None,

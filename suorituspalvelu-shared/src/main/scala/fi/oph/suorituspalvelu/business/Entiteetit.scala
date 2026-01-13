@@ -218,6 +218,35 @@ case class Lahtokoulu(suorituksenAlku: LocalDate,
                       arvosanaPuuttuu: Option[Boolean],
                       suoritusTyyppi: LahtokouluTyyppi)
 
+object PerusopetuksenYksilollistaminen {
+  def fromIntValue(value: Int): PerusopetuksenYksilollistaminen = value match {
+    case 1 => EI_YKSILOLLISTETTY
+    case 2 => OSITTAIN_YKSILOLLISTETTY
+    case 6 => PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY
+    case 3 => TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY
+    case 8 => OSITTAIN_RAJATTU
+    case 9 => PAAOSIN_TAI_KOKONAAN_RAJATTU
+  }
+
+  def toIntValue(yks: PerusopetuksenYksilollistaminen): Int = yks match {
+    case EI_YKSILOLLISTETTY => 1
+    case OSITTAIN_YKSILOLLISTETTY => 2
+    case PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY => 6
+    case TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY => 3
+    case OSITTAIN_RAJATTU => 8
+    case PAAOSIN_TAI_KOKONAAN_RAJATTU => 9
+  }
+}
+
+enum PerusopetuksenYksilollistaminen(intValue: Int) {
+  case EI_YKSILOLLISTETTY extends PerusopetuksenYksilollistaminen(1)
+  case OSITTAIN_YKSILOLLISTETTY extends PerusopetuksenYksilollistaminen(2)
+  case PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY extends PerusopetuksenYksilollistaminen(6)
+  case TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY extends PerusopetuksenYksilollistaminen(3)
+  case OSITTAIN_RAJATTU extends PerusopetuksenYksilollistaminen(8)
+  case PAAOSIN_TAI_KOKONAAN_RAJATTU extends PerusopetuksenYksilollistaminen(9)
+}
+
 case class PerusopetuksenOppimaara(tunniste: UUID,
                                    versioTunniste: Option[UUID],
                                    oppilaitos: Oppilaitos,
@@ -226,12 +255,13 @@ case class PerusopetuksenOppimaara(tunniste: UUID,
                                    supaTila: SuoritusTila,
                                    suoritusKieli: Koodi,
                                    koulusivistyskieli: Set[Koodi],
-                                   yksilollistaminen: Option[Int],
+                                   yksilollistaminen: Option[PerusopetuksenYksilollistaminen],
                                    aloitusPaivamaara: Option[LocalDate],
                                    vahvistusPaivamaara: Option[LocalDate],
                                    aineet: Set[PerusopetuksenOppiaine],
                                    lahtokoulut: Set[Lahtokoulu],
-                                   syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
+                                   syotetty: Boolean, //Käsin tallennetulle tiedolle true, muutoin false.
+                                   vuosiluokkiinSitoutumatonOpetus: Boolean
                                   ) extends Suoritus, Tyypitetty
 
 //Kieli määritelty oppiaineille kuten A1, B1 jne.

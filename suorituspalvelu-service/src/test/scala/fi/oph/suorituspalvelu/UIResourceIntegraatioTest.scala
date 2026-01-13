@@ -156,6 +156,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Some(LocalDate.parse(s"$vuosi-06-01")),
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${vuosi-1}-08-01"), Some(LocalDate.parse(s"$vuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
         false
       )),
       None,
@@ -220,6 +221,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
         false
       )),
       None,
@@ -290,6 +292,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
         false
       )),
       None,
@@ -445,6 +448,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), Some(luokka), Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
         false
       )),
       None,
@@ -1283,7 +1287,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
-    
+
     Mockito.when(tarjontaIntegration.getHaku(hakuOid))
       .thenReturn(Some(KoutaHaku(
         oid = hakuOid,

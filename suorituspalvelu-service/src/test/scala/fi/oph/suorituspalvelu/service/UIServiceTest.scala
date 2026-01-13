@@ -74,6 +74,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       if (vuosi.isDefined) Some(LocalDate.parse(s"${vuosi.get}-08-18")) else None,
       Set.empty,
       lahtokoulut,
+      false,
       false
     )
 
@@ -217,6 +218,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         Some(LocalDate.parse(s"$valmistumisVuosi-06-01")),
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
         false
       )),
       None,
@@ -235,7 +237,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     val oppilaitosJossaSuoritusOid = "1.2.246.562.10.52320123197"
     val organisaatio = Organisaatio(oppilaitosJohonOikeudetOid, OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty)
     val valmistumisVuosi = 2025
-    
+
     // mockataan onr ja organisaatiopalvelun vastaukset
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosJohonOikeudetOid)).thenReturn(Some(organisaatio))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
@@ -260,6 +262,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         Some(LocalDate.parse(s"$valmistumisVuosi-06-01")),
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosJossaSuoritusOid, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
         false
       )),
       None,

@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, PerusopetuksenYksilollistaminen}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski
@@ -54,7 +54,8 @@ class KoskiParsingTest {
     }).next().head
 
   @Test def testAmmatillisetOpiskeluoikeudet(): Unit =
-    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson("""
+    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
@@ -102,7 +103,8 @@ class KoskiParsingTest {
 
   @Test def testAmmatillisenTutkinnonTila(): Unit =
     // ammatillisen tutkinnon tila on ajallisesti viimeisen opiskeluoikeusjakson tila (vaikka alku olisi tulevaisuudessa)
-    val tutkinto = getFirstSuoritusFromJson("""
+    val tutkinto = getFirstSuoritusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
@@ -147,7 +149,8 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.koskiTila)
 
   @Test def testAmmatillisenTutkinnonKentat(): Unit =
-    val tutkinto = getFirstSuoritusFromJson("""
+    val tutkinto = getFirstSuoritusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
@@ -221,7 +224,8 @@ class KoskiParsingTest {
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"), tutkinto.oppilaitos)
 
   @Test def testAmmatillisenTutkinnonOsasuoritukset(): Unit =
-    val tutkinto = getFirstSuoritusFromJson("""
+    val tutkinto = getFirstSuoritusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
@@ -290,7 +294,8 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(Laajuus(20, Koodi("6", "opintojenlaajuusyksikko", Some(1)), None, None)), osaSuoritus.laajuus)
 
   @Test def testAmmatillisenTutkinnonOsaAlueet(): Unit =
-    val tutkinto = getFirstSuoritusFromJson("""
+    val tutkinto = getFirstSuoritusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
@@ -582,11 +587,12 @@ class KoskiParsingTest {
       Assertions.assertEquals(oikeudet.size, 1)
       Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
       Assertions.assertEquals(telmaLaajuus.get, 60)
-      })
+    })
   }
 
   @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =
-    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson("""
+    val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
@@ -643,7 +649,8 @@ class KoskiParsingTest {
       Some(List(KoskiKotiopetusjakso("2021-08-24", Some("2022-01-23")))))), opiskeluoikeus.lisatiedot)
 
   @Test def testPerusopetuksenOppimaarat(): Unit =
-    val oppimaara = getFirstSuoritusFromJson("""
+    val oppimaara = getFirstSuoritusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
@@ -709,8 +716,9 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
     Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), oppimaara.koulusivistyskieli)
 
-  @Test def testPerusopetuksenOppimaaranOppiaineet(): Unit =
-    val oppimaara = getFirstSuoritusFromJson("""
+  @Test def testPerusopetuksenOppimaaranOppiaineet(): Unit = {
+    val oppimaara = getFirstSuoritusFromJson(
+      """
         |[
         |  {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
@@ -775,6 +783,8 @@ class KoskiParsingTest {
     Assertions.assertEquals(true, oppiaine.pakollinen)
     Assertions.assertEquals(Some(true), oppiaine.yksilollistetty)
     Assertions.assertEquals(Some(true), oppiaine.rajattu)
+    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY), oppimaara.yksilollistaminen)
+  }
 
   @Test def testPerusopetuksenOppimaaranLahtokoulut(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""

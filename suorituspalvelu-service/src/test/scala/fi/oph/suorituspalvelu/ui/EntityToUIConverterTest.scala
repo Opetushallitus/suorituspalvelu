@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -477,7 +477,7 @@ class EntityToUIConverterTest {
       supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       suoritusKieli = Koodi("FI", "kieli", Some(1)),
       koulusivistyskieli = Set(Koodi("FI", "kieli", Some(1))),
-      yksilollistaminen = Some(1),
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY),
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       aineet = Set(
@@ -503,7 +503,8 @@ class EntityToUIConverterTest {
         ),
       ),
       lahtokoulut = Set.empty,
-      syotetty = false
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = false
     )
 
     val koodistoProvider = new KoodistoProvider {
@@ -547,7 +548,7 @@ class EntityToUIConverterTest {
       suorituskieli = oppimaara.suoritusKieli.arvo,
       luokka = oppimaara.luokka.toJava,
       yksilollistaminen = Optional.of(Yksilollistaminen(
-        arvo = oppimaara.yksilollistaminen.get,
+        arvo = PerusopetuksenYksilollistaminen.toIntValue(oppimaara.yksilollistaminen.get),
         nimi = YksilollistamisNimi(
           Optional.of("Perusopetuksen oppimäärä"),
           Optional.empty,

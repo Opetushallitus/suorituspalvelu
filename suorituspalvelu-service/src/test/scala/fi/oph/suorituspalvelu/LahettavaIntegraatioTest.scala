@@ -112,6 +112,16 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
           Set.empty,
           Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+          false,
+          false
+        ),
+        PerusopetuksenVuosiluokka(
+          UUID.randomUUID(),
+          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
+          Kielistetty(None, None, None),
+          Koodi("9", "perusopetuksenluokkaaste", None),
+          None,
+          Some(LocalDate.parse(s"$valmistumisvuosi-08-18")),
           false
         )
       ),
@@ -204,6 +214,16 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
           Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           Set.empty,
           Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+          false,
+          false
+        ),
+        PerusopetuksenVuosiluokka(
+          UUID.randomUUID(),
+          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
+          Kielistetty(None, None, None),
+          Koodi("9", "perusopetuksenluokkaaste", None),
+          None,
+          Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           false
         )
       ),

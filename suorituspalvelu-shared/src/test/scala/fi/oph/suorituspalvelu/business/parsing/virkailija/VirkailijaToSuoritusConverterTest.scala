@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.business.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
+import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
@@ -72,7 +73,7 @@ class VirkailijaToSuoritusConverterTest {
           SuoritusTila.VALMIS,
           Koodi(suoritus.suorituskieli.get, "kieli", Some(1)),
           Set(Koodi(suoritus.suorituskieli.get, "kieli", Some(1))),
-          Some(1),
+          Some(EI_YKSILOLLISTETTY),
           None,
           suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
@@ -86,7 +87,8 @@ class VirkailijaToSuoritusConverterTest {
             None
           ))).getOrElse(Set.empty),
           Set(Lahtokoulu(LocalDate.now, Some(LocalDate.now), suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.VALMIS), Some(true), VUOSILUOKKA_9)),
-          syotetty = true
+          syotetty = true,
+          vuosiluokkiinSitoutumatonOpetus = false
         )
       ),
       None,
