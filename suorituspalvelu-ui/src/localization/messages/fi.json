@@ -107,9 +107,11 @@
       "useita_vahvistettuja_oppimaaria": "Oppijalla on useita vahvistettuja perusopetuksen oppimääriä. Korjaa oppijan tiedot niin, että oppijalla on vain yksi vahvistettu perusopetuksen oppimäärä ja yritä uudelleen."
     },
     "avain": {
+      "ei_sallittu": "Avain ei ole sallittu",
       "ei_validi": "Avain ei ole validi"
     },
     "arvo": {
+      "tyhja": "Arvo ei saa olla tyhjä",
       "ei_validi": "Arvo ei ole validi"
     }
   },
@@ -316,7 +318,15 @@
     "valitse-haku": "Valitse haku",
     "valittu-haku-virheellinen": "Valittu haku on virheellinen.",
     "hakemuksesta-opiskelijavalintaan-tulevat-tiedot": "Hakemuksesta opiskelijavalintaan tulevat tiedot",
-    "arvon-selitteet-label": "Arvon selitteet"
+    "arvon-selitteet-label": "Arvon selitteet",
+    "nayta-muutoshistoria": "Muutoshistoria",
+    "muutoshistoria": {
+      "muokattu": "Muokattu",
+      "arvo": "Arvo",
+      "muutoksen-syy": "Muutoksen syy",
+      "yliajo-poistettu": "Yliajo poistettu",
+      "palauta": "Palauta"
+    }
   },
   "search": {
     "tabs": {
