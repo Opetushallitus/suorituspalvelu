@@ -136,7 +136,9 @@
       "metadata": {
         "selitteet": [],
         "arvoEnnenYliajoa": "9",
-        "yliajo": null
+        "yliajo": {
+          "arvo": "8"
+        }
       }
     },
     {
@@ -156,7 +158,9 @@
           "Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
         ],
         "arvoEnnenYliajoa": "false",
-        "yliajo": null
+        "yliajo": {
+          "arvo": "true"
+        }
       }
     },
     {

@@ -68,7 +68,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_TILA', value: 'true' },
       { label: 'PK_SUORITUSVUOSI', value: '2016' },
       { label: 'AM_TILA', value: 'true' },
-      { label: 'LK_TILA', value: 'true (Yliajamaton: false )' },
+      { label: 'LK_TILA', value: 'true (Yliajamaton: false ) Muutoshistoria' },
       { label: 'YO_TILA', value: 'false' },
       // Lisäpistekoulutus
       { label: 'LISAKOULUTUS_OPISTO', value: 'false' },
@@ -89,7 +89,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_ARVOSANA_GE', value: '9' },
       { label: 'PK_ARVOSANA_HI', value: '8' },
       { label: 'PK_ARVOSANA_KE', value: '7' },
-      { label: 'PK_ARVOSANA_KO', value: '8 (Yliajamaton: 9)' },
+      { label: 'PK_ARVOSANA_KO', value: '8 (Yliajamaton: 9) Muutoshistoria' },
       { label: 'PK_ARVOSANA_KS', value: '9' },
       { label: 'PK_ARVOSANA_KU', value: '8' },
       { label: 'PK_ARVOSANA_LI', value: '9' },
@@ -336,7 +336,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       page.waitForRequest((request) =>
         request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
       ),
-      editModal.getByRole('button', { name: 'Poista muokkaus' }).click(),
+      editModal.getByRole('button', { name: 'Poista yliajo' }).click(),
     ]);
 
     expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
@@ -411,7 +411,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       page.waitForRequest((request) =>
         request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
       ),
-      editModal.getByRole('button', { name: 'Poista kenttä' }).click(),
+      editModal.getByRole('button', { name: 'Poista yliajo' }).click(),
     ]);
 
     expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
@@ -473,7 +473,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     await Promise.all([
       page.waitForRequest('**/ui/poistayliajo*'),
-      editModal.getByRole('button', { name: 'Poista kenttä' }).click(),
+      editModal.getByRole('button', { name: 'Poista yliajo' }).click(),
     ]);
 
     await expect(editModal).toBeHidden();
@@ -663,7 +663,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(hakemukseltaTiedotButton).toBeHidden();
   });
 
-  test('Näytetään arvon selitteet kun klikataan info-ikonia', async ({
+  test('Näytetään arvon selitteet kun laitetaan kursori info-ikonin päälle', async ({
     page,
   }) => {
     await page.goto(
