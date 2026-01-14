@@ -67,7 +67,7 @@ const TextButton = styled(OphButton)(({ theme }) => ({
 const MuutoshistoriaButton = ({
   showMuutoshistoria,
 }: {
-  showMuutoshistoria: () => void;
+  showMuutoshistoria?: () => void;
 }) => {
   const { t } = useTranslations();
 
@@ -96,7 +96,9 @@ export const AvainArvoDisplay = ({
   const alkuperainenArvo = avainArvo.metadata.arvoEnnenYliajoa ?? '';
 
   const hasChangedArvo =
-    avainArvo.metadata.yliajo && avainArvo.metadata.yliajo.arvo !== null;
+    avainArvo.metadata.arvoEnnenYliajoa !== null &&
+    avainArvo.metadata.yliajo &&
+    avainArvo.metadata.yliajo.arvo !== null;
   const arvonSelitteet = avainArvo.metadata.selitteet ?? [];
   const hasMuutoshistoria = Boolean(avainArvo.metadata.yliajo);
 
@@ -144,11 +146,7 @@ export const AvainArvoDisplay = ({
           <ArvoAndSelitteet arvo={avainArvo.arvo} selitteet={arvonSelitteet} />
         )}
         {hasMuutoshistoria && (
-          <MuutoshistoriaButton
-            showMuutoshistoria={() => {
-              showMuutoshistoria?.();
-            }}
-          />
+          <MuutoshistoriaButton showMuutoshistoria={showMuutoshistoria} />
         )}
       </OphTypography>
     </Box>
