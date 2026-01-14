@@ -253,8 +253,10 @@
       "arvo": "9",
       "metadata": {
         "selitteet": [],
-        "arvoEnnenYliajoa": null,
-        "yliajo": null
+        "arvoEnnenYliajoa": "9",
+        "yliajo": {
+          "arvo": null
+        }
       }
     },
     {
@@ -283,6 +285,18 @@
         "arvoEnnenYliajoa": null,
         "yliajo": null,
         "arvoOnHakemukselta": true
+      }
+    },
+    {
+      "avain": "LISATTY_KENTTA",
+      "arvo": "lisatty",
+      "metadata": {
+        "selitteet": [],
+        "arvoEnnenYliajoa": null,
+        "yliajo": {
+          "arvo": "lisatty"
+        },
+        "arvoOnHakemukselta": false
       }
     }
   ]
