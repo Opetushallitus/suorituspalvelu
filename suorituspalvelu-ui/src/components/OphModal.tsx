@@ -8,6 +8,7 @@ import {
   type DialogProps,
   DialogTitle,
 } from '@mui/material';
+import { styled } from '@/lib/theme';
 import { OphButton, ophColors } from '@opetushallitus/oph-design-system';
 import { useId } from 'react';
 
@@ -25,6 +26,13 @@ export type OphModalProps = Pick<
     reason: 'backdropClick' | 'escapeKeyDown' | 'closeButtonClick',
   ) => void;
 };
+
+const StyledDialogContent = styled(DialogContent)({
+  position: 'relative',
+  // Estetään syötekenttien outline-reunuksen leikkautuminen DialogContentin vasemmasta reunasta
+  marginLeft: '-6px',
+  paddingLeft: '6px',
+});
 
 export const OphModal = ({
   open,
@@ -72,9 +80,9 @@ export const OphModal = ({
           />
         )}
       </DialogTitle>
-      <DialogContent sx={{ textAlign: contentAlign, position: 'relative' }}>
+      <StyledDialogContent sx={{ textAlign: contentAlign }}>
         {children}
-      </DialogContent>
+      </StyledDialogContent>
       {actions && <DialogActions>{actions}</DialogActions>}
     </Dialog>
   );
