@@ -28,6 +28,8 @@ case class LukukausiIlmoittautuminen(IlmoittautumisPvm: LocalDate, opiskelijaAva
 
 case class Organisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDecimal])
 
+case class MuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
+
 @JsonDeserialize(classOf[ArvosanaDeserializer])
 case class Arvosana(arvosana: String, asteikko: String)
 
@@ -39,12 +41,15 @@ case class SuoritusKoulutusala(Koodi: Koodi)
 @JsonDeserialize(classOf[NimiDeserializer])
 case class Nimi(kieli: Option[String], nimi: String)
 
+@JsonDeserialize(classOf[SisaltyvyysDeserializer])
+case class Suoritusviite(avain: String)
+
 case class Opintosuoritus(
                            Kieli: String,
                            Organisaatio: Option[Organisaatio],
                            SuoritusPvm: LocalDate,
                            Arvosana: Option[Arvosana],
-                           opiskeluoikeusAvain: String,
+                           opiskeluoikeusAvain: Option[String], // puuttuu osasuorituksilta
                            Koulutusala: Option[SuoritusKoulutusala],
                            Laji: Int,
                            koulutusmoduulitunniste: String,
@@ -56,7 +61,8 @@ case class Opintosuoritus(
                            Myontaja: String,
                            Koulutuskoodi: Option[String],
                            @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[Nimi],
-                           TKILaajuusHarjoittelu: Option[Laajuus]
+                           TKILaajuusHarjoittelu: Option[Laajuus],
+                           @JacksonXmlElementWrapper(useWrapping = false) Sisaltyvyys: Seq[Suoritusviite]
                          )
 
 case class Opiskelija(Opiskeluoikeudet: Seq[Opiskeluoikeus], LukukausiIlmoittautumiset: Seq[LukukausiIlmoittautuminen], Opintosuoritukset: Option[Seq[Opintosuoritus]], Henkilotunnus: String, avain: String)
@@ -79,6 +85,15 @@ class KoodiDeserializer extends JsonDeserializer[Koodi] {
     Koodi(mixin.versio, mixin.value)
 }
 
+class SisaltyvyysDeserializer extends JsonDeserializer[Suoritusviite] {
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): Suoritusviite =
+    val value = p.readValueAs(classOf[Any])
+    value match
+      case sisaltyvyys: Map[_, _] =>
+        val sisaltyvyysMap = sisaltyvyys.asInstanceOf[Map[String, String]]
+        Suoritusviite(sisaltyvyysMap("sisaltyvaOpintosuoritusAvain"))
+}
+
 class NimiDeserializer extends JsonDeserializer[Nimi] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): Nimi =
     val value = p.readValueAs(classOf[Any])
@@ -89,16 +104,34 @@ class NimiDeserializer extends JsonDeserializer[Nimi] {
       case nimi: Map[_, _] =>
         val nimiMap = nimi.asInstanceOf[Map[String, String]]
         Nimi(Some(nimiMap("kieli")), nimiMap(""))
-
 }
 
 class ArvosanaDeserializer extends JsonDeserializer[Arvosana] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): Arvosana =
-    val tuple = p.readValueAs(classOf[Map[String, String]]).head
-    if("EiKaytossa".equals(tuple._1))
-      null
-    else
-      Arvosana(tuple._2, tuple._1)
+    val (arvosanaTagName, arvosanaContent) = p.readValueAs(classOf[Map[String, Any]]).head
+    arvosanaTagName match {
+      case "EiKaytossa" => null
+      case "Muu" =>
+        val mapper = p.getCodec.asInstanceOf[ObjectMapper]
+        val contentMap = arvosanaContent.asInstanceOf[Map[String, Any]]
+        val asteikkoMap = contentMap("Asteikko").asInstanceOf[Map[String, Any]]
+        val koodi = contentMap("Koodi").asInstanceOf[String]
+        val asteikkoNimi = asteikkoMap("Nimi").asInstanceOf[String]
+
+        val asteikkoArvosanat = asteikkoMap("AsteikkoArvosana") match {
+          case list: List[_] =>
+            list.map(item => mapper.convertValue(item, classOf[MuuAsteikkoArvosana]))
+          case single: Map[_, _] =>
+            Seq(mapper.convertValue(single, classOf[MuuAsteikkoArvosana]))
+        }
+
+        val matchingArvosana = asteikkoArvosanat.find(_.avain == koodi).map(_.Nimi)
+        matchingArvosana match {
+          case Some(arvosanaNimi) => Arvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
+          case None => null
+        }
+      case _ => Arvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = arvosanaTagName)
+    }
 }
 
 object VirtaParser {
