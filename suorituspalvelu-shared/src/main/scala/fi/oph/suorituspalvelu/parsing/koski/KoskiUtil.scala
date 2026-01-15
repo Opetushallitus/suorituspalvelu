@@ -3,10 +3,12 @@ package fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_7}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
+import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
 
 import java.time.{Instant, LocalDate}
+import scala.jdk.OptionConverters.*
 
 val NOT_DEFINED_PLACEHOLDER = "_"
 
@@ -40,26 +42,37 @@ object KoskiUtil {
         case s: Tuva => s.lahtokoulu
         case s: VapaaSivistystyo => s.lahtokoulu
       }
-    }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku).reverse
+    }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku)
 
-  // tätä pitää käyttää hakemuksen lähtökoulun yksikäsitteiseen määrittämiseen, muttei katseluoikeuden määrittämiseen
-  def haeViimeisinLahtokoulu(ajanhetki: LocalDate, opiskeluoikeudet: Set[Opiskeluoikeus]): Option[String] =
-    val lahtokouluMetadata = getLahtokouluMetadata(opiskeluoikeudet)
-
-    val rajatut = lahtokouluMetadata.zip(lahtokouluMetadata.tail.map(e => Some(e)) :+ None).map((curr, next) => curr.copy(suorituksenLoppu = {
-      (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
-        case (None, None) => None
-        case (Some(currLoppu), None) => Some(currLoppu)
-        case (None, Some(nextAlku)) => Some(nextAlku)
-        case (Some(currLoppu), Some(nextAlku)) => Some(if currLoppu.isAfter(nextAlku) then nextAlku else currLoppu)
-    }))
-    
-    rajatut.find(lk => !lk.suorituksenAlku.isAfter(ajanhetki) && lk.suorituksenLoppu.forall(pvm => !pvm.isBefore(ajanhetki))).map(lk => lk.oppilaitosOid)
+  /**
+   * Luo lähtökoulutietojen perusteella ajallisen jatkumon oppilaitoksista joiden (tietyillä) rooleilla on oikeus
+   * tarkastella henkilön tietoja niin että oikeus on yhdellä oppilaitoksella kerrallaan. Listaa luodaan seuraavasti:
+   * - oikeus alkaa relevantin suorituksen alkupäivästä
+   * - oikeus päättyy siihen päivään (ei-inklusiivinen) kun ajallisesti seuraava oikeus alkaa
+   * - jos ajallisesti seuraavaa oikeutta ei ole, oikeus päättyy seuraavan vuoden tammikuun loppuun
+   * - jos suoritus on kesken päättymispäivää ei ole määritelty
+   *
+   * @param lahtokoulut lähtökoulutiedot joiden perusteella oikeudet luodaan
+   * @return
+   */
+  def luoLahtokouluAuthorizations(lahtokoulut: Seq[Lahtokoulu]): Seq[LahtokouluAuthorization] =
+    if(lahtokoulut.isEmpty)
+      Seq.empty
+    else {
+      val aikajarjestetyt = lahtokoulut.sortBy(_.suorituksenAlku)
+      aikajarjestetyt.zip(aikajarjestetyt.tail.map(e => Some(e)) :+ None).map((curr, next) => {
+        val loppuPaivamaara =
+          (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
+            case (None, None) => None
+            case (Some(currLoppu), None) => Some(LocalDate.parse(s"${currLoppu.getYear + 1}-02-01")) // loppupäivä ei-inklusiivinen
+            case (_, Some(nextAlku)) => Some(nextAlku)
+        LahtokouluAuthorization(curr.oppilaitosOid, curr.suorituksenAlku, loppuPaivamaara.toJava, curr.suoritusTyyppi.toString)
+      })
+    }
 
   /**
    * Kertoo löytyykö suorituksista kriteerit täyttäviä lähtökouluja. Tätä tietoa käytetään ratkaisemaan:
    *  - Onko lähettävän katselijalla oikeus nähdä henkilön suoritukset SUPAssa
-   *  - Onko lähettävän katselijalla oikeus nähdä henkilön hakemukset Hakemuspalvelussa
    *  - Pitääkö Muuttuneet KOSKI-tiedot päivittää SUPAan (lähtökohta on että jos henkilön tiedot näkyvät tarkastus-
    *    näkymässä niin pitää päivittää). Samaa päättelyä käytetään siis siihen saako suoritukset nähdä SUPAssa ja
    *    päivitetäänkö suoritustieto. Jos tätä halutaan muuttaa niin asiaa kannattaa harkita ainakin kahdesti. Tilanne

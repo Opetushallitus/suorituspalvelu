@@ -389,6 +389,26 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           WHERE ${paivamaara.isEmpty} OR loppu>${paivamaara.getOrElse(LocalDate.now).toString}::date
          """.as[(String, Option[String])]), DB_TIMEOUT).toSet
 
+  def haeLahtokoulut(henkiloOidit: Set[String]): Set[Lahtokoulu] =
+    Await.result(db.run(
+        (sql"""
+          SELECT
+            jsonb_build_object(
+              'suorituksenAlku', suorituksen_alku,
+              'suorituksenLoppu', suorituksen_loppu,
+              'oppilaitosOid', oppilaitos_oid,
+              'valmistumisvuosi', valmistumisvuosi,
+              'luokka', luokka,
+              'tila', tila,
+              'arvosanaPuuttuu', arvosanapuuttuu,
+              'suoritusTyyppi', suoritustyyppi
+            )::text AS data
+          FROM lahtokoulut
+          WHERE upper(versio_voimassaolo)='infinity'::timestamptz
+          AND oppijanumero=ANY(${henkiloOidit.toSeq})
+        """).as[String]), DB_TIMEOUT)
+      .map(data => MAPPER.readValue(data, classOf[Lahtokoulu])).toSet
+
   def haePKOppilaitokset(lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[String] =
     Await.result(db.run(
       sql"""
@@ -460,11 +480,6 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     LOG.info(s"päätetään version $tunniste voimassaolo")
     val voimassaolo = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), now()) WHERE tunniste=${tunniste.toString}::uuid AND upper(voimassaolo)='infinity'::timestamptz"""
     Await.result(db.run(voimassaolo), DB_TIMEOUT)>0
-
-  def haeMetadataAvaimenArvot(avain: String, prefix: Option[String] = None): Set[String] =
-    prefix match
-      case None => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain""".as[String]), DB_TIMEOUT).toSet
-      case Some(prefix) => Await.result(db.run(sql"""SELECT arvo FROM metadata_arvot WHERE avain=$avain AND arvo LIKE ${s"$prefix%"}""".as[String]), DB_TIMEOUT).toSet
 
   def haeOppijanYliajot(oppijaNumero: String, hakuOid: String): Seq[AvainArvoYliajo] = {
     Await.result(db.run(

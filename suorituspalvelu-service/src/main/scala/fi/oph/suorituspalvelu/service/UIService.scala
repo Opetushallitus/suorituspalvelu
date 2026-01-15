@@ -117,7 +117,7 @@ class UIService {
 
   @Autowired val tarjontaIntegration: fi.oph.suorituspalvelu.integration.TarjontaIntegration = null
 
-  val ONR_TIMEOUT = 10.seconds;
+  val ONR_TIMEOUT = 10.seconds
 
   val LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
 
@@ -174,17 +174,6 @@ class UIService {
         val luokat = luokatMap.get(henkilo.oidHenkilo).flatMap(l => l.map(l => Set(l))).getOrElse(Set.empty)
         Some(Oppija(henkilo.oidHenkilo, henkilo.hetu.toJava, henkilo.etunimet.toJava, henkilo.sukunimi.toJava, luokat.asJava))
       }))
-
-    Await.result(r, 30.seconds)
-  }
-
-  def haeLahtokoulu(henkiloOid: String): Option[String] = {
-    val r = onrIntegration.getAliasesForPersonOids(Set(henkiloOid))
-      .map(_.allOidsByQueriedOids(henkiloOid))
-      .map(aliakset => {
-        val suoritukset = aliakset.map(alias => this.kantaOperaatiot.haeSuoritukset(alias)).flatMap(_.values).flatten
-        KoskiUtil.haeViimeisinLahtokoulu(LocalDate.now, suoritukset)
-      })
 
     Await.result(r, 30.seconds)
   }

@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse, LahtokoulutFailureResponse, LahtokoulutSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
@@ -35,16 +35,10 @@ import scala.jdk.CollectionConverters.*
  * johtavat skenaariot. Eri variaatiot näiden skenaarioiden sisällä (esim. erityyppiset validointiongelmat) testataan
  * yksikkötasolla. Onnistuneiden kutsujen osalta validoidaan että kannan tila kutsun jälkeen vastaa oletusta.
  */
-class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
+class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val onrIntegration: OnrIntegration = null
-
-  @MockitoBean
-  val organisaatioProvider: OrganisaatioProvider = null
-
-  @MockitoBean
-  var hakemuspalveluClient: HakemuspalveluClientImpl = null
 
   val OPPILAITOS_OID = "1.2.246.562.10.52320123196"
 
@@ -252,4 +246,92 @@ class LahettavaIntegraatioTest extends BaseIntegraatioTesti {
       ApiConstants.LAHETTAVAT_VUOSI_PARAM_NAME -> valmistumisVuosi.toString
     ), auditLogEntry.target)
 
+  /*
+   * Integraatiotestit lähtökoulujen haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeLahtokoulutAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.OPISKELIJAT_LAHTOKOULUT_PATH
+          .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeLahtokoulutEiOikeuksia(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.OPISKELIJAT_LAHTOKOULUT_PATH
+          .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPIJANUMERO), ""))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @Test def testHaeLahtokoulutInvalidParams(): Unit =
+    // haetaan virheellisillä parametreilla
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.OPISKELIJAT_LAHTOKOULUT_PATH
+          .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, "Tämä ei ole validi oid"), ""))
+      .andExpect(status().isBadRequest).andReturn()
+
+    // virhe on kuten pitää
+    Assertions.assertEquals(LahtokoulutFailureResponse(java.util.Set.of(
+      Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI
+    )), objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @Test def testHaeLahtokoulutAllowed(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21583363331"
+    val valmistumisVuosi = 2025
+    val aloitusPaiva = LocalDate.parse(s"${valmistumisVuosi-1}-08-18")
+    val valmistumisPaiva = LocalDate.parse(s"$valmistumisVuosi-06-01")
+
+    // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      OPPILAITOS_OID,
+      Set(
+        PerusopetuksenOppimaara(
+          UUID.randomUUID(),
+          None,
+          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
+          None,
+          Koodi("", "", None),
+          VALMIS,
+          Koodi("", "", None),
+          Set.empty,
+          None,
+          None,
+          Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
+          Set.empty,
+          Set(Lahtokoulu(aloitusPaiva, Some(valmistumisPaiva), OPPILAITOS_OID, Some(valmistumisVuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+          false,
+          false
+        )
+      ),
+      None,
+      VALMIS,
+      List.empty
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    
+    // mockataan onr-vastaus ja haetaan luokat
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.OPISKELIJAT_LAHTOKOULUT_PATH
+          .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, oppijaNumero), ""))
+      .andExpect(status().isOk).andReturn()
+
+    // saadaan lähtökoulua vastaava autorisointi joka päättyy seuraavan vuoden tammikuun loppuun
+    Assertions.assertEquals(LahtokoulutSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-02-01")), VUOSILUOKKA_9.toString)).asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutSuccessResponse]))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeLahtokoulut.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_NAME -> oppijaNumero,
+    ), auditLogEntry.target)
 }

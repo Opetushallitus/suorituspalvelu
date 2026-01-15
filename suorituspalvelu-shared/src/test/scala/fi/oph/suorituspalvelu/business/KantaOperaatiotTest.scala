@@ -586,6 +586,26 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, vanhaOppilaitosOid, valmistumisVuosi, None, false, false, Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, uusiOppilaitosOid, valmistumisVuosi, None, false, false, Set(VUOSILUOKKA_9)))
 
+  @Test def haeLahtokoulut(): Unit = {
+    val henkiloNumero1 = "1.2.246.562.24.99988877766"
+    val henkiloNumero2 = "1.2.246.562.24.99988877767"
+    val oppilaitosOid1 = "1.2.246.562.10.95136889433"
+    val uusiOppilaitosOid = "1.2.246.562.10.95136889434"
+    val valmistumisVuosi = 2025
+
+    // tallennetaan versiot ja lähtökoulut
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero1, SuoritusJoukko.KOSKI, Seq("{}"), Instant.now())
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero2, SuoritusJoukko.KOSKI, Seq("{}"), Instant.now())
+    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(lahtokoulu2))
+
+    // luettu vastaa tallennettua
+    Assertions.assertEquals(Set(lahtokoulu1), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero1)))
+    Assertions.assertEquals(Set(lahtokoulu1, lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero1, henkiloNumero2)))
+  }
+
   @Test def testYliajoRoundtrip(): Unit = {
     val personOid = "1.2.246.562.24.12345678901"
     val hakuOid = "1.2.246.562.29.98765432109"
