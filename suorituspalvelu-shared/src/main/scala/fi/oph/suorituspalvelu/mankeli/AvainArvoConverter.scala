@@ -172,6 +172,10 @@ object AvainArvoConstants {
   val hakemuksenPohjakoulutuksetUskotaanHakemusta = Set(POHJAKOULUTUS_PERUSKOULU, POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY,
     POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY, POHJAKOULUTUS_PERUSKOULU_TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY,
     POHJAKOULUTUS_PERUSKOULU_OSITTAIN_RAJOITETTU, POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU)
+
+  val arvosananLahdeSeliteSupa = "Tieto löytyi Suorituspalvelusta."
+  val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
+
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -222,7 +226,7 @@ object HakemusConverter {
 
       // Muokataan tulokset takaisin Supa-muotoon
       convertedArvosanat.asScala.map(dto =>
-        AvainArvoContainer(dto.getAvain, dto.getArvo, Seq(s"Arvosana on poimittu hakemukselta, koska hakemuksella ilmoitettu pohjakoulutusvuosi oli ${hakemusPohjakoulutusVuosi.get}."))
+        AvainArvoContainer(dto.getAvain, dto.getArvo, Seq(AvainArvoConstants.arvosananLahdeSeliteHakemus))
       ).toSet
     } else Set.empty
   }
@@ -529,7 +533,7 @@ object AvainArvoConverter {
   def perusopetuksenOppiaineetToAvainArvot(aineet: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
     aineet.flatMap(aine => {
       val arvosanaAvain = AvainArvoConstants.peruskouluAineenArvosanaPrefix + aine.koodi.arvo
-      val arvosanaArvot: AvainArvoContainer = AvainArvoContainer(arvosanaAvain, aine.arvosana.arvo, Seq("Arvosana löytyi Koskesta."))
+      val arvosanaArvot: AvainArvoContainer = AvainArvoContainer(arvosanaAvain, aine.arvosana.arvo, Seq(AvainArvoConstants.arvosananLahdeSeliteSupa))
 
       val kieliArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
         val kieliAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliPostfix

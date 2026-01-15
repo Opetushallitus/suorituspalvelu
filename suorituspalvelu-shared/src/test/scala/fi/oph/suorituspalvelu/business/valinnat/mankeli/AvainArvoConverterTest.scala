@@ -654,4 +654,69 @@ class AvainArvoConverterTest {
     }
 
   }
+
+  @Test def testAvainArvoConverterHakemuksenArvosanojaEiHuomioidaJosRekisteristaLoytyyPerusopetus(): Unit = {
+    val opiskeluoikeusOid = "1.2.246.562.15.09876543210"
+    val oppilaitosOid = "1.2.246.562.10.00000000234"
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val oppiaineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None),
+        Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None),
+        None, true, None, None),
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kemia"), None, None),
+        Koodi("KE", "koodisto", None), Koodi("9", "koodisto", None),
+        None, true, None, None))
+    val perusopetuksenOppimaaraValmis = PerusopetuksenOppimaara(
+      UUID.randomUUID(),
+      None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None,
+      Koodi("toinenarvo", "koodisto", Some(1)),
+      SuoritusTila.VALMIS,
+      Koodi("FI", "kielikoodisto", Some(1)),
+      Set.empty,
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
+      None,
+      vahvistusPaivamaara = Some(LocalDate.parse("2025-05-30")),
+      oppiaineet,
+      Set.empty,
+      false,
+      vuosiluokkiinSitoutumatonOpetus = false)
+
+    val lisatiedot = KoskiLisatiedot(None, Some(true), None)
+    val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraValmis), Some(lisatiedot), SuoritusTila.VALMIS, List.empty)
+
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
+      AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2016",
+      "arvosana-BI_group0" -> "arvosana-BI-7",
+      "arvosana-MA_group0" -> "arvosana-MA-7",
+    ))
+
+    val leikkuri = LocalDate.now
+    val converterResultWithRekisteriPeruskoulu = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq(opiskeluoikeus), leikkuri, DEFAULT_KOUTA_HAKU)
+    println(s"converterResultWithRekisteriPeruskoulu: $converterResultWithRekisteriPeruskoulu")
+    //Tarkistetaan, että perusopetuksen opiskeluoikeudesta poimitut arvosanat ovat mukana, ja hakemuksen arvosanoja ei ole
+    val avainArvoKE = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_KE")) //Supa
+    val avainArvoHI = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_HI")) //Supa
+    val avainArvoBI = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_BI")) //Hakemus, ei pitäisi löytyä
+    val avainArvoMA = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_MA")) //Hakemus, ei pitäisi löytyä
+    Assertions.assertEquals("9", avainArvoKE.get.arvo)
+    Assertions.assertEquals("8", avainArvoHI.get.arvo)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteSupa, avainArvoKE.get.selitteet.head)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteSupa, avainArvoHI.get.selitteet.head)
+    Assertions.assertEquals(None, avainArvoBI)
+    Assertions.assertEquals(None, avainArvoMA)
+
+    val converterResultWithoutRekisteriPeruskoulu = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
+
+    //Tarkistetaan, että hakemuksella ilmoitetut arvosanat ovat mukana
+    val avainArvoBIHakemus = converterResultWithoutRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_BI"))
+    val avainArvoMAHakemus = converterResultWithoutRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_MA"))
+    Assertions.assertEquals("7", avainArvoBIHakemus.get.arvo)
+    Assertions.assertEquals("7", avainArvoMAHakemus.get.arvo)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteHakemus, avainArvoBIHakemus.get.selitteet.head)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteHakemus, avainArvoMAHakemus.get.selitteet.head)
+
+  }
 }
