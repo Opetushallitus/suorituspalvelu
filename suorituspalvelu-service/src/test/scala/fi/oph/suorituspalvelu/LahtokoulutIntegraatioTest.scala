@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse, LahtokouluFailureResponse, LahtokouluSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse, LahtokoulutFailureResponse, LahtokoulutSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
@@ -275,9 +275,9 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isBadRequest).andReturn()
 
     // virhe on kuten pitää
-    Assertions.assertEquals(LahtokouluFailureResponse(java.util.Set.of(
+    Assertions.assertEquals(LahtokoulutFailureResponse(java.util.Set.of(
       Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI
-    )), objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokouluFailureResponse]))
+    )), objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
   @Test def testHaeLahtokoulutAllowed(): Unit =
@@ -324,9 +324,9 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk).andReturn()
 
-    // henkilön luokka vastaa (toistaiseksi hardkoodattua) luokkaa
-    Assertions.assertEquals(LahtokouluSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.Lahtokoulu(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-01-31")), Optional.of("9A"), VUOSILUOKKA_9.toString)).asJava),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokouluSuccessResponse]))
+    // saadaan lähtökoulua vastaava autorisointi joka päättyy seuraavan vuoden tammikuun loppuun
+    Assertions.assertEquals(LahtokoulutSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-02-01")), VUOSILUOKKA_9.toString)).asJava),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()

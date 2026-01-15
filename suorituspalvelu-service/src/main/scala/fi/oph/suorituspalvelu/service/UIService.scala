@@ -178,17 +178,6 @@ class UIService {
     Await.result(r, 30.seconds)
   }
 
-  def haeLahtokoulu(henkiloOid: String): Option[String] = {
-    val r = onrIntegration.getAliasesForPersonOids(Set(henkiloOid))
-      .map(_.allOidsByQueriedOids(henkiloOid))
-      .map(aliakset => {
-        val suoritukset = aliakset.map(alias => this.kantaOperaatiot.haeSuoritukset(alias)).flatMap(_.values).flatten
-        KoskiUtil.haeViimeisinLahtokoulu(LocalDate.now, suoritukset)
-      })
-
-    Await.result(r, 30.seconds)
-  }
-
   def resolveOppijaNumero(tunniste: String): Option[String] = {
     if (Validator.hetuPattern.matches(tunniste)) {
       Await.result(

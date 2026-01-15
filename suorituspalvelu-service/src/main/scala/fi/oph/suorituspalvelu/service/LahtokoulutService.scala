@@ -1,10 +1,11 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.*
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahtokoulu, Opiskeluoikeus, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, NOT_DEFINED_PLACEHOLDER}
+import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
 import fi.oph.suorituspalvelu.ui.EntityToUIConverter
@@ -40,13 +41,13 @@ class LahtokoulutService {
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
     kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi).map((henkilo, luokka) => henkilo -> luokka)
   }
-  
-  def haeLahtokoulut(henkiloOid: String): Seq[Lahtokoulu] = {
+
+  def haeLahtokouluAuthorizations(henkiloOid: String): Seq[LahtokouluAuthorization] = {
     val r = onrIntegration.getAliasesForPersonOids(Set(henkiloOid))
       .map(_.allOidsByQueriedOids(henkiloOid))
       .map(aliakset => {
-        val suoritukset = aliakset.map(alias => this.kantaOperaatiot.haeSuoritukset(alias)).flatMap(_.values).flatten
-        KoskiUtil.haeLahtokoulut(suoritukset)
+        val lahtokoulut = this.kantaOperaatiot.haeLahtokoulut(aliakset)
+        KoskiUtil.luoLahtokouluAuthorizations(lahtokoulut.toSeq)
       })
 
     Await.result(r, 30.seconds)

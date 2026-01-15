@@ -156,30 +156,28 @@ case class LahettavatHenkilotFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends LahettavatHenkilotResponse
 
-trait LahtokouluResponse()
+trait LahtokoulutResponse()
 
-case class Lahtokoulu(
+case class LahtokouluAuthorization(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitosOid: String,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Alkupäivämäärä (inklusiivinen)", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty alkuPaivamaara: LocalDate,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(description = "Loppupäivämärää (ei-inklusiivinen)", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty loppuPaivamaara: Optional[LocalDate],
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty luokka: Optional[String],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tyyppi: String
 )
 
-case class LahtokouluSuccessResponse(
+case class LahtokoulutSuccessResponse(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty lahtokoulut: java.util.List[Lahtokoulu]
-) extends LahtokouluResponse
+  @BeanProperty lahtokoulut: java.util.List[LahtokouluAuthorization]
+) extends LahtokoulutResponse
 
-case class LahtokouluFailureResponse(
+case class LahtokoulutFailureResponse(
   @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.Set[String]
-) extends LahtokouluResponse
+) extends LahtokoulutResponse
 
 case class ValintalaskentaDataPayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)

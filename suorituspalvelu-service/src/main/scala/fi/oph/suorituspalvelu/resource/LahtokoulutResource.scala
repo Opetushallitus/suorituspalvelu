@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
-import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotFailureResponse, LahettavatHenkilotResponse, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatResponse, LahettavatLuokatSuccessResponse, Lahtokoulu, LahtokouluFailureResponse, LahtokouluResponse, LahtokouluSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotFailureResponse, LahettavatHenkilotResponse, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatResponse, LahettavatLuokatSuccessResponse, LahtokouluAuthorization, LahtokoulutFailureResponse, LahtokoulutResponse, LahtokoulutSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.LahtokoulutService
 import fi.oph.suorituspalvelu.util.LogContext
@@ -150,15 +150,18 @@ class LahtokoulutResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Hakee henkilön lähtökoulut",
-    description = "Lähtökoulutietoja käytetään hakemuspalvelussa pääsyn rajaamiseen ja tilastointiin.",
+    summary = "Hakee henkilön lähtökouluista johdetut oppilaitosten autorisoinnit",
+    description = "Tuloslistassa oleva autorisointi tarkoittaa sitä että kyseisellä (rajatulla) ajanhetkellä oppilaitoksen tiettyjen henkilöiden (tyyppillisesti opot) " +
+      "on oikeus katsella henkilöön liittyviä tietoja (hakemukset) sillä perusteella että henkilö on ollut oppilaitoksen opiskelija kyseisellä hetkellä tai lähimenneisyydessä. " +
+      "Tätä autorisointitietoja käytetään hakemuspalvelussa pääsyn rajaamiseen. Mikäli halutaan hakea muita lähtökouluihin liittyviä tietoja, tähän on syytä käyttää (ja " +
+      "tarvittaessa tehdä) muita rajapintoja. Ei ole esim. täysin poissuljettua että tulevaisuudessa henkilöllä voi samalle ajanhetkelle olla useita autorisoituja lähtökouluja.",
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Palauttaa listan henkilön lähtökouluista", content = Array(new Content(schema = new Schema(implementation = classOf[LahtokouluSuccessResponse])))),
-      new ApiResponse(responseCode = "400", description = LAHETTAVAT_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LahtokouluFailureResponse])))),
+      new ApiResponse(responseCode = "200", description = "Palauttaa listan henkilön lähtökouluista seuraavista autorisoinneista", content = Array(new Content(schema = new Schema(implementation = classOf[LahtokoulutSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = LAHETTAVAT_RESPONSE_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[LahtokoulutFailureResponse])))),
       new ApiResponse(responseCode = "403", description = LAHETTAVAT_RESPONSE_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def haeLahtokoulu(@PathVariable(name = OPISKELIJAT_HENKILOOID_PARAM_NAME, required = false) @Parameter(description = "Henkilön tunniste", example = ESIMERKKI_OPPIJANUMERO) henkiloOid: Optional[String],
-                    request: HttpServletRequest): ResponseEntity[LahtokouluResponse] = {
+                    request: HttpServletRequest): ResponseEntity[LahtokoulutResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
       LogContext(path = OPISKELIJAT_LAHTOKOULUT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
@@ -175,31 +178,25 @@ class LahtokoulutResource {
             if (virheet.isEmpty)
               Right(henkiloOid.get)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LahtokouluFailureResponse(virheet.asJava))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LahtokoulutFailureResponse(virheet.asJava))))
           .map(henkiloOid => {
             try
               val user = AuditLog.getUser(request)
               AuditLog.log(user, Map(OPISKELIJAT_HENKILOOID_PARAM_NAME -> henkiloOid), AuditOperation.HaeLahtokoulut, None)
-              LOG.info(s"Haetaan lähtökoulut henkilölle $henkiloOid")
+              LOG.info(s"Haetaan lähtökouluihin perustuvat autorisoinnit henkilölle $henkiloOid")
 
-              val lahtokoulut = lahtokoulutService.haeLahtokoulut(henkiloOid)
-              ResponseEntity.status(HttpStatus.OK).body(LahtokouluSuccessResponse(lahtokoulut.map(l => Lahtokoulu(
-                l.oppilaitosOid,
-                l.suorituksenAlku,
-                l.suorituksenLoppu.toJava,
-                l.luokka.toJava,
-                l.suoritusTyyppi.toString
-              )).toList.asJava))
+              val lahtokoulut = lahtokoulutService.haeLahtokouluAuthorizations(henkiloOid)
+              ResponseEntity.status(HttpStatus.OK).body(LahtokoulutSuccessResponse(lahtokoulut.toList.asJava))
             catch
               case e: Exception =>
-                LOG.error(s"Lähtökoulujen haku henkilölle $henkiloOid epäonnistui", e)
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahtokouluFailureResponse(Set(LAHETTAVAT_500_VIRHE).asJava))
+                LOG.error(s"Lähtökouluautorisointien haku henkilölle $henkiloOid epäonnistui", e)
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahtokoulutFailureResponse(Set(LAHETTAVAT_500_VIRHE).asJava))
           })
-          .fold(e => e, r => r).asInstanceOf[ResponseEntity[LahtokouluResponse]])
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[LahtokoulutResponse]])
     catch
       case e: Exception =>
-        LOG.error("Henkilöiden haku epäonnistui", e)
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahtokouluFailureResponse(java.util.Set.of(LAHETTAVAT_500_VIRHE)))
+        LOG.error("Lähtökouluautorisointien haku epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LahtokoulutFailureResponse(java.util.Set.of(LAHETTAVAT_500_VIRHE)))
   }
 }
 
