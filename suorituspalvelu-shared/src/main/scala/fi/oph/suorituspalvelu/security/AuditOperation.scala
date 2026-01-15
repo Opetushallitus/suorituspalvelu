@@ -67,5 +67,7 @@ object AuditOperation {
 
   case object HaeValintadata extends AuditOperation("VALINTADATAN HAKU HAKUKOHTEELLE TAI HAKEMUKSILLE")
 
+  case object Uudelleenparseroi extends AuditOperation("LÄHDEDATAN UUDELLEENPARSEROINTI")
+
   case object HaeJobData extends AuditOperation("JOBIEN TIETOJEN HAKU")
 }

@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_JOB_NIMI, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_JOB_NIMI, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -68,6 +68,16 @@ case class YtrSyncFailureResponse(
   @(Schema @field)(example = "[\"" + VIRTA_DATASYNC_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
 
+@Schema(name = "ReparseSuccessResponse")
+case class ReparseSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty jobids: java.util.List[UUID]) extends SyncResponse {}
+
+@Schema(name = "ReparseFailureResponse")
+case class ReparseFailureResponse(
+  @(Schema @field)(example = "[\"" + DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
+
 case class YTRPaivitaTiedotHaullePayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakuOid: Optional[String]) {
@@ -123,6 +133,23 @@ case class KoskiRetryPayload(
   @BeanProperty tiedostot: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
+}
+
+case class ReparsePayload(
+  @(Schema @field)(description = "Uudelleenparseroidaan KOSKI-tiedot", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty koski: Boolean,
+  @(Schema @field)(description = "Uudelleenparseroidaan VIRTA-tiedot", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virta: Boolean,
+  @(Schema @field)(description = "Uudelleenparseroidaan YTR-tiedot", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty ytr: Boolean,
+  @(Schema @field)(description = "Uudelleenparseroidaan syötetyt perusopetuksen oppimäärät", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty perusopetuksenOppimaarat: Boolean,
+  @(Schema @field)(description = "Uudelleenparseroidaan syötetyt perusopetuksen oppiaineen oppimäärät", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty perusopetuksenOppiaineet: Boolean,
+  @(Schema @field)(description = "Ei tallenneta uudelleenparseroituja tietoja", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty dryRun: Boolean) {
+
+  def this() = this(false, false, false, false, false, false)
 }
 
 trait LahettavatLuokatResponse()
