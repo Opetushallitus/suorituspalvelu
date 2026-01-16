@@ -136,7 +136,9 @@
       "metadata": {
         "selitteet": [],
         "arvoEnnenYliajoa": "9",
-        "yliajo": null
+        "yliajo": {
+          "arvo": "8"
+        }
       }
     },
     {
@@ -156,7 +158,9 @@
           "Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
         ],
         "arvoEnnenYliajoa": "false",
-        "yliajo": null
+        "yliajo": {
+          "arvo": "true"
+        }
       }
     },
     {
@@ -249,8 +253,10 @@
       "arvo": "9",
       "metadata": {
         "selitteet": [],
-        "arvoEnnenYliajoa": null,
-        "yliajo": null
+        "arvoEnnenYliajoa": "9",
+        "yliajo": {
+          "arvo": null
+        }
       }
     },
     {
@@ -279,6 +285,18 @@
         "arvoEnnenYliajoa": null,
         "yliajo": null,
         "arvoOnHakemukselta": true
+      }
+    },
+    {
+      "avain": "LISATTY_KENTTA",
+      "arvo": "lisatty",
+      "metadata": {
+        "selitteet": [],
+        "arvoEnnenYliajoa": null,
+        "yliajo": {
+          "arvo": "lisatty"
+        },
+        "arvoOnHakemukselta": false
       }
     }
   ]

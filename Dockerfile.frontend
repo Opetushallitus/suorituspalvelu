@@ -1,14 +1,14 @@
 FROM node:24
 WORKDIR /app
 EXPOSE 3000
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN mkdir -p /home/appuser && chmod -R 777 /home/appuser
 RUN mkdir -p /pnpm/store && chmod -R 777 /pnpm
 
 # Ensure /app and node_modules directory is writable by any user
 RUN mkdir -p /app/node_modules && chmod -R 777 /app/node_modules
 
-RUN echo "store-dir=/pnpm/store" >> /etc/npmrc
-
 RUN corepack enable pnpm
 
-CMD ["sh", "-c", "cp /run/secrets/npmrc ~/.npmrc && pnpm install && pnpm run dev"]
+CMD ["sh", "-c", "cp /run/secrets/npmrc ~/.npmrc && pnpm config set store-dir /pnpm/store --global && pnpm install && pnpm run dev"]

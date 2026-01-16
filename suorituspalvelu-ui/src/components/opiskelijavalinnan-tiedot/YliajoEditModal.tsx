@@ -46,17 +46,16 @@ export const YliajoEditModal = ({
         maxWidth="sm"
         actions={
           <>
-            {mode === 'edit' && originalAvainArvo?.metadata.yliajo && (
-              <OphButton
-                variant="outlined"
-                startIcon={<DeleteOutline />}
-                onClick={() => deleteYliajo(yliajo.avain)}
-              >
-                {originalAvainArvo?.metadata.arvoEnnenYliajoa !== null
-                  ? t('opiskelijavalinnan-tiedot.poista-muokkaus')
-                  : t('opiskelijavalinnan-tiedot.poista-kentta')}
-              </OphButton>
-            )}
+            {mode === 'edit' &&
+              originalAvainArvo?.metadata.yliajo?.arvo != null && (
+                <OphButton
+                  variant="outlined"
+                  startIcon={<DeleteOutline />}
+                  onClick={() => deleteYliajo(yliajo.avain)}
+                >
+                  {t('opiskelijavalinnan-tiedot.poista-yliajo')}
+                </OphButton>
+              )}
             <OphButton variant="outlined" onClick={onClose}>
               {t('peruuta')}
             </OphButton>

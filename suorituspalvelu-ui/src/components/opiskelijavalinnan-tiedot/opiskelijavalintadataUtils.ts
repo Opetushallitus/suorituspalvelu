@@ -85,13 +85,9 @@ export const sortGroups = (
   });
 };
 
-export const groupAndSortAvainarvot = (
-  avainarvot: Array<AvainArvo>,
-  avainArvoFilter?: (avainArvo: AvainArvo) => boolean,
-) => {
+export const groupAndSortAvainarvot = (avainarvot: Array<AvainArvo>) => {
   return pipe(
     avainarvot,
-    ($) => (avainArvoFilter ? $.filter(avainArvoFilter) : $),
     groupBy((item) => getOpiskelijavalintaGroup(item)),
     (grouped) => sortGroups(grouped),
   );

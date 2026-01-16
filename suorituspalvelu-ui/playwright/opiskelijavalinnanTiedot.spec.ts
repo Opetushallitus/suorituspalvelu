@@ -1,9 +1,14 @@
 import { test, expect } from './lib/fixtures';
-import { expectLabeledValues, selectOption } from './lib/playwrightUtils';
+import {
+  expectLabeledValues,
+  expectTableValues,
+  selectOption,
+} from './lib/playwrightUtils';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 import VALINTA_DATA from './fixtures/valintaData.json' with { type: 'json' };
 import OPPIJAN_HAUT from './fixtures/oppijanHaut.json' with { type: 'json' };
 import VALINTA_DATA_FOR_SECOND_HAKU from './fixtures/valintaDataForSecondHaku.json' with { type: 'json' };
+import VALINTADATA_HISTORIA from './fixtures/valintadataHistoria.json' with { type: 'json' };
 import type { IHaku } from '@/types/backend';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
@@ -34,8 +39,17 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     );
 
     await page.route(
+      (url) => url.pathname.endsWith('/ui/valintadatahistoria'),
+      async (route) => {
+        await route.fulfill({
+          json: VALINTADATA_HISTORIA,
+        });
+      },
+    );
+
+    await page.route(
       (url) =>
-        url.pathname.includes('/ui/valintadata') &&
+        url.pathname.endsWith('/ui/valintadata') &&
         url.searchParams.get('oppijaNumero') === OPPIJANUMERO,
       (route, request) => {
         const url = new URL(request.url());
@@ -68,7 +82,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_TILA', value: 'true' },
       { label: 'PK_SUORITUSVUOSI', value: '2016' },
       { label: 'AM_TILA', value: 'true' },
-      { label: 'LK_TILA', value: 'true (Yliajamaton: false )' },
+      { label: 'LK_TILA', value: 'true (Yliajamaton: false ) Muutoshistoria' },
       { label: 'YO_TILA', value: 'false' },
       // Lisäpistekoulutus
       { label: 'LISAKOULUTUS_OPISTO', value: 'false' },
@@ -89,13 +103,15 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       { label: 'PK_ARVOSANA_GE', value: '9' },
       { label: 'PK_ARVOSANA_HI', value: '8' },
       { label: 'PK_ARVOSANA_KE', value: '7' },
-      { label: 'PK_ARVOSANA_KO', value: '8 (Yliajamaton: 9)' },
-      { label: 'PK_ARVOSANA_KS', value: '9' },
+      { label: 'PK_ARVOSANA_KO', value: '8 (Yliajamaton: 9) Muutoshistoria' },
+      { label: 'PK_ARVOSANA_KS', value: '9 Muutoshistoria' },
       { label: 'PK_ARVOSANA_KU', value: '8' },
       { label: 'PK_ARVOSANA_LI', value: '9' },
       { label: 'PK_ARVOSANA_MU', value: '7' },
       { label: 'PK_ARVOSANA_TE', value: '8' },
       { label: 'PK_ARVOSANA_YH', value: '10' },
+      // lisätty kenttä
+      { label: 'LISATTY_KENTTA', value: 'lisatty Muutoshistoria' },
     ]);
   });
 
@@ -271,7 +287,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(errorModal).toBeHidden();
   });
 
-  test('poistaa muokkauksen onnistuneesti', async ({ page }) => {
+  test('poistaa yliajon onnistuneesti muokkausmodaalista', async ({ page }) => {
     let deletedYliajoParams: {
       oppijaNumero?: string;
       hakuOid?: string;
@@ -336,7 +352,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       page.waitForRequest((request) =>
         request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
       ),
-      editModal.getByRole('button', { name: 'Poista muokkaus' }).click(),
+      editModal.getByRole('button', { name: 'Poista yliajo' }).click(),
     ]);
 
     expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
@@ -411,7 +427,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
       page.waitForRequest((request) =>
         request.url().includes(`/ui/valintadata?oppijaNumero=${OPPIJANUMERO}`),
       ),
-      editModal.getByRole('button', { name: 'Poista kenttä' }).click(),
+      editModal.getByRole('button', { name: 'Poista yliajo' }).click(),
     ]);
 
     expect(deletedYliajoParams.oppijaNumero).toBe(OPPIJANUMERO);
@@ -473,7 +489,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     await Promise.all([
       page.waitForRequest('**/ui/poistayliajo*'),
-      editModal.getByRole('button', { name: 'Poista kenttä' }).click(),
+      editModal.getByRole('button', { name: 'Poista yliajo' }).click(),
     ]);
 
     await expect(editModal).toBeHidden();
@@ -565,7 +581,6 @@ test.describe('Opiskelijavalinnan tiedot', () => {
   });
 
   test('valitaan URL-parametrin mukainen haku', async ({ page }) => {
-    // Mock multiple haut
     await page.route(
       (url) => url.href.includes(`/ui/oppijanhaut/${OPPIJANUMERO}`),
       async (route) => {
@@ -663,7 +678,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
     await expect(hakemukseltaTiedotButton).toBeHidden();
   });
 
-  test('Näytetään arvon selitteet kun klikataan info-ikonia', async ({
+  test('Näytetään arvon selitteet kun laitetaan kursori info-ikonin päälle', async ({
     page,
   }) => {
     await page.goto(
@@ -685,5 +700,64 @@ test.describe('Opiskelijavalinnan tiedot', () => {
         name: 'Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta',
       }),
     ).toBeVisible();
+  });
+
+  test('Näytetään muutoshistoria kun klikataan "Muutoshistoria"-nappia', async ({
+    page,
+  }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    const kotitalous_ko = tiedot.getByLabel('PK_ARVOSANA_KO');
+
+    await kotitalous_ko.getByRole('button', { name: 'Muutoshistoria' }).click();
+
+    const muutoshistoriaModal = page.getByRole('dialog', {
+      name: 'PK_ARVOSANA_KO',
+    });
+
+    await expect(muutoshistoriaModal).toBeVisible();
+    await expect(muutoshistoriaModal.getByText('Yliajamaton: 9')).toBeVisible();
+    await expect(
+      muutoshistoriaModal.getByRole('button', { name: 'Palauta' }),
+    ).toBeVisible();
+
+    await expectTableValues(muutoshistoriaModal.getByRole('table'), [
+      ['Muokattu', 'Arvo', 'Muutoksen syy'],
+      ['16.1.2024 12:30:00Matti Meikäläinen', '', 'Yliajo poistettu'],
+      ['15.1.2024 12:30:00Matti Meikäläinen', 'test', 'Vaihdettu testiksi'],
+    ]);
+  });
+
+  test('Poistaa yliajon muutoshistoria-modaalista', async ({ page }) => {
+    await page.goto(
+      `/suorituspalvelu/henkilo/${OPPIJANUMERO}/opiskelijavalinnan-tiedot`,
+    );
+
+    const tiedot = page.getByRole('region', {
+      name: 'Suorituspalvelusta opiskelijavalintaan siirtyvät tiedot',
+    });
+
+    const kotitalous_ko = tiedot.getByLabel('PK_ARVOSANA_KO');
+
+    await kotitalous_ko.getByRole('button', { name: 'Muutoshistoria' }).click();
+
+    const muutoshistoriaModal = page.getByRole('dialog', {
+      name: 'PK_ARVOSANA_KO',
+    });
+
+    const palautaButton = muutoshistoriaModal.getByRole('button', {
+      name: 'Palauta',
+    });
+
+    await Promise.all([
+      palautaButton.click(),
+      page.waitForRequest('**/ui/poistayliajo*'),
+    ]);
   });
 });

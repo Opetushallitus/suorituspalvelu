@@ -21,7 +21,6 @@ export const HakemukseltaTulevatTiedot = ({
     >
       <AvainArvotSection
         avainarvot={sortBy(valintaData.avainArvot, prop('avain'))}
-        avainArvoFilter={(avainArvo) => avainArvo.metadata.arvoOnHakemukselta}
       />
     </AccordionBox>
   );

@@ -21,12 +21,6 @@ runs:
         cache-dependency-path: ${{ inputs.project_path }}/pnpm-lock.yaml
         registry-url: 'https://npm.pkg.github.com'
         scope: '@opetushallitus'
-    - name: Cache node_modules
-      uses: actions/cache@v4
-      id: node_modules-cache
-      with:
-        path: ${{ github.workspace }}/${{ inputs.project_path }}/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.project_path)) }}
     - name: Install dependencies
       if: steps.node_modules-cache.outputs.cache-hit != 'true'
       shell: bash
