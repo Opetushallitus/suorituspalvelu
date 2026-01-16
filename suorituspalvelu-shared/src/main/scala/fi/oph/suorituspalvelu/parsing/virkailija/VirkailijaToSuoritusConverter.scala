@@ -120,7 +120,7 @@ object VirkailijaToSuoritusConverter {
           suoritusKieli = Koodi(suoritus.suorituskieli.get(), "kieli", None),
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
-          oppiaineet = oppiaineet,
+          aineet = oppiaineet,
           syotetty = true
         )
       ),

@@ -139,7 +139,7 @@ class AvainArvoConverterTest {
     val oppiaineenOppimaara1 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-07")), Some(LocalDate.parse("2025-06-07")), Set(korotus1Biologia), false)
     val oppiaineenOppimaara2 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-08")), Some(LocalDate.parse("2025-06-08")), Set(korotus2Liikunta), false)
 
-    val oppiaineet = oppimaara.aineet ++ oppiaineenOppimaara1.oppiaineet ++ oppiaineenOppimaara2.oppiaineet
+    val oppiaineet = oppimaara.aineet ++ oppiaineenOppimaara1.aineet ++ oppiaineenOppimaara2.aineet
     val avainArvot = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(oppiaineet)
     val ka: Set[AvainArvoContainer] = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(avainArvot)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap

@@ -190,7 +190,7 @@ case class PerusopetuksenOppimaaranOppiaineidenSuoritus(tunniste: UUID,
                                                         suoritusKieli: Koodi,
                                                         aloitusPaivamaara: Option[LocalDate],
                                                         vahvistusPaivamaara: Option[LocalDate],
-                                                        oppiaineet: Set[PerusopetuksenOppiaine],
+                                                        aineet: Set[PerusopetuksenOppiaine],
                                                         syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
                                                        ) extends Suoritus, Tyypitetty
 
