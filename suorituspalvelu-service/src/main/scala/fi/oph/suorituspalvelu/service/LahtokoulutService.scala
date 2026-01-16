@@ -31,7 +31,9 @@ class LahtokoulutService {
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
   @Autowired val onrIntegration: OnrIntegration = null
-  
+
+  @Autowired val valintaDataService: ValintaDataService = null
+
   val ONR_TIMEOUT = 10.seconds
   
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
@@ -51,5 +53,10 @@ class LahtokoulutService {
       })
 
     Await.result(r, 30.seconds)
+  }
+
+  def haeAvainarvot(hakemusOid: String): Map[String, String] = {
+    valintaDataService.getValintaData(hakemusOid).kaikkiAvainArvotFull()
+      .map(aa => aa.avain -> aa.arvo).toMap
   }
 }

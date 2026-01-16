@@ -70,8 +70,14 @@ object ApiConstants {
 
   final val OPISKELIJAT_HENKILOOID_PARAM_NAME               = "henkiloOid"
   final val OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER        = "{" + OPISKELIJAT_HENKILOOID_PARAM_NAME + "}"
+  final val OPISKELIJAT_AIKALEIMA_PARAM_NAME                = "aikaleima"
   final val OPISKELIJAT_PATH                                = VERSIONED_API_PREFIX + "/opiskelijat/" + OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER
   final val OPISKELIJAT_LAHTOKOULUT_PATH                    = OPISKELIJAT_PATH + "/lahtokoulut"
+
+  final val HAKEMUKSET_HAKEMUS_PARAM_NAME                   = "hakemusOid"
+  final val HAKEMUKSET_PARAM_PLACEHOLDER                    = "{" + HAKEMUKSET_HAKEMUS_PARAM_NAME + "}"
+  final val HAKEMUKSET_PATH                                 = VERSIONED_API_PREFIX + "/hakemukset/" + HAKEMUKSET_PARAM_PLACEHOLDER
+  final val HAKEMUKSET_AVAINARVOT_PATH                      = HAKEMUKSET_PATH + "/avainarvot"
 
   final val LAHETTAVAT_RESPONSE_400_DESCRIPTION             = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val LAHETTAVAT_RESPONSE_403_DESCRIPTION             = "Käyttäjälle ei ole rekisterinpitäjä- tai palvelukäyttäjä-oikeutta"
@@ -184,5 +190,4 @@ object ApiConstants {
 
   final val ESIMERKKI_JOB_NIMI                              = "esimerkki-jobi"
   final val ESIMERKKI_JOB_TUNNISTE                          = "5cc3b63f-f3f8-40e9-b535-ba4027d490bb"
-
 }
