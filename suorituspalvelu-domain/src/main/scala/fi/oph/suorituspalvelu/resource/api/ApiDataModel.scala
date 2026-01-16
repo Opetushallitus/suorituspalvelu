@@ -215,6 +215,18 @@ case class ValintalaskentaDataPayload(
   @BeanProperty hakemusOids: java.util.List[String]
 )
 
+trait AvainarvotResponse()
+
+case class AvainarvotSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty avainarvot: java.util.Map[String, String]
+) extends AvainarvotResponse
+
+case class AvainarvotFailureResponse(
+  @(Schema @field)(example = "[\"" + LAHETTAVAT_ESIMERKKI_VIRHE + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty virheet: java.util.Set[String]
+) extends AvainarvotResponse
+
 trait ValintalaskentaDataResponse
 
 case class ValintalaskentaDataSuccessResponse(

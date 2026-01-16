@@ -25,6 +25,8 @@ object AuditOperation {
 
   case object HaeLahtokoulut extends AuditOperation("HAE LAHTOKOULUT")
 
+  case object HaeAvainarvot extends AuditOperation("HAE AVAINARVOT")
+
   case object HaeOppilaitoksenOppijatUI extends AuditOperation("HAE OPPILAITOKSEN OPPIJAT UI")
 
   case object HaeOppijaTiedotUI extends AuditOperation("HAE OPPIJATIEDOT UI")
