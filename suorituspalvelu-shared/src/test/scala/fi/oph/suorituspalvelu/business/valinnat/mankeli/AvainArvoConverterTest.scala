@@ -3,11 +3,11 @@ package fi.oph.suorituspalvelu.business.valinnat.mankeli
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku, KoutaHakuaika}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, KantaOperaatiot, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, VapaaSivistystyo, PerusopetuksenOppimaaranOppiaineidenSuoritus}
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
@@ -139,8 +139,9 @@ class AvainArvoConverterTest {
     val oppiaineenOppimaara1 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-07")), Some(LocalDate.parse("2025-06-07")), Set(korotus1Biologia), false)
     val oppiaineenOppimaara2 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-08")), Some(LocalDate.parse("2025-06-08")), Set(korotus2Liikunta), false)
 
-
-    val ka: Set[AvainArvoContainer] = AvainArvoConverter.korkeimmatPerusopetuksenArvosanatAineittain(Some(oppimaara), Seq(oppiaineenOppimaara1, oppiaineenOppimaara2))
+    val oppiaineet = oppimaara.aineet ++ oppiaineenOppimaara1.aineet ++ oppiaineenOppimaara2.aineet
+    val avainArvot = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(oppiaineet)
+    val ka: Set[AvainArvoContainer] = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(avainArvot)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
 
     val tavoiteArvosanat = Map("A1" -> "10", "BI" -> "9", "KO" -> "S", "LI" -> "10")
@@ -562,5 +563,160 @@ class AvainArvoConverterTest {
 
       Assertions.assertEquals(Some(hakemuksenPohjakoulutus), converterResult.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
     })
+  }
+
+  @Test def testArvosanatHakemukseltaJaYksiKorotusSupasta(): Unit = {
+    val keyValues = Map(
+      "arvosana-KO_group0" -> "arvosana-KO-7",
+      "oppiaine-valinnainen-kieli_group0" -> "oppiaine-valinnainen-kieli-b2",
+      "arvosana-valinnainen-kieli_group0" -> "arvosana-valinnainen-kieli-6",
+      "arvosana-FY_group0" -> "arvosana-FY-6",
+      "oppimaara-kieli-valinnainen-kieli_group0" -> "DE",
+      "oppimaara-kieli-A1_group0" -> "EN",
+      "arvosana-KE_group0" -> "arvosana-KE-7", //Tämä arvosana yliajetaan korotuksella
+      "arvosana-TE_group0" -> "arvosana-TE-7",
+      "arvosana-A1_group0" -> "arvosana-A1-8",
+      "oppimaara-a-valinnainen-kieli_group0" -> "",
+      "arvosana-KU_group0" -> "arvosana-KU-8",
+      "arvosana-HI_group0" -> "arvosana-HI-6",
+      "arvosana-KU_group1" -> "arvosana-KU-9",
+      "oppimaara-a_group0" -> "suomi-aidinkielena",
+      "arvosana-KT_group0" -> "arvosana-KT-7",
+      "arvosana-KA_group0" -> "arvosana-KA-7",
+      "arvosana-TY_group0" -> "arvosana-TY-7",
+      "arvosana-KS_group1" -> "arvosana-KS-hyvaksytty",
+      "arvosana-MU_group0" -> "arvosana-MU-7",
+      "arvosana-valinnainen-kieli_group1" -> "",
+      "arvosana-GE_group0" -> "arvosana-GE-8",
+      "oppimaara-a-valinnainen-kieli_group1" -> "",
+      "arvosana-TT_group0" -> "arvosana-TT-7",
+      "oppiaine-valinnainen-kieli_group1" -> "",
+      "arvosana-KS_group0" -> "arvosana-KS-7",
+      "arvosana-YH_group0" -> "arvosana-YH-8",
+      "arvosana-LI_group0" -> "arvosana-LI-8",
+      "arvosana-A_group0" -> "arvosana-A-8",
+      "pohjakoulutus_vuosi" -> "2016",
+      "oppimaara-kieli-B1_group0" -> "SV",
+      "arvosana-KO_group1" -> "arvosana-KO-hyvaksytty",
+      "arvosana-BI_group0" -> "arvosana-BI-7",
+      "arvosana-B1_group0" -> "arvosana-B1-6",
+      "arvosana-MA_group0" -> "arvosana-MA-7",
+      "arvosana-KA_group1" -> "arvosana-KA-hyvaksytty",
+      "oppimaara-kieli-valinnainen-kieli_group1" -> ""
+    )
+    val hakemus = BASE_HAKEMUS.copy(keyValues = keyValues)
+
+    //Yhdelle hakemuksen arvosanoista löytyy korotus, muille ei
+    val korotus1Kemia = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kemia"), None, None), Koodi("KE", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None)
+
+    val arvosanatHakemukselta = HakemusConverter.convertArvosanatHakemukselta(hakemus)
+    val arvosanatSupasta = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(Set(korotus1Kemia))
+
+    val korkeimmat = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(arvosanatHakemukselta ++ arvosanatSupasta)
+
+    //Tarkistetaan, että arvosanat vastaavat oletettuja
+    val resultMap = korkeimmat.map(aa => aa.avain -> aa.arvo).toMap
+
+    val tavoiteArvosanat = Map(
+      "PK_LI" -> "8",
+      "PK_MU" -> "7",
+      "PK_MA" -> "7",
+      "PK_KO" -> "7",
+      "PK_AI" -> "8",
+      "PK_GE" -> "8",
+      "PK_B1_OPPIAINE" -> "SV",
+      "PK_KU_VAL1" -> "9",
+      "PK_B1" -> "6",
+      "PK_TT" -> "7",
+      "PK_KU" -> "8",
+      "PK_YH" -> "8",
+      "PK_KS" -> "7",
+      "PK_FY" -> "6",
+      "PK_A1_OPPIAINE" -> "EN",
+      "PK_TE" -> "7",
+      "PK_TY" -> "7",
+      "PK_B2" -> "6",
+      "PK_KT" -> "7",
+      "PK_KE" -> "9", //Tämä arvosana on korotettu oppiaineen oppimäärän suorituksella, olisi muuten hakemuksen perusteella 7
+      "PK_AI_OPPIAINE" -> "FI",
+      "PK_HI" -> "6",
+      "PK_BI" -> "7",
+      "PK_B2_OPPIAINE" -> "DE",
+      "PK_A1" -> "8",
+      "PK_KA" -> "7"
+    )
+
+    tavoiteArvosanat.foreach { case (key, value) =>
+      Assertions.assertEquals(
+        value,
+        resultMap(key)
+      )
+    }
+
+  }
+
+  @Test def testAvainArvoConverterHakemuksenArvosanojaEiHuomioidaJosRekisteristaLoytyyPerusopetus(): Unit = {
+    val opiskeluoikeusOid = "1.2.246.562.15.09876543210"
+    val oppilaitosOid = "1.2.246.562.10.00000000234"
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val oppiaineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None),
+        Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None),
+        None, true, None, None),
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kemia"), None, None),
+        Koodi("KE", "koodisto", None), Koodi("9", "koodisto", None),
+        None, true, None, None))
+    val perusopetuksenOppimaaraValmis = PerusopetuksenOppimaara(
+      UUID.randomUUID(),
+      None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None,
+      Koodi("toinenarvo", "koodisto", Some(1)),
+      SuoritusTila.VALMIS,
+      Koodi("FI", "kielikoodisto", Some(1)),
+      Set.empty,
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
+      None,
+      vahvistusPaivamaara = Some(LocalDate.parse("2025-05-30")),
+      oppiaineet,
+      Set.empty,
+      false,
+      vuosiluokkiinSitoutumatonOpetus = false)
+
+    val lisatiedot = KoskiLisatiedot(None, Some(true), None)
+    val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraValmis), Some(lisatiedot), SuoritusTila.VALMIS, List.empty)
+
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
+      AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2016",
+      "arvosana-BI_group0" -> "arvosana-BI-7",
+      "arvosana-MA_group0" -> "arvosana-MA-7",
+    ))
+
+    val leikkuri = LocalDate.now
+    val converterResultWithRekisteriPeruskoulu = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq(opiskeluoikeus), leikkuri, DEFAULT_KOUTA_HAKU)
+    println(s"converterResultWithRekisteriPeruskoulu: $converterResultWithRekisteriPeruskoulu")
+    //Tarkistetaan, että perusopetuksen opiskeluoikeudesta poimitut arvosanat ovat mukana, ja hakemuksen arvosanoja ei ole
+    val avainArvoKE = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_KE")) //Supa
+    val avainArvoHI = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_HI")) //Supa
+    val avainArvoBI = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_BI")) //Hakemus, ei pitäisi löytyä
+    val avainArvoMA = converterResultWithRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_MA")) //Hakemus, ei pitäisi löytyä
+    Assertions.assertEquals("9", avainArvoKE.get.arvo)
+    Assertions.assertEquals("8", avainArvoHI.get.arvo)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteSupa, avainArvoKE.get.selitteet.head)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteSupa, avainArvoHI.get.selitteet.head)
+    Assertions.assertEquals(None, avainArvoBI)
+    Assertions.assertEquals(None, avainArvoMA)
+
+    val converterResultWithoutRekisteriPeruskoulu = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU)
+
+    //Tarkistetaan, että hakemuksella ilmoitetut arvosanat ovat mukana
+    val avainArvoBIHakemus = converterResultWithoutRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_BI"))
+    val avainArvoMAHakemus = converterResultWithoutRekisteriPeruskoulu.paatellytArvot.find(_.avain.equals("PK_MA"))
+    Assertions.assertEquals("7", avainArvoBIHakemus.get.arvo)
+    Assertions.assertEquals("7", avainArvoMAHakemus.get.arvo)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteHakemus, avainArvoBIHakemus.get.selitteet.head)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteHakemus, avainArvoMAHakemus.get.selitteet.head)
+
   }
 }

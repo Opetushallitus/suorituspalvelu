@@ -149,7 +149,7 @@ class VirkailijaToSuoritusConverterTest {
           suoritusKieli = Koodi(suoritus.suorituskieli.get(), "kieli", None),
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
-          oppiaineet = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].oppiaineet,
+          aineet = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].aineet,
           syotetty = true
         )
       ),

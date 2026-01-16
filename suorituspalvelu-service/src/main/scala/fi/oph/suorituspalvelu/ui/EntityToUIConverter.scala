@@ -505,7 +505,7 @@ object EntityToUIConverter {
       .collect { case s: PerusopetuksenOppimaaranOppiaineidenSuoritus => s }
       .map(oppiaineidenSuoritus => {
         val oppiaineet: Set[PerusopetuksenOppiaineUI] =
-          oppiaineidenSuoritus.oppiaineet.map(oppiaine => {
+          oppiaineidenSuoritus.aineet.map(oppiaine => {
             PerusopetuksenOppiaineUI(
               tunniste = oppiaine.tunniste,
               koodi = oppiaine.koodi.arvo,
