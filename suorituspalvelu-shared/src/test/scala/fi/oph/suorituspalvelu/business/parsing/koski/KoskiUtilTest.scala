@@ -99,9 +99,9 @@ class KoskiUtilTest {
 
     Assertions.assertEquals(Seq(
       // ensimmäisen autorisaation loppu on toisen alku koska menevät limittäin
-      LahtokouluAuthorization(lahtokoulu1.oppilaitosOid, lahtokoulu1.suorituksenAlku, Optional.of(lahtokoulu2.suorituksenAlku), lahtokoulu1.suoritusTyyppi.toString),
+      LahtokouluAuthorization(lahtokoulu1.oppilaitosOid, lahtokoulu1.suorituksenAlku, Optional.of(lahtokoulu2.suorituksenAlku), Some("9A"), lahtokoulu1.suoritusTyyppi.toString),
       // toisen autorisaation loppu on seuraavan vuoden tammikuun loppu (ei-inklusiivinen)
-      LahtokouluAuthorization(lahtokoulu2.oppilaitosOid, lahtokoulu2.suorituksenAlku, Optional.of(LocalDate.parse("2026-02-01")), lahtokoulu2.suoritusTyyppi.toString)
+      LahtokouluAuthorization(lahtokoulu2.oppilaitosOid, lahtokoulu2.suorituksenAlku, Optional.of(LocalDate.parse("2026-02-01")), Some("9A"), lahtokoulu2.suoritusTyyppi.toString)
     ), KoskiUtil.luoLahtokouluAuthorizations(Seq(
       // varmistetaan ettei lähdedatan järjestys merkitse
       lahtokoulu2,

@@ -193,6 +193,8 @@ case class LahtokouluAuthorization(
   @(Schema @field)(description = "Loppupäivämärää (ei-inklusiivinen)", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty loppuPaivamaara: Optional[LocalDate],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty luokka: Option[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tyyppi: String
 )
 
