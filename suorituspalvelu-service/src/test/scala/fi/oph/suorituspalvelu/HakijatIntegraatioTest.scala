@@ -9,10 +9,10 @@ import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID}
-import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse, LahtokoulutFailureResponse, LahtokoulutSuccessResponse, AvainarvotFailureResponse, AvainarvotSuccessResponse}
+import fi.oph.suorituspalvelu.resource.api.{AvainarvotFailureResponse, AvainarvotSuccessResponse, LahettavatHenkilo, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatSuccessResponse, LahtokoulutFailureResponse, LahtokoulutSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
-import fi.oph.suorituspalvelu.service.LahtokoulutService
+import fi.oph.suorituspalvelu.service.{AvainArvoMetadata, CombinedAvainArvoContainer, ValintaData, ValintaDataService}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
@@ -337,10 +337,10 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     ), auditLogEntry.target)
 }
 
-class LahtokoulutIntegraatioMockServiceTest extends BaseIntegraatioTesti {
+class AvainarvotIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
-  val lahtokoulutService: LahtokoulutService = null
+  val valintaDataService: ValintaDataService = null
 
   /*
    * Integraatiotestit lomakkeen tietojen haulle
@@ -374,10 +374,25 @@ class LahtokoulutIntegraatioMockServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AvainarvotFailureResponse(java.util.Set.of(Validator.VALIDATION_HAKEMUSOID_EI_VALIDI +  "Tämä ei ole validi oid")),
       objectMapper.readValue(result1.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[AvainarvotFailureResponse]))
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
+  @Test def testHaeAvainarvotNotFound(): Unit =
+    // mockataan virhe
+    Mockito.when(valintaDataService.getValintaData(ESIMERKKI_HAKEMUS_OID)).thenReturn(Left("Ei löydy"))
+
+    // haetaan virheellisillä parametreillä - virheellinen henkilöOid
+    val result1 = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.HAKEMUKSET_AVAINARVOT_PATH
+          .replace(ApiConstants.HAKEMUKSET_PARAM_PLACEHOLDER, ESIMERKKI_HAKEMUS_OID)))
+      .andExpect(status().isNotFound).andReturn()
+
+    // virhe on kuten pitää
+    Assertions.assertEquals(AvainarvotFailureResponse(java.util.Set.of("Ei löydy")),
+      objectMapper.readValue(result1.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[AvainarvotFailureResponse]))
+
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeAvainarvotAllowed(): Unit =
     // mockataan avainarvot
-    Mockito.when(lahtokoulutService.haeAvainarvot(ESIMERKKI_HAKEMUS_OID)).thenReturn(Map("avain" -> "arvo"))
+    Mockito.when(valintaDataService.getValintaData(ESIMERKKI_HAKEMUS_OID)).thenReturn(Right(ValintaData(ESIMERKKI_OPPIJANUMERO, Seq(CombinedAvainArvoContainer("avain", "arvo", AvainArvoMetadata(Seq.empty, None, None, false))), None, Seq.empty, "", "")))
 
     // haetaan lomakkeen tiedot
     val result = mvc.perform(MockMvcRequestBuilders

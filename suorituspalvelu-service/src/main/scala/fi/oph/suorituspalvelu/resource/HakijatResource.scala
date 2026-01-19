@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
 import fi.oph.suorituspalvelu.resource.api.{LahettavatHenkilo, LahettavatHenkilotFailureResponse, LahettavatHenkilotResponse, LahettavatHenkilotSuccessResponse, LahettavatLuokatFailureResponse, LahettavatLuokatResponse, LahettavatLuokatSuccessResponse, LahtokouluAuthorization, LahtokoulutFailureResponse, LahtokoulutResponse, LahtokoulutSuccessResponse, AvainarvotFailureResponse, AvainarvotResponse, AvainarvotSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
-import fi.oph.suorituspalvelu.service.LahtokoulutService
+import fi.oph.suorituspalvelu.service.{LahtokoulutService, ValintaDataService}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.validation.Validator
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
@@ -23,15 +23,17 @@ import scala.jdk.OptionConverters.*
 @RequestMapping(path = Array(""))
 @RestController
 @Tag(
-  name = "Lähtökoulut",
+  name = "Hakijat",
   description = "Hakemuspalvelun tarpeeseen rakennettuja rajapintoja, joiden avulla voidaan rajata hakemuspalvelussa 2. " +
-    "asteen hakijoihin kohdistuvia hakuja ja tarkastaakäyttöoikeuksia. Vain rekisterinpitäjillä ja palvelukäyttäjillä on " +
-    "pääsy näihin rajapintoihin.")
-class LahtokoulutResource {
+    "asteen hakijoihin kohdistuvia hakuja, tarkastaa käyttöoikeuksia, ja hakea valintalaskennassa käytettäviä tietoja. " +
+    "Vain rekisterinpitäjillä ja palvelukäyttäjillä on pääsy näihin rajapintoihin.")
+class HakijatResource {
 
-  val LOG = LoggerFactory.getLogger(classOf[LahtokoulutResource])
+  val LOG = LoggerFactory.getLogger(classOf[HakijatResource])
 
   @Autowired var lahtokoulutService: LahtokoulutService = null
+
+  @Autowired var valintaDataService: ValintaDataService = null
 
   @GetMapping(
     path = Array(LAHETTAVAT_LUOKAT_PATH),
@@ -236,7 +238,10 @@ class LahtokoulutResource {
               val user = AuditLog.getUser(request)
               AuditLog.log(user, Map(HAKEMUKSET_HAKEMUS_PARAM_NAME -> hakemusOid), AuditOperation.HaeAvainarvot, None)
               LOG.info(s"Haetaan avainarvotiedot hakemukselle $hakemusOid")
-              ResponseEntity.status(HttpStatus.OK).body(AvainarvotSuccessResponse(lahtokoulutService.haeAvainarvot(hakemusOid).asJava))
+              valintaDataService.getValintaData(hakemusOid).fold(
+                virhe => ResponseEntity.status(HttpStatus.NOT_FOUND).body(AvainarvotFailureResponse(Set(virhe).asJava)),
+                valintaData => ResponseEntity.status(HttpStatus.OK).body(AvainarvotSuccessResponse(valintaData.kaikkiAvainArvotFull().map(aa => aa.avain -> aa.arvo).toMap.asJava))
+              )
             catch
               case e: Exception =>
                 LOG.error(s"Avainarvotietojen haku hakemukselle $hakemusOid epäonnistui", e)

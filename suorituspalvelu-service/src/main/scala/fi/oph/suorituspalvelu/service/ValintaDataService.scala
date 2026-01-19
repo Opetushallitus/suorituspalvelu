@@ -164,18 +164,21 @@ class ValintaDataService {
     Await.result(valintaDatat, 5.minutes)
   }
 
-  def getValintaData(hakemusOid: String): ValintaData = {
+  def getValintaData(hakemusOid: String):  Either[String, ValintaData] = {
     val r = fetchValintalaskentaHakemukset(None, Set(hakemusOid), true).map(hakemukset => {
       val hakemus = hakemukset.headOption match {
-        case Some(hakemus) => hakemus
-        case None => throw new RuntimeException(s"Hakemusta $hakemusOid ei löytynyt!")
+        case Some(hakemus) => Some(hakemus)
+        case None => None
       }
-      val haku = tarjontaIntegration.getHaku(hakemus.hakuOid) match {
-        case Some(haku) if haku.isToisenAsteenHaku() => haku
-        case Some(haku) => throw new RuntimeException(s"Haku ${hakemus.hakuOid} ei ole toisen asteen haku!")
-        case None => throw new RuntimeException(s"Hakua oidilla ${hakemus.hakuOid} ei löytynyt!")
+      val haku = hakemus.flatMap(h => tarjontaIntegration.getHaku(h.hakuOid) match {
+        case Some(haku) => Some(haku)
+        case None => None
+      })
+      (hakemus, haku) match {
+        case (Some(hakemus), Some(haku)) => Right(doAvainArvoConversions(None, haku, Some(hakemus)))
+        case (None, _) => Left(s"Hakemusta ei löytynyt tunnisteella $hakemusOid")
+        case (Some(hakemus), None) => Left(s"Hakua ei löytynyt tunnisteella ${hakemus.hakuOid}")
       }
-      doAvainArvoConversions(None, haku, Some(hakemus))
     })
     Await.result(r, 1.minute)
   }
