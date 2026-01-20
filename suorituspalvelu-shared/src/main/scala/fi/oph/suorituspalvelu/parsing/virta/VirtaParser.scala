@@ -28,6 +28,8 @@ case class LukukausiIlmoittautuminen(IlmoittautumisPvm: LocalDate, opiskelijaAva
 
 case class Organisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDecimal])
 
+case class MuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
+
 @JsonDeserialize(classOf[ArvosanaDeserializer])
 case class Arvosana(arvosana: String, asteikko: String)
 
@@ -94,11 +96,30 @@ class NimiDeserializer extends JsonDeserializer[Nimi] {
 
 class ArvosanaDeserializer extends JsonDeserializer[Arvosana] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): Arvosana =
-    val tuple = p.readValueAs(classOf[Map[String, String]]).head
-    if("EiKaytossa".equals(tuple._1))
-      null
-    else
-      Arvosana(tuple._2, tuple._1)
+    val (arvosanaTagName, arvosanaContent) = p.readValueAs(classOf[Map[String, Any]]).head
+    arvosanaTagName match {
+      case "EiKaytossa" => null
+      case "Muu" =>
+        val mapper = p.getCodec.asInstanceOf[ObjectMapper]
+        val contentMap = arvosanaContent.asInstanceOf[Map[String, Any]]
+        val asteikkoMap = contentMap("Asteikko").asInstanceOf[Map[String, Any]]
+        val koodi = contentMap("Koodi").asInstanceOf[String]
+        val asteikkoNimi = asteikkoMap("Nimi").asInstanceOf[String]
+
+        val asteikkoArvosanat = asteikkoMap("AsteikkoArvosana") match {
+          case list: List[_] =>
+            list.map(item => mapper.convertValue(item, classOf[MuuAsteikkoArvosana]))
+          case single: Map[_, _] =>
+            Seq(mapper.convertValue(single, classOf[MuuAsteikkoArvosana]))
+        }
+
+        val matchingArvosana = asteikkoArvosanat.find(_.avain == koodi).map(_.Nimi)
+        matchingArvosana match {
+          case Some(arvosanaNimi) => Arvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
+          case None => null
+        }
+      case _ => Arvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = arvosanaTagName)
+    }
 }
 
 object VirtaParser {
