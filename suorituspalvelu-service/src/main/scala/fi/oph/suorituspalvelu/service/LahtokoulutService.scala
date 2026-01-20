@@ -31,7 +31,7 @@ class LahtokoulutService {
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
   @Autowired val onrIntegration: OnrIntegration = null
-  
+
   val ONR_TIMEOUT = 10.seconds
   
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {

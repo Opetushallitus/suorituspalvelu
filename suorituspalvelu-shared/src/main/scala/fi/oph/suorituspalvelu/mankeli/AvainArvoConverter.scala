@@ -378,7 +378,7 @@ object AvainArvoConverter {
     val suoritusSelite = (tuoreinRiittava, vstOpistovuodet) match {
       case (tuorein, _) if tuorein.isDefined =>
         Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
-      case (_, vstOpistovuodet) if vstOpistovuodet.nonEmpty =>
+      case (_, vstOpistovuodet) if vstOpistovuodet.exists(_.hyvaksyttyLaajuus.nonEmpty) =>
         val korkeinLaajuus: Laajuus = vstOpistovuodet.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Opistovuosi-suoritusta. Korkein löytynyt laajuus: " +
           s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")

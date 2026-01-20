@@ -164,6 +164,25 @@ class ValintaDataService {
     Await.result(valintaDatat, 5.minutes)
   }
 
+  def getValintaData(hakemusOid: String):  Either[String, ValintaData] = {
+    val r = fetchValintalaskentaHakemukset(None, Set(hakemusOid), true).map(hakemukset => {
+      val hakemus = hakemukset.headOption match {
+        case Some(hakemus) => Some(hakemus)
+        case None => None
+      }
+      val haku = hakemus.flatMap(h => tarjontaIntegration.getHaku(h.hakuOid) match {
+        case Some(haku) => Some(haku)
+        case None => None
+      })
+      (hakemus, haku) match {
+        case (Some(hakemus), Some(haku)) => Right(doAvainArvoConversions(None, haku, Some(hakemus)))
+        case (None, _) => Left(s"Hakemusta ei löytynyt tunnisteella $hakemusOid")
+        case (Some(hakemus), None) => Left(s"Hakua ei löytynyt tunnisteella ${hakemus.hakuOid}")
+      }
+    })
+    Await.result(r, 1.minute)
+  }
+
   def getValintaData(personOid: String, hakuOid: String): ValintaData = {
     LOG.info(s"Haetaan UI:n käyttöön avain-arvot, henkilö $personOid, haku $hakuOid")
     val haku = tarjontaIntegration.getHaku(hakuOid) match {
