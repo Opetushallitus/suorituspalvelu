@@ -60,8 +60,11 @@ object KoskiToSuoritusConverter {
       .toList
   }
 
-  def isMitatoitu(tila: KoskiKoodi): Boolean =
-    tila.koodiarvo == "mitatoity"
+  def isMitatoitu(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean =
+    // Opiskeluoikeus on mitätöity jos se on milloinkaan ollut mitätöity. Tämä johtuu siitä että
+    // KOSKI-datassa on opiskeluoikeuksia jotka on laitettu alkamaan tulevaisuudessa ja sitten mitätöity
+    // nykyhetkeen.
+    opiskeluoikeus.tila.exists(tila => tila.opiskeluoikeusjaksot.exists(jakso => jakso.tila.koodiarvo=="mitatoity"))
 
   def parseTila(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: Option[KoskiSuoritus]): Option[KoskiKoodi] =
     if(suoritus.isDefined && suoritus.get.vahvistus.isDefined)
@@ -616,7 +619,7 @@ object KoskiToSuoritusConverter {
 
   def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[KoskiOpiskeluoikeus], koodistoProvider: KoodistoProvider): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] =
     opiskeluoikeudet.flatMap {
-      case opiskeluoikeus if isMitatoitu(parseTila(opiskeluoikeus, None).get) => None
+      case opiskeluoikeus if isMitatoitu(opiskeluoikeus) => None
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         Some(PerusopetuksenOpiskeluoikeus(
           UUID.randomUUID(),

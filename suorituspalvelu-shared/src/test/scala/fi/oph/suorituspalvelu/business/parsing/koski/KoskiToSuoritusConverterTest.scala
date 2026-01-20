@@ -1,13 +1,15 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot.KantaEntiteetit.{AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS, PERUSOPETUKSEN_OPISKELUOIKEUS}
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, KoskiKoulutusModuuli, KoskiOpiskeluoikeus, KoskiOsaSuoritus, KoskiSuoritus}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
+
+import java.time.LocalDate
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -146,5 +148,29 @@ class KoskiToSuoritusConverterTest {
 
     // Case 11: Ei osasuorituksia
     Assertions.assertEquals(None, KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus))
+  }
+
+  @Test def testIsMitatoity(): Unit = {
+    val opiskeluoikeus = KoskiOpiskeluoikeus(
+      "1.2.3",
+      None,
+      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTila(List(
+        KoskiOpiskeluoikeusJakso(
+          LocalDate.parse("2025-01-01"),
+          KoskiKoodi("mitatoity", "koodisto", None, Kielistetty(None, None, None), None)
+        ),
+        KoskiOpiskeluoikeusJakso(
+          LocalDate.parse("2025-05-05"),
+          KoskiKoodi("läsnä", "koodisto", None, Kielistetty(None, None, None), None)
+        )))),
+      Set.empty,
+      None
+    )
+
+    // Opiskeluoikeus on mitätöity jos se on milloinkaan ollut mitätöity. Tämä johtuu siitä että
+    // KOSKI-datassa on opiskeluoikeuksia jotka on laitettu alkamaan tulevaisuudessa ja sitten mitätöity
+    // nykyhetkeen.
+    Assertions.assertTrue(KoskiToSuoritusConverter.isMitatoitu(opiskeluoikeus))
   }
 }
