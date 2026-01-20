@@ -851,6 +851,70 @@ class KoskiParsingTest {
 
     Assertions.assertEquals(Set(Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), Some("9A"), Some(VALMIS), Some(true), VUOSILUOKKA_9)), oppimaara.lahtokoulut)
 
+  @Test def testPerusopetuksenOppimaaranLahtokoulutEiAlkamispaivaa(): Unit =
+    val oppimaara = getFirstSuoritusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2021-06-02",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "9",
+        |                "nimi": {
+        |                  "fi": "9. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2021-06-01"
+        |            },
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+
+    Assertions.assertEquals(Set.empty, oppimaara.lahtokoulut)
+
   @Test def testNuortenPerusopetuksenOppiaineenOppimaara(): Unit =
     val oppimaara = getFirstSuoritusFromJson(
       """
