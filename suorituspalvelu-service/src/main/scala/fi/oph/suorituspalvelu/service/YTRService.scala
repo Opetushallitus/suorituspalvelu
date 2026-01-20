@@ -36,7 +36,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
       LOG.info(s"Ytr-dataa ei löytynyt henkilölle ${ytrResult.personOid}")
       SyncResultForHenkilo(ytrResult.personOid, None, None)
     else
-      LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}: ${ytrResult.resultJson.getOrElse("no data")}")
+      LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}")
       try {
         val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), fetchedAt)
         versio.foreach(v => {

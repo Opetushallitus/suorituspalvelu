@@ -102,7 +102,6 @@ class KoskiClient(username: String, password: String, environmentBaseUrl: String
       .setHeader("Content-Type", "application/json")
       .setBody(payloadString)
       .build()
-    //LOG.info(s"About to execute request $request")
     executeRequest(request)
   }
 
