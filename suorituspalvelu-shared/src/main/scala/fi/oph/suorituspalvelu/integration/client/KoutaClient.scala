@@ -16,6 +16,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 //aikaleimat muodossa "2022-02-22T08:00:00"
 case class KoutaHakuaika(alkaa: String, paattyy: Option[String])
 
+case class KoutaHakukohde(oid: String,
+                          voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean])
+
 case class KoutaHaku(oid: String,
                      tila: String,
                      nimi: Map[String, String],
@@ -55,6 +58,14 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
   mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+  def fetchHakukohde(hakukohdeOid: String): Future[KoutaHakukohde] = {
+    val url = environmentBaseUrl + "/kouta-internal/hakukohde/" + hakukohdeOid
+    val hakukohdeTulosF: Future[Option[KoutaHakukohde]] = doGet(url).map(resultOpt => resultOpt.map(result => {
+      mapper.readValue(result, classOf[KoutaHakukohde])
+    }))
+    hakukohdeTulosF.map(_.getOrElse(throw new RuntimeException(s"Hakukohdetta $hakukohdeOid ei löytynyt!")))
+  }
 
   def fetchHaut(): Future[Map[String, KoutaHaku]] = {
     val url = environmentBaseUrl + "/kouta-internal/haku/search"
