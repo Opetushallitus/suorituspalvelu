@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.integration.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.asynchttpclient.Dsl.asyncHttpClient
+import org.asynchttpclient.Dsl.{asyncHttpClient, get}
 import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Request, Response}
 import org.slf4j.LoggerFactory
 
@@ -91,7 +91,7 @@ class YtrClient(username: String, password: String, baseUrl: String) {
       .setHeader("Authorization", encodeBasicAuth(username, password))
       .setHeader("Content-Type", "application/json")
       .build()
-    LOG.info(s"About to execute request $request")
+    LOG.info(s"About to execute request ${request.getUrl}")
     executeRequestAsByteArray(request)
   }
 

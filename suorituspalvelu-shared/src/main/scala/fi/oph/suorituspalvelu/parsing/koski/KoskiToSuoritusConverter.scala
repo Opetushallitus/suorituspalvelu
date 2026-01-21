@@ -60,8 +60,11 @@ object KoskiToSuoritusConverter {
       .toList
   }
 
-  def isMitatoitu(tila: KoskiKoodi): Boolean =
-    tila.koodiarvo == "mitatoity"
+  def isMitatoitu(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean =
+    // Opiskeluoikeus on mitätöity jos se on milloinkaan ollut mitätöity. Tämä johtuu siitä että
+    // KOSKI-datassa on opiskeluoikeuksia jotka on laitettu alkamaan tulevaisuudessa ja sitten mitätöity
+    // nykyhetkeen.
+    opiskeluoikeus.tila.exists(tila => tila.opiskeluoikeusjaksot.exists(jakso => jakso.tila.koodiarvo=="mitatoity"))
 
   def parseTila(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: Option[KoskiSuoritus]): Option[KoskiKoodi] =
     if(suoritus.isDefined && suoritus.get.vahvistus.isDefined)
@@ -475,12 +478,16 @@ object KoskiToSuoritusConverter {
       vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       aineet = aineet,
       lahtokoulut = opiskeluoikeus.suoritukset
-        .filter(s => s.tyyppi.koodiarvo==SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA)
-        .map(s => {
-          val alkamispaiva = LocalDate.parse(s.alkamispäivä.get)
-          val vahvistuspaiva = s.vahvistus.map(v => LocalDate.parse(v.`päivä`))
+        .filter(s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA).flatMap(s => {
           val luokkaAste = s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).getOrElse(dummy())
-          Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), Some("9A"), supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste"))
+          s.alkamispäivä match
+            // Luodaan lähtökoulu vain jos alkamispäivä määritelty. KOSKI-tiimin mukaan alkamispäivät määritelty ainakin
+            // viimeisen kuuden vuoden ajalta.
+            case Some(pvm) if Set("7", "8", "9").contains(luokkaAste)=>
+              val alkamispaiva = LocalDate.parse(pvm)
+              val vahvistuspaiva = s.vahvistus.map(v => LocalDate.parse(v.`päivä`))
+              Some(Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), Some("9A"), supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste")))
+            case default => None
         }),
       syotetty = false,
       vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
@@ -612,7 +619,7 @@ object KoskiToSuoritusConverter {
 
   def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[KoskiOpiskeluoikeus], koodistoProvider: KoodistoProvider): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] =
     opiskeluoikeudet.flatMap {
-      case opiskeluoikeus if isMitatoitu(parseTila(opiskeluoikeus, None).get) => None
+      case opiskeluoikeus if isMitatoitu(opiskeluoikeus) => None
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         Some(PerusopetuksenOpiskeluoikeus(
           UUID.randomUUID(),
