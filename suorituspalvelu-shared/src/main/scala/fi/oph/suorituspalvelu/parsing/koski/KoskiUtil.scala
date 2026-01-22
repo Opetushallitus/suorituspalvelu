@@ -66,7 +66,7 @@ object KoskiUtil {
             case (None, None) => None
             case (Some(currLoppu), None) => Some(LocalDate.parse(s"${currLoppu.getYear + 1}-02-01")) // loppupäivä ei-inklusiivinen
             case (_, Some(nextAlku)) => Some(nextAlku)
-        LahtokouluAuthorization(curr.oppilaitosOid, curr.suorituksenAlku, loppuPaivamaara.toJava, curr.suoritusTyyppi.toString)
+        LahtokouluAuthorization(curr.oppilaitosOid, curr.suorituksenAlku, loppuPaivamaara.toJava, curr.luokka, curr.suoritusTyyppi.toString)
       })
     }
 
