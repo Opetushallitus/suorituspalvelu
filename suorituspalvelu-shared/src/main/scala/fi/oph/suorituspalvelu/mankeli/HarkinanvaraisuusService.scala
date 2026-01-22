@@ -30,7 +30,7 @@ case class HakemuksenHarkinnanvaraisuus(hakemusOid: String,
                                         henkiloOid: String,
                                         hakutoiveet: List[HakutoiveenHarkinnanvaraisuus])
 
-object HarkinnanvaraisuusDeducer {
+object HarkinnanvaraisuusPaattely {
 
   //Tämän jälkeen suoritettuja ma/ai yksilöllistämisiä ei enää huomioida harkinnanvaraisuuspäättelyssä.
   // Oppiaineen oppimäärän suoritukset (korotukset) kuitenkin huomioidaan myös tämän jälkeen.
@@ -97,7 +97,7 @@ object HarkinnanvaraisuusDeducer {
           HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI
         case (true, _, Some(AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS), _) => HarkinnanvaraisuudenSyy.ATARU_ULKOMAILLA_OPISKELTU
         case (true, _, Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), _) => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
-        case (true, _, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
+        case (true, _, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA //Todo, pitäisikö tässä palauttaa SURE_EI_PAATTOTODISTUSTA? Tilanne siis, että Supassa ei perusopetusta, eikä hakemuksellakaan ilmoitettu.
         case (true, _, _, _) if ilmoitettuVanhaPeruskoulu && isAtaruIlmoitettuYksMatAi => HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI
         case (true, _, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
           harkinnanvaraisuusHakukohteelleHakemukselta match {
@@ -105,6 +105,7 @@ object HarkinnanvaraisuusDeducer {
             case "1" => HarkinnanvaraisuudenSyy.ATARU_SOSIAALISET_SYYT
             case "2" => HarkinnanvaraisuudenSyy.ATARU_KOULUTODISTUSTEN_VERTAILUVAIKEUDET
             case "3" => HarkinnanvaraisuudenSyy.ATARU_RIITTAMATON_TUTKINTOKIELEN_TAITO
+            case default => throw new RuntimeException(s"Tuntematon arvo hakemukselta hakukohteen ${hakutoive.hakukohdeOid} harkinnanvaraisuudeksi: $default")
           }
         case _ => HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN
       }
@@ -139,6 +140,6 @@ class HarkinnanvaraisuusService {
     val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(hakemus.hakuOid)
     val suorituksetKannasta = kantaOperaatiot.haeSuoritukset(hakemusOid).flatMap(_._2).toSeq
 
-    val hark = HarkinnanvaraisuusDeducer.syncHarkinnanvaraisuusForHakemus(hakemus, suorituksetKannasta, ohjausparametrit, hakemuksenHakukohteetMap)
+    val hark = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(hakemus, suorituksetKannasta, ohjausparametrit, hakemuksenHakukohteetMap)
   }
 }
