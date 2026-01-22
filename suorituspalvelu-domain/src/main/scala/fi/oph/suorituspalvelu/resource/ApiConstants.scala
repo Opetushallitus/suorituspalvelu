@@ -60,7 +60,7 @@ object ApiConstants {
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
   final val LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER              = "{" + LAHETTAVAT_VUOSI_PARAM_NAME + "}"
-  final val LAHETTAVAT_PATH                                 = VERSIONED_API_PREFIX + "/lahettavat/" + LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER + "/" + LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER
+  final val LAHETTAVAT_PATH                                 = VERSIONED_API_PREFIX + "/oppilaitokset/" + LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER + "/vuosi/" + LAHETTAVAT_VUOSI_PARAM_PLACEHOLDER
   final val LAHETTAVAT_ESIMERKKI_VIRHE                      = "oppilaitosOid ei ole validi oid"
   final val LAHETTAVAT_500_VIRHE                            = "Tietojen haku epäonnistui"
   final val LAHETTAVAT_HAKU_EPÄONNISTUI                     = "Rajaimien tietojen haku epäonnistui"
