@@ -119,7 +119,6 @@ class BaseIntegraatioTesti {
       sqlu"""
              DELETE FROM task_status;
              DELETE FROM scheduled_tasks;
-             DELETE FROM opiskeluoikeudet;
              DELETE FROM versiot;
           """), 5.seconds)
 
