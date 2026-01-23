@@ -67,7 +67,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     LOG.info(s"Persistoidaan Virta-data henkilölle $oppijaNumero")
 
     val kantaOperaatiot = KantaOperaatiot(database)
-    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.VIRTA, hetulessXmls, fetchedAt)
+    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.VIRTA, Seq.empty, hetulessXmls, fetchedAt)
 
     versio.foreach(v => {
       LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")

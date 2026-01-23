@@ -14,9 +14,7 @@ CREATE TABLE IF NOT EXISTS versiot (
     data_json                   JSONB[],
     data_xml                    XML[],
     opiskeluoikeudet            JSONB,
-    EXCLUDE USING gist (henkilo_oid WITH =, suoritusjoukko WITH =, voimassaolo WITH &&),
-    CHECK ((suoritusjoukko='VIRTA' AND data_json IS NULL       AND data_xml IS NOT NULL) OR
-                                      (data_json IS NOT NULL   AND data_xml IS NULL))
+    EXCLUDE USING gist (henkilo_oid WITH =, suoritusjoukko WITH =, voimassaolo WITH &&)
 );
 
 CREATE INDEX IF NOT EXISTS idx_versiot_opiskeluoikeudet ON versiot USING GIN (opiskeluoikeudet jsonb_path_ops);
