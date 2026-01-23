@@ -158,7 +158,7 @@ class HarkinnanvaraisuusPaattelyTest {
     val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
 
     val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -186,7 +186,7 @@ class HarkinnanvaraisuusPaattelyTest {
     val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
 
     val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -210,7 +210,7 @@ class HarkinnanvaraisuusPaattelyTest {
     val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
 
     val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -230,7 +230,7 @@ class HarkinnanvaraisuusPaattelyTest {
    val ohjausparametritPastDeadline = DEFAULT_OHJAUSPARAMETRIT.copy(suoritustenVahvistuspaiva = Some(DateParam(pastInstant.toEpochMilli)))
 
     val result2 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus, opiskeluoikeudet2, ohjausparametritPastDeadline, hakukohteet
+      hakemus, opiskeluoikeudet2, ohjausparametritPastDeadline.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -257,7 +257,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -286,7 +286,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result1 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus1, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus1, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA, result1.hakutoiveet.find(_.hakukohdeOid.equals(HAKUKOHDE_OID_1)).get.harkinnanvaraisuudenSyy)
@@ -296,7 +296,7 @@ class HarkinnanvaraisuusPaattelyTest {
     val hakemus2 = BASE_HAKEMUS
 
     val result2 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus2, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus2, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA, result1.hakutoiveet.find(_.hakukohdeOid.equals(HAKUKOHDE_OID_1)).get.harkinnanvaraisuudenSyy)
@@ -324,7 +324,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -357,7 +357,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result1 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus1, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus1, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -375,7 +375,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result2 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus2, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus2, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
     Assertions.assertEquals(
       HarkinnanvaraisuudenSyy.ATARU_SOSIAALISET_SYYT,
@@ -392,7 +392,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result3 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus3, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus3, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(
@@ -410,7 +410,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
 
     val result4 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-      hakemus4, opiskeluoikeudet, ohjausparametrit, hakukohteet
+      hakemus4, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
     Assertions.assertEquals(

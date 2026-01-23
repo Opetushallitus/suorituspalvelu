@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, ValintalaskentaHakutoive}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, HarkinnanvaraisuusService, ValintalaskentaHakutoive}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import fi.oph.suorituspalvelu.resource.ui.YliajonMuutosUI
 import org.slf4j.LoggerFactory
@@ -47,6 +47,8 @@ class ValintaDataService {
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
 
   @Autowired val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired val harkinnanvaraisuusService: HarkinnanvaraisuusService = null
 
   val LOG = LoggerFactory.getLogger(classOf[ValintaDataService])
 
@@ -105,18 +107,20 @@ class ValintaDataService {
 
     val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(haku.oid)
     val suoritustenAjanhetki = ohjausparametrit.valintalaskentapaiva.map(vlp => Instant.ofEpochMilli(vlp.date)).getOrElse(Instant.now())
-    //Todo, onko parempi defaultata tulevaisuuteen nykyhetken sijaan, jos vaikka halutaan jossain tilanteessa huomioida tulevaisuuteen merkattuja valmistumisia?
-    val vahvistettuViimeistaan = ohjausparametrit.suoritustenVahvistuspaiva
-      .map(svp => Instant.ofEpochMilli(svp.date)
-        .atZone(ZoneId.of("Europe/Helsinki"))
-        .toLocalDate).getOrElse(LocalDate.now())
 
     val kaikkiOpiskeluoikeudet = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, suoritustenAjanhetki)
-    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan, haku)
+
+    val harkinnanvaraisuudet =
+      if (hakemus.isDefined && haku.isToisenAsteenHaku())
+        Some(harkinnanvaraisuusService.getHakemuksenHarkinnanvaraisuudet(hakemus.get, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate))
+      else
+        None
+
+    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, haku, harkinnanvaraisuudet)
 
     val yliajot = fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResults, yliajot)
-    ValintaData(usePersonOid, combinedWithYliajot.toSeq, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan.toString, LocalDate.now().toString)
+    ValintaData(usePersonOid, combinedWithYliajot.toSeq, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.suoritustenVahvistuspaiva.toString, LocalDate.now().toString)
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
