@@ -413,7 +413,7 @@ object KoskiToSuoritusConverter {
       suoritusKieli = suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       aloitusPaivamaara = parseAloitus(opiskeluoikeus),
       vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      oppiaineet = Set(
+      aineet = Set(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
