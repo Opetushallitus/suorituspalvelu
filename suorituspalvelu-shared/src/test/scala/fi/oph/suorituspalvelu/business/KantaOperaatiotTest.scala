@@ -585,7 +585,21 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, vanhaOppilaitosOid, valmistumisVuosi, None, false, false, Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, uusiOppilaitosOid, valmistumisVuosi, None, false, false, Set(VUOSILUOKKA_9)))
 
-  @Test def haeLahtokoulut(): Unit = {
+  @Test def haeLahtokoulutRoundTrip(): Unit = {
+    val henkiloNumero = "1.2.246.562.24.99988877766"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val valmistumisVuosi = 2025
+
+    // tallennetaan versiot ja lähtökoulut
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now())
+    val lahtokoulu = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(lahtokoulu))
+
+    // luettu vastaa tallennettua
+    Assertions.assertEquals(Set(lahtokoulu), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
+  }
+
+  @Test def haeLahtokoulutPerHenkilö(): Unit = {
     val henkiloNumero1 = "1.2.246.562.24.99988877766"
     val henkiloNumero2 = "1.2.246.562.24.99988877767"
     val oppilaitosOid1 = "1.2.246.562.10.95136889433"
@@ -602,7 +616,31 @@ class KantaOperaatiotTest {
 
     // luettu vastaa tallennettua
     Assertions.assertEquals(Set(lahtokoulu1), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero1)))
+    Assertions.assertEquals(Set(lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero2)))
     Assertions.assertEquals(Set(lahtokoulu1, lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero1, henkiloNumero2)))
+  }
+
+  @Test def haeLahtokoulutVainViimeisimmaltaVersiolta(): Unit = {
+    val henkiloNumero = "1.2.246.562.24.99988877766"
+    val oppilaitosOid1 = "1.2.246.562.10.95136889433"
+    val uusiOppilaitos2 = "1.2.246.562.10.95136889434"
+    val valmistumisVuosi = 2025
+
+    // tallennetaan ensimmäinen versio, lähtökoulu täsmää
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq("{\"avain\": \"arvo1\"}"), Seq.empty, Instant.now())
+    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1))
+    Assertions.assertEquals(Set(lahtokoulu1), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
+
+    // tallennetaan toinen versio, lähtökoulu muuttuu
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq("{\"avain\": \"arvo2\"}"), Seq.empty, Instant.now())
+    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(lahtokoulu2))
+    Assertions.assertEquals(Set(lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
+
+    // vanhan version parserointi uudelleen ei muuta lähtökouluja
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1))
+    Assertions.assertEquals(Set(lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
   }
 
   @Test def testYliajoRoundtrip(): Unit = {
@@ -921,7 +959,6 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(List(Job(haettuTaskId, haettuTaskName, 0.5, lastUpdated), Job(muuTaskId, muuTaskName, 0.5, lastUpdated)), this.kantaOperaatiot.getLastJobStatuses(None, None, 10))
 
   }
-
 
   @Test
   def testHaeSuorituksetAjanhetkella(): Unit = {

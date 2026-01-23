@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS versiot (
 CREATE INDEX IF NOT EXISTS idx_versiot_opiskeluoikeudet ON versiot USING GIN (opiskeluoikeudet jsonb_path_ops);
 
 CREATE TABLE lahtokoulut (
-    versio_tunniste         UUID NOT NULL REFERENCES versiot (tunniste) ON DELETE CASCADE,
-    versio_voimassaolo      TSTZRANGE NOT NULL,
+    versio_tunniste         UUID NOT NULL REFERENCES versiot (tunniste),
     henkilo_oid             VARCHAR NOT NULL,
+    suoritusjoukko          VARCHAR NOT NULL,
     suorituksen_alku        DATE NOT NULL,
     suorituksen_loppu       DATE,
     valmistumisvuosi        INTEGER,    -- suorituksen oletettu (tai todellinen) valmistumisvuosi tarkastusnäkymää varten
@@ -33,5 +33,5 @@ CREATE TABLE lahtokoulut (
     suoritustyyppi          VARCHAR NOT NULL
 );
 
-CREATE INDEX idx_lahtokoulut_oppilaitos_vuosi_oid ON lahtokoulut (oppilaitos_oid, valmistumisvuosi) WHERE upper(versio_voimassaolo) = 'infinity'::timestamptz;
-CREATE INDEX idx_lahtokoulut_henkilo_oid ON lahtokoulut (henkilo_oid) WHERE upper(versio_voimassaolo) = 'infinity'::timestamptz;
+CREATE INDEX idx_lahtokoulut_oppilaitos_vuosi_oid ON lahtokoulut (oppilaitos_oid, valmistumisvuosi);
+CREATE INDEX idx_lahtokoulut_henkilo_oid ON lahtokoulut (henkilo_oid);
