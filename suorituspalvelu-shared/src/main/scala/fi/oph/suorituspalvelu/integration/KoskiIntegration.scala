@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, Ser
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByOppija
+import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByHenkilo
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiOpiskeluoikeus}
 import slick.jdbc.JdbcBackend
 
@@ -36,7 +36,7 @@ object KoskiIntegration {
     mapper
   }
 
-  def splitKoskiDataByOppija(input: InputStream): Iterator[(String, String)] =
+  def splitKoskiDataByHenkilo(input: InputStream): Iterator[(String, String)] =
     val jsonParser = MAPPER.getFactory().createParser(input)
     jsonParser.nextToken()
 
@@ -124,7 +124,7 @@ class KoskiIntegration {
     koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).map(fileResult => {
       LOG.info(s"Saatiin haettua KOSKI-massaluovutushaun tiedosto $fileUrl onnistuneesti")
       val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
-      val splitted = splitKoskiDataByOppija(inputStream)
+      val splitted = splitKoskiDataByHenkilo(inputStream)
       splitted.map(henkilonTiedot => {
         KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)
       })

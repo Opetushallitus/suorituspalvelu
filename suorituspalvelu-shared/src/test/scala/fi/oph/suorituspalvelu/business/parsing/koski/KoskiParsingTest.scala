@@ -25,7 +25,7 @@ class KoskiParsingTest {
       "/1_2_246_562_24_40483869857.json",
       "/1_2_246_562_24_30563266636.json"
     ).foreach(fileName => {
-      val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
+      val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName))
       splitData.foreach((oppijaOid, data) => {
         val koskiOpiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data), DUMMY_KOODISTOPROVIDER)
       })
@@ -40,14 +40,14 @@ class KoskiParsingTest {
     Assertions.assertFalse(KoskiToSuoritusConverter.isYTO("234567"))
 
   private def getFirstOpiskeluoikeusFromJson(data: String): Option[Opiskeluoikeus] =
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
     splitData.map((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
     }).next().headOption
 
   private def getFirstSuoritusFromJson(data: String): Suoritus =
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
     splitData.map((oppijaOid, data) => {
       val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
       KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER, true)
@@ -574,7 +574,7 @@ class KoskiParsingTest {
 
   @Test def testTelmaOsasuoritukset(): Unit = {
     val fileName = "/telmaosasuoritukset.json"
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
     splitData.foreach((oppijaOid, data) => {
       val koskiOpiskeluoikeudet: Seq[koski.KoskiOpiskeluoikeus] = KoskiParser.parseKoskiData(data)
       val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)

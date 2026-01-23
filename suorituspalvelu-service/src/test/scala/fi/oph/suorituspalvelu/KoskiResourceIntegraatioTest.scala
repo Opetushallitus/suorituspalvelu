@@ -78,7 +78,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_24_91423219238.json").mkString.getBytes())
 
     // mockataan KOSKI-vastaus
-    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2))))
+    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, KoskiPaivitaTiedotHenkiloillePayload(Optional.of(List(oppijaNumero).asJava))))
@@ -140,7 +140,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_24_91423219238.json").mkString.getBytes())
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid)).thenReturn(Future.successful(Set(AtaruHakemuksenHenkilotiedot("hakemusOid", Some(oppijaNumero), None))))
-    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2))))
+    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, KoskiPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
@@ -201,7 +201,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
     Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
-    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima))).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2))))
+    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima))).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima))))
@@ -264,7 +264,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
     Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
-    Mockito.when(koskiIntegration.retryKoskiResultFile(fileUrl)).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByOppija(resultData).next()._2))))
+    Mockito.when(koskiIntegration.retryKoskiResultFile(fileUrl)).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, KoskiRetryPayload(Optional.of(List(fileUrl).asJava))))

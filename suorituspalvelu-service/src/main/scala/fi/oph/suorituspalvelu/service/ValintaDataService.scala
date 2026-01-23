@@ -55,11 +55,11 @@ class ValintaDataService {
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(6))
 
   def fetchOverridesForOppijaAliases(allOidsForSinglePerson: Set[String], hakuOid: String): Set[AvainArvoYliajo] = {
-    allOidsForSinglePerson.flatMap(personOid => kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid))
+    allOidsForSinglePerson.flatMap(personOid => kantaOperaatiot.haeHenkilonYliajot(personOid, hakuOid))
   }
 
   def fetchOverridesForOppija(personOid: String, hakuOid: String): Seq[AvainArvoYliajo] = {
-    kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
+    kantaOperaatiot.haeHenkilonYliajot(personOid, hakuOid)
   }
 
   def saveOverridesForOppija(personOid: String, hakuOid: String, overrides: Seq[AvainArvoYliajo]): Unit = {
