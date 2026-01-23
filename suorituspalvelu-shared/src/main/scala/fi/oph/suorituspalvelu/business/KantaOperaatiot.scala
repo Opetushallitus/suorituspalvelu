@@ -86,7 +86,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  def isNewVersion(henkiloOid: String, suoritusJoukko: SuoritusJoukko, data: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
+  def isNewVersion(henkiloOid: String, suoritusJoukko: SuoritusJoukko, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
             SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json, data_xml
             FROM versiot
@@ -99,35 +99,34 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         if(fetchedAt.toEpochMilli<=Instant.parse(alku).toEpochMilli)
           LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska aikaisemmin tallennettu versio on uudempi.")
           false
-        else
-          suoritusJoukko match
-            case SuoritusJoukko.VIRTA =>
-              existingXmlData.length != data.length ||
-              existingXmlData.sorted.zip(data.sorted).exists((existingDataItem, dataItem) => {
-                val existingDataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(existingDataItem, classOf[Map[Any, Any]]))
-                val dataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(dataItem, classOf[Map[Any, Any]]))
-                if (JSONCompare.compareJSON(existingDataAsJson, dataAsJson, JSONCompareMode.NON_EXTENSIBLE).passed())
-                  LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
-                  false
-                else
-                  true
-              })
-            case default =>
-              existingJsonData.length != data.length ||
-              existingJsonData.sorted.zip(data.sorted).exists((existingDataItem, dataItem) => {
-                if (JSONCompare.compareJSON(existingDataItem, dataItem, JSONCompareMode.NON_EXTENSIBLE).passed())
-                  LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
-                  false
-                else
-                  true
-              })
+        else {
+          val isNewXmlData = existingXmlData.length != xmlData.length ||
+            existingXmlData.sorted.zip(xmlData.sorted).exists((existingDataItem, dataItem) => {
+              val existingDataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(existingDataItem, classOf[Map[Any, Any]]))
+              val dataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(dataItem, classOf[Map[Any, Any]]))
+              if (JSONCompare.compareJSON(existingDataAsJson, dataAsJson, JSONCompareMode.NON_EXTENSIBLE).passed())
+                LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+                false
+              else
+                true
+            })
+          val isNewJsonData = existingJsonData.length != jsonData.length ||
+            existingJsonData.sorted.zip(jsonData.sorted).exists((existingDataItem, dataItem) => {
+              if (JSONCompare.compareJSON(existingDataItem, dataItem, JSONCompareMode.NON_EXTENSIBLE).passed())
+                LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+                false
+              else
+                true
+            })
+          isNewXmlData || isNewJsonData
+        }
     })
 
-  def tallennaJarjestelmaVersio(henkiloOid: String, suoritusJoukko: SuoritusJoukko, data: Seq[String], fetchedAt: Instant): Option[VersioEntiteetti] =
+  def tallennaJarjestelmaVersio(henkiloOid: String, suoritusJoukko: SuoritusJoukko, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Instant): Option[VersioEntiteetti] =
     val insertHenkiloAction = sqlu"INSERT INTO henkilot(oid) VALUES (${henkiloOid}) ON CONFLICT DO NOTHING"
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${henkiloOid} FOR UPDATE"""
     val insertVersioIfNewDataAction = DBIO.sequence(Seq(insertHenkiloAction, lockHenkiloAction.as[Int]))
-      .flatMap(_ => isNewVersion(henkiloOid, suoritusJoukko, data, fetchedAt)).flatMap(isNewVersion => {
+      .flatMap(_ => isNewVersion(henkiloOid, suoritusJoukko, jsonData, xmlData, fetchedAt)).flatMap(isNewVersion => {
         if (!isNewVersion)
           DBIO.sequence(Seq.empty).map(_ => None)
         else
@@ -159,13 +158,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 // b) foreign key constraint toimii (pitää viitata taulussa olevaan versioon)
                 tunniste.toString
               } else edellinenVersioTunniste.get
-              suoritusJoukko match
-                case SuoritusJoukko.VIRTA => sqlu"""
-                    INSERT INTO versiot(tunniste, use_versio_tunniste, henkilo_oid, voimassaolo, suoritusjoukko, data_xml)
-                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${henkiloOid}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${data}::xml[])"""
-                case default => sqlu"""
-                    INSERT INTO versiot(tunniste, use_versio_tunniste, henkilo_oid, voimassaolo, suoritusjoukko, data_json)
-                    VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${henkiloOid}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${data}::jsonb[])"""
+              sqlu"""
+                  INSERT INTO versiot(tunniste, use_versio_tunniste, henkilo_oid, voimassaolo, suoritusjoukko, data_json, data_xml)
+                  VALUES(${tunniste.toString}::uuid, ${useVersioTunniste}::uuid, ${henkiloOid}, tstzrange(${timestamp.toString}::timestamptz, 'infinity'::timestamptz), ${suoritusJoukko.nimi}, ${jsonData}::jsonb[], ${xmlData}::xml[])"""
             })
           insertVersioAction.map(_ => Some(VersioEntiteetti(tunniste, henkiloOid, timestamp, None, suoritusJoukko)))
       })
@@ -215,7 +210,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           SELECT * FROM w_versiot""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
-  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, Seq[String]) =
+  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, Seq[String], Seq[String]) =
     Await.result(db.run(
       sql"""SELECT jsonb_build_object('tunniste', tunniste,
               'henkiloOid', henkilo_oid,
@@ -223,10 +218,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
               'suoritusJoukko', suoritusjoukko
             )::text AS versio,
-            CASE WHEN suoritusjoukko='VIRTA' THEN data_xml::text[] ELSE data_json::text[] END
+            data_json::text[],
+            data_xml::text[]
             FROM versiot
-            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String])]), DB_TIMEOUT)
-      .map((json, data) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), data)).head
+            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String], Seq[String])]), DB_TIMEOUT)
+      .map((json, jsonData, xmlData) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), jsonData, xmlData)).head
 
   def haeVersiot(suoritusJoukko: SuoritusJoukko): Seq[VersioEntiteetti] =
     Await.result(db.run(

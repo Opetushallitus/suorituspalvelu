@@ -36,7 +36,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
     versiot.zipWithIndex.foreach((versio, idx) => {
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val (_, data) = kantaOperaatiot.haeData(versio)
+          val (_, data, _) = kantaOperaatiot.haeData(versio)
           val parsed = data.flatMap(d => KoskiParser.parseKoskiData(d))
           val converted = KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
@@ -54,7 +54,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
     versiot.zipWithIndex.foreach((versio, idx) => {
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val (_, data) = kantaOperaatiot.haeData(versio)
+          val (_, _, data) = kantaOperaatiot.haeData(versio)
           val parsed = data.map(d => VirtaParser.parseVirtaData(d))
           val converted: Set[Opiskeluoikeus] = parsed.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
@@ -72,7 +72,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
     versiot.zipWithIndex.foreach((versio, idx) => {
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val (_, data) = kantaOperaatiot.haeData(versio)
+          val (_, data, _) = kantaOperaatiot.haeData(versio)
           val parsed = data.map(d => YtrParser.parseYtrData(d))
           val converted: Set[Opiskeluoikeus] = parsed.map(s => YtrToSuoritusConverter.toSuoritus(s)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
@@ -90,7 +90,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
     versiot.zipWithIndex.foreach((versio, idx) => {
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val (_, data) = kantaOperaatiot.haeData(versio)
+          val (_, data, _) = kantaOperaatiot.haeData(versio)
           val parsed = data.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppimaaranSuoritus]))
           val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
@@ -108,7 +108,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
     versiot.zipWithIndex.foreach((versio, idx) => {
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val (_, data) = kantaOperaatiot.haeData(versio)
+          val (_, data, _) = kantaOperaatiot.haeData(versio)
           val parsed = data.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer]))
           val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))

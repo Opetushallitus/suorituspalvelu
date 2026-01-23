@@ -38,7 +38,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     else
       LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}")
       try {
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), fetchedAt)
+        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, SuoritusJoukko.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), Seq.empty, fetchedAt)
         versio.foreach(v => {
           LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
           val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
