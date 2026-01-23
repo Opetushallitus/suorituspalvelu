@@ -801,7 +801,7 @@ class UIResource {
                   LOG.error(s"Yritettiin poistaa versiota ${versio.get.tunniste} joka joka ei ole käsin syötetty suoritus")
                   Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaSuoritusFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA)))))
           .flatMap(versio =>
-            LOG.info(s"Poistetaan suorituksen versio ${versio.tunniste} henkilöltä ${versio.oppijaNumero}")
+            LOG.info(s"Poistetaan suorituksen versio ${versio.tunniste} henkilöltä ${versio.henkiloOid}")
             val user = AuditLog.getUser(request)
             versio.suoritusJoukko match
               case SuoritusJoukko.SYOTETTY_PERUSOPETUS => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppimaaranSuoritus, None)

@@ -308,7 +308,7 @@ case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi, supaTila: SuoritusTi
 
 case class Koe(tunniste: UUID, koodi: Koodi, tutkintoKerta: LocalDate, arvosana: Koodi, pisteet: Option[Int])
 
-case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko)
+case class VersioEntiteetti(tunniste: UUID, henkiloOid: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko)
 
 enum KKOpiskeluoikeusTila:
   case VOIMASSA

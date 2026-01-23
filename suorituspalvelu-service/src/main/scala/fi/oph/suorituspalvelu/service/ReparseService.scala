@@ -41,7 +41,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted = KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.oppijaNumero} KOSKI-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} KOSKI-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"KOSKI-datan uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)
@@ -59,7 +59,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted: Set[Opiskeluoikeus] = parsed.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.oppijaNumero} VIRTA-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} VIRTA-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"VIRTA-datan uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)
@@ -77,7 +77,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted: Set[Opiskeluoikeus] = parsed.map(s => YtrToSuoritusConverter.toSuoritus(s)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.oppijaNumero} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"YTR-datan uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)
@@ -95,7 +95,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.oppijaNumero} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"Syotettyjen perusopetuksen oppimäärien uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)
@@ -113,7 +113,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.oppijaNumero} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"Syotettyjen perusopetuksen oppiaineen oppimäärien uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)

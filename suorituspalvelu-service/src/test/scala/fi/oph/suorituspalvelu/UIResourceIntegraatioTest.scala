@@ -1477,7 +1477,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(List(objectMapper.readValue(yliajotPayload, classOf[Map[Any, Any]])), auditLogEntry.changes)
 
     // ja yliajot tallentuvat kantaan
-    val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
+    val tallennetutYliajot = kantaOperaatiot.haeHenkilonYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(2, tallennetutYliajot.size)
     Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
   }
@@ -1551,7 +1551,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // ja yliajot tallentuvat kantaan, ja myöhemmin poistettava avain on vielä mukana
-    val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
+    val tallennetutYliajot = kantaOperaatiot.haeHenkilonYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(2, tallennetutYliajot.size)
     Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJokaPoistetaan))
     Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJotaEiPoisteta))
@@ -1567,7 +1567,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että poistetun avaimen arvo on nyt tyhjä
-    val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
+    val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeHenkilonYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(2, tallennetutYliajotPoistonJalkeen.size)
     Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(ya => ya.avain == avainJokaPoistetaan && ya.arvo.isEmpty))
     Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJotaEiPoisteta))
