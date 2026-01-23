@@ -138,27 +138,27 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                  UPDATE versiot
                  SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)
                  WHERE henkilo_oid=${henkiloOid} AND suoritusjoukko=${suoritusJoukko.nimi} AND upper(voimassaolo)='infinity'::timestamptz
-                 RETURNING tunniste::text""".as[String]
+                 RETURNING tunniste::text""".as[String].headOption
           }
           val discontinueLahtokoulutVersionAction = discontinueOldVersionAction
-            .map(useVersioTunnisteet => {
-              if (useVersioTunnisteet.isEmpty)
+            .map(edellinenVersioTunniste => {
+              if (edellinenVersioTunniste.isEmpty)
                 sqlu"""SELECT 1"""
               else
                 sqlu"""
                      UPDATE lahtokoulut
                      SET versio_voimassaolo=tstzrange(lower(versio_voimassaolo), ${timestamp.toString}::timestamptz)
-                     WHERE versio_tunniste=${useVersioTunnisteet.head}"""
-              useVersioTunnisteet
+                     WHERE versio_tunniste=${edellinenVersioTunniste.get}"""
+              edellinenVersioTunniste
             })
           val insertVersioAction = discontinueLahtokoulutVersionAction
-            .flatMap(useVersioTunnisteet => {
-              val useVersioTunniste = if (useVersioTunnisteet.isEmpty) {
+            .flatMap(edellinenVersioTunniste => {
+              val useVersioTunniste = if (edellinenVersioTunniste.isEmpty) {
                 // tilanteessa jossa kyseessä henkilön ensimmäinen versio käytetään edellisenä versiona talletettavaa versiota
                 // jotta a) pystytään indikoimaan että versio ei ole käytössä (ts. use_version_tunniste ei null), ja
                 // b) foreign key constraint toimii (pitää viitata taulussa olevaan versioon)
                 tunniste.toString
-              } else useVersioTunnisteet.head
+              } else edellinenVersioTunniste.get
               suoritusJoukko match
                 case SuoritusJoukko.VIRTA => sqlu"""
                     INSERT INTO versiot(tunniste, use_versio_tunniste, henkilo_oid, voimassaolo, suoritusjoukko, data_xml)
@@ -242,12 +242,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], metadata: Seq[Lahtokoulu]) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
-    val deletePrevious = sqlu"""DELETE FROM opiskeluoikeudet WHERE versio_tunniste=${versio.tunniste.toString}::uuid"""
-    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL WHERE tunniste=${versio.tunniste.toString}::uuid"""
-    val dataInserts = opiskeluoikeudet.map(opiskeluoikeus =>
-      sqlu"""
-            INSERT INTO opiskeluoikeudet (versio_tunniste, data_parseroitu) VALUES(${versio.tunniste.toString}::uuid, ${MAPPER.writeValueAsString(Container(opiskeluoikeus))}::jsonb)
-            """)
+    val updateVersion = sqlu"""UPDATE versiot SET use_versio_tunniste=NULL, opiskeluoikeudet=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb WHERE tunniste=${versio.tunniste.toString}::uuid"""
     val metadataInserts = metadata.map(lahtokoulu =>
       sqlu"""
             INSERT INTO lahtokoulut (versio_tunniste, henkilo_oid, versio_voimassaolo, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
@@ -264,7 +259,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               ${lahtokoulu.arvosanaPuuttuu},
               ${lahtokoulu.suoritusTyyppi.toString})
             """)
-    Await.result(db.run(DBIO.sequence(Seq(deletePrevious) ++ dataInserts ++ Seq(updateVersion) ++ metadataInserts).transactionally), DB_TIMEOUT)
+    Await.result(db.run(DBIO.sequence(Seq(updateVersion) ++ metadataInserts).transactionally), DB_TIMEOUT)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
@@ -294,31 +289,17 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                   'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
                   'loppu', CASE WHEN loppu='infinity'::timestamptz THEN null ELSE to_json(loppu::timestamptz)#>>'{}' END,
                   'suoritusJoukko', versiot.suoritusjoukko
-                )::text AS data
+                )::text AS versio,
+                COALESCE(opiskeluoikeudet, '[]'::jsonb) AS opiskeluoikeudet
               FROM w_versiot_in_use JOIN versiot ON w_versiot_in_use.tunniste=versiot.tunniste
               WHERE w_versiot_in_use.use_versio_tunniste IS NULL
-            ),
-            w_data AS(
-              SELECT opiskeluoikeudet.versio_tunniste AS versio_tunniste, data_parseroitu::text AS data
-              FROM opiskeluoikeudet JOIN w_versiot ON opiskeluoikeudet.versio_tunniste=w_versiot.versio_tunniste
             )
-          SELECT 1 as priority, 'versio' AS tyyppi, null AS versio_tunniste, data FROM w_versiot
-          UNION ALL
-          SELECT 2 as priority, 'opiskeluoikeus' as tyyppi, versio_tunniste, data FROM w_data
-          ORDER BY priority ASC;
-        """).as[(Int, String, String, String)]), DB_TIMEOUT).flatMap((priority, tyyppi, versioTunniste, data) => {
-        tyyppi match {
-          case "versio" =>
-            val versio = MAPPER.readValue(data, classOf[VersioEntiteetti])
-            versiotByKey = versiotByKey + (versio.tunniste.toString -> versio)
-            None
-          case "opiskeluoikeus" =>
-            val container = MAPPER.readValue(data, classOf[Container])
-            Some(versiotByKey(versioTunniste), container.opiskeluoikeus)
-        }
+          SELECT versio, opiskeluoikeudet FROM w_versiot;
+        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeudetJson) => {
+        (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), MAPPER.readValue(opiskeluoikeudetJson, classOf[Container]).opiskeluoikeudet)
       })
       .groupBy((versio, _) => versio)
-      .map((versio, suoritukset) => (versio, suoritukset.map(t => t._2).toSet))
+      .map((versio, tuples) => versio -> tuples.flatMap(_._2).toSet)
   }
 
   def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {

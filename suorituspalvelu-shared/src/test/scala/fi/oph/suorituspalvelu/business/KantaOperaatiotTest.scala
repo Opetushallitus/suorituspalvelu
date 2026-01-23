@@ -89,7 +89,6 @@ class KantaOperaatiotTest {
             DROP TABLE spring_session;
             DROP TABLE task_status;
             DROP TABLE scheduled_tasks;
-            DROP TABLE opiskeluoikeudet;
             DROP TABLE lahtokoulut;
             DROP TABLE versiot;
             DROP TABLE flyway_schema_history;

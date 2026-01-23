@@ -78,7 +78,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
     
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map.empty, kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -115,7 +115,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map.empty, kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -142,7 +142,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map.empty, kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -177,7 +177,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map.empty, kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -212,6 +212,6 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map.empty, kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 }
