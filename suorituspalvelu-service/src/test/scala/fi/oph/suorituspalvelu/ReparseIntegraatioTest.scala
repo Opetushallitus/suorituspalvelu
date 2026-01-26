@@ -49,7 +49,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testUudelleenParseroiKoski(): Unit = {
     // tallennetaan versio ja parseroitua dataa
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -84,7 +84,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testUudelleenParseroiVirta(): Unit = {
     // tallennetaan versio ja parseroitua dataa
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq.empty, Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq.empty, Seq.empty, Instant.now(), "VIRTA", None).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirtaOpiskeluoikeus(
       UUID.randomUUID(),
       "",
@@ -121,7 +121,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testUudelleenParseroiYTR(): Unit = {
     // tallennetaan versio ja parseroitua dataa
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.YTR, Seq.empty, Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.YTR, Seq.empty, Seq.empty, Instant.now(), "YTR", None).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(YOOpiskeluoikeus(UUID.randomUUID(), YOTutkinto(UUID.randomUUID(), Koodi("arvo", "koodisto", None), VALMIS, None, Set.empty)))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.YTR)
 
@@ -148,7 +148,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testUudelleenParseroiPerusopetuksenOppimaarat(): Unit = {
     // tallennetaan versio ja parseroitua dataa
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq.empty, Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -183,7 +183,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testUudelleenParseroiPerusopetuksenOppiaineenOppimaarat(): Unit = {
     // tallennetaan versio ja parseroitua dataa
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.SYOTETYT_OPPIAINEET, Seq.empty, Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.SYOTETYT_OPPIAINEET, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,

@@ -667,7 +667,8 @@ class UIResource {
             LOG.info(s"Tallennetaan perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppimaaranSuoritus, Some(suoritus))
-            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, Instant.now())
+            val now = Instant.now()
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, now, SuoritusJoukko.defaultLahdeTunniste(SuoritusJoukko.SYOTETTY_PERUSOPETUS), None)
 
             if(versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
@@ -739,7 +740,8 @@ class UIResource {
             LOG.info(s"Tallennetaan perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid}")
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppiaineenOppimaaranSuoritus, Some(suoritus))
-            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, Instant.now())
+            val now = Instant.now()
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, now, SuoritusJoukko.defaultLahdeTunniste(SuoritusJoukko.SYOTETTY_PERUSOPETUS), None)
 
             if(versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")

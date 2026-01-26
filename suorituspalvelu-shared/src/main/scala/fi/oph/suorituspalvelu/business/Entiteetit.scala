@@ -23,6 +23,14 @@ object SuoritusJoukko {
 
   def oppiaineenOppimaara(nimi: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${nimi.toUpperCase()}")
   def kieliOppiaineenOppimaara(kieli: String, laajuus: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${kieli.toUpperCase()}_${laajuus.toUpperCase}")
+
+  def defaultLahdeTunniste(suoritusJoukko: SuoritusJoukko): String = suoritusJoukko match {
+    case KOSKI => "KOSKI"
+    case VIRTA => "VIRTA"
+    case YTR => "YTR"
+    case SYOTETTY_PERUSOPETUS => "SYOTETTY"
+    case SYOTETYT_OPPIAINEET => "SYOTETTY"
+  }
 }
 
 enum SuoritusTila:
@@ -308,7 +316,7 @@ case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi, supaTila: SuoritusTi
 
 case class Koe(tunniste: UUID, koodi: Koodi, tutkintoKerta: LocalDate, arvosana: Koodi, pisteet: Option[Int])
 
-case class VersioEntiteetti(tunniste: UUID, henkiloOid: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko, parserVersio: Option[Int])
+case class VersioEntiteetti(tunniste: UUID, henkiloOid: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko, lahdeTunniste: String, lahdeVersio: Option[Int], parserVersio: Option[Int])
 
 enum KKOpiskeluoikeusTila:
   case VOIMASSA
