@@ -95,7 +95,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} käsin syötetyn version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"Syotettyjen perusopetuksen oppimäärien uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)
@@ -113,7 +113,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
           val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted))
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} käsin syötetyn version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
       })
     LOG.info(s"Syotettyjen perusopetuksen oppiaineen oppimäärien uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
   }, Seq.empty)
