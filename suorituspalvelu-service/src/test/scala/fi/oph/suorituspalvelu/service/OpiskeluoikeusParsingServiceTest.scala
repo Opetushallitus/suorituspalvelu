@@ -24,7 +24,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testParseWhenNoVersionStored(): Unit =
     // Tallennetaan versio ilman parserointia
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
 
     // Varmistetaan että parserVersio on None
     val versioBeforeParse = kantaOperaatiot.haeVersio(versio.tunniste)
@@ -43,7 +43,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testReparseWhenOlderVersionStored(): Unit =
     // Tallennetaan versio vanhalla parserVersiolla
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
     val oldParserVersion = ParserVersions.KOSKI - 1
 
     // Päivitetään parserVersio vanhaksi suoraan kantaan
@@ -68,7 +68,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testParseWithoutStoreWhenNewerVersionStored(): Unit =
     // Tallennetaan versio uudemmalla parserVersiolla (simuloi deployment-tilannetta)
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
     val newerParserVersion = ParserVersions.KOSKI + 1
 
     // Päivitetään parserVersio uudemmaksi suoraan kantaan
@@ -93,7 +93,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testUseStoredDataWhenVersionsMatch(): Unit =
     // Tallennetaan ja parseroidaan versio normaalisti
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now()).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set.empty, Seq.empty, ParserVersions.KOSKI)
 
     // Varmistetaan että nykyinen versio on tallennettu
