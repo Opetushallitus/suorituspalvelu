@@ -107,6 +107,8 @@ class UIService {
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
+  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
+
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
@@ -207,7 +209,7 @@ class UIService {
             Set(oppijaNumero)
       }
 
-      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.kantaOperaatiot.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
+      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
         masterHenkilo.hetu, oppijaNumero, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
       })
@@ -237,7 +239,7 @@ class UIService {
     def hasOrganisaatioKatseluoikeus(): Boolean =
       val lahettajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
       lahettajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => {
-        val opiskeluoikeudet = allOids.flatMap(oppijaNumero => this.kantaOperaatiot.haeSuoritukset(oppijaNumero).values.toSet.flatten)
+        val opiskeluoikeudet = allOids.flatMap(oppijaNumero => this.opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.toSet.flatten)
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, Some(lahettajaOikeusOrganisaatiot), None, opiskeluoikeudet)
       }), 30.seconds)
 

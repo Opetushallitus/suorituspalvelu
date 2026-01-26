@@ -358,47 +358,21 @@ class KantaOperaatiotTest {
   }
 
   /**
-   * Testataan että suorituksia haettaessa palautetaan viimeisin versio jonka data on parseroitu onnistuneesti.
+   * Testataan että kun versiota ei ole vielä parsittu (parserVersio puuttuu), haeSuoritukset palauttaa
+   * version tyhjällä opiskeluoikeusjoukolla. On-demand-parserointi tapahtuu OpiskeluoikeusParsingService-tasolla.
    */
-  @Test def testPalautetaanViimeisinParseroituVersio(): Unit =
+  @Test def testPalautetaanVersioTyhjillaOpiskeluoikeuksillaKunEiParsittu(): Unit =
     val HENKILONUMERO = "2.3.4"
 
-    // tallenetaan uusia versioita ilman että tallennetaan suorituksia
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now()).get
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value2\"}"), Seq.empty, Instant.now()).get
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value3\"}"), Seq.empty, Instant.now()).get
+    // tallennetaan versio ilman parserausta
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now()).get
 
-    // tallennetaan versio ja suoritukset
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value4\"}"), Seq.empty, Instant.now()).get
-    val suoritus = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "3.4.5"), None, Koodi("arvo", "koodisto",  Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, None, None, Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None), Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("FI", "kielivalikoima", None)), true, None, None)), Set.empty, false, false)
-    val lisatiedot = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
-    val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("opiskeluoikeusOid"), "oppilaitosOid", Set(suoritus), Some(lisatiedot), VALMIS, List.empty)
-    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.KOSKI)
+    // varmistetaan että parserVersio on None
+    Assertions.assertEquals(None, versio.parserVersio)
 
-    // tallennetaan uusia versioita ilman että tallennetaan suorituksia
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value5\"}"), Seq.empty, Instant.now()).get
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value6\"}"), Seq.empty, Instant.now()).get
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value7\"}"), Seq.empty, Instant.now()).get
-
-    // versio jotka suoritukset purettu palautuu suorituksineen kun haetaan henkilönumerolla
+    // haetaan suoritukset - palautuu versio tyhjällä opiskeluoikeusjoukolla
     val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(HENKILONUMERO)
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus)), haetutSuoritusEntiteetit)
-
-  /**
-   * Testataan että suorituksia haettaessa ei palauteta mitään jos ei ole versioita joiden data on parseroitu
-   * onnistuneesti.
-   */
-  @Test def testEiPalautetaVersioitaJosEiParseroituja(): Unit =
-    val HENKILONUMERO = "2.3.4"
-
-    // tallenetaan uusia versioita ilman että tallennetaan suorituksia
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now()).get
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value2\"}"), Seq.empty, Instant.now()).get
-    this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value3\"}"), Seq.empty, Instant.now()).get
-
-    // koska ei ole parseroituja versioita ei palaudu mitään
-    val haetutSuoritusEntiteetit = this.kantaOperaatiot.haeSuoritukset(HENKILONUMERO)
-    Assertions.assertEquals(Map.empty, haetutSuoritusEntiteetit)
+    Assertions.assertEquals(Map(versio -> Set.empty), haetutSuoritusEntiteetit)
 
   /**
    * Testataan (hyvin karkealla tavalla) suoritusten tallennuksen ja haun suorituskykyä.
