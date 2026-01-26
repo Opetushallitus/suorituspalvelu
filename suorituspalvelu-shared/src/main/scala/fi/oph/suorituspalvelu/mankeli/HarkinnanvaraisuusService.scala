@@ -47,8 +47,8 @@ object HarkinnanvaraisuusPaattely {
     val huomioitavatValmiitOppimaarat = perusopetusOOs
       .flatMap(_.suoritukset).collect { case om: PerusopetuksenOppimaara => om }
       .filter(_.supaTila.equals(SuoritusTila.VALMIS))
-      .filter(_.vahvistusPaivamaara.exists(vahvistusPvm => vahvistusPvm.isBefore(vahvistettuViimeistaan) || vahvistusPvm.isEqual(vahvistettuViimeistaan)))
-      .filter(_.vahvistusPaivamaara.exists(vahvistusPvm => vahvistusPvm.isBefore(YKS_MAT_AI_SUORITUS_ENNEN_DATE) || vahvistusPvm.isEqual(YKS_MAT_AI_SUORITUS_ENNEN_DATE)))
+      .filter(_.vahvistusPaivamaara.exists(!_.isAfter(vahvistettuViimeistaan)))
+      .filter(_.vahvistusPaivamaara.exists(!_.isAfter(YKS_MAT_AI_SUORITUS_ENNEN_DATE)))
     val huomioitavatOppiaineenOppimaarat = perusopetusOOs
       .flatMap(_.suoritukset).collect { case oom: PerusopetuksenOppimaaranOppiaineidenSuoritus => oom }
       .filter(_.supaTila.equals(SuoritusTila.VALMIS))
@@ -71,17 +71,18 @@ object HarkinnanvaraisuusPaattely {
                                        hakukohteet: Map[String, KoutaHakukohde]): HakemuksenHarkinnanvaraisuus = {
 
     val tuoreinPeruskoulusuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet)
-    val isSupaYksMatAi = hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet, vahvistettuViimeistaan)
+
     val deadlineOhitettu = LocalDate.now().isAfter(vahvistettuViimeistaan)
     val pohjakoulutusHakemukselta = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey)
 
+    val isSupaYksMatAi = hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet, vahvistettuViimeistaan)
     val isAtaruIlmoitettuYksMatAi = hakemus.keyValues.filter(kv => ataruMatematiikkaJaAidinkieliYksilollistettyQuestions.contains(kv._1)).values.exists(_.equals("1"))
 
     val hakutoiveet = hakemus.hakutoiveet.map(hakutoive => {
       val hakukohteenHarkinnanvaraisuusHakemukselta: Option[String] = hakemus.keyValues.get(ataruHakukohdeHarkinnanvaraisuusPrefix + hakutoive.hakukohdeOid)
       val ilmoitettuVanhaPeruskoulu = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt).exists(_ <= 2017)
 
-      val hakukohde = hakukohteet(hakutoive.hakukohdeOid)
+      val hakukohde = hakukohteet.getOrElse(hakutoive.hakukohdeOid, throw new RuntimeException(s"Hakukohdetta ${hakutoive.hakukohdeOid} ei löytynyt!"))
       val hakukohdeSalliiHarkinnanvaraisuuden = hakukohde.voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita.exists(_.equals(true))
       val syy = (hakukohdeSalliiHarkinnanvaraisuuden, tuoreinPeruskoulusuoritus, pohjakoulutusHakemukselta, hakukohteenHarkinnanvaraisuusHakemukselta) match {
         case (false, _, _, _) => HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN_HAKUKOHDE
@@ -93,7 +94,7 @@ object HarkinnanvaraisuusPaattely {
           HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI
         case (true, None, Some(AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS), _) => HarkinnanvaraisuudenSyy.ATARU_ULKOMAILLA_OPISKELTU
         case (true, None, Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), _) => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
-        case (true, None, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA //Todo, pitäisikö tässä palauttaa SURE_EI_PAATTOTODISTUSTA? Tilanne siis, että Supassa ei perusopetusta, eikä hakemuksellakaan ilmoitettu.
+        case (true, None, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
         case (true, None, _, _) if ilmoitettuVanhaPeruskoulu && isAtaruIlmoitettuYksMatAi => HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI
         case (true, None, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
           harkinnanvaraisuusHakukohteelleHakemukselta match {
@@ -142,7 +143,7 @@ class HarkinnanvaraisuusService {
       .map(hakutoive => tarjontaIntegration.getHakukohde(hakutoive.hakukohdeOid))
       .map(koutaHakukohde => (koutaHakukohde.oid, koutaHakukohde)).toMap
     val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(hakemus.hakuOid)
-    val suorituksetKannasta = kantaOperaatiot.haeSuoritukset(hakemusOid).flatMap(_._2).toSeq
+    val suorituksetKannasta = haeSupaTiedot(hakemus.personOid)
 
     HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(hakemus, suorituksetKannasta, ohjausparametrit.getVahvistuspaivaLocalDate, hakemuksenHakukohteetMap)
   }

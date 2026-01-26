@@ -174,12 +174,14 @@ class HarkinnanvaraisuusPaattelyTest {
     )
   }
 
+  @Test
   def testSyncHarkinnanvaraisuusSUREYksMatAi(): Unit = {
     val hakukohteet = Map(
-      HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true)
+      HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true),
+      HAKUKOHDE_OID_2 -> createHakukohde(HAKUKOHDE_OID_2, true)
     )
 
-    val tuoreinPeruskoulu = createOpiskeluoikeusWithOppimaara(true, true, SuoritusTila.KESKEN, Some(LocalDate.parse("2025-01-01")))
+    val tuoreinPeruskoulu = createOpiskeluoikeusWithOppimaara(true, true, SuoritusTila.VALMIS, Some(LocalDate.parse("2025-01-01")))
     val opiskeluoikeudet = Seq(tuoreinPeruskoulu)
 
     val hakemus = BASE_HAKEMUS
@@ -299,8 +301,8 @@ class HarkinnanvaraisuusPaattelyTest {
       hakemus2, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
     )
 
-    Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA, result1.hakutoiveet.find(_.hakukohdeOid.equals(HAKUKOHDE_OID_1)).get.harkinnanvaraisuudenSyy)
-    Assertions.assertEquals(HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN_HAKUKOHDE, result1.hakutoiveet.find(_.hakukohdeOid.equals(HAKUKOHDE_OID_2)).get.harkinnanvaraisuudenSyy)
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA, result2.hakutoiveet.find(_.hakukohdeOid.equals(HAKUKOHDE_OID_1)).get.harkinnanvaraisuudenSyy)
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN_HAKUKOHDE, result2.hakutoiveet.find(_.hakukohdeOid.equals(HAKUKOHDE_OID_2)).get.harkinnanvaraisuudenSyy)
 
 
   }

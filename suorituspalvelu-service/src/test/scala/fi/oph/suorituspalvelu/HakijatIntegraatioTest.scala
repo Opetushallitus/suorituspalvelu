@@ -392,7 +392,7 @@ class AvainarvotIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeAvainarvotAllowed(): Unit =
     // mockataan avainarvot
-    Mockito.when(valintaDataService.getValintaData(ESIMERKKI_HAKEMUS_OID)).thenReturn(Right(ValintaData(ESIMERKKI_OPPIJANUMERO, Seq(CombinedAvainArvoContainer("avain", "arvo", AvainArvoMetadata(Seq.empty, None, None, false))), None, Seq.empty, "", "")))
+    Mockito.when(valintaDataService.getValintaData(ESIMERKKI_HAKEMUS_OID)).thenReturn(Right(ValintaData(ESIMERKKI_OPPIJANUMERO, Seq(CombinedAvainArvoContainer("avain", "arvo", AvainArvoMetadata(Seq.empty, None, None, false))), None, Seq.empty, LocalDate.now, Instant.now)))
 
     // haetaan lomakkeen tiedot
     val result = mvc.perform(MockMvcRequestBuilders
