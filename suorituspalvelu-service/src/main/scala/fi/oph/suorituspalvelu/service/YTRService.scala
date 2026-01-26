@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrIntegration}
@@ -42,7 +42,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
         versio.foreach(v => {
           LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
           val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus), Seq.empty)
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus), Seq.empty, ParserVersions.YTR)
         })
         SyncResultForHenkilo(ytrResult.personOid, versio, None)
       } catch {

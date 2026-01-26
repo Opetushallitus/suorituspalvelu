@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusJoukko, SuoritusTila, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusJoukko, SuoritusTila, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -89,7 +89,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       tila,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
   /*
    * Integraatiotestit metadatapohjaiselle oppijoiden haulle
@@ -225,7 +225,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // palautuu true koska oppijalla oppilaitoksessa pk-suoritus
     Assertions.assertEquals(true, uiService.hasOppijanKatseluOikeus(oppijaOid))
@@ -269,7 +269,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // palautuu false koska oppijalla pk-suoritus muuta toisessa oppilaitoksessa kuin oikeus
     Assertions.assertEquals(false, uiService.hasOppijanKatseluOikeus(oppijaOid))
