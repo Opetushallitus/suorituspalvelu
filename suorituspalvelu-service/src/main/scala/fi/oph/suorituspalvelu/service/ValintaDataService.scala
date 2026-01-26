@@ -42,6 +42,8 @@ class ValintaDataService {
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
+  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
+
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
@@ -98,7 +100,7 @@ class ValintaDataService {
   }
 
   def haeOppijanJaAliastenOpiskeluoikeudet(allOids: Set[String], timestamp: Instant): Seq[Opiskeluoikeus] = {
-    allOids.flatMap(oid => kantaOperaatiot.haeSuorituksetAjanhetkella(oid, timestamp).values.flatten).toSeq
+    allOids.flatMap(oid => opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, timestamp).values.flatten).toSeq
   }
 
   def doAvainArvoConversions(personOid: Option[String], haku: KoutaHaku, hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {

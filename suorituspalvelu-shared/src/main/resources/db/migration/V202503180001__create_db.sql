@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS henkilot (
 
 CREATE TABLE IF NOT EXISTS versiot (
     tunniste                    UUID PRIMARY KEY,
-    use_versio_tunniste         UUID REFERENCES versiot (tunniste),
     henkilo_oid                 VARCHAR NOT NULL REFERENCES henkilot (oid),
     voimassaolo                 TSTZRANGE NOT NULL,
     suoritusjoukko              VARCHAR NOT NULL,
