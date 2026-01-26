@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Lahtokoulu, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, Ohjausparametrit, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
@@ -163,7 +163,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // mockataan organisaatiopalvelun vastaus
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq.empty)
@@ -228,7 +228,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // haetaan vuodet ja katsotaan että täsmää
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
@@ -299,7 +299,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // haetaan luokat ja katsotaan että täsmää, TODO: toistaiseksi luokka kovakoodattu kunnes saadaan koskesta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
@@ -455,7 +455,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // haetaan oppijoita oppilaitoksella ja vuodella
     val result = mvc.perform(MockMvcRequestBuilders
@@ -548,7 +548,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val opiskeluoikeudet = Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
     ).asInstanceOf[Set[Opiskeluoikeus]]
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
@@ -586,7 +586,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
-    ), List.empty)
+    ), List.empty, ParserVersions.KOSKI)
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, Some(henkilotunnus), None, None))))
@@ -1696,7 +1696,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         List.empty
       )
-    ), Seq.empty)
+    ), Seq.empty, ParserVersions.KOSKI)
 
     // Mock ONR & organisaatiopalvelu
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)))

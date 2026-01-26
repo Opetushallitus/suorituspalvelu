@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, SuoritusJoukko, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
@@ -123,7 +123,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         versio.foreach(v => {
           LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
           val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getLahtokouluMetadata(oikeudet.toSet))
+          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getLahtokouluMetadata(oikeudet.toSet), ParserVersions.KOSKI)
         })
         SyncResultForHenkilo(oppija.oppijaOid, versio, None)
       } catch {

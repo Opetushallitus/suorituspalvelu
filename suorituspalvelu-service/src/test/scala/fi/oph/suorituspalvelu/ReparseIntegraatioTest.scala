@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import com.fasterxml.jackson.core.`type`.TypeReference
 import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.VOIMASSA
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, VirtaOpiskeluoikeus, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, VirtaOpiskeluoikeus, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.*
@@ -59,8 +59,8 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty)
-    
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.KOSKI)
+
     // suoritetaan kutsu ja parseroidaan vastaus
     val payload = new ReparsePayload().copy(koski = true)
     val result = mvc.perform(jsonPost(ApiConstants.DATASYNC_UUDELLEENPARSEROI_PATH, payload))
@@ -78,7 +78,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
     
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -96,7 +96,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       "",
       Set.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.VIRTA)
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val payload = new ReparsePayload().copy(virta = true)
@@ -115,7 +115,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.VIRTA)) -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -123,7 +123,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     // tallennetaan versio ja parseroitua dataa
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.YTR, Seq.empty, Seq.empty, Instant.now()).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(YOOpiskeluoikeus(UUID.randomUUID(), YOTutkinto(UUID.randomUUID(), Koodi("arvo", "koodisto", None), VALMIS, None, Set.empty)))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.YTR)
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val payload = new ReparsePayload().copy(ytr = true)
@@ -142,7 +142,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.YTR)) -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -158,7 +158,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.SYOTETTY_PERUSOPETUS)
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val payload = new ReparsePayload().copy(perusopetuksenOppimaarat = true)
@@ -177,7 +177,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.SYOTETTY_PERUSOPETUS)) -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -193,7 +193,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.SYOTETYT_OPPIAINEET)
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val payload = new ReparsePayload().copy(perusopetuksenOppiaineet = true)
@@ -212,6 +212,6 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.SYOTETYT_OPPIAINEET)) -> Set.empty), kantaOperaatiot.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
   }
 }

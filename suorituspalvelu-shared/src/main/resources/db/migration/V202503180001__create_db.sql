@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS versiot (
     data_json                   JSONB[],
     data_xml                    XML[],
     opiskeluoikeudet            JSONB,
+    parser_versio               INTEGER,
     EXCLUDE USING gist (henkilo_oid WITH =, suoritusjoukko WITH =, voimassaolo WITH &&)
 );
 

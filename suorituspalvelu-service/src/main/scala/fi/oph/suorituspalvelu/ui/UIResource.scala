@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus, SuoritusJoukko}
+import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus, ParserVersions, SuoritusJoukko}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
 import fi.oph.suorituspalvelu.mankeli.UseitaVahvistettujaOppimaariaException
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
@@ -673,7 +673,7 @@ class UIResource {
               LOG.info(s"Tallennettava perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
-              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.SYOTETTY_PERUSOPETUS)
 
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPerusopetuksenOppimaaraSuccessResponse())))
           )
@@ -745,7 +745,7 @@ class UIResource {
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else {
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
-              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+              this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.SYOTETYT_OPPIAINEET)
             }
             Right(ResponseEntity.status(HttpStatus.OK).body(LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse())))
       )
