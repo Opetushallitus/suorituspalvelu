@@ -41,12 +41,15 @@ case class SuoritusKoulutusala(Koodi: Koodi)
 @JsonDeserialize(classOf[NimiDeserializer])
 case class Nimi(kieli: Option[String], nimi: String)
 
+@JsonDeserialize(classOf[SisaltyvyysDeserializer])
+case class Suoritusviite(avain: String)
+
 case class Opintosuoritus(
                            Kieli: String,
                            Organisaatio: Option[Organisaatio],
                            SuoritusPvm: LocalDate,
                            Arvosana: Option[Arvosana],
-                           opiskeluoikeusAvain: String,
+                           opiskeluoikeusAvain: Option[String], // puuttuu osasuorituksilta
                            Koulutusala: Option[SuoritusKoulutusala],
                            Laji: Int,
                            koulutusmoduulitunniste: String,
@@ -58,7 +61,8 @@ case class Opintosuoritus(
                            Myontaja: String,
                            Koulutuskoodi: Option[String],
                            @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[Nimi],
-                           TKILaajuusHarjoittelu: Option[Laajuus]
+                           TKILaajuusHarjoittelu: Option[Laajuus],
+                           @JacksonXmlElementWrapper(useWrapping = false) Sisaltyvyys: Seq[Suoritusviite]
                          )
 
 case class Opiskelija(Opiskeluoikeudet: Seq[Opiskeluoikeus], LukukausiIlmoittautumiset: Seq[LukukausiIlmoittautuminen], Opintosuoritukset: Option[Seq[Opintosuoritus]], Henkilotunnus: String, avain: String)
@@ -81,6 +85,15 @@ class KoodiDeserializer extends JsonDeserializer[Koodi] {
     Koodi(mixin.versio, mixin.value)
 }
 
+class SisaltyvyysDeserializer extends JsonDeserializer[Suoritusviite] {
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): Suoritusviite =
+    val value = p.readValueAs(classOf[Any])
+    value match
+      case sisaltyvyys: Map[_, _] =>
+        val sisaltyvyysMap = sisaltyvyys.asInstanceOf[Map[String, String]]
+        Suoritusviite(sisaltyvyysMap("sisaltyvaOpintosuoritusAvain"))
+}
+
 class NimiDeserializer extends JsonDeserializer[Nimi] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): Nimi =
     val value = p.readValueAs(classOf[Any])
@@ -91,7 +104,6 @@ class NimiDeserializer extends JsonDeserializer[Nimi] {
       case nimi: Map[_, _] =>
         val nimiMap = nimi.asInstanceOf[Map[String, String]]
         Nimi(Some(nimiMap("kieli")), nimiMap(""))
-
 }
 
 class ArvosanaDeserializer extends JsonDeserializer[Arvosana] {
