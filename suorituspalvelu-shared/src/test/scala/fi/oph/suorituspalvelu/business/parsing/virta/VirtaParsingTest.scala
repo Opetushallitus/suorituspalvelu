@@ -191,4 +191,70 @@ class VirtaParsingTest {
 
     Assertions.assertEquals(Some(LocalDate.parse("2014-09-17")), suoritus.hyvaksilukuPvm)
     Assertions.assertEquals(false, suoritus.opinnaytetyo)
+
+  @Test def testVirtasuoritusMuuArvosana(): Unit =
+    val suoritus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
+      """
+        |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+        |  <SOAP-ENV:Body>
+        |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
+        |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
+        |        <virta:Opiskelija avain="C10">
+        |          <virta:Opiskeluoikeudet>
+        |            <virta:Opiskeluoikeus opiskelijaAvain="C102" avain="xxx002">
+        |              <virta:AlkuPvm>2014-01-01</virta:AlkuPvm>
+        |              <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>
+        |              <virta:Tila>
+        |                <virta:AlkuPvm>2017-06-01</virta:AlkuPvm>
+        |                <virta:Koodi>3</virta:Koodi>
+        |              </virta:Tila>
+        |              <virta:Jakso>
+        |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
+        |              </virta:Jakso>
+        |            </virta:Opiskeluoikeus>
+        |          </virta:Opiskeluoikeudet>
+        |          <virta:Opintosuoritukset>
+        |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx002" opiskelijaAvain="C10" koulutusmoduulitunniste="LOG13A 01SUO" avain="625422">
+        |              <virta:SuoritusPvm>2015-05-31</virta:SuoritusPvm>
+        |              <virta:Laajuus>
+        |                <virta:Opintopiste>4</virta:Opintopiste>
+        |              </virta:Laajuus>
+        |              <virta:Arvosana>
+        |                <virta:Muu>
+        |                  <virta:Asteikko avain="11">
+        |                    <virta:Nimi>Fail-Pass</virta:Nimi>
+        |                    <virta:AsteikkoArvosana avain="10979859">
+        |                      <virta:Koodi>HYV</virta:Koodi>
+        |                      <virta:Nimi>Hyväksytty</virta:Nimi>
+        |                      <virta:LaskennallinenArvo>2.0</virta:LaskennallinenArvo>
+        |                    </virta:AsteikkoArvosana>
+        |                  </virta:Asteikko>
+        |                  <virta:Koodi>10979859</virta:Koodi>
+        |                </virta:Muu>
+        |              </virta:Arvosana>
+        |              <virta:Myontaja>10108</virta:Myontaja>
+        |              <virta:Organisaatio>
+        |                <virta:Rooli>3</virta:Rooli>
+        |                <virta:Koodi>XX</virta:Koodi>
+        |                <virta:Osuus>1</virta:Osuus>
+        |              </virta:Organisaatio>
+        |              <virta:Laji>2</virta:Laji>
+        |              <virta:Nimi kieli="fi">Asiantuntijaviestintä</virta:Nimi>
+        |              <virta:Nimi kieli="en">Professional Communications</virta:Nimi>
+        |              <virta:Kieli>fi</virta:Kieli>
+        |              <virta:Koulutusala>
+        |                <virta:Koodi versio="ohjausala">5</virta:Koodi>
+        |              </virta:Koulutusala>
+        |              <virta:HyvaksilukuPvm>2014-09-17</virta:HyvaksilukuPvm>
+        |              <virta:Opinnaytetyo>0</virta:Opinnaytetyo>
+        |            </virta:Opintosuoritus>
+        |          </virta:Opintosuoritukset>
+        |        </virta:Opiskelija>
+        |      </virta:Virta>
+        |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
+        |  </SOAP-ENV:Body>
+        |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset.head.asInstanceOf[Opintosuoritus]
+
+    Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
+    Assertions.assertEquals(Some("Fail-Pass"), suoritus.arvosanaAsteikko)
 }
