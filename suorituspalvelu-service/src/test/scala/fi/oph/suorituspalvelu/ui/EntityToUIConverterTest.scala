@@ -687,9 +687,9 @@ class EntityToUIConverterTest {
       Set(virtaTutkinto)
     )
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritus(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.UIKKSuoritus(
       virtaTutkinto.tunniste,
-      Optional.of(KKSuoritusNimi(
+      Optional.of(UIKKSuoritusNimi(
         virtaTutkinto.nimi.flatMap(_.fi).toJava,
         virtaTutkinto.nimi.flatMap(_.sv).toJava,
         virtaTutkinto.nimi.flatMap(_.en).toJava

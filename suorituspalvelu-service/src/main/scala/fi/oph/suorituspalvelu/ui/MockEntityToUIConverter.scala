@@ -39,10 +39,10 @@ object MockEntityToUIConverter {
         )
       ))
 
-  def getKKTutkinnot(): List[KKSuoritus] =
-    List(KKSuoritus(
+  def getKKTutkinnot(): List[UIKKSuoritus] =
+    List(UIKKSuoritus(
       tunniste = UUID.randomUUID(),
-      nimi = Optional.of(KKSuoritusNimi(
+      nimi = Optional.of(UIKKSuoritusNimi(
         fi = Optional.of("Kasvatust. maist., kasvatustiede"),
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")

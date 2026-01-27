@@ -56,6 +56,7 @@ object KantaOperaatiot {
       classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
       classOf[Tuva],
       classOf[KKTutkinto],
+      classOf[KKSynteettinenSuoritus],
       classOf[KKOpintosuoritus],
       classOf[VapaaSivistystyo],
       classOf[EBTutkinto],
