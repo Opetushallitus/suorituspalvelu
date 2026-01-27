@@ -1,12 +1,10 @@
 package fi.oph.suorituspalvelu.business.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenPerustutkinto, Koodi, VirtaOpintosuoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.business.{Koodi, VirtaOpintosuoritus,  VirtaTutkinto}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
+import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
-import java.io.ByteArrayInputStream
 import java.time.LocalDate
 
 object KoskiParsing {
@@ -59,7 +57,7 @@ class VirtaParsingTest {
 
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
     Assertions.assertEquals("xxx002", opiskeluoikeus.virtaTunniste)
-    Assertions.assertEquals("726302", opiskeluoikeus.koulutusKoodi)
+    Assertions.assertEquals(Some("726302"), opiskeluoikeus.koulutusKoodi)
     Assertions.assertEquals(LocalDate.parse("2018-01-01"), opiskeluoikeus.alkuPvm)
     Assertions.assertEquals(LocalDate.parse("2019-01-01"), opiskeluoikeus.loppuPvm)
     Assertions.assertEquals(Koodi("3", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), opiskeluoikeus.virtaTila) // viimeiseksi alkanut tila on voimassa
@@ -396,31 +394,30 @@ class VirtaParsingTest {
         |  </SOAP-ENV:Body>
         |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset
 
-    val tutkinnot = suoritukset.filter(_.isInstanceOf[VirtaTutkinto]).map(_.asInstanceOf[VirtaTutkinto]).toSeq
-    Assertions.assertEquals(tutkinnot.length, 1)
-    val onlyTutkinto = tutkinnot.head
-    Assertions.assertEquals(onlyTutkinto.opiskeluoikeusAvain, "TY¤75094¤123049¤A")
-    Assertions.assertEquals(onlyTutkinto.nimiFi.get, "HUMANISTISTEN TIETEIDEN KANDIDAATTI, YHTEISKUNTATIETEELLINEN TIEDEKUNTA")
-    Assertions.assertEquals(onlyTutkinto.osaSuoritusAvaimet.length, 1)
-    Assertions.assertEquals(onlyTutkinto.osaSuoritusAvaimet.head, "TY¤75094¤22545")
+    Assertions.assertEquals(suoritukset.toSeq.length, 1)
+    val onlyFirstLevelSuoritus = suoritukset.head
 
-    val opintosuoritukset = suoritukset.filter(_.isInstanceOf[VirtaOpintosuoritus]).map(_.asInstanceOf[VirtaOpintosuoritus]).toSeq
-    Assertions.assertTrue(opintosuoritukset.forall(_.opiskeluoikeusAvain == "TY¤75094¤123049¤A"))
-    Assertions.assertEquals(opintosuoritukset.length, 4)
-    val osaSuoritus1 = opintosuoritukset.find(s => s.avain == "TY¤75094¤22545").get
-    Assertions.assertEquals(osaSuoritus1.nimiFi.get, "LOGOPEDIAN PERUS- JA AINEOPINNOT")
-    Assertions.assertEquals(osaSuoritus1.osaSuoritusAvaimet.length, 1)
-    Assertions.assertEquals(osaSuoritus1.osaSuoritusAvaimet.head, "TY¤75094¤14781")
-    val osaSuoritus2 = opintosuoritukset.find(s => s.avain == "TY¤75094¤14781").get
-    Assertions.assertEquals(osaSuoritus2.nimiFi.get, "LOGOPEDIAN PERUSOPINNOT")
-    Assertions.assertEquals(osaSuoritus2.osaSuoritusAvaimet.length, 2)
-    Assertions.assertTrue(osaSuoritus2.osaSuoritusAvaimet.contains("TY¤75094¤14791"))
-    Assertions.assertTrue(osaSuoritus2.osaSuoritusAvaimet.contains("TY¤75094¤14793"))
-    val osaSuoritus3 = opintosuoritukset.find(s => s.avain == "TY¤75094¤14791").get
-    Assertions.assertEquals(osaSuoritus3.nimiFi.get, "KIELEN JA PUHEEN KEHITYKSEN TUKEMINEN")
-    Assertions.assertEquals(osaSuoritus3.osaSuoritusAvaimet.length, 0)
-    val osaSuoritus4 = opintosuoritukset.find(s => s.avain == "TY¤75094¤14793").get
-    Assertions.assertEquals(osaSuoritus4.nimiFi.get, "PUHETTA TUKEVAT JA KORVAAVAT KEINOT KOMMUNIKOINNISSA")
-    Assertions.assertEquals(osaSuoritus4.osaSuoritusAvaimet.length, 0)
+    Assertions.assertTrue(onlyFirstLevelSuoritus.isInstanceOf[VirtaTutkinto])
+    val onlyTutkinto = onlyFirstLevelSuoritus.asInstanceOf[VirtaTutkinto]
+    Assertions.assertEquals(Some("TY¤75094¤123049¤A"), onlyTutkinto.opiskeluoikeusAvain)
+    Assertions.assertEquals(Some("HUMANISTISTEN TIETEIDEN KANDIDAATTI, YHTEISKUNTATIETEELLINEN TIEDEKUNTA"), onlyTutkinto.nimiFi)
+    val secondLevelSuoritukset = onlyTutkinto.suoritukset
+    Assertions.assertEquals(1, secondLevelSuoritukset.length)
+    val onlySecondLevelSuoritus = secondLevelSuoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+    Assertions.assertEquals(Some("LOGOPEDIAN PERUS- JA AINEOPINNOT"), onlySecondLevelSuoritus.nimiFi)
+    val thirdLevelSuoritukset = onlySecondLevelSuoritus.suoritukset.map(_.asInstanceOf[VirtaOpintosuoritus])
+
+    Assertions.assertEquals(1, thirdLevelSuoritukset.length)
+    val onlyThirdLevelSuoritus = thirdLevelSuoritukset.head
+
+    Assertions.assertEquals(Some("LOGOPEDIAN PERUSOPINNOT"), onlyThirdLevelSuoritus.nimiFi)
+    val fourthLevelSuoritukset = onlyThirdLevelSuoritus.suoritukset.map(_.asInstanceOf[VirtaOpintosuoritus])
+    Assertions.assertEquals(2, fourthLevelSuoritukset.length)
+    val fourthLevelSuoritus1 = fourthLevelSuoritukset.find(_.avain == "TY¤75094¤14791").get
+    Assertions.assertEquals(Some("KIELEN JA PUHEEN KEHITYKSEN TUKEMINEN"), fourthLevelSuoritus1.nimiFi)
+    Assertions.assertEquals(0, fourthLevelSuoritus1.suoritukset.length)
+    val fourthLevelSuoritus2 = fourthLevelSuoritukset.find(_.avain == "TY¤75094¤14793").get
+    Assertions.assertEquals(Some("PUHETTA TUKEVAT JA KORVAAVAT KEINOT KOMMUNIKOINNISSA"), fourthLevelSuoritus2.nimiFi)
+    Assertions.assertEquals(0, fourthLevelSuoritus2.suoritukset.length)
   }
 }

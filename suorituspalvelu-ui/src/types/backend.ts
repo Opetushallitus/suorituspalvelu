@@ -264,21 +264,10 @@ export interface IKKOpintojaksoNimi {
   en?: string;
 }
 
-export interface IKKOppilaitos {
-  nimi: IKKOppilaitosNimi;
-  oid: string;
-}
-
-export interface IKKOppilaitosNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IKKSuoritus {
   tunniste: string;
   nimi: IKKSuoritusNimi;
-  oppilaitos: IKKOppilaitos;
+  oppilaitos: IUIOppilaitos;
   tila: SuoritusTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
@@ -377,17 +366,6 @@ export interface ILuokatFailureResponse {
 
 export interface ILuokatSuccessResponse {
   luokat: string[];
-}
-
-export interface IOOOppilaitos {
-  nimi: IOOOppilaitosNimi;
-  oid: string;
-}
-
-export interface IOOOppilaitosNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
 }
 
 export interface IOppija {
@@ -709,7 +687,7 @@ export interface ITuvaNimi {
 export interface IUIOpiskeluoikeus {
   tunniste: string;
   nimi: IUIOpiskeluoikeusNimi;
-  oppilaitos: IOOOppilaitos;
+  oppilaitos: IUIOppilaitos;
   voimassaolonAlku: string;
   voimassaolonLoppu: string;
   supaTila: OpiskeluoikeusTila;
@@ -723,6 +701,17 @@ export interface IUIOpiskeluoikeusNimi {
 }
 
 export interface IUIOpiskeluoikeusVirtaTila {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IUIOppilaitos {
+  nimi: IUIOppilaitosNimi;
+  oid: string;
+}
+
+export interface IUIOppilaitosNimi {
   fi?: string;
   sv?: string;
   en?: string;
@@ -888,6 +877,6 @@ export interface IYliajonMuutosUI {
 
 export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';
