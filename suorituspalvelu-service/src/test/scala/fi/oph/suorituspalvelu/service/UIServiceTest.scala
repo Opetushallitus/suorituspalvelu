@@ -79,7 +79,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     )
 
   def tallennaOppimaara(oppijaOid: String, tila: SuoritusTila, suoritukset: Set[Suoritus]): Unit =
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -199,7 +199,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
 
     // tallennetaan valmis perusopetuksen oppimäärä
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -243,7 +243,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
 
     // tallennetaan valmis perusopetuksen oppimäärä
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,

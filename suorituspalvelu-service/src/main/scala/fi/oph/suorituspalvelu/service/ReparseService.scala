@@ -37,7 +37,7 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
           val (_, data, _) = kantaOperaatiot.haeData(versio)
-          val parsed = data.flatMap(d => KoskiParser.parseKoskiData(d))
+          val parsed = data.map(d => KoskiParser.parseKoskiData(d))
           val converted = KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.KOSKI)
         catch

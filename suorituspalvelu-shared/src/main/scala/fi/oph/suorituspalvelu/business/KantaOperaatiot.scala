@@ -211,6 +211,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${henkiloOid} FOR UPDATE"""
     val timestamp = Instant.ofEpochMilli(voimassaolonAlku.toEpochMilli)
 
+    // KOSKI is versioned, others are not
+    val isVersionedSource = suoritusJoukko == SuoritusJoukko.KOSKI
+    if (isVersionedSource && lahdeVersio.isEmpty)
+      throw new IllegalArgumentException(s"lahdeVersio vaaditaan versioitavalle lähteelle $suoritusJoukko")
+    if (!isVersionedSource && lahdeVersio.isDefined)
+      throw new IllegalArgumentException(s"lahdeVersio ei sallittu versioimattomalle lähteelle $suoritusJoukko")
+
     val upsertAction = DBIO.sequence(Seq(insertHenkiloAction, lockHenkiloAction.as[Int])).flatMap(_ =>
       lahdeVersio match {
         case Some(lahdeVersio) =>

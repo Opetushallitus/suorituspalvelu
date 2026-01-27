@@ -109,7 +109,7 @@ class OpiskeluoikeusParsingService(
   private def parse(versio: VersioEntiteetti, jsonData: Seq[String], xmlData: Seq[String]): (Set[Opiskeluoikeus], Int) = {
     versio.suoritusJoukko match {
       case SuoritusJoukko.KOSKI =>
-        val parsed = jsonData.flatMap(d => KoskiParser.parseKoskiData(d))
+        val parsed = jsonData.map(d => KoskiParser.parseKoskiData(d))
         val converted = KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
         (converted, ParserVersions.KOSKI)
 

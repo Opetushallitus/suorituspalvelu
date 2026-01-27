@@ -25,7 +25,6 @@ object SuoritusJoukko {
   def kieliOppiaineenOppimaara(kieli: String, laajuus: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${kieli.toUpperCase()}_${laajuus.toUpperCase}")
 
   def defaultLahdeTunniste(suoritusJoukko: SuoritusJoukko): String = suoritusJoukko match {
-    case KOSKI => "KOSKI"
     case VIRTA => "VIRTA"
     case YTR => "YTR"
     case SYOTETTY_PERUSOPETUS => "SYOTETTY"

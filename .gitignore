@@ -46,3 +46,6 @@ cdk.out
 
 ## Frontend bundle
 /suorituspalvelu-service/src/main/resources/static/
+
+### local Spring Boot config file ###
+/suorituspalvelu-service/src/test/resources/application-dev.yml

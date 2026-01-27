@@ -214,20 +214,20 @@ class KantaOperaatiotTest {
    */
   @Test def testVersionumeroituVoidaanLisataValiin(): Unit =
     val HENKILONUMERO = "1.2.3"
-    val LAHDE = "KOSKI"
+    val OO_NUMERO = "1.2.3"
     val baseTime = Instant.now()
 
     // Tallennetaan versio 1 (ensimmäinen)
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"versio\": 1}"), Seq.empty,
-      baseTime, LAHDE, Some(1)
+      baseTime, OO_NUMERO, Some(1)
     ).get
     Assertions.assertTrue(versio1.loppu.isEmpty, "Ensimmäisen version loppu pitäisi olla infinity")
 
     // Tallennetaan versio 3 (kolmas, mutta lisätään ennen versiota 2)
     val versio3 = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"versio\": 3}"), Seq.empty,
-      baseTime.plusSeconds(20), LAHDE, Some(3)
+      baseTime.plusSeconds(20), OO_NUMERO, Some(3)
     ).get
     Assertions.assertTrue(versio3.loppu.isEmpty, "Uusimman version loppu pitäisi olla infinity")
 
@@ -238,7 +238,7 @@ class KantaOperaatiotTest {
     // Nyt lisätään versio 2 väliin
     val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"versio\": 2}"), Seq.empty,
-      baseTime.plusSeconds(10), LAHDE, Some(2)
+      baseTime.plusSeconds(10), OO_NUMERO, Some(2)
     ).get
 
     // Tarkistetaan että versio 2:n loppu on versio 3:n alku
@@ -258,19 +258,19 @@ class KantaOperaatiotTest {
    */
   @Test def testVersionumeroituVersiotaEiPaivitetaVaikkaDataMuuttuu(): Unit =
     val HENKILONUMERO = "1.2.3"
-    val LAHDE = "KOSKI"
+    val OO_NUMERO = "1.2.3"
     val baseTime = Instant.now()
 
     // Tallennetaan versio
     val alkuperainenVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"alkuperainen\"}"), Seq.empty,
-      baseTime, LAHDE, Some(1)
+      baseTime, OO_NUMERO, Some(1)
     ).get
 
     // Yritetään tallentaa uudella datalla (sama lahdeVersio) - pitäisi ohittaa
     val tulos = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"paivitetty\"}"), Seq.empty,
-      baseTime.plusSeconds(10), LAHDE, Some(1)
+      baseTime.plusSeconds(10), OO_NUMERO, Some(1)
     )
 
     // Ei pitäisi palauttaa versiota koska sama lahdeVersio on jo olemassa
@@ -312,8 +312,8 @@ class KantaOperaatiotTest {
     })
 
   @Test def testHaeVersiot(): Unit =
-    val koskiVersio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
-    val koskiVersio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio("2.3.4", SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val koskiVersio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
+    val koskiVersio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio("2.3.4", SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "2.3.4", Some(1)).get
     val ytrVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", SuoritusJoukko.YTR, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "YTR", None).get
 
     Assertions.assertEquals(Set(koskiVersio1, koskiVersio2), this.kantaOperaatiot.haeVersiot(SuoritusJoukko.KOSKI).toSet)
@@ -323,7 +323,7 @@ class KantaOperaatiotTest {
     val PARSER_VERSIO = 42
 
     // tallennetaan versio - parserVersio pitäisi olla None
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     Assertions.assertEquals(None, versio.parserVersio)
 
     // haetaan versio ja tarkistetaan että parserVersio on edelleen None
@@ -349,7 +349,7 @@ class KantaOperaatiotTest {
     val HENKILONUMERO = "2.3.4"
 
     // tallennetaan versio ja suoritukset
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val suoritukset = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "3.4.5"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, None, None, Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None), Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("FI", "kielivalikoima", None)), true, None, None)), Set.empty, false, false)
     val opiskeluoikeus = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("4.5.6"), "opiskeluoikeusoid1", Set(suoritukset), None, VALMIS, List.empty)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.KOSKI)
@@ -371,13 +371,13 @@ class KantaOperaatiotTest {
     val OPISKELUOIKEUSOID2 = "1.2.246.562.15.09876543210"
 
     // tallennetaan versio ja suoritukset henkilölle 1
-    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val suoritus1 = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID1), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, None, None, Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None), Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("FI", "kielivalikoima", None)), true, None, None)), Set.empty, false, false)
     val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(OPISKELUOIKEUSOID1), OPPILAITOSOID1, Set(suoritus1), None, VALMIS, List.empty)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1), Seq.empty, ParserVersions.KOSKI)
 
     // tallennetaan versio henkilölle 2
-    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO2, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO2, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
 
     // tallennetaan suoritukset kerran ja sitten toisen kerran henkilölle 2
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus1), Seq.empty, ParserVersions.KOSKI)
@@ -402,16 +402,19 @@ class KantaOperaatiotTest {
       "/1_2_246_562_24_40483869857b.json"
     ).foreach(fileName => {
       val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName))
-      val suoritukset = splitData.foreach((henkiloOid, data) => {
-        val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None).get
+      splitData.foreach(henkilo => {
+        val opiskeluoikeudet = henkilo.opiskeluoikeudet.flatMap {
+          case Right(opiskeluoikeus) =>
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkilo.oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero)).get
+            val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
+            val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), koodisto => Map.empty).toSet
+            this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Seq.empty, ParserVersions.KOSKI)
+            oo
+          case Left(ex) => throw ex
+        }.toSet
 
-        val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, koodisto => Map.empty).toSet
-        this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Seq.empty, ParserVersions.KOSKI)
-
-        val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(henkiloOid)
-
-        Assertions.assertEquals(oo, haetutSuoritukset.head._2);
+        val haetutOpiskeluoikeudet = this.kantaOperaatiot.haeSuoritukset(henkilo.oppijaOid)
+        Assertions.assertEquals(opiskeluoikeudet, haetutOpiskeluoikeudet.head._2);
       })
     })
   }
@@ -427,17 +430,19 @@ class KantaOperaatiotTest {
       "/1_2_246_562_15_94501385358.json"
     ).foreach(fileName => {
       val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName))
-      val suoritukset = splitData.foreach((henkiloOid, data) => {
+      splitData.foreach(henkilo => {
+        val opiskeluoikeudet = henkilo.opiskeluoikeudet.flatMap {
+          case Right(opiskeluoikeus) =>
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkilo.oppijaOid, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero)).get
+            val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
+            val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), koodisto => Map.empty).toSet
+            this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Seq.empty, ParserVersions.KOSKI)
+            oo
+          case Left(ex) => throw ex
+        }.toSet
 
-        val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
-
-        val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-        val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, koodisto => Map.empty).toSet
-        this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Seq.empty, ParserVersions.KOSKI)
-
-        val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(henkiloOid)
-
-        Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> oo), haetutSuoritukset);
+        val haetutOpiskeluoikeudet = this.kantaOperaatiot.haeSuoritukset(henkilo.oppijaOid).flatMap(_._2).toSet
+        Assertions.assertEquals(opiskeluoikeudet, haetutOpiskeluoikeudet);
       })
     })
   }
@@ -450,7 +455,7 @@ class KantaOperaatiotTest {
     val HENKILONUMERO = "2.3.4"
 
     // tallennetaan versio ilman parserausta
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
 
     // varmistetaan että parserVersio on None
     Assertions.assertEquals(None, versio.parserVersio)
@@ -467,11 +472,15 @@ class KantaOperaatiotTest {
     val iterations = 100
 
     val startSave = Instant.now()
-    val data = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
+    val opiskeluoikeudet = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream("/1_2_246_562_24_40483869857.json")).iterator.next()._2
     (1 to iterations).foreach(i => {
-      val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO + i, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
-      val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data), koodisto => Map.empty)
-      this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo.toSet, Seq.empty, ParserVersions.KOSKI)
+      opiskeluoikeudet.foreach {
+        case Right(opiskeluoikeus) =>
+          val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO + i, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero)).get
+          val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(opiskeluoikeus.data)), koodisto => Map.empty)
+          this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo.toSet, Seq.empty, ParserVersions.KOSKI)
+        case Left(ex) => throw ex
+      }
     })
     val saveDuration = Instant.now().toEpochMilli - startSave.toEpochMilli
     Assertions.assertTrue(saveDuration< 50 * iterations);
@@ -491,7 +500,7 @@ class KantaOperaatiotTest {
     val OPISKELUOIKEUSOID1 = "1.2.246.562.15.12345678901"
     val OPISKELUOIKEUSOID2 = "1.2.246.562.15.09876543210"
 
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
 
     val suoritus1 = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID1), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, None, None, Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None), Koodi("arvo", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("FI", "kielivalikoima", None)), true, None, None)), Set.empty, false, false)
     val luokkasuoritus1 = PerusopetuksenVuosiluokka(UUID.randomUUID(), Oppilaitos(Kielistetty(None, None, None), OPPILAITOSOID1), Kielistetty(Some("vuosiluokka"), None, None), Koodi("arvo1", "koodisto", Some(1)), Some(LocalDate.parse("2024-08-01")), Some(LocalDate.parse("2025-08-01")), false)
@@ -514,7 +523,7 @@ class KantaOperaatiotTest {
 
   @Test def testAmmatillinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val oppilaitos = Oppilaitos(Kielistetty(Some("Nimi suomi"), Some("Nimi Ruotsi"), Some("Nimi englanti")), "1.2.246.562.10.95136889433")
     val suoritus = TestDataUtil.getTestAmmatillinenTutkinto(oppilaitos = oppilaitos)
     val tilat = KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(LocalDate.parse("2024-06-03"), KoskiKoodi("opiskelu", "tilakoodisto", Some(6), Kielistetty(None, None, None), None)), KoskiOpiskeluoikeusJakso(LocalDate.parse("2024-11-09"), KoskiKoodi("joulunvietto", "tilakoodisto", Some(6), Kielistetty(None, None, None), None))))
@@ -526,7 +535,7 @@ class KantaOperaatiotTest {
 
   @Test def testGeneerinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val suoritus = Tuva(UUID.randomUUID(), Kielistetty(Some("Nimi Suomi"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(Some("Nimi suomi"), None, None), "1.2.246.562.10.95136889433"), Koodi("lasna", "koskiopiskeluoikeudentila", Some(1)), SuoritusTila.KESKEN, LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), None,
       Lahtokoulu(LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), "1.2.246.562.10.95136889433", Some(2025), None, Some(SuoritusTila.KESKEN), None, TUVA))
     val tilat = KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(LocalDate.parse("2023-05-03"), KoskiKoodi("opiskelu", "tilakoodisto", Some(2), Kielistetty(None, None, None), None)), KoskiOpiskeluoikeusJakso(LocalDate.parse("2025-10-09"), KoskiKoodi("lasna", "tilakoodisto", Some(6), Kielistetty(None, None, None), None))))
@@ -552,7 +561,7 @@ class KantaOperaatiotTest {
 
     val henkilon1Versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.YTR, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "YTR", None).get
     val henkilon1Versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, SuoritusJoukko.YTR, Seq("{\"attr\": \"value2\"}"), Seq.empty, Instant.now(), "YTR", None).get
-    val henkilon2Versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO2, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val henkilon2Versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO2, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
 
     val henkilon1Versiot = this.kantaOperaatiot.haeHenkilonVersiot(HENKILONUMERO1)
     Assertions.assertTrue(henkilon1Versiot.exists(v => v.tunniste == henkilon1Versio.tunniste))
@@ -603,7 +612,7 @@ class KantaOperaatiotTest {
     val henkiloNumero = "1.2.246.562.24.99988877766"
     val oppilaitosOid = "1.2.246.562.10.95136889433"
     val valmistumisVuosi = 2025
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
 
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), None, oppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
@@ -618,7 +627,7 @@ class KantaOperaatiotTest {
     val uusiOppilaitosOid = "1.2.246.562.10.95136889434"
     val valmistumisVuosi = 2025
 
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       // ensimmäinen suoritus päättyy koulun vaihtoon
       Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
@@ -637,7 +646,7 @@ class KantaOperaatiotTest {
     val uusiOppilaitosOid = "1.2.246.562.10.95136889434"
     val valmistumisVuosi = 2025
 
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       // ensimmäinen suoritus päättyy koulun vaihtoon
       Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
@@ -656,7 +665,7 @@ class KantaOperaatiotTest {
     val uusiOppilaitosOid = "1.2.246.562.10.95136889434"
     val valmistumisVuosi = 2025
 
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       // ensimmäinen suoritus päättyy koulun vaihtoon
       Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
@@ -674,7 +683,7 @@ class KantaOperaatiotTest {
     val valmistumisVuosi = 2025
 
     // tallennetaan versiot ja lähtökoulut
-    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val lahtokoulu = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(lahtokoulu), ParserVersions.KOSKI)
 
@@ -690,8 +699,8 @@ class KantaOperaatiotTest {
     val valmistumisVuosi = 2025
 
     // tallennetaan versiot ja lähtökoulut
-    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero1, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
-    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero2, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero1, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero2, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1), ParserVersions.KOSKI)
@@ -710,13 +719,13 @@ class KantaOperaatiotTest {
     val valmistumisVuosi = 2025
 
     // tallennetaan ensimmäinen versio, lähtökoulu täsmää
-    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq("{\"avain\": \"arvo1\"}"), Seq.empty, Instant.now(), "KOSKI", None)
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq("{\"avain\": \"arvo1\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1))
     val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1), ParserVersions.KOSKI)
     Assertions.assertEquals(Set(lahtokoulu1), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
 
     // tallennetaan toinen versio, lähtökoulu muuttuu
-    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq("{\"avain\": \"arvo2\"}"), Seq.empty, Instant.now(), "KOSKI", None)
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, SuoritusJoukko.KOSKI, Seq("{\"avain\": \"arvo2\"}"), Seq.empty, Instant.now(), "1.2.3", Some(2))
     val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(lahtokoulu2), ParserVersions.KOSKI)
     Assertions.assertEquals(Set(lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
@@ -1082,7 +1091,7 @@ class KantaOperaatiotTest {
     val oppilaitosOid = "1.2.246.562.10.12345678900"
 
     // tallennetaan versio ja suoritukset
-    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value111\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value111\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val suoritus1 = PerusopetuksenOppimaara(
       UUID.randomUUID(), None,
       Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
@@ -1106,7 +1115,7 @@ class KantaOperaatiotTest {
     Thread.sleep(100)
 
     // tallennetaan toinen versio ja suoritukset
-    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value222\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value222\"}"), Seq.empty, Instant.now(), "1.2.3", Some(2)).get
     val suoritus2 = PerusopetuksenOppimaara(
       UUID.randomUUID(), None,
       Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
@@ -1133,7 +1142,7 @@ class KantaOperaatiotTest {
 
 
     // tallennetaan kolmas versio ja suoritukset
-    val versio3 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value333\"}"), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio3 = this.kantaOperaatiot.tallennaJarjestelmaVersio(personOid, SuoritusJoukko.KOSKI, Seq("{\"attr\": \"value333\"}"), Seq.empty, Instant.now(), "1.2.3", Some(3)).get
     val suoritus3 = PerusopetuksenOppimaara(
       UUID.randomUUID(), None,
       Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),

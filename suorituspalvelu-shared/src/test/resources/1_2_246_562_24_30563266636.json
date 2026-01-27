@@ -7,6 +7,9 @@
     "aikaleima": "2025-04-16T15:57:17.192772",
     "opiskeluoikeudet": [
       {
+        "oid": "1.2.246.562.15.30828417052",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "perusopetus",
@@ -21,7 +24,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.30828417052",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.59286753021",
           "nimi": {
@@ -827,6 +829,9 @@
         }
       },
       {
+        "oid": "1.2.246.562.15.52233440677",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "perusopetus",
@@ -841,7 +846,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.52233440677",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.59286753021",
           "nimi": {
@@ -2514,6 +2518,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.30994048939",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "tuva",
@@ -2528,7 +2535,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.30994048939",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.77171783218",
           "nimi": {
@@ -2694,6 +2700,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.72522532828",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "aikuistenperusopetus",
@@ -2708,7 +2717,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.72522532828",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.59286753021",
           "nimi": {
@@ -2802,6 +2810,9 @@
         "suoritukset": []
       },
       {
+        "oid": "1.2.246.562.15.77661702355",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "perusopetus",
@@ -2816,7 +2827,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.77661702355",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.59286753021",
           "nimi": {
@@ -3019,6 +3029,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.32310148674",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
@@ -3033,7 +3046,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.32310148674",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.77171783218",
           "nimi": {
@@ -3117,6 +3129,9 @@
         "suoritukset": []
       },
       {
+        "oid": "1.2.246.562.15.69532568529",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
@@ -3131,7 +3146,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.69532568529",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.99191194051",
           "nimi": {
@@ -3283,6 +3297,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.24186343661",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "oppijaOid": "1.2.246.562.24.30563266636",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
@@ -3297,7 +3314,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.24186343661",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.77171783218",
           "nimi": {

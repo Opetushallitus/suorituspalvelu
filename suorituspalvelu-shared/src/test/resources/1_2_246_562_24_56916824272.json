@@ -7,6 +7,9 @@
     "aikaleima": "2023-05-23T10:59:29.132573",
     "opiskeluoikeudet": [
       {
+        "oid": "1.2.246.562.15.79299730741",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -20,7 +23,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.79299730741",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.35751498086",
           "nimi": {
@@ -182,6 +184,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.24748024759",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -195,7 +200,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.24748024759",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.77862589668",
           "nimi": {
@@ -444,6 +448,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.41833690484",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "perusopetus",
           "nimi": {
@@ -457,7 +464,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.41833690484",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.14205792964",
           "nimi": {
@@ -1257,6 +1263,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.54761186631",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -1270,7 +1279,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.54761186631",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.14175756379",
           "nimi": {
