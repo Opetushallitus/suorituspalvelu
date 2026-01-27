@@ -42,11 +42,11 @@ object MockEntityToUIConverter {
   def getKKTutkinnot(): List[KKSuoritus] =
     List(KKSuoritus(
       tunniste = UUID.randomUUID(),
-      nimi = KKSuoritusNimi(
+      nimi = Optional.of(KKSuoritusNimi(
         fi = Optional.of("Kasvatust. maist., kasvatustiede"),
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")
-      ),
+      )),
       oppilaitos = UIOppilaitos(
         nimi = UIOppilaitosNimi(
           fi = Optional.of("Tampereen yliopisto"),
