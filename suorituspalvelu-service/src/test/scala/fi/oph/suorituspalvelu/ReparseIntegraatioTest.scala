@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import com.fasterxml.jackson.core.`type`.TypeReference
 import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.VOIMASSA
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, VirtaOpiskeluoikeus, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, KKOpiskeluoikeus, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.*
@@ -85,7 +85,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testUudelleenParseroiVirta(): Unit = {
     // tallennetaan versio ja parseroitua dataa
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, SuoritusJoukko.VIRTA, Seq.empty, Instant.now()).get
-    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirtaOpiskeluoikeus(
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(KKOpiskeluoikeus(
       UUID.randomUUID(),
       "",
       "",

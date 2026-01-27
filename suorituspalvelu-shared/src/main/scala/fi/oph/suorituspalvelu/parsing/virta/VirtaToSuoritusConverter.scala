@@ -1,13 +1,14 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, Suoritus, SuoritusTila, VirtaMuuSuoritus, VirtaOpintosuoritus, VirtaOpiskeluoikeus, VirtaOpiskeluoikeusBase, VirtaSynteettinenOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, Suoritus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKSynteettinenOpiskeluoikeus, KKTutkinto}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
 import java.util.UUID
 import scala.collection.immutable.*
+
 /**
- * Muuntaa Kosken suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
+ * Muuntaa Virran suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
  */
 object VirtaToSuoritusConverter {
   val LOG = LoggerFactory.getLogger(getClass)
@@ -23,10 +24,10 @@ object VirtaToSuoritusConverter {
     else
       throw new RuntimeException("Dummies not allowed")
 
-  def getDefaultNimi(nimet: Seq[Nimi]): Option[String] =
+  def getDefaultNimi(nimet: Seq[VirtaNimi]): Option[String] =
     getNimi(nimet, "fi").orElse(nimet.find(n => n.kieli.isEmpty).map(n => n.nimi))
 
-  def getNimi(nimet: Seq[Nimi], kieli: String): Option[String] =
+  def getNimi(nimet: Seq[VirtaNimi], kieli: String): Option[String] =
     nimet.find(n => n.kieli.exists(k => kieli.equals(k))).map(n => n.nimi)
 
   def convertVirtaTila(koodiArvo: String): KKOpiskeluoikeusTila =
@@ -38,15 +39,20 @@ object VirtaToSuoritusConverter {
       case "5" => KKOpiskeluoikeusTila.PAATTYNYT  // luopunut
       case "6" => KKOpiskeluoikeusTila.PAATTYNYT  // päättynyt
 
-  private def isPaattynytOpiskeluoikeus(opiskeluoikeus: Opiskeluoikeus) = {
+  private def isPaattynytOpiskeluoikeus(opiskeluoikeus: VirtaOpiskeluoikeus) = {
     latestTila(opiskeluoikeus).exists(t => {
       convertVirtaTila(t.Koodi) == KKOpiskeluoikeusTila.PAATTYNYT
     })
   }
 
-  private def sisaltyvatAvaimet(suoritus: Opintosuoritus): Set[String] =  suoritus.Sisaltyvyys.map(_.avain).toSet
+  private def sisaltyvatAvaimet(suoritus: VirtaOpintosuoritus): Set[String] =  suoritus.Sisaltyvyys.map(_.avain).toSet
 
-  private def sisaltyyOpiskeluoikeuteen(suoritus: Opintosuoritus, opiskeluoikeus: Opiskeluoikeus, suorituksetByAvain: Map[String, Opintosuoritus], rootSuoritus: Option[Opintosuoritus] = None): Boolean = {
+  private def sisaltyyOpiskeluoikeuteen(
+    suoritus: VirtaOpintosuoritus,
+    opiskeluoikeus: VirtaOpiskeluoikeus,
+    suorituksetByAvain: Map[String, VirtaOpintosuoritus],
+    rootSuoritus: Option[VirtaOpintosuoritus] = None
+  ): Boolean = {
     suoritus.opiskeluoikeusAvain.contains(opiskeluoikeus.avain) &&
       (rootSuoritus.isEmpty || rootSuoritus.flatMap(_.opiskeluoikeusAvain).isEmpty || rootSuoritus.get.opiskeluoikeusAvain.contains(opiskeluoikeus.avain)) ||
       suoritus.Sisaltyvyys.exists(sis => {
@@ -59,11 +65,11 @@ object VirtaToSuoritusConverter {
 
   private val TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT = Set("1", "2", "3", "4", "6", "7")
 
-  private def isTutkintoonJohtava(opiskeluoikeus: Opiskeluoikeus) = TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeus.Tyyppi)
+  private def isTutkintoonJohtava(opiskeluoikeus: VirtaOpiskeluoikeus) = TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeus.Tyyppi)
 
   private def moveOpintojaksotUnderRootSuoritusIfNecessary(suoritukset: Seq[Suoritus]): Seq[Suoritus] = {
-    val tutkinnot = suoritukset.collect { case t: VirtaTutkinto => t }
-    val opintojaksot = suoritukset.collect { case o: VirtaOpintosuoritus => o }
+    val tutkinnot = suoritukset.collect { case t: KKTutkinto => t }
+    val opintojaksot = suoritukset.collect { case o: KKOpintosuoritus => o }
     if (tutkinnot.size == 1 && tutkinnot.head.suoritukset.isEmpty && opintojaksot.nonEmpty) {
       Seq(tutkinnot.head.copy(suoritukset = opintojaksot))
     } else {
@@ -71,10 +77,10 @@ object VirtaToSuoritusConverter {
     }
   }
 
-  private def addKeskenerainenTutkinnonSuoritus(suoritukset: Seq[Suoritus], opiskeluoikeus: Opiskeluoikeus): List[Suoritus] = {
-    val (opintojaksot, muutSuoritukset) = suoritukset.toList.partition(_.isInstanceOf[VirtaOpintosuoritus])
+  private def addKeskenerainenTutkinnonSuoritus(suoritukset: Seq[Suoritus], opiskeluoikeus: VirtaOpiskeluoikeus): List[Suoritus] = {
+    val (opintojaksot, muutSuoritukset) = suoritukset.toList.partition(_.isInstanceOf[KKOpintosuoritus])
     val koulutusKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
-    VirtaTutkinto(
+    KKTutkinto(
       tunniste = UUID.randomUUID(),
       nimiFi = None,
       nimiEn = None,
@@ -84,11 +90,11 @@ object VirtaToSuoritusConverter {
       aloitusPvm = opiskeluoikeus.AlkuPvm,
       suoritusPvm = None,
       myontaja = opiskeluoikeus.Myontaja,
-      kieli = "",
+      kieli = None,
       koulutusKoodi = koulutusKoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
-      suoritukset = opintojaksot.collect { case o: VirtaOpintosuoritus => o },
-      avain = ""
+      suoritukset = opintojaksot.collect { case o: KKOpintosuoritus => o },
+      avain = None
     ) :: muutSuoritukset
   }
 
@@ -96,14 +102,14 @@ object VirtaToSuoritusConverter {
     Set(
       "8", // Kotimainen opiskelijaliikkuvuus
       "13" // Avoimen opinnot
-      ).contains(opiskeluoikeusTyyppi)
+    ).contains(opiskeluoikeusTyyppi)
   }
 
-  private def latestJakso(opiskeluoikeus: Opiskeluoikeus): Option[Jakso] = {
+  private def latestJakso(opiskeluoikeus: VirtaOpiskeluoikeus): Option[VirtaJakso] = {
     opiskeluoikeus.Jakso.sortBy(_.AlkuPvm).lastOption
   }
 
-  private def latestTila(opiskeluoikeus: Opiskeluoikeus): Option[Tila] = {
+  private def latestTila(opiskeluoikeus: VirtaOpiskeluoikeus): Option[VirtaTila] = {
     opiskeluoikeus.Tila.sortBy(_.AlkuPvm).lastOption
   }
 
@@ -111,42 +117,40 @@ object VirtaToSuoritusConverter {
 
   private def addMuuKorkeakouluSuoritus(
     suoritukset: Seq[Suoritus],
-    opiskeluoikeus: Opiskeluoikeus,
-    viimeisinTutkintoKoulutuskoodi: Option[String]): Seq[Suoritus] = {
+    opiskeluoikeus: VirtaOpiskeluoikeus,
+    viimeisinTutkintoKoulutuskoodi: Option[String]
+  ): Seq[Suoritus] = {
     val tyyppi = opiskeluoikeus.Tyyppi
-    val (rootSuoritukset, osaSuoritukset) = if (sisallytaOpintojaksotOsasuorituksina(opiskeluoikeus.Tyyppi)) {
-      val (opintojaksot, muut) = suoritukset.foldRight((List.empty[VirtaOpintosuoritus], List.empty[Suoritus])) {
-        case (jakso: VirtaOpintosuoritus, (jaksot, muut)) => (jakso :: jaksot, muut)
-        case (muu, (jaksot, muut)) => (jaksot, muu :: muut)
-      }
-      (muut, if (opintojaksot.isEmpty) Seq.empty else opintojaksot)
+    val (rootSuoritukset, osaSuoritukset) = if (sisallytaOpintojaksotOsasuorituksina(tyyppi)) {
+      suoritukset.partition(_.isInstanceOf[KKTutkinto])
     } else {
       (suoritukset, Seq.empty)
     }
 
-    val vahvistusPaiva = latestTila(opiskeluoikeus).filter(_.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT).map(_.AlkuPvm)
-    val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(Ordering[LocalDate].reverse).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
-    val nimiFallback = Some(opiskeluoikeus.koulutusmoduulitunniste.stripPrefix("#").stripSuffix("/").trim).filter(_.nonEmpty)
-
     val newSuoritus: Option[Suoritus] = if (osaSuoritukset.nonEmpty) {
+      val vahvistusPaiva = latestTila(opiskeluoikeus).filter(_.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT).map(_.AlkuPvm)
+      val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(Ordering[LocalDate].reverse).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
+      val nimiFallback = Some(opiskeluoikeus.koulutusmoduulitunniste.stripPrefix("#").stripSuffix("/").trim).filter(_.nonEmpty)
+      val koulutusKoodi = viimeisinTutkintoKoulutuskoodi.getOrElse("")
       Some(viimeisinTutkintoKoulutuskoodi.map(viimeisinKoulutusKoodi => {
-        VirtaTutkinto(
+        KKTutkinto(
           tunniste = UUID.randomUUID(),
           nimiFi = None,
           nimiSv = None,
           nimiEn = None,
-          komoTunniste = viimeisinKoulutusKoodi,
+          komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
           opintoPisteet = 0,
           aloitusPvm = opiskeluoikeus.AlkuPvm,
           suoritusPvm = vahvistusPaiva,
           myontaja = opiskeluoikeus.Myontaja,
-          kieli = "",
+          kieli = None,
           koulutusKoodi = Some(viimeisinKoulutusKoodi),
           opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
           suoritukset = osaSuoritukset,
-          avain = ""
+          avain = None
         )
-      }).getOrElse(VirtaOpintosuoritus(
+      }).getOrElse(KKOpintosuoritus(
+        // TODO: Onko tarpeellista erotella tämä ja ylläoleva tutkinto?
         tunniste = UUID.randomUUID(),
         nimiFi = getDefaultNimi(jaksonNimi).orElse(nimiFallback),
         nimiSv = getNimi(jaksonNimi, "sv").orElse(nimiFallback),
@@ -177,49 +181,42 @@ object VirtaToSuoritusConverter {
     newSuoritus.toSeq ++ rootSuoritukset
   }
 
-  private def fixRootSuoritusIfNecessary(suoritukset: Seq[Suoritus], opiskeluoikeus: Opiskeluoikeus): Seq[Suoritus] = {
-    val opiskeluoikeusJaksoKoulutuskoodit = opiskeluoikeus.Jakso.flatMap(_.Koulutuskoodi)
-    val suoritusLoytyyKoulutuskoodilla = opiskeluoikeusJaksoKoulutuskoodit.exists(jaksoKoulutusKoodi => {
-      suoritukset.exists {
-        case t: VirtaTutkinto => t.koulutusKoodi.contains(jaksoKoulutusKoodi)
-        case _ => false
-      }
-    })
-
-    if (suoritusLoytyyKoulutuskoodilla) {
-      moveOpintojaksotUnderRootSuoritusIfNecessary(suoritukset)
-    } else if (opiskeluoikeusJaksoKoulutuskoodit.nonEmpty && !isPaattynytOpiskeluoikeus(opiskeluoikeus)) {
-      addKeskenerainenTutkinnonSuoritus(suoritukset, opiskeluoikeus)
-    } else if (opiskeluoikeusJaksoKoulutuskoodit.nonEmpty) {
-      val viimeisinTutkintoKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
-      addMuuKorkeakouluSuoritus(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi)
-    } else {
-      addMuuKorkeakouluSuoritus(suoritukset, opiskeluoikeus, None)
-    }
-  }
-
-  def rearrangeSuorituksetIfNecessary(suoritukset: Seq[Suoritus], opiskeluoikeus: Opiskeluoikeus): Seq[Suoritus] = {
+  private def fixSuoritusRoots(suoritukset: Seq[Suoritus], opiskeluoikeus: VirtaOpiskeluoikeus): Seq[Suoritus] = {
     if (isTutkintoonJohtava(opiskeluoikeus)) {
-      fixRootSuoritusIfNecessary(suoritukset, opiskeluoikeus)
+      val opiskeluoikeusJaksoKoulutuskoodit = opiskeluoikeus.Jakso.flatMap(_.Koulutuskoodi)
+      val suoritusLoytyyKoulutuskoodilla = opiskeluoikeusJaksoKoulutuskoodit.exists(jaksoKoulutusKoodi => {
+        suoritukset.exists {
+          case t: KKTutkinto => t.koulutusKoodi.contains(jaksoKoulutusKoodi)
+          case _ => false
+        }
+      })
+
+      if (suoritusLoytyyKoulutuskoodilla) {
+        moveOpintojaksotUnderRootSuoritusIfNecessary(suoritukset)
+      } else if (opiskeluoikeusJaksoKoulutuskoodit.nonEmpty && !isPaattynytOpiskeluoikeus(opiskeluoikeus)) {
+        addKeskenerainenTutkinnonSuoritus(suoritukset, opiskeluoikeus)
+      } else {
+        val viimeisinTutkintoKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
+        addMuuKorkeakouluSuoritus(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi)
+      }
     } else {
       addMuuKorkeakouluSuoritus(suoritukset, opiskeluoikeus, None)
     }
   }
 
-  def toOpiskeluoikeudet(virtaSuoritukset: VirtaSuoritukset): Seq[VirtaOpiskeluoikeusBase] = {
+  def toOpiskeluoikeudet(virtaSuoritukset: VirtaSuoritukset): Seq[KKOpiskeluoikeusBase] = {
       val suoritukset = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(_.Opintosuoritukset).flatten
       val virtaOpiskeluoikeudet = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(_.Opiskeluoikeudet)
       val suoritusRoots = suoritukset.filter(s => !suoritukset.exists(sisaltyvatAvaimet(_).contains(s.avain)))
-
       val suorituksetByAvain = suoritukset.map(s => s.avain -> s).toMap
 
-      val (orphanSuoritukset, opiskeluoikeudet) = virtaOpiskeluoikeudet.foldLeft((suoritusRoots, List.empty[VirtaOpiskeluoikeusBase]))
+      val (orphanSuoritukset, opiskeluoikeudet) = virtaOpiskeluoikeudet.foldLeft((suoritusRoots, List.empty[KKOpiskeluoikeusBase]))
         { case ((remainingSuoritusRoots, opiskeluOikeudet), oo) => {
-          val virtaTila = oo.Tila.sortBy(_.AlkuPvm).lastOption.map(_.Koodi).getOrElse("")
+          val virtaTila = latestTila(oo).map(_.Koodi).getOrElse("")
           val (opiskeluoikeudenSuoritukset, muutSuoritukset) = remainingSuoritusRoots.partition(sisaltyyOpiskeluoikeuteen(_, oo, suorituksetByAvain))
           val jakso = latestJakso(oo)
 
-          val opiskeluOikeus = VirtaOpiskeluoikeus(
+          val opiskeluOikeus = KKOpiskeluoikeus(
             tunniste = UUID.randomUUID(),
             virtaTunniste = oo.avain,
             tyyppiKoodi = oo.Tyyppi,
@@ -229,14 +226,14 @@ object VirtaToSuoritusConverter {
             virtaTila = fi.oph.suorituspalvelu.business.Koodi(virtaTila, VIRTA_OO_TILA_KOODISTO, None), // otetaan viimeisin opiskeluoikeuden tila
             supaTila = convertVirtaTila(virtaTila),
             myontaja = oo.Myontaja,
-            suoritukset = rearrangeSuorituksetIfNecessary(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet
+            suoritukset = fixSuoritusRoots(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet
           )
           (muutSuoritukset, opiskeluOikeus :: opiskeluOikeudet)
         }
       }
 
       val synteettisetOpiskeluoikeudet = orphanSuoritukset.groupBy(_.Myontaja).map { case (myontaja, suoritukset) =>
-        VirtaSynteettinenOpiskeluoikeus(
+        KKSynteettinenOpiskeluoikeus(
           UUID.randomUUID(),
           myontaja,
           toSuoritukset(None, suoritukset, suorituksetByAvain).toSet,
@@ -247,68 +244,70 @@ object VirtaToSuoritusConverter {
   }
 
 
-  private def toSuoritus(suoritus: fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus,
-    suorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus],
-    opiskeluoikeus: Option[fi.oph.suorituspalvelu.parsing.virta.Opiskeluoikeus]
+  private def toSuoritus(
+    suoritus: fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus,
+    suorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus],
+    opiskeluoikeus: Option[fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus]
   ): Option[Suoritus] = {
     (suoritus.Laji, opiskeluoikeus) match
       // TODO: Onko ongelma, jos vaaditaan opiskeluoikeuden olemassaolo tässä?
-      case (1, Some(oo)) => Some(VirtaTutkinto(
-        UUID.randomUUID(),
-        getDefaultNimi(suoritus.Nimi),
-        getNimi(suoritus.Nimi, "sv"),
-        getNimi(suoritus.Nimi, "en"),
-        suoritus.koulutusmoduulitunniste,
-        suoritus.Laajuus.Opintopiste,
-        oo.AlkuPvm,
-        Some(suoritus.SuoritusPvm),
-        suoritus.Myontaja,
-        suoritus.Kieli,
-        suoritus.Koulutuskoodi.orElse(latestJakso(oo).flatMap(_.Koulutuskoodi)),
-        suoritus.opiskeluoikeusAvain,
-        suoritus.Sisaltyvyys.flatMap(sis => {
+      case (1, Some(oo)) => Some(KKTutkinto(
+        tunniste = UUID.randomUUID(),
+        nimiFi = getDefaultNimi(suoritus.Nimi),
+        nimiSv = getNimi(suoritus.Nimi, "sv"),
+        nimiEn = getNimi(suoritus.Nimi, "en"),
+        komoTunniste = suoritus.koulutusmoduulitunniste,
+        opintoPisteet = suoritus.Laajuus.Opintopiste,
+        aloitusPvm = oo.AlkuPvm,
+        suoritusPvm = Some(suoritus.SuoritusPvm),
+        myontaja = suoritus.Myontaja,
+        kieli = Some(suoritus.Kieli),
+        koulutusKoodi = suoritus.Koulutuskoodi.orElse(latestJakso(oo).flatMap(_.Koulutuskoodi)),
+        opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
+        suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
            suorituksetByAvain.get(sis.avain).flatMap(s =>
-             toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[VirtaOpintosuoritus]]
+             toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[KKOpintosuoritus]]
            )
         }),
-        suoritus.avain
+        avain = Some(suoritus.avain)
       ))
-      case (2, _) => Some(VirtaOpintosuoritus(
-        UUID.randomUUID(),
-        getDefaultNimi(suoritus.Nimi),
-        getNimi(suoritus.Nimi, "sv"),
-        getNimi(suoritus.Nimi, "en"),
-        suoritus.koulutusmoduulitunniste,
-        suoritus.Laajuus.Opintopiste,
-        None,
-        Some(suoritus.SuoritusPvm),
-        suoritus.HyvaksilukuPvm,
-        suoritus.Myontaja,
-        suoritus.Organisaatio.map(_.Rooli),
-        suoritus.Organisaatio.map(_.Koodi),
-        suoritus.Organisaatio.flatMap(_.Osuus),
-        suoritus.Arvosana.map(_.arvosana),
-        suoritus.Arvosana.map(_.asteikko),
-        suoritus.Kieli,
-        suoritus.Koulutusala.map(_.Koodi.koodi).get,
-        suoritus.Koulutusala.map(_.Koodi.versio).get,
-        suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
-        suoritus.opiskeluoikeusAvain,
-        suoritus.Sisaltyvyys.flatMap(sis => {
+      case (2, _) => Some(KKOpintosuoritus(
+        tunniste = UUID.randomUUID(),
+        nimiFi = getDefaultNimi(suoritus.Nimi),
+        nimiSv = getNimi(suoritus.Nimi, "sv"),
+        nimiEn = getNimi(suoritus.Nimi, "en"),
+        komoTunniste = suoritus.koulutusmoduulitunniste,
+        opintoPisteet = suoritus.Laajuus.Opintopiste,
+        opintoviikot = None,
+        suoritusPvm = Some(suoritus.SuoritusPvm),
+        hyvaksilukuPvm = suoritus.HyvaksilukuPvm,
+        myontaja = suoritus.Myontaja,
+        jarjestavaRooli = suoritus.Organisaatio.map(_.Rooli),
+        jarjestavaKoodi = suoritus.Organisaatio.map(_.Koodi),
+        jarjestavaOsuus = suoritus.Organisaatio.flatMap(_.Osuus),
+        arvosana = suoritus.Arvosana.map(_.arvosana),
+        arvosanaAsteikko =suoritus.Arvosana.map(_.asteikko),
+        kieli = suoritus.Kieli,
+        koulutusala = suoritus.Koulutusala.map(_.Koodi.koodi).get,
+        koulutusalaKoodisto = suoritus.Koulutusala.map(_.Koodi.versio).get,
+        opinnaytetyo = suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
+        opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
+        suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
           suorituksetByAvain.get(sis.avain).flatMap(s =>
-            toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[VirtaOpintosuoritus]]
+            toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[KKOpintosuoritus]]
           )
         }),
-        suoritus.avain
+        avain = suoritus.avain
       ))
       case default => None
   }
 
   def toSuoritukset(
-    opiskeluoikeus: Option[Opiskeluoikeus],
-    opintosuoritukset: Seq[fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus],
-    allSuorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus] = Map.empty,
-    allowMissingFieldsForTests: Boolean = false): Seq[Suoritus] =
+    opiskeluoikeus: Option[VirtaOpiskeluoikeus],
+    opintosuoritukset: Seq[fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus],
+    allSuorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus] = Map.empty,
+    allowMissingFieldsForTests: Boolean = false
+  ): Seq[Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opintosuoritukset.flatMap(suoritus => toSuoritus(suoritus, allSuorituksetByAvain, opiskeluoikeus))
