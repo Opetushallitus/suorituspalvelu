@@ -20,8 +20,6 @@ const VoimassaoloIndicator = ({
     switch (opiskeluoikeus.supaTila) {
       case 'VOIMASSA':
         return ophColors.green3;
-      case 'EI_VOIMASSA':
-        return ophColors.orange3;
       case 'PAATTYNYT':
         return ophColors.red2;
     }
@@ -31,8 +29,6 @@ const VoimassaoloIndicator = ({
     switch (opiskeluoikeus.supaTila) {
       case 'VOIMASSA':
         return 'oppija.voimassa';
-      case 'EI_VOIMASSA':
-        return 'oppija.ei-voimassa';
       case 'PAATTYNYT':
         return 'oppija.paattynyt';
       default:

@@ -134,7 +134,6 @@ case class OppijanHautFailureResponse(
 
 enum OpiskeluoikeusTila:
   case VOIMASSA
-  case EI_VOIMASSA
   case PAATTYNYT
 
 enum SuoritusTila:
@@ -145,7 +144,7 @@ enum SuoritusTila:
 enum SuoritusTapa:
   case NAYTTOTUTKINTO
 
-case class OOOppilaitosNimi(
+case class UIOppilaitosNimi(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Tampereen yliopisto sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -154,9 +153,9 @@ case class OOOppilaitosNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class OOOppilaitos(
+case class UIOppilaitos(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: OOOppilaitosNimi,
+  @BeanProperty nimi: UIOppilaitosNimi,
   @(Schema @field)(example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oid: String
 )
@@ -185,7 +184,7 @@ case class UIOpiskeluoikeus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: UIOpiskeluoikeusNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: OOOppilaitos,
+  @BeanProperty oppilaitos: UIOppilaitos,
   @(Schema @field)(example = "2020-01-01", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty voimassaolonAlku: LocalDate,
   @(Schema @field)(example = "2024-12-31", requiredMode = RequiredMode.REQUIRED)
@@ -196,23 +195,29 @@ case class UIOpiskeluoikeus(
   @BeanProperty virtaTila: UIOpiskeluoikeusVirtaTila
 )
 
-case class KKOppilaitosNimi(
-  @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
+case class KKOpintojaksoNimi(
+  @(Schema @field)(example = "Johdatus kasvatustieteisiin", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Tampereen yliopisto sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Johdatus kasvatustieteisiin sv", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Tampereen yliopisto en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Johdatus kasvatustieteisiin en", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String],
 )
 
-case class KKOppilaitos(
-  @(Schema @field)(description = "Oppilaitoksen nimi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: KKOppilaitosNimi,
-  @(Schema @field)(description = "Oppilaitoksen tunniste", example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oid: String
+case class UIKKOpintojakso(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(description = "Opintojakson nimi", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: KKOpintojaksoNimi,
+  @(Schema @field)(description = "Opintojakson laajuus (opintopistettä)", example = "3", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty laajuus: BigDecimal,
+  @(Schema @field)(description = "Opintojakson arvosana", example = "3", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(example = "3")
+  @BeanProperty opintojaksot: java.util.List[UIKKOpintojakso],
 )
 
-case class KKSuoritusNimi(
+case class UIKKSuoritusNimi(
   @(Schema @field)(example = "Kasvatustieteen maisteri", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Kasvatustieteen maisteri sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -221,19 +226,21 @@ case class KKSuoritusNimi(
   @BeanProperty en: Optional[String],
 )
 
-case class KKSuoritus(
+case class UIKKSuoritus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(description = "Tutkinnon nimi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: KKSuoritusNimi,
+  @BeanProperty nimi: Optional[UIKKSuoritusNimi],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: KKOppilaitos,
+  @BeanProperty oppilaitos: UIOppilaitos,
   @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "")
+  @BeanProperty opintojaksot: java.util.List[UIKKOpintojakso],
 )
 
 case class YOKoeNimi(
@@ -1174,7 +1181,7 @@ case class OppijanTiedotSuccessResponse(
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty henkiloOID: String,
   @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
-  @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],
+  @BeanProperty kkTutkinnot: java.util.List[UIKKSuoritus],
   @BeanProperty yoTutkinnot: java.util.List[YOTutkinto],
   @BeanProperty lukionOppimaara: Optional[LukionOppimaara],
   @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
@@ -1199,36 +1206,41 @@ case class OppijanTiedotFailureResponse(
   @BeanProperty virheet: java.util.Set[String],
 ) extends OppijanTiedotResponse
 
-case class AvainArvoYliajoUI(@BeanProperty avain: String,
-                             @BeanProperty arvo: Optional[String],
-                             @BeanProperty henkiloOid: String,
-                             @BeanProperty hakuOid: String,
-                             @BeanProperty virkailijaOid: String,
-                             @BeanProperty selite: String)
+case class AvainArvoYliajoUI(
+  @BeanProperty avain: String,
+  @BeanProperty arvo: Optional[String],
+  @BeanProperty henkiloOid: String,
+  @BeanProperty hakuOid: String,
+  @BeanProperty virkailijaOid: String,
+  @BeanProperty selite: String
+)
 
-case class AvainArvoMetadataUI(@BeanProperty selitteet: java.util.List[String],
-                               @BeanProperty arvoEnnenYliajoa: Optional[String],
-                               @BeanProperty yliajo: Optional[AvainArvoYliajoUI],
-                               @BeanProperty arvoOnHakemukselta: Boolean) //Hakemukselta tulleita arvoja ei voi muokata Supassa, ja ne halutaan varmaan useimmiten piilottaa kälissä.
+case class AvainArvoMetadataUI(
+  @BeanProperty selitteet: java.util.List[String],
+  @BeanProperty arvoEnnenYliajoa: Optional[String],
+  @BeanProperty yliajo: Optional[AvainArvoYliajoUI],
+  @BeanProperty arvoOnHakemukselta: Boolean
+) //Hakemukselta tulleita arvoja ei voi muokata Supassa, ja ne halutaan varmaan useimmiten piilottaa kälissä.
 
-
-case class AvainArvoContainerUI(@BeanProperty avain: String,
-                                @BeanProperty arvo: String,
-                                @BeanProperty metadata: AvainArvoMetadataUI)
+case class AvainArvoContainerUI(
+  @BeanProperty avain: String,
+  @BeanProperty arvo: String,
+  @BeanProperty metadata: AvainArvoMetadataUI
+)
 
 case class OppijanValintaDataSuccessResponse(
-                                         @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
-                                         @BeanProperty henkiloOID: String,
-                                         @BeanProperty hakuOID: String,
-                                         //@BeanProperty leikkuriPaiva: LocalDate, lisätään tänne kun saadaan tieto kaivettua ohjausparametreista ja käyttöön
-                                         //@BeanProperty laskennanAlkaminen: LocalDate, lisätään tänne kun saadaan tieto kaivettua jostain ja käyttöön
-                                         @BeanProperty avainArvot: java.util.List[AvainArvoContainerUI]
-                                       ) extends OppijanTiedotResponse
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOID: String,
+  @BeanProperty hakuOID: String,
+  //@BeanProperty leikkuriPaiva: LocalDate, lisätään tänne kun saadaan tieto kaivettua ohjausparametreista ja käyttöön
+  //@BeanProperty laskennanAlkaminen: LocalDate, lisätään tänne kun saadaan tieto kaivettua jostain ja käyttöön
+  @BeanProperty avainArvot: java.util.List[AvainArvoContainerUI]
+) extends OppijanTiedotResponse
 
 case class OppijanValintaDataFailureResponse(
-                                         @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
-                                         @BeanProperty virheAvaimet: java.util.Set[String],
-                                       ) extends OppijanTiedotResponse
+  @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
+  @BeanProperty virheAvaimet: java.util.Set[String],
+) extends OppijanTiedotResponse
 
 trait YliajonMuutosHistoriaResponse()
 

@@ -1,8 +1,6 @@
 services:
   pgdatabase:
     image: postgres:15
-    networks:
-      - supanet
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -31,8 +29,8 @@ services:
     ports:
       - "8443:8443"
       - "5005:5005"
-    networks:
-      - supanet
+    extra_hosts:
+      - "virtawstesti.csc.fi:host-gateway"
     volumes:
       - .:/app
       - ~/.m2:/home/appuser/.m2
@@ -52,8 +50,6 @@ services:
       dockerfile: Dockerfile.frontend
     ports:
       - "3000:3000"
-    networks:
-      - supanet
     volumes:
       - ./suorituspalvelu-ui:/app
       - frontend_node_modules:/app/node_modules
@@ -68,14 +64,9 @@ services:
       - "80:80"
     volumes:
       - ./nginx.dev.conf:/etc/nginx/templates/default.conf.template:ro
-    networks:
-      - supanet
     depends_on:
       - frontend
       - backend
-networks:
-  supanet:
-    driver: bridge
 volumes:
   pgdata:
   frontend_node_modules:
