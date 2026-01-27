@@ -208,6 +208,11 @@ case class LahtokoulutFailureResponse(
   @BeanProperty virheet: java.util.Set[String]
 ) extends LahtokoulutResponse
 
+case class HakemustenHarkinnanvaraisuudetPayload(
+  @(Schema @field)(example = "[\"" + ESIMERKKI_HAKUKOHDE_OID + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakemusOids: java.util.List[String]
+)
+
 case class ValintalaskentaDataPayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakuOid: Optional[String],
@@ -286,4 +291,32 @@ case class ValintalaskentaApiHakemus(
   @BeanProperty avaimet: java.util.List[ValintalaskentaApiAvainArvo],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty avainMetatiedotDTO: java.util.List[ValintalaskentaApiAvainMetatiedotDTO] //Lisätään nämä myöhemmässä vaiheessa, tai yhdistetään avain-arvoihin (vaatii muutoksia valintaperusteisiin jos yhdistetään)
+)
+
+trait HarkinnanvaraisuusResponse
+
+case class HarkinnanvaraisuusSuccessResponse(
+  @(Schema @field)
+  @BeanProperty harkinnanvaraisuudet: java.util.List[ValintaApiHakemuksenHarkinnanvaraisuus]
+) extends HarkinnanvaraisuusResponse
+
+case class HarkinnanvaraisuusFailureResponse(
+  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.List[String]
+) extends HarkinnanvaraisuusResponse
+
+case class ValintaApiHakukohteenHarkinnanvaraisuus(
+  @(Schema @field)(example = ESIMERKKI_HAKUKOHDE_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakukohdeOid: String,
+  @(Schema @field)(example = "ATARU_EI_PAATTOTODISTUSTA", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty harkinnanvaraisuudenSyy: String
+)
+
+case class ValintaApiHakemuksenHarkinnanvaraisuus(
+  @(Schema @field)(example = "1.2.246.562.11.00000000000000000001", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakemusOid: String,
+  @(Schema @field)(example = "1.2.246.562.24.00000000001", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakutoiveet: java.util.List[ValintaApiHakukohteenHarkinnanvaraisuus],
 )

@@ -513,7 +513,7 @@ class HarkinnanvaraisuusPaattelyTest {
       List.empty)
   }
 
-  def createHakukohde(oid: String, harkinnanvaraisetSallittu: Boolean) = {
+  private def createHakukohde(oid: String, harkinnanvaraisetSallittu: Boolean) = {
     KoutaHakukohde(
       oid = oid,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(harkinnanvaraisetSallittu)

@@ -39,9 +39,8 @@ object HarkinnanvaraisuusPaattely {
 
   val ataruMatematiikkaJaAidinkieliYksilollistettyQuestions = Set("matematiikka-ja-aidinkieli-yksilollistetty_1", "matematiikka-ja-aidinkieli-yksilollistetty_2")
   val ataruHakukohdeHarkinnanvaraisuusPrefix = "harkinnanvaraisuus-reason_"
-  val ataruHakemusPohjakoulutus = "base-education-2nd"
 
-  def hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate) = {
+  def hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Boolean = {
     val perusopetusOOs = opiskeluoikeudet.collect { case o: PerusopetuksenOpiskeluoikeus => o }
 
     val huomioitavatValmiitOppimaarat = perusopetusOOs
@@ -134,6 +133,39 @@ class HarkinnanvaraisuusService {
       .map(koutaHakukohde => (koutaHakukohde.oid, koutaHakukohde)).toMap
     HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(hakemus, opiskeluoikeudet, vahvistettuViimeistaan, hakemuksenHakukohteetMap)
   }
+
+  def getHakemustenHarkinnanvaraisuudet(hakemusOids: Set[String]): Set[HakemuksenHarkinnanvaraisuus] = {
+    if (hakemusOids.isEmpty) {
+      Set.empty
+    } else {
+      val hakemuksetF: Future[Seq[AtaruValintalaskentaHakemus]] = hakemuspalveluClient.getValintalaskentaHakemukset(None, true, hakemusOids)
+      val hakemukset = Await.result(hakemuksetF, 2.minutes)
+
+      val hakuOidsToHakemukset = hakemukset.groupBy(_.hakuOid)
+
+      hakuOidsToHakemukset.flatMap { case (hakuOid, hakemuksetForHaku) =>
+        val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(hakuOid)
+        val vahvistusPaiva = ohjausparametrit.getVahvistuspaivaLocalDate
+
+        //Haetaan valmiiksi kaikkien hakemusten hakutoiveita vastaavat hakukohteet
+        val hakukohteetMap =
+          hakemuksetForHaku.flatMap(_.hakutoiveet.map(_.hakukohdeOid)).toSet
+            .map(oid => tarjontaIntegration.getHakukohde(oid))
+            .map(hakukohde => (hakukohde.oid, hakukohde)).toMap
+
+        hakemuksetForHaku.map { hakemus =>
+          val opiskeluoikeudet = haeSupaTiedot(hakemus.personOid)
+          HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+            hakemus,
+            opiskeluoikeudet,
+            vahvistusPaiva,
+            hakukohteetMap
+          )
+        }
+      }.toSet
+    }
+  }
+
 
   def getHakemuksenHarkinnanvaraisuudet(hakemusOid: String): HakemuksenHarkinnanvaraisuus = {
     val hakemusF: Future[Seq[AtaruValintalaskentaHakemus]] = hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid))

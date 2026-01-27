@@ -294,7 +294,7 @@ object AvainArvoConverter {
     //Todo, valintapisteet avain-arvoiksi
     val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
 
-    val harkinannvaraisuusArvot: Option[AvainArvoContainer] = harkinnanvaraisuudet.map(getHarkinnanvaraisuusArvot)
+    val harkinnanvaraisuusArvot: Option[AvainArvoContainer] = harkinnanvaraisuudet.map(getHarkinnanvaraisuusArvot)
 
     val toisenAsteenPk: Option[AvainArvoContainer] = if (haku.isToisenAsteenHaku())
       hakemus.map(h => toisenAsteenPohjakoulutus(h, opiskeluoikeudet, vahvistettuViimeistaan)) else None
@@ -304,19 +304,19 @@ object AvainArvoConverter {
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku)
 
-    val paatellytArvot: Set[AvainArvoContainer] = 
-      peruskouluArvot 
-        ++ ammatillisetArvot 
-        ++ yoArvot 
-        ++ lukioArvot 
-        ++ lisapistekoulutusArvot 
-        ++ toisenAsteenPk.toSet 
-        ++ harkinannvaraisuusArvot.toSet
+    val paatellytArvot: Set[AvainArvoContainer] =
+      peruskouluArvot
+        ++ ammatillisetArvot
+        ++ yoArvot
+        ++ lukioArvot
+        ++ lisapistekoulutusArvot
+        ++ toisenAsteenPk.toSet
+        ++ harkinnanvaraisuusArvot.toSet
 
     AvainArvoConverterResults(personOid, paatellytArvot, convertedHakemus, opiskeluoikeudet)
   }
 
-  def getHarkinnanvaraisuusArvot(harkinnanvaraisuus: HakemuksenHarkinnanvaraisuus) = {
+  def getHarkinnanvaraisuusArvot(harkinnanvaraisuus: HakemuksenHarkinnanvaraisuus): AvainArvoContainer = {
     val syyt = harkinnanvaraisuus.hakutoiveet.map(_.harkinnanvaraisuudenSyy)
     val isYksMatAI = syyt.exists(syy => Set(HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI, HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI).contains(syy))
     AvainArvoContainer(AvainArvoConstants.yksMatAiKey, isYksMatAI.toString)
