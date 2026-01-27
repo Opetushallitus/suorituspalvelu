@@ -46,7 +46,7 @@ object VirtaToSuoritusConverter {
     })
   }
 
-  private def sisaltyvatAvaimet(suoritus: VirtaOpintosuoritus): Set[String] =  suoritus.Sisaltyvyys.map(_.avain).toSet
+  private def sisaltyvatAvaimet(suoritus: VirtaOpintosuoritus): Set[String] =  suoritus.Sisaltyvyys.map(_.sisaltyvaOpintosuoritusAvain).toSet
 
   private def sisaltyyOpiskeluoikeuteen(
     suoritus: VirtaOpintosuoritus,
@@ -57,7 +57,7 @@ object VirtaToSuoritusConverter {
     suoritus.opiskeluoikeusAvain.contains(opiskeluoikeus.avain) &&
       (rootSuoritus.isEmpty || rootSuoritus.flatMap(_.opiskeluoikeusAvain).isEmpty || rootSuoritus.get.opiskeluoikeusAvain.contains(opiskeluoikeus.avain)) ||
       suoritus.Sisaltyvyys.exists(sis => {
-        suorituksetByAvain.get(sis.avain) match {
+        suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain) match {
           case Some(s) => sisaltyyOpiskeluoikeuteen(s, opiskeluoikeus, suorituksetByAvain, Some(rootSuoritus.getOrElse(suoritus)))
           case _ => false
         }
@@ -235,7 +235,7 @@ object VirtaToSuoritusConverter {
         koulutusKoodi = suoritus.Koulutuskoodi,
         opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
         suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
-           suorituksetByAvain.get(sis.avain).flatMap(s =>
+           suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(s =>
              toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[KKOpintosuoritus]]
            )
         }),
@@ -261,7 +261,7 @@ object VirtaToSuoritusConverter {
         opinnaytetyo = suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
         opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
         suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
-          suorituksetByAvain.get(sis.avain).flatMap(s =>
+          suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(s =>
             toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[KKOpintosuoritus]]
           )
         }),
