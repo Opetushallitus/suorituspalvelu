@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, VirtaOpintosuoritus, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, VirtaOpintosuoritus, VirtaOpiskeluoikeus, VirtaOpiskeluoikeusBase, VirtaSynteettinenOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.resource.ui.{AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIATutkinto, DIAVastaavuusTodistus, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBTutkinto,  KKOpintojakso, KKOpintojaksoNimi, KKSuoritus, KKSuoritusNimi,  LukionOppiaineenOppimaara, LukionOppimaara, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, UIOppilaitos, UIOppilaitosNimi, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
+import fi.oph.suorituspalvelu.resource.ui.{AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIATutkinto, DIAVastaavuusTodistus, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBTutkinto, KKOpintojakso, KKOpintojaksoNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaineenOppimaara, LukionOppimaara, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, UIOppilaitos, UIOppilaitosNimi, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.service.UIService.EXAMPLE_OPPIJA_OID
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
@@ -91,48 +91,62 @@ object EntityToUIConverter {
   }
 
   def getKKTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): List[KKSuoritus] = {
-    opiskeluoikeudet.filter(_.isInstanceOf[VirtaOpiskeluoikeus]).flatMap(oo => {
-      val virtaOikeus = oo.asInstanceOf[VirtaOpiskeluoikeus]
-      if (virtaOikeus.suoritukset.size == 1) {
-        val onlySuoritus = virtaOikeus.suoritukset.head.asInstanceOf[VirtaTutkinto]
+    opiskeluoikeudet.filter(_.isInstanceOf[VirtaOpiskeluoikeusBase]).flatMap({
+      case synteettinenOikeus: VirtaSynteettinenOpiskeluoikeus =>
         Some(KKSuoritus(
-          tunniste = onlySuoritus.tunniste,
+          tunniste = synteettinenOikeus.tunniste,
           nimi = KKSuoritusNimi(
-            fi = onlySuoritus.nimiFi.toJava,
-            sv = onlySuoritus.nimiSv.toJava,
-            en = onlySuoritus.nimiEn.toJava,
+            fi = Optional.of("synteettinen suoritus"),
+            sv = Optional.of("synteettinen suoritus"),
+            en = Optional.of("synteettinen suoritus")
           ),
-          oppilaitos = getKKOppilaitos(onlySuoritus.myontaja, organisaatioProvider),
+          oppilaitos = getKKOppilaitos(synteettinenOikeus.myontaja, organisaatioProvider),
           tila = VALMIS,
-          aloituspaiva = Optional.of(onlySuoritus.aloitusPvm),
-          valmistumispaiva = Optional.of(onlySuoritus.suoritusPvm),
-          opintojaksot = createVirtaOpintojaksoHierarkia(virtaOikeus.suoritukset.toSeq),
+          aloituspaiva = Optional.empty(),
+          valmistumispaiva = Optional.empty(),
+          opintojaksot = createVirtaOpintojaksoHierarkia(synteettinenOikeus.suoritukset.toSeq),
         ))
-      } else if (virtaOikeus.suoritukset.nonEmpty) {
-        Some(KKSuoritus(
-          tunniste = virtaOikeus.tunniste,
-          nimi = virtaOikeus.koulutusKoodi.map(koulutusKoodi => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(koulutusKoodi).map(k =>
-              KKSuoritusNimi(
-                fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
-                sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
-                en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
-              ))).getOrElse(
-              koodistoProvider.haeKoodisto(VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO).get(virtaOikeus.tyyppiKoodi).map(k =>
+      case virtaOikeus: VirtaOpiskeluoikeus =>
+        if (virtaOikeus.suoritukset.size == 1) {
+          val onlySuoritus = virtaOikeus.suoritukset.head.asInstanceOf[VirtaTutkinto]
+          Some(KKSuoritus(
+            tunniste = onlySuoritus.tunniste,
+            nimi = KKSuoritusNimi(
+              fi = onlySuoritus.nimiFi.toJava,
+              sv = onlySuoritus.nimiSv.toJava,
+              en = onlySuoritus.nimiEn.toJava,
+            ),
+            oppilaitos = getKKOppilaitos(onlySuoritus.myontaja, organisaatioProvider),
+            tila = VALMIS,
+            aloituspaiva = Optional.of(onlySuoritus.aloitusPvm),
+            valmistumispaiva = Optional.of(onlySuoritus.suoritusPvm),
+            opintojaksot = createVirtaOpintojaksoHierarkia(virtaOikeus.suoritukset.toSeq),
+          ))
+        } else if (virtaOikeus.suoritukset.nonEmpty) {
+          Some(KKSuoritus(
+            tunniste = virtaOikeus.tunniste,
+            nimi = virtaOikeus.koulutusKoodi.map(koulutusKoodi => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(koulutusKoodi).map(k =>
                 KKSuoritusNimi(
                   fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
                   sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
                   en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
-                )))
-            .getOrElse(KKSuoritusNimi(Optional.empty(), Optional.empty(), Optional.empty())),
-          oppilaitos = getKKOppilaitos(virtaOikeus.myontaja, organisaatioProvider),
-          tila = VALMIS,
-          aloituspaiva = Optional.of(virtaOikeus.alkuPvm),
-          valmistumispaiva = Optional.of(virtaOikeus.loppuPvm),
-          opintojaksot = createVirtaOpintojaksoHierarkia(virtaOikeus.suoritukset.toSeq)
-        ))
-      } else {
-       None
-      }
+                ))).getOrElse(
+                koodistoProvider.haeKoodisto(VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO).get(virtaOikeus.tyyppiKoodi).map(k =>
+                  KKSuoritusNimi(
+                    fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
+                    sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
+                    en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
+                  )))
+              .getOrElse(KKSuoritusNimi(Optional.empty(), Optional.empty(), Optional.empty())),
+            oppilaitos = getKKOppilaitos(virtaOikeus.myontaja, organisaatioProvider),
+            tila = VALMIS,
+            aloituspaiva = Optional.of(virtaOikeus.alkuPvm),
+            valmistumispaiva = Optional.of(virtaOikeus.loppuPvm),
+            opintojaksot = createVirtaOpintojaksoHierarkia(virtaOikeus.suoritukset.toSeq)
+          ))
+        } else {
+          None
+        }
     }).toList
   }
 

@@ -56,6 +56,7 @@ object KantaOperaatiot {
       classOf[Tuva],
       classOf[VirtaTutkinto],
       classOf[VirtaOpintosuoritus],
+      classOf[VirtaSynteettinenOpiskeluoikeus],
       classOf[VapaaSivistystyo],
       classOf[EBTutkinto],
       classOf[ErikoisAmmattiTutkinto])
