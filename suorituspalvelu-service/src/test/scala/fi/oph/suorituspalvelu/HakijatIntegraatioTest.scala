@@ -87,7 +87,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisvuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -189,7 +189,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisVuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -288,7 +288,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisPaiva = LocalDate.parse(s"$valmistumisVuosi-06-01")
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "KOSKI", None)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,

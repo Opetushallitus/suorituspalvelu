@@ -83,12 +83,12 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, KoskiPaivitaTiedotHenkiloillePayload(Optional.of(List(oppijaNumero).asJava))))
       .andExpect(status().isOk).andReturn()
-    Assertions.assertEquals(KoskiSyncSuccessResponse(1, 0),
+    Assertions.assertEquals(KoskiSyncSuccessResponse(3, 0),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse]))
 
     // tarkistetaan että kantaan on tallentunut kolme opiskeluoikeutta
-    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-    Assertions.assertEquals(haetut.head._2.size, 3)
+    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    Assertions.assertEquals(3, haetut.size)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
     val auditLogEntry = getLatestAuditLogEntry()
@@ -150,8 +150,8 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobId)
 
     // tarkistetaan että kantaan on tallentunut kolme opiskeluoikeutta
-    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-    Assertions.assertEquals(haetut.head._2.size, 3)
+    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    Assertions.assertEquals(3, haetut.size)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
     val auditLogEntry = getLatestAuditLogEntry()

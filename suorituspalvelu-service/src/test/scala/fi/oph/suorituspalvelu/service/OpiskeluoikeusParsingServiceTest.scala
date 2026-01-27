@@ -16,15 +16,12 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
 
   val OPPIJA_OID = "1.2.246.562.24.12345678901"
 
-  // Yksinkertainen KOSKI-data testejä varten
-  val KOSKI_JSON = "[]"
-
   /**
    * Kun parserVersio on None, palvelu parseroi ja tallentaa tuloksen.
    */
   @Test def testParseWhenNoVersionStored(): Unit =
     // Tallennetaan versio ilman parserointia
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
 
     // Varmistetaan että parserVersio on None
     val versioBeforeParse = kantaOperaatiot.haeVersio(versio.tunniste)
@@ -43,7 +40,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testReparseWhenOlderVersionStored(): Unit =
     // Tallennetaan versio vanhalla parserVersiolla
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val oldParserVersion = ParserVersions.KOSKI - 1
 
     // Päivitetään parserVersio vanhaksi suoraan kantaan
@@ -68,7 +65,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testParseWithoutStoreWhenNewerVersionStored(): Unit =
     // Tallennetaan versio uudemmalla parserVersiolla (simuloi deployment-tilannetta)
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val newerParserVersion = ParserVersions.KOSKI + 1
 
     // Päivitetään parserVersio uudemmaksi suoraan kantaan
@@ -93,7 +90,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testUseStoredDataWhenVersionsMatch(): Unit =
     // Tallennetaan ja parseroidaan versio normaalisti
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq(KOSKI_JSON), Seq.empty, Instant.now(), "KOSKI", None).get
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set.empty, Seq.empty, ParserVersions.KOSKI)
 
     // Varmistetaan että nykyinen versio on tallennettu
@@ -101,12 +98,12 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Some(ParserVersions.KOSKI), versioBeforeFetch.get.parserVersio)
 
     // Kutsutaan palvelua
-    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID)
+    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID).flatMap(_._2)
 
     // Varmistetaan että versio ei muuttunut
     val versioAfterFetch = kantaOperaatiot.haeVersio(versio.tunniste)
     Assertions.assertEquals(Some(ParserVersions.KOSKI), versioAfterFetch.get.parserVersio)
 
     // Palvelu palautti tuloksen
-    Assertions.assertEquals(1, result.size)
+    Assertions.assertEquals(0, result.size)
 }

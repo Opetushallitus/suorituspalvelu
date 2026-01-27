@@ -76,7 +76,10 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
       //    ei voi käyttää tiedon tallennuksesta päätettäessä koska yksilöinnit voivat muuttua
       //  - tiedot lisäpistekoulutuksista päivitetään kuten ysiluokkalaiset koska näkyvät tarkastusnäkymässä
       def isYsiluokkalainenTaiLisapiste(koskiData: KoskiDataForOppija): Boolean =
-        val opiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(koskiData.data), koodistoProvider)
+        val opiskeluoikeudet = koskiData.opiskeluoikeudet.flatMap {
+          case Right(oo) => Some(KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(oo.data)), koodistoProvider))
+          case Left(e) => None
+        }.flatten
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeudet.toSet) ||
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid).values.flatten.toSet)
       
@@ -118,21 +121,25 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
     new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(DUMMY_JOB_CTX, koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
 
   private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
-    data.map(oppija => {
-      try {
-        val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, Seq(oppija.data), Seq.empty, fetchedAt, SuoritusJoukko.defaultLahdeTunniste(SuoritusJoukko.KOSKI), None)
-        versio.foreach(v => {
-          LOG.info(s"Versio tallennettu henkilölle ${oppija.oppijaOid}")
-          val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(oppija.data), koodistoProvider)
-          kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getLahtokouluMetadata(oikeudet.toSet), ParserVersions.KOSKI)
-        })
-        SyncResultForHenkilo(oppija.oppijaOid, versio, None)
-      } catch {
-        case e: Exception =>
-          val message = s"Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui" 
-          LOG.error(message, e)
-          ctx.reportError(message, Some(e))
-          SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
+    data.flatMap(oppija => {
+      oppija.opiskeluoikeudet.map {
+        case Right(opiskeluoikeus) =>
+          try {
+            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, SuoritusJoukko.KOSKI, Seq(opiskeluoikeus.data), Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero))
+            versio.foreach(v => {
+              LOG.info(s"Versio tallennettu henkilön ${oppija.oppijaOid} opiskeluoikeudelle ${opiskeluoikeus.oid}")
+              val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(opiskeluoikeus.data)), koodistoProvider)
+              kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getLahtokouluMetadata(oikeudet.toSet), ParserVersions.KOSKI)
+            })
+            SyncResultForHenkilo(oppija.oppijaOid, versio, None)
+          } catch {
+            case e: Exception =>
+              val message = s"Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui"
+              LOG.error(message, e)
+              ctx.reportError(message, Some(e))
+              SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
+          }
+        case Left(ex) => SyncResultForHenkilo(oppija.oppijaOid, None, Some(ex))
       }
     })
 }

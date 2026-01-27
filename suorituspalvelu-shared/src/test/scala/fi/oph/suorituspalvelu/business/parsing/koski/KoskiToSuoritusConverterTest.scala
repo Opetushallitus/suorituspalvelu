@@ -27,63 +27,81 @@ class KoskiToSuoritusConverterTest {
   @Test def testKoskiParsingAndConversion1(): Unit =
     val fileName = "/1_2_246_562_24_40483869857.json"
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName))
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
+    val oikeudet = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(oo) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(oo.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+        case Left(exception) => Assertions.fail(exception)
+      }
+    }).toSeq
 
-      Assertions.assertEquals(4, oikeudet.size) // kolme mitätöityä opiskeluoikeutta
+    Assertions.assertEquals(4, oikeudet.size) // kolme mitätöityä opiskeluoikeutta
 
-      val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
-      Assertions.assertEquals(1, perusopetukset.size)
-      Assertions.assertEquals(3, ammatilliset.size)
-      Assertions.assertEquals(0, geneeriset.size)
-    })
+    val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
+    Assertions.assertEquals(1, perusopetukset.size)
+    Assertions.assertEquals(3, ammatilliset.size)
+    Assertions.assertEquals(0, geneeriset.size)
+
 
   @Test def testKoskiParsingAndConversion2(): Unit =
     val fileName = "/1_2_246_562_24_30563266636.json"
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName))
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
+    val oikeudet = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(oo) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(oo.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+        case Left(exception) => Assertions.fail(exception)
+      }
+    }).toSeq
 
-      Assertions.assertEquals(2, oikeudet.size) // kuusi mitätöityä opiskeluoikeutta
+    Assertions.assertEquals(2, oikeudet.size) // kuusi mitätöityä opiskeluoikeutta
 
-      val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
-      Assertions.assertEquals(1, perusopetukset.size)
-      Assertions.assertEquals(0, ammatilliset.size)
-      Assertions.assertEquals(1, geneeriset.size)
-    })
+    val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
+    Assertions.assertEquals(1, perusopetukset.size)
+    Assertions.assertEquals(0, ammatilliset.size)
+    Assertions.assertEquals(1, geneeriset.size)
+
 
   @Test def testKoskiParsingForPerusopetuksenOpiskeluoikeudenSuoritukset(): Unit = {
     val fileName = "/oo_1.2.246.562.15.94501385358.json"
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
-
-      // Tarkistetaan että löytyy yksi perusopetuksen opiskeluoikeusopiskeluoikeus, joka sisältää neljä suoritusta
-      // (perusopetuksen oppimäärän ja kolme vuosiluokkaa). Tästä seuraa yksi parseroitu suoritus koska vuosiluokista
-      // tarvittavat tiedot (lähtökoulu) yhdistetään oppimäärän parseroituun suoritukseen
-      Assertions.assertEquals(oikeudet.size, 1)
-      Assertions.assertEquals(oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size, 1)
+    val oikeudet = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(oo) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(oo.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+        case Left(exception) => Assertions.fail(exception)
+      }
      })
+
+    // Tarkistetaan että löytyy yksi perusopetuksen opiskeluoikeusopiskeluoikeus, joka sisältää neljä suoritusta
+    // (perusopetuksen oppimäärän ja kolme vuosiluokkaa). Tästä seuraa yksi parseroitu suoritus koska vuosiluokista
+    // tarvittavat tiedot (lähtökoulu) yhdistetään oppimäärän parseroituun suoritukseen
+    Assertions.assertEquals(oikeudet.size, 1)
+    Assertions.assertEquals(oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size, 1)
   }
 
   @Test def testKoskiParsingForAmmatillistenOpiskeluoikeuksienSuoritukset(): Unit = {
     val fileName = "/1_2_246_562_24_56916824272.json"
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
-        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-
-      //Pitäisi syntyä kolme ammatillista opiskeluoikeutta, joista kahdella on yksi suoritus ja yhdellä ei suorituksia.
-      Assertions.assertEquals(oikeudet.size, 3)
-      Assertions.assertEquals(1, oikeudet.find(o => o.oid == "1.2.246.562.15.79299730741").get.suoritukset.size)
-      Assertions.assertEquals(1, oikeudet.find(o => o.oid == "1.2.246.562.15.24748024759").get.suoritukset.size)
-      Assertions.assertEquals(0, oikeudet.find(o => o.oid == "1.2.246.562.15.54761186631").get.suoritukset.size)
+    val oikeudet = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(oo) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(oo.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+            .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+            .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+        case Left(exception) => Assertions.fail(exception)
+      }
     })
+
+    //Pitäisi syntyä kolme ammatillista opiskeluoikeutta, joista kahdella on yksi suoritus ja yhdellä ei suorituksia.
+    Assertions.assertEquals(oikeudet.size, 3)
+    Assertions.assertEquals(1, oikeudet.find(o => o.oid == "1.2.246.562.15.79299730741").get.suoritukset.size)
+    Assertions.assertEquals(1, oikeudet.find(o => o.oid == "1.2.246.562.15.24748024759").get.suoritukset.size)
+    Assertions.assertEquals(0, oikeudet.find(o => o.oid == "1.2.246.562.15.54761186631").get.suoritukset.size)
   }
 
   @Test
