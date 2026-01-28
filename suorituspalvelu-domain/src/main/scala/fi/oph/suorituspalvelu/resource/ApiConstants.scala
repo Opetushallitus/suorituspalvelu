@@ -84,7 +84,9 @@ object ApiConstants {
 
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR        = "5000"
 
+
   final val VALINTALASKENTA_VALINTADATA_PATH                = VERSIONED_API_PREFIX + "/valintalaskenta/valintadata"
+  final val VALINNAT_HARKINNANVARAISUUS_PATH                = VERSIONED_API_PREFIX + "/valinnat/harkinnanvaraisuus"
   final val VALINTALASKENTA_EI_OIKEUKSIA                    = "Käyttäjällä ei ole oikeuksia hakea valintadataa"
   final val VALINTALASKENTA_JSON_VIRHE                      = "JSON-deserialisointi epäonnistui"
   final val VALINTALASKENTA_RESPONSE_400_DESCRIPTION        = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
@@ -95,6 +97,16 @@ object ApiConstants {
   final val VALINTALASKENTA_LIIKAA_PARAMETREJA              = "Anna parametrina vain joko hakukohdeOid tai lista hakemusOideja"
   final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui"
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA            = VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR.toInt
+
+  final val HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA_STR     = "5000"
+  final val HARKINNANVARAISUUS_EI_OIKEUKSIA                 = "Käyttäjällä ei ole oikeuksia hakea harkinnanvaraisuustietoja"
+  final val HARKINNANVARAISUUS_HAKEMUKSET_LIIKAA            = "Tiedot voi hakea korkeintaan 5000 hakemukselle kerrallaan"
+  final val HARKINNANVARAISUUS_PUUTTUVA_PARAMETRI           = "Joko hakukohdeOid tai 1-5000 hakemusOidia on annettava"
+  final val HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA         = HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA_STR.toInt
+  final val HARKINNANVARAISUUS_JSON_VIRHE                   = "JSON-deserialisointi epäonnistui"
+  final val HARKINNANVARAISUUS_500_VIRHE                    = "Harkinnanvaraisuustietojen haku epäonnistui"
+  final val HARKINNANVARAISUUS_RESPONSE_400_DESCRIPTION     = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val HARKINNANVARAISUUS_RESPONSE_403_DESCRIPTION     = "Käyttäjällä ei ole oikeuksia hakea harkinnanvaraisuustietoja"
 
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot"
 

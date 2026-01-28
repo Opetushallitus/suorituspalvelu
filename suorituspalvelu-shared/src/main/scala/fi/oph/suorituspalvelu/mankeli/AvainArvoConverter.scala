@@ -3,12 +3,12 @@ package fi.oph.suorituspalvelu.mankeli
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoDTO}
 import org.slf4j.LoggerFactory
 
 import java.util.List as JavaList
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.time.LocalDate
 import scala.collection.immutable
 
@@ -81,7 +81,8 @@ object AvainArvoConstants {
     peruskouluOppiaineenKieli_B1 -> "Peruskoulun B1-kielen oppiaine",
     peruskouluOppiaineenKieli_B2 -> "Peruskoulun B2-kielen oppiaine",
     peruskouluOppiaineenKieli_AI -> "Peruskoulun äidinkielen oppiaine",
-    pohjakoulutusToinenAste -> "Toisen asteen pohjakoulutus"
+    pohjakoulutusToinenAste -> "Toisen asteen pohjakoulutus",
+    yksMatAiKey -> "Onko joku hakemuksen hakutoiveista harkinnanvarainen siksi, että matematiikka ja äidinkieli yksilöllistettyjä"
   )
 
   final val perusopetuksenKieliKey = "perusopetuksen_kieli"
@@ -177,6 +178,7 @@ object AvainArvoConstants {
   val arvosananLahdeSeliteSupa = "Tieto löytyi Suorituspalvelusta."
   val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
 
+  val yksMatAiKey = "yks_mat_ai"
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -283,14 +285,16 @@ object AvainArvoConverter {
 
   val LOG = LoggerFactory.getLogger(getClass)
 
-  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: KoutaHaku): AvainArvoConverterResults = {
-    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan, haku)
+  def convertOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: KoutaHaku, harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus]): AvainArvoConverterResults = {
+    convertOpiskeluoikeudet(personOid, None, opiskeluoikeudet, vahvistettuViimeistaan, haku, harkinnanvaraisuudet)
   }
 
-  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: KoutaHaku): AvainArvoConverterResults = {
+  def convertOpiskeluoikeudet(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate, haku: KoutaHaku, harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus]): AvainArvoConverterResults = {
 
     //Todo, valintapisteet avain-arvoiksi
     val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
+
+    val harkinnanvaraisuusArvot: Option[AvainArvoContainer] = harkinnanvaraisuudet.map(getHarkinnanvaraisuusArvot)
 
     val toisenAsteenPk: Option[AvainArvoContainer] = if (haku.isToisenAsteenHaku())
       hakemus.map(h => toisenAsteenPohjakoulutus(h, opiskeluoikeudet, vahvistettuViimeistaan)) else None
@@ -300,9 +304,22 @@ object AvainArvoConverter {
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku)
 
-    val paatellytArvot: Set[AvainArvoContainer] = peruskouluArvot ++ ammatillisetArvot ++ yoArvot ++ lukioArvot ++ lisapistekoulutusArvot ++ toisenAsteenPk.toSet
+    val paatellytArvot: Set[AvainArvoContainer] =
+      peruskouluArvot
+        ++ ammatillisetArvot
+        ++ yoArvot
+        ++ lukioArvot
+        ++ lisapistekoulutusArvot
+        ++ toisenAsteenPk.toSet
+        ++ harkinnanvaraisuusArvot.toSet
 
     AvainArvoConverterResults(personOid, paatellytArvot, convertedHakemus, opiskeluoikeudet)
+  }
+
+  def getHarkinnanvaraisuusArvot(harkinnanvaraisuus: HakemuksenHarkinnanvaraisuus): AvainArvoContainer = {
+    val syyt = harkinnanvaraisuus.hakutoiveet.map(_.harkinnanvaraisuudenSyy)
+    val isYksMatAI = syyt.exists(syy => Set(HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI, HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI).contains(syy))
+    AvainArvoContainer(AvainArvoConstants.yksMatAiKey, isYksMatAI.toString)
   }
 
   def toisenAsteenPohjakoulutus(hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], deadline: LocalDate): AvainArvoContainer = {
@@ -573,7 +590,7 @@ object AvainArvoConverter {
         val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).getOrElse("-")}"
         val suoritusArvo: AvainArvoContainer = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "false", Seq(vahvistettuMyohassaSelite))
         Set(suoritusArvo)
-        
+
       //Jos Supasta ei löydy perusopetuksen suoritusta, käytetään hakemuksen tietoja jos sieltä löytyy hakijan ilmoittama perusopetus vuodelta 2017 tai aiemmin.
       case (None, Some(hakemus)) if hakemuksellaIlmoitettuPeruskoulu2017TaiAiempi(hakemus) =>
         val arvosanatHakemukselta = HakemusConverter.convertArvosanatHakemukselta(hakemus)

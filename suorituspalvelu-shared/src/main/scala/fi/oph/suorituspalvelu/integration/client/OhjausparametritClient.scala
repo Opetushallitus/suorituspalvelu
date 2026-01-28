@@ -7,14 +7,21 @@ import org.slf4j.LoggerFactory
 import org.asynchttpclient.Dsl.asyncHttpClient
 import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Request, Response}
 
-import java.time.Duration
+import java.time.{Duration, Instant, LocalDate, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 
 case class DateParam(date: Long)
 
-case class Ohjausparametrit(PH_HKP: Option[DateParam] = None, suoritustenVahvistuspaiva: Option[DateParam] = None, valintalaskentapaiva: Option[DateParam] = None)
+case class Ohjausparametrit(PH_HKP: Option[DateParam] = None, suoritustenVahvistuspaiva: Option[DateParam] = None, valintalaskentapaiva: Option[DateParam] = None) {
+  def getVahvistuspaivaLocalDate: LocalDate = {
+    suoritustenVahvistuspaiva
+      .map(svp => Instant.ofEpochMilli(svp.date)
+        .atZone(ZoneId.of("Europe/Helsinki"))
+        .toLocalDate).getOrElse(LocalDate.now())
+  }
+}
 
 class OhjausparametritClient(environmentBaseUrl: String) {
 

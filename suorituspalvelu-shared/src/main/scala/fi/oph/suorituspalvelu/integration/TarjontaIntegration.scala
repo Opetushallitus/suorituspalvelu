@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.integration
 
-import fi.oph.suorituspalvelu.integration.client.{KoutaClient, KoutaHaku, Ohjausparametrit, OhjausparametritClient}
+import fi.oph.suorituspalvelu.integration.client.{KoutaClient, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OhjausparametritClient}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
@@ -29,12 +29,23 @@ class TarjontaIntegration {
       Await.result(koutaClient.fetchHaut(), HAUT_TIMEOUT)
     })
 
+  private val hakukohdeCache: LoadingCache[String, KoutaHakukohde] = Caffeine.newBuilder()
+    .expireAfterWrite(java.time.Duration.ofHours(6))
+    .refreshAfterWrite(java.time.Duration.ofHours(3))
+    .build[String, KoutaHakukohde](hakukohdeOid => {
+      Await.result(koutaClient.fetchHakukohde(hakukohdeOid), OHJAUSPARAMETRIT_TIMEOUT)
+    })
+
   private val ohjausparametritCache: LoadingCache[String, Ohjausparametrit] = Caffeine.newBuilder()
     .expireAfterWrite(java.time.Duration.ofHours(6))
     .refreshAfterWrite(java.time.Duration.ofHours(3))
     .build[String, Ohjausparametrit](hakuOid => {
       Await.result(ohjausparametritClient.haeOhjausparametrit(hakuOid), OHJAUSPARAMETRIT_TIMEOUT)
     })
+
+  def getHakukohde(hakukohdeOid: String): KoutaHakukohde = {
+    hakukohdeCache.get(hakukohdeOid)
+  }
 
   def getHaku(hakuOid: String): Option[KoutaHaku] = {
     allHautCache.get("haut").get(hakuOid)
