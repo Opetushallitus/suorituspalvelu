@@ -1,25 +1,17 @@
-import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { OphTypography } from '@opetushallitus/oph-design-system';
-import { useTranslate } from '@tolgee/react';
 import { SuorituksetKoulutustyypeittain } from './SuorituksetKoulutustyypeittain';
-import { useState } from 'react';
 import type { OppijanTiedot } from '@/types/ui-types';
-import { SuorituksetAikajarjestyksessa } from './SuorituksetAikajarjestyksessa';
 import { PerusopetusSuoritusAdder } from './PerusopetusSuoritusAdder';
 import { useKayttaja } from '@/lib/suorituspalvelu-queries';
-
-type SuoritusOrder = 'koulutustyypeittain' | 'uusin-ensin';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export function Suoritukset({
   oppijanTiedot,
 }: {
   oppijanTiedot: OppijanTiedot;
 }) {
-  const { t } = useTranslate();
-
-  const [suoritusOrder, setSuoritusOrder] = useState<SuoritusOrder>(
-    'koulutustyypeittain',
-  );
+  const { t } = useTranslations();
 
   const { data: kayttaja } = useKayttaja();
 
@@ -36,33 +28,11 @@ export function Suoritukset({
         >
           {t('oppija.suoritukset')}
         </OphTypography>
-        <ToggleButtonGroup
-          sx={{ marginBottom: suoritusOrder === 'uusin-ensin' ? 2 : 0 }}
-          value={suoritusOrder}
-          exclusive
-          onChange={(_event, newValue) => {
-            if (!newValue) {
-              return;
-            }
-            setSuoritusOrder(newValue);
-          }}
-        >
-          <ToggleButton value="koulutustyypeittain">
-            {t('oppija.koulutustyypeittain')}
-          </ToggleButton>
-          <ToggleButton value="uusin-ensin">
-            {t('oppija.uusin-ensin')}
-          </ToggleButton>
-        </ToggleButtonGroup>
       </Stack>
       {kayttaja.isRekisterinpitaja && (
         <PerusopetusSuoritusAdder henkiloOID={oppijanTiedot.henkiloOID} />
       )}
-      {suoritusOrder === 'koulutustyypeittain' ? (
-        <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
-      ) : (
-        <SuorituksetAikajarjestyksessa oppijanTiedot={oppijanTiedot} />
-      )}
+      <SuorituksetKoulutustyypeittain oppijanTiedot={oppijanTiedot} />
     </Box>
   );
 }
