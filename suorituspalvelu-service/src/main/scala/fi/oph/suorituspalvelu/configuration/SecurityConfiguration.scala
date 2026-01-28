@@ -38,7 +38,7 @@ import slick.jdbc.JdbcBackend
 @EnableJdbcHttpSession
 class SecurityConfiguration {
   private def  isFrontEndRoute: String => Boolean = path =>
-    path.equals("/index.html") || path.equals("/") || path.startsWith("/henkilo") || path.startsWith("/tarkastus")
+    path.equals("/index.html") || path.equals("/") || path.startsWith("/henkilo") || path.startsWith("/tarkastus") || path.startsWith("/redirect")
 
   @Bean
   def frontendResourceFilter: Filter = (request: ServletRequest, response: ServletResponse, chain: FilterChain) => {

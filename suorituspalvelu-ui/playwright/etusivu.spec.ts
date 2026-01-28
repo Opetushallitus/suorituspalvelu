@@ -28,6 +28,15 @@ test.describe('Etusivu', () => {
       );
     });
 
+    test('ohjautuu /redirect/:henkiloOid -polusta henkilöhakuun', async ({
+      page,
+    }) => {
+      await page.goto('redirect/1.2.3.4.5');
+      await expect(page).toHaveURL((url) =>
+        url.toString().endsWith('/henkilo/1.2.3.4.5'),
+      );
+    });
+
     test('näytetään molemmat hakunäkymä-välilehdet', async ({ page }) => {
       const searchTabNavi = page.getByRole('navigation', {
         name: 'Oppijoiden hakunäkymän valitsin',
@@ -56,6 +65,15 @@ test.describe('Etusivu', () => {
       await page.goto('');
       await expect(page).toHaveURL((url) =>
         url.toString().endsWith('/henkilo'),
+      );
+    });
+
+    test('ohjautuu /redirect/:henkiloOid -polusta henkilöhakuun', async ({
+      page,
+    }) => {
+      await page.goto('redirect/1.2.3.4.5');
+      await expect(page).toHaveURL((url) =>
+        url.toString().endsWith('/henkilo/1.2.3.4.5'),
       );
     });
 
@@ -115,6 +133,15 @@ test.describe('Etusivu', () => {
       await page.goto('');
       await expect(page).toHaveURL((url) =>
         url.toString().endsWith('/tarkastus'),
+      );
+    });
+
+    test('ohjautuu /redirect/:henkiloOid -polusta tarkastusnäkymään', async ({
+      page,
+    }) => {
+      await page.goto('redirect/1.2.3.4.5');
+      await expect(page).toHaveURL((url) =>
+        url.toString().endsWith('/tarkastus/1.2.3.4.5'),
       );
     });
 
