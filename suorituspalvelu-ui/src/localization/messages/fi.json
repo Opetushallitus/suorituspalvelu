@@ -155,8 +155,6 @@
     "tuva": "Tutkintokoulutukseen valmentava koulutus",
     "vapaa-sivistystyo": "Vapaa sivistystyö",
     "perusopetus": "Perusopetus",
-    "koulutustyypeittain": "Koulutustyypeittäin",
-    "uusin-ensin": "Uusin ensin",
     "hakukohde": "Hakukohde",
     "oppiaineet": "Oppiaineet",
     "luokka": "Luokka",
@@ -193,7 +191,8 @@
     "syntymaaika": "Syntymäaika",
     "oppijanumero": "Oppijanumero",
     "henkiloOid": "Henkilö-OID",
-    "lisatieto-kieli": "Lisätieto (oppimäärä)"
+    "lisatieto-kieli": "Lisätieto (oppimäärä)",
+    "avaa-koski-jarjestelmassa": "Avaa tiedot Koski-järjestelmässä"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",

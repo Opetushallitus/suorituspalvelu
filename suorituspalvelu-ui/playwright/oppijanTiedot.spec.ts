@@ -50,6 +50,9 @@ test.describe('Oppijan tiedot', () => {
     const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
     await expect(oppijaNumeroLink).toHaveText(OPPIJANUMERO);
     await expect(page.getByLabel('Henkilö-OID')).toHaveText(OPPIJANUMERO);
+    await expect(
+      page.getByRole('link', { name: 'Avaa tiedot Koski-järjestelmässä' }),
+    ).toHaveAttribute('href', new RegExp(`/koski/oppija/${OPPIJANUMERO}$`));
   });
 
   test('navigointi välilehtien välillä toimii', async ({ page }) => {
