@@ -7,6 +7,8 @@
     "aikaleima": "2025-05-16T15:11:44.552622",
     "opiskeluoikeudet": [
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -124,6 +126,8 @@
         "suoritukset": []
       },
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -311,6 +315,8 @@
         ]
       },
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -2446,6 +2452,8 @@
         ]
       },
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "vapaansivistystyonkoulutus",
           "nimi": {
@@ -2553,6 +2561,8 @@
         "suoritukset": []
       },
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -2740,6 +2750,8 @@
         ]
       },
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "ammatillinenkoulutus",
           "nimi": {
@@ -2914,6 +2926,8 @@
         ]
       },
       {
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "aikuistenperusopetus",
           "nimi": {

@@ -130,7 +130,7 @@ object KoskiParser {
     mapper
   }
 
-  def parseKoskiData(data: String): Seq[KoskiOpiskeluoikeus] =
-    MAPPER.readValue(data, classOf[Array[KoskiOpiskeluoikeus]]).toSeq
+  def parseKoskiData(data: String): KoskiOpiskeluoikeus =
+    MAPPER.readValue(data, classOf[KoskiOpiskeluoikeus])
 
 }

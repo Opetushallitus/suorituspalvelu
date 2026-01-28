@@ -25,9 +25,12 @@ class KoskiParsingTest {
       "/1_2_246_562_24_40483869857.json",
       "/1_2_246_562_24_30563266636.json"
     ).foreach(fileName => {
-      val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName))
-      splitData.foreach((oppijaOid, data) => {
-        val koskiOpiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(KoskiParser.parseKoskiData(data), DUMMY_KOODISTOPROVIDER)
+      val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName))
+      splitData.foreach(henkilo => {
+        henkilo.opiskeluoikeudet.foreach {
+          case Right(opiskeluoikeus) => val koskiOpiskeluoikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(opiskeluoikeus.data)), DUMMY_KOODISTOPROVIDER)
+          case Left(exception) => Assertions.fail(exception)
+        }
       })
     })
 
@@ -40,17 +43,25 @@ class KoskiParsingTest {
     Assertions.assertFalse(KoskiToSuoritusConverter.isYTO("234567"))
 
   private def getFirstOpiskeluoikeusFromJson(data: String): Option[Opiskeluoikeus] =
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
-    splitData.map((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
+    splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.map {
+        case Right(opiskeluoikeus) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+        case Left(exception) => Assertions.fail(exception)
+      }
     }).next().headOption
 
   private def getFirstSuoritusFromJson(data: String): Suoritus =
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(new ByteArrayInputStream(data.getBytes))
-    splitData.map((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      KoskiToSuoritusConverter.toSuoritukset(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER, true)
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
+    splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.map {
+        case Right(opiskeluoikeus) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
+          KoskiToSuoritusConverter.toSuoritukset(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER, true)
+        case Left(exception) => Assertions.fail(exception)
+      }
     }).next().head
 
   @Test def testAmmatillisetOpiskeluoikeudet(): Unit =
@@ -66,6 +77,8 @@ class KoskiParsingTest {
         |          "koodistoUri": "opiskeluoikeudentyyppi",
         |          "koodistoVersio": 1
         |        },
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.24186343661",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.41945921983",
@@ -110,6 +123,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
@@ -156,6 +172,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.41945921983",
         |          "nimi": {
@@ -231,6 +250,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -301,6 +323,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -382,6 +407,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.35986177022",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.41945921983",
         |          "nimi": {
@@ -447,6 +475,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.35986177022",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.54019331674",
         |          "nimi": {
@@ -512,6 +543,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.54019331674",
         |          "nimi": {
@@ -574,20 +608,24 @@ class KoskiParsingTest {
 
   @Test def testTelmaOsasuoritukset(): Unit = {
     val fileName = "/telmaosasuoritukset.json"
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet: Seq[koski.KoskiOpiskeluoikeus] = KoskiParser.parseKoskiData(data)
-      val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
-        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-
-      val telmaSuoritus = oikeudet.head.suoritukset.head.asInstanceOf[Telma]
-      val telmaLaajuus = telmaSuoritus.hyvaksyttyLaajuus.map(_.arvo)
-
-      Assertions.assertEquals(oikeudet.size, 1)
-      Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
-      Assertions.assertEquals(telmaLaajuus.get, 60)
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
+    val oikeudet: Seq[AmmatillinenOpiskeluoikeus] = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(opiskeluoikeus) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+            .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+            .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+        case Left(exception) => Assertions.fail(exception)
+      }
     })
+
+    val telmaSuoritus = oikeudet.head.suoritukset.head.asInstanceOf[Telma]
+    val telmaLaajuus = telmaSuoritus.hyvaksyttyLaajuus.map(_.arvo)
+
+    Assertions.assertEquals(oikeudet.size, 1)
+    Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
+    Assertions.assertEquals(telmaLaajuus.get, 60)
   }
 
   @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =
@@ -603,6 +641,8 @@ class KoskiParsingTest {
         |          "koodistoUri": "opiskeluoikeudentyyppi",
         |          "koodistoVersio": 1
         |        },
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.77661702355",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.19666365424"
@@ -656,6 +696,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.32727448402",
         |          "nimi": {
@@ -724,6 +767,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.32727448402",
         |          "nimi": {
@@ -793,6 +839,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.32727448402",
         |          "nimi": {
@@ -858,6 +907,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.32727448402",
         |          "nimi": {
@@ -923,6 +975,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
@@ -1000,6 +1055,8 @@ class KoskiParsingTest {
         |          "koodistoUri": "opiskeluoikeudentyyppi",
         |          "koodistoVersio": 1
         |        },
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.42923230215"
@@ -1047,6 +1104,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.32727448402",
         |          "nimi": {
@@ -1107,6 +1167,8 @@ class KoskiParsingTest {
         |          "koodistoUri": "opiskeluoikeudentyyppi",
         |          "koodistoVersio": 1
         |        },
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.30994048939",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.41945921983"
@@ -1145,6 +1207,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.41945921983",
         |          "nimi": {
@@ -1226,6 +1291,8 @@ class KoskiParsingTest {
         |          "koodistoUri": "opiskeluoikeudentyyppi",
         |          "koodistoVersio": 1
         |        },
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.87456579967",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.63029756333"
@@ -1264,6 +1331,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.75291104630",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.63029756333",
         |          "nimi": {
@@ -1371,6 +1441,8 @@ class KoskiParsingTest {
         |          "koodistoUri": "opiskeluoikeudentyyppi",
         |          "koodistoVersio": 1
         |        },
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.87456579967",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.63029756333"
@@ -1451,6 +1523,9 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.35986177022",
         |    "opiskeluoikeudet": [
         |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
         |        "oppilaitos": {
         |          "oid": "1.2.246.562.10.73383452575",
         |          "nimi": {
