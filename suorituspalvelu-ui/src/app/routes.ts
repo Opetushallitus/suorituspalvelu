@@ -17,6 +17,7 @@ const tiedotRoutes = (id: string) => [
 export default [
   layout('./RootLayout.tsx', [
     index('./RootIndex.tsx'),
+    route('/redirect/:henkiloOid', './OppijaRedirect.tsx'),
     route(
       '/henkilo/:oppijaNumero?',
       './HenkiloLayout.tsx',
