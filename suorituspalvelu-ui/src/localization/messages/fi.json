@@ -191,7 +191,8 @@
     "syntymaaika": "Syntymäaika",
     "oppijanumero": "Oppijanumero",
     "henkiloOid": "Henkilö-OID",
-    "lisatieto-kieli": "Lisätieto (oppimäärä)"
+    "lisatieto-kieli": "Lisätieto (oppimäärä)",
+    "avaa-koski-jarjestelmassa": "Avaa tiedot Koski-järjestelmässä"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",

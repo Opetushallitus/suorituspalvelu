@@ -36,6 +36,8 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
 export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   const { t } = useTranslations();
 
+  const config = useConfig();
+
   return (
     <Stack spacing={3} sx={{ padding: 2 }}>
       <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${formatHenkiloNimi(tiedot, t)}`}</title>
@@ -58,6 +60,11 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
             value={tiedot?.henkiloOID}
           />
         </Stack>
+        <ExternalLink
+          href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
+        >
+          {t('oppija.avaa-koski-jarjestelmassa')}
+        </ExternalLink>
       </Stack>
       <TiedotTabNavi />
       <QuerySuspenseBoundary>
