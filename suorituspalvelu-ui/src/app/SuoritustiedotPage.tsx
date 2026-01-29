@@ -21,7 +21,7 @@ export default function SuoritustiedotPage() {
     <QuerySuspenseBoundary>
       <Stack spacing={6}>
         <SuoritusManagerProvider>
-          <Opiskeluoikeudet opiskeluoikeudet={tiedot?.opiskeluoikeudet} />
+          <Opiskeluoikeudet oppijanTiedot={tiedot} />
           <Suoritukset oppijanTiedot={tiedot} />
         </SuoritusManagerProvider>
       </Stack>

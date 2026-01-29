@@ -5,9 +5,10 @@ import { ophColors, OphTypography } from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { LabeledInfoItem } from '@/components/LabeledInfoItem';
-import type { Opiskeluoikeus } from '@/types/ui-types';
+import type { Opiskeluoikeus, OppijanTiedot } from '@/types/ui-types';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
-import { isEmpty } from 'remeda';
+import { isEmpty, prop, sortBy } from 'remeda';
+import { useMemo } from 'react';
 
 const VoimassaoloIndicator = ({
   opiskeluoikeus,
@@ -63,11 +64,25 @@ const VoimassaoloIndicator = ({
   );
 };
 
+const useSortedOpiskeluoikeudet = (oppijanTiedot: OppijanTiedot) => {
+  return useMemo(
+    () =>
+      sortBy(
+        oppijanTiedot.opiskeluoikeudet,
+        [prop('voimassaolonAlku'), 'desc'],
+        [prop('voimassaolonLoppu'), 'desc'],
+      ),
+    [oppijanTiedot.opiskeluoikeudet],
+  );
+};
+
 export const Opiskeluoikeudet = ({
-  opiskeluoikeudet,
+  oppijanTiedot,
 }: {
-  opiskeluoikeudet: Array<Opiskeluoikeus>;
+  oppijanTiedot: OppijanTiedot;
 }) => {
+  const opiskeluoikeudet = useSortedOpiskeluoikeudet(oppijanTiedot);
+
   const { t, translateKielistetty } = useTranslations();
   return isEmpty(opiskeluoikeudet) ? null : (
     <Box data-test-id="opiskeluoikeudet">
