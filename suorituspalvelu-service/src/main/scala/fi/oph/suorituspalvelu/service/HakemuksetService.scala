@@ -47,5 +47,6 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
       ))).map(_.personOid).toSet
       if(kkHakemusHenkilot.nonEmpty)
         virtaService.startRefreshForHenkilot(kkHakemusHenkilot)
-        ytrService.startRefreshForHenkilot(kkHakemusHenkilot)
+        // YTR-tietojen haku disabloitu toistaiseksi ettei rikota SUREa
+        //ytrService.startRefreshForHenkilot(kkHakemusHenkilot)
 }
