@@ -69,7 +69,7 @@ object KoskiIntegration {
               MAPPER.writeValueAsString(opiskeluoikeus)))
           catch
             case e: Exception =>
-              LOG.error(s"Virhe koski-opiskeluoikeuden parseoinnissa, oid: ${opiskeluoikeus.get("oid")}, versionumero: ${opiskeluoikeus.get("versionumero")}, aikaleima: ${opiskeluoikeus.get("aikaleima")}", e)
+              LOG.error(s"Virhe koski-opiskeluoikeuden parseroinnissa, oid: ${opiskeluoikeus.get("oid")}, versionumero: ${opiskeluoikeus.get("versionumero")}, aikaleima: ${opiskeluoikeus.get("aikaleima")}", e)
               Left(e)
         }))
       })

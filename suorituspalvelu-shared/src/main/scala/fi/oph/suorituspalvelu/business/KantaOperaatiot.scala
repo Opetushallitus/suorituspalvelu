@@ -297,8 +297,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int) = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${versio.henkiloOid} FOR UPDATE""" // ei tarvita inserttiä henkilöt-tauluun, jos on versio niin on myös henkilö
-    val updateVersionAction = lockHenkiloAction.as[Int].flatMap(_ => sql"""UPDATE versiot SET opiskeluoikeudet=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb, parser_versio=${parserVersio} WHERE tunniste=${versio.tunniste.toString}::uuid RETURNING upper(voimassaolo)='infinity'::timestamptz""".as[Boolean])
+    val updateVersionAction = lockHenkiloAction.as[Int].flatMap(_ =>
+      sql"""
+           UPDATE versiot
+           SET opiskeluoikeudet=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb, parser_versio=${parserVersio}
+           WHERE tunniste=${versio.tunniste.toString}::uuid RETURNING upper(voimassaolo)='infinity'::timestamptz""".as[Boolean])
     val updateLahtokoulutAction = updateVersionAction.flatMap(isNewestVersion => {
+      // lähtökoulut tallennetaan vain viimeisimmälle versiolle, ts. ne pitää päivittää ainoastaan kun tallennetaan uusin versio (voimassaolon loppu == infinity)
       if(!isNewestVersion.head)
         DBIO.successful(Seq.empty[DBIO[Int]])
       else {
