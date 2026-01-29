@@ -880,6 +880,7 @@ class KoskiParsingTest {
         |                "koodistoVersio": 1
         |              }
         |            },
+        |            "luokka": "9G",
         |            "alkamispäivä": "2020-08-15",
         |            "vahvistus": {
         |              "päivä": "2021-06-01"
@@ -898,7 +899,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
 
-    Assertions.assertEquals(Set(Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), Some("9A"), Some(VALMIS), Some(true), VUOSILUOKKA_9)), oppimaara.lahtokoulut)
+    Assertions.assertEquals(Set(Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), Some("9G"), Some(VALMIS), Some(true), VUOSILUOKKA_9)), oppimaara.lahtokoulut)
 
   @Test def testPerusopetuksenOppimaaranLahtokoulutEiAlkamispaivaa(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""
@@ -948,6 +949,7 @@ class KoskiParsingTest {
         |                "koodistoVersio": 1
         |              }
         |            },
+        |            "luokka": "9D",
         |            "vahvistus": {
         |              "päivä": "2021-06-01"
         |            },
