@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo, TarjontaIntegration, Util}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
@@ -67,7 +67,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     LOG.info(s"Persistoidaan Virta-data henkilölle $oppijaNumero")
 
     val kantaOperaatiot = KantaOperaatiot(database)
-    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.VIRTA, Seq.empty, hetulessXmls, fetchedAt, SuoritusJoukko.defaultLahdeTunniste(SuoritusJoukko.VIRTA), None)
+    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.VIRTA, Seq.empty, hetulessXmls, fetchedAt, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.VIRTA), None)
 
     versio.foreach(v => {
       LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")

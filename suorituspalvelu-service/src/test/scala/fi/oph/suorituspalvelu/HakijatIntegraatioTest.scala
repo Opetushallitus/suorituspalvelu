@@ -1,9 +1,9 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
-import fi.oph.suorituspalvelu.business.SuoritusJoukko.KOSKI
+import fi.oph.suorituspalvelu.business.Lahdejarjestelma.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Lahdejarjestelma, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -87,7 +87,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisvuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -189,7 +189,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisVuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -288,7 +288,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisPaiva = LocalDate.parse(s"$valmistumisVuosi-06-01")
 
     // tallennetaan valmis perusopetuksen oppimäärä ja vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,

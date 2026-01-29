@@ -86,13 +86,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  private def isNewVersion(henkiloOid: String, suoritusJoukko: SuoritusJoukko, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
+  private def isNewVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
       SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json, data_xml
       FROM versiot
       WHERE henkilo_oid=${henkiloOid}
-        AND suoritusjoukko=${suoritusJoukko.nimi}
-        AND lahde_tunniste=${lahdeTunniste}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
         AND upper(voimassaolo)='infinity'::timestamptz
     """.as[(String, Seq[String], Seq[String])].map(result => {
       if (result.isEmpty)
@@ -118,19 +118,19 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           isNewXmlData || isNewJsonData
     })
 
-  private def findExistingVersionByLahdeVersio(henkiloOid: String, suoritusJoukko: SuoritusJoukko, lahdeTunniste: String, lahdeVersio: Int): DBIOAction[Option[String], NoStream, Effect] =
+  private def findExistingVersionByLahdeVersio(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, lahdeVersio: Int): DBIOAction[Option[String], NoStream, Effect] =
     sql"""
       SELECT tunniste::text
       FROM versiot
       WHERE henkilo_oid=${henkiloOid}
-        AND suoritusjoukko=${suoritusJoukko.nimi}
-        AND lahde_tunniste=${lahdeTunniste}
-        AND lahde_versio=${lahdeVersio}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
+        AND lahdeversio=${lahdeVersio}
     """.as[String].headOption
 
   private def discontinuePreviousVersionedVersion(
     henkiloOid: String,
-    suoritusJoukko: SuoritusJoukko,
+    lahdeJarjestelma: Lahdejarjestelma,
     lahdeTunniste: String,
     lahdeVersio: Int,
     timestamp: Instant
@@ -139,15 +139,15 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       UPDATE versiot
       SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)
       WHERE henkilo_oid=${henkiloOid}
-        AND suoritusjoukko=${suoritusJoukko.nimi}
-        AND lahde_tunniste=${lahdeTunniste}
-        AND lahde_versio < ${lahdeVersio}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
+        AND lahdeversio < ${lahdeVersio}
         AND upper(voimassaolo) > ${timestamp.toString}::timestamptz
     """
 
   private def discontinueCurrentVersion(
     henkiloOid: String,
-    suoritusJoukko: SuoritusJoukko,
+    lahdeJarjestelma: Lahdejarjestelma,
     lahdeTunniste: String,
     timestamp: Instant
   ): DBIOAction[Int, NoStream, Effect] =
@@ -155,19 +155,19 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       UPDATE versiot
       SET voimassaolo=tstzrange(lower(voimassaolo), ${timestamp.toString}::timestamptz)
       WHERE henkilo_oid=${henkiloOid}
-        AND suoritusjoukko=${suoritusJoukko.nimi}
-        AND lahde_tunniste=${lahdeTunniste}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
         AND upper(voimassaolo) = 'infinity'::timestamptz
     """
 
   private def insertNewVersion(
-    henkiloOid: String,
-    suoritusJoukko: SuoritusJoukko,
-    jsonData: Seq[String],
-    xmlData: Seq[String],
-    timestamp: Instant,
-    lahdeTunniste: String,
-    lahdeVersio: Option[Int]
+                                henkiloOid: String,
+                                lahdeJarjestelma: Lahdejarjestelma,
+                                jsonData: Seq[String],
+                                xmlData: Seq[String],
+                                timestamp: Instant,
+                                lahdeTunniste: String,
+                                lahdeVersio: Option[Int]
   ): DBIOAction[Option[VersioEntiteetti], NoStream, Effect] =
     val tunniste = getUUID()
     LOG.info(s"Luodaan uusi versio $tunniste henkilölle $henkiloOid (lahdeVersio=$lahdeVersio)")
@@ -176,19 +176,19 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         SELECT lower(voimassaolo) as loppu
         FROM versiot
         WHERE henkilo_oid=${henkiloOid}
-          AND suoritusjoukko=${suoritusJoukko.nimi}
-          AND lahde_tunniste=${lahdeTunniste}
+          AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+          AND lahdetunniste=${lahdeTunniste}
           AND ${lahdeVersio}::integer IS NOT NULL
-          AND lahde_versio > ${lahdeVersio}
-        ORDER BY lahde_versio ASC
+          AND lahdeversio > ${lahdeVersio}
+        ORDER BY lahdeversio ASC
         LIMIT 1
       )
-      INSERT INTO versiot(tunniste, henkilo_oid, voimassaolo, suoritusjoukko, lahde_tunniste, lahde_versio, data_json, data_xml)
+      INSERT INTO versiot(tunniste, henkilo_oid, voimassaolo, lahdejarjestelma, lahdetunniste, lahdeversio, data_json, data_xml)
       VALUES(
         ${tunniste.toString}::uuid,
         ${henkiloOid},
         tstzrange(${timestamp.toString}::timestamptz, COALESCE((SELECT loppu FROM subsequent_version), 'infinity'::timestamptz)),
-        ${suoritusJoukko.nimi},
+        ${lahdeJarjestelma.nimi},
         ${lahdeTunniste},
         ${lahdeVersio},
         ${jsonData}::jsonb[],
@@ -199,46 +199,46 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         'henkiloOid', henkilo_oid,
         'alku', to_json(lower(voimassaolo)::timestamptz)#>>'{}',
         'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-        'suoritusJoukko', suoritusjoukko,
-        'lahdeTunniste', lahde_tunniste,
-        'lahdeVersio', lahde_versio,
+        'lahdeJarjestelma', lahdejarjestelma,
+        'lahdeTunniste', lahdetunniste,
+        'lahdeVersio', lahdeversio,
         'parserVersio', parser_versio
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
 
-  def tallennaJarjestelmaVersio(henkiloOid: String, suoritusJoukko: SuoritusJoukko, jsonData: Seq[String], xmlData: Seq[String], voimassaolonAlku: Instant, lahdeTunniste: String, lahdeVersio: Option[Int]): Option[VersioEntiteetti] =
+  def tallennaJarjestelmaVersio(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, jsonData: Seq[String], xmlData: Seq[String], voimassaolonAlku: Instant, lahdeTunniste: String, lahdeVersio: Option[Int]): Option[VersioEntiteetti] =
     val insertHenkiloAction = sqlu"INSERT INTO henkilot(oid) VALUES (${henkiloOid}) ON CONFLICT DO NOTHING"
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${henkiloOid} FOR UPDATE"""
     val timestamp = Instant.ofEpochMilli(voimassaolonAlku.toEpochMilli)
 
     // KOSKI is versioned, others are not
-    val isVersionedSource = suoritusJoukko == SuoritusJoukko.KOSKI
+    val isVersionedSource = lahdeJarjestelma == Lahdejarjestelma.KOSKI
     if (isVersionedSource && lahdeVersio.isEmpty)
-      throw new IllegalArgumentException(s"lahdeVersio vaaditaan versioitavalle lähteelle $suoritusJoukko")
+      throw new IllegalArgumentException(s"lahdeVersio vaaditaan versioitavalle lähteelle $lahdeJarjestelma")
     if (!isVersionedSource && lahdeVersio.isDefined)
-      throw new IllegalArgumentException(s"lahdeVersio ei sallittu versioimattomalle lähteelle $suoritusJoukko")
+      throw new IllegalArgumentException(s"lahdeVersio ei sallittu versioimattomalle lähteelle $lahdeJarjestelma")
 
     val upsertAction = DBIO.sequence(Seq(insertHenkiloAction, lockHenkiloAction.as[Int])).flatMap(_ =>
       lahdeVersio match {
         case Some(lahdeVersio) =>
-          // Versioned: check if same lahde_versio already exists
-          findExistingVersionByLahdeVersio(henkiloOid, suoritusJoukko, lahdeTunniste, lahdeVersio).flatMap {
+          // Versioned: check if same lahdeversio already exists
+          findExistingVersionByLahdeVersio(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio).flatMap {
             case Some(existingTunniste) =>
               LOG.info(s"Versio lahdeVersio=$lahdeVersio henkilölle $henkiloOid on jo olemassa (tunniste=$existingTunniste), ohitetaan.")
               DBIO.successful(None)
             case None =>
-              discontinuePreviousVersionedVersion(henkiloOid, suoritusJoukko, lahdeTunniste, lahdeVersio, timestamp).flatMap(_ =>
-                insertNewVersion(henkiloOid, suoritusJoukko, jsonData, xmlData, timestamp, lahdeTunniste, Some(lahdeVersio))
+              discontinuePreviousVersionedVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio, timestamp).flatMap(_ =>
+                insertNewVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, timestamp, lahdeTunniste, Some(lahdeVersio))
               )
           }
         case None =>
           // Unversioned: check if this is a new version based on timestamp and data comparison
-          isNewVersion(henkiloOid, suoritusJoukko, lahdeTunniste, jsonData, xmlData, timestamp).flatMap {
+          isNewVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, jsonData, xmlData, timestamp).flatMap {
             case false =>
               DBIO.successful(None)
             case true =>
-              discontinueCurrentVersion(henkiloOid, suoritusJoukko, lahdeTunniste, timestamp).flatMap(_ =>
-                insertNewVersion(henkiloOid, suoritusJoukko, jsonData, xmlData, timestamp, lahdeTunniste, lahdeVersio)
+              discontinueCurrentVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, timestamp).flatMap(_ =>
+                insertNewVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, timestamp, lahdeTunniste, lahdeVersio)
               )
           }
       }
@@ -253,9 +253,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           'henkiloOid', versiot.henkilo_oid,
           'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
           'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-          'suoritusJoukko', versiot.suoritusjoukko,
-          'lahdeTunniste', versiot.lahde_tunniste,
-          'lahdeVersio', versiot.lahde_versio,
+          'lahdeJarjestelma', versiot.lahdejarjestelma,
+          'lahdeTunniste', versiot.lahdetunniste,
+          'lahdeVersio', versiot.lahdeversio,
           'parserVersio', versiot.parser_versio
         )::text AS versio
         FROM versiot where henkilo_oid = $henkiloOid""".as[String]), DB_TIMEOUT)
@@ -268,9 +268,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'henkiloOid', henkilo_oid,
               'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-              'suoritusJoukko', suoritusjoukko,
-              'lahdeTunniste', lahde_tunniste,
-              'lahdeVersio', lahde_versio,
+              'lahdeJarjestelma', lahdejarjestelma,
+              'lahdeTunniste', lahdetunniste,
+              'lahdeVersio', lahdeversio,
               'parserVersio', parser_versio
             )::text AS versio,
             data_json::text[],
@@ -279,19 +279,19 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String], Seq[String])]), DB_TIMEOUT)
       .map((json, jsonData, xmlData) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), jsonData, xmlData)).head
 
-  def haeVersiot(suoritusJoukko: SuoritusJoukko): Seq[VersioEntiteetti] =
+  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] =
     Await.result(db.run(
         sql"""SELECT jsonb_build_object('tunniste', tunniste,
               'henkiloOid', henkilo_oid,
               'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-              'suoritusJoukko', suoritusjoukko,
-              'lahdeTunniste', lahde_tunniste,
-              'lahdeVersio', lahde_versio,
+              'lahdeJarjestelma', lahdejarjestelma,
+              'lahdeTunniste', lahdetunniste,
+              'lahdeVersio', lahdeversio,
               'parserVersio', parser_versio
             )::text AS versio
             FROM versiot
-            WHERE suoritusjoukko=${suoritusJoukko.nimi}""".as[String]), DB_TIMEOUT)
+            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int) = {
@@ -303,13 +303,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         DBIO.successful(Seq.empty[DBIO[Int]])
       else {
         DBIO.sequence(
-          sqlu"""DELETE FROM lahtokoulut WHERE henkilo_oid=${versio.henkiloOid} AND suoritusjoukko=${versio.suoritusJoukko.toString} AND lahde_tunniste=${versio.lahdeTunniste}""" +: lahtokoulut.map(lahtokoulu =>
+          sqlu"""DELETE FROM lahtokoulut WHERE henkilo_oid=${versio.henkiloOid} AND lahdejarjestelma=${versio.lahdeJarjestelma.toString} AND lahdetunniste=${versio.lahdeTunniste}""" +: lahtokoulut.map(lahtokoulu =>
           sqlu"""
-              INSERT INTO lahtokoulut (versio_tunniste, henkilo_oid, suoritusjoukko, lahde_tunniste, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
+              INSERT INTO lahtokoulut (versio_tunniste, henkilo_oid, lahdejarjestelma, lahdetunniste, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
               VALUES(
                 ${versio.tunniste.toString}::uuid,
                 ${versio.henkiloOid},
-                ${versio.suoritusJoukko.toString},
+                ${versio.lahdeJarjestelma.toString},
                 ${versio.lahdeTunniste},
                 ${lahtokoulu.suorituksenAlku.toString}::date,
                 ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).getOrElse(null)}::date,
@@ -339,9 +339,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'henkiloOid', versiot.henkilo_oid,
               'alku',to_json(lower(versiot.voimassaolo)::timestamptz)#>>'{}',
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-              'suoritusJoukko', versiot.suoritusjoukko,
-              'lahdeTunniste', versiot.lahde_tunniste,
-              'lahdeVersio', versiot.lahde_versio,
+              'lahdeJarjestelma', versiot.lahdejarjestelma,
+              'lahdeTunniste', versiot.lahdetunniste,
+              'lahdeVersio', versiot.lahdeversio,
               'parserVersio', versiot.parser_versio
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
@@ -368,9 +368,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 'henkiloOid', henkilo_oid,
                 'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
                 'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-                'suoritusJoukko', suoritusjoukko,
-                'lahdeTunniste', lahde_tunniste,
-                'lahdeVersio', lahde_versio,
+                'lahdeJarjestelma', lahdejarjestelma,
+                'lahdeTunniste', lahdetunniste,
+                'lahdeVersio', lahdeversio,
                 'parserVersio', parser_versio
               )::text AS versio
               FROM versiot

@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
@@ -36,7 +36,7 @@ class OpiskeluoikeusParsingService(
    * @return parseroidut opiskeluoikeudet
    */
   def parseAndStore(versio: VersioEntiteetti): Set[Opiskeluoikeus] = {
-    LOG.info(s"On-demand-parserointi versiolle ${versio.tunniste} (${versio.suoritusJoukko})")
+    LOG.info(s"On-demand-parserointi versiolle ${versio.tunniste} (${versio.lahdeJarjestelma})")
     val (_, jsonData, xmlData) = kantaOperaatiot.haeData(versio)
     val (opiskeluoikeudet, parserVersio) = parse(versio, jsonData, xmlData)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), parserVersio)
@@ -79,7 +79,7 @@ class OpiskeluoikeusParsingService(
   def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
     val result = kantaOperaatiot.haeSuorituksetAjanhetkella(henkiloOid, timestamp)
     result.map { case (versio, opiskeluoikeudet) =>
-      val currentParserVersion = ParserVersions.forSuoritusJoukko(versio.suoritusJoukko)
+      val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
       versio.parserVersio match {
         case None =>
           // Versio ei ole vielä parsittu, parsitaan on-demand ja tallennetaan
@@ -107,34 +107,34 @@ class OpiskeluoikeusParsingService(
   }
 
   private def parse(versio: VersioEntiteetti, jsonData: Seq[String], xmlData: Seq[String]): (Set[Opiskeluoikeus], Int) = {
-    versio.suoritusJoukko match {
-      case SuoritusJoukko.KOSKI =>
+    versio.lahdeJarjestelma match {
+      case Lahdejarjestelma.KOSKI =>
         val parsed = jsonData.map(d => KoskiParser.parseKoskiData(d))
         val converted = KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
         (converted, ParserVersions.KOSKI)
 
-      case SuoritusJoukko.VIRTA =>
+      case Lahdejarjestelma.VIRTA =>
         val parsed = xmlData.map(d => VirtaParser.parseVirtaData(d))
         val converted: Set[Opiskeluoikeus] = parsed.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p)).toSet
         (converted, ParserVersions.VIRTA)
 
-      case SuoritusJoukko.YTR =>
+      case Lahdejarjestelma.YTR =>
         val parsed = jsonData.map(d => YtrParser.parseYtrData(d))
         val converted: Set[Opiskeluoikeus] = parsed.map(s => YtrToSuoritusConverter.toSuoritus(s)).toSet
         (converted, ParserVersions.YTR)
 
-      case SuoritusJoukko.SYOTETTY_PERUSOPETUS =>
+      case Lahdejarjestelma.SYOTETTY_PERUSOPETUS =>
         val parsed = jsonData.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppimaaranSuoritus]))
         val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
         (converted, ParserVersions.SYOTETTY_PERUSOPETUS)
 
-      case SuoritusJoukko.SYOTETYT_OPPIAINEET =>
+      case Lahdejarjestelma.SYOTETYT_OPPIAINEET =>
         val parsed = jsonData.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer]))
         val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
         (converted, ParserVersions.SYOTETYT_OPPIAINEET)
 
       case _ =>
-        LOG.warn(s"Tuntematon suoritusjoukko: ${versio.suoritusJoukko}")
+        LOG.warn(s"Tuntematon lähdejärjestelmä: ${versio.lahdeJarjestelma}")
         (Set.empty, 0)
     }
   }

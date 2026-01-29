@@ -10,7 +10,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByHenkilo
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiOpiskeluoikeus, KoskiParser, KoskiToSuoritusConverter}
 import slick.jdbc.JdbcBackend
