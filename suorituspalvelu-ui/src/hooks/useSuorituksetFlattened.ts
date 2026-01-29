@@ -6,7 +6,7 @@ import type {
   Suoritus,
 } from '@/types/ui-types';
 import { useMemo } from 'react';
-import { groupBy, isTruthy, omit } from 'remeda';
+import { groupBy, isTruthy } from 'remeda';
 
 const convertPerusopetusOppiaineet = (
   oppiaineet: Array<IPerusopetuksenOppiaineUI>,
@@ -48,21 +48,8 @@ const convertPerusopetusOppiaineet = (
   return result;
 };
 
-export function useSuorituksetFlattened(
-  oppijanTiedot: OppijanTiedot,
-  sortByDate: boolean = false,
-) {
+export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
   return useMemo(() => {
-    const suoritusTiedot = omit(oppijanTiedot, [
-      'etunimet',
-      'sukunimi',
-      'oppijaNumero',
-      'henkiloTunnus',
-      'syntymaAika',
-      'opiskeluoikeudet',
-      'henkiloOID',
-    ]);
-
     const result: Array<Suoritus> = [];
 
     const addSuoritukset = (
@@ -71,13 +58,13 @@ export function useSuorituksetFlattened(
       const arrayValue = castToArray(v);
       arrayValue?.forEach((suoritus) => {
         if (suoritus) {
-          return result.push(suoritus);
+          result.push(suoritus);
         }
       });
     };
 
     addSuoritukset(
-      suoritusTiedot.kkTutkinnot?.map((suoritus) => ({
+      oppijanTiedot.kkTutkinnot?.map((suoritus) => ({
         ...suoritus,
         koulutustyyppi: 'korkeakoulutus',
       })),
@@ -85,11 +72,11 @@ export function useSuorituksetFlattened(
 
     addSuoritukset(
       [
-        ...suoritusTiedot.yoTutkinnot,
-        suoritusTiedot.lukionOppimaara,
-        ...suoritusTiedot.lukionOppiaineenOppimaarat,
-        suoritusTiedot.diaTutkinto,
-        suoritusTiedot.diaVastaavuusTodistus,
+        ...oppijanTiedot.yoTutkinnot,
+        oppijanTiedot.lukionOppimaara,
+        ...oppijanTiedot.lukionOppiaineenOppimaarat,
+        oppijanTiedot.diaTutkinto,
+        oppijanTiedot.diaVastaavuusTodistus,
       ]
         .filter(isTruthy)
         .map((suoritus) => ({
@@ -99,31 +86,32 @@ export function useSuorituksetFlattened(
     );
 
     addSuoritukset(
-      suoritusTiedot.ebTutkinto && {
-        ...suoritusTiedot.ebTutkinto,
+      oppijanTiedot.ebTutkinto && {
+        ...oppijanTiedot.ebTutkinto,
         koulutustyyppi: 'eb',
       },
     );
 
     addSuoritukset(
-      suoritusTiedot.ibTutkinto && {
-        ...suoritusTiedot.ibTutkinto,
+      oppijanTiedot.ibTutkinto && {
+        ...oppijanTiedot.ibTutkinto,
         koulutustyyppi: 'ib',
       },
     );
 
     addSuoritukset(
-      suoritusTiedot.preIB && {
-        ...suoritusTiedot.preIB,
+      oppijanTiedot.preIB && {
+        ...oppijanTiedot.preIB,
         koulutustyyppi: 'lukio',
       },
     );
+
     addSuoritukset(
       [
-        ...suoritusTiedot.ammatillisetPerusTutkinnot,
-        ...suoritusTiedot.ammattitutkinnot,
-        ...suoritusTiedot.erikoisammattitutkinnot,
-        ...suoritusTiedot.telmat,
+        ...oppijanTiedot.ammatillisetPerusTutkinnot,
+        ...oppijanTiedot.ammattitutkinnot,
+        ...oppijanTiedot.erikoisammattitutkinnot,
+        ...oppijanTiedot.telmat,
       ].map((suoritus) => ({
         ...suoritus,
         koulutustyyppi: 'ammatillinen',
@@ -131,21 +119,21 @@ export function useSuorituksetFlattened(
     );
 
     addSuoritukset(
-      suoritusTiedot.tuvat.map((suoritus) => ({
+      oppijanTiedot.tuvat.map((suoritus) => ({
         ...suoritus,
         koulutustyyppi: 'tuva',
       })),
     );
 
     addSuoritukset(
-      suoritusTiedot.vapaaSivistystyoKoulutukset.map((suoritus) => ({
+      oppijanTiedot.vapaaSivistystyoKoulutukset.map((suoritus) => ({
         ...suoritus,
         koulutustyyppi: 'vapaa-sivistystyo',
       })),
     );
 
     addSuoritukset(
-      suoritusTiedot.perusopetuksenOppimaarat.map((suoritus) => {
+      oppijanTiedot.perusopetuksenOppimaarat.map((suoritus) => {
         return {
           ...suoritus,
           isEditable: suoritus.syotetty,
@@ -158,7 +146,7 @@ export function useSuorituksetFlattened(
     );
 
     addSuoritukset(
-      [suoritusTiedot.perusopetuksenOppimaara78Luokkalaiset]
+      [oppijanTiedot.perusopetuksenOppimaara78Luokkalaiset]
         .filter(isTruthy)
         .map((suoritus) => ({
           ...suoritus,
@@ -168,7 +156,7 @@ export function useSuorituksetFlattened(
     );
 
     addSuoritukset(
-      suoritusTiedot.perusopetuksenOppiaineenOppimaarat.map((suoritus) => {
+      oppijanTiedot.perusopetuksenOppiaineenOppimaarat.map((suoritus) => {
         return {
           ...suoritus,
           isEditable: suoritus.syotetty,
@@ -180,26 +168,6 @@ export function useSuorituksetFlattened(
       }),
     );
 
-    if (sortByDate) {
-      return result.sort((a, b) => {
-        if (a.valmistumispaiva && b.valmistumispaiva) {
-          if (a.valmistumispaiva === b.valmistumispaiva) {
-            return 0;
-          }
-          return a.valmistumispaiva < b.valmistumispaiva ? 1 : -1;
-        }
-        if (a.tila === 'KESKEN' && !a.valmistumispaiva) {
-          return -1;
-        } else if (b.tila === 'KESKEN' && !b.valmistumispaiva) {
-          return 1;
-        } else if (a.valmistumispaiva) {
-          return -1;
-        } else if (b.valmistumispaiva) {
-          return 1;
-        }
-        return 0;
-      });
-    }
     return result;
-  }, [oppijanTiedot, sortByDate]);
+  }, [oppijanTiedot]);
 }
