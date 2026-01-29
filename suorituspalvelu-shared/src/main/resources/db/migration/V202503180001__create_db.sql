@@ -1,35 +1,33 @@
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
--- taulu lisätty jotta voidaa lukita yksittäinen oppija
-CREATE TABLE IF NOT EXISTS oppijat (
-    oppijanumero                VARCHAR PRIMARY KEY
+-- taulu lisätty jotta voidaa lukita yksittäinen henkilö
+CREATE TABLE IF NOT EXISTS henkilot (
+    oid                         VARCHAR PRIMARY KEY
 );
 
 CREATE TABLE IF NOT EXISTS versiot (
     tunniste                    UUID PRIMARY KEY,
-    use_versio_tunniste         UUID REFERENCES versiot (tunniste),
-    oppijanumero                VARCHAR NOT NULL REFERENCES oppijat (oppijanumero),
+    henkilo_oid                 VARCHAR NOT NULL REFERENCES henkilot (oid),
     voimassaolo                 TSTZRANGE NOT NULL,
-    suoritusjoukko              VARCHAR NOT NULL,
+    lahdejarjestelma            VARCHAR NOT NULL,
+    lahdetunniste               VARCHAR NOT NULL,
+    lahdeversio                 INTEGER,
     data_json                   JSONB[],
     data_xml                    XML[],
-    EXCLUDE USING gist (oppijanumero WITH =, suoritusjoukko WITH =, voimassaolo WITH &&),
-    CHECK ((suoritusjoukko='VIRTA' AND data_json IS NULL       AND data_xml IS NOT NULL) OR
-                                      (data_json IS NOT NULL   AND data_xml IS NULL))
+    opiskeluoikeudet            JSONB,
+    parser_versio               INTEGER,
+    EXCLUDE USING gist (henkilo_oid WITH =, lahdejarjestelma WITH =, lahdetunniste WITH =, voimassaolo WITH &&)
 );
 
-CREATE TABLE opiskeluoikeudet (
-    versio_tunniste UUID    NOT NULL REFERENCES versiot (tunniste),
-    data_parseroitu         JSONB
-);
+CREATE INDEX IF NOT EXISTS idx_versiot_opiskeluoikeudet ON versiot USING GIN (opiskeluoikeudet jsonb_path_ops);
 
-CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_versio_tunniste ON opiskeluoikeudet(versio_tunniste);
-CREATE INDEX IF NOT EXISTS idx_opiskeluoikeudet_data_parseroitu ON opiskeluoikeudet USING GIN (data_parseroitu jsonb_path_ops);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_versiot_lahde_versio_unique ON versiot (henkilo_oid, lahdejarjestelma, lahdetunniste, lahdeversio) WHERE lahdeversio IS NOT NULL;
 
 CREATE TABLE lahtokoulut (
-    versio_tunniste         UUID NOT NULL REFERENCES versiot (tunniste) ON DELETE CASCADE,
-    versio_voimassaolo      TSTZRANGE NOT NULL,
-    oppijanumero            VARCHAR NOT NULL,
+    versio_tunniste         UUID NOT NULL REFERENCES versiot (tunniste),
+    henkilo_oid             VARCHAR NOT NULL,
+    lahdejarjestelma        VARCHAR NOT NULL,
+    lahdetunniste           VARCHAR NOT NULL,
     suorituksen_alku        DATE NOT NULL,
     suorituksen_loppu       DATE,
     valmistumisvuosi        INTEGER,    -- suorituksen oletettu (tai todellinen) valmistumisvuosi tarkastusnäkymää varten
@@ -40,5 +38,5 @@ CREATE TABLE lahtokoulut (
     suoritustyyppi          VARCHAR NOT NULL
 );
 
-CREATE INDEX idx_lahtokoulut_oppilaitos_vuosi_oid ON lahtokoulut (oppilaitos_oid, valmistumisvuosi) WHERE upper(versio_voimassaolo) = 'infinity'::timestamptz;
-CREATE INDEX idx_lahtokoulut_oppijanumero ON lahtokoulut (oppijanumero) WHERE upper(versio_voimassaolo) = 'infinity'::timestamptz;
+CREATE INDEX idx_lahtokoulut_oppilaitos_vuosi_oid ON lahtokoulut (oppilaitos_oid, valmistumisvuosi);
+CREATE INDEX idx_lahtokoulut_henkilo_oid ON lahtokoulut (henkilo_oid);

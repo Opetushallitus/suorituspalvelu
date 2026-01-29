@@ -73,51 +73,58 @@ class AvainArvoConverterTest {
 
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
-
-      Assertions.assertEquals(1, oos.size)
-
-      val leikkuri = LocalDate.now
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, DEFAULT_KOUTA_HAKU, None)
-
-      Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
-      Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
-      Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
-
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
+    val opiskeluoikeudet = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(oo) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(oo.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER)
+        case Left(exception) => Assertions.fail(exception)
+      }
     })
+
+    Assertions.assertEquals(1, opiskeluoikeudet.size)
+
+    val leikkuri = LocalDate.now
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", opiskeluoikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
+
+    Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
+    Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
   }
 
   @Test def testAvainArvoConverterForPeruskouluArvosanatJaKielet(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
-    val splitData = KoskiIntegration.splitKoskiDataByOppija(this.getClass.getResourceAsStream(fileName)).toList
-    splitData.foreach((oppijaOid, data) => {
-      val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(data)
-      val oos: Seq[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(koskiOpiskeluoikeudet, DUMMY_KOODISTOPROVIDER)
-
-      Assertions.assertEquals(1, oos.size)
-      val leikkuri = LocalDate.now
-      val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", oos, leikkuri, DEFAULT_KOUTA_HAKU, None)
-      val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
-        "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
-        "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
-      val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE")
-
-      tavoiteArvosanat.foreach { case (aine, arvosana) =>
-        val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
-        Assertions.assertEquals(Some(arvosana), converterResult.getAvainArvoMap().get(prefix + aine))
-      }
-
-      tavoiteKielet.foreach { case (aine, kieli) =>
-        val postfix = AvainArvoConstants.peruskouluAineenKieliPostfix
-        val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
-        val kieliAvain = prefix + aine + postfix
-
-        Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(kieliAvain))
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
+    val opiskeluoikeudet = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(oo) =>
+          val koskiOpiskeluoikeudet = KoskiParser.parseKoskiData(oo.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeudet), DUMMY_KOODISTOPROVIDER)
+        case Left(exception) => Assertions.fail(exception)
       }
     })
+
+    Assertions.assertEquals(1, opiskeluoikeudet.size)
+    val leikkuri = LocalDate.now
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", opiskeluoikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
+    val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
+      "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
+      "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
+    val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE")
+
+    tavoiteArvosanat.foreach { case (aine, arvosana) =>
+      val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
+      Assertions.assertEquals(Some(arvosana), converterResult.getAvainArvoMap().get(prefix + aine))
+    }
+
+    tavoiteKielet.foreach { case (aine, kieli) =>
+      val postfix = AvainArvoConstants.peruskouluAineenKieliPostfix
+      val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
+      val kieliAvain = prefix + aine + postfix
+
+      Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(kieliAvain))
+    }
   }
 
   @Test def testKorkeimmatArvosanat(): Unit = {

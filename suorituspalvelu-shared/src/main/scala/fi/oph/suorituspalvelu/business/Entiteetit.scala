@@ -6,23 +6,30 @@ import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiL
 import java.util.UUID
 import java.time.{Instant, LocalDate}
 
-case class SuoritusJoukko(nimi: String) {
+case class Lahdejarjestelma(nimi: String) {
   @JsonValue
   def toJson: String = nimi
 }
 
-object SuoritusJoukko {
-  final val KOSKI = SuoritusJoukko("KOSKI")
-  final val VIRTA = SuoritusJoukko("VIRTA")
-  final val YTR   = SuoritusJoukko("YTR")
-  final val SYOTETTY_PERUSOPETUS = SuoritusJoukko("SYOTETTY_PERUSOPETUS")
-  final val SYOTETYT_OPPIAINEET = SuoritusJoukko("SYOTETYT_OPPIAINEET")
+object Lahdejarjestelma {
+  final val KOSKI = Lahdejarjestelma("KOSKI")
+  final val VIRTA = Lahdejarjestelma("VIRTA")
+  final val YTR   = Lahdejarjestelma("YTR")
+  final val SYOTETTY_PERUSOPETUS = Lahdejarjestelma("SYOTETTY_PERUSOPETUS")
+  final val SYOTETYT_OPPIAINEET = Lahdejarjestelma("SYOTETYT_OPPIAINEET")
 
   @JsonCreator
-  def fromString(value: String): SuoritusJoukko = SuoritusJoukko(value)
+  def fromString(value: String): Lahdejarjestelma = Lahdejarjestelma(value)
 
-  def oppiaineenOppimaara(nimi: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${nimi.toUpperCase()}")
-  def kieliOppiaineenOppimaara(kieli: String, laajuus: String): SuoritusJoukko = SuoritusJoukko(s"OPPIAINE_${kieli.toUpperCase()}_${laajuus.toUpperCase}")
+  def oppiaineenOppimaara(nimi: String): Lahdejarjestelma = Lahdejarjestelma(s"OPPIAINE_${nimi.toUpperCase()}")
+  def kieliOppiaineenOppimaara(kieli: String, laajuus: String): Lahdejarjestelma = Lahdejarjestelma(s"OPPIAINE_${kieli.toUpperCase()}_${laajuus.toUpperCase}")
+
+  def defaultLahdeTunniste(lahdejarjestelma: Lahdejarjestelma): String = lahdejarjestelma match {
+    case VIRTA => "VIRTA"
+    case YTR => "YTR"
+    case SYOTETTY_PERUSOPETUS => "SYOTETTY"
+    case SYOTETYT_OPPIAINEET => "SYOTETTY"
+  }
 }
 
 enum SuoritusTila:
@@ -32,7 +39,7 @@ enum SuoritusTila:
 
 case class Container(
                       @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                      opiskeluoikeus: Opiskeluoikeus)
+                      opiskeluoikeudet: Set[Opiskeluoikeus])
 
 sealed trait TallennettavaEntiteetti
 
@@ -308,7 +315,7 @@ case class YOTutkinto(tunniste: UUID, suoritusKieli: Koodi, supaTila: SuoritusTi
 
 case class Koe(tunniste: UUID, koodi: Koodi, tutkintoKerta: LocalDate, arvosana: Koodi, pisteet: Option[Int])
 
-case class VersioEntiteetti(tunniste: UUID, oppijaNumero: String, alku: Instant, loppu: Option[Instant], suoritusJoukko: SuoritusJoukko)
+case class VersioEntiteetti(tunniste: UUID, henkiloOid: String, alku: Instant, loppu: Option[Instant], lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, lahdeVersio: Option[Int], parserVersio: Option[Int])
 
 enum KKOpiskeluoikeusTila:
   case VOIMASSA

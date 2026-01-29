@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Lahtokoulu, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, SuoritusJoukko, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Lahdejarjestelma, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, Ohjausparametrit, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
@@ -137,7 +137,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan valmis perusopetuksen oppimäärä
     // (rekisterinpitäjälle palautettavat oppilaitokset perustuvat metadatan arvoihin)
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -163,7 +163,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // mockataan organisaatiopalvelun vastaus
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq.empty)
@@ -202,7 +202,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisvuosi = 2025
 
     // tallennetaan valmis perusopetuksen oppimäärä
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -228,7 +228,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // haetaan vuodet ja katsotaan että täsmää
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
@@ -273,7 +273,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val valmistumisvuosi = 2025
 
     // tallennetaan valmis perusopetuksen vuosiluokka
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -299,7 +299,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // haetaan luokat ja katsotaan että täsmää, TODO: toistaiseksi luokka kovakoodattu kunnes saadaan koskesta
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
@@ -429,7 +429,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
     // tallennetaan valmis perusopetuksen oppimäärä
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(hakusanaOppijanumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(hakusanaOppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
       None,
@@ -455,7 +455,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       VALMIS,
       List.empty
     ))
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // haetaan oppijoita oppilaitoksella ja vuodella
     val result = mvc.perform(MockMvcRequestBuilders
@@ -543,12 +543,12 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val syntymaAika = Some(LocalDate.of(2000, 1, 1))
 
     // tallennetaan tutkinnot
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3.4", Some(1))
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     val opiskeluoikeudet = Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
     ).asInstanceOf[Set[Opiskeluoikeus]]
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
@@ -582,11 +582,11 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val henkilotunnus = "123456-789A"
 
     // tallennetaan tutkinnot
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3.4", Some(1))
     val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("tapa", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
-    ), List.empty)
+    ), List.empty, ParserVersions.KOSKI)
 
     // mockataan ONR-vastaus
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, Some(henkilotunnus), None, None))))
@@ -1155,7 +1155,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusEiVoimassa(): Unit =
     // tallennetaan versio ja päätetään voimassaolo
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", Lahdejarjestelma.SYOTETTY_PERUSOPETUS, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None)
     kantaOperaatiot.paataVersionVoimassaolo(versio.get.tunniste)
 
     // versio joka jo poistettu aiheuttaa virheen
@@ -1172,7 +1172,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusEiPoistettavissa(): Unit =
     // tallennetaan versio lähdejärjestelmälle jonka suorituksia ei voi poistaa
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio("1.2.246.562.24.21250967212", Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
 
     // versio joka ei poistettavissa aiheuttaa virheen
     val result = mvc.perform(MockMvcRequestBuilders
@@ -1189,7 +1189,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testPoistaPerusopetuksenOppimaaranSuoritusSuoritusAllowed(): Unit =
     // tallennetaan versio
     val oppijaNumero = "1.2.246.562.24.21250967211"
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETTY_PERUSOPETUS, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.SYOTETTY_PERUSOPETUS, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None)
 
     // poistetaan versio
     val result = mvc.perform(MockMvcRequestBuilders
@@ -1213,7 +1213,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testPoistaPerusopetuksenOppiaineenOppimaaranSuoritusSuoritusAllowed(): Unit =
     // tallennetaan versio
     val oppijaNumero = "1.2.246.562.24.21250967211"
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETYT_OPPIAINEET, Seq.empty, Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.SYOTETYT_OPPIAINEET, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None)
 
     // poistetaan versio
     val result = mvc.perform(MockMvcRequestBuilders
@@ -1283,7 +1283,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val eriHaunYliajo = AvainArvoYliajo(eriHaunYliajettuAvain, Some(eriHaunYliajettuArvo), oppijaNumero, eriHaunOid, virkailijaOid, eriHaunYliajoSelite)
 
     kantaOperaatiot.tallennaYliajot(Seq(yliajo, eriHaunYliajo))
-    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.SYOTETYT_OPPIAINEET, Seq("{}"), Instant.now())
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.SYOTETYT_OPPIAINEET, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None)
 
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
@@ -1477,7 +1477,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(List(objectMapper.readValue(yliajotPayload, classOf[Map[Any, Any]])), auditLogEntry.changes)
 
     // ja yliajot tallentuvat kantaan
-    val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
+    val tallennetutYliajot = kantaOperaatiot.haeHenkilonYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(2, tallennetutYliajot.size)
     Assertions.assertEquals(tallennetutYliajot.map(_.virkailijaOid).toSet, Set("1.2.246.562.24.21250967987"))
   }
@@ -1551,7 +1551,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // ja yliajot tallentuvat kantaan, ja myöhemmin poistettava avain on vielä mukana
-    val tallennetutYliajot = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
+    val tallennetutYliajot = kantaOperaatiot.haeHenkilonYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(2, tallennetutYliajot.size)
     Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJokaPoistetaan))
     Assertions.assertTrue(tallennetutYliajot.exists(_.avain == avainJotaEiPoisteta))
@@ -1567,7 +1567,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // tarkistetaan että poistetun avaimen arvo on nyt tyhjä
-    val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeOppijanYliajot(oppijaNumero, hakuOid)
+    val tallennetutYliajotPoistonJalkeen: Seq[AvainArvoYliajo] = kantaOperaatiot.haeHenkilonYliajot(oppijaNumero, hakuOid)
     Assertions.assertEquals(2, tallennetutYliajotPoistonJalkeen.size)
     Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(ya => ya.avain == avainJokaPoistetaan && ya.arvo.isEmpty))
     Assertions.assertTrue(tallennetutYliajotPoistonJalkeen.exists(_.avain == avainJotaEiPoisteta))
@@ -1685,7 +1685,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // Save version and EB tutkinto
-    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.KOSKI, Seq.empty, Instant.now())
+    val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       GeneerinenOpiskeluoikeus(
         UUID.randomUUID(),
@@ -1696,7 +1696,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         List.empty
       )
-    ), Seq.empty)
+    ), Seq.empty, ParserVersions.KOSKI)
 
     // Mock ONR & organisaatiopalvelu
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)))

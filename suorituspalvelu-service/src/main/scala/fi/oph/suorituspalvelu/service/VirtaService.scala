@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo, TarjontaIntegration, Util}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
@@ -67,13 +67,13 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     LOG.info(s"Persistoidaan Virta-data henkilölle $oppijaNumero")
 
     val kantaOperaatiot = KantaOperaatiot(database)
-    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, SuoritusJoukko.VIRTA, hetulessXmls, fetchedAt)
+    val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.VIRTA, Seq.empty, hetulessXmls, fetchedAt, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.VIRTA), None)
 
     versio.foreach(v => {
       LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
       val parseroidut = hetulessXmls.map(xml => VirtaParser.parseVirtaData(new ByteArrayInputStream(xml.getBytes)))
       val konvertoidut = parseroidut.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p))
-      kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet, Seq.empty)
+      kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet, Seq.empty, ParserVersions.VIRTA)
       LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle $oppijaNumero, yhteensä ${konvertoidut.size} suoritusta.")
     })
 

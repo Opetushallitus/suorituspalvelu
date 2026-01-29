@@ -7,6 +7,9 @@
     "aikaleima": "2024-12-18T12:53:12.120389",
     "opiskeluoikeudet": [
       {
+        "oid": "1.2.246.562.15.80919344202",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "perusopetus",
           "nimi": {
@@ -20,7 +23,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.80919344202",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.494695390410",
           "nimi": {
@@ -529,6 +531,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.23838014928",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "aikuistenperusopetus",
           "nimi": {
@@ -542,7 +547,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.23838014928",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.26464466668",
           "nimi": {
@@ -755,6 +759,9 @@
         ]
       },
       {
+        "oid": "1.2.246.562.15.83931646828",
+        "versionumero": 127,
+        "aikaleima": "2024-09-12T15:12:40.365225",
         "tyyppi": {
           "koodiarvo": "perusopetus",
           "nimi": {
@@ -768,7 +775,6 @@
           "koodistoUri": "opiskeluoikeudentyyppi",
           "koodistoVersio": 1
         },
-        "oid": "1.2.246.562.15.83931646828",
         "koulutustoimija": {
           "oid": "1.2.246.562.10.2013120314194853405606",
           "nimi": {

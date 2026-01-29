@@ -28,8 +28,8 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
         start.toString
       catch
         case e: Exception =>
-          LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
-          prevStart.toString
+          LOG.error("Muuttuneiden hakemustietojen pollaus epäonnistui", e)
+          prevStart.map(_.toString).orNull
     else
       start.toString
   }, "0 */2 * * * *")

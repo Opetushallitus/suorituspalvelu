@@ -119,8 +119,9 @@ class BaseIntegraatioTesti {
       sqlu"""
              DELETE FROM task_status;
              DELETE FROM scheduled_tasks;
-             DELETE FROM opiskeluoikeudet;
+             DELETE FROM lahtokoulut;
              DELETE FROM versiot;
+             DELETE FROM henkilot;
           """), 5.seconds)
 
   var capturedOutput: CapturedOutput = null

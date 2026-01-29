@@ -3,7 +3,7 @@
 package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
-import fi.oph.suorituspalvelu.business.SuoritusJoukko
+import fi.oph.suorituspalvelu.business.Lahdejarjestelma
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, KoutaHaku, YtrClient, YtrHetuPostData, YtrMassOperation, YtrMassOperationQueryResponse}
 import fi.oph.suorituspalvelu.integration.ytr.YtrDataForHenkilo
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
@@ -153,11 +153,11 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
     val ytrSyncResponse: YtrSyncSuccessResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncSuccessResponse])
 
-    val versiot = kantaOperaatiot.haeOppijanVersiot(oppijaNumero)
+    val versiot = kantaOperaatiot.haeHenkilonVersiot(oppijaNumero)
 
     //Tarkistetaan että kantaan on tallennettu oppijalle yksi versio
     Assertions.assertEquals(versiot.size, 1)
-    Assertions.assertEquals(versiot.head.suoritusJoukko, SuoritusJoukko.YTR)
+    Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
 
     val data = kantaOperaatiot.haeData(versiot.head)
     val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
@@ -231,14 +231,14 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     //Tarkistetaan että kaikille oppijanumeroille on muodostunut yksi versio kantaan, ja versio on parseroitu suorituksiksi
     hetuToPersonOid.values.foreach(personOid => {
-      val versiot = kantaOperaatiot.haeOppijanVersiot(personOid)
+      val versiot = kantaOperaatiot.haeHenkilonVersiot(personOid)
       Assertions.assertTrue(versiot.size == 1)
-      Assertions.assertEquals(versiot.head.suoritusJoukko, SuoritusJoukko.YTR)
+      Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
       val data = kantaOperaatiot.haeData(versiot.head)
       val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
       parsed.foreach(p => Assertions.assertTrue(p.ssn.isEmpty))
 
-      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.oppijaNumero)
+      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
   }

@@ -10,21 +10,25 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SuoritusJoukko, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByOppija
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.integration.KoskiIntegration.splitKoskiDataByHenkilo
+import fi.oph.suorituspalvelu.parsing.koski.{KoskiOpiskeluoikeus, KoskiParser, KoskiToSuoritusConverter}
 import slick.jdbc.JdbcBackend
 
 import java.io.{ByteArrayInputStream, InputStream}
-import java.time.Instant
+import java.time.{Instant, LocalDateTime, ZoneId}
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 case class SplitattavaKoskiData(oppijaOid: String, opiskeluoikeudet: Seq[Map[String, Any]])
 
-case class KoskiDataForOppija(oppijaOid: String, data: String)
+case class KoskiDataForOppija(oppijaOid: String, opiskeluoikeudet: Seq[Either[Exception, KoskiOpiskeluoikeus]])
+
+case class KoskiOpiskeluoikeus(oid: String, versioNumero: Int, aikaleima: Instant, data: String)
 
 object KoskiIntegration {
+
+  val LOG = LoggerFactory.getLogger(classOf[KoskiIntegration])
 
   val MAPPER: ObjectMapper = {
     val mapper = new ObjectMapper()
@@ -36,7 +40,12 @@ object KoskiIntegration {
     mapper
   }
 
-  def splitKoskiDataByOppija(input: InputStream): Iterator[(String, String)] =
+  val zone = ZoneId.of("Europe/Helsinki")
+
+  def parseVoimassaolonAlku(timestamp: String): Instant =
+    LocalDateTime.parse(timestamp).atZone(zone).toInstant
+
+  def splitKoskiDataByHenkilo(input: InputStream): Iterator[KoskiDataForOppija] =
     val jsonParser = MAPPER.getFactory().createParser(input)
     jsonParser.nextToken()
 
@@ -48,7 +57,21 @@ object KoskiIntegration {
           None})
       .takeWhile(data => data.isDefined)
       .map(data => {
-        (data.get.oppijaOid, MAPPER.writeValueAsString(data.get.opiskeluoikeudet))
+        KoskiDataForOppija(data.get.oppijaOid, data.get.opiskeluoikeudet.map(opiskeluoikeus => {
+          try
+            val oid = opiskeluoikeus("oid").toString
+            val versionumero = opiskeluoikeus("versionumero").toString.toInt
+            val aikaleima = parseVoimassaolonAlku(opiskeluoikeus("aikaleima").toString)
+            Right(KoskiOpiskeluoikeus(
+              oid,
+              versionumero,
+              aikaleima,
+              MAPPER.writeValueAsString(opiskeluoikeus)))
+          catch
+            case e: Exception =>
+              LOG.error(s"Virhe koski-opiskeluoikeuden parseroinnissa, oid: ${opiskeluoikeus.get("oid")}, versionumero: ${opiskeluoikeus.get("versionumero")}, aikaleima: ${opiskeluoikeus.get("aikaleima")}", e)
+              Left(e)
+        }))
       })
 }
 
@@ -124,10 +147,7 @@ class KoskiIntegration {
     koskiClient.getWithBasicAuth(fileUrl, followRedirects = true).map(fileResult => {
       LOG.info(s"Saatiin haettua KOSKI-massaluovutushaun tiedosto $fileUrl onnistuneesti")
       val inputStream = new ByteArrayInputStream(fileResult.getBytes("UTF-8"))
-      val splitted = splitKoskiDataByOppija(inputStream)
-      splitted.map(henkilonTiedot => {
-        KoskiDataForOppija(henkilonTiedot._1, henkilonTiedot._2)
-      })
+      splitKoskiDataByHenkilo(inputStream)
     }).recoverWith({
       case e: Exception =>
         if(retries > 0)

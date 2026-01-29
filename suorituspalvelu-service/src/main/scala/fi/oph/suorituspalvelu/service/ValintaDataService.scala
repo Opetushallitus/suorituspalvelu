@@ -42,6 +42,8 @@ class ValintaDataService {
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
+  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
+
   @Autowired val onrIntegration: OnrIntegration = null
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
@@ -55,11 +57,11 @@ class ValintaDataService {
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(6))
 
   def fetchOverridesForOppijaAliases(allOidsForSinglePerson: Set[String], hakuOid: String): Set[AvainArvoYliajo] = {
-    allOidsForSinglePerson.flatMap(personOid => kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid))
+    allOidsForSinglePerson.flatMap(personOid => kantaOperaatiot.haeHenkilonYliajot(personOid, hakuOid))
   }
 
   def fetchOverridesForOppija(personOid: String, hakuOid: String): Seq[AvainArvoYliajo] = {
-    kantaOperaatiot.haeOppijanYliajot(personOid, hakuOid)
+    kantaOperaatiot.haeHenkilonYliajot(personOid, hakuOid)
   }
 
   def saveOverridesForOppija(personOid: String, hakuOid: String, overrides: Seq[AvainArvoYliajo]): Unit = {
@@ -98,7 +100,7 @@ class ValintaDataService {
   }
 
   def haeOppijanJaAliastenOpiskeluoikeudet(allOids: Set[String], timestamp: Instant): Seq[Opiskeluoikeus] = {
-    allOids.flatMap(oid => kantaOperaatiot.haeSuorituksetAjanhetkella(oid, timestamp).values.flatten).toSeq
+    allOids.flatMap(oid => opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, timestamp).values.flatten).toSeq
   }
 
   def doAvainArvoConversions(personOid: Option[String], haku: KoutaHaku, hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
