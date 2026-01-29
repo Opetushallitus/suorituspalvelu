@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.Lahdejarjestelma.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Lahdejarjestelma, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Lahdejarjestelma, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -109,15 +109,6 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false
-        ),
-        PerusopetuksenVuosiluokka(
-          UUID.randomUUID(),
-          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
-          Kielistetty(None, None, None),
-          Koodi("9", "perusopetuksenluokkaaste", None),
-          None,
-          Some(LocalDate.parse(s"$valmistumisvuosi-08-18")),
-          false
         )
       ),
       None,
@@ -210,15 +201,6 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           Set.empty,
           Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
-          false
-        ),
-        PerusopetuksenVuosiluokka(
-          UUID.randomUUID(),
-          fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), OPPILAITOS_OID),
-          Kielistetty(None, None, None),
-          Koodi("9", "perusopetuksenluokkaaste", None),
-          None,
-          Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           false
         )
       ),
