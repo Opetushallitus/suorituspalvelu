@@ -45,10 +45,12 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
     if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
       try
         refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(60))
+        start.toString
       catch
-        case e: Exception => LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
-    }
-    start.toString
+        case e: Exception =>
+          LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
+          prevStart.map(_.toString).orNull
+    } else start.toString
   }, "0 */2 * * * *")
 
   def refreshKoskiChangesSince(ctx: SupaJobContext, since: Instant): SaferIterator[SyncResultForHenkilo] =
