@@ -217,7 +217,7 @@ object HakemusConverter {
   //Käytetään muunnokseen Valintalaskentakoostepalvelusta kopioitua valmista java-luokkaa.
   //Arvosanat parsitaan vain, jos pohjakoulutusvuosi 2017 tai aiempi.
   def convertArvosanatHakemukselta(hakemus: AtaruValintalaskentaHakemus): Set[AvainArvoContainer] = {
-    val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt)
+    val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt)
     if (hakemusPohjakoulutusVuosi.exists(_ <= 2017)) {
       // Muokataan hakemukselta tulevat arvot AtaruArvosanaParserin ymmärtämään muotoon
       val avainArvoDTOMap = hakemus.keyValues.map { case (key, value) =>
@@ -341,8 +341,8 @@ object AvainArvoConverter {
         .orElse(keskeytyneetOppimaarat.maxByOption(_.aloitusPaivamaara))
     val kelpaavaOppimaara = viimeisinOppimaara.filter(onKelpaavaOppimaara(_, deadline))
 
-    val hakemusPohjakoulutus = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey)
-    val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt)
+    val hakemusPohjakoulutus = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey).flatMap(v => Option.apply(v))
+    val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt)
 
     val (pkResult, pkSelite) = getPohjakoulutusResult(kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi)
 
@@ -563,7 +563,7 @@ object AvainArvoConverter {
   }
 
   def hakemuksellaIlmoitettuPeruskoulu2017TaiAiempi(hakemus: AtaruValintalaskentaHakemus): Boolean = {
-    hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt).exists(_ <= 2017)
+    hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
   }
 
   def convertPeruskouluArvot(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
@@ -598,7 +598,7 @@ object AvainArvoConverter {
         val korotuksetSuorituspalvelusta = perusopetuksenOppiaineetToAvainArvot(oppiaineenOppimaarat.flatMap(_.aineet).toSet)
         val korkeimmatArvosanatHakemukseltaJaSupasta = valitseKorkeimmatPerusopetuksenArvosanatAineittain(korotuksetSuorituspalvelusta ++ arvosanatHakemukselta)
         val suoritusKieliHakemukselta =
-          hakemus.keyValues.get(AvainArvoConstants.perusopetuksenKieliKey)
+          hakemus.keyValues.get(AvainArvoConstants.perusopetuksenKieliKey).flatMap(v => Option.apply(v))
             .map(k => AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, k))
 
         //Todo, halutaanko tässä tapauksessa asettaa myös avain-arvo peruskouluSuoritettuKey -> true? Onko tällä merkitystä?

@@ -254,6 +254,7 @@ class HarkinnanvaraisuusPaattelyTest {
 
     val hakemus = BASE_HAKEMUS.copy(
       keyValues = Map(
+        AvainArvoConstants.ataruPohjakoulutusVuosiKey -> null,
         AvainArvoConstants.ataruPohjakoulutusKey -> AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS
       )
     )
