@@ -72,14 +72,14 @@ object HarkinnanvaraisuusPaattely {
     val tuoreinPeruskoulusuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet)
 
     val deadlineOhitettu = LocalDate.now().isAfter(vahvistettuViimeistaan)
-    val pohjakoulutusHakemukselta = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey)
+    val pohjakoulutusHakemukselta = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey).flatMap(v => Option.apply(v))
 
     val isSupaYksMatAi = hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet, vahvistettuViimeistaan)
     val isAtaruIlmoitettuYksMatAi = hakemus.keyValues.filter(kv => ataruMatematiikkaJaAidinkieliYksilollistettyQuestions.contains(kv._1)).values.exists(_.equals("1"))
 
     val hakutoiveet = hakemus.hakutoiveet.map(hakutoive => {
-      val hakukohteenHarkinnanvaraisuusHakemukselta: Option[String] = hakemus.keyValues.get(ataruHakukohdeHarkinnanvaraisuusPrefix + hakutoive.hakukohdeOid)
-      val ilmoitettuVanhaPeruskoulu = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).map(_.toInt).exists(_ <= 2017)
+      val hakukohteenHarkinnanvaraisuusHakemukselta: Option[String] = hakemus.keyValues.get(ataruHakukohdeHarkinnanvaraisuusPrefix + hakutoive.hakukohdeOid).flatMap(v => Option.apply(v))
+      val ilmoitettuVanhaPeruskoulu = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
 
       val hakukohde = hakukohteet.getOrElse(hakutoive.hakukohdeOid, throw new RuntimeException(s"Hakukohdetta ${hakutoive.hakukohdeOid} ei löytynyt!"))
       val hakukohdeSalliiHarkinnanvaraisuuden = hakukohde.voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita.exists(_.equals(true))
