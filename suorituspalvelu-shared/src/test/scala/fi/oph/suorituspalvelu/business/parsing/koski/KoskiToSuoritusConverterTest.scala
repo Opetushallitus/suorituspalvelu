@@ -108,7 +108,7 @@ class KoskiToSuoritusConverterTest {
   def testGetYksilollistaminen(): Unit = {
     val baseSuoritus = KoskiSuoritus(
       null, null, null, null, null, null,
-      osasuoritukset = Some(Set.empty), null, null, null, null
+      osasuoritukset = Some(Set.empty), null, null, null, null, null
     )
 
     val baseOikeus =  KoskiOpiskeluoikeus(

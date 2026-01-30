@@ -3,12 +3,10 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, Lahdejarjestelma, SuoritusTila, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus, Lahdejarjestelma, SuoritusTila, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.*
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ui.{Oppija, OppijanHakuSuccessResponse}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.{Assertions, Test}
@@ -16,12 +14,9 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-import java.nio.charset.Charset
 import java.time.{Instant, LocalDate}
-import java.util.{Optional, UUID}
+import java.util.UUID
 import scala.concurrent.Future
 
 class UIServiceTest extends BaseIntegraatioTesti {

@@ -1,12 +1,10 @@
 package fi.oph.suorituspalvelu.business.parsing.ytr
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koe, Koodi, Laajuus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenVuosiluokka, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiArviointi, Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter, KoskiKotiopetusjakso, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila}
+import fi.oph.suorituspalvelu.business.{Koe, Koodi, SuoritusTila, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
+import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
-import java.io.ByteArrayInputStream
 import java.time.LocalDate
 
 @Test

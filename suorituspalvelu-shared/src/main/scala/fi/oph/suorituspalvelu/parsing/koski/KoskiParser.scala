@@ -80,6 +80,7 @@ case class KoskiSuoritus(tyyppi: KoskiSuoritusTyyppi,
                          arviointi: Option[Set[KoskiArviointi]],
                          keskiarvo: Option[BigDecimal],
                          suoritustapa: Option[KoskiSuoritusTapa],
+                         luokka: Option[String],
                          `jääLuokalle`: Option[Boolean])
 
 case class KoskiOpiskeluoikeusJakso(alku: LocalDate,

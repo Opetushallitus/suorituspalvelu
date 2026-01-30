@@ -198,7 +198,7 @@ class HarkinnanvaraisuusPaattelyTest {
     )
   }
 
- @Test
+  @Test
   def testSyncHarkinnanvaraisuusSUREEiPaattotodistusta(): Unit = {
     val hakukohteet = Map(
       HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true),
@@ -229,7 +229,7 @@ class HarkinnanvaraisuusPaattelyTest {
     val pastDate = LocalDate.now().minusDays(10)
     val pastInstant = pastDate.atStartOfDay(ZoneId.systemDefault()).toInstant()
 
-   val ohjausparametritPastDeadline = DEFAULT_OHJAUSPARAMETRIT.copy(suoritustenVahvistuspaiva = Some(DateParam(pastInstant.toEpochMilli)))
+    val ohjausparametritPastDeadline = DEFAULT_OHJAUSPARAMETRIT.copy(suoritustenVahvistuspaiva = Some(DateParam(pastInstant.toEpochMilli)))
 
     val result2 = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
       hakemus, opiskeluoikeudet2, ohjausparametritPastDeadline.getVahvistuspaivaLocalDate, hakukohteet

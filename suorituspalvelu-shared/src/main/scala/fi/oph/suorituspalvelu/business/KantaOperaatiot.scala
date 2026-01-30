@@ -49,7 +49,6 @@ object KantaOperaatiot {
       classOf[AmmattiTutkinto],
       classOf[GeneerinenOpiskeluoikeus],
       classOf[YOOpiskeluoikeus],
-      classOf[PerusopetuksenVuosiluokka],
       classOf[Telma],
       classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
       classOf[Tuva],
