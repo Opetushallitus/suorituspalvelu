@@ -535,7 +535,7 @@ class KantaOperaatiotTest {
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
     val suoritus = Tuva(UUID.randomUUID(), Kielistetty(Some("Nimi Suomi"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(Some("Nimi suomi"), None, None), "1.2.246.562.10.95136889433"), Koodi("lasna", "koskiopiskeluoikeudentila", Some(1)), SuoritusTila.KESKEN, LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), None,
-      Lahtokoulu(LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), "1.2.246.562.10.95136889433", Some(2025), None, Some(SuoritusTila.KESKEN), None, TUVA))
+      Lahtokoulu(LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), "1.2.246.562.10.95136889433", Some(2025), "9A", Some(SuoritusTila.KESKEN), None, TUVA))
     val tilat = KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(LocalDate.parse("2023-05-03"), KoskiKoodi("opiskelu", "tilakoodisto", Some(2), Kielistetty(None, None, None), None)), KoskiOpiskeluoikeusJakso(LocalDate.parse("2025-10-09"), KoskiKoodi("lasna", "tilakoodisto", Some(6), Kielistetty(None, None, None), None))))
     val opiskeluoikeus = GeneerinenOpiskeluoikeus(UUID.randomUUID(), "opiskeluoikeusOid", Koodi("arvo", "koodisto", None), "oppilaitosOid", Set(suoritus), Some(tilat), List.empty)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.KOSKI)
@@ -613,7 +613,7 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
 
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
-      Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), None, oppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+      Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), None, oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), 1);
 
     // henkilö näkyy koska suoritus kesken
@@ -628,9 +628,9 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       // ensimmäinen suoritus päättyy koulun vaihtoon
-      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
       // jälkimmäinen suoritus alkaa kun ensimmäinen loppuu
-      Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+      Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), 1)
 
     // henkilö näkyy joulukuussa edelleen molempien koulujen oppilaslistalla koska opolla oikeus tarkastaa tilanne seuraavan tammikuun loppuun
@@ -647,9 +647,9 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       // ensimmäinen suoritus päättyy koulun vaihtoon
-      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
       // jälkimmäinen suoritus alkaa kun ensimmäinen loppuu
-      Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+      Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), 1)
 
     // helmikuussa henkilö ei enää näy vanhan koulun listalla
@@ -666,9 +666,9 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
       // ensimmäinen suoritus päättyy koulun vaihtoon
-      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9),
       // jälkimmäinen suoritus alkaa kun ensimmäinen loppuu
-      Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+      Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), 1)
 
     // henkilö näkyy molemmilla listoilla koska ei tarkastella tiettyä ajanhetkeä, ja henkilö on ollut kummankin koulun tietyn valmistumisvuoden oppilas
@@ -682,7 +682,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan versiot ja lähtökoulut
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
-    val lahtokoulu = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val lahtokoulu = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), "9A", Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(lahtokoulu), ParserVersions.KOSKI)
 
     // luettu vastaa tallennettua
@@ -699,8 +699,8 @@ class KantaOperaatiotTest {
     // tallennetaan versiot ja lähtökoulut
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero1, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
     val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero2, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
-    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
-    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), "9A", Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1), ParserVersions.KOSKI)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(lahtokoulu2), ParserVersions.KOSKI)
 
@@ -718,13 +718,13 @@ class KantaOperaatiotTest {
 
     // tallennetaan ensimmäinen versio, lähtökoulu täsmää
     val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq("{\"avain\": \"arvo1\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1))
-    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), Some("9A"), Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val lahtokoulu1 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2024-10-01")), "1.2.246.562.10.95136889433", Some(2025), "9A", Some(SuoritusTila.KESKEYTYNYT), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(lahtokoulu1), ParserVersions.KOSKI)
     Assertions.assertEquals(Set(lahtokoulu1), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
 
     // tallennetaan toinen versio, lähtökoulu muuttuu
     val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq("{\"avain\": \"arvo2\"}"), Seq.empty, Instant.now(), "1.2.3", Some(2))
-    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), Some("9B"), Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-10-01"), None, "1.2.246.562.10.95136889434", Some(2025), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(lahtokoulu2), ParserVersions.KOSKI)
     Assertions.assertEquals(Set(lahtokoulu2), kantaOperaatiot.haeLahtokoulut(Set(henkiloNumero)))
 
@@ -746,12 +746,12 @@ class KantaOperaatiotTest {
 
     // Tallennetaan opiskeluoikeuden 1 lähtökoulut
     val versioA = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq("{\"avain\": \"arvo\"}"), Seq.empty, Instant.now(), oo1, Some(1)).get
-    val oo1Lahtokoulu = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-06-01")), oppilaitosOid, Some(2025), Some("9A"), Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val oo1Lahtokoulu = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-06-01")), oppilaitosOid, Some(2025), "9A", Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versioA, Set.empty, Seq(oo1Lahtokoulu), ParserVersions.KOSKI)
 
     // Tallennetaan opiskeluoikeuden 2 lähtökoulut
     val versioB = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq("{\"avain\": \"arvo\"}"), Seq.empty, Instant.now(), oo2, Some(1)).get
-    val oo2Lahtokoulu = Lahtokoulu(LocalDate.parse("2025-08-01"), None, oppilaitosOid, Some(2026), None, Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.TELMA)
+    val oo2Lahtokoulu = Lahtokoulu(LocalDate.parse("2025-08-01"), None, oppilaitosOid, Some(2026), "9D", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.TELMA)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versioB, Set.empty, Seq(oo2Lahtokoulu), ParserVersions.KOSKI)
 
     // Molemmat lähtökoulut pitäisi löytyä
@@ -759,7 +759,7 @@ class KantaOperaatiotTest {
 
     // Päivitetään lähteen A versio uudella lähtökoululla
     val versioA2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq("{\"avain\": \"uusi arvo\"}"), Seq.empty, Instant.now(), oo1, Some(2)).get
-    val oo1Lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-06-01")), oppilaitosOid, Some(2025), Some("9B"), Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    val oo1Lahtokoulu2 = Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-06-01")), oppilaitosOid, Some(2025), "9B", Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versioA2, Set.empty, Seq(oo1Lahtokoulu2), ParserVersions.KOSKI)
 
     // Lähteen B lähtökoulu pitäisi edelleen löytyä, lähteen A lähtökoulu pitäisi olla päivittynyt

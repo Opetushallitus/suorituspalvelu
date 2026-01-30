@@ -262,7 +262,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(VALMIS), None, TELMA)
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
     )
 
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(
@@ -299,7 +299,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(VALMIS), None, TELMA)
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
     )
 
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(
@@ -337,7 +337,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(VALMIS), None, TELMA)
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
     )
 
     val haku = KoutaHaku(
@@ -385,7 +385,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Some(Laajuus(28, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       Koodi("FI", "kieli", Some(1)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
@@ -424,7 +424,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Some(Laajuus(22, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       Koodi("FI", "kieli", Some(1)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), None, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
