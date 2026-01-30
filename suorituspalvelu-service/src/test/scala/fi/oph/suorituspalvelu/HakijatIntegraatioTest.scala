@@ -106,7 +106,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
           Set.empty,
-          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false
         )
@@ -199,7 +199,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           Set.empty,
-          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false
         )
@@ -289,7 +289,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           Set.empty,
-          Set(Lahtokoulu(aloitusPaiva, Some(valmistumisPaiva), OPPILAITOS_OID, Some(valmistumisVuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+          Set(Lahtokoulu(aloitusPaiva, Some(valmistumisPaiva), OPPILAITOS_OID, Some(valmistumisVuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false
         )
@@ -308,7 +308,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
 
     // saadaan lähtökoulua vastaava autorisointi joka päättyy seuraavan vuoden tammikuun loppuun
-    Assertions.assertEquals(LahtokoulutSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-02-01")), Some("9A"), VUOSILUOKKA_9.toString)).asJava),
+    Assertions.assertEquals(LahtokoulutSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-02-01")), "9A", VUOSILUOKKA_9.toString)).asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää

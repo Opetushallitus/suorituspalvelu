@@ -48,7 +48,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
       if (tila == VALMIS) Some(LocalDate.parse(s"${aloitusVuosi + 1}-06-01")) else None,
       oppilaitosOid,
       Some(aloitusVuosi + 1),
-      Some("9A"),
+      "9A",
       Some(tila),
       None,
       VUOSILUOKKA_9
@@ -212,7 +212,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisVuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -256,7 +256,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisVuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosJossaSuoritusOid, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosJossaSuoritusOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),

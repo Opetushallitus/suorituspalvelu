@@ -353,7 +353,7 @@ class EntityToUIConverterTest {
       2020,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(18, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
-      Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), None, Some(VALMIS), None, TELMA)
+      Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Telma(
@@ -391,7 +391,7 @@ class EntityToUIConverterTest {
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None)))),
-      Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), None, Some(VALMIS), None, TUVA)
+      Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TUVA.defaultLuokka.get, Some(VALMIS), None, TUVA)
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Tuva(
@@ -435,7 +435,7 @@ class EntityToUIConverterTest {
       2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
       Koodi("FI", "kieli", Some(1)),
-      Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), None, Some(fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
+      Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.VapaaSivistystyoKoulutus(
