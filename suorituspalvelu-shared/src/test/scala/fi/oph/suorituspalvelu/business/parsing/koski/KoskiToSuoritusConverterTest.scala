@@ -112,7 +112,7 @@ class KoskiToSuoritusConverterTest {
     )
 
     val baseOikeus =  KoskiOpiskeluoikeus(
-      null, null, null, null, null, lisätiedot = None
+      null, null, null, null, null, lisätiedot = None, None
     )
 
     def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): KoskiOsaSuoritus = {
@@ -223,7 +223,7 @@ class KoskiToSuoritusConverterTest {
     val opiskeluoikeus = KoskiOpiskeluoikeus(
       "1.2.3",
       None,
-      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None)),
       Some(KoskiOpiskeluoikeusTila(List(
         KoskiOpiskeluoikeusJakso(
           LocalDate.parse("2025-01-01"),
@@ -233,7 +233,8 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2025-05-05"),
           KoskiKoodi("läsnä", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Set.empty,
+      Some(Set.empty),
+      None,
       None
     )
 
