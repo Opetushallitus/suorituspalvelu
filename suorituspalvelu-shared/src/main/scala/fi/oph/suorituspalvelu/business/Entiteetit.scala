@@ -54,6 +54,8 @@ sealed trait Suoritus extends TallennettavaEntiteetti
 
 sealed trait Opiskeluoikeus extends TallennettavaEntiteetti
 
+case class PoistettuOpiskeluoikeus(oid: String) extends Opiskeluoikeus, Tyypitetty
+
 case class Koodi(arvo: String, koodisto: String, versio: Option[Int])
 
 case class Laajuus(arvo: BigDecimal, yksikko: Koodi, nimi: Option[Kielistetty], lyhytNimi: Option[Kielistetty])
