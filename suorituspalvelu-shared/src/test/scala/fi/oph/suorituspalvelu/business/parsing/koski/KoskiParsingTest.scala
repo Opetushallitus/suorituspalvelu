@@ -1450,7 +1450,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), vst.suoritusKieli)
     Assertions.assertEquals(Lahtokoulu(LocalDate.parse("2024-05-25"), Some(LocalDate.parse("2025-04-16")), "1.2.246.562.10.63029756333", Some(2025), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(VALMIS), None, VAPAA_SIVISTYSTYO), vst.lahtokoulu)
 
-  @Test def testMitatoidutOpiskeluoikeudetFiltteroidaan(): Unit =
+  @Test def testMitatoituOpiskeluoikeusPalautetaanPoistettunaOpiskeluoikeutena(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
       """
         |[
@@ -1487,9 +1487,9 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin)
+        |""".stripMargin).get.asInstanceOf[PoistettuOpiskeluoikeus]
 
-    Assertions.assertTrue(opiskeluoikeus.isEmpty)
+    Assertions.assertEquals("1.2.246.562.15.87456579967", opiskeluoikeus.oid)
 
   @Test def testParasArviointiAmmatillinen(): Unit = {
     val arvioinnit = Set(

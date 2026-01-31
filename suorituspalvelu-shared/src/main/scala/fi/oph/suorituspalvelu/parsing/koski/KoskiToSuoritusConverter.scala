@@ -639,7 +639,7 @@ object KoskiToSuoritusConverter {
 
   def parseOpiskeluoikeudet(opiskeluoikeudet: Seq[KoskiOpiskeluoikeus], koodistoProvider: KoodistoProvider): Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus] =
     opiskeluoikeudet.flatMap {
-      case opiskeluoikeus if isMitatoitu(opiskeluoikeus) => None
+      case opiskeluoikeus if isMitatoitu(opiskeluoikeus) => Some(PoistettuOpiskeluoikeus(opiskeluoikeus.oid))
       case opiskeluoikeus if opiskeluoikeus.poistettu.contains(true) => Some(PoistettuOpiskeluoikeus(opiskeluoikeus.oid))
       case opiskeluoikeus if opiskeluoikeus.isPerusopetus =>
         Some(PerusopetuksenOpiskeluoikeus(
