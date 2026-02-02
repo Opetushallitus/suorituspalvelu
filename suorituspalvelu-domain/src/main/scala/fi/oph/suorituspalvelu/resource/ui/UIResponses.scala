@@ -876,7 +876,7 @@ case class TuvaLaajuus(
   @BeanProperty yksikko: TuvaLaajuusYksikko,
 )
 
-case class Tuva(
+case class TuvaUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -1185,7 +1185,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
   @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
   @BeanProperty telmat: java.util.List[Telma],
-  @BeanProperty tuvat: java.util.List[Tuva],
+  @BeanProperty tuvat: java.util.List[TuvaUI],
   @BeanProperty vapaaSivistystyoKoulutukset: java.util.List[VapaaSivistystyoKoulutus],
   @BeanProperty perusopetuksenOppimaarat: java.util.List[PerusopetuksenOppimaaraUI],
   @BeanProperty perusopetuksenOppimaara78Luokkalaiset: Optional[PerusopetuksenOppimaara78Luokkalaiset],
