@@ -201,20 +201,20 @@ case class PerusopetuksenOppimaaranOppiaineidenSuoritus(tunniste: UUID,
                                                         syotetty: Boolean //Käsin tallennetulle tiedolle true, muutoin false.
                                                        ) extends Suoritus, Tyypitetty
 
-enum LahtokouluTyyppi:
-  case VUOSILUOKKA_7
-  case VUOSILUOKKA_8
-  case VUOSILUOKKA_9
-  case AIKUISTEN_PERUSOPETUS
-  case TUVA
-  case TELMA
-  case VAPAA_SIVISTYSTYO
+enum LahtokouluTyyppi(val defaultLuokka: Option[String]):
+  case VUOSILUOKKA_7 extends LahtokouluTyyppi(None)
+  case VUOSILUOKKA_8 extends LahtokouluTyyppi(None)
+  case VUOSILUOKKA_9 extends LahtokouluTyyppi(None)
+  case AIKUISTEN_PERUSOPETUS extends LahtokouluTyyppi(Some("Aikuisten perusopetus"))
+  case TUVA extends LahtokouluTyyppi(Some("TUVA"))
+  case TELMA extends LahtokouluTyyppi(Some("TELMA"))
+  case VAPAA_SIVISTYSTYO extends LahtokouluTyyppi(Some("Vapaa sivistystyö"))
 
 case class Lahtokoulu(suorituksenAlku: LocalDate,
                       suorituksenLoppu: Option[LocalDate],
                       oppilaitosOid: String,
                       valmistumisvuosi: Option[Int],
-                      luokka: Option[String],
+                      luokka: String,
                       tila: Option[SuoritusTila],
                       arvosanaPuuttuu: Option[Boolean],
                       suoritusTyyppi: LahtokouluTyyppi)

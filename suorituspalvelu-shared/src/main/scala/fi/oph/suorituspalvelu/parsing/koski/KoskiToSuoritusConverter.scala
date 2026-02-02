@@ -294,7 +294,7 @@ object KoskiToSuoritusConverter {
       getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true),
-      Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), None, Some(supaTila), None, TELMA)
+      Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), TELMA.defaultLuokka.get, Some(supaTila), None, TELMA)
     )
   }
 
@@ -334,7 +334,7 @@ object KoskiToSuoritusConverter {
           asKoodiObject(l.yksikkö.get),
           Option.apply(l.yksikkö.get.nimi),
           l.yksikkö.get.lyhytNimi))),
-      Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), None, Some(supaTila), None, TUVA)
+      Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), TUVA.defaultLuokka.get, Some(supaTila), None, TUVA)
     )
 
   def toVapaaSivistystyoKoulutus(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): VapaaSivistystyo =
@@ -364,7 +364,7 @@ object KoskiToSuoritusConverter {
       //Huom. Tässä ei ole filtteröintiä hyväksytyn arvioinnin perusteella vrt. Telma, koska arviointeja ei ole.
       getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
-      Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), None, Some(supaTila), None, VAPAA_SIVISTYSTYO)
+      Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(supaTila), None, VAPAA_SIVISTYSTYO)
     )
 
   def toPerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppiaine] = {
@@ -480,7 +480,7 @@ object KoskiToSuoritusConverter {
       lahtokoulut = opiskeluoikeus.suoritukset
         .filter(s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA).flatMap(s => {
           val luokkaAste = s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).getOrElse(dummy())
-          val luokka = s.luokka
+          val luokka = s.luokka.getOrElse(dummy())
           s.alkamispäivä match
             // Luodaan lähtökoulu vain jos alkamispäivä määritelty. KOSKI-tiimin mukaan alkamispäivät määritelty ainakin
             // viimeisen kuuden vuoden ajalta.
@@ -552,7 +552,7 @@ object KoskiToSuoritusConverter {
       aloitusPaivamaara = aloitus,
       vahvistusPaivamaara = vahvistus,
       aineet = aineet,
-      lahtokoulut = Set(Lahtokoulu(aloitus.get, vahvistus, oppilaitos.oid, aloitus.map(_.getYear + 1), Some("Aikuisten perusopetus"), supaTila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), AIKUISTEN_PERUSOPETUS)),
+      lahtokoulut = Set(Lahtokoulu(aloitus.get, vahvistus, oppilaitos.oid, aloitus.map(_.getYear + 1), AIKUISTEN_PERUSOPETUS.defaultLuokka.get, supaTila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), AIKUISTEN_PERUSOPETUS)),
       syotetty = false,
       vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
     )

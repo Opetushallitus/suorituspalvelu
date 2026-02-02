@@ -86,7 +86,7 @@ class VirkailijaToSuoritusConverterTest {
             None,
             None
           ))).getOrElse(Set.empty),
-          Set(Lahtokoulu(LocalDate.now, Some(LocalDate.now), suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), Some("9A"), Some(SuoritusTila.VALMIS), Some(true), VUOSILUOKKA_9)),
+          Set(Lahtokoulu(LocalDate.now, Some(LocalDate.now), suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), "9A", Some(SuoritusTila.VALMIS), Some(true), VUOSILUOKKA_9)),
           syotetty = true,
           vuosiluokkiinSitoutumatonOpetus = false
         )

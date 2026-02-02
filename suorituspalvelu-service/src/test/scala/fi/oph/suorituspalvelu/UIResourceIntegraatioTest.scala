@@ -155,7 +155,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$vuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${vuosi-1}-08-01"), Some(LocalDate.parse(s"$vuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${vuosi-1}-08-01"), Some(LocalDate.parse(s"$vuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -220,7 +220,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -291,7 +291,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), Some("9A"), Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -446,7 +446,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), Some(luokka), Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), luokka, Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
