@@ -415,8 +415,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hetu = "123456-789A"
     val hakusanaOppijanumero = "1.2.246.562.24.21583363334"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
-    val valmistumisvuosi = 2025
-    // Tällä hetkellä luokka kovakoodattu KoskiUtil-moduulissa "9A":ksi
+    val valmistumisvuosi = LocalDate.now.getYear
     val luokka = "9A"
 
     // mockataan onr-vastaus
