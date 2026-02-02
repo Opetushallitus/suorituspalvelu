@@ -19,10 +19,10 @@ test.describe('Etusivu', () => {
         isRekisterinpitaja: true,
         isOrganisaationKatselija: false,
       });
-      await page.goto('');
     });
 
     test('ohjautuu juuresta henkilöhakuun', async ({ page }) => {
+      await page.goto('');
       await expect(page).toHaveURL((url) =>
         url.toString().endsWith('/henkilo'),
       );
@@ -38,6 +38,7 @@ test.describe('Etusivu', () => {
     });
 
     test('näytetään molemmat hakunäkymä-välilehdet', async ({ page }) => {
+      await page.goto('');
       const searchTabNavi = page.getByRole('navigation', {
         name: 'Oppijoiden hakunäkymän valitsin',
       });
@@ -126,10 +127,6 @@ test.describe('Etusivu', () => {
     });
 
     test('ohjautuu juuresta tarkastusnäkymään', async ({ page }) => {
-      await stubKayttajaResponse(page, {
-        isRekisterinpitaja: false,
-        isOrganisaationKatselija: true,
-      });
       await page.goto('');
       await expect(page).toHaveURL((url) =>
         url.toString().endsWith('/tarkastus'),
