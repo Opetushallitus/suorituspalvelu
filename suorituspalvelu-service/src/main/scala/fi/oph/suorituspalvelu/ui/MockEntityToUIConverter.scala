@@ -142,8 +142,8 @@ object MockEntityToUIConverter {
       ))
     ))
 
-  def getLukionOppimaara(): Option[LukionOppimaara] =
-    Some(LukionOppimaara(
+  def getLukionOppimaara(): Option[LukionOppimaaraUI] =
+    Some(LukionOppimaaraUI(
       tunniste = UUID.randomUUID(),
       nimi = LukionOppimaaraNimi(
         fi = Optional.of("Lukion oppimäärä"),
@@ -161,22 +161,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      oppiaineet = java.util.List.of(LukionOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = LukionOppiaineNimi(
-          fi = Optional.of("Äidinkieli ja kirjallisuus"),
-          sv = Optional.of("Äidinkieli ja kirjallisuus sv"),
-          en = Optional.of("Äidinkieli ja kirjallisuus en")
-        )
-      ),LukionOppiaine(
-        tunniste = UUID.randomUUID(),
-        nimi = LukionOppiaineNimi(
-          fi = Optional.of("Uskonto/Elämänkatsomustieto"),
-          sv = Optional.of("Uskonto/Elämänkatsomustieto sv"),
-          en = Optional.of("Uskonto/Elämänkatsomustieto en")
-        )
-      ))
+      suorituskieli = "FI"
     ))
 
   def getLukionOppiaineenOppimaarat(): List[LukionOppiaineenOppimaara] =

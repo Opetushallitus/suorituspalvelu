@@ -325,7 +325,7 @@ case class LukionOppimaaraNimi(
   @BeanProperty en: Optional[String],
 )
 
-case class LukionOppimaara(
+case class LukionOppimaaraUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -338,10 +338,8 @@ case class LukionOppimaara(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
-  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[LukionOppiaine]
+  @(Schema @field)(example = "FI", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty suorituskieli: String
 )
 
 case class LukionOppiaineenOppimaaraNimi(
@@ -1176,7 +1174,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty opiskeluoikeudet: java.util.List[UIOpiskeluoikeus],
   @BeanProperty kkTutkinnot: java.util.List[KKSuoritus],
   @BeanProperty yoTutkinnot: java.util.List[YOTutkinto],
-  @BeanProperty lukionOppimaara: Optional[LukionOppimaara],
+  @BeanProperty lukionOppimaara: Optional[LukionOppimaaraUI],
   @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
   @BeanProperty diaTutkinto: Optional[DIATutkinto],
   @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistus],

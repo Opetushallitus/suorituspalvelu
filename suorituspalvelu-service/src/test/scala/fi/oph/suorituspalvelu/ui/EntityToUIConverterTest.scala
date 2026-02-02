@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -738,6 +738,39 @@ class EntityToUIConverterTest {
         tutkintokerta = a.tutkintoKerta
       )).toList.asJava
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(YOOpiskeluoikeus(null, yoTutkinto)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).yoTutkinnot)
+  }
+
+  @Test def testConvertLukionOppimaara(): Unit = {
+    val lukionOppimaara = LukionOppimaara(
+      tunniste = UUID.randomUUID(),
+      oppilaitos = Oppilaitos(Kielistetty(Some("Ressun lukio"), Some("Ressun lukio sv"), Some("Ressun lukio en")), "1.2.246.562.10.12345678901"),
+      koskiTila = Koodi("valmistunut", "", None),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      vahvistusPaivamaara = Some(LocalDate.parse("2024-06-01")),
+      suoritusKieli = Some(Koodi("FI", "kieli", Some(1))),
+      koulusivistyskieli = Set(Koodi("FI", "kieli", Some(1)))
+    )
+
+    Assertions.assertEquals(Optional.of(LukionOppimaaraUI(
+      tunniste = lukionOppimaara.tunniste,
+      nimi = LukionOppimaaraNimi(
+        fi = Optional.of("Lukion oppimäärä"),
+        sv = Optional.of("Gymnasiets lärokurs"),
+        en = Optional.of("Upper secondary school syllabus")
+      ),
+      oppilaitos = YOOppilaitos(
+        nimi = YOOppilaitosNimi(
+          fi = lukionOppimaara.oppilaitos.nimi.fi.toJava,
+          sv = lukionOppimaara.oppilaitos.nimi.sv.toJava,
+          en = lukionOppimaara.oppilaitos.nimi.en.toJava
+        ),
+        oid = lukionOppimaara.oppilaitos.oid
+      ),
+      tila = SuoritusTila.VALMIS,
+      aloituspaiva = Optional.empty(),
+      valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
+      suorituskieli = "FI"
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("lukiokoulutus", "opiskeluoikeudentyyppi", None), "", Set(lukionOppimaara), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).lukionOppimaara)
   }
 
 }
