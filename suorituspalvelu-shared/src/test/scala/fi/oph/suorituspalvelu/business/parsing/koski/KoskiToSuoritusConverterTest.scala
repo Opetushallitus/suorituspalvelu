@@ -168,6 +168,57 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(None, KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus))
   }
 
+  @Test def testParseKeskeytyminen(): Unit = {
+    // Keskeytynyt opiskeluoikeus palauttaa keskeytymishetken
+    val opiskeluoikeusEronnut = KoskiOpiskeluoikeus(
+      "1.2.3",
+      None,
+      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTila(List(
+        KoskiOpiskeluoikeusJakso(
+          LocalDate.parse("2024-01-01"),
+          KoskiKoodi("lasna", "koodisto", None, Kielistetty(None, None, None), None)
+        ),
+        KoskiOpiskeluoikeusJakso(
+          LocalDate.parse("2024-06-15"),
+          KoskiKoodi("eronnut", "koodisto", None, Kielistetty(None, None, None), None)
+        )))),
+      Set.empty,
+      None
+    )
+    Assertions.assertEquals(Some(LocalDate.parse("2024-06-15")), KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusEronnut))
+
+    // Ei keskeytynyt palauttaa None
+    val opiskeluoikeusValmis = KoskiOpiskeluoikeus(
+      "1.2.3",
+      None,
+      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTila(List(
+        KoskiOpiskeluoikeusJakso(
+          LocalDate.parse("2024-01-01"),
+          KoskiKoodi("lasna", "koodisto", None, Kielistetty(None, None, None), None)
+        ),
+        KoskiOpiskeluoikeusJakso(
+          LocalDate.parse("2024-06-15"),
+          KoskiKoodi("valmistunut", "koodisto", None, Kielistetty(None, None, None), None)
+        )))),
+      Set.empty,
+      None
+    )
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusValmis))
+
+    // Jos ei tilaa palautuu None
+    val opiskeluoikeusNoTila = KoskiOpiskeluoikeus(
+      "1.2.3",
+      None,
+      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      None,
+      Set.empty,
+      None
+    )
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusNoTila))
+  }
+
   @Test def testIsMitatoity(): Unit = {
     val opiskeluoikeus = KoskiOpiskeluoikeus(
       "1.2.3",
