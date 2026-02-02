@@ -265,6 +265,14 @@ case class PerusopetuksenOppimaara(tunniste: UUID,
                                    vuosiluokkiinSitoutumatonOpetus: Boolean
                                   ) extends Suoritus, Tyypitetty
 
+case class LukionOppimaara(tunniste: UUID,
+                           oppilaitos: Oppilaitos,
+                           koskiTila: Koodi,
+                           supaTila: SuoritusTila,
+                           vahvistusPaivamaara: Option[LocalDate],
+                           suoritusKieli: Option[Koodi],
+                           koulusivistyskieli: Set[Koodi]) extends Suoritus, Tyypitetty
+
 //Kieli määritelty oppiaineille kuten A1, B1 jne.
 case class PerusopetuksenOppiaine(tunniste: UUID,
                                   nimi: Kielistetty,
