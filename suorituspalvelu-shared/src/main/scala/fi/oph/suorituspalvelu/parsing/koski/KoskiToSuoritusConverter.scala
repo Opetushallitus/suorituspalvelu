@@ -328,12 +328,8 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       aloitusPaivamaara,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      laajuus = suoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l =>
-        Laajuus(
-          l.arvo,
-          asKoodiObject(l.yksikkö.get),
-          Option.apply(l.yksikkö.get.nimi),
-          l.yksikkö.get.lyhytNimi))),
+      getLisapistekoulutusSuoritusvuosi(suoritus),
+      getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true),
       Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(aloitusPaivamaara.getYear + 1), TUVA.defaultLuokka.get, Some(supaTila), None, TUVA)
     )
 

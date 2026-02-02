@@ -534,7 +534,7 @@ class KantaOperaatiotTest {
   @Test def testGeneerinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, Instant.now(), "1.2.3", Some(1)).get
-    val suoritus = Tuva(UUID.randomUUID(), Kielistetty(Some("Nimi Suomi"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(Some("Nimi suomi"), None, None), "1.2.246.562.10.95136889433"), Koodi("lasna", "koskiopiskeluoikeudentila", Some(1)), SuoritusTila.KESKEN, LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), None,
+    val suoritus = Tuva(UUID.randomUUID(), Kielistetty(Some("Nimi Suomi"), None, None), Koodi("arvo", "koodisto", None), Oppilaitos(Kielistetty(Some("Nimi suomi"), None, None), "1.2.246.562.10.95136889433"), Koodi("lasna", "koskiopiskeluoikeudentila", Some(1)), SuoritusTila.KESKEN, LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), 2025, None,
       Lahtokoulu(LocalDate.parse("2025-03-20"), Some(LocalDate.parse("2025-03-20")), "1.2.246.562.10.95136889433", Some(2025), "9A", Some(SuoritusTila.KESKEN), None, TUVA))
     val tilat = KoskiOpiskeluoikeusTila(List(KoskiOpiskeluoikeusJakso(LocalDate.parse("2023-05-03"), KoskiKoodi("opiskelu", "tilakoodisto", Some(2), Kielistetty(None, None, None), None)), KoskiOpiskeluoikeusJakso(LocalDate.parse("2025-10-09"), KoskiKoodi("lasna", "tilakoodisto", Some(6), Kielistetty(None, None, None), None))))
     val opiskeluoikeus = GeneerinenOpiskeluoikeus(UUID.randomUUID(), "opiskeluoikeusOid", Koodi("arvo", "koodisto", None), "oppilaitosOid", Set(suoritus), Some(tilat), List.empty)

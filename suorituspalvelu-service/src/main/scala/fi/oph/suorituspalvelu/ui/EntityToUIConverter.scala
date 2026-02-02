@@ -423,7 +423,7 @@ object EntityToUIConverter {
             tila = SuoritusTila.valueOf(t.supaTila.toString),
             aloituspaiva = Optional.of(t.aloitusPaivamaara),
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
-            laajuus = t.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
+            laajuus = t.hyvaksyttyLaajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
               l.lyhytNimi.get.fi.toJava,
               l.lyhytNimi.get.sv.toJava,
               l.lyhytNimi.get.en.toJava

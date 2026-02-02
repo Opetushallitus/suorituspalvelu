@@ -390,6 +390,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
+      2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None)))),
       Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TUVA.defaultLuokka.get, Some(VALMIS), None, TUVA)
     )
@@ -412,7 +413,7 @@ class EntityToUIConverterTest {
       SuoritusTila.VALMIS,
       Optional.of(tuva.aloitusPaivamaara),
       tuva.vahvistusPaivamaara.toJava,
-      tuva.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
+      tuva.hyvaksyttyLaajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
         l.lyhytNimi.get.fi.toJava,
         l.lyhytNimi.get.sv.toJava,
         l.lyhytNimi.get.en.toJava
