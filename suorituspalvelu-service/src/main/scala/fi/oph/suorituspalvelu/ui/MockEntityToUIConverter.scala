@@ -738,8 +738,8 @@ object MockEntityToUIConverter {
       suorituskieli = "suomi"
     ))
 
-  def getTuvat(): List[Tuva] =
-    List(Tuva(
+  def getTuvat(): List[TuvaUI] =
+    List(TuvaUI(
       tunniste = UUID.randomUUID(),
       nimi = TuvaNimi(
         fi = Optional.of("Tutkintokoulutukseen valmentava koulutus"),

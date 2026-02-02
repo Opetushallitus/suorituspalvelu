@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, Ammatillinen
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOppilaitos, KKOppilaitosNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaaraUI, LukionOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OOOppilaitos, OOOppilaitosNimi, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, Tuva, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOppilaitos, KKOppilaitosNimi, KKSuoritus, KKSuoritusNimi, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaaraUI, LukionOppimaaraNimi, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OOOppilaitos, OOOppilaitosNimi, OpiskeluoikeusTila, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, TuvaUI, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, UIOpiskeluoikeus, UIOpiskeluoikeusNimi, UIOpiskeluoikeusVirtaTila, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_HETU, EXAMPLE_OPPIJA_OID}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
@@ -399,15 +399,13 @@ object EntityToUIConverter {
       }).toList
     }
 
-    def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Tuva] =
+    def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[TuvaUI] =
       opiskeluoikeudet
-        .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-        .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+        .collect { case o: GeneerinenOpiskeluoikeus => o}
         .flatMap(o => o.suoritukset)
-        .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
-        .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Tuva])
+        .collect { case s: fi.oph.suorituspalvelu.business.Tuva => s }
         .map(t => {
-          Tuva(
+          TuvaUI(
             t.tunniste,
             nimi = TuvaNimi(
               t.nimi.fi.toJava,
