@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator}
+import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -36,6 +36,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   var koskiIntegration: KoskiIntegration = null
+
+  @MockitoBean
+  var tarjontaIntegration: TarjontaIntegration = null
 
   @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
@@ -196,12 +199,14 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshKoskiMuuttuneetAllowed(): Unit = {
     val aikaleima = "2025-09-28T10:15:30Z"
-    val oppijaNumero = "1_2_246_562_98_69863082363"
+    val oppijaNumero = "1.2.246.562.98.69863082363"
+    val hakuOid = "1.2.246.562.29.00000000000000044639"
 
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
-    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq(hakuOid))))
     Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima))).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+    Mockito.when(tarjontaIntegration.tarkistaHaunAktiivisuus(hakuOid)).thenReturn(true)
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima))))
@@ -212,6 +217,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tarkistetaan että kantaan on tallennettu opiskeluoikeus
     val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+
     Assertions.assertEquals(haetut.head._2.size, 1)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
