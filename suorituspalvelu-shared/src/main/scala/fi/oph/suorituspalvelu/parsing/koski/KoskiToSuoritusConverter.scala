@@ -76,7 +76,7 @@ object KoskiToSuoritusConverter {
       opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).map(jakso => jakso.alku).head)
 
   def parseKeskeytyminen(opiskeluoikeus: KoskiOpiskeluoikeus): Option[LocalDate] = {
-    val uusinJakso = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.sortBy(jakso => jakso.alku).head)
+    val uusinJakso = opiskeluoikeus.tila.map(tila => tila.opiskeluoikeusjaksot.maxBy(_.alku))
     uusinJakso.flatMap(jakso => convertKoskiTila(jakso.tila.koodiarvo) match {
       case KESKEYTYNYT => Some(jakso.alku)
       case default => None

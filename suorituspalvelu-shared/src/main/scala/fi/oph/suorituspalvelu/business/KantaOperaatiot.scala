@@ -307,13 +307,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         DBIO.successful(Seq.empty[DBIO[Int]])
       else {
         DBIO.sequence(
-          sqlu"""DELETE FROM lahtokoulut WHERE henkilo_oid=${versio.henkiloOid} AND lahdejarjestelma=${versio.lahdeJarjestelma.toString} AND lahdetunniste=${versio.lahdeTunniste}""" +: lahtokoulut.map(lahtokoulu =>
+          sqlu"""DELETE FROM lahtokoulut WHERE henkilo_oid=${versio.henkiloOid} AND lahdejarjestelma=${versio.lahdeJarjestelma.nimi} AND lahdetunniste=${versio.lahdeTunniste}""" +: lahtokoulut.map(lahtokoulu =>
           sqlu"""
               INSERT INTO lahtokoulut (versio_tunniste, henkilo_oid, lahdejarjestelma, lahdetunniste, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
               VALUES(
                 ${versio.tunniste.toString}::uuid,
                 ${versio.henkiloOid},
-                ${versio.lahdeJarjestelma.toString},
+                ${versio.lahdeJarjestelma.nimi},
                 ${versio.lahdeTunniste},
                 ${lahtokoulu.suorituksenAlku.toString}::date,
                 ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).getOrElse(null)}::date,
