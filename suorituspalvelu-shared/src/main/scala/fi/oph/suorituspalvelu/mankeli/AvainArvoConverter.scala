@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoDTO}
 import org.slf4j.LoggerFactory
@@ -95,6 +95,8 @@ object AvainArvoConstants {
 
   //Nämä suoritusavaimet ja suoritusvuosiavaimet poikkeavat toisistaan vähän hämäävästi.
   // Ne kuitenkin vastaavat nykyistä proxysuoritusrajapinnan mallia.
+  final val tuvaSuoritettuKey = "LISAKOULUTUS_TUVA"
+  final val tuvaSuoritusvuosiKey = "LISAPISTEKOULUTUS_TUVA_SUORITUSVUOSI"
   final val telmaSuoritettuKey = "LISAKOULUTUS_TELMA"
   final val telmaSuoritusvuosiKey = "LISAPISTEKOULUTUS_TELMA_SUORITUSVUOSI"
   final val opistovuosiSuoritettuKey = "LISAKOULUTUS_OPISTOVUOSI"
@@ -382,6 +384,36 @@ object AvainArvoConverter {
     }
   }
 
+  def convertTuva(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
+    val tuvaSuoritukset = opiskeluoikeudet.collect {
+      case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: Tuva => s }
+    }.flatten
+    val riittavanTuoreetJaLaajat: Seq[Tuva] =
+      tuvaSuoritukset
+        .filter(t => t.suoritusVuosi >= vuosiVahintaan)
+        .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.tuvaMinimiLaajuus))
+    val tuoreinRiittava: Option[Tuva] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
+
+    val suoritusSelite = (tuoreinRiittava, tuvaSuoritukset) match {
+      case (tuorein, _) if tuorein.isDefined =>
+        Seq(s"Löytyneen Tuva-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
+      case (_, tuvat) if tuvat.nonEmpty =>
+        val korkeinLaajuus: Laajuus = tuvat.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
+        Seq(s"Ei löytynyt tarpeeksi laajaa Tuva-suoritusta. Korkein löytynyt laajuus: " +
+          s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")
+      case (_, tuvat) =>
+        Seq(s"Ei löytynyt lainkaan Tuva-suoritusta.")
+    }
+
+    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.tuvaSuoritettuKey, tuoreinRiittava.isDefined.toString, suoritusSelite)
+
+    val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
+      Some(AvainArvoContainer(AvainArvoConstants.tuvaSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
+    } else None
+
+    suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
+  }
+
   def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
     val telmat = opiskeluoikeudet.collect {
       case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
@@ -447,12 +479,12 @@ object AvainArvoConverter {
     if (haku.isToisenAsteenYhteisHaku()) {
       val vuosiVahintaan = haku.hakuvuosi.map(vuosi => vuosi - 1).getOrElse(LocalDate.now().getYear)
 
-      //todo tuva
       //todo kansanopisto?
+      val tuvaArvot = convertTuva(personOid, opiskeluoikeudet, vuosiVahintaan)
       val telmaArvot = convertTelma(personOid, opiskeluoikeudet, vuosiVahintaan)
       val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet, vuosiVahintaan)
 
-      telmaArvot ++ opistovuosiArvot
+      tuvaArvot ++ telmaArvot ++ opistovuosiArvot
     } else {
       Set.empty
     }

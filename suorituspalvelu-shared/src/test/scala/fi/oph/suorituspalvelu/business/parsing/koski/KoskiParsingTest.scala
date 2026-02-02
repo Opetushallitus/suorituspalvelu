@@ -1324,9 +1324,8 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tuva.koskiTila)
     Assertions.assertEquals(LocalDate.parse("2022-08-01"), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-04-16")), tuva.vahvistusPaivamaara)
-    Assertions.assertEquals(Some(Laajuus(30, Koodi("8", "opintojenlaajuusyksikko", Some(1)), Some(Kielistetty(Some("viikkoa"), None, None)), None)), tuva.laajuus)
+    Assertions.assertEquals(None, tuva.hyvaksyttyLaajuus)
     Assertions.assertEquals(Lahtokoulu(LocalDate.parse("2022-08-01"), Some(LocalDate.parse("2023-04-16")), "1.2.246.562.10.41945921983", Some(2023), TUVA.defaultLuokka.get, Some(VALMIS), None, TUVA), tuva.lahtokoulu)
-
 
   @Test def testVapaaSivistysTyoOpiskeluoikeus(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(

@@ -172,7 +172,8 @@ case class Tuva(tunniste: UUID,
                 supaTila: SuoritusTila,
                 aloitusPaivamaara: LocalDate,
                 vahvistusPaivamaara: Option[LocalDate],
-                laajuus: Option[Laajuus],
+                suoritusVuosi: Int,
+                hyvaksyttyLaajuus: Option[Laajuus],
                 lahtokoulu: Lahtokoulu) extends Suoritus, Tyypitetty
 
 //Opistovuosi
