@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.KantaOperaatiot.KantaEntiteetit.{AMMATILL
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
@@ -248,4 +248,382 @@ class KoskiToSuoritusConverterTest {
     // nykyhetkeen.
     Assertions.assertTrue(KoskiToSuoritusConverter.isMitatoitu(opiskeluoikeus))
   }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusEiOsasuorituksia(): Unit = {
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = None,
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+
+    val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
+
+    Assertions.assertEquals(None, result)
+  }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusTyhjatOsasuoritukset(): Unit = {
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set.empty),
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+
+    val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
+
+    Assertions.assertEquals(None, result)
+  }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusEiLaajuuttaOsasuorituksella(): Unit = {
+    val osasuoritus = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "123",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = None,
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = None,
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set(osasuoritus)),
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+
+    val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
+
+    Assertions.assertEquals(None, result)
+  }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusPuuttuvaLaajuudenYksikkoOsasuorituksella(): Unit = {
+    val osasuoritus = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "123",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = Some(KoskiLaajuus(
+          arvo = 10,
+          yksikkö = None
+        )),
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = None,
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set(osasuoritus)),
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+    val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
+
+    Assertions.assertEquals(None, result)
+  }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusKaikilleOsasuorituksilleMyosEiHyvaksytyt(): Unit = {
+    val yksikko = KoskiKoodi(
+      koodiarvo = "op",
+      koodistoUri = "opintojenlaajuusyksikko",
+      koodistoVersio = Some(1),
+      nimi = Kielistetty(Some("opintopistettä"), None, None),
+      lyhytNimi = None
+    )
+
+    val osasuoritus1 = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus 1"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "123",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus 1"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = Some(KoskiLaajuus(
+          arvo = 5,
+          yksikkö = Some(yksikko)
+        )),
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = None,
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    val osasuoritus2 = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus 2"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "456",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus 2"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = Some(KoskiLaajuus(
+          arvo = 10,
+          yksikkö = Some(yksikko)
+        )),
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = None,
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set(osasuoritus1, osasuoritus2)),
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+
+    val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
+
+    Assertions.assertTrue(result.isDefined)
+    Assertions.assertEquals(15, result.get.arvo.intValue)
+    Assertions.assertEquals("op", result.get.yksikko.arvo)
+    Assertions.assertEquals("opintojenlaajuusyksikko", result.get.yksikko.koodisto)
+  }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusVainHyvaksytyilleOsasuorituksille(): Unit = {
+    val yksikko = KoskiKoodi(
+      koodiarvo = "op",
+      koodistoUri = "opintojenlaajuusyksikko",
+      koodistoVersio = Some(1),
+      nimi = Kielistetty(Some("opintopistettä"), None, None),
+      lyhytNimi = None
+    )
+
+    // Approved osasuoritus
+    val osasuoritus1 = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus 1"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "123",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus 1"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = Some(KoskiLaajuus(
+          arvo = 5,
+          yksikkö = Some(yksikko)
+        )),
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = Some(Set(
+        KoskiArviointi(
+          arvosana = KoskiKoodi("Hyväksytty", "arviointiasteikkoammatillinenhyvaksyttyhylatty", Some(1), Kielistetty(Some("Hyväksytty"), None, None), None),
+          hyväksytty = true,
+          päivä = None
+        )
+      )),
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    // Non-approved osasuoritus
+    val osasuoritus2 = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus 2"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "456",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus 2"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = Some(KoskiLaajuus(
+          arvo = 10,
+          yksikkö = Some(yksikko)
+        )),
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = Some(Set(
+        KoskiArviointi(
+          arvosana = KoskiKoodi("Hylätty", "arviointiasteikkoammatillinenhyvaksyttyhylatty", Some(1), Kielistetty(Some("Hylätty"), None, None), None),
+          hyväksytty = false,
+          päivä = None
+        )
+      )),
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set(osasuoritus1, osasuoritus2)),
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+
+    val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true)
+
+    Assertions.assertTrue(result.isDefined)
+    Assertions.assertEquals(5, result.get.arvo.intValue) // Vain osasuoritus laajuudella 5 huomioitu. Osasuoritus laajuudella 10 jäi pois.
+    Assertions.assertEquals("op", result.get.yksikko.arvo)
+    Assertions.assertEquals("opintojenlaajuusyksikko", result.get.yksikko.koodisto)
+  }
+
+  @Test
+  def testGetLisapistekoulutusYhteenlaskettuLaajuusTyhjäArviointiJoukko(): Unit = {
+    // Arrange
+    val yksikko = KoskiKoodi(
+      koodiarvo = "op",
+      koodistoUri = "opintojenlaajuusyksikko",
+      koodistoVersio = Some(1),
+      nimi = Kielistetty(Some("opintopistettä"), None, None),
+      lyhytNimi = None
+    )
+
+    // Osasuoritus with empty evaluation set
+    val osasuoritus = KoskiOsaSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("osasuoritus", "suorituksentyyppi", Kielistetty(Some("Osasuoritus"), None, None)),
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(
+          koodiarvo = "123",
+          koodistoUri = "osasuorituksentyyppi",
+          koodistoVersio = Some(1),
+          nimi = Kielistetty(Some("Osasuoritus"), None, None),
+          lyhytNimi = None
+        )),
+        laajuus = Some(KoskiLaajuus(
+          arvo = 5,
+          yksikkö = Some(yksikko)
+        )),
+        kieli = None,
+        pakollinen = None,
+        koulutustyyppi = None
+      )),
+      arviointi = Some(Set.empty),
+      yksilöllistettyOppimäärä = None,
+      rajattuOppimäärä = None,
+      suorituskieli = None,
+      osasuoritukset = None
+    )
+
+    val suoritus = KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("tuvakoulutuksensuoritus", "suorituksentyyppi", Kielistetty(Some("Tuva-koulutus"), None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set(osasuoritus)),
+      arviointi = None,
+      keskiarvo = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+
+    // Should include the osasuoritus when vainHyvaksytytArvioinnit is false
+    val resultFalse = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
+    Assertions.assertTrue(resultFalse.isDefined)
+    Assertions.assertEquals(5, resultFalse.get.arvo.intValue)
+
+    // Should not include the osasuoritus when vainHyvaksytytArvioinnit is true
+    val resultTrue = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true)
+    Assertions.assertTrue(resultTrue.isDefined)
+    Assertions.assertEquals(0, resultTrue.get.arvo.intValue)
+  }
+
 }
