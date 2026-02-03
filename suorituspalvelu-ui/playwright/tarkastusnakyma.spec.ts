@@ -72,9 +72,15 @@ test.describe('Tarkastusnäkymä', () => {
     });
 
     await page.route(`**/ui/rajain/vuodet/**`, async (route) => {
-      await route.fulfill({
-        json: { vuodet: ['2024', '2023'] },
-      });
+      const url = new URL(route.request().url());
+      const oppilaitosOid = url.pathname.split('/').pop();
+
+      // Toisella oppilaitoksella vähemmän vuosia
+      if (oppilaitosOid === OPPILAITOS_OID) {
+        await route.fulfill({ json: { vuodet: ['2024', '2023', '2022'] } });
+      } else {
+        await route.fulfill({ json: { vuodet: ['2024', '2023'] } });
+      }
     });
 
     await page.route(`**/ui/rajain/luokat/**`, async (route) => {
@@ -285,7 +291,7 @@ test.describe('Tarkastusnäkymä', () => {
     await page.goto('tarkastus');
   });
 
-  test('oppilaitoksen vaihtaminen tyhjentää luokan ja suodatuksen', async ({
+  test('oppilaitoksen vaihtaminen tyhjentää luokan ja suodatuksen mutta säilyttää vuoden', async ({
     page,
   }) => {
     await page.goto('tarkastus');
@@ -300,6 +306,7 @@ test.describe('Tarkastusnäkymä', () => {
       getHenkilotSidebar(page).getByText('3 henkilöä'),
     ).toBeVisible();
 
+    await selectOption({ page, name: 'Valmistumisvuosi', option: '2023' });
     await selectOption({ page, name: 'Luokka', option: '9A' });
     const suodatusInput = getSuodatusInput(page);
     await suodatusInput.fill('Olli');
@@ -312,9 +319,42 @@ test.describe('Tarkastusnäkymä', () => {
     });
 
     await expect(page).toHaveURL(
-      (url) => url.searchParams.get('luokka') === null,
+      (url) =>
+        url.searchParams.get('luokka') === null &&
+        url.searchParams.get('vuosi') === '2023',
     );
     await expect(suodatusInput).toHaveValue('');
+  });
+
+  test('oppilaitoksen vaihtaminen resetoi vuoden jos valittu vuosi ei ole saatavilla', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({
+      name: 'Oppilaitos',
+      page,
+      option: OPPILAITOS_NIMI,
+    });
+
+    // Valitaan vuosi 2022
+    await selectOption({ page, name: 'Valmistumisvuosi', option: '2022' });
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get('vuosi') === '2022',
+    );
+
+    // Vaihdetaan toiseen oppilaitokseen jolle vuosi 2022 ei tarjolla
+    await selectOption({
+      name: 'Oppilaitos',
+      page,
+      option: 'Tampereen normaalikoulu',
+    });
+
+    // Vuosivalinta resetoituu tähän vuoteen
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get('vuosi') === '2025',
+    );
+    await expect(getVuosiSelect(page)).toHaveText('2025');
   });
 
   test('vuoden vaihtaminen tyhjentää luokan ja suodatuksen', async ({
@@ -370,5 +410,38 @@ test.describe('Tarkastusnäkymä', () => {
     await expect(
       page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
     ).toBeHidden();
+  });
+
+  test('automaattiset valinnat eivät luo ylimääräisiä selainhistorian askeleita', async ({
+    page,
+  }) => {
+    // Stub single oppilaitos to trigger auto-select
+    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
+      await route.fulfill({
+        json: {
+          oppilaitokset: [OPPILAITOKSET.oppilaitokset[0]],
+        },
+      });
+    });
+
+    // navigoidaan henkilösivulle
+    // eslint-disable-next-line playwright/no-networkidle
+    await page.goto('henkilo', { waitUntil: 'networkidle' });
+    await expect(page).toHaveURL((url) => url.pathname.endsWith('henkilo'));
+
+    // navigoidaan tarkastusnäkymään jolloin useEffect säätää oppilaitoksen ja vuoden
+    await page.goto('tarkastus');
+
+    // odotetaan että valinnat ilmestyvät urliin
+    await expect(page).toHaveURL(
+      (url) =>
+        url.searchParams.get('oppilaitos') === OPPILAITOS_OID &&
+        url.searchParams.get('vuosi') === '2025',
+    );
+
+    // navigoidaan takaisiin ja varmistetaan ettei tullut ylimääräisiä askeleita
+    await page.goBack();
+
+    await expect(page).toHaveURL((url) => url.pathname.endsWith('henkilo'));
   });
 });

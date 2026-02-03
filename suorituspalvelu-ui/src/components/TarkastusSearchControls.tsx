@@ -55,9 +55,10 @@ const OppilaitosSelectField = ({
   useEffect(() => {
     const onlyOppilaitosOption = only(oppilaitoksetOptions);
     if (onlyOppilaitosOption && !value) {
-      setSearchParams({
-        oppilaitos: onlyOppilaitosOption.value,
-      });
+      setSearchParams(
+        { oppilaitos: onlyOppilaitosOption.value },
+        { replace: true },
+      );
     }
   }, [oppilaitoksetOptions, value, setSearchParams]);
 
@@ -91,12 +92,14 @@ const VuosiSelectField = ({
   const { setSearchParams } = useOppilaitoksenOppijatSearchParamsState();
 
   useEffect(() => {
-    if (oppilaitosOid && !value) {
-      setSearchParams({
-        vuosi: getCurrentYear(),
-      });
+    if (oppilaitosOid && vuodetOptions && !isLoading) {
+      const isCurrentValueValid =
+        value && vuodetOptions.some((opt) => opt.value === value);
+      if (!isCurrentValueValid) {
+        setSearchParams({ vuosi: getCurrentYear() }, { replace: true });
+      }
     }
-  }, [oppilaitosOid, value, setSearchParams]);
+  }, [oppilaitosOid, value, vuodetOptions, isLoading, setSearchParams]);
 
   return (
     <OphSelectWithLoading
@@ -159,7 +162,6 @@ export const TarkastusSearchControls = () => {
           if (newOppilaitos !== oppilaitos) {
             setSearchParams({
               oppilaitos: newOppilaitos,
-              vuosi: getCurrentYear(),
               luokka: '',
               suodatus: '',
             });
