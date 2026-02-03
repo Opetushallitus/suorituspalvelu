@@ -237,7 +237,7 @@ case class UIKKSuoritus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: KKOppilaitos,
   @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN")
-  @BeanProperty tila: Optional[SuoritusTila],
+  @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")

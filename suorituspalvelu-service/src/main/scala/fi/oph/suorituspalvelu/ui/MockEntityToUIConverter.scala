@@ -55,7 +55,7 @@ object MockEntityToUIConverter {
         ),
         oid = "1.2.3.4"
       ),
-      tila = Optional.of(KESKEN),
+      tila = KESKEN,
       aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
       valmistumispaiva = Optional.empty(),
       opintojaksot = java.util.List.of()
