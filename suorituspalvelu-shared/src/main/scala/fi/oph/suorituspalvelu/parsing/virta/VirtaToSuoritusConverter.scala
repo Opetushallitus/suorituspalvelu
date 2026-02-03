@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.{
-  KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus,
-  KKTutkinto, KKOpiskeluoikeusTila, Suoritus, SuoritusTila
+  KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus,
+  KKSynteettinenSuoritus, KKTutkinto, Suoritus, SuoritusTila
 }
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.slf4j.LoggerFactory
@@ -73,7 +73,10 @@ object VirtaToSuoritusConverter {
   private def sisaltyvatAvaimet(suoritus: VirtaOpintosuoritus): Set[String] =
     suoritus.Sisaltyvyys.map(_.sisaltyvaOpintosuoritusAvain).toSet
 
-  private def jalkelaisillaOpiskeluoikeusavainPuuttuuTaiOnSamaKuinJuuritasolla(rootSuoritus: Option[VirtaOpintosuoritus], opiskeluoikeus: VirtaOpiskeluoikeus): Boolean =
+  private def jalkelaisillaOpiskeluoikeusavainPuuttuuTaiOnSamaKuinJuuritasolla(
+    rootSuoritus: Option[VirtaOpintosuoritus],
+    opiskeluoikeus: VirtaOpiskeluoikeus
+  ): Boolean =
     rootSuoritus.isEmpty || rootSuoritus.flatMap(_.opiskeluoikeusAvain).isEmpty ||
       rootSuoritus.get.opiskeluoikeusAvain.contains(opiskeluoikeus.avain)
 
@@ -137,7 +140,7 @@ object VirtaToSuoritusConverter {
     ).contains(opiskeluoikeusTyyppi)
   }
 
-  private def addMuuKorkeakouluSuoritus(
+  private def addSyntheticSuoritusWrapperWhenNeeded(
     suoritukset: Seq[Suoritus],
     opiskeluoikeus: VirtaOpiskeluoikeus,
     viimeisinTutkintoKoulutuskoodi: Option[String]
@@ -149,17 +152,18 @@ object VirtaToSuoritusConverter {
       (suoritukset, Seq.empty)
     }
 
+    // Lisätään synteettinen suoritus vain, jos löytyi osasuorituksia, jotka halutaan yhdistää, tai jos suorituksia
+    // ei ole lainkaan.
     val newSuoritus: Option[Suoritus] = if (osaSuoritukset.nonEmpty || suoritukset.isEmpty) {
       val tila = latestTila(opiskeluoikeus)
       val vahvistusPaiva = if (tila.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT) Some(tila.AlkuPvm) else None
       val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(
         Ordering[LocalDate].reverse
       ).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
-      val nimiFallback =
-        Some(opiskeluoikeus.koulutusmoduulitunniste.stripPrefix("#").stripSuffix("/").trim).filter(_.nonEmpty)
 
       Some(KKSynteettinenSuoritus(
         tunniste = UUID.randomUUID(),
+        // Jos koulutuskoodi löytyy, ei aseteta nimeä. Käytetään UI:ssa koulutuskoodin nimeä.
         nimi = if (viimeisinTutkintoKoulutuskoodi.isDefined) None else virtaNimiToKielistetty(jaksonNimi),
         supaTila = getSuoritustilaFromOpiskeluoikeus(opiskeluoikeus),
         komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
@@ -193,10 +197,10 @@ object VirtaToSuoritusConverter {
         addKeskenerainenTutkinnonSuoritus(suoritukset, opiskeluoikeus)
       } else {
         val viimeisinTutkintoKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
-        addMuuKorkeakouluSuoritus(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi)
+        addSyntheticSuoritusWrapperWhenNeeded(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi)
       }
     } else {
-      addMuuKorkeakouluSuoritus(suoritukset, opiskeluoikeus, None)
+      addSyntheticSuoritusWrapperWhenNeeded(suoritukset, opiskeluoikeus, None)
     }
   }
 
