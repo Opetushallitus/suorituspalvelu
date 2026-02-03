@@ -347,7 +347,7 @@ case class VirtaTutkinto(
                           komoTunniste: String,
                           opintoPisteet: BigDecimal,
                           aloitusPvm: LocalDate,
-                          suoritusPvm: LocalDate,
+                          suoritusPvm: Option[LocalDate],
                           myontaja: String,
                           kieli: String,
                           koulutusKoodi: Option[String],
@@ -365,7 +365,7 @@ case class VirtaOpintosuoritus(
                            komoTunniste: String,
                            opintoPisteet: BigDecimal,
                            opintoviikot: Option[BigDecimal],
-                           suoritusPvm: LocalDate,
+                           suoritusPvm: Option[LocalDate],
                            hyvaksilukuPvm: Option[LocalDate],
                            myontaja: String,
                            jarjestavaRooli: Option[String],
@@ -382,6 +382,19 @@ case class VirtaOpintosuoritus(
                            suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
                            avain: String,
                          ) extends Suoritus, Tyypitetty
+
+case class VirtaMuuSuoritus(
+                             tunniste: UUID,
+                             nimiFi: Option[String],
+                             nimiSv: Option[String],
+                             nimiEn: Option[String],
+                             suoritusPvm: Option[LocalDate],
+                             myontaja: String,
+                             kieli: Option[String],
+                             opiskeluoikeusAvain: Option[String],
+                             @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                             suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
+                           ) extends Suoritus, Tyypitetty
 
 case class AvainArvoYliajo(avain: String,
                            arvo: Option[String],
