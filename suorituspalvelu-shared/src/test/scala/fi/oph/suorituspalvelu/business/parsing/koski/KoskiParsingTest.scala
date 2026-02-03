@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, PerusopetuksenYksilollistaminen}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski
@@ -1807,6 +1807,82 @@ class KoskiParsingTest {
     Assertions.assertEquals(EBArvosana(Koodi("8.0", "arviointiasteikkoeuropeanschoolofhelsinkifinalmark", Some(1)), true), finalKoeL2.arvosana)
 
   }
+
+  @Test def testLukionOppimaara(): Unit =
+    val lukionOppimaara = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.24698338212",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "versionumero": 299,
+        |        "aikaleima": "2025-11-25T08:57:51.633360",
+        |        "oid": "1.2.246.562.15.99636591200",
+        |        "tyyppi": {
+        |          "koodiarvo": "lukiokoulutus",
+        |          "koodistoUri": "opiskeluoikeudentyyppi",
+        |          "koodistoVersio": 1
+        |        },
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.57118763579",
+        |          "nimi": {
+        |            "fi": "Testin lukio",
+        |            "sv": "Test gymnasium",
+        |            "en": "Test high school"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-08-01",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            {
+        |              "alku": "2025-05-31",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "lukionoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2025-05-31"
+        |            },
+        |            "koulusivistyskieli": [
+        |              {
+        |                "koodiarvo": "FI",
+        |                "koodistoUri": "kieli"
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).asInstanceOf[LukionOppimaara]
+
+    Assertions.assertEquals("1.2.246.562.10.57118763579", lukionOppimaara.oppilaitos.oid)
+    Assertions.assertEquals(Kielistetty(Some("Testin lukio"), Some("Test gymnasium"), Some("Test high school")), lukionOppimaara.oppilaitos.nimi)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), lukionOppimaara.koskiTila)
+    Assertions.assertEquals(SuoritusTila.VALMIS, lukionOppimaara.supaTila)
+    Assertions.assertEquals(Some(LocalDate.parse("2025-05-31")), lukionOppimaara.vahvistusPaivamaara)
+    Assertions.assertEquals(None, lukionOppimaara.suoritusKieli)
+    Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), lukionOppimaara.koulusivistyskieli)
 
 
 }
