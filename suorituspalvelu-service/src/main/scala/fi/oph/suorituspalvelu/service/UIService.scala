@@ -198,20 +198,20 @@ class UIService {
     ).values.headOption
   }
 
-  def haeOppijanSuoritukset(oppijaNumero: String, aikaleima: Instant): Option[OppijanTiedotSuccessResponse] =
-    resolveMasterHenkilo(oppijaNumero).map(masterHenkilo => {
+  def haeOppijanSuoritukset(henkiloOid: String, aikaleima: Instant): Option[OppijanTiedotSuccessResponse] =
+    resolveMasterHenkilo(henkiloOid).map(masterHenkilo => {
       def haeAliakset(oppijaOid: String): Set[String] = {
         try
-          Set(Set(oppijaNumero), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
+          Set(Set(henkiloOid), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
         catch
           case e: Exception =>
-            LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + oppijaNumero, e)
-            Set(oppijaNumero)
+            LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + henkiloOid, e)
+            Set(henkiloOid)
       }
 
-      val suoritukset = haeAliakset(oppijaNumero).flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
+      val suoritukset = haeAliakset(henkiloOid).flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
-        masterHenkilo.hetu, oppijaNumero, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
+        masterHenkilo.hetu, masterHenkilo.oidHenkilo, henkiloOid, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
       })
 
   /**
