@@ -160,7 +160,6 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.23.01000000000000013275"))
       .andExpect(status().isBadRequest).andReturn()
 
-
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaForHakuAllowedActuallySaveSuoritukset(): Unit = {
     val hakijaOid1 = "1.2.246.562.24.00000000111"
@@ -227,4 +226,5 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedotHaunHakijoille.name, auditLogEntry.operation)
     Assertions.assertEquals(Map("hakuOid" -> hakuOid), auditLogEntry.target)
   }
+
 }

@@ -167,18 +167,18 @@ object EntityToUIConverter {
         Optional.empty(),
         createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
       ))
-      case _ => Seq(UIKKSuoritus(
+      case suoritukset => Seq(UIKKSuoritus(
         oo.tunniste,
         Optional.of(UIKKSuoritusNimi(
-          fi = Optional.of(s"${oo.suoritukset.size} opintojaksoa"),
-          sv = Optional.of(s"${oo.suoritukset.size} studieavsnitt"),
-          en = Optional.of(s"${oo.suoritukset.size} study modules"),
+          fi = Optional.of(s"${suoritukset.size} opintojaksoa"),
+          sv = Optional.of(s"${suoritukset.size} studieavsnitt"),
+          en = Optional.of(s"${suoritukset.size} study modules"),
         )),
         getKKOppilaitos(oo.myontaja, organisaatioProvider),
         SuoritusTila.VALMIS,
         Optional.empty(),
         Optional.empty(),
-        createVirtaOpintojaksoHierarkia(oo.suoritukset.toSeq)
+        createVirtaOpintojaksoHierarkia(suoritukset)
       ))
     }
   }
@@ -188,7 +188,7 @@ object EntityToUIConverter {
     organisaatioProvider: OrganisaatioProvider,
     koodistoProvider: KoodistoProvider
   ): Seq[UIKKSuoritus] = oo.suoritukset.toSeq match {
-    // opiskeluoikeuden tutkinnot erilliksi suorituksiksi
+    // opiskeluoikeuden kaikki päätason suoritukset tutkintoja -> näytetään erillisinä suorituksina
     case tutkinnot if tutkinnot.forall(_.isInstanceOf[KKTutkinto]) =>
       tutkinnot.collect {case t: KKTutkinto => t}.map(tutkinto =>
         UIKKSuoritus(
@@ -223,7 +223,8 @@ object EntityToUIConverter {
         opintojaksot = createVirtaOpintojaksoHierarkia(s.suoritukset.toSeq)
       ))
 
-    case multiple if multiple.nonEmpty =>
+    // Monta ei-tutkintosuoritusta opiskeluoikeudella -> näytetään yhtenä suorituksena
+    case suoritukset if suoritukset.nonEmpty =>
       Seq(UIKKSuoritus(
         tunniste = oo.tunniste,
         nimi = getKKSuoritusNimi(None, Some(oo), Some(koodistoProvider)),
@@ -231,7 +232,7 @@ object EntityToUIConverter {
         tila = convertKKSuoritusTila(oo),
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = Optional.of(oo.loppuPvm),
-        opintojaksot = createVirtaOpintojaksoHierarkia(oo.suoritukset.toSeq)
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset.toSeq)
       ))
 
     case _ => Seq.empty
