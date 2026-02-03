@@ -339,7 +339,8 @@ case class VirtaTutkinto(
                           myontaja: String,
                           kieli: String,
                           koulutusKoodi: String,
-                          opiskeluoikeusAvain: String
+                          opiskeluoikeusAvain: String,
+                          osaSuoritusAvaimet: Seq[String] = Seq.empty
                         ) extends Suoritus, Tyypitetty
 
 case class Opintosuoritus(
@@ -362,7 +363,8 @@ case class Opintosuoritus(
                            koulutusala: Int,
                            koulutusalaKoodisto: String,
                            opinnaytetyo: Boolean,
-                           opiskeluoikeusAvain: String //Onhan tämä aina saatavilla?
+                           opiskeluoikeusAvain: String, //Onhan tämä aina saatavilla?
+                           osaSuoritusAvaimet: Seq[String] = Seq.empty
                          ) extends Suoritus, Tyypitetty
 
 case class AvainArvoYliajo(avain: String,
