@@ -398,9 +398,9 @@ object AvainArvoConverter {
       case (tuorein, _) if tuorein.isDefined =>
         Seq(s"Löytyneen Tuva-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
       case (_, tuvat) if tuvat.nonEmpty =>
-        val korkeinLaajuus: Laajuus = tuvat.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
+        val korkeinLaajuus: Option[Laajuus] = tuvat.flatMap(_.hyvaksyttyLaajuus).maxByOption(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Tuva-suoritusta. Korkein löytynyt laajuus: " +
-          s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")
+          s"${korkeinLaajuus.map(_.arvo).getOrElse(0)} ${korkeinLaajuus.flatMap(_.nimi).flatMap(_.fi).getOrElse("")}.")
       case (_, tuvat) =>
         Seq(s"Ei löytynyt lainkaan Tuva-suoritusta.")
     }
@@ -428,9 +428,9 @@ object AvainArvoConverter {
       case (tuorein, _) if tuorein.isDefined =>
         Seq(s"Löytyneen Telma-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
       case (_, telmat) if telmat.nonEmpty =>
-        val korkeinLaajuus: Laajuus = telmat.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
+        val korkeinLaajuus: Option[Laajuus] = telmat.flatMap(_.hyvaksyttyLaajuus).maxByOption(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Telma-suoritusta. Korkein löytynyt laajuus: " +
-          s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")
+          s"${korkeinLaajuus.map(_.arvo).getOrElse(0)} ${korkeinLaajuus.flatMap(_.nimi).flatMap(_.fi).getOrElse("")}.")
       case (_, telmat) =>
         Seq(s"Ei löytynyt lainkaan Telma-suoritusta.")
     }
@@ -459,9 +459,9 @@ object AvainArvoConverter {
       case (tuorein, _) if tuorein.isDefined =>
         Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
       case (_, vstOpistovuodet) if vstOpistovuodet.exists(_.hyvaksyttyLaajuus.nonEmpty) =>
-        val korkeinLaajuus: Laajuus = vstOpistovuodet.flatMap(_.hyvaksyttyLaajuus).maxBy(_.arvo)
+        val korkeinLaajuus: Option[Laajuus] = vstOpistovuodet.flatMap(_.hyvaksyttyLaajuus).maxByOption(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Opistovuosi-suoritusta. Korkein löytynyt laajuus: " +
-          s"${korkeinLaajuus.arvo} ${korkeinLaajuus.nimi.flatMap(_.fi).getOrElse("")}.")
+          s"${korkeinLaajuus.map(_.arvo)} ${korkeinLaajuus.flatMap(_.nimi).flatMap(_.fi).getOrElse("")}.")
       case (_, vstOpistovuodet) =>
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
