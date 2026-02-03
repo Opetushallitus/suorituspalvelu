@@ -212,6 +212,28 @@ case class KKOppilaitos(
   @BeanProperty oid: String
 )
 
+case class KKOpintojaksoNimi(
+  @(Schema @field)(example = "Johdatus kasvatustieteisiin", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Johdatus kasvatustieteisiin sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Johdatus kasvatustieteisiin en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String],
+)
+
+case class KKOpintojakso(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(description = "Opintojakson nimi", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: KKOpintojaksoNimi,
+  @(Schema @field)(description = "Opintojakson laajuus (opintopistettä)", example = "3", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty laajuus: BigDecimal,
+  @(Schema @field)(description = "Opintojakson arvosana", example = "3", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(example = "3")
+  @BeanProperty opintojaksot: java.util.List[KKOpintojakso],
+)
+
 case class KKSuoritusNimi(
   @(Schema @field)(example = "Kasvatustieteen maisteri", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -234,6 +256,8 @@ case class KKSuoritus(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "")
+  @BeanProperty opintojaksot: java.util.List[KKOpintojakso],
 )
 
 case class YOKoeNimi(
