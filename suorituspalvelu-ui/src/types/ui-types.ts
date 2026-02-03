@@ -2,7 +2,7 @@ import type {
   IYOKoe,
   SuoritusTila,
   ILukionOppiaine,
-  IKKSuoritus,
+  IUIKKSuoritus,
   ILukionOppimaara,
   ILukionOppiaineenOppimaara,
   IYOTutkinto,
@@ -48,7 +48,7 @@ export type SuorituksenPerustiedot = {
 };
 
 export type SuoritusOtsikkoTiedot = {
-  nimi: Kielistetty;
+  nimi?: Kielistetty;
   tila: SuorituksenTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
@@ -81,7 +81,7 @@ export type IBOppiaine = IIBOppiaine;
 
 export type EBOppiaine = IEBOppiaineUI;
 
-export type KorkeakouluSuoritus = IKKSuoritus & {
+export type KorkeakouluSuoritus = IUIKKSuoritus & {
   koulutustyyppi: 'korkeakoulutus';
 };
 
