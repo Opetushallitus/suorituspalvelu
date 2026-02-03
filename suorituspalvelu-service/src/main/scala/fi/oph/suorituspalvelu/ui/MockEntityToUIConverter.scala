@@ -21,8 +21,8 @@ object MockEntityToUIConverter {
           sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
           en = Optional.of("Kasvatust. maist., kasvatustiede en")
         ),
-        oppilaitos = OOOppilaitos(
-          nimi = OOOppilaitosNimi(
+        oppilaitos = KKOppilaitos(
+          nimi = KKOppilaitosNimi(
             fi = Optional.of("Tampereen yliopisto"),
             sv = Optional.of("Tampereen yliopisto sv"),
             en = Optional.of("Tampereen yliopisto en")
@@ -39,14 +39,14 @@ object MockEntityToUIConverter {
         )
       ))
 
-  def getKKTutkinnot(): List[KKSuoritus] =
-    List(KKSuoritus(
+  def getKKTutkinnot(): List[UIKKSuoritus] =
+    List(UIKKSuoritus(
       tunniste = UUID.randomUUID(),
-      nimi = KKSuoritusNimi(
+      nimi = Optional.of(UIKKSuoritusNimi(
         fi = Optional.of("Kasvatust. maist., kasvatustiede"),
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")
-      ),
+      )),
       oppilaitos = KKOppilaitos(
         nimi = KKOppilaitosNimi(
           fi = Optional.of("Tampereen yliopisto"),
@@ -57,7 +57,8 @@ object MockEntityToUIConverter {
       ),
       tila = KESKEN,
       aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
-      valmistumispaiva = Optional.empty()
+      valmistumispaiva = Optional.empty(),
+      opintojaksot = java.util.List.of()
     ))
 
   def getYOTutkinto(): List[YOTutkinto] =

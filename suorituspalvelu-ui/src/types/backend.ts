@@ -250,27 +250,18 @@ export interface IIBTutkintoNimi {
   en?: string;
 }
 
+export interface IKKOpintojaksoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IKKOppilaitos {
   nimi: IKKOppilaitosNimi;
   oid: string;
 }
 
 export interface IKKOppilaitosNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface IKKSuoritus {
-  tunniste: string;
-  nimi: IKKSuoritusNimi;
-  oppilaitos: IKKOppilaitos;
-  tila: SuoritusTila;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-}
-
-export interface IKKSuoritusNimi {
   fi?: string;
   sv?: string;
   en?: string;
@@ -364,17 +355,6 @@ export interface ILuokatSuccessResponse {
   luokat: string[];
 }
 
-export interface IOOOppilaitos {
-  nimi: IOOOppilaitosNimi;
-  oid: string;
-}
-
-export interface IOOOppilaitosNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IOppija {
   oppijaNumero: string;
   hetu?: string;
@@ -411,7 +391,7 @@ export interface IOppijanTiedotSuccessResponse {
   oppijaNumero: string;
   henkiloOID: string;
   opiskeluoikeudet: IUIOpiskeluoikeus[];
-  kkTutkinnot: IKKSuoritus[];
+  kkTutkinnot: IUIKKSuoritus[];
   yoTutkinnot: IYOTutkinto[];
   lukionOppimaara?: ILukionOppimaara;
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
@@ -691,10 +671,34 @@ export interface ITuvaNimi {
   en?: string;
 }
 
+export interface IUIKKOpintojakso {
+  tunniste: string;
+  nimi: IKKOpintojaksoNimi;
+  laajuus: number;
+  arvosana?: string;
+  opintojaksot: IUIKKOpintojakso[];
+}
+
+export interface IUIKKSuoritus {
+  tunniste: string;
+  nimi?: IUIKKSuoritusNimi;
+  oppilaitos: IKKOppilaitos;
+  tila: SuoritusTila;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  opintojaksot: IUIKKOpintojakso[];
+}
+
+export interface IUIKKSuoritusNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IUIOpiskeluoikeus {
   tunniste: string;
   nimi: IUIOpiskeluoikeusNimi;
-  oppilaitos: IOOOppilaitos;
+  oppilaitos: IKKOppilaitos;
   voimassaolonAlku: string;
   voimassaolonLoppu: string;
   supaTila: OpiskeluoikeusTila;
@@ -871,8 +875,8 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";

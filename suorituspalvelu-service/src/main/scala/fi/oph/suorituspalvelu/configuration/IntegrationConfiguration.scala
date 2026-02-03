@@ -140,10 +140,9 @@ class IntegrationConfiguration {
           OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
         })
 
-      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
+      override def orgLookupTable(): Map[String, Organisaatio] =
         hierarkiaCache.get("hierarkia")
     }
-
   }
 
   @Bean

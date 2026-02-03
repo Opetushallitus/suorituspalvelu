@@ -1,101 +1,141 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.{DeserializationContext, DeserializationFeature, JsonDeserializer, ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.time.LocalDate
 
 case class Header()
 
-case class Tila(AlkuPvm: LocalDate, Koodi: String)
+case class VirtaTila(AlkuPvm: LocalDate, LoppuPvm: LocalDate, Koodi: String)
 
 @JsonDeserialize(classOf[KoulutusalaDeserializer])
-case class OpiskeluoikeusKoulutusala(versio: String, koodi: Int)
+case class VirtaOpiskeluoikeusKoulutusala(versio: String, koodi: Int)
 
-case class Laajuus(Opintopiste: BigDecimal)
+case class VirtaLaajuus(Opintopiste: BigDecimal)
 
-case class Jakso(Rahoituslahde: String, Koulutuskieli: String, LoppuPvm: LocalDate, AlkuPvm: LocalDate, Koulutuskoodi: String, koulutusmoduulitunniste: String, Koulutuskunta: String)
+case class VirtaJakso(
+  @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
+  Rahoituslahde: Option[String],
+  Koulutuskieli: Option[String],
+  LoppuPvm: LocalDate,
+  AlkuPvm: LocalDate,
+  Koulutuskoodi: Option[String],
+  koulutusmoduulitunniste: String,
+  Koulutuskunta: Option[String]
+)
 
-case class Opiskeluoikeus(Laajuus: Laajuus, LoppuPvm: LocalDate, @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[Tila], Jakso: Jakso, Koulutusala: OpiskeluoikeusKoulutusala, Tyyppi: String, AlkuPvm: LocalDate, Myontaja: String, opiskelijaAvain: String, avain: String)
+case class VirtaOpiskeluoikeus(
+  Laajuus: VirtaLaajuus,
+  LoppuPvm: LocalDate,
+  koulutusmoduulitunniste: String = "",
+  // Tiloja on aina vähintään yksi
+  @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[VirtaTila],
+  // Jaksoja voi olla nolla
+  @JacksonXmlElementWrapper(useWrapping = false) Jakso: Seq[VirtaJakso],
+  Koulutusala: VirtaOpiskeluoikeusKoulutusala,
+  Tyyppi: String,
+  AlkuPvm: LocalDate,
+  Myontaja: String,
+  opiskelijaAvain: String,
+  avain: String
+)
 
-case class LukukausiIlmoittautuminen(IlmoittautumisPvm: LocalDate, opiskelijaAvain: String, LoppuPvm: LocalDate, Tila: String, opiskeluoikeusAvain: String, AlkuPvm: LocalDate, Myontaja: String)
+case class VirtaLukukausiIlmoittautuminen(
+  IlmoittautumisPvm: LocalDate,
+  opiskelijaAvain: String,
+  LoppuPvm: LocalDate,
+  Tila: String,
+  opiskeluoikeusAvain: String,
+  AlkuPvm: LocalDate,
+  Myontaja: String
+)
 
-case class Organisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDecimal])
+case class VirtaOrganisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDecimal])
 
-case class MuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
+case class VirtaMuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
 
 @JsonDeserialize(classOf[ArvosanaDeserializer])
-case class Arvosana(arvosana: String, asteikko: String)
+case class VirtaArvosana(arvosana: String, asteikko: String)
 
 @JsonDeserialize(classOf[KoodiDeserializer])
-case class Koodi(versio: String, koodi: Int)
+case class VirtaKoodi(versio: String, koodi: Int)
 
-case class SuoritusKoulutusala(Koodi: Koodi)
+case class VirtaSuoritusKoulutusala(Koodi: VirtaKoodi)
 
 @JsonDeserialize(classOf[NimiDeserializer])
-case class Nimi(kieli: Option[String], nimi: String)
+case class VirtaNimi(kieli: Option[String], nimi: String)
 
-case class Opintosuoritus(
-                           Kieli: String,
-                           Organisaatio: Option[Organisaatio],
-                           SuoritusPvm: LocalDate,
-                           Arvosana: Option[Arvosana],
-                           opiskeluoikeusAvain: String,
-                           Koulutusala: Option[SuoritusKoulutusala],
-                           Laji: Int,
-                           koulutusmoduulitunniste: String,
-                           Opinnaytetyo: Option[String],
-                           Laajuus: Laajuus,
-                           HyvaksilukuPvm: Option[LocalDate],
-                           opiskelijaAvain: String,
-                           avain: String,
-                           Myontaja: String,
-                           Koulutuskoodi: Option[String],
-                           @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[Nimi],
-                           TKILaajuusHarjoittelu: Option[Laajuus]
-                         )
+case class VirtaSuoritusviite(sisaltyvaOpintosuoritusAvain: String)
 
-case class Opiskelija(Opiskeluoikeudet: Seq[Opiskeluoikeus], LukukausiIlmoittautumiset: Seq[LukukausiIlmoittautuminen], Opintosuoritukset: Option[Seq[Opintosuoritus]], Henkilotunnus: String, avain: String)
+case class VirtaOpintosuoritus(
+  Kieli: String,
+  Organisaatio: Option[VirtaOrganisaatio],
+  Tyyppi: String,
+  SuoritusPvm: LocalDate,
+  Arvosana: Option[VirtaArvosana],
+  opiskeluoikeusAvain: Option[String], // puuttuu osasuorituksilta
+  Koulutusala: Option[VirtaSuoritusKoulutusala],
+  Laji: Int,
+  koulutusmoduulitunniste: String,
+  Opinnaytetyo: Option[String],
+  Laajuus: VirtaLaajuus,
+  HyvaksilukuPvm: Option[LocalDate],
+  opiskelijaAvain: String,
+  avain: String,
+  Myontaja: String,
+  Koulutuskoodi: Option[String],
+  @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
+  TKILaajuusHarjoittelu: Option[VirtaLaajuus],
+  @JacksonXmlElementWrapper(useWrapping = false) Sisaltyvyys: Seq[VirtaSuoritusviite]
+)
 
-case class OpiskelijanKaikkiTiedotResponse(Virta: Seq[Opiskelija])
+case class VirtaOpiskelija(
+  Opiskeluoikeudet: Seq[VirtaOpiskeluoikeus],
+  LukukausiIlmoittautumiset: Seq[VirtaLukukausiIlmoittautuminen],
+  Opintosuoritukset: Option[Seq[VirtaOpintosuoritus]],
+  Henkilotunnus: String,
+  avain: String
+)
 
-case class Body(OpiskelijanKaikkiTiedotResponse: OpiskelijanKaikkiTiedotResponse)
+case class VirtaOpiskelijanKaikkiTiedot(Virta: Seq[VirtaOpiskelija])
+
+case class Body(OpiskelijanKaikkiTiedotResponse: VirtaOpiskelijanKaikkiTiedot)
 
 case class VirtaSuoritukset(Header: Header, Body: Body)
 
-class KoulutusalaDeserializer extends JsonDeserializer[OpiskeluoikeusKoulutusala] {
-  override def deserialize(p: JsonParser, ctxt: DeserializationContext): OpiskeluoikeusKoulutusala =
+class KoulutusalaDeserializer extends JsonDeserializer[VirtaOpiskeluoikeusKoulutusala] {
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaOpiskeluoikeusKoulutusala =
     val mixin = p.readValueAs(classOf[KoulutusAlaTaiKoodiMixIn])
-    OpiskeluoikeusKoulutusala(mixin.versio, mixin.value)
+    VirtaOpiskeluoikeusKoulutusala(mixin.versio, mixin.value)
 }
 
-class KoodiDeserializer extends JsonDeserializer[Koodi] {
-  override def deserialize(p: JsonParser, ctxt: DeserializationContext): Koodi =
+class KoodiDeserializer extends JsonDeserializer[VirtaKoodi] {
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaKoodi =
     val mixin = p.readValueAs(classOf[KoulutusAlaTaiKoodiMixIn])
-    Koodi(mixin.versio, mixin.value)
+    VirtaKoodi(mixin.versio, mixin.value)
 }
 
-class NimiDeserializer extends JsonDeserializer[Nimi] {
-  override def deserialize(p: JsonParser, ctxt: DeserializationContext): Nimi =
+class NimiDeserializer extends JsonDeserializer[VirtaNimi] {
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaNimi =
     val value = p.readValueAs(classOf[Any])
     value match
       // jos tullaan tähän haaraan, nimiä on vain yksi ja sillä ei ole kieliattribuuttia
-      case nimi: String => Nimi(None, nimi)
+      case nimi: String => VirtaNimi(None, nimi)
       // jos tullaan tähän haaraan kieliä on useita ja niillä pitäisi olla kieliattribuutit, jos ei ole niin räjähdetään
       case nimi: Map[_, _] =>
         val nimiMap = nimi.asInstanceOf[Map[String, String]]
-        Nimi(Some(nimiMap("kieli")), nimiMap(""))
-
+        VirtaNimi(Some(nimiMap("kieli")), nimiMap(""))
 }
 
-class ArvosanaDeserializer extends JsonDeserializer[Arvosana] {
-  override def deserialize(p: JsonParser, ctxt: DeserializationContext): Arvosana =
+class ArvosanaDeserializer extends JsonDeserializer[VirtaArvosana] {
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaArvosana =
     val (arvosanaTagName, arvosanaContent) = p.readValueAs(classOf[Map[String, Any]]).head
     arvosanaTagName match {
       case "EiKaytossa" => null
@@ -108,17 +148,17 @@ class ArvosanaDeserializer extends JsonDeserializer[Arvosana] {
 
         val asteikkoArvosanat = asteikkoMap("AsteikkoArvosana") match {
           case list: List[_] =>
-            list.map(item => mapper.convertValue(item, classOf[MuuAsteikkoArvosana]))
+            list.map(item => mapper.convertValue(item, classOf[VirtaMuuAsteikkoArvosana]))
           case single: Map[_, _] =>
-            Seq(mapper.convertValue(single, classOf[MuuAsteikkoArvosana]))
+            Seq(mapper.convertValue(single, classOf[VirtaMuuAsteikkoArvosana]))
         }
 
         val matchingArvosana = asteikkoArvosanat.find(_.avain == koodi).map(_.Nimi)
         matchingArvosana match {
-          case Some(arvosanaNimi) => Arvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
+          case Some(arvosanaNimi) => VirtaArvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
           case None => null
         }
-      case _ => Arvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = arvosanaTagName)
+      case _ => VirtaArvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = arvosanaTagName)
     }
 }
 
