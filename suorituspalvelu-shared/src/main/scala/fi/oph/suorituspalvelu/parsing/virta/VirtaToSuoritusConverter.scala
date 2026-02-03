@@ -127,7 +127,7 @@ object VirtaToSuoritusConverter {
       (suoritukset, Seq.empty)
     }
 
-    val newSuoritus: Option[Suoritus] = if (osaSuoritukset.nonEmpty) {
+    val newSuoritus: Option[Suoritus] = if (osaSuoritukset.nonEmpty || suoritukset.isEmpty) {
       val vahvistusPaiva = latestTila(opiskeluoikeus).filter(_.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT).map(_.AlkuPvm)
       val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(Ordering[LocalDate].reverse).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
       val nimiFallback = Some(opiskeluoikeus.koulutusmoduulitunniste.stripPrefix("#").stripSuffix("/").trim).filter(_.nonEmpty)
