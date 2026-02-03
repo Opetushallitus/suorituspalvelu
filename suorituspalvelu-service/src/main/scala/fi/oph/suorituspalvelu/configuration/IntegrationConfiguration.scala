@@ -140,10 +140,10 @@ class IntegrationConfiguration {
           OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
         })
 
+      // Palautetaan hierarkiassa vain oid-avaimet, ettei tule duplikaatteja oppilaitoskoodi-avainten kanssa
       override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
-        hierarkiaCache.get("hierarkia")
+        hierarkiaCache.get("hierarkia").filter((tunniste, _) => tunniste.startsWith("1.2.246"))
     }
-
   }
 
   @Bean
