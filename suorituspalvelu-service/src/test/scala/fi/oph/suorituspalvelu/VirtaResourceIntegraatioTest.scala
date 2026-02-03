@@ -1,11 +1,11 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, KKOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKTutkinto, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, SyncSuccessJobResponse}
+import fi.oph.suorituspalvelu.resource.api.{SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator
@@ -83,11 +83,26 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     waitUntilReady(response.jobId)
 
-    // pitäisi syntyä kaksi opiskeluoikeutta, joista toisella 0 ja toisella 50 alisuoritusta.
+    // Pitäisi syntyä kaksi opiskeluoikeutta:
+    // 1. opiskeluoikeus, jolla 1 tutkintosuoritus, jolla ei osasuorituksilta
+    // 2. opiskeluoikeus, jolla 1 tutkintosuoritus, jolla 49 osasuoritusta
     val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-    Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.isEmpty))
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.size == 50))
+    val opiskeluoikeudetKannasta = suorituksetKannasta.head._2
+    Assertions.assertEquals(2, opiskeluoikeudetKannasta.size)
+
+    val opiskeluoikeudetOsasuorituksilla = opiskeluoikeudetKannasta.collect({
+      case oo: KKOpiskeluoikeus if oo.suoritukset.nonEmpty => oo
+    })
+
+    Assertions.assertEquals(2, opiskeluoikeudetOsasuorituksilla.size)
+
+    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
+      oo.suoritukset.size == 1 && oo.suoritukset.head.asInstanceOf[KKTutkinto].suoritukset.size == 49
+    }))
+
+    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
+      oo.suoritukset.size == 1 && oo.suoritukset.head.asInstanceOf[KKTutkinto].suoritukset.isEmpty
+    }))
 
     // tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
