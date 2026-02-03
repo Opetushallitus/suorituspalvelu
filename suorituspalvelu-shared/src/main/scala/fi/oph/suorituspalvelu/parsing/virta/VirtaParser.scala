@@ -20,7 +20,7 @@ case class OpiskeluoikeusKoulutusala(versio: String, koodi: Int)
 
 case class Laajuus(Opintopiste: BigDecimal)
 
-case class Jakso(Rahoituslahde: String, Koulutuskieli: String, LoppuPvm: LocalDate, AlkuPvm: LocalDate, Koulutuskoodi: String, koulutusmoduulitunniste: String, Koulutuskunta: String)
+case class Jakso(Rahoituslahde: String, Koulutuskieli: String, LoppuPvm: LocalDate, AlkuPvm: LocalDate, Koulutuskoodi: Option[String], koulutusmoduulitunniste: String, Koulutuskunta: String)
 
 case class Opiskeluoikeus(Laajuus: Laajuus, LoppuPvm: LocalDate, @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[Tila], Jakso: Jakso, Koulutusala: OpiskeluoikeusKoulutusala, Tyyppi: String, AlkuPvm: LocalDate, Myontaja: String, opiskelijaAvain: String, avain: String)
 
@@ -47,6 +47,7 @@ case class Suoritusviite(avain: String)
 case class Opintosuoritus(
                            Kieli: String,
                            Organisaatio: Option[Organisaatio],
+                           Tyyppi: String,
                            SuoritusPvm: LocalDate,
                            Arvosana: Option[Arvosana],
                            opiskeluoikeusAvain: Option[String], // puuttuu osasuorituksilta

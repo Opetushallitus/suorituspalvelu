@@ -314,17 +314,19 @@ enum KKOpiskeluoikeusTila:
   case EI_VOIMASSA
   case PAATTYNYT
 
+
 case class VirtaOpiskeluoikeus(
                                 tunniste: UUID,
                                 virtaTunniste: String,
-                                koulutusKoodi: String,
+                                tyyppiKoodi: String,
+                                koulutusKoodi: Option[String],
                                 alkuPvm: LocalDate,
                                 loppuPvm: LocalDate,
                                 virtaTila: Koodi,
                                 supaTila: KKOpiskeluoikeusTila,
                                 myontaja: String,
                                 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-                                suoritukset: Set[Suoritus]
+                                suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus]
                               ) extends Opiskeluoikeus, Tyypitetty
 
 case class VirtaTutkinto(
@@ -339,8 +341,9 @@ case class VirtaTutkinto(
                           myontaja: String,
                           kieli: String,
                           koulutusKoodi: String,
-                          opiskeluoikeusAvain: String,
-                          osaSuoritusAvaimet: Seq[String] = Seq.empty,
+                          opiskeluoikeusAvain: Option[String],
+                          @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                          suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
                           avain: String
                         ) extends Suoritus, Tyypitetty
 
@@ -364,9 +367,10 @@ case class VirtaOpintosuoritus(
                            koulutusala: Int,
                            koulutusalaKoodisto: String,
                            opinnaytetyo: Boolean,
-                           opiskeluoikeusAvain: String, //Onhan tämä aina saatavilla?
-                           osaSuoritusAvaimet: Seq[String] = Seq.empty,
-                           avain: String
+                           opiskeluoikeusAvain: Option[String], //Onhan tämä aina saatavilla?
+                           @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+                           suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
+                           avain: String,
                          ) extends Suoritus, Tyypitetty
 
 case class AvainArvoYliajo(avain: String,
