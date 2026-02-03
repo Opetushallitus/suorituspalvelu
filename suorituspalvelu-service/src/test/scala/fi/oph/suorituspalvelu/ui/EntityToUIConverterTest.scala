@@ -571,6 +571,46 @@ class EntityToUIConverterTest {
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", None, Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, List.empty)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
   }
 
+  @Test def testPerusopetuksenOppimaaraOppiaineeetNotIncludedWhenNotValmis(): Unit = {
+    val oppimaara = PerusopetuksenOppimaara(
+      tunniste = UUID.randomUUID(),
+      versioTunniste = None,
+      oppilaitos = Oppilaitos(Kielistetty(Some("Testikoulu"), None, None), "1.2.3.4.5"),
+      luokka = Some("9A"),
+      koskiTila = Koodi("lasna", "", None),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN,
+      suoritusKieli = Koodi("FI", "kieli", Some(1)),
+      koulusivistyskieli = Set.empty,
+      yksilollistaminen = None,
+      aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
+      vahvistusPaivamaara = None,
+      aineet = Set(
+        PerusopetuksenOppiaine(
+          tunniste = UUID.randomUUID(),
+          nimi = Kielistetty(Some("Historia"), None, None),
+          koodi = Koodi("HI", "koskioppiaineetyleissivistava", Some(1)),
+          arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+          kieli = None,
+          pakollinen = true,
+          yksilollistetty = None,
+          rajattu = None
+        )
+      ),
+      lahtokoulut = Set.empty,
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = false
+    )
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", None,
+      Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN, List.empty)),
+      DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
+    )
+
+    Assertions.assertEquals(1, result.perusopetuksenOppimaarat.size())
+    Assertions.assertTrue(result.perusopetuksenOppimaarat.get(0).oppiaineet.isEmpty, "Oppiaineet should be empty when supaTila is not VALMIS")
+  }
+
   @Test def testConvertOpiskeluoikeudet(): Unit = {
     val OPPIJANUMERO = "1.2.3"
     val ORGANISAATION_OID = "2.3.4"
