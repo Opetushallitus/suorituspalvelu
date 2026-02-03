@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Suoritus, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Suoritus, Telma, Tuva, VapaaSivistystyo, KKOpiskeluoikeus, KKTutkinto, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -615,7 +615,7 @@ class EntityToUIConverterTest {
     val OPPIJANUMERO = "1.2.3"
     val ORGANISAATION_OID = "2.3.4"
 
-    val virtaOpiskeluoikeus = VirtaOpiskeluoikeus(
+    val virtaOpiskeluoikeus = KKOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
       virtaTunniste = "",
       tyyppiKoodi = "1",
@@ -691,7 +691,7 @@ class EntityToUIConverterTest {
   @Test def testConvertKKTutkinto(): Unit = {
     val OPPIJANUMERO = "1.2.3"
 
-    val virtaTutkinto = VirtaTutkinto(
+    val virtaTutkinto = KKTutkinto(
       tunniste = UUID.randomUUID(),
       nimiFi = Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"),
       nimiSv = Some("Bachelor of Health Care"),
@@ -701,11 +701,11 @@ class EntityToUIConverterTest {
       aloitusPvm = LocalDate.parse("2020-01-01"),
       suoritusPvm = Some(LocalDate.parse("2021-01-01")),
       myontaja = "10108",
-      kieli = "fi",
+      kieli = Some("fi"),
       koulutusKoodi = Some("671103"),
       opiskeluoikeusAvain = Some("xxx002"),
       suoritukset = Seq.empty,
-      avain = ""
+      avain = None
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
@@ -713,7 +713,7 @@ class EntityToUIConverterTest {
         Map(virtaTutkinto.myontaja -> Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty, Seq.empty))
     }
 
-    val opiskeluoikeus = VirtaOpiskeluoikeus(
+    val opiskeluoikeus = KKOpiskeluoikeus(
       null,
       null,
       null,

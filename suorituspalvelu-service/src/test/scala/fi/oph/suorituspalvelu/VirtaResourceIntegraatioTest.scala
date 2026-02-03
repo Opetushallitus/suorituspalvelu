@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, VirtaOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, KKOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
@@ -86,8 +86,8 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // pitäisi syntyä kaksi opiskeluoikeutta, joista toisella 0 ja toisella 50 alisuoritusta.
     val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
     Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.isEmpty))
+    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.size == 50))
 
     // tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
@@ -193,16 +193,16 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
       if (oppijaNumero != failingHakijaOid) {
          val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
          Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.isEmpty))
+         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.size == 50))
       }
     })
 
     //Tarkistetaan myös aliaksen suoritukset
     val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(aliasForHakijaOid2)
     Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.isEmpty))
+    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[KKOpiskeluoikeus].suoritukset.size == 50))
 
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()

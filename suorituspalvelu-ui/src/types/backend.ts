@@ -875,7 +875,7 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = ("VOIMASSA" | "PAATTYNYT");
 
 export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
