@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from './lib/fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 import VALINTA_DATA from './fixtures/valintaData.json' with { type: 'json' };
+import { stubKayttajaResponse } from './lib/playwrightUtils';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
 
@@ -72,5 +73,24 @@ test.describe('Oppijan tiedot', () => {
     await expect(page).toHaveURL((url) =>
       url.pathname.includes(`henkilo/${OPPIJANUMERO}/suoritustiedot`),
     );
+  });
+
+  test('Koski-linkki ei näy jos käyttäjä ei ole rekisterinpitäjä', async ({
+    page,
+  }) => {
+    await stubKayttajaResponse(page, {
+      isRekisterinpitaja: false,
+      isOrganisaationKatselija: false,
+    });
+
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
+
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole('link', { name: 'Avaa tiedot Koski-järjestelmässä' }),
+    ).toBeHidden();
   });
 });

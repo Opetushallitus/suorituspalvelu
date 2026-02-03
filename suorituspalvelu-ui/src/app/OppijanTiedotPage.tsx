@@ -16,6 +16,7 @@ import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import {
   queryOptionsGetOppija,
+  useKayttaja,
   useOppija,
 } from '@/lib/suorituspalvelu-queries';
 import { useEffect } from 'react';
@@ -35,8 +36,8 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
 
 export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   const { t } = useTranslations();
-
   const config = useConfig();
+  const { data: kayttaja } = useKayttaja();
 
   return (
     <Stack spacing={3} sx={{ padding: 2 }}>
@@ -60,11 +61,13 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
             value={tiedot?.henkiloOID}
           />
         </Stack>
-        <ExternalLink
-          href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
-        >
-          {t('oppija.avaa-koski-jarjestelmassa')}
-        </ExternalLink>
+        {kayttaja.isRekisterinpitaja && (
+          <ExternalLink
+            href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
+          >
+            {t('oppija.avaa-koski-jarjestelmassa')}
+          </ExternalLink>
+        )}
       </Stack>
       <TiedotTabNavi />
       <QuerySuspenseBoundary>
