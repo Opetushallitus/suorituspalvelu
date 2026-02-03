@@ -602,7 +602,7 @@ class EntityToUIConverterTest {
     )
 
     val result = EntityToUIConverter.getOppijanTiedot(
-      None, None, None, "1.2.3", None,
+      None, None, None, "1.2.3", "2.3.4", None,
       Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN, List.empty)),
       DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
     )
