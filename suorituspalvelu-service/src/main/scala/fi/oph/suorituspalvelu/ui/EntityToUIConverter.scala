@@ -479,7 +479,8 @@ object EntityToUIConverter {
               ya.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
             )).get
           )).toJava,
-          oppiaineet = om.aineet.map(a => PerusopetuksenOppiaineUI(
+          // halutaan näyttää vain valmistuneen suorituksen oppiaineet
+          oppiaineet = (if (om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS) om.aineet else Set.empty).map(a => PerusopetuksenOppiaineUI(
             tunniste = a.tunniste,
             koodi = a.koodi.arvo,
             nimi = PerusopetuksenOppiaineNimi(
