@@ -160,11 +160,10 @@ export const TarkastusSearchControls = () => {
         onChange={(e) => {
           const newOppilaitos = e.target.value;
           if (newOppilaitos !== oppilaitos) {
-            setSearchParams({
-              oppilaitos: newOppilaitos,
-              luokka: '',
-              suodatus: '',
-            });
+            setSearchParams(
+              { oppilaitos: newOppilaitos, luokka: '', suodatus: '' },
+              { resetHenkilo: true },
+            );
           }
         }}
       />
@@ -174,7 +173,10 @@ export const TarkastusSearchControls = () => {
         onChange={(e) => {
           const newVuosi = e.target.value;
           if (newVuosi !== vuosi) {
-            setSearchParams({ vuosi: newVuosi, luokka: '', suodatus: '' });
+            setSearchParams(
+              { vuosi: newVuosi, luokka: '', suodatus: '' },
+              { resetHenkilo: true },
+            );
           }
         }}
       />
@@ -183,7 +185,10 @@ export const TarkastusSearchControls = () => {
         vuosi={vuosi}
         oppilaitosOid={oppilaitos}
         onChange={(e) => {
-          setSearchParams({ luokka: e.target.value, suodatus: '' });
+          setSearchParams(
+            { luokka: e.target.value, suodatus: '' },
+            { resetHenkilo: true },
+          );
         }}
       />
     </StyledSearchControls>
