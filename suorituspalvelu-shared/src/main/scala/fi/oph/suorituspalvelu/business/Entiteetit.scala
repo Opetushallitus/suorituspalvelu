@@ -336,6 +336,21 @@ case class KKSynteettinenOpiskeluoikeus(
   suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
 ) extends KKOpiskeluoikeusBase(synteettinen = true)
 
+sealed trait KKSuoritusBase(synteettinen: Boolean = false) extends Suoritus, Tyypitetty
+
+case class KKSynteettinenSuoritus(
+  tunniste: UUID,
+  nimi: Option[Kielistetty],
+  komoTunniste: String,
+  aloitusPvm: Option[LocalDate],
+  suoritusPvm: Option[LocalDate],
+  myontaja: String,
+  koulutusKoodi: Option[String],
+  opiskeluoikeusAvain: Option[String],
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+  suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
+) extends KKSuoritusBase(synteettinen = true)
+
 case class KKTutkinto(
   tunniste: UUID,
   nimi: Option[Kielistetty],
@@ -350,7 +365,7 @@ case class KKTutkinto(
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
   suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
   avain: Option[String] // Puuttuu, jos synteettinen
-) extends Suoritus, Tyypitetty
+) extends KKSuoritusBase(synteettinen = false)
 
 case class KKOpintosuoritus(
   tunniste: UUID,
@@ -374,7 +389,7 @@ case class KKOpintosuoritus(
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
   suoritukset: Seq[fi.oph.suorituspalvelu.business.Suoritus] = Seq.empty,
   avain: String,
-) extends Suoritus, Tyypitetty
+) extends KKSuoritusBase(synteettinen = false)
 
 case class AvainArvoYliajo(avain: String,
                            arvo: Option[String],
