@@ -45,6 +45,7 @@ object KantaOperaatiot {
       classOf[PerusopetuksenOppimaara],
       classOf[AmmatillinenOpiskeluoikeus],
       classOf[VirtaOpiskeluoikeus],
+      classOf[PoistettuOpiskeluoikeus],
       classOf[AmmatillinenPerustutkinto],
       classOf[AmmattiTutkinto],
       classOf[GeneerinenOpiskeluoikeus],

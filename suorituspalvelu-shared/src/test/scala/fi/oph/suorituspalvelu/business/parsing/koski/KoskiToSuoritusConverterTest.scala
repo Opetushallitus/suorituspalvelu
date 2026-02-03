@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot.KantaEntiteetit.{AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS, PERUSOPETUKSEN_OPISKELUOIKEUS}
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiToSuoritusConverter}
@@ -17,11 +17,12 @@ class KoskiToSuoritusConverterTest {
 
   val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map().empty
 
-  def getOikeudetByType(oikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): (Seq[PerusopetuksenOpiskeluoikeus], Seq[AmmatillinenOpiskeluoikeus], Seq[GeneerinenOpiskeluoikeus]) = {
+  def getOikeudetByType(oikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): (Seq[PerusopetuksenOpiskeluoikeus], Seq[AmmatillinenOpiskeluoikeus], Seq[GeneerinenOpiskeluoikeus], Seq[PoistettuOpiskeluoikeus]) = {
     val perusopetukset = oikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
     val ammatilliset = oikeudet.collect { case am: AmmatillinenOpiskeluoikeus => am }
     val geneeriset = oikeudet.collect { case g: GeneerinenOpiskeluoikeus => g }
-    (perusopetukset, ammatilliset, geneeriset)
+    val poistetut = oikeudet.collect { case g: PoistettuOpiskeluoikeus => g }
+    (perusopetukset, ammatilliset, geneeriset, poistetut)
   }
 
   @Test def testKoskiParsingAndConversion1(): Unit =
@@ -36,12 +37,13 @@ class KoskiToSuoritusConverterTest {
       }
     }).toSeq
 
-    Assertions.assertEquals(4, oikeudet.size) // kolme mitätöityä opiskeluoikeutta
+    Assertions.assertEquals(7, oikeudet.size) // kolme mitätöityä opiskeluoikeutta
 
-    val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
+    val (perusopetukset, ammatilliset, geneeriset, poistetut) = getOikeudetByType(oikeudet)
     Assertions.assertEquals(1, perusopetukset.size)
     Assertions.assertEquals(3, ammatilliset.size)
     Assertions.assertEquals(0, geneeriset.size)
+    Assertions.assertEquals(3, poistetut.size)
 
 
   @Test def testKoskiParsingAndConversion2(): Unit =
@@ -56,13 +58,13 @@ class KoskiToSuoritusConverterTest {
       }
     }).toSeq
 
-    Assertions.assertEquals(2, oikeudet.size) // kuusi mitätöityä opiskeluoikeutta
+    Assertions.assertEquals(8, oikeudet.size) // kuusi mitätöityä opiskeluoikeutta
 
-    val (perusopetukset, ammatilliset, geneeriset) = getOikeudetByType(oikeudet)
+    val (perusopetukset, ammatilliset, geneeriset, poistetut) = getOikeudetByType(oikeudet)
     Assertions.assertEquals(1, perusopetukset.size)
     Assertions.assertEquals(0, ammatilliset.size)
     Assertions.assertEquals(1, geneeriset.size)
-
+    Assertions.assertEquals(6, poistetut.size)
 
   @Test def testKoskiParsingForPerusopetuksenOpiskeluoikeudenSuoritukset(): Unit = {
     val fileName = "/oo_1.2.246.562.15.94501385358.json"
@@ -112,7 +114,7 @@ class KoskiToSuoritusConverterTest {
     )
 
     val baseOikeus =  KoskiOpiskeluoikeus(
-      null, null, null, null, null, lisätiedot = None
+      null, null, null, null, null, lisätiedot = None, None
     )
 
     def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): KoskiOsaSuoritus = {
@@ -173,7 +175,7 @@ class KoskiToSuoritusConverterTest {
     val opiskeluoikeusEronnut = KoskiOpiskeluoikeus(
       "1.2.3",
       None,
-      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None)),
       Some(KoskiOpiskeluoikeusTila(List(
         KoskiOpiskeluoikeusJakso(
           LocalDate.parse("2024-01-01"),
@@ -183,7 +185,8 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2024-06-15"),
           KoskiKoodi("eronnut", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Set.empty,
+      Some(Set.empty),
+      None,
       None
     )
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-15")), KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusEronnut))
@@ -192,7 +195,7 @@ class KoskiToSuoritusConverterTest {
     val opiskeluoikeusValmis = KoskiOpiskeluoikeus(
       "1.2.3",
       None,
-      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None)),
       Some(KoskiOpiskeluoikeusTila(List(
         KoskiOpiskeluoikeusJakso(
           LocalDate.parse("2024-01-01"),
@@ -202,7 +205,8 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2024-06-15"),
           KoskiKoodi("valmistunut", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Set.empty,
+      Some(Set.empty),
+      None,
       None
     )
     Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusValmis))
@@ -211,9 +215,10 @@ class KoskiToSuoritusConverterTest {
     val opiskeluoikeusNoTila = KoskiOpiskeluoikeus(
       "1.2.3",
       None,
-      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None)),
       None,
-      Set.empty,
+      Some(Set.empty),
+      None,
       None
     )
     Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusNoTila))
@@ -223,7 +228,7 @@ class KoskiToSuoritusConverterTest {
     val opiskeluoikeus = KoskiOpiskeluoikeus(
       "1.2.3",
       None,
-      KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None),
+      Some(KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None)),
       Some(KoskiOpiskeluoikeusTila(List(
         KoskiOpiskeluoikeusJakso(
           LocalDate.parse("2025-01-01"),
@@ -233,7 +238,8 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2025-05-05"),
           KoskiKoodi("läsnä", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Set.empty,
+      Some(Set.empty),
+      None,
       None
     )
 

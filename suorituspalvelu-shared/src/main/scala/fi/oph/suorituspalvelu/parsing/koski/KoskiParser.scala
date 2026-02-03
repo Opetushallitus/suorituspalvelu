@@ -106,12 +106,13 @@ case class KoskiLisatiedot(erityisenTuenPäätökset: Option[List[KoskiErityisen
 
 case class KoskiOpiskeluoikeus(oid: String,
                                oppilaitos: Option[KoskiOppilaitos],
-                               tyyppi: KoskiOpiskeluoikeusTyyppi,
+                               tyyppi: Option[KoskiOpiskeluoikeusTyyppi],
                                tila: Option[KoskiOpiskeluoikeusTila],
-                               suoritukset: Set[KoskiSuoritus],
-                               lisätiedot: Option[KoskiLisatiedot]) {
-  def isPerusopetus: Boolean = tyyppi.koodiarvo == "perusopetus" || tyyppi.koodiarvo == "aikuistenperusopetus"
-  def isAmmatillinen: Boolean = tyyppi.koodiarvo == "ammatillinenkoulutus"
+                               suoritukset: Option[Set[KoskiSuoritus]],
+                               lisätiedot: Option[KoskiLisatiedot],
+                               poistettu: Option[Boolean]) {
+  def isPerusopetus: Boolean = tyyppi.exists(t => t.koodiarvo == "perusopetus" || t.koodiarvo == "aikuistenperusopetus")
+  def isAmmatillinen: Boolean = tyyppi.exists(_.koodiarvo == "ammatillinenkoulutus")
 }
 
 /**
