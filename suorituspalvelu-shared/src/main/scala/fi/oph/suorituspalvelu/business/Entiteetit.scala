@@ -338,12 +338,10 @@ case class KKSynteettinenOpiskeluoikeus(
 
 case class KKTutkinto(
   tunniste: UUID,
-  nimiFi: Option[String],
-  nimiSv: Option[String],
-  nimiEn: Option[String],
+  nimi: Option[Kielistetty],
   komoTunniste: String,
   opintoPisteet: BigDecimal,
-  aloitusPvm: LocalDate,
+  aloitusPvm: Option[LocalDate],
   suoritusPvm: Option[LocalDate],
   myontaja: String,
   kieli: Option[String],
@@ -356,9 +354,7 @@ case class KKTutkinto(
 
 case class KKOpintosuoritus(
   tunniste: UUID,
-  nimiFi: Option[String],
-  nimiSv: Option[String],
-  nimiEn: Option[String],
+  nimi: Option[Kielistetty],
   komoTunniste: String,
   opintoPisteet: BigDecimal,
   opintoviikot: Option[BigDecimal],

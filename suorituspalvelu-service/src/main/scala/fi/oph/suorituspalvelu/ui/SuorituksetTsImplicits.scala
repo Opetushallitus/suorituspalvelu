@@ -32,6 +32,7 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val erikoisAmmattitutkintoTSType: TSType[Erikoisammattitutkinto] = TSType.fromCaseClass
   implicit val ytoTSType: TSType[YTO] = TSType.fromCaseClass
   implicit val ammatillinenTutkintoTSType: TSType[Ammatillinentutkinto] = TSType.fromCaseClass
+  implicit val optionalKkSuoritusNimiTsType: TSType[Optional[KKSuoritusNimi]] = TSType.sameAs[Optional[KKSuoritusNimi], Option[KKSuoritusNimi]]
   // Rekursiivinen tyyppi
   implicit val kkOpintojaksoTsType: TSType[KKOpintojakso] = {
     implicit val recursiveRef: TSType[KKOpintojakso] = TSType.external[KKOpintojakso]("IKKOpintojakso")

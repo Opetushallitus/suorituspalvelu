@@ -230,7 +230,7 @@ case class KKSuoritus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(description = "Tutkinnon nimi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: KKSuoritusNimi,
+  @BeanProperty nimi: Optional[KKSuoritusNimi],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: UIOppilaitos,
   @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
