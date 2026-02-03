@@ -4,23 +4,32 @@ import type { BackendOppijatSearchParams } from '@/lib/suorituspalvelu-service';
 import { isNonNullish, isNullish, pickBy } from 'remeda';
 import {
   useLocation,
+  useNavigate,
+  useParams,
   useSearchParams,
   type NavigateOptions,
 } from 'react-router';
 import { useMemo } from 'react';
 import type { SearchNavigationState } from '@/types/navigation';
+import { setOppijaNumeroInPath } from '@/lib/navigationPathUtils';
 
 type OppijatSearchParams = BackendOppijatSearchParams & {
   suodatus?: string;
 };
 
+type SetSearchParamsOptions = NavigateOptions & {
+  resetHenkilo?: boolean;
+};
+
 export function useOppilaitoksenOppijatSearchParamsState() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
 
   const location = useLocation();
+  const navigate = useNavigate();
+  const { oppijaNumero } = useParams();
   const locationState = location.state as SearchNavigationState;
   const tarkastusSearchTerm = locationState?.tarkastusSearchTerm;
 
@@ -28,26 +37,29 @@ export function useOppilaitoksenOppijatSearchParamsState() {
     () => ({
       setSearchParams: (
         params: OppijatSearchParams,
-        options?: NavigateOptions,
+        options?: SetSearchParamsOptions,
       ) => {
         const { suodatus, ...rest } = params;
-        setSearchParams(
-          (prev) => {
-            const next = new URLSearchParams(prev);
-            Object.entries(rest).forEach(([key, value]) => {
-              if (isNullish(value) || value === '') {
-                next.delete(key);
-              } else {
-                next.set(key, value);
-              }
-            });
-            return next;
-          },
-          {
-            replace: false,
-            ...options,
-            state: { ...locationState, tarkastusSearchTerm: suodatus },
-          }, // Use push to add to history
+        const { resetHenkilo, ...navOptions } = options ?? {};
+        const newState = { ...locationState, tarkastusSearchTerm: suodatus };
+
+        const newSearch = new URLSearchParams(searchParams);
+        Object.entries(rest).forEach(([key, value]) => {
+          if (isNullish(value) || value === '') {
+            newSearch.delete(key);
+          } else {
+            newSearch.set(key, value);
+          }
+        });
+
+        const newPathname =
+          resetHenkilo && oppijaNumero
+            ? setOppijaNumeroInPath(location.pathname, null)
+            : location.pathname;
+
+        navigate(
+          { pathname: newPathname, search: newSearch.toString() },
+          { replace: false, ...navOptions, state: newState },
         );
       },
       searchParams: pickBy(
@@ -58,7 +70,10 @@ export function useOppilaitoksenOppijatSearchParamsState() {
     }),
     [
       locationState,
-      setSearchParams,
+      searchParams,
+      navigate,
+      location.pathname,
+      oppijaNumero,
       tarkastusSearchTerm,
       oppilaitos,
       luokka,

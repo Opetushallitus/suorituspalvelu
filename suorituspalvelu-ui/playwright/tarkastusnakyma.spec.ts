@@ -444,4 +444,103 @@ test.describe('Tarkastusnäkymä', () => {
 
     await expect(page).toHaveURL((url) => url.pathname.endsWith('henkilo'));
   });
+
+  test('oppilaitoksen vaihtaminen tyhjentää valitun henkilön', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+
+    const sidebar = getHenkilotSidebar(page);
+    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+
+    // Valitaan henkilö
+    await page
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
+      .click();
+
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(`tarkastus/${OPPIJANUMERO}`),
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    // Vaihdetaan oppilaitos
+    await selectOption({
+      name: 'Oppilaitos',
+      page,
+      option: 'Tampereen normaalikoulu',
+    });
+
+    // Henkilö pitäisi olla tyhjennetty
+    await expect(page).toHaveURL((url) => !url.pathname.includes(OPPIJANUMERO));
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeHidden();
+    await expect(page.getByText('Hae ja valitse henkilö')).toBeVisible();
+  });
+
+  test('vuoden vaihtaminen tyhjentää valitun henkilön', async ({ page }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+
+    const sidebar = getHenkilotSidebar(page);
+    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+
+    // Valitaan henkilö
+    await page
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
+      .click();
+
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(`tarkastus/${OPPIJANUMERO}`),
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    // Vaihdetaan vuosi
+    await selectOption({ page, name: 'Valmistumisvuosi', option: '2024' });
+
+    // Henkilö pitäisi olla tyhjennetty
+    await expect(page).toHaveURL((url) => !url.pathname.includes(OPPIJANUMERO));
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeHidden();
+    await expect(page.getByText('Hae ja valitse henkilö')).toBeVisible();
+  });
+
+  test('luokan vaihtaminen tyhjentää valitun henkilön', async ({ page }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+
+    const sidebar = getHenkilotSidebar(page);
+    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+
+    // Valitaan henkilö
+    await page
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
+      .click();
+
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(`tarkastus/${OPPIJANUMERO}`),
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    // Vaihdetaan luokka
+    await selectOption({ page, name: 'Luokka', option: '9A' });
+
+    // Henkilö pitäisi olla tyhjennetty
+    await expect(page).toHaveURL((url) => !url.pathname.includes(OPPIJANUMERO));
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeHidden();
+    await expect(page.getByText('Hae ja valitse henkilö')).toBeVisible();
+  });
 });
