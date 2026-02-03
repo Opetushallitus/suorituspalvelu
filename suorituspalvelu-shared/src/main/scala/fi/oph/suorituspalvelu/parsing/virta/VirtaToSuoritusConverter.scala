@@ -73,6 +73,10 @@ object VirtaToSuoritusConverter {
   private def sisaltyvatAvaimet(suoritus: VirtaOpintosuoritus): Set[String] =
     suoritus.Sisaltyvyys.map(_.sisaltyvaOpintosuoritusAvain).toSet
 
+  private def jalkelaisillaOpiskeluoikeusavainPuuttuuTaiOnSamaKuinJuuritasolla(rootSuoritus: Option[VirtaOpintosuoritus], opiskeluoikeus: VirtaOpiskeluoikeus): Boolean =
+    rootSuoritus.isEmpty || rootSuoritus.flatMap(_.opiskeluoikeusAvain).isEmpty ||
+      rootSuoritus.get.opiskeluoikeusAvain.contains(opiskeluoikeus.avain)
+
   private def sisaltyyOpiskeluoikeuteen(
     suoritus: VirtaOpintosuoritus,
     opiskeluoikeus: VirtaOpiskeluoikeus,
@@ -80,8 +84,7 @@ object VirtaToSuoritusConverter {
     rootSuoritus: Option[VirtaOpintosuoritus] = None
   ): Boolean = {
     suoritus.opiskeluoikeusAvain.contains(opiskeluoikeus.avain) &&
-    (rootSuoritus.isEmpty || rootSuoritus.flatMap(_.opiskeluoikeusAvain).isEmpty ||
-      rootSuoritus.get.opiskeluoikeusAvain.contains(opiskeluoikeus.avain)) ||
+    jalkelaisillaOpiskeluoikeusavainPuuttuuTaiOnSamaKuinJuuritasolla(rootSuoritus, opiskeluoikeus) ||
     suoritus.Sisaltyvyys.exists(sis => {
       suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain) match {
         case Some(s) =>
