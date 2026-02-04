@@ -38,18 +38,13 @@ import type {
 export type SuorituksenTila = SuoritusTila;
 
 export type SuorituksenPerustiedot = {
+  nimi?: Kielistetty;
   oppilaitos: {
     nimi: Kielistetty;
     oid: string;
   };
   tila: SuorituksenTila;
   suorituskieli?: string;
-  valmistumispaiva?: string;
-};
-
-export type SuoritusOtsikkoTiedot = {
-  nimi: Kielistetty;
-  tila: SuorituksenTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
 };
