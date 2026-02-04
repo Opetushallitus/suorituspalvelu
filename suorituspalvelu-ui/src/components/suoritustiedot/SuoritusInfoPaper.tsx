@@ -3,26 +3,14 @@ import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { Stack } from '@mui/material';
 import type { SuorituksenPerustiedot } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
-import { isNonNullish } from 'remeda';
-import { formatYear, NDASH } from '@/lib/common';
+import { formatFinnishDate, NDASH } from '@/lib/common';
 
 const Vuodet = ({ suoritus }: { suoritus: SuorituksenPerustiedot }) => {
-  const { t } = useTranslations();
-
-  switch (true) {
-    case isNonNullish(suoritus.valmistumispaiva):
-      return (
-        <OphTypography variant="body1" component="span">
-          ({formatYear(suoritus.valmistumispaiva)})
-        </OphTypography>
-      );
-    case isNonNullish(suoritus.aloituspaiva):
-      return (
-        <OphTypography variant="body1" component="span">
-          {`(${formatYear(suoritus.aloituspaiva)} ${NDASH} ${t(`suorituksen-tila.${suoritus.tila}`)})`}
-        </OphTypography>
-      );
-  }
+  return (
+    <OphTypography variant="body1" component="span">
+      {`(${formatFinnishDate(suoritus.aloituspaiva)} ${NDASH} ${formatFinnishDate(suoritus.valmistumispaiva)})`}
+    </OphTypography>
+  );
 };
 
 export const SuoritusInfoPaper = ({
