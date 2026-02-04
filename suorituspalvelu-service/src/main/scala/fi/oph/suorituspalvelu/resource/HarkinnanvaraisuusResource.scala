@@ -67,7 +67,7 @@ class HarkinnanvaraisuusResource {
       Right(None)
         .flatMap(_ =>
           // tarkastetaan oikeudet
-          if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onPalveluKayttaja())
+          if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onPalveluKayttaja() || securityOperaatiot.onValintaKayttaja())
             Right(None)
           else
             Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(HarkinnanvaraisuusFailureResponse(java.util.List.of(HARKINNANVARAISUUS_EI_OIKEUKSIA)))))
