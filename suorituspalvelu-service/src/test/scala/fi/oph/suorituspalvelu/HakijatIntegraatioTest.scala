@@ -307,8 +307,8 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, oppijaNumero), ""))
       .andExpect(status().isOk).andReturn()
 
-    // saadaan lähtökoulua vastaava autorisointi joka päättyy seuraavan vuoden tammikuun loppuun
-    Assertions.assertEquals(LahtokoulutSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-02-01")), "9A", VUOSILUOKKA_9.toString)).asJava),
+    // saadaan lähtökoulua vastaava autorisointi joka päättyy seuraavan vuoden tammikuun loppuun (helmikuun loppuun demossa)
+    Assertions.assertEquals(LahtokoulutSuccessResponse(List(fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization(OPPILAITOS_OID, aloitusPaiva, Optional.of(LocalDate.parse(s"${valmistumisPaiva.getYear+1}-03-01")), "9A", VUOSILUOKKA_9.toString)).asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää
