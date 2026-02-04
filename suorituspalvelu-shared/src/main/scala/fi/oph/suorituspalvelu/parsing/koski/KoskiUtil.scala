@@ -61,7 +61,7 @@ object KoskiUtil {
         val loppuPaivamaara =
           (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
             case (None, None) => None
-            case (Some(currLoppu), None) => Some(LocalDate.parse(s"${currLoppu.getYear + 1}-02-01")) // loppupäivä ei-inklusiivinen
+            case (Some(currLoppu), None) => Some(LocalDate.parse(s"${currLoppu.getYear + 1}-03-01")) // loppupäivä ei-inklusiivinen
             case (_, Some(nextAlku)) => Some(nextAlku)
         LahtokouluAuthorization(curr.oppilaitosOid, curr.suorituksenAlku, loppuPaivamaara.toJava, curr.luokka, curr.suoritusTyyppi.toString)
       })
@@ -91,7 +91,7 @@ object KoskiUtil {
     ohjausvastuut.exists(o =>
       (oppilaitosOids.isEmpty || oppilaitosOids.exists(_.contains(o.oppilaitosOid))) &&
         (lahtokouluTyypit.isEmpty || lahtokouluTyypit.exists(_.contains(o.suoritusTyyppi))) &&
-        // katseluoikeus on suorituksen päättymisvuotta seuraavan vuoden tammikuun loppuun
-        (o.suorituksenLoppu.isEmpty || o.suorituksenLoppu.exists(l => !LocalDate.parse(s"${l.getYear + 1}-01-31").isBefore(LocalDate.now))))
+        // katseluoikeus on suorituksen päättymisvuotta seuraavan vuoden tammikuun loppuun (helmikuun loppuun demossa)
+        (o.suorituksenLoppu.isEmpty || o.suorituksenLoppu.exists(l => !LocalDate.parse(s"${l.getYear + 1}-03-01").isBefore(LocalDate.now))))
 
 }
