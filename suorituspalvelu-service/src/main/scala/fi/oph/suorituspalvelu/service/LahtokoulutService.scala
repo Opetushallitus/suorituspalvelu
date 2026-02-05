@@ -35,7 +35,7 @@ class LahtokoulutService {
   val ONR_TIMEOUT = 10.seconds
   
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
-    kantaOperaatiot.haeLuokat(oppilaitosOid, valmistumisVuosi)
+    kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, Some(LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA))
   }
 
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {

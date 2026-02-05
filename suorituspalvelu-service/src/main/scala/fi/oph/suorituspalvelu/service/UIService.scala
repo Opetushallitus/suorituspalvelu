@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
@@ -121,8 +121,6 @@ class UIService {
 
   val ONR_TIMEOUT = 10.seconds
 
-  val LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
-
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
     oppilaitosOids
       .flatMap(oid => organisaatioProvider.haeOrganisaationTiedot(oid)
@@ -152,13 +150,13 @@ class UIService {
         organisaatio.oid))
   }
 
-  def haeVuodet(oppilaitosOid: String): Set[String] = {
+  def haeVuodet(paivamaara: Option[LocalDate], oppilaitosOid: String): Set[String] = {
     // haetaan kaikkien suoritustyyppien paitsi 7. ja 8. vuosiluokkien perusteella koska niitä ei haluta näyttää kälissä
-    kantaOperaatiot.haeVuodet(oppilaitosOid, LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA)
+    kantaOperaatiot.haeVuodet(paivamaara, oppilaitosOid, Some(LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA))
   }
 
-  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
-    kantaOperaatiot.haeLuokat(oppilaitosOid, valmistumisVuosi)
+  def haeLuokat(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
+    kantaOperaatiot.haeLuokat(paivamaara, oppilaitosOid, valmistumisVuosi, Some(LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA))
   }
 
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
@@ -167,7 +165,7 @@ class UIService {
 
   def haeOhjattavat(ajanhetki: Option[LocalDate], oppilaitos: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Seq[Oppija] = {
     // haetaan oppijat jotka ovat oppilaitoksen halutun valmistumisvuoden ohjattavia, paitsi 7. ja 8. vuosiluokkien perusteella koska niitä ei haluta näyttää kälissä
-    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(ajanhetki, oppilaitos, valmistumisVuosi, luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu, LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA)
+    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(ajanhetki, oppilaitos, Some(valmistumisVuosi), luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu, LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA)
     val oppijaOids = oppijaLuokat.map(_._1)
     val luokatMap = oppijaLuokat.toMap
 
