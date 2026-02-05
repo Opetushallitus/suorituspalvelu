@@ -43,7 +43,7 @@ const SidebarContent = () => {
   return (
     <Stack
       spacing={1.5}
-      sx={{ paddingLeft: 2, paddingTop: 2 }}
+      sx={{ paddingLeft: 2, paddingTop: 2, height: '100%' }}
       data-test-id="henkilot-sidebar"
     >
       {hasValidSearchParams ? (
