@@ -3,10 +3,17 @@ import type { IPerusopetuksenOppiaineUI } from '@/types/backend';
 import type {
   OppijanTiedot,
   PerusopetuksenOppiaine,
+  SuorituksenPerustiedot,
   Suoritus,
 } from '@/types/ui-types';
 import { useMemo } from 'react';
-import { groupBy, isTruthy } from 'remeda';
+import { groupBy, isTruthy, sortBy } from 'remeda';
+
+export function sortSuoritukset<T extends SuorituksenPerustiedot>(
+  suoritukset: Array<T>,
+) {
+  return sortBy(suoritukset, [(s) => s.aloituspaiva ?? '', 'desc']);
+}
 
 const convertPerusopetusOppiaineet = (
   oppiaineet: Array<IPerusopetuksenOppiaineUI>,
@@ -52,119 +59,105 @@ export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
   return useMemo(() => {
     const result: Array<Suoritus> = [];
 
-    const addSuoritukset = (
-      v: Suoritus | Array<Suoritus> | null | undefined,
+    const addSortedSuoritukset = <T extends SuorituksenPerustiedot>(
+      v: T | Array<T> | undefined | null,
+      mapSuoritus: (suoritus: T) => Suoritus,
     ) => {
-      const arrayValue = castToArray(v);
+      const arrayValue = sortSuoritukset(castToArray(v).filter(isTruthy));
       arrayValue?.forEach((suoritus) => {
         if (suoritus) {
-          result.push(suoritus);
+          result.push(mapSuoritus(suoritus as T));
         }
       });
     };
 
-    addSuoritukset(
-      oppijanTiedot.kkTutkinnot?.map((suoritus) => ({
-        ...suoritus,
-        koulutustyyppi: 'korkeakoulutus',
-      })),
-    );
+    addSortedSuoritukset(oppijanTiedot.kkTutkinnot, (s) => ({
+      ...s,
+      koulutustyyppi: 'korkeakoulutus',
+    }));
+    addSortedSuoritukset(oppijanTiedot.yoTutkinnot, (s) => ({
+      ...s,
+      koulutustyyppi: 'lukio',
+    }));
+    addSortedSuoritukset(oppijanTiedot.lukionOppimaara, (s) => ({
+      ...s,
+      koulutustyyppi: 'lukio',
+    }));
+    addSortedSuoritukset(oppijanTiedot.lukionOppiaineenOppimaarat, (s) => ({
+      ...s,
+      koulutustyyppi: 'lukio',
+    }));
+    addSortedSuoritukset(oppijanTiedot.diaTutkinto, (s) => ({
+      ...s,
+      koulutustyyppi: 'lukio',
+    }));
+    addSortedSuoritukset(oppijanTiedot.diaVastaavuusTodistus, (s) => ({
+      ...s,
+      koulutustyyppi: 'lukio',
+    }));
+    addSortedSuoritukset(oppijanTiedot.ebTutkinto, (s) => ({
+      ...s,
+      koulutustyyppi: 'eb',
+    }));
+    addSortedSuoritukset(oppijanTiedot.ibTutkinto, (s) => ({
+      ...s,
+      koulutustyyppi: 'ib',
+    }));
+    addSortedSuoritukset(oppijanTiedot.preIB, (s) => ({
+      ...s,
+      koulutustyyppi: 'lukio',
+    }));
+    addSortedSuoritukset(oppijanTiedot.ammatillisetPerusTutkinnot, (s) => ({
+      ...s,
+      koulutustyyppi: 'ammatillinen',
+    }));
+    addSortedSuoritukset(oppijanTiedot.ammattitutkinnot, (s) => ({
+      ...s,
+      koulutustyyppi: 'ammatillinen',
+    }));
+    addSortedSuoritukset(oppijanTiedot.erikoisammattitutkinnot, (s) => ({
+      ...s,
+      koulutustyyppi: 'ammatillinen',
+    }));
+    addSortedSuoritukset(oppijanTiedot.telmat, (s) => ({
+      ...s,
+      koulutustyyppi: 'ammatillinen',
+    }));
+    addSortedSuoritukset(oppijanTiedot.tuvat, (s) => ({
+      ...s,
+      koulutustyyppi: 'tuva',
+    }));
+    addSortedSuoritukset(oppijanTiedot.vapaaSivistystyoKoulutukset, (s) => ({
+      ...s,
+      koulutustyyppi: 'vapaa-sivistystyo',
+    }));
+    addSortedSuoritukset(oppijanTiedot.perusopetuksenOppimaarat, (s) => ({
+      ...s,
+      isEditable: s.syotetty,
+      koulutustyyppi: 'perusopetus',
+      suoritustyyppi: 'perusopetuksenoppimaara',
+      // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
+      oppiaineet: convertPerusopetusOppiaineet(s.oppiaineet),
+    }));
 
-    addSuoritukset(
-      [
-        ...oppijanTiedot.yoTutkinnot,
-        oppijanTiedot.lukionOppimaara,
-        ...oppijanTiedot.lukionOppiaineenOppimaarat,
-        oppijanTiedot.diaTutkinto,
-        oppijanTiedot.diaVastaavuusTodistus,
-      ]
-        .filter(isTruthy)
-        .map((suoritus) => ({
-          ...suoritus,
-          koulutustyyppi: 'lukio',
-        })),
-    );
-
-    addSuoritukset(
-      oppijanTiedot.ebTutkinto && {
-        ...oppijanTiedot.ebTutkinto,
-        koulutustyyppi: 'eb',
-      },
-    );
-
-    addSuoritukset(
-      oppijanTiedot.ibTutkinto && {
-        ...oppijanTiedot.ibTutkinto,
-        koulutustyyppi: 'ib',
-      },
-    );
-
-    addSuoritukset(
-      oppijanTiedot.preIB && {
-        ...oppijanTiedot.preIB,
-        koulutustyyppi: 'lukio',
-      },
-    );
-
-    addSuoritukset(
-      [
-        ...oppijanTiedot.ammatillisetPerusTutkinnot,
-        ...oppijanTiedot.ammattitutkinnot,
-        ...oppijanTiedot.erikoisammattitutkinnot,
-        ...oppijanTiedot.telmat,
-      ].map((suoritus) => ({
-        ...suoritus,
-        koulutustyyppi: 'ammatillinen',
-      })),
-    );
-
-    addSuoritukset(
-      oppijanTiedot.tuvat.map((suoritus) => ({
-        ...suoritus,
-        koulutustyyppi: 'tuva',
-      })),
-    );
-
-    addSuoritukset(
-      oppijanTiedot.vapaaSivistystyoKoulutukset.map((suoritus) => ({
-        ...suoritus,
-        koulutustyyppi: 'vapaa-sivistystyo',
-      })),
-    );
-
-    addSuoritukset(
-      oppijanTiedot.perusopetuksenOppimaarat.map((suoritus) => {
-        return {
-          ...suoritus,
-          isEditable: suoritus.syotetty,
-          koulutustyyppi: 'perusopetus',
-          suoritustyyppi: 'perusopetuksenoppimaara',
-          // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
-          oppiaineet: convertPerusopetusOppiaineet(suoritus.oppiaineet),
-        };
+    addSortedSuoritukset(
+      oppijanTiedot.perusopetuksenOppimaara78Luokkalaiset,
+      (s) => ({
+        ...s,
+        koulutustyyppi: 'perusopetus',
+        isEditable: false,
       }),
     );
 
-    addSuoritukset(
-      [oppijanTiedot.perusopetuksenOppimaara78Luokkalaiset]
-        .filter(isTruthy)
-        .map((suoritus) => ({
-          ...suoritus,
-          koulutustyyppi: 'perusopetus',
-          isEditable: false,
-        })),
-    );
-
-    addSuoritukset(
-      oppijanTiedot.perusopetuksenOppiaineenOppimaarat.map((suoritus) => {
-        return {
-          ...suoritus,
-          isEditable: suoritus.syotetty,
-          koulutustyyppi: 'perusopetus',
-          suoritustyyppi: 'perusopetuksenoppiaineenoppimaara',
-          // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
-          oppiaineet: convertPerusopetusOppiaineet(suoritus.oppiaineet),
-        };
+    addSortedSuoritukset(
+      oppijanTiedot.perusopetuksenOppiaineenOppimaarat,
+      (s) => ({
+        ...s,
+        isEditable: s.syotetty,
+        koulutustyyppi: 'perusopetus',
+        suoritustyyppi: 'perusopetuksenoppiaineenoppimaara',
+        // Oppiaineet-listassa voi tulla samalle oppiaineelle useita arvosanarivejä, jotka täytyy yhdistää
+        oppiaineet: convertPerusopetusOppiaineet(s.oppiaineet),
       }),
     );
 
