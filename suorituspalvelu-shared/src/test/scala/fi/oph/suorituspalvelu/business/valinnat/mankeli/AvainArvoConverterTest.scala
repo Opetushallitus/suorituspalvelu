@@ -85,12 +85,12 @@ class AvainArvoConverterTest {
 
     Assertions.assertEquals(1, opiskeluoikeudet.size)
 
-    val leikkuri = LocalDate.now
+    val leikkuri = LocalDate.parse("2025-05-31")
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", opiskeluoikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
 
-    Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
-    Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
+    Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
+    Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
   }
 
   @Test def testAvainArvoConverterForPeruskouluArvosanatJaKielet(): Unit = {
