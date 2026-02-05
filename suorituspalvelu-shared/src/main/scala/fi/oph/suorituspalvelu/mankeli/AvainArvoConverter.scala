@@ -304,7 +304,7 @@ object AvainArvoConverter {
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
-    val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku)
+    val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku, toisenAsteenPk)
 
     val paatellytArvot: Set[AvainArvoContainer] =
       peruskouluArvot
@@ -384,7 +384,7 @@ object AvainArvoConverter {
     }
   }
 
-  def convertTuva(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
+  def convertTuva(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int, toisenAsteenPohjakoulutus: Option[AvainArvoContainer]): Set[AvainArvoContainer] = {
     val tuvaSuoritukset = opiskeluoikeudet.collect {
       case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: Tuva => s }
     }.flatten
@@ -393,10 +393,13 @@ object AvainArvoConverter {
         .filter(t => t.suoritusVuosi >= vuosiVahintaan)
         .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.tuvaMinimiLaajuus))
     val tuoreinRiittava: Option[Tuva] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
+    val pohjakoulutusSallii = toisenAsteenPohjakoulutus.map(_.arvo).exists(arvo => !arvo.equals(AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS) && !arvo.equals(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA))
 
     val suoritusSelite = (tuoreinRiittava, tuvaSuoritukset) match {
-      case (tuorein, _) if tuorein.isDefined =>
+      case (tuorein, _) if tuorein.isDefined && pohjakoulutusSallii =>
         Seq(s"Löytyneen Tuva-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
+      case (tuorein, _) if tuorein.isDefined && !pohjakoulutusSallii =>
+        Seq(s"Löytyneen Tuva-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}, mutta hakijan pohjakoulutus (${toisenAsteenPohjakoulutus.map(_.arvo)}) ei salli lisäpistekoulutusten huomioimista.")
       case (_, tuvat) if tuvat.nonEmpty =>
         val korkeinLaajuus: Option[Laajuus] = tuvat.flatMap(_.hyvaksyttyLaajuus).maxByOption(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Tuva-suoritusta. Korkein löytynyt laajuus: " +
@@ -405,16 +408,17 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Tuva-suoritusta.")
     }
 
-    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.tuvaSuoritettuKey, tuoreinRiittava.isDefined.toString, suoritusSelite)
+    val tuvaHuomioidaan: Boolean = pohjakoulutusSallii && tuoreinRiittava.isDefined
+    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.tuvaSuoritettuKey, tuvaHuomioidaan.toString, suoritusSelite)
 
-    val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
+    val suoritusVuosiArvo = if (tuvaHuomioidaan) {
       Some(AvainArvoContainer(AvainArvoConstants.tuvaSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
     } else None
 
     suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
   }
 
-  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
+  def convertTelma(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int, toisenAsteenPohjakoulutus: Option[AvainArvoContainer]): Set[AvainArvoContainer] = {
     val telmat = opiskeluoikeudet.collect {
       case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
     }.flatten
@@ -423,10 +427,13 @@ object AvainArvoConverter {
         .filter(t => t.suoritusVuosi >= vuosiVahintaan)
         .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.telmaMinimiLaajuus))
     val tuoreinRiittava: Option[Telma] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
+    val pohjakoulutusSallii = toisenAsteenPohjakoulutus.map(_.arvo).exists(arvo => !arvo.equals(AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS) && !arvo.equals(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA))
 
     val suoritusSelite = (tuoreinRiittava, telmat) match {
-      case (tuorein, _) if tuorein.isDefined =>
+      case (tuorein, _) if tuorein.isDefined && pohjakoulutusSallii =>
         Seq(s"Löytyneen Telma-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
+      case (tuorein, _) if tuorein.isDefined && !pohjakoulutusSallii =>
+        Seq(s"Löytyneen Telma-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}, mutta hakijan pohjakoulutus (${toisenAsteenPohjakoulutus.map(_.arvo)}) ei salli lisäpistekoulutusten huomioimista.")
       case (_, telmat) if telmat.nonEmpty =>
         val korkeinLaajuus: Option[Laajuus] = telmat.flatMap(_.hyvaksyttyLaajuus).maxByOption(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Telma-suoritusta. Korkein löytynyt laajuus: " +
@@ -435,16 +442,17 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Telma-suoritusta.")
     }
 
-    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.telmaSuoritettuKey, tuoreinRiittava.isDefined.toString, suoritusSelite)
+    val telmaHuomioidaan: Boolean = pohjakoulutusSallii && tuoreinRiittava.isDefined
+    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.telmaSuoritettuKey, telmaHuomioidaan.toString, suoritusSelite)
 
-    val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
+    val suoritusVuosiArvo = if (telmaHuomioidaan) {
       Some(AvainArvoContainer(AvainArvoConstants.telmaSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
     } else None
 
     suoritusVuosiArvo.map(Set(suoritusArvo, _)).getOrElse(Set(suoritusArvo))
   }
 
-  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int): Set[AvainArvoContainer] = {
+  def convertOpistovuosi(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vuosiVahintaan: Int, toisenAsteenPohjakoulutus: Option[AvainArvoContainer]): Set[AvainArvoContainer] = {
     val vstOpistovuodet = opiskeluoikeudet.collect {
       case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: VapaaSivistystyo => s }
     }.flatten
@@ -454,10 +462,13 @@ object AvainArvoConverter {
         .filter(o => o.suoritusVuosi >= vuosiVahintaan)
         .filter(t => t.hyvaksyttyLaajuus.exists(laajuus => laajuus.arvo >= AvainArvoConstants.opistovuosiMinimiLaajuus))
     val tuoreinRiittava: Option[VapaaSivistystyo] = riittavanTuoreetJaLaajat.maxByOption(_.suoritusVuosi)
+    val pohjakoulutusSallii = toisenAsteenPohjakoulutus.map(_.arvo).exists(arvo => !arvo.equals(AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS) && !arvo.equals(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA))
 
     val suoritusSelite = (tuoreinRiittava, vstOpistovuodet) match {
-      case (tuorein, _) if tuorein.isDefined =>
+      case (tuorein, _) if tuorein.isDefined && pohjakoulutusSallii =>
         Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}.")
+      case (tuorein, _) if tuorein.isDefined && !pohjakoulutusSallii =>
+        Seq(s"Löytyneen Opistovuosi-suorituksen laajuus on ${tuoreinRiittava.flatMap(_.hyvaksyttyLaajuus.map(_.arvo))}, mutta hakijan pohjakoulutus (${toisenAsteenPohjakoulutus.map(_.arvo)}) ei salli lisäpistekoulutusten huomioimista.")
       case (_, vstOpistovuodet) if vstOpistovuodet.exists(_.hyvaksyttyLaajuus.nonEmpty) =>
         val korkeinLaajuus: Option[Laajuus] = vstOpistovuodet.flatMap(_.hyvaksyttyLaajuus).maxByOption(_.arvo)
         Seq(s"Ei löytynyt tarpeeksi laajaa Opistovuosi-suoritusta. Korkein löytynyt laajuus: " +
@@ -466,23 +477,24 @@ object AvainArvoConverter {
         Seq(s"Ei löytynyt lainkaan Opistovuosi-suoritusta.")
     }
 
-    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritettuKey, tuoreinRiittava.isDefined.toString, suoritusSelite)
+    val opistovuosiHuomioidaan: Boolean = pohjakoulutusSallii && tuoreinRiittava.isDefined
+    val suoritusArvo = AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritettuKey, opistovuosiHuomioidaan.toString, suoritusSelite)
 
-    val suoritusVuosiArvo = if (tuoreinRiittava.isDefined) {
+    val suoritusVuosiArvo = if (opistovuosiHuomioidaan) {
       Some(AvainArvoContainer(AvainArvoConstants.opistovuosiSuoritusvuosiKey, tuoreinRiittava.get.suoritusVuosi.toString))
     } else None
 
     Set(suoritusArvo) ++ suoritusVuosiArvo
   }
 
-  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: KoutaHaku): Set[AvainArvoContainer] = {
+  def convertLisapistekoulutukset(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: KoutaHaku, toisenAsteenPohjakoulutus: Option[AvainArvoContainer]): Set[AvainArvoContainer] = {
     if (haku.isToisenAsteenYhteisHaku()) {
       val vuosiVahintaan = haku.hakuvuosi.map(vuosi => vuosi - 1).getOrElse(LocalDate.now().getYear)
 
       //todo kansanopisto?
-      val tuvaArvot = convertTuva(personOid, opiskeluoikeudet, vuosiVahintaan)
-      val telmaArvot = convertTelma(personOid, opiskeluoikeudet, vuosiVahintaan)
-      val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet, vuosiVahintaan)
+      val tuvaArvot = convertTuva(personOid, opiskeluoikeudet, vuosiVahintaan, toisenAsteenPohjakoulutus)
+      val telmaArvot = convertTelma(personOid, opiskeluoikeudet, vuosiVahintaan, toisenAsteenPohjakoulutus)
+      val opistovuosiArvot = convertOpistovuosi(personOid, opiskeluoikeudet, vuosiVahintaan, toisenAsteenPohjakoulutus)
 
       tuvaArvot ++ telmaArvot ++ opistovuosiArvot
     } else {
