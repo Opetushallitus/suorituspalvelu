@@ -1,15 +1,14 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_8, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.parsing.koski
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
+import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.io.ByteArrayInputStream
 import java.time.LocalDate
@@ -852,7 +851,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY), oppimaara.yksilollistaminen)
   }
 
-  @Test def testPerusopetuksenOppimaaranLahtokoulut(): Unit =
+  @Test def testPerusopetuksenOppimaaranLahtokoulutJaLuokka(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""
         |[
         |  {
@@ -911,6 +910,29 @@ class KoskiParsingTest {
         |              "koodistoVersio": 1
         |            },
         |            "osasuoritukset": []
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "8",
+        |                "nimi": {
+        |                  "fi": "8. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "8G",
+        |            "alkamispäivä": "2019-08-15",
+        |            "vahvistus": {
+        |              "päivä": "2020-06-01"
+        |            },
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
         |          }
         |        ]
         |      }
@@ -919,7 +941,13 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
 
-    Assertions.assertEquals(Set(Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), "9G", Some(VALMIS), Some(true), VUOSILUOKKA_9)), oppimaara.lahtokoulut)
+    Assertions.assertEquals("9G", oppimaara.luokka.get)
+    Assertions.assertEquals(
+      Set(
+        Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), "9G", Some(VALMIS), Some(true), VUOSILUOKKA_9),
+        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", Some(VALMIS), Some(true), VUOSILUOKKA_8)
+      ), oppimaara.lahtokoulut
+    )
 
   @Test def testPerusopetuksenOppimaaranLahtokoulutEiAlkamispaivaa(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""

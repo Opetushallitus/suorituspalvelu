@@ -33,11 +33,11 @@ test.describe('Oppijan tiedot', () => {
         });
       },
     );
-
-    await page.goto(`henkilo/${OPPIJANUMERO}`);
   });
 
   test('näyttää henkilötiedot', async ({ page }) => {
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
+
     await expect(page).toHaveTitle(
       'Suorituspalvelu - Henkilön tiedot - Olli Oppija',
     );
@@ -57,6 +57,8 @@ test.describe('Oppijan tiedot', () => {
   });
 
   test('navigointi välilehtien välillä toimii', async ({ page }) => {
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
+
     // Oletuksena näytetään suoritustiedot
     await expect(page).toHaveURL((url) =>
       url.pathname.includes(`henkilo/${OPPIJANUMERO}/suoritustiedot`),
