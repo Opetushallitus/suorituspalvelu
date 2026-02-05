@@ -17,7 +17,7 @@ type SuoritusSpec = {
 
 export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: `Kasvatust. maist., kasvatustiede (2025 ${NDASH} kesken)`,
+    title: `Kasvatust. maist., kasvatustiede (11.12.2025 ${NDASH} )`,
     oppilaitos: 'Tampereen yliopisto',
     tila: 'Suoritus kesken',
     valmistusmipaiva: '-',
@@ -26,7 +26,7 @@ export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
 
 export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Ylioppilastutkinto (2019)',
+    title: `Ylioppilastutkinto ( ${NDASH} 1.6.2019)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2019',
@@ -47,7 +47,7 @@ export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
 
 export const LUKION_OPPIMAARA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Lukion oppimäärä (2024)',
+    title: `Lukion oppimäärä (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -66,7 +66,7 @@ export const LUKION_OPPIMAARA_SUORITUS: SuoritusSpec = {
 
 export const LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Lukion oppiaineen oppimäärä (2024)',
+    title: `Lukion oppiaineen oppimäärä (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -85,7 +85,7 @@ export const LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
 
 export const DIA_TUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'DIA-tutkinto (2024)',
+    title: `DIA-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -95,7 +95,7 @@ export const DIA_TUTKINTO_SUORITUS: SuoritusSpec = {
 
 export const DIA_VASTAAVUUSTODISTUS_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'DIA-vastaavuustodistus (2024)',
+    title: `DIA-vastaavuustodistus (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -117,7 +117,7 @@ export const DIA_VASTAAVUUSTODISTUS_SUORITUS: SuoritusSpec = {
 
 export const EB_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'EB-tutkinto (2024)',
+    title: `EB-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -145,7 +145,7 @@ export const EB_SUORITUS: SuoritusSpec = {
 
 export const IB_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'IB-tutkinto (2024)',
+    title: `IB-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -171,7 +171,7 @@ export const IB_SUORITUS: SuoritusSpec = {
 
 export const PRE_IB_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Pre-IB (2024)',
+    title: `Pre-IB (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -180,7 +180,7 @@ export const PRE_IB_SUORITUS: SuoritusSpec = {
 };
 export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Puutarha-alan perustutkinto (2024)',
+    title: `Puutarha-alan perustutkinto (31.12.2024 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -264,7 +264,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
 
 export const HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Hevostalouden perustutkinto (2024)',
+    title: `Hevostalouden perustutkinto (31.12.2024 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '31.12.2024',
@@ -278,7 +278,7 @@ export const HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
 
 export const MAANMITTAUSALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Maanmittausalan ammattitutkinto (2017)',
+    title: `Maanmittausalan ammattitutkinto (1.6.2017 ${NDASH} 1.6.2017)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2017',
@@ -289,7 +289,7 @@ export const MAANMITTAUSALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
 export const TALOUS_JA_HENKILOSTOALAN_ERIKOISAMMATTITUTKINTO_SUORITUS: SuoritusSpec =
   {
     perustiedot: {
-      title: 'Talous- ja henkilöstöalan erikoisammattitutkinto (2017)',
+      title: `Talous- ja henkilöstöalan erikoisammattitutkinto (1.6.2017 ${NDASH} 1.6.2017)`,
       oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
       tila: 'Suoritus valmis',
       valmistusmipaiva: '1.6.2017',
@@ -299,7 +299,7 @@ export const TALOUS_JA_HENKILOSTOALAN_ERIKOISAMMATTITUTKINTO_SUORITUS: SuoritusS
 
 export const TELMA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Työhön ja itsenäiseen elämään valmentava koulutus (2017)',
+    title: `Työhön ja itsenäiseen elämään valmentava koulutus (1.6.2017 ${NDASH} 1.6.2017)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2017',
@@ -309,7 +309,7 @@ export const TELMA_SUORITUS: SuoritusSpec = {
 
 export const TUVA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Tutkintokoulutukseen valmentava koulutus (2017)',
+    title: `Tutkintokoulutukseen valmentava koulutus (31.12.2023 ${NDASH} 1.6.2017)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2017',
@@ -321,7 +321,7 @@ export const TUVA_SUORITUS: SuoritusSpec = {
 
 export const VAPAA_SIVISTYSTYO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: `Vapaan sivistystyön koulutus (2023 ${NDASH} keskeytynyt)`,
+    title: `Vapaan sivistystyön koulutus (31.12.2023 ${NDASH} )`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus keskeytynyt',
     valmistusmipaiva: '-',
@@ -334,7 +334,7 @@ export const VAPAA_SIVISTYSTYO_SUORITUS: SuoritusSpec = {
 
 export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Perusopetuksen oppimäärä (2016)',
+    title: `Perusopetuksen oppimäärä (31.12.2015 ${NDASH} 1.6.2016)`,
     oppilaitos: 'Keltinmäen koulu',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2016',
@@ -366,7 +366,7 @@ export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
 
 export const PERUSOPETUKSEN_OPPIMAARA_78LUOKKA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Perusopetuksen oppimäärä (2016)',
+    title: `Perusopetuksen oppimäärä (31.12.2015 ${NDASH} 1.6.2016)`,
     oppilaitos: 'Keltinmäen koulu',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2016',
@@ -380,7 +380,7 @@ export const PERUSOPETUKSEN_OPPIMAARA_78LUOKKA_SUORITUS: SuoritusSpec = {
 
 export const PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: 'Perusopetuksen oppiaineen oppimäärä (2016)',
+    title: `Perusopetuksen oppiaineen oppimäärä (31.12.2015 ${NDASH} 1.6.2016)`,
     oppilaitos: 'Keltinmäen koulu',
     tila: 'Suoritus valmis',
     valmistusmipaiva: '1.6.2016',

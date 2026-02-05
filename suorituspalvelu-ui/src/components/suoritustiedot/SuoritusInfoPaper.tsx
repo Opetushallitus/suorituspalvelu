@@ -1,28 +1,16 @@
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { PaperWithTopColor } from '@/components/PaperWithTopColor';
 import { Stack } from '@mui/material';
-import type { SuoritusOtsikkoTiedot } from '@/types/ui-types';
+import type { SuorituksenPerustiedot } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
-import { isNonNullish } from 'remeda';
-import { formatYear, NDASH } from '@/lib/common';
+import { formatFinnishDate, NDASH } from '@/lib/common';
 
-const Vuodet = ({ suoritus }: { suoritus: SuoritusOtsikkoTiedot }) => {
-  const { t } = useTranslations();
-
-  switch (true) {
-    case isNonNullish(suoritus.valmistumispaiva):
-      return (
-        <OphTypography variant="body1" component="span">
-          ({formatYear(suoritus.valmistumispaiva)})
-        </OphTypography>
-      );
-    case isNonNullish(suoritus.aloituspaiva):
-      return (
-        <OphTypography variant="body1" component="span">
-          {`(${formatYear(suoritus.aloituspaiva)} ${NDASH} ${t(`suorituksen-tila.${suoritus.tila}`)})`}
-        </OphTypography>
-      );
-  }
+const Vuodet = ({ suoritus }: { suoritus: SuorituksenPerustiedot }) => {
+  return (
+    <OphTypography variant="body1" component="span">
+      {`(${formatFinnishDate(suoritus.aloituspaiva)} ${NDASH} ${formatFinnishDate(suoritus.valmistumispaiva)})`}
+    </OphTypography>
+  );
 };
 
 export const SuoritusInfoPaper = ({
@@ -31,7 +19,7 @@ export const SuoritusInfoPaper = ({
   topColor,
   children,
 }: {
-  suoritus: SuoritusOtsikkoTiedot;
+  suoritus: SuorituksenPerustiedot;
   headingLevel?: 'h2' | 'h3' | 'h4' | 'h5';
   topColor: string;
   children: React.ReactNode;
