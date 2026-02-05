@@ -390,11 +390,12 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
+      2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None)))),
       Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TUVA.defaultLuokka.get, Some(VALMIS), None, TUVA)
     )
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Tuva(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.TuvaUI(
       tuva.tunniste,
       TuvaNimi(
         tuva.nimi.fi.toJava,
@@ -412,12 +413,12 @@ class EntityToUIConverterTest {
       SuoritusTila.VALMIS,
       Optional.of(tuva.aloitusPaivamaara),
       tuva.vahvistusPaivamaara.toJava,
-      tuva.laajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
+      tuva.hyvaksyttyLaajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
         l.lyhytNimi.get.fi.toJava,
         l.lyhytNimi.get.sv.toJava,
         l.lyhytNimi.get.en.toJava
       ))).toJava,
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tuva), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).tuvat)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("tuva", "opiskeluoikeudentyyppi", Some(1)), "1.2.3.4.5", Set(tuva), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).tuvat)
   }
 
   @Test def testConvertVapaaSivistystyoKoulutus(): Unit = {

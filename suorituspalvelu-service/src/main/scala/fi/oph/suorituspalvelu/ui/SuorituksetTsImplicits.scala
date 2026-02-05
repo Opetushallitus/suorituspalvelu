@@ -25,7 +25,7 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val lukionOppiaineenOppimaaraTSType: TSType[LukionOppiaineenOppimaara] = TSType.fromCaseClass
   implicit val optionalTuvaLaajuus: TSType[Optional[TuvaLaajuus]] = TSType.sameAs[Optional[TuvaLaajuus], Option[TuvaLaajuus]]
   implicit val optionalVSTLaajuus: TSType[Optional[VapaaSivistystyoLaajuus]] = TSType.sameAs[Optional[VapaaSivistystyoLaajuus], Option[VapaaSivistystyoLaajuus]]
-  implicit val tuvaTSType: TSType[Tuva] = TSType.fromCaseClass
+  implicit val tuvaTSType: TSType[TuvaUI] = TSType.fromCaseClass
   implicit val vapaaSivistysTyoKoulutusTSType: TSType[VapaaSivistystyoKoulutus] = TSType.fromCaseClass
   implicit val telmaTSType: TSType[Telma] = TSType.fromCaseClass
   implicit val ammattitutkintoTSType: TSType[Ammattitutkinto] = TSType.fromCaseClass

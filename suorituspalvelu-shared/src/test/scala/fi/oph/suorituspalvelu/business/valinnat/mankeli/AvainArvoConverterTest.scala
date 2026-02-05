@@ -1,11 +1,11 @@
 package fi.oph.suorituspalvelu.business.valinnat.mankeli
 
-import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, VAPAA_SIVISTYSTYO}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -366,6 +366,127 @@ class AvainArvoConverterTest {
 
     //Jos Telmaa ei ole suoritettu hakuvuonna tai sitä edeltävänä vuonna, suoritusvuodelle ei saa tulla avain-arvoa.
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
+  }
+
+  @Test def testTuvaRiittavaLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val suoritusVuosi = 2022
+    val tuvaTutkinto = Tuva(
+      UUID.randomUUID(),
+      Kielistetty(Some("Tutkintokoulutukseen valmentava koulutus"), None, None),
+      Koodi("999904", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      LocalDate.parse("2021-01-01"),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      Some(Laajuus(38, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA)
+    )
+
+    val oikeudet = Seq(GeneerinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Koodi("", "", None),
+      "2.3.4.5",
+      Set(tuvaTutkinto),
+      None,
+      List.empty
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+    Assertions.assertEquals(Some(suoritusVuosi.toString), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
+  }
+
+  @Test def testTuvaRiittamatonLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val suoritusVuosi = 2022
+
+    val tuvaTutkinto = Tuva(
+      UUID.randomUUID(),
+      Kielistetty(Some("Tutkintokoulutukseen valmentava koulutus"), None, None),
+      Koodi("999904", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      LocalDate.parse("2021-01-01"),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      None,//Some(Laajuus(16, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)), // Assuming 16 viikkoa is insufficient
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA)
+    )
+
+    val oikeudet = Seq(GeneerinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Koodi("", "", None),
+      "2.3.4.5",
+      Set(tuvaTutkinto),
+      None,
+      List.empty
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None)
+
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+
+    //Jos Tuvaa ei ole suoritettu hakuvuonna tai sitä edeltävänä vuonna, suoritusvuodelle ei saa tulla avain-arvoa.
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
+  }
+
+  @Test def testTuvaLiianVanhaSuoritus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+
+    val leikkuriPaiva = LocalDate.parse("2024-05-15")
+    val suoritusVuosi = 2022 // Liian vanha, koska hakuvuosi 2024
+
+    val tuvaTutkinto = Tuva(
+      UUID.randomUUID(),
+      Kielistetty(Some("Tutkintokoulutukseen valmentava koulutus"), None, None),
+      Koodi("999904", "koulutus", Some(1)),
+      Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
+      Koodi("valmistunut", "suorituksentila", Some(1)),
+      SuoritusTila.VALMIS,
+      LocalDate.parse("2021-01-01"),
+      Some(LocalDate.parse("2022-05-15")),
+      suoritusVuosi,
+      Some(Laajuus(22, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
+      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA)
+    )
+
+    val haku = KoutaHaku(
+      oid = "1.2.246.562.29.01000000000000012345",
+      tila = "julkaistu",
+      nimi = Map("fi" -> s"Testi haku 1.2.246.562.29.01000000000000012345"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_11#1"),
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(2024)
+    )
+
+    val oikeudet = Seq(GeneerinenOpiskeluoikeus(
+      UUID.randomUUID(),
+      "1.2.3",
+      Koodi("", "", None),
+      "2.3.4.5",
+      Set(tuvaTutkinto),
+      None,
+      List.empty
+    ))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, haku, None)
+
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+
+    //Jos Tuvaa ei ole suoritettu hakuvuonna tai sitä edeltävänä vuonna, suoritusvuodelle ei saa tulla avain-arvoa.
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
   }
 
   @Test def testOpistovuosiRiittavaLaajuus(): Unit = {
