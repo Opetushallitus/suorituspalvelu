@@ -106,7 +106,10 @@ export const useOppilaitoksenOppijatSearchResult = () => {
         );
       });
     }
-    return sortBy(filtered ?? [], (oppija) => oppija.sukunimi ?? '');
+    return sortBy(
+      filtered ?? [],
+      (oppija) => oppija.luokat?.join(', ') + (oppija.sukunimi ?? ''),
+    );
   }, [oppilaitos, vuosi, suodatus, result.data]);
 
   return { ...result, data, totalCount: result.data.length };
