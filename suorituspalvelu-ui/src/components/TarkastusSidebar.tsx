@@ -15,12 +15,15 @@ import { SearchInput } from './SearchInput';
 import { Box, Stack } from '@mui/material';
 import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import { sortBy } from 'remeda';
 
 const SidebarContent = () => {
   const { searchParams, setSearchParams, hasValidSearchParams } =
     useOppilaitoksenOppijatSearchParamsState();
 
   const { data, totalCount } = useOppilaitoksenOppijatSearchResult();
+
+  const oppijatSorted = sortBy(data ?? [], (oppija) => oppija.sukunimi ?? '');
 
   const { t } = useTranslate();
 
@@ -65,7 +68,7 @@ const SidebarContent = () => {
             })}
           </OphTypography>
           <NavigationList tabIndex={0} aria-label={t('sivupalkki.navigaatio')}>
-            {data?.map((oppija) => {
+            {oppijatSorted?.map((oppija) => {
               const henkiloNimi = formatHenkiloNimi(oppija, t);
               const luokat = oppija.luokat?.join(', ');
               const henkiloTunnus = oppija.hetu;

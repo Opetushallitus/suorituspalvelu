@@ -147,8 +147,8 @@ test.describe('Tarkastusnäkymä', () => {
       .getByRole('navigation', { name: 'Henkilövalitsin' })
       .getByRole('link');
 
-    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija 010296-1230');
-    await expect(navigationLinks.nth(0)).toHaveAccessibleName(
+    await expect(navigationLinks.nth(2)).toHaveText('Olli Oppija 010296-1230');
+    await expect(navigationLinks.nth(2)).toHaveAccessibleName(
       'Olli Oppija, henkilötunnus: 010296-1230',
     );
     await expect(navigationLinks.nth(1)).toHaveText(
@@ -157,10 +157,10 @@ test.describe('Tarkastusnäkymä', () => {
     await expect(navigationLinks.nth(1)).toHaveAccessibleName(
       'Matti Meikäläinen, henkilötunnus: 020397-1231, luokka: 9B',
     );
-    await expect(navigationLinks.nth(2)).toHaveText(
+    await expect(navigationLinks.nth(0)).toHaveText(
       'Maija Mallikas 030498-1232 9A',
     );
-    await expect(navigationLinks.nth(2)).toHaveAccessibleName(
+    await expect(navigationLinks.nth(0)).toHaveAccessibleName(
       'Maija Mallikas, henkilötunnus: 030498-1232, luokka: 9A',
     );
   });
