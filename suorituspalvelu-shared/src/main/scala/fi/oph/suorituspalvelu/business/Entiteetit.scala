@@ -272,6 +272,7 @@ case class LukionOppimaara(tunniste: UUID,
                            oppilaitos: Oppilaitos,
                            koskiTila: Koodi,
                            supaTila: SuoritusTila,
+                           aloitusPaivamaara: Option[LocalDate],
                            vahvistusPaivamaara: Option[LocalDate],
                            suoritusKieli: Option[Koodi],
                            koulusivistyskieli: Set[Koodi]) extends Suoritus, Tyypitetty
