@@ -1927,6 +1927,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Testin lukio"), Some("Test gymnasium"), Some("Test high school")), lukionOppimaara.oppilaitos.nimi)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), lukionOppimaara.koskiTila)
     Assertions.assertEquals(SuoritusTila.VALMIS, lukionOppimaara.supaTila)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-08-01")), lukionOppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-05-31")), lukionOppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(None, lukionOppimaara.suoritusKieli)
     Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), lukionOppimaara.koulusivistyskieli)
