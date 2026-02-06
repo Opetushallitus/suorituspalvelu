@@ -1,32 +1,22 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.*
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, HakemuspalveluClientImpl, KoutaHaku}
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo}
-import fi.oph.suorituspalvelu.parsing.koski.{KoskiUtil, NOT_DEFINED_PLACEHOLDER}
+import fi.oph.suorituspalvelu.business.KantaOperaatiot
+import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
-import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot, VirkailijaAuthorization}
-import fi.oph.suorituspalvelu.ui.EntityToUIConverter
-import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
-import fi.oph.suorituspalvelu.validation.Validator
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-import java.time.{Instant, LocalDate}
-import java.util.Optional
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
+import scala.concurrent.Await
 
 @Component
 class LahtokoulutService {
 
-  val LOG = LoggerFactory.getLogger(classOf[UIService])
+  val LOG = LoggerFactory.getLogger(classOf[LahtokoulutService])
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
@@ -35,7 +25,7 @@ class LahtokoulutService {
   val ONR_TIMEOUT = 10.seconds
   
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
-    kantaOperaatiot.haeLuokat(oppilaitosOid, valmistumisVuosi)
+    kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, Some(LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA))
   }
 
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {

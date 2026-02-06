@@ -220,7 +220,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), None, oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -236,6 +236,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk)
       .andReturn()
 
+    // vuosi näkyvissä edelleen opolla koska suoritus kesken
     Assertions.assertEquals(VuodetSuccessResponse(java.util.List.of(valmistumisvuosi.toString)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VuodetSuccessResponse]))
 
@@ -289,9 +290,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         None,
         None,
-        Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
+        None,
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-18"), None, oppilaitosOid, Some(valmistumisvuosi), "9G", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -301,14 +302,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
-    // haetaan luokat ja katsotaan että täsmää, TODO: toistaiseksi luokka kovakoodattu kunnes saadaan koskesta
+    // haetaan luokat ja katsotaan että täsmää,
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
         .replace(ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER, oppilaitosOid)
         .replace(ApiConstants.UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER, valmistumisvuosi.toString), ""))
       .andExpect(status().isOk)
       .andReturn()
 
-    Assertions.assertEquals(LuokatSuccessResponse(java.util.List.of("9A")),
+    // Koska suoritus on kesken, henkilö on edeleen opon nähtävissä ja luokka palautuu
+    Assertions.assertEquals(LuokatSuccessResponse(java.util.List.of("9G")),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuokatSuccessResponse]))
 
     //Tarkistetaan että auditloki täsmää
