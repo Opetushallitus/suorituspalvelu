@@ -303,7 +303,7 @@ object EntityToUIConverter {
             oid = lukionOppimaara.oppilaitos.oid
           ),
           tila = SuoritusTila.valueOf(lukionOppimaara.supaTila.toString),
-          aloituspaiva = Optional.empty(),
+          aloituspaiva = lukionOppimaara.aloitusPaivamaara.toJava,
           valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
           suorituskieli = lukionOppimaara.suoritusKieli.map(_.arvo).getOrElse("")
         )
