@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{Koodi, VirtaOpintosuoritus,  VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{Koodi, VirtaOpintosuoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
@@ -53,7 +53,7 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).head
+        |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaOpiskeluoikeus]
 
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
     Assertions.assertEquals("xxx002", opiskeluoikeus.virtaTunniste)
@@ -104,7 +104,7 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset.head.asInstanceOf[VirtaTutkinto]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaOpintosuoritus].suoritukset.head.asInstanceOf[VirtaTutkinto]
 
     Assertions.assertEquals("532", suoritus.komoTunniste)
     Assertions.assertEquals(LocalDate.parse("2017-05-31"), suoritus.suoritusPvm)
@@ -165,7 +165,7 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+          |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
 
     Assertions.assertEquals("LOG13A 01SUO", suoritus.komoTunniste)
     Assertions.assertEquals(LocalDate.parse("2015-05-31"), suoritus.suoritusPvm)
@@ -251,7 +251,7 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
 
     Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
     Assertions.assertEquals(Some("Fail-Pass"), suoritus.arvosanaAsteikko)
@@ -392,7 +392,7 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).head.suoritukset
+        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset
 
     Assertions.assertEquals(suoritukset.toSeq.length, 1)
     val onlyFirstLevelSuoritus = suoritukset.head

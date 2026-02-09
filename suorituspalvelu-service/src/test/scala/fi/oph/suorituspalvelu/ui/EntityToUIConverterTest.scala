@@ -703,7 +703,7 @@ class EntityToUIConverterTest {
       suoritusPvm = LocalDate.parse("2021-01-01"),
       myontaja = "10108",
       kieli = "fi",
-      koulutusKoodi = "671103",
+      koulutusKoodi = Some("671103"),
       opiskeluoikeusAvain = Some("xxx002"),
       suoritukset = Seq.empty,
       avain = ""
