@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.business.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{Koodi, VirtaOpintosuoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{Koodi, KKOpintosuoritus, KKOpiskeluoikeus, KKTutkinto}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
@@ -55,7 +55,7 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaOpiskeluoikeus]
+        |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[KKOpiskeluoikeus]
 
     Assertions.assertNotNull(opiskeluoikeus.tunniste)
     Assertions.assertEquals("xxx002", opiskeluoikeus.virtaTunniste)
@@ -108,7 +108,7 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.head.asInstanceOf[VirtaTutkinto]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[KKOpiskeluoikeus].suoritukset.head.asInstanceOf[KKTutkinto]
 
     Assertions.assertEquals("532", suoritus.komoTunniste)
     Assertions.assertEquals(Some(LocalDate.parse("2017-05-31")), suoritus.suoritusPvm)
@@ -116,7 +116,7 @@ class VirtaParsingTest {
     Assertions.assertEquals("10108", suoritus.myontaja)
     Assertions.assertEquals(Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"), suoritus.nimiFi)
     Assertions.assertEquals(Some("Bachelor of Health Care"), suoritus.nimiEn)
-    Assertions.assertEquals("fi", suoritus.kieli)
+    Assertions.assertEquals(Some("fi"), suoritus.kieli)
     Assertions.assertEquals(Some("671103"), suoritus.koulutusKoodi)
 
   @Test def testVirtasuorituksenKentat(): Unit =
@@ -171,7 +171,7 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+          |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[KKOpiskeluoikeus]].head.suoritukset.head.asInstanceOf[KKOpintosuoritus]
 
     Assertions.assertEquals("LOG13A 01SUO", suoritus.komoTunniste)
     Assertions.assertEquals(Some(LocalDate.parse("2015-05-31")), suoritus.suoritusPvm)
@@ -259,10 +259,10 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset
+        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[KKOpiskeluoikeus]].head.suoritukset
 
     Assertions.assertEquals(1, suoritukset.size)
-    val suoritus = suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+    val suoritus = suoritukset.head.asInstanceOf[KKOpintosuoritus]
     Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
     Assertions.assertEquals(Some("Fail-Pass"), suoritus.arvosanaAsteikko)
 
@@ -406,26 +406,26 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset
+        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[KKOpiskeluoikeus]].head.suoritukset
 
     Assertions.assertEquals(suoritukset.toSeq.length, 1)
     val onlyFirstLevelSuoritus = suoritukset.head
 
-    Assertions.assertTrue(onlyFirstLevelSuoritus.isInstanceOf[VirtaTutkinto])
-    val onlyTutkinto = onlyFirstLevelSuoritus.asInstanceOf[VirtaTutkinto]
+    Assertions.assertTrue(onlyFirstLevelSuoritus.isInstanceOf[KKTutkinto])
+    val onlyTutkinto = onlyFirstLevelSuoritus.asInstanceOf[KKTutkinto]
     Assertions.assertEquals(Some("TY¤75094¤123049¤A"), onlyTutkinto.opiskeluoikeusAvain)
     Assertions.assertEquals(Some("HUMANISTISTEN TIETEIDEN KANDIDAATTI, YHTEISKUNTATIETEELLINEN TIEDEKUNTA"), onlyTutkinto.nimiFi)
     val secondLevelSuoritukset = onlyTutkinto.suoritukset
     Assertions.assertEquals(1, secondLevelSuoritukset.length)
-    val onlySecondLevelSuoritus = secondLevelSuoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+    val onlySecondLevelSuoritus = secondLevelSuoritukset.head.asInstanceOf[KKOpintosuoritus]
     Assertions.assertEquals(Some("LOGOPEDIAN PERUS- JA AINEOPINNOT"), onlySecondLevelSuoritus.nimiFi)
-    val thirdLevelSuoritukset = onlySecondLevelSuoritus.suoritukset.map(_.asInstanceOf[VirtaOpintosuoritus])
+    val thirdLevelSuoritukset = onlySecondLevelSuoritus.suoritukset.map(_.asInstanceOf[KKOpintosuoritus])
 
     Assertions.assertEquals(1, thirdLevelSuoritukset.length)
     val onlyThirdLevelSuoritus = thirdLevelSuoritukset.head
 
     Assertions.assertEquals(Some("LOGOPEDIAN PERUSOPINNOT"), onlyThirdLevelSuoritus.nimiFi)
-    val fourthLevelSuoritukset = onlyThirdLevelSuoritus.suoritukset.map(_.asInstanceOf[VirtaOpintosuoritus])
+    val fourthLevelSuoritukset = onlyThirdLevelSuoritus.suoritukset.map(_.asInstanceOf[KKOpintosuoritus])
     Assertions.assertEquals(2, fourthLevelSuoritukset.length)
     val fourthLevelSuoritus1 = fourthLevelSuoritukset.find(_.avain == "TY¤75094¤14791").get
     Assertions.assertEquals(Some("KIELEN JA PUHEEN KEHITYKSEN TUKEMINEN"), fourthLevelSuoritus1.nimiFi)

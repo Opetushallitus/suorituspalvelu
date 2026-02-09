@@ -134,7 +134,6 @@ case class OppijanHautFailureResponse(
 
 enum OpiskeluoikeusTila:
   case VOIMASSA
-  case EI_VOIMASSA
   case PAATTYNYT
 
 enum SuoritusTila:
