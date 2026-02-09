@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, Opintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, VirtaOpintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
 import org.slf4j.LoggerFactory
 
 import java.util.UUID
@@ -90,7 +90,7 @@ object VirtaToSuoritusConverter {
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opintosuoritukset.flatMap(suoritus => {
-        val osaSuoritukset = suoritus.Sisaltyvyys.map(_.avain)
+        val osaSuoritusAvaimet = suoritus.Sisaltyvyys.map(_.avain)
         suoritus.Laji match
           case 1 => Some(VirtaTutkinto(
             UUID.randomUUID(),
@@ -105,9 +105,10 @@ object VirtaToSuoritusConverter {
             suoritus.Kieli,
             suoritus.Koulutuskoodi.get,
             suoritus.opiskeluoikeusAvain.get,
-            osaSuoritukset
+            osaSuoritusAvaimet,
+            suoritus.avain
           ))
-          case 2 => Some(Opintosuoritus(
+          case 2 => Some(VirtaOpintosuoritus(
             UUID.randomUUID(),
             getDefaultNimi(suoritus.Nimi),
             getNimi(suoritus.Nimi, "sv"),
@@ -128,7 +129,8 @@ object VirtaToSuoritusConverter {
             suoritus.Koulutusala.map(k => k.Koodi.versio).get,
             suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
             suoritus.opiskeluoikeusAvain.get,
-            osaSuoritukset
+            osaSuoritusAvaimet,
+            suoritus.avain
           ))
           case default => None
       })

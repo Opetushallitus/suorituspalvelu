@@ -703,7 +703,9 @@ class EntityToUIConverterTest {
       myontaja = "10108",
       kieli = "fi",
       koulutusKoodi = "671103",
-      opiskeluoikeusAvain = "xxx002"
+      opiskeluoikeusAvain = "xxx002",
+      osaSuoritusAvaimet = Seq.empty,
+      avain = ""
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
