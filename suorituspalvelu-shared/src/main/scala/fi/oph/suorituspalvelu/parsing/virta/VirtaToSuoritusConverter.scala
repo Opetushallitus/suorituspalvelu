@@ -274,8 +274,8 @@ object VirtaToSuoritusConverter {
           koulutusKoodi = suoritus.Koulutuskoodi,
           opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
           suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
-            suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(s =>
-              toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[KKOpintosuoritus]]
+            suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(suoritus =>
+              toSuoritus(suoritus, suorituksetByAvain, opiskeluoikeus)
             )
           }),
           avain = Some(suoritus.avain)
@@ -301,8 +301,8 @@ object VirtaToSuoritusConverter {
           opinnaytetyo = suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
           opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
           suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
-            suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(s =>
-              toSuoritus(s, suorituksetByAvain, opiskeluoikeus).asInstanceOf[Option[KKOpintosuoritus]]
+            suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(suoritus =>
+              toSuoritus(suoritus, suorituksetByAvain, opiskeluoikeus)
             )
           }),
           avain = suoritus.avain
