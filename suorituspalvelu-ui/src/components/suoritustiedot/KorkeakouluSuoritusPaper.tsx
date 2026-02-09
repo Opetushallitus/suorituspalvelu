@@ -5,6 +5,8 @@ import type { KorkeakouluSuoritus } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isEmptyish } from 'remeda';
 
+const SHOW_OPINTOJAKSOT = false;
+
 export const KorkeakouluSuoritusPaper = ({
   suoritus,
 }: {
@@ -15,7 +17,7 @@ export const KorkeakouluSuoritusPaper = ({
     suoritus && (
       <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.red1}>
         <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
-        {!isEmptyish(suoritus?.opintojaksot) && (
+        {SHOW_OPINTOJAKSOT && !isEmptyish(suoritus?.opintojaksot) && (
           <>
             <OphTypography variant="h5" sx={{ marginTop: 2 }}>
               Opintosuoritukset
