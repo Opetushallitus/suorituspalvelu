@@ -143,7 +143,7 @@ enum SuoritusTila:
 enum SuoritusTapa:
   case NAYTTOTUTKINTO
 
-case class UIOppilaitosNimi(
+case class KKOppilaitosNimiUI(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Tampereen yliopisto sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -152,9 +152,9 @@ case class UIOppilaitosNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class UIOppilaitos(
+case class KKOppilaitosUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: UIOppilaitosNimi,
+  @BeanProperty nimi: KKOppilaitosNimiUI,
   @(Schema @field)(example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oid: String
 )
@@ -183,7 +183,7 @@ case class OpiskeluoikeusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: OpiskeluoikeusNimiUI,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: UIOppilaitos,
+  @BeanProperty oppilaitos: KKOppilaitosUI,
   @(Schema @field)(example = "2020-01-01", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty voimassaolonAlku: LocalDate,
   @(Schema @field)(example = "2024-12-31", requiredMode = RequiredMode.REQUIRED)
@@ -235,8 +235,8 @@ case class KKSuoritusUI(
   @(Schema @field)(description = "Tutkinnon nimi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: Optional[KKSuoritusNimiUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: UIOppilaitos,
-  @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oppilaitos: KKOppilaitosUI,
+  @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN")
   @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty aloituspaiva: Optional[LocalDate],

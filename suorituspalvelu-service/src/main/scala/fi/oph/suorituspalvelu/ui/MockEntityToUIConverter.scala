@@ -21,8 +21,8 @@ object MockEntityToUIConverter {
           sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
           en = Optional.of("Kasvatust. maist., kasvatustiede en")
         ),
-        oppilaitos = UIOppilaitos(
-          nimi = UIOppilaitosNimi(
+        oppilaitos = KKOppilaitosUI(
+          nimi = KKOppilaitosNimiUI(
             fi = Optional.of("Tampereen yliopisto"),
             sv = Optional.of("Tampereen yliopisto sv"),
             en = Optional.of("Tampereen yliopisto en")
@@ -47,8 +47,8 @@ object MockEntityToUIConverter {
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")
       )),
-      oppilaitos = UIOppilaitos(
-        nimi = UIOppilaitosNimi(
+      oppilaitos = KKOppilaitosUI(
+        nimi = KKOppilaitosNimiUI(
           fi = Optional.of("Tampereen yliopisto"),
           sv = Optional.of("Tampereen yliopisto sv"),
           en = Optional.of("Tampereen yliopisto en")

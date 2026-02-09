@@ -670,8 +670,8 @@ class EntityToUIConverterTest {
         Optional.empty(),
         Optional.of(KOULUTUKSEN_NIMI_EN)
       ),
-      UIOppilaitos(
-        UIOppilaitosNimi(
+      KKOppilaitosUI(
+        KKOppilaitosNimiUI(
           Optional.of(ORGANISAATION_NIMI_FI),
           Optional.of(ORGANISAATION_NIMI_SV),
           Optional.of(ORGANISAATION_NIMI_EN)
@@ -787,8 +787,8 @@ class EntityToUIConverterTest {
         virtaTutkinto.nimi.flatMap(_.sv).toJava,
         virtaTutkinto.nimi.flatMap(_.en).toJava
       )),
-      UIOppilaitos(
-        UIOppilaitosNimi(
+      KKOppilaitosUI(
+        KKOppilaitosNimiUI(
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.fi),
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.sv),
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.en)
