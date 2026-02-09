@@ -250,30 +250,45 @@ export interface IIBTutkintoNimi {
   en?: string;
 }
 
-export interface IKKOppilaitos {
-  nimi: IKKOppilaitosNimi;
+export interface IKKOpintojaksoNimiUI {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IKKOpintojaksoUI {
+  tunniste: string;
+  nimi: IKKOpintojaksoNimiUI;
+  laajuus: number;
+  arvosana?: string;
+  opintojaksot: IKKOpintojaksoUI[];
+}
+
+export interface IKKOppilaitosNimiUI {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IKKOppilaitosUI {
+  nimi: IKKOppilaitosNimiUI;
   oid: string;
 }
 
-export interface IKKOppilaitosNimi {
+export interface IKKSuoritusNimiUI {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IKKSuoritus {
+export interface IKKSuoritusUI {
   tunniste: string;
-  nimi: IKKSuoritusNimi;
-  oppilaitos: IKKOppilaitos;
+  nimi?: IKKSuoritusNimiUI;
+  oppilaitos: IKKOppilaitosUI;
   tila: SuoritusTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
-}
-
-export interface IKKSuoritusNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
+  opintojaksot: IKKOpintojaksoUI[];
 }
 
 export interface IKayttajaFailureResponse {
@@ -314,7 +329,13 @@ export interface ILukionOppiaineenOppimaaraNimi {
   en?: string;
 }
 
-export interface ILukionOppimaara {
+export interface ILukionOppimaaraNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ILukionOppimaaraUI {
   tunniste: string;
   nimi: ILukionOppimaaraNimi;
   oppilaitos: IYOOppilaitos;
@@ -322,13 +343,6 @@ export interface ILukionOppimaara {
   aloituspaiva?: string;
   valmistumispaiva?: string;
   suorituskieli: string;
-  oppiaineet: ILukionOppiaine[];
-}
-
-export interface ILukionOppimaaraNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
 }
 
 export interface ILuoPerusopetuksenOppimaaraFailureResponse {
@@ -364,12 +378,23 @@ export interface ILuokatSuccessResponse {
   luokat: string[];
 }
 
-export interface IOOOppilaitos {
-  nimi: IOOOppilaitosNimi;
-  oid: string;
+export interface IOpiskeluoikeusNimiUI {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
-export interface IOOOppilaitosNimi {
+export interface IOpiskeluoikeusUI {
+  tunniste: string;
+  nimi: IOpiskeluoikeusNimiUI;
+  oppilaitos: IKKOppilaitosUI;
+  voimassaolonAlku: string;
+  voimassaolonLoppu: string;
+  supaTila: OpiskeluoikeusTila;
+  virtaTila: IOpiskeluoikeusVirtaTilaUI;
+}
+
+export interface IOpiskeluoikeusVirtaTilaUI {
   fi?: string;
   sv?: string;
   en?: string;
@@ -410,10 +435,10 @@ export interface IOppijanTiedotSuccessResponse {
   syntymaAika?: string;
   oppijaNumero: string;
   henkiloOID: string;
-  opiskeluoikeudet: IUIOpiskeluoikeus[];
-  kkTutkinnot: IKKSuoritus[];
+  opiskeluoikeudet: IOpiskeluoikeusUI[];
+  kkTutkinnot: IKKSuoritusUI[];
   yoTutkinnot: IYOTutkinto[];
-  lukionOppimaara?: ILukionOppimaara;
+  lukionOppimaara?: ILukionOppimaaraUI;
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
   diaTutkinto?: IDIATutkinto;
   diaVastaavuusTodistus?: IDIAVastaavuusTodistus;
@@ -424,7 +449,7 @@ export interface IOppijanTiedotSuccessResponse {
   ammattitutkinnot: IAmmattitutkinto[];
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
   telmat: ITelma[];
-  tuvat: ITuva[];
+  tuvat: ITuvaUI[];
   vapaaSivistystyoKoulutukset: IVapaaSivistystyoKoulutus[];
   perusopetuksenOppimaarat: IPerusopetuksenOppimaaraUI[];
   perusopetuksenOppimaara78Luokkalaiset?: IPerusopetuksenOppimaara78Luokkalaiset;
@@ -664,16 +689,6 @@ export interface ITelmaNimi {
   en?: string;
 }
 
-export interface ITuva {
-  tunniste: string;
-  nimi: ITuvaNimi;
-  oppilaitos: IAmmatillinenOppilaitos;
-  tila: SuoritusTila;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  laajuus?: ITuvaLaajuus;
-}
-
 export interface ITuvaLaajuus {
   arvo: number;
   yksikko: ITuvaLaajuusYksikko;
@@ -691,26 +706,14 @@ export interface ITuvaNimi {
   en?: string;
 }
 
-export interface IUIOpiskeluoikeus {
+export interface ITuvaUI {
   tunniste: string;
-  nimi: IUIOpiskeluoikeusNimi;
-  oppilaitos: IOOOppilaitos;
-  voimassaolonAlku: string;
-  voimassaolonLoppu: string;
-  supaTila: OpiskeluoikeusTila;
-  virtaTila: IUIOpiskeluoikeusVirtaTila;
-}
-
-export interface IUIOpiskeluoikeusNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface IUIOpiskeluoikeusVirtaTila {
-  fi?: string;
-  sv?: string;
-  en?: string;
+  nimi: ITuvaNimi;
+  oppilaitos: IAmmatillinenOppilaitos;
+  tila: SuoritusTila;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  laajuus?: ITuvaLaajuus;
 }
 
 export interface IVapaaSivistystyoKoulutus {
@@ -871,8 +874,8 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";

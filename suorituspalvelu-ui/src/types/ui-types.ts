@@ -2,8 +2,8 @@ import type {
   IYOKoe,
   SuoritusTila,
   ILukionOppiaine,
-  IKKSuoritus,
-  ILukionOppimaara,
+  IKKSuoritusUI,
+  ILukionOppimaaraUI,
   ILukionOppiaineenOppimaara,
   IYOTutkinto,
   IDIATutkinto,
@@ -15,12 +15,12 @@ import type {
   IAmmattitutkinto,
   IErikoisammattitutkinto,
   IVapaaSivistystyoKoulutus,
-  ITuva,
+  ITuvaUI,
   IPerusopetuksenOppiaineenOppimaaratUI,
   IPerusopetuksenOppimaara78Luokkalaiset,
   IPerusopetuksenOppimaaraUI,
   IOppijanTiedotSuccessResponse,
-  IUIOpiskeluoikeus,
+  IOpiskeluoikeusUI,
   ITelma,
   IEBOppiaineUI,
   IIBOppiaine,
@@ -55,7 +55,7 @@ export type Kielistetty = {
   en?: string;
 };
 
-export type Opiskeluoikeus = IUIOpiskeluoikeus;
+export type Opiskeluoikeus = IOpiskeluoikeusUI;
 
 export type OppijanTiedot = IOppijanTiedotSuccessResponse;
 
@@ -76,7 +76,7 @@ export type IBOppiaine = IIBOppiaine;
 
 export type EBOppiaine = IEBOppiaineUI;
 
-export type KorkeakouluSuoritus = IKKSuoritus & {
+export type KorkeakouluSuoritus = IKKSuoritusUI & {
   koulutustyyppi: 'korkeakoulutus';
 };
 
@@ -93,7 +93,7 @@ export type LukioSuoritus =
   | IBSuoritus
   | ((
       | IYOTutkinto
-      | ILukionOppimaara
+      | ILukionOppimaaraUI
       | ILukionOppiaineenOppimaara
       | IDIATutkinto
       | IDIAVastaavuusTodistus
@@ -106,7 +106,7 @@ export type AmmatillinenSuoritus = (
   | IErikoisammattitutkinto
 ) & { koulutustyyppi: 'ammatillinen' };
 
-export type TUVASuoritus = ITuva & {
+export type TUVASuoritus = ITuvaUI & {
   koulutustyyppi: 'tuva';
 };
 export type TelmaSuoritus = ITelma & {

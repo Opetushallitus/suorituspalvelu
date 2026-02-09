@@ -1,11 +1,11 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti, VirtaOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.api.{VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, SyncSuccessJobResponse}
+import fi.oph.suorituspalvelu.resource.api.{SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator
@@ -26,6 +26,31 @@ import scala.concurrent.Future
  * yksikkötasolla. Onnistuneiden kutsujen osalta validoidaan että kannan tila kutsun jälkeen vastaa oletusta.
  */
 class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
+
+  private def assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]]) = {
+    // Pitäisi syntyä kaksi opiskeluoikeutta:
+    // 1. opiskeluoikeus, jolla 1 synteettinen suoritus, jolla ei osasuorituksilta
+    // 2. opiskeluoikeus, jolla 1 tutkintosuoritus, jolla 49 osasuoritusta
+
+    val opiskeluoikeudetKannasta = suorituksetKannasta.head._2
+    Assertions.assertEquals(2, opiskeluoikeudetKannasta.size)
+
+    val opiskeluoikeudetOsasuorituksilla = opiskeluoikeudetKannasta.collect({
+      case oo: KKOpiskeluoikeus if oo.suoritukset.nonEmpty => oo
+    })
+
+    Assertions.assertEquals(2, opiskeluoikeudetOsasuorituksilla.size)
+
+    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
+      oo.suoritukset.size == 1 && oo.suoritukset.head.isInstanceOf[KKSynteettinenSuoritus]
+        && oo.suoritukset.head.asInstanceOf[KKSynteettinenSuoritus].suoritukset.isEmpty
+    }))
+
+    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
+      oo.suoritukset.size == 1 && oo.suoritukset.head.isInstanceOf[KKTutkinto]
+       && oo.suoritukset.head.asInstanceOf[KKTutkinto].suoritukset.size == 49
+    }))
+  }
 
   @MockitoBean
   var virtaClient: VirtaClient = null
@@ -66,6 +91,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncFailureResponse]))
 
+
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaAllowedActuallySaveSuoritukset(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967215"
@@ -83,11 +109,8 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     waitUntilReady(response.jobId)
 
-    // pitäisi syntyä kaksi opiskeluoikeutta, joista toisella 0 ja toisella 50 alisuoritusta.
     val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-    Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+    assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta)
 
     // tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
@@ -136,7 +159,6 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // ei validi oid ei sallittu
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.23.01000000000000013275"))
       .andExpect(status().isBadRequest).andReturn()
-
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaForHakuAllowedActuallySaveSuoritukset(): Unit = {
@@ -187,26 +209,22 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     //Odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK_FOR_HAKU ehtii pyörähtää
     waitUntilReady(response.jobId)
 
-    //Jokaiselle oppijaNumerolle pitäisi syntyä kaksi opiskeluoikeutta, joista toisella 0 ja toisella 50 alisuoritusta.
     haunHakijatOids.foreach(oppijaNumero => {
       //Virheeseen päätyneen hakijan tietoja ei löydy kannasta.
       if (oppijaNumero != failingHakijaOid) {
          val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-         Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-         Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+         assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta)
       }
     })
 
     //Tarkistetaan myös aliaksen suoritukset
     val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(aliasForHakijaOid2)
-    Assertions.assertEquals(2, suorituksetKannasta.head._2.size)
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.isEmpty))
-    Assertions.assertTrue(suorituksetKannasta.head._2.exists(oo => oo.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.size == 50))
+    assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta)
 
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedotHaunHakijoille.name, auditLogEntry.operation)
     Assertions.assertEquals(Map("hakuOid" -> hakuOid), auditLogEntry.target)
   }
+
 }

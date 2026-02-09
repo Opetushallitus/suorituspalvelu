@@ -22,23 +22,29 @@ class OrganisaatioUtilTest {
   def testFlattenSingleOrganisationWithNoChildren(): Unit = {
 
     val orgOid = "1.2.246.562.10.57118763123"
+    val oppilaitosKoodi = Some("12345")
 
     val singleOrg = HierarkiaOrganisaatio(
       oid = orgOid,
       nimi = OrganisaatioNimi("Testiorganisaatio", "", ""),
       parentOid = None,
       children = Seq.empty,
-      tyypit = Seq.empty
+      tyypit = Seq.empty,
+      oppilaitosKoodi = oppilaitosKoodi
     )
 
     val result = OrganisaatioUtil.flattenHierarkia(Seq(singleOrg))
-    assertEquals(1, result.size)
+    assertEquals(2, result.size)
 
-    val resultOrg = result(orgOid)
-    assertEquals(singleOrg.oid, resultOrg.oid)
-    assertEquals(singleOrg.nimi, resultOrg.nimi)
-    assertEquals(None, resultOrg.parentOid)
-    assertTrue(resultOrg.allDescendantOids.isEmpty)
+    val resultOrgWithOid = result(orgOid)
+    assertEquals(singleOrg.oid, resultOrgWithOid.oid)
+    assertEquals(singleOrg.nimi, resultOrgWithOid.nimi)
+    assertEquals(None, resultOrgWithOid.parentOid)
+    assertTrue(resultOrgWithOid.allDescendantOids.isEmpty)
+
+    // Myös oppilaitosKoodilla pitäisi löytyä sama organisaatio
+    val resultOrgWithKoodi = result(oppilaitosKoodi.get)
+    assertEquals(resultOrgWithKoodi, resultOrgWithOid)
   }
 
   @Test

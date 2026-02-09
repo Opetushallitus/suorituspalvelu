@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, VirtaOpiskeluoikeus, VirtaTutkinto, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -24,7 +24,7 @@ import scala.jdk.OptionConverters.*
 class EntityToUIConverterTest {
 
   val DUMMY_ORGANISAATIOPROVIDER = new OrganisaatioProvider {
-    override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] = Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
+    override def orgLookupTable(): Map[String, Organisaatio] = Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
   }
 
   val DUMMY_KOODISTOPROVIDER = new KoodistoProvider {
@@ -616,10 +616,11 @@ class EntityToUIConverterTest {
     val OPPIJANUMERO = "1.2.3"
     val ORGANISAATION_OID = "2.3.4"
 
-    val virtaOpiskeluoikeus = VirtaOpiskeluoikeus(
+    val virtaOpiskeluoikeus = KKOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
       virtaTunniste = "",
-      koulutusKoodi = "671103",
+      tyyppiKoodi = "1",
+      koulutusKoodi = Some("671103"),
       alkuPvm = LocalDate.parse("2020-01-01"),
       loppuPvm = LocalDate.parse("2021-01-01"),
       virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
@@ -632,7 +633,7 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_SV = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] = {
+      override def orgLookupTable(): Map[String, Organisaatio] = {
         Map(ORGANISAATION_OID -> Organisaatio(ORGANISAATION_OID, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty, Seq.empty))
       }
     }
@@ -662,15 +663,15 @@ class EntityToUIConverterTest {
       )
     }
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.UIOpiskeluoikeus(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusUI(
       virtaOpiskeluoikeus.tunniste,
-      UIOpiskeluoikeusNimi(
+      OpiskeluoikeusNimiUI(
         Optional.of(KOULUTUKSEN_NIMI_FI),
         Optional.empty(),
         Optional.of(KOULUTUKSEN_NIMI_EN)
       ),
-      OOOppilaitos(
-        OOOppilaitosNimi(
+      KKOppilaitosUI(
+        KKOppilaitosNimiUI(
           Optional.of(ORGANISAATION_NIMI_FI),
           Optional.of(ORGANISAATION_NIMI_SV),
           Optional.of(ORGANISAATION_NIMI_EN)
@@ -680,7 +681,7 @@ class EntityToUIConverterTest {
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
       OpiskeluoikeusTila.VOIMASSA,
-      UIOpiskeluoikeusVirtaTila(
+      OpiskeluoikeusVirtaTilaUI(
         Optional.of(KOULUTUKSEN_TILA_FI),
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
@@ -691,45 +692,141 @@ class EntityToUIConverterTest {
   @Test def testConvertKKTutkinto(): Unit = {
     val OPPIJANUMERO = "1.2.3"
 
-    val virtaTutkinto = VirtaTutkinto(
+    val nestedOpintojakso = KKOpintosuoritus(
       tunniste = UUID.randomUUID(),
-      nimiFi = Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"),
-      nimiSv = Some("Bachelor of Health Care"),
-      nimiEn = None,
+      nimi = Some(Kielistetty(
+        fi = Some("Nested opintojakso"),
+        sv = Some("Nested opintojakso sv"),
+        en = Some("Nested opintojakso en"))),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      komoTunniste = "nested123",
+      opintoPisteet = 2.5,
+      opintoviikot = None,
+      suoritusPvm = Some(LocalDate.parse("2020-06-15")),
+      hyvaksilukuPvm = None,
+      myontaja = "10108",
+      jarjestavaRooli = None,
+      jarjestavaKoodi = None,
+      jarjestavaOsuus = None,
+      arvosana = Some("4"),
+      arvosanaAsteikko = None,
+      kieli = "fi",
+      koulutusala = Some(1),
+      koulutusalaKoodisto = Some("okmohjauksenala"),
+      opinnaytetyo = false,
+      opiskeluoikeusAvain = Some("xxx002"),
+      suoritukset = Seq.empty,
+      avain = "nested-avain"
+    )
+
+    val opintojakso = KKOpintosuoritus(
+      tunniste = UUID.randomUUID(),
+      nimi = Some(Kielistetty(
+        fi = Some("Johdatus kasvatustieteisiin"),
+        sv = Some("Johdatus kasvatustieteisiin sv"),
+        en = Some("Johdatus kasvatustieteisiin en"))),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      komoTunniste = "123",
+      opintoPisteet = 5.0,
+      opintoviikot = None,
+      suoritusPvm = Some(LocalDate.parse("2020-05-01")),
+      hyvaksilukuPvm = None,
+      myontaja = "10108",
+      jarjestavaRooli = None,
+      jarjestavaKoodi = None,
+      jarjestavaOsuus = None,
+      arvosana = Some("3"),
+      arvosanaAsteikko = None,
+      kieli = "fi",
+      koulutusala = Some(1),
+      koulutusalaKoodisto = Some("okmohjauksenala"),
+      opinnaytetyo = false,
+      opiskeluoikeusAvain = Some("xxx002"),
+      suoritukset = Seq(nestedOpintojakso),
+      avain = "opintojakso-avain"
+    )
+
+    val virtaTutkinto = KKTutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Some(Kielistetty(
+        fi = Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"),
+        sv = Some("Bachelor of Health Care"),
+        en = None)),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN,
       komoTunniste = "532",
       opintoPisteet = 30.5,
-      aloitusPvm = LocalDate.parse("2020-01-01"),
-      suoritusPvm = LocalDate.parse("2021-01-01"),
+      aloitusPvm = Some(LocalDate.parse("2020-01-01")),
+      suoritusPvm = Some(LocalDate.parse("2021-01-01")),
       myontaja = "10108",
-      kieli = "fi",
-      koulutusKoodi = "671103",
-      opiskeluoikeusAvain = "xxx002"
+      kieli = Some("fi"),
+      koulutusKoodi = Some("671103"),
+      opiskeluoikeusAvain = Some("xxx002"),
+      suoritukset = Seq(opintojakso),
+      avain = None
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
+      override def orgLookupTable(): Map[String, Organisaatio] =
         Map(virtaTutkinto.myontaja -> Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty, Seq.empty))
     }
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritus(
+    val opiskeluoikeus = KKOpiskeluoikeus(
+      null,
+      null,
+      null,
+      None,
+      null,
+      null,
+      Koodi("1", "", None),
+      KKOpiskeluoikeusTila.VOIMASSA,
+      virtaTutkinto.myontaja,
+      Set(virtaTutkinto)
+    )
+
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritusUI(
       virtaTutkinto.tunniste,
-      KKSuoritusNimi(
-        virtaTutkinto.nimiFi.toJava,
-        virtaTutkinto.nimiSv.toJava,
-        virtaTutkinto.nimiEn.toJava
-      ),
-      KKOppilaitos(
-        KKOppilaitosNimi(
+      Optional.of(KKSuoritusNimiUI(
+        virtaTutkinto.nimi.flatMap(_.fi).toJava,
+        virtaTutkinto.nimi.flatMap(_.sv).toJava,
+        virtaTutkinto.nimi.flatMap(_.en).toJava
+      )),
+      KKOppilaitosUI(
+        KKOppilaitosNimiUI(
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.fi),
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.sv),
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.en)
         ),
-        virtaTutkinto.myontaja
+        "1.2.3"
       ),
-      SuoritusTila.VALMIS,
-      Optional.of(virtaTutkinto.aloitusPvm),
-      Optional.of(virtaTutkinto.suoritusPvm)
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
+      SuoritusTila.KESKEN,
+      virtaTutkinto.aloitusPvm.toJava,
+      virtaTutkinto.suoritusPvm.toJava,
+      java.util.List.of(
+        KKOpintojaksoUI(
+          opintojakso.tunniste,
+          KKOpintojaksoNimiUI(
+            opintojakso.nimi.flatMap(_.fi).toJava,
+            opintojakso.nimi.flatMap(_.sv).toJava,
+            opintojakso.nimi.flatMap(_.en).toJava
+          ),
+          opintojakso.opintoPisteet,
+          opintojakso.arvosana.toJava,
+          java.util.List.of(
+            KKOpintojaksoUI(
+              nestedOpintojakso.tunniste,
+              KKOpintojaksoNimiUI(
+                nestedOpintojakso.nimi.flatMap(_.fi).toJava,
+                nestedOpintojakso.nimi.flatMap(_.sv).toJava,
+                nestedOpintojakso.nimi.flatMap(_.en).toJava
+              ),
+              nestedOpintojakso.opintoPisteet,
+              nestedOpintojakso.arvosana.toJava,
+              java.util.List.of()
+            )
+          )
+        )
+      )
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(opiskeluoikeus), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
 
   @Test def testConvertYlioppilasTutkinto(): Unit = {
@@ -764,7 +861,7 @@ class EntityToUIConverterTest {
         ),
         oid = UIService.YTL_ORGANISAATIO_OID
       ),
-      tila = SuoritusTila.valueOf(yoTutkinto.supaTila.toString()),
+      tila = SuoritusTila.valueOf(yoTutkinto.supaTila.toString),
       valmistumispaiva = yoTutkinto.valmistumisPaiva.toJava,
       suorituskieli = "FI",
       yoKokeet = yoTutkinto.aineet.map(a => YOKoe(

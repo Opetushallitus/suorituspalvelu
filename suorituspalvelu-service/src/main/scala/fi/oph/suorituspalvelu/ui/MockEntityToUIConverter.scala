@@ -12,17 +12,17 @@ import scala.jdk.OptionConverters.*
 
 object MockEntityToUIConverter {
 
-  def getOpiskeluoikeudet(): List[UIOpiskeluoikeus] =
+  def getOpiskeluoikeudet(): List[OpiskeluoikeusUI] =
     List(
-      UIOpiskeluoikeus(
+      OpiskeluoikeusUI(
         tunniste = UUID.randomUUID(),
-        nimi = UIOpiskeluoikeusNimi(
+        nimi = OpiskeluoikeusNimiUI(
           fi = Optional.of("Kasvatust. maist., kasvatustiede"),
           sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
           en = Optional.of("Kasvatust. maist., kasvatustiede en")
         ),
-        oppilaitos = OOOppilaitos(
-          nimi = OOOppilaitosNimi(
+        oppilaitos = KKOppilaitosUI(
+          nimi = KKOppilaitosNimiUI(
             fi = Optional.of("Tampereen yliopisto"),
             sv = Optional.of("Tampereen yliopisto sv"),
             en = Optional.of("Tampereen yliopisto en")
@@ -32,23 +32,23 @@ object MockEntityToUIConverter {
         voimassaolonAlku = LocalDate.parse("2001-08-01"),
         voimassaolonLoppu = LocalDate.parse("2025-12-11"),
         OpiskeluoikeusTila.VOIMASSA,
-        UIOpiskeluoikeusVirtaTila(
+        OpiskeluoikeusVirtaTilaUI(
           Optional.of("aktiivinen"),
           Optional.of("aktiv"),
           Optional.of("active")
         )
       ))
 
-  def getKKTutkinnot(): List[KKSuoritus] =
-    List(KKSuoritus(
+  def getKKTutkinnot(): List[KKSuoritusUI] =
+    List(KKSuoritusUI(
       tunniste = UUID.randomUUID(),
-      nimi = KKSuoritusNimi(
+      nimi = Optional.of(KKSuoritusNimiUI(
         fi = Optional.of("Kasvatust. maist., kasvatustiede"),
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")
-      ),
-      oppilaitos = KKOppilaitos(
-        nimi = KKOppilaitosNimi(
+      )),
+      oppilaitos = KKOppilaitosUI(
+        nimi = KKOppilaitosNimiUI(
           fi = Optional.of("Tampereen yliopisto"),
           sv = Optional.of("Tampereen yliopisto sv"),
           en = Optional.of("Tampereen yliopisto en")
@@ -57,7 +57,8 @@ object MockEntityToUIConverter {
       ),
       tila = KESKEN,
       aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
-      valmistumispaiva = Optional.empty()
+      valmistumispaiva = Optional.empty(),
+      opintojaksot = java.util.List.of()
     ))
 
   def getYOTutkinto(): List[YOTutkinto] =
