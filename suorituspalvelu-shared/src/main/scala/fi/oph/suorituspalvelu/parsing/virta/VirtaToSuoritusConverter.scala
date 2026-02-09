@@ -14,8 +14,11 @@ import scala.collection.immutable.*
 object VirtaToSuoritusConverter {
   val LOG = LoggerFactory.getLogger(getClass)
 
-  var VIRTA_TUTKINTO_LAJI = 1
-  var VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
+  private val VIRTA_TUTKINTO_LAJI = 1
+  private val VIRTA_OPINTOSUORITUS_LAJI = 2
+  val VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
+
+  private val OPISKELUOIKEUS_TILA_VALMISTUNUT = "3"
 
   val allowMissingFields = new ThreadLocal[Boolean]
 
@@ -109,8 +112,6 @@ object VirtaToSuoritusConverter {
   private def latestTila(opiskeluoikeus: VirtaOpiskeluoikeus): Option[VirtaTila] = {
     opiskeluoikeus.Tila.sortBy(_.AlkuPvm).lastOption
   }
-
-  private val OPISKELUOIKEUS_TILA_VALMISTUNUT = "3"
 
   private def addMuuKorkeakouluSuoritus(
     suoritukset: Seq[Suoritus],
@@ -223,7 +224,7 @@ object VirtaToSuoritusConverter {
     opiskeluoikeus: Option[fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus]
   ): Option[Suoritus] = {
     suoritus.Laji match
-      case 1 => Some(KKTutkinto(
+      case VIRTA_TUTKINTO_LAJI => Some(KKTutkinto(
         tunniste = UUID.randomUUID(),
         nimi = virtaNimiToKielistetty(suoritus.Nimi),
         komoTunniste = suoritus.koulutusmoduulitunniste,
@@ -241,7 +242,7 @@ object VirtaToSuoritusConverter {
         }),
         avain = Some(suoritus.avain)
       ))
-      case 2 => Some(KKOpintosuoritus(
+      case VIRTA_OPINTOSUORITUS_LAJI => Some(KKOpintosuoritus(
         tunniste = UUID.randomUUID(),
         nimi = virtaNimiToKielistetty(suoritus.Nimi),
         komoTunniste = suoritus.koulutusmoduulitunniste,
