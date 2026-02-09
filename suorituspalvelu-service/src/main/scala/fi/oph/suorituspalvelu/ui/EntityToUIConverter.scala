@@ -191,7 +191,6 @@ object EntityToUIConverter {
     organisaatioProvider: OrganisaatioProvider,
     koodistoProvider: KoodistoProvider
   ): Seq[KKSuoritusUI] = oo.suoritukset.toSeq.flatMap {
-    // opiskeluoikeuden kaikki päätason suoritukset tutkintoja -> näytetään erillisinä suorituksina
     case tutkinto: KKTutkinto =>
       Some(KKSuoritusUI(
         tunniste = tutkinto.tunniste,
