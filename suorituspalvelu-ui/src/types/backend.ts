@@ -266,7 +266,7 @@ export interface IKKOpintojaksoNimi {
 
 export interface IKKSuoritus {
   tunniste: string;
-  nimi: IKKSuoritusNimi;
+  nimi?: IKKSuoritusNimi;
   oppilaitos: IUIOppilaitos;
   tila: SuoritusTila;
   aloituspaiva?: string;

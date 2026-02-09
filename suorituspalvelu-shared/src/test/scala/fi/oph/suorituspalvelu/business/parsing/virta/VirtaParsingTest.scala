@@ -114,8 +114,8 @@ class VirtaParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2017-05-31")), suoritus.suoritusPvm)
     Assertions.assertEquals(BigDecimal.valueOf(210.0000000), suoritus.opintoPisteet)
     Assertions.assertEquals("10108", suoritus.myontaja)
-    Assertions.assertEquals(Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"), suoritus.nimiFi)
-    Assertions.assertEquals(Some("Bachelor of Health Care"), suoritus.nimiEn)
+    Assertions.assertEquals(Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"), suoritus.nimi.flatMap(_.fi))
+    Assertions.assertEquals(Some("Bachelor of Health Care"), suoritus.nimi.flatMap(_.en))
     Assertions.assertEquals(Some("fi"), suoritus.kieli)
     Assertions.assertEquals(Some("671103"), suoritus.koulutusKoodi)
 
@@ -184,9 +184,9 @@ class VirtaParsingTest {
     Assertions.assertEquals("XX", suoritus.jarjestavaKoodi.get)
     Assertions.assertEquals(BigDecimal.valueOf(1), suoritus.jarjestavaOsuus.get)
 
-    Assertions.assertEquals(Some("Asiantuntijaviestintä"), suoritus.nimiFi)
-    Assertions.assertEquals(Some("Professional Communications"), suoritus.nimiEn)
-    Assertions.assertEquals(None, suoritus.nimiSv)
+    Assertions.assertEquals(Some("Asiantuntijaviestintä"), suoritus.nimi.flatMap(_.fi))
+    Assertions.assertEquals(Some("Professional Communications"), suoritus.nimi.flatMap(_.en))
+    Assertions.assertEquals(None, suoritus.nimi.flatMap(_.sv))
 
     Assertions.assertEquals("fi", suoritus.kieli)
 
@@ -414,24 +414,24 @@ class VirtaParsingTest {
     Assertions.assertTrue(onlyFirstLevelSuoritus.isInstanceOf[KKTutkinto])
     val onlyTutkinto = onlyFirstLevelSuoritus.asInstanceOf[KKTutkinto]
     Assertions.assertEquals(Some("TY¤75094¤123049¤A"), onlyTutkinto.opiskeluoikeusAvain)
-    Assertions.assertEquals(Some("HUMANISTISTEN TIETEIDEN KANDIDAATTI, YHTEISKUNTATIETEELLINEN TIEDEKUNTA"), onlyTutkinto.nimiFi)
+    Assertions.assertEquals(Some("HUMANISTISTEN TIETEIDEN KANDIDAATTI, YHTEISKUNTATIETEELLINEN TIEDEKUNTA"), onlyTutkinto.nimi.flatMap(_.fi))
     val secondLevelSuoritukset = onlyTutkinto.suoritukset
     Assertions.assertEquals(1, secondLevelSuoritukset.length)
     val onlySecondLevelSuoritus = secondLevelSuoritukset.head.asInstanceOf[KKOpintosuoritus]
-    Assertions.assertEquals(Some("LOGOPEDIAN PERUS- JA AINEOPINNOT"), onlySecondLevelSuoritus.nimiFi)
+    Assertions.assertEquals(Some("LOGOPEDIAN PERUS- JA AINEOPINNOT"), onlySecondLevelSuoritus.nimi.flatMap(_.fi))
     val thirdLevelSuoritukset = onlySecondLevelSuoritus.suoritukset.map(_.asInstanceOf[KKOpintosuoritus])
 
     Assertions.assertEquals(1, thirdLevelSuoritukset.length)
     val onlyThirdLevelSuoritus = thirdLevelSuoritukset.head
 
-    Assertions.assertEquals(Some("LOGOPEDIAN PERUSOPINNOT"), onlyThirdLevelSuoritus.nimiFi)
+    Assertions.assertEquals(Some("LOGOPEDIAN PERUSOPINNOT"), onlyThirdLevelSuoritus.nimi.flatMap(_.fi))
     val fourthLevelSuoritukset = onlyThirdLevelSuoritus.suoritukset.map(_.asInstanceOf[KKOpintosuoritus])
     Assertions.assertEquals(2, fourthLevelSuoritukset.length)
     val fourthLevelSuoritus1 = fourthLevelSuoritukset.find(_.avain == "TY¤75094¤14791").get
-    Assertions.assertEquals(Some("KIELEN JA PUHEEN KEHITYKSEN TUKEMINEN"), fourthLevelSuoritus1.nimiFi)
+    Assertions.assertEquals(Some("KIELEN JA PUHEEN KEHITYKSEN TUKEMINEN"), fourthLevelSuoritus1.nimi.flatMap(_.fi))
     Assertions.assertEquals(0, fourthLevelSuoritus1.suoritukset.length)
     val fourthLevelSuoritus2 = fourthLevelSuoritukset.find(_.avain == "TY¤75094¤14793").get
-    Assertions.assertEquals(Some("PUHETTA TUKEVAT JA KORVAAVAT KEINOT KOMMUNIKOINNISSA"), fourthLevelSuoritus2.nimiFi)
+    Assertions.assertEquals(Some("PUHETTA TUKEVAT JA KORVAAVAT KEINOT KOMMUNIKOINNISSA"), fourthLevelSuoritus2.nimi.flatMap(_.fi))
     Assertions.assertEquals(0, fourthLevelSuoritus2.suoritukset.length)
   }
 }

@@ -694,12 +694,13 @@ class EntityToUIConverterTest {
 
     val virtaTutkinto = KKTutkinto(
       tunniste = UUID.randomUUID(),
-      nimiFi = Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"),
-      nimiSv = Some("Bachelor of Health Care"),
-      nimiEn = None,
+      nimi = Some(Kielistetty(
+        fi = Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"),
+        sv = Some("Bachelor of Health Care"),
+        en = None)),
       komoTunniste = "532",
       opintoPisteet = 30.5,
-      aloitusPvm = LocalDate.parse("2020-01-01"),
+      aloitusPvm = Some(LocalDate.parse("2020-01-01")),
       suoritusPvm = Some(LocalDate.parse("2021-01-01")),
       myontaja = "10108",
       kieli = Some("fi"),
@@ -729,11 +730,11 @@ class EntityToUIConverterTest {
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritus(
       virtaTutkinto.tunniste,
-      KKSuoritusNimi(
-        virtaTutkinto.nimiFi.toJava,
-        virtaTutkinto.nimiSv.toJava,
-        virtaTutkinto.nimiEn.toJava
-      ),
+      Optional.of(KKSuoritusNimi(
+        virtaTutkinto.nimi.flatMap(_.fi).toJava,
+        virtaTutkinto.nimi.flatMap(_.sv).toJava,
+        virtaTutkinto.nimi.flatMap(_.en).toJava
+      )),
       UIOppilaitos(
         UIOppilaitosNimi(
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.fi),
@@ -743,7 +744,7 @@ class EntityToUIConverterTest {
         "1.2.3"
       ),
       SuoritusTila.KESKEN,
-      Optional.of(virtaTutkinto.aloitusPvm),
+      virtaTutkinto.aloitusPvm.toJava,
       virtaTutkinto.suoritusPvm.toJava,
       java.util.List.of()
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(opiskeluoikeus), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)

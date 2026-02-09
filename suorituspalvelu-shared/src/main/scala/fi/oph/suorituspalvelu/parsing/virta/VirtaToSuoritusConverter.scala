@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, Suoritus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKSynteettinenOpiskeluoikeus, KKTutkinto}
+import fi.oph.suorituspalvelu.business.{KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus, KKTutkinto, Suoritus}
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
@@ -64,9 +65,9 @@ object VirtaToSuoritusConverter {
   }
 
   private val TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT = Set("1", "2", "3", "4", "6", "7")
-
   private def isTutkintoonJohtava(opiskeluoikeus: VirtaOpiskeluoikeus) = TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeus.Tyyppi)
 
+  //Jos vain yksi tutkinto ja tavallisia opintosuorituksia, siirretään kaikki opintosuoritukset tutkinnon alle
   private def moveOpintojaksotUnderRootSuoritusIfNecessary(suoritukset: Seq[Suoritus]): Seq[Suoritus] = {
     val tutkinnot = suoritukset.collect { case t: KKTutkinto => t }
     val opintojaksot = suoritukset.collect { case o: KKOpintosuoritus => o }
@@ -77,23 +78,22 @@ object VirtaToSuoritusConverter {
     }
   }
 
+  // Virrasta ei palaudu keskeneräisiä suorituksia, joten luodaan sellainen opiskeluoikeuden tiedoista
   private def addKeskenerainenTutkinnonSuoritus(suoritukset: Seq[Suoritus], opiskeluoikeus: VirtaOpiskeluoikeus): List[Suoritus] = {
     val (opintojaksot, muutSuoritukset) = suoritukset.toList.partition(_.isInstanceOf[KKOpintosuoritus])
     val koulutusKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
     KKTutkinto(
       tunniste = UUID.randomUUID(),
-      nimiFi = None,
-      nimiEn = None,
-      nimiSv = None,
+      nimi = None,
       komoTunniste = koulutusKoodi.getOrElse(""),
       opintoPisteet = 0,
-      aloitusPvm = opiskeluoikeus.AlkuPvm,
+      aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
       suoritusPvm = None,
       myontaja = opiskeluoikeus.Myontaja,
       kieli = None,
       koulutusKoodi = koulutusKoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
-      suoritukset = opintojaksot.collect { case o: KKOpintosuoritus => o },
+      suoritukset = opintojaksot,
       avain = None
     ) :: muutSuoritukset
   }
@@ -135,12 +135,10 @@ object VirtaToSuoritusConverter {
       Some(viimeisinTutkintoKoulutuskoodi.map(viimeisinKoulutusKoodi => {
         KKTutkinto(
           tunniste = UUID.randomUUID(),
-          nimiFi = None,
-          nimiSv = None,
-          nimiEn = None,
+          nimi = None,
           komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
           opintoPisteet = 0,
-          aloitusPvm = opiskeluoikeus.AlkuPvm,
+          aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
           suoritusPvm = vahvistusPaiva,
           myontaja = opiskeluoikeus.Myontaja,
           kieli = None,
@@ -152,9 +150,7 @@ object VirtaToSuoritusConverter {
       }).getOrElse(KKOpintosuoritus(
         // TODO: Onko tarpeellista erotella tämä ja ylläoleva tutkinto?
         tunniste = UUID.randomUUID(),
-        nimiFi = getDefaultNimi(jaksonNimi).orElse(nimiFallback),
-        nimiSv = getNimi(jaksonNimi, "sv").orElse(nimiFallback),
-        nimiEn = getNimi(jaksonNimi, "en").orElse(nimiFallback),
+        nimi = virtaNimiToKielistetty(jaksonNimi),
         komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
         opintoPisteet = 0,
         opintoviikot = None,
@@ -243,26 +239,31 @@ object VirtaToSuoritusConverter {
       opiskeluoikeudet ++ synteettisetOpiskeluoikeudet
   }
 
+  private def virtaNimiToKielistetty(virtaNimi: Seq[VirtaNimi]) = {
+    val k = Kielistetty(
+      fi = getDefaultNimi(virtaNimi),
+      sv = getNimi(virtaNimi, "sv"),
+      en = getNimi(virtaNimi, "en")
+    )
+    if (k.fi.isDefined || k.sv.isDefined || k.en.isDefined) Some(k) else None
+  }
 
   private def toSuoritus(
     suoritus: fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus,
     suorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus],
     opiskeluoikeus: Option[fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus]
   ): Option[Suoritus] = {
-    (suoritus.Laji, opiskeluoikeus) match
-      // TODO: Onko ongelma, jos vaaditaan opiskeluoikeuden olemassaolo tässä?
-      case (1, Some(oo)) => Some(KKTutkinto(
+    suoritus.Laji match
+      case 1 => Some(KKTutkinto(
         tunniste = UUID.randomUUID(),
-        nimiFi = getDefaultNimi(suoritus.Nimi),
-        nimiSv = getNimi(suoritus.Nimi, "sv"),
-        nimiEn = getNimi(suoritus.Nimi, "en"),
+        nimi = virtaNimiToKielistetty(suoritus.Nimi),
         komoTunniste = suoritus.koulutusmoduulitunniste,
         opintoPisteet = suoritus.Laajuus.Opintopiste,
-        aloitusPvm = oo.AlkuPvm,
+        aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
         suoritusPvm = Some(suoritus.SuoritusPvm),
         myontaja = suoritus.Myontaja,
         kieli = Some(suoritus.Kieli),
-        koulutusKoodi = suoritus.Koulutuskoodi.orElse(latestJakso(oo).flatMap(_.Koulutuskoodi)),
+        koulutusKoodi = suoritus.Koulutuskoodi,
         opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
         suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
            suorituksetByAvain.get(sis.avain).flatMap(s =>
@@ -271,11 +272,9 @@ object VirtaToSuoritusConverter {
         }),
         avain = Some(suoritus.avain)
       ))
-      case (2, _) => Some(KKOpintosuoritus(
+      case 2 => Some(KKOpintosuoritus(
         tunniste = UUID.randomUUID(),
-        nimiFi = getDefaultNimi(suoritus.Nimi),
-        nimiSv = getNimi(suoritus.Nimi, "sv"),
-        nimiEn = getNimi(suoritus.Nimi, "en"),
+        nimi = virtaNimiToKielistetty(suoritus.Nimi),
         komoTunniste = suoritus.koulutusmoduulitunniste,
         opintoPisteet = suoritus.Laajuus.Opintopiste,
         opintoviikot = None,
