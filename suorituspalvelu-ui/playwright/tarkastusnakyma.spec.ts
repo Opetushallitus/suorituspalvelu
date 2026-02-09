@@ -141,15 +141,17 @@ test.describe('Tarkastusnäkymä', () => {
 
     const henkilotSidebar = getHenkilotSidebar(page);
 
-    await expect(henkilotSidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(henkilotSidebar.getByText('4 henkilöä')).toBeVisible();
 
     const navigationLinks = henkilotSidebar
       .getByRole('navigation', { name: 'Henkilövalitsin' })
       .getByRole('link');
 
-    await expect(navigationLinks.nth(0)).toHaveText('Olli Oppija 010296-1230');
+    await expect(navigationLinks.nth(0)).toHaveText(
+      'Maija Mallikas 030498-1232 9A',
+    );
     await expect(navigationLinks.nth(0)).toHaveAccessibleName(
-      'Olli Oppija, henkilötunnus: 010296-1230',
+      'Maija Mallikas, henkilötunnus: 030498-1232, luokka: 9A',
     );
     await expect(navigationLinks.nth(1)).toHaveText(
       'Matti Meikäläinen 020397-1231 9B',
@@ -158,10 +160,14 @@ test.describe('Tarkastusnäkymä', () => {
       'Matti Meikäläinen, henkilötunnus: 020397-1231, luokka: 9B',
     );
     await expect(navigationLinks.nth(2)).toHaveText(
-      'Maija Mallikas 030498-1232 9A',
+      'Matti Myöhäinen 030397-2342 9B',
     );
     await expect(navigationLinks.nth(2)).toHaveAccessibleName(
-      'Maija Mallikas, henkilötunnus: 030498-1232, luokka: 9A',
+      'Matti Myöhäinen, henkilötunnus: 030397-2342, luokka: 9B',
+    );
+    await expect(navigationLinks.nth(3)).toHaveText('Olli Oppija 010296-1230');
+    await expect(navigationLinks.nth(3)).toHaveAccessibleName(
+      'Olli Oppija, henkilötunnus: 010296-1230',
     );
   });
 
@@ -173,7 +179,7 @@ test.describe('Tarkastusnäkymä', () => {
       option: OPPILAITOS_NIMI,
     });
 
-    await expect(page.getByText('3 henkilöä')).toBeVisible();
+    await expect(page.getByText('4 henkilöä')).toBeVisible();
 
     await selectOption({
       page,
@@ -197,7 +203,7 @@ test.describe('Tarkastusnäkymä', () => {
 
     const henkilotSidebar = getHenkilotSidebar(page);
 
-    await expect(henkilotSidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(henkilotSidebar.getByText('4 henkilöä')).toBeVisible();
 
     const suodatusInput = getSuodatusInput(page);
 
@@ -219,8 +225,8 @@ test.describe('Tarkastusnäkymä', () => {
       .getByRole('navigation', { name: 'Henkilövalitsin' })
       .getByRole('link');
 
-    await expect(henkilotSidebar.getByText('3 henkilöä')).toBeVisible();
-    await expect(navigationLinks).toHaveCount(3);
+    await expect(henkilotSidebar.getByText('4 henkilöä')).toBeVisible();
+    await expect(navigationLinks).toHaveCount(4);
 
     const suodatusInput = getSuodatusInput(page);
 
@@ -231,8 +237,8 @@ test.describe('Tarkastusnäkymä', () => {
 
     await suodatusInput.clear();
 
-    await expect(henkilotSidebar.getByText('3 henkilöä')).toBeVisible();
-    await expect(navigationLinks).toHaveCount(3);
+    await expect(henkilotSidebar.getByText('4 henkilöä')).toBeVisible();
+    await expect(navigationLinks).toHaveCount(4);
   });
 
   test('oppijan valinta näyttää oppijan tiedot', async ({ page }) => {
@@ -245,7 +251,7 @@ test.describe('Tarkastusnäkymä', () => {
     });
 
     const sidebar = getHenkilotSidebar(page);
-    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(sidebar.getByText('4 henkilöä')).toBeVisible();
 
     await page
       .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
@@ -276,7 +282,7 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ page, name: 'Luokka', option: '9A' });
 
     const sidebar = getHenkilotSidebar(page);
-    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(sidebar.getByText('4 henkilöä')).toBeVisible();
 
     await sidebar
       .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
@@ -303,7 +309,7 @@ test.describe('Tarkastusnäkymä', () => {
     });
 
     await expect(
-      getHenkilotSidebar(page).getByText('3 henkilöä'),
+      getHenkilotSidebar(page).getByText('4 henkilöä'),
     ).toBeVisible();
 
     await selectOption({ page, name: 'Valmistumisvuosi', option: '2023' });
@@ -364,7 +370,7 @@ test.describe('Tarkastusnäkymä', () => {
 
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
 
-    await expect(page.getByText('3 henkilöä')).toBeVisible();
+    await expect(page.getByText('4 henkilöä')).toBeVisible();
 
     await selectOption({ page, name: 'Luokka', option: '9A' });
 
@@ -453,7 +459,7 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
 
     const sidebar = getHenkilotSidebar(page);
-    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(sidebar.getByText('4 henkilöä')).toBeVisible();
 
     // Valitaan henkilö
     await page
@@ -488,7 +494,7 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
 
     const sidebar = getHenkilotSidebar(page);
-    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(sidebar.getByText('4 henkilöä')).toBeVisible();
 
     // Valitaan henkilö
     await page
@@ -519,7 +525,7 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
 
     const sidebar = getHenkilotSidebar(page);
-    await expect(sidebar.getByText('3 henkilöä')).toBeVisible();
+    await expect(sidebar.getByText('4 henkilöä')).toBeVisible();
 
     // Valitaan henkilö
     await page

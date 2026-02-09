@@ -1,7 +1,7 @@
 import { useApiSuspenseQuery } from '@/lib/http-client';
 import { queryOptionsSearchOppilaitoksenOppijat } from '@/lib/suorituspalvelu-queries';
 import type { BackendOppijatSearchParams } from '@/lib/suorituspalvelu-service';
-import { isNonNullish, isNullish, pickBy } from 'remeda';
+import { isNonNullish, isNullish, pickBy, sortBy } from 'remeda';
 import {
   useLocation,
   useNavigate,
@@ -95,8 +95,9 @@ export const useOppilaitoksenOppijatSearchResult = () => {
   );
 
   const data = useMemo(() => {
+    let filtered = result.data;
     if (oppilaitos && vuosi && suodatus) {
-      return result.data.filter((oppija) => {
+      filtered = result.data.filter((oppija) => {
         const lowercaseSuodatus = suodatus.toLowerCase() ?? '';
         return (
           oppija.etunimet?.toLocaleLowerCase().includes(lowercaseSuodatus) ||
@@ -104,9 +105,11 @@ export const useOppilaitoksenOppijatSearchResult = () => {
           oppija?.hetu?.toLowerCase()?.includes(lowercaseSuodatus)
         );
       });
-    } else {
-      return result.data;
     }
+    return sortBy(
+      filtered ?? [],
+      (oppija) => oppija.luokat?.join(', ') + (oppija.sukunimi ?? ''),
+    );
   }, [oppilaitos, vuosi, suodatus, result.data]);
 
   return { ...result, data, totalCount: result.data.length };
