@@ -1,12 +1,12 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.{DeserializationContext, DeserializationFeature, JsonDeserializer, ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.time.LocalDate
@@ -21,31 +21,39 @@ case class VirtaOpiskeluoikeusKoulutusala(versio: String, koodi: Int)
 case class VirtaLaajuus(Opintopiste: BigDecimal)
 
 case class VirtaJakso(
-                       @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
-                       Rahoituslahde: Option[String],
-                       Koulutuskieli: Option[String],
-                       LoppuPvm: LocalDate,
-                       AlkuPvm: LocalDate,
-                       Koulutuskoodi: Option[String],
-                       koulutusmoduulitunniste: String,
-                       Koulutuskunta: Option[String]
+  @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
+  Rahoituslahde: Option[String],
+  Koulutuskieli: Option[String],
+  LoppuPvm: LocalDate,
+  AlkuPvm: LocalDate,
+  Koulutuskoodi: Option[String],
+  koulutusmoduulitunniste: String,
+  Koulutuskunta: Option[String]
 )
 
 case class VirtaOpiskeluoikeus(
-                                Laajuus: VirtaLaajuus,
-                                LoppuPvm: LocalDate,
-                                koulutusmoduulitunniste: String = "",
-                                @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[VirtaTila],
-                                @JacksonXmlElementWrapper(useWrapping = false) Jakso: Seq[VirtaJakso],
-                                Koulutusala: VirtaOpiskeluoikeusKoulutusala,
-                                Tyyppi: String,
-                                AlkuPvm: LocalDate,
-                                Myontaja: String,
-                                opiskelijaAvain: String,
-                                avain: String
+  Laajuus: VirtaLaajuus,
+  LoppuPvm: LocalDate,
+  koulutusmoduulitunniste: String = "",
+  @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[VirtaTila],
+  @JacksonXmlElementWrapper(useWrapping = false) Jakso: Seq[VirtaJakso],
+  Koulutusala: VirtaOpiskeluoikeusKoulutusala,
+  Tyyppi: String,
+  AlkuPvm: LocalDate,
+  Myontaja: String,
+  opiskelijaAvain: String,
+  avain: String
 )
 
-case class VirtaLukukausiIlmoittautuminen(IlmoittautumisPvm: LocalDate, opiskelijaAvain: String, LoppuPvm: LocalDate, Tila: String, opiskeluoikeusAvain: String, AlkuPvm: LocalDate, Myontaja: String)
+case class VirtaLukukausiIlmoittautuminen(
+  IlmoittautumisPvm: LocalDate,
+  opiskelijaAvain: String,
+  LoppuPvm: LocalDate,
+  Tila: String,
+  opiskeluoikeusAvain: String,
+  AlkuPvm: LocalDate,
+  Myontaja: String
+)
 
 case class VirtaOrganisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDecimal])
 
@@ -65,28 +73,34 @@ case class VirtaNimi(kieli: Option[String], nimi: String)
 case class VirtaSuoritusviite(sisaltyvaOpintosuoritusAvain: String)
 
 case class VirtaOpintosuoritus(
-                                Kieli: String,
-                                Organisaatio: Option[VirtaOrganisaatio],
-                                Tyyppi: String,
-                                SuoritusPvm: LocalDate,
-                                Arvosana: Option[VirtaArvosana],
-                                opiskeluoikeusAvain: Option[String], // puuttuu osasuorituksilta
-                                Koulutusala: Option[VirtaSuoritusKoulutusala],
-                                Laji: Int,
-                                koulutusmoduulitunniste: String,
-                                Opinnaytetyo: Option[String],
-                                Laajuus: VirtaLaajuus,
-                                HyvaksilukuPvm: Option[LocalDate],
-                                opiskelijaAvain: String,
-                                avain: String,
-                                Myontaja: String,
-                                Koulutuskoodi: Option[String],
-                                @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
-                                TKILaajuusHarjoittelu: Option[VirtaLaajuus],
-                                @JacksonXmlElementWrapper(useWrapping = false) Sisaltyvyys: Seq[VirtaSuoritusviite]
-                         )
+  Kieli: String,
+  Organisaatio: Option[VirtaOrganisaatio],
+  Tyyppi: String,
+  SuoritusPvm: LocalDate,
+  Arvosana: Option[VirtaArvosana],
+  opiskeluoikeusAvain: Option[String], // puuttuu osasuorituksilta
+  Koulutusala: Option[VirtaSuoritusKoulutusala],
+  Laji: Int,
+  koulutusmoduulitunniste: String,
+  Opinnaytetyo: Option[String],
+  Laajuus: VirtaLaajuus,
+  HyvaksilukuPvm: Option[LocalDate],
+  opiskelijaAvain: String,
+  avain: String,
+  Myontaja: String,
+  Koulutuskoodi: Option[String],
+  @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
+  TKILaajuusHarjoittelu: Option[VirtaLaajuus],
+  @JacksonXmlElementWrapper(useWrapping = false) Sisaltyvyys: Seq[VirtaSuoritusviite]
+)
 
-case class VirtaOpiskelija(Opiskeluoikeudet: Seq[VirtaOpiskeluoikeus], LukukausiIlmoittautumiset: Seq[VirtaLukukausiIlmoittautuminen], Opintosuoritukset: Option[Seq[VirtaOpintosuoritus]], Henkilotunnus: String, avain: String)
+case class VirtaOpiskelija(
+  Opiskeluoikeudet: Seq[VirtaOpiskeluoikeus],
+  LukukausiIlmoittautumiset: Seq[VirtaLukukausiIlmoittautuminen],
+  Opintosuoritukset: Option[Seq[VirtaOpintosuoritus]],
+  Henkilotunnus: String,
+  avain: String
+)
 
 case class VirtaOpiskelijanKaikkiTiedot(Virta: Seq[VirtaOpiskelija])
 
