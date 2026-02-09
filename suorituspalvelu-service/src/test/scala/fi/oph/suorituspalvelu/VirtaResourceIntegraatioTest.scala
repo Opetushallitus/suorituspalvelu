@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKTutkinto, Opiskeluoikeus, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
@@ -26,6 +26,31 @@ import scala.concurrent.Future
  * yksikkötasolla. Onnistuneiden kutsujen osalta validoidaan että kannan tila kutsun jälkeen vastaa oletusta.
  */
 class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
+
+  private def assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]]) = {
+    // Pitäisi syntyä kaksi opiskeluoikeutta:
+    // 1. opiskeluoikeus, jolla 1 synteettinen suoritus, jolla ei osasuorituksilta
+    // 2. opiskeluoikeus, jolla 1 tutkintosuoritus, jolla 49 osasuoritusta
+
+    val opiskeluoikeudetKannasta = suorituksetKannasta.head._2
+    Assertions.assertEquals(2, opiskeluoikeudetKannasta.size)
+
+    val opiskeluoikeudetOsasuorituksilla = opiskeluoikeudetKannasta.collect({
+      case oo: KKOpiskeluoikeus if oo.suoritukset.nonEmpty => oo
+    })
+
+    Assertions.assertEquals(2, opiskeluoikeudetOsasuorituksilla.size)
+
+    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
+      oo.suoritukset.size == 1 && oo.suoritukset.head.isInstanceOf[KKSynteettinenSuoritus]
+        && oo.suoritukset.head.asInstanceOf[KKSynteettinenSuoritus].suoritukset.isEmpty
+    }))
+
+    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
+      oo.suoritukset.size == 1 && oo.suoritukset.head.isInstanceOf[KKTutkinto]
+       && oo.suoritukset.head.asInstanceOf[KKTutkinto].suoritukset.size == 49
+    }))
+  }
 
   @MockitoBean
   var virtaClient: VirtaClient = null
@@ -66,27 +91,6 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncFailureResponse]))
 
-  private def assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]]) = {
-    // Pitäisi syntyä kaksi opiskeluoikeutta:
-    // 1. opiskeluoikeus, jolla 1 tutkintosuoritus, jolla ei osasuorituksilta
-    // 2. opiskeluoikeus, jolla 1 tutkintosuoritus, jolla 49 osasuoritusta
-    val opiskeluoikeudetKannasta = suorituksetKannasta.head._2
-    Assertions.assertEquals(2, opiskeluoikeudetKannasta.size)
-
-    val opiskeluoikeudetOsasuorituksilla = opiskeluoikeudetKannasta.collect({
-      case oo: KKOpiskeluoikeus if oo.suoritukset.nonEmpty => oo
-    })
-
-    Assertions.assertEquals(2, opiskeluoikeudetOsasuorituksilla.size)
-
-    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
-      oo.suoritukset.size == 1 && oo.suoritukset.head.asInstanceOf[KKTutkinto].suoritukset.size == 49
-    }))
-
-    Assertions.assertTrue(opiskeluoikeudetOsasuorituksilla.exists(oo => {
-      oo.suoritukset.size == 1 && oo.suoritukset.head.asInstanceOf[KKTutkinto].suoritukset.isEmpty
-    }))
-  }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaAllowedActuallySaveSuoritukset(): Unit = {

@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeusTila, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -663,9 +663,9 @@ class EntityToUIConverterTest {
       )
     }
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.UIOpiskeluoikeus(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusUI(
       virtaOpiskeluoikeus.tunniste,
-      UIOpiskeluoikeusNimi(
+      OpiskeluoikeusNimiUI(
         Optional.of(KOULUTUKSEN_NIMI_FI),
         Optional.empty(),
         Optional.of(KOULUTUKSEN_NIMI_EN)
@@ -681,7 +681,7 @@ class EntityToUIConverterTest {
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
       OpiskeluoikeusTila.VOIMASSA,
-      UIOpiskeluoikeusVirtaTila(
+      OpiskeluoikeusVirtaTilaUI(
         Optional.of(KOULUTUKSEN_TILA_FI),
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
@@ -728,9 +728,9 @@ class EntityToUIConverterTest {
       Set(virtaTutkinto)
     )
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritus(
+    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritusUI(
       virtaTutkinto.tunniste,
-      Optional.of(KKSuoritusNimi(
+      Optional.of(KKSuoritusNimiUI(
         virtaTutkinto.nimi.flatMap(_.fi).toJava,
         virtaTutkinto.nimi.flatMap(_.sv).toJava,
         virtaTutkinto.nimi.flatMap(_.en).toJava

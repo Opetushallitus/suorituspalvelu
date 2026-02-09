@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
-import fi.oph.suorituspalvelu.business.{KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus, KKTutkinto, Suoritus}
+import fi.oph.suorituspalvelu.business.{KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Suoritus}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.slf4j.LoggerFactory
 
@@ -82,19 +82,16 @@ object VirtaToSuoritusConverter {
   private def addKeskenerainenTutkinnonSuoritus(suoritukset: Seq[Suoritus], opiskeluoikeus: VirtaOpiskeluoikeus): List[Suoritus] = {
     val (opintojaksot, muutSuoritukset) = suoritukset.toList.partition(_.isInstanceOf[KKOpintosuoritus])
     val koulutusKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
-    KKTutkinto(
+    KKSynteettinenSuoritus(
       tunniste = UUID.randomUUID(),
       nimi = None,
       komoTunniste = koulutusKoodi.getOrElse(""),
-      opintoPisteet = 0,
       aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
       suoritusPvm = None,
       myontaja = opiskeluoikeus.Myontaja,
-      kieli = None,
       koulutusKoodi = koulutusKoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
       suoritukset = opintojaksot,
-      avain = None
     ) :: muutSuoritukset
   }
 
@@ -131,45 +128,17 @@ object VirtaToSuoritusConverter {
       val vahvistusPaiva = latestTila(opiskeluoikeus).filter(_.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT).map(_.AlkuPvm)
       val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(Ordering[LocalDate].reverse).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
       val nimiFallback = Some(opiskeluoikeus.koulutusmoduulitunniste.stripPrefix("#").stripSuffix("/").trim).filter(_.nonEmpty)
-      val koulutusKoodi = viimeisinTutkintoKoulutuskoodi.getOrElse("")
-      Some(viimeisinTutkintoKoulutuskoodi.map(viimeisinKoulutusKoodi => {
-        KKTutkinto(
-          tunniste = UUID.randomUUID(),
-          nimi = None,
-          komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
-          opintoPisteet = 0,
-          aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
-          suoritusPvm = vahvistusPaiva,
-          myontaja = opiskeluoikeus.Myontaja,
-          kieli = None,
-          koulutusKoodi = Some(viimeisinKoulutusKoodi),
-          opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
-          suoritukset = osaSuoritukset,
-          avain = None
-        )
-      }).getOrElse(KKOpintosuoritus(
-        // TODO: Onko tarpeellista erotella tämä ja ylläoleva tutkinto?
+      Some(KKSynteettinenSuoritus(
         tunniste = UUID.randomUUID(),
-        nimi = virtaNimiToKielistetty(jaksonNimi),
+        nimi = if (viimeisinTutkintoKoulutuskoodi.isDefined) None else virtaNimiToKielistetty(jaksonNimi),
         komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
-        opintoPisteet = 0,
-        opintoviikot = None,
+        aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
         suoritusPvm = vahvistusPaiva,
-        hyvaksilukuPvm = None,
         myontaja = opiskeluoikeus.Myontaja,
-        jarjestavaRooli = None,
-        jarjestavaKoodi = None,
-        jarjestavaOsuus = None,
-        arvosana = None,
-        arvosanaAsteikko = None,
-        kieli = "",
-        koulutusala = 1,
-        koulutusalaKoodisto = "koulutusala",
-        opinnaytetyo = false,
+        koulutusKoodi = viimeisinTutkintoKoulutuskoodi,
         opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
         suoritukset = osaSuoritukset,
-        avain = ""
-     )))
+      ))
     } else {
       None
     }

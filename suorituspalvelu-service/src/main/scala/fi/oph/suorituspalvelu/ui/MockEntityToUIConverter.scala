@@ -12,11 +12,11 @@ import scala.jdk.OptionConverters.*
 
 object MockEntityToUIConverter {
 
-  def getOpiskeluoikeudet(): List[UIOpiskeluoikeus] =
+  def getOpiskeluoikeudet(): List[OpiskeluoikeusUI] =
     List(
-      UIOpiskeluoikeus(
+      OpiskeluoikeusUI(
         tunniste = UUID.randomUUID(),
-        nimi = UIOpiskeluoikeusNimi(
+        nimi = OpiskeluoikeusNimiUI(
           fi = Optional.of("Kasvatust. maist., kasvatustiede"),
           sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
           en = Optional.of("Kasvatust. maist., kasvatustiede en")
@@ -32,17 +32,17 @@ object MockEntityToUIConverter {
         voimassaolonAlku = LocalDate.parse("2001-08-01"),
         voimassaolonLoppu = LocalDate.parse("2025-12-11"),
         OpiskeluoikeusTila.VOIMASSA,
-        UIOpiskeluoikeusVirtaTila(
+        OpiskeluoikeusVirtaTilaUI(
           Optional.of("aktiivinen"),
           Optional.of("aktiv"),
           Optional.of("active")
         )
       ))
 
-  def getKKTutkinnot(): List[KKSuoritus] =
-    List(KKSuoritus(
+  def getKKTutkinnot(): List[KKSuoritusUI] =
+    List(KKSuoritusUI(
       tunniste = UUID.randomUUID(),
-      nimi = Optional.of(KKSuoritusNimi(
+      nimi = Optional.of(KKSuoritusNimiUI(
         fi = Optional.of("Kasvatust. maist., kasvatustiede"),
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")
