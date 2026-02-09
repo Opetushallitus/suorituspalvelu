@@ -24,7 +24,7 @@ import scala.jdk.OptionConverters.*
 class EntityToUIConverterTest {
 
   val DUMMY_ORGANISAATIOPROVIDER = new OrganisaatioProvider {
-    override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] = Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
+    override def orgLookupTable(): Map[String, Organisaatio] = Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
   }
 
   val DUMMY_KOODISTOPROVIDER = new KoodistoProvider {
@@ -633,7 +633,7 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_SV = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] = {
+      override def orgLookupTable(): Map[String, Organisaatio] = {
         Map(ORGANISAATION_OID -> Organisaatio(ORGANISAATION_OID, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty, Seq.empty))
       }
     }
@@ -766,7 +766,7 @@ class EntityToUIConverterTest {
     )
 
     val organisaatioProvider = new OrganisaatioProvider {
-      override def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
+      override def orgLookupTable(): Map[String, Organisaatio] =
         Map(virtaTutkinto.myontaja -> Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty, Seq.empty))
     }
 
