@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -692,6 +692,58 @@ class EntityToUIConverterTest {
   @Test def testConvertKKTutkinto(): Unit = {
     val OPPIJANUMERO = "1.2.3"
 
+    val nestedOpintojakso = KKOpintosuoritus(
+      tunniste = UUID.randomUUID(),
+      nimi = Some(Kielistetty(
+        fi = Some("Nested opintojakso"),
+        sv = Some("Nested opintojakso sv"),
+        en = Some("Nested opintojakso en"))),
+      komoTunniste = "nested123",
+      opintoPisteet = 2.5,
+      opintoviikot = None,
+      suoritusPvm = Some(LocalDate.parse("2020-06-15")),
+      hyvaksilukuPvm = None,
+      myontaja = "10108",
+      jarjestavaRooli = None,
+      jarjestavaKoodi = None,
+      jarjestavaOsuus = None,
+      arvosana = Some("4"),
+      arvosanaAsteikko = None,
+      kieli = "fi",
+      koulutusala = 1,
+      koulutusalaKoodisto = "okmohjauksenala",
+      opinnaytetyo = false,
+      opiskeluoikeusAvain = Some("xxx002"),
+      suoritukset = Seq.empty,
+      avain = "nested-avain"
+    )
+
+    val opintojakso = KKOpintosuoritus(
+      tunniste = UUID.randomUUID(),
+      nimi = Some(Kielistetty(
+        fi = Some("Johdatus kasvatustieteisiin"),
+        sv = Some("Johdatus kasvatustieteisiin sv"),
+        en = Some("Johdatus kasvatustieteisiin en"))),
+      komoTunniste = "123",
+      opintoPisteet = 5.0,
+      opintoviikot = None,
+      suoritusPvm = Some(LocalDate.parse("2020-05-01")),
+      hyvaksilukuPvm = None,
+      myontaja = "10108",
+      jarjestavaRooli = None,
+      jarjestavaKoodi = None,
+      jarjestavaOsuus = None,
+      arvosana = Some("3"),
+      arvosanaAsteikko = None,
+      kieli = "fi",
+      koulutusala = 1,
+      koulutusalaKoodisto = "okmohjauksenala",
+      opinnaytetyo = false,
+      opiskeluoikeusAvain = Some("xxx002"),
+      suoritukset = Seq(nestedOpintojakso),
+      avain = "opintojakso-avain"
+    )
+
     val virtaTutkinto = KKTutkinto(
       tunniste = UUID.randomUUID(),
       nimi = Some(Kielistetty(
@@ -706,7 +758,7 @@ class EntityToUIConverterTest {
       kieli = Some("fi"),
       koulutusKoodi = Some("671103"),
       opiskeluoikeusAvain = Some("xxx002"),
-      suoritukset = Seq.empty,
+      suoritukset = Seq(opintojakso),
       avain = None
     )
 
@@ -746,7 +798,31 @@ class EntityToUIConverterTest {
       SuoritusTila.KESKEN,
       virtaTutkinto.aloitusPvm.toJava,
       virtaTutkinto.suoritusPvm.toJava,
-      java.util.List.of()
+      java.util.List.of(
+        KKOpintojaksoUI(
+          opintojakso.tunniste,
+          KKOpintojaksoNimiUI(
+            opintojakso.nimi.flatMap(_.fi).toJava,
+            opintojakso.nimi.flatMap(_.sv).toJava,
+            opintojakso.nimi.flatMap(_.en).toJava
+          ),
+          opintojakso.opintoPisteet,
+          opintojakso.arvosana.toJava,
+          java.util.List.of(
+            KKOpintojaksoUI(
+              nestedOpintojakso.tunniste,
+              KKOpintojaksoNimiUI(
+                nestedOpintojakso.nimi.flatMap(_.fi).toJava,
+                nestedOpintojakso.nimi.flatMap(_.sv).toJava,
+                nestedOpintojakso.nimi.flatMap(_.en).toJava
+              ),
+              nestedOpintojakso.opintoPisteet,
+              nestedOpintojakso.arvosana.toJava,
+              java.util.List.of()
+            )
+          )
+        )
+      )
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(opiskeluoikeus), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
 
