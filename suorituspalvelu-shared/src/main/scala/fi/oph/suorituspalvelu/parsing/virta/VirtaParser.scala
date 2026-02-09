@@ -13,16 +13,37 @@ import java.time.LocalDate
 
 case class Header()
 
-case class Tila(AlkuPvm: LocalDate, Koodi: String)
+case class Tila(AlkuPvm: LocalDate, LoppuPvm: LocalDate, Koodi: String)
 
 @JsonDeserialize(classOf[KoulutusalaDeserializer])
 case class OpiskeluoikeusKoulutusala(versio: String, koodi: Int)
 
 case class Laajuus(Opintopiste: BigDecimal)
 
-case class Jakso(Rahoituslahde: String, Koulutuskieli: String, LoppuPvm: LocalDate, AlkuPvm: LocalDate, Koulutuskoodi: Option[String], koulutusmoduulitunniste: String, Koulutuskunta: String)
+case class Jakso(
+  @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[Nimi],
+  Rahoituslahde: Option[String],
+  Koulutuskieli: Option[String],
+  LoppuPvm: LocalDate,
+  AlkuPvm: LocalDate,
+  Koulutuskoodi: Option[String],
+  koulutusmoduulitunniste: String,
+  Koulutuskunta: Option[String]
+)
 
-case class Opiskeluoikeus(Laajuus: Laajuus, LoppuPvm: LocalDate, @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[Tila], Jakso: Option[Jakso], Koulutusala: OpiskeluoikeusKoulutusala, Tyyppi: String, AlkuPvm: LocalDate, Myontaja: String, opiskelijaAvain: String, avain: String)
+case class Opiskeluoikeus(
+  Laajuus: Laajuus,
+  LoppuPvm: LocalDate,
+  koulutusmoduulitunniste: String = "",
+  @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[Tila],
+  @JacksonXmlElementWrapper(useWrapping = false) Jakso: Seq[Jakso],
+  Koulutusala: OpiskeluoikeusKoulutusala,
+  Tyyppi: String,
+  AlkuPvm: LocalDate,
+  Myontaja: String,
+  opiskelijaAvain: String,
+  avain: String
+)
 
 case class LukukausiIlmoittautuminen(IlmoittautumisPvm: LocalDate, opiskelijaAvain: String, LoppuPvm: LocalDate, Tila: String, opiskeluoikeusAvain: String, AlkuPvm: LocalDate, Myontaja: String)
 

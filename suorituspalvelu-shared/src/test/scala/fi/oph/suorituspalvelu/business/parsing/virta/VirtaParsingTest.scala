@@ -46,6 +46,8 @@ class VirtaParsingTest {
         |              <virta:Myontaja>01901</virta:Myontaja>
         |              <virta:Jakso>
         |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
+        |                <virta:AlkuPvm>2018-01-01</virta:AlkuPvm>
+        |                <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>
         |              </virta:Jakso>
         |            </virta:Opiskeluoikeus>
         |          </virta:Opiskeluoikeudet>
@@ -79,6 +81,8 @@ class VirtaParsingTest {
           |                <virta:Koodi>3</virta:Koodi>
           |              </virta:Tila>
           |              <virta:Jakso>
+          |                <virta:AlkuPvm>2018-01-01</virta:AlkuPvm>
+          |                <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>
           |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
           |              </virta:Jakso>
           |            </virta:Opiskeluoikeus>
@@ -104,16 +108,16 @@ class VirtaParsingTest {
           |      </virta:Virta>
           |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
           |  </SOAP-ENV:Body>
-          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaOpintosuoritus].suoritukset.head.asInstanceOf[VirtaTutkinto]
+          |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[VirtaOpiskeluoikeus].suoritukset.head.asInstanceOf[VirtaTutkinto]
 
     Assertions.assertEquals("532", suoritus.komoTunniste)
-    Assertions.assertEquals(LocalDate.parse("2017-05-31"), suoritus.suoritusPvm)
+    Assertions.assertEquals(Some(LocalDate.parse("2017-05-31")), suoritus.suoritusPvm)
     Assertions.assertEquals(BigDecimal.valueOf(210.0000000), suoritus.opintoPisteet)
     Assertions.assertEquals("10108", suoritus.myontaja)
     Assertions.assertEquals(Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"), suoritus.nimiFi)
     Assertions.assertEquals(Some("Bachelor of Health Care"), suoritus.nimiEn)
     Assertions.assertEquals("fi", suoritus.kieli)
-    Assertions.assertEquals("671103", suoritus.koulutusKoodi)
+    Assertions.assertEquals(Some("671103"), suoritus.koulutusKoodi)
 
   @Test def testVirtasuorituksenKentat(): Unit =
     val suoritus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData("""
@@ -131,6 +135,8 @@ class VirtaParsingTest {
           |                <virta:Koodi>3</virta:Koodi>
           |              </virta:Tila>
           |              <virta:Jakso>
+          |                <virta:AlkuPvm>2014-01-01</virta:AlkuPvm>
+          |                <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>
           |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
           |              </virta:Jakso>
           |            </virta:Opiskeluoikeus>
@@ -168,7 +174,7 @@ class VirtaParsingTest {
           |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
 
     Assertions.assertEquals("LOG13A 01SUO", suoritus.komoTunniste)
-    Assertions.assertEquals(LocalDate.parse("2015-05-31"), suoritus.suoritusPvm)
+    Assertions.assertEquals(Some(LocalDate.parse("2015-05-31")), suoritus.suoritusPvm)
     Assertions.assertEquals(BigDecimal.valueOf(4), suoritus.opintoPisteet)
     Assertions.assertEquals(Some("1"), suoritus.arvosana)
     Assertions.assertEquals(Some("Viisiportainen"), suoritus.arvosanaAsteikko)
@@ -191,7 +197,7 @@ class VirtaParsingTest {
     Assertions.assertEquals(false, suoritus.opinnaytetyo)
 
   @Test def testVirtasuoritusMuuArvosana(): Unit =
-    val suoritus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
+    val suoritukset = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
       """
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
         |  <SOAP-ENV:Body>
@@ -206,8 +212,10 @@ class VirtaParsingTest {
         |                <virta:AlkuPvm>2017-06-01</virta:AlkuPvm>
         |                <virta:Koodi>3</virta:Koodi>
         |              </virta:Tila>
-        |              <virta:Jakso>
+        |              <virta:Jakso koulutusmoduulitunniste="">
         |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
+        |                <virta:AlkuPvm>2014-01-01</virta:AlkuPvm>
+        |                <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>
         |              </virta:Jakso>
         |            </virta:Opiskeluoikeus>
         |          </virta:Opiskeluoikeudet>
@@ -251,8 +259,10 @@ class VirtaParsingTest {
         |      </virta:Virta>
         |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
         |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
+        |</SOAP-ENV:Envelope>""".stripMargin)).asInstanceOf[Seq[VirtaOpiskeluoikeus]].head.suoritukset
 
+    Assertions.assertEquals(1, suoritukset.size)
+    val suoritus = suoritukset.head.asInstanceOf[VirtaOpintosuoritus]
     Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
     Assertions.assertEquals(Some("Fail-Pass"), suoritus.arvosanaAsteikko)
 
@@ -281,9 +291,13 @@ class VirtaParsingTest {
         |              <virta:Myontaja>10089</virta:Myontaja>
         |              <virta:Jakso koulutusmoduulitunniste="">
         |                <virta:Koulutuskoodi>623404</virta:Koulutuskoodi>
+        |                <virta:AlkuPvm>2007-08-01</virta:AlkuPvm>
+        |                <virta:LoppuPvm>2010-09-20</virta:LoppuPvm>
         |              </virta:Jakso>
         |              <virta:Jakso koulutusmoduulitunniste="">
         |                <virta:Koulutuskoodi>623404</virta:Koulutuskoodi>
+        |                <virta:AlkuPvm>2010-09-20</virta:AlkuPvm>
+        |                <virta:LoppuPvm>2011-09-20</virta:LoppuPvm>
         |              </virta:Jakso>
         |              <virta:Koulutusala versio="ohjausala">3</virta:Koulutusala>
         |              <virta:Laajuus>

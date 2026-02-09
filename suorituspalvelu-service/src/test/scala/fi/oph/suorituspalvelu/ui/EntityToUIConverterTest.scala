@@ -700,7 +700,7 @@ class EntityToUIConverterTest {
       komoTunniste = "532",
       opintoPisteet = 30.5,
       aloitusPvm = LocalDate.parse("2020-01-01"),
-      suoritusPvm = LocalDate.parse("2021-01-01"),
+      suoritusPvm = Some(LocalDate.parse("2021-01-01")),
       myontaja = "10108",
       kieli = "fi",
       koulutusKoodi = Some("671103"),
@@ -742,9 +742,9 @@ class EntityToUIConverterTest {
         ),
         "1.2.3"
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTila.KESKEN,
       Optional.of(virtaTutkinto.aloitusPvm),
-      Optional.of(virtaTutkinto.suoritusPvm),
+      virtaTutkinto.suoritusPvm.toJava,
       java.util.List.of()
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(opiskeluoikeus), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
