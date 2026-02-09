@@ -56,38 +56,8 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
   def refreshKoskiChangesSince(ctx: SupaJobContext, since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
     val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
-
-    tiedot.grouped(100).flatMap(chunk => {
-      // haetaan relevantit aktiiviset haut
-      val oppijaOids = chunk.map(_.oppijaOid)
-      val oppijanHaut = Await.result(hakemuspalveluClient.getHenkilonHaut(oppijaOids), HAKEMUKSET_TIMEOUT)
-      val aktiivisetHaut = oppijanHaut.values.flatten.toSet
-        .filter(h => tarjontaIntegration.tarkistaHaunAktiivisuus(h))
-
-      // Aktiivisen haun loppuminen johtuu ajan kulumisesta eikä KOSKI-tietojen muutoksesta, joten jos halutaan että
-      // suoritustietoihin tehdään muutoksia (esim. merkataan viimeisen version voimassaolo päättyneeksi) ne täytyy tehdä
-      // muulla mekanismilla (esim. toistuva jobi)
-      def hasAktiivinenHaku(oppijaOid: String): Boolean =
-        oppijanHaut.get(oppijaOid)
-          .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
-
-      // Huomioita:
-      //  - jos päivitetään sen perusteella että KOSKI sanoo että ysiluokkalainen, pitää päivittää myös sillä perusteella
-      //    että SUPAn mukaan ysiluokkalainen, muuten tieto siitä ettei olekaan ysiluokkalainen ei päivity
-      //  - vaikka teoriassa yksilöinnit voisivat paljastaa että henkilö on jo muussa koulutuksessa, yksilöintitietoja
-      //    ei voi käyttää tiedon tallennuksesta päätettäessä koska yksilöinnit voivat muuttua
-      //  - tiedot lisäpistekoulutuksista päivitetään kuten ysiluokkalaiset koska näkyvät tarkastusnäkymässä
-      def isYsiluokkalainenTaiLisapiste(koskiData: KoskiDataForOppija): Boolean =
-        val opiskeluoikeudet = koskiData.opiskeluoikeudet.flatMap {
-          case Right(oo) => Some(KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(oo.data)), koodistoProvider))
-          case Left(e) => None
-        }.flatten
-        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeudet.toSet) ||
-        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid).values.flatten.toSet)
-      
-      val filtteroity = chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r))
-      processKoskiDataForOppijat(ctx, new SaferIterator(filtteroity.iterator), fetchedAt)
-    })
+    val filtteroity = onlyYsiluokkalainenLisapisteTaiAktiivinenHaku(tiedot)
+    processKoskiDataForOppijat(ctx, filtteroity, fetchedAt)
 
   private val refreshKoskiChangesSinceJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
     val (changed, exceptions) = refreshKoskiChangesSince(ctx, Instant.parse(alkaen))
@@ -120,7 +90,44 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
-    new SaferIterator(fileUrls.iterator).flatMap(fileUrl => processKoskiDataForOppijat(DUMMY_JOB_CTX, koskiIntegration.retryKoskiResultFile(fileUrl), fetchedAt))
+    new SaferIterator(fileUrls.iterator).flatMap(fileUrl =>
+      LOG.info(s"Prosessoidaan KOSKI-haun tulostiedosto $fileUrl")
+      val data = koskiIntegration.retryKoskiResultFile(fileUrl)
+      val filtteroity = onlyYsiluokkalainenLisapisteTaiAktiivinenHaku(data)
+      processKoskiDataForOppijat(DUMMY_JOB_CTX, filtteroity, fetchedAt)
+    )
+
+  private def onlyYsiluokkalainenLisapisteTaiAktiivinenHaku(data: SaferIterator[KoskiDataForOppija]): SaferIterator[KoskiDataForOppija] =
+    data.grouped(100).flatMap(chunk => {
+      // haetaan relevantit aktiiviset haut
+      val oppijaOids = chunk.map(_.oppijaOid)
+      val oppijanHaut = Await.result(hakemuspalveluClient.getHenkilonHaut(oppijaOids), HAKEMUKSET_TIMEOUT)
+      val aktiivisetHaut = oppijanHaut.values.flatten.toSet
+        .filter(h => tarjontaIntegration.tarkistaHaunAktiivisuus(h))
+
+      // Aktiivisen haun loppuminen johtuu ajan kulumisesta eikä KOSKI-tietojen muutoksesta, joten jos halutaan että
+      // suoritustietoihin tehdään muutoksia (esim. merkataan viimeisen version voimassaolo päättyneeksi) ne täytyy tehdä
+      // muulla mekanismilla (esim. toistuva jobi)
+      def hasAktiivinenHaku(oppijaOid: String): Boolean =
+        oppijanHaut.get(oppijaOid)
+          .exists(haut => haut.exists(haku => aktiivisetHaut.contains(haku)))
+
+      // Huomioita:
+      //  - jos päivitetään sen perusteella että KOSKI sanoo että ysiluokkalainen, pitää päivittää myös sillä perusteella
+      //    että SUPAn mukaan ysiluokkalainen, muuten tieto siitä ettei olekaan ysiluokkalainen ei päivity
+      //  - vaikka teoriassa yksilöinnit voisivat paljastaa että henkilö on jo muussa koulutuksessa, yksilöintitietoja
+      //    ei voi käyttää tiedon tallennuksesta päätettäessä koska yksilöinnit voivat muuttua
+      //  - tiedot lisäpistekoulutuksista päivitetään kuten ysiluokkalaiset koska näkyvät tarkastusnäkymässä
+      def isYsiluokkalainenTaiLisapiste(koskiData: KoskiDataForOppija): Boolean =
+        val opiskeluoikeudet = koskiData.opiskeluoikeudet.flatMap {
+          case Right(oo) => Some(KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(oo.data)), koodistoProvider))
+          case Left(e) => None
+        }.flatten
+        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeudet.toSet) ||
+        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid).values.flatten.toSet)
+
+      chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r))
+    })
 
   private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
     data.flatMap(oppija => {

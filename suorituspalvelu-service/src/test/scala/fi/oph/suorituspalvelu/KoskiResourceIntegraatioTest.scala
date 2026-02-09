@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.nio.charset.Charset
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.Optional
 import scala.io.Source
 import scala.concurrent.Future
@@ -266,11 +266,15 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testRefreshKoskiRetryAllowed(): Unit = {
     val fileUrl = "https://valid.url.fi"
     val oppijaNumero = "1_2_246_562_98_69863082363"
+    val valmistumisvuosi = LocalDate.now.getYear
 
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
-    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
+    val resultData = scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString
+      .replace("2024-08-15", s"${valmistumisvuosi-1}-08-15")
+      .replace("2025-05-31", s"${valmistumisvuosi}-05-31")
+
     Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq.empty)))
-    Mockito.when(koskiIntegration.retryKoskiResultFile(fileUrl)).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+    Mockito.when(koskiIntegration.retryKoskiResultFile(fileUrl)).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(resultData.getBytes())).next()._2))))
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_RETRY_PATH, KoskiRetryPayload(Optional.of(List(fileUrl).asJava))))
