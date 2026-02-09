@@ -409,6 +409,7 @@ sealed trait KKSuoritusBase(synteettinen: Boolean = false) extends Suoritus, Tyy
 case class KKSynteettinenSuoritus(
   tunniste: UUID,
   nimi: Option[Kielistetty],
+  supaTila: SuoritusTila,
   komoTunniste: String,
   aloitusPvm: Option[LocalDate],
   suoritusPvm: Option[LocalDate],
@@ -422,6 +423,7 @@ case class KKSynteettinenSuoritus(
 case class KKTutkinto(
   tunniste: UUID,
   nimi: Option[Kielistetty],
+  supaTila: SuoritusTila,
   komoTunniste: String,
   opintoPisteet: BigDecimal,
   aloitusPvm: Option[LocalDate],
@@ -438,6 +440,7 @@ case class KKTutkinto(
 case class KKOpintosuoritus(
   tunniste: UUID,
   nimi: Option[Kielistetty],
+  supaTila: SuoritusTila,
   komoTunniste: String,
   opintoPisteet: BigDecimal,
   opintoviikot: Option[BigDecimal],

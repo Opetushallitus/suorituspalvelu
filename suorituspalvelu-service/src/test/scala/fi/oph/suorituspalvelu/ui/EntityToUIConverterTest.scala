@@ -698,6 +698,7 @@ class EntityToUIConverterTest {
         fi = Some("Nested opintojakso"),
         sv = Some("Nested opintojakso sv"),
         en = Some("Nested opintojakso en"))),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       komoTunniste = "nested123",
       opintoPisteet = 2.5,
       opintoviikot = None,
@@ -724,6 +725,7 @@ class EntityToUIConverterTest {
         fi = Some("Johdatus kasvatustieteisiin"),
         sv = Some("Johdatus kasvatustieteisiin sv"),
         en = Some("Johdatus kasvatustieteisiin en"))),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       komoTunniste = "123",
       opintoPisteet = 5.0,
       opintoviikot = None,
@@ -750,6 +752,7 @@ class EntityToUIConverterTest {
         fi = Some("Sosiaali- ja terveysalan ammattikorkeakoulututkinto"),
         sv = Some("Bachelor of Health Care"),
         en = None)),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN,
       komoTunniste = "532",
       opintoPisteet = 30.5,
       aloitusPvm = Some(LocalDate.parse("2020-01-01")),
@@ -858,7 +861,7 @@ class EntityToUIConverterTest {
         ),
         oid = UIService.YTL_ORGANISAATIO_OID
       ),
-      tila = SuoritusTila.valueOf(yoTutkinto.supaTila.toString()),
+      tila = SuoritusTila.valueOf(yoTutkinto.supaTila.toString),
       valmistumispaiva = yoTutkinto.valmistumisPaiva.toJava,
       suorituskieli = "FI",
       yoKokeet = yoTutkinto.aineet.map(a => YOKoe(

@@ -152,6 +152,7 @@ object EntityToUIConverter {
             en = nimi.en.toJava
           )
         ).orElse(koodistoProviderOption.flatMap(getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus, _)))
+      case _ => None
     }).toJava
   }
 
@@ -189,55 +190,39 @@ object EntityToUIConverter {
     oo: KKOpiskeluoikeus,
     organisaatioProvider: OrganisaatioProvider,
     koodistoProvider: KoodistoProvider
-  ): Seq[KKSuoritusUI] = oo.suoritukset.toSeq match {
+  ): Seq[KKSuoritusUI] = oo.suoritukset.toSeq.flatMap {
     // opiskeluoikeuden kaikki päätason suoritukset tutkintoja -> näytetään erillisinä suorituksina
-    case tutkinnot if tutkinnot.forall(_.isInstanceOf[KKTutkinto]) =>
-      tutkinnot.collect {case t: KKTutkinto => t}.map(tutkinto =>
-        KKSuoritusUI(
-          tunniste = tutkinto.tunniste,
-          nimi = getKKSuoritusNimi(Some(tutkinto), Some(oo), Some(koodistoProvider)),
-          oppilaitos = getKKOppilaitos(tutkinto.myontaja, organisaatioProvider),
-          tila = convertKKSuoritusTila(oo),
-          aloituspaiva = tutkinto.aloitusPvm.toJava,
-          valmistumispaiva = tutkinto.suoritusPvm.toJava,
-          opintojaksot = createVirtaOpintojaksoHierarkia(tutkinto.suoritukset.toSeq),
-        ))
-
-    case Seq(s: KKOpintosuoritus) =>
-      Seq(KKSuoritusUI(
-        tunniste = s.tunniste,
-        nimi = getKKSuoritusNimi(Some(s), Some(oo), Some(koodistoProvider)),
-        oppilaitos = getKKOppilaitos(oo.myontaja, organisaatioProvider),
-        tila = convertKKSuoritusTila(oo),
-        aloituspaiva = Optional.of(oo.alkuPvm),
-        valmistumispaiva = s.suoritusPvm.toJava,
-        opintojaksot = createVirtaOpintojaksoHierarkia(s.suoritukset.toSeq)
+    case tutkinto: KKTutkinto =>
+      Some(KKSuoritusUI(
+        tunniste = tutkinto.tunniste,
+        nimi = getKKSuoritusNimi(Some(tutkinto), Some(oo), Some(koodistoProvider)),
+        oppilaitos = getKKOppilaitos(tutkinto.myontaja, organisaatioProvider),
+        tila = SuoritusTila.valueOf(tutkinto.supaTila.toString),
+        aloituspaiva = tutkinto.aloitusPvm.toJava,
+        valmistumispaiva = tutkinto.suoritusPvm.toJava,
+        opintojaksot = createVirtaOpintojaksoHierarkia(tutkinto.suoritukset.toSeq)
       ))
-
-    case Seq(s: KKSynteettinenSuoritus) =>
-      Seq(KKSuoritusUI(
-        tunniste = s.tunniste,
-        nimi = getKKSuoritusNimi(Some(s), Some(oo), Some(koodistoProvider)),
+    case suoritus: KKOpintosuoritus =>
+      Some(KKSuoritusUI(
+        tunniste = suoritus.tunniste,
+        nimi = getKKSuoritusNimi(Some(suoritus), Some(oo), Some(koodistoProvider)),
         oppilaitos = getKKOppilaitos(oo.myontaja, organisaatioProvider),
-        tila = convertKKSuoritusTila(oo),
+        tila = SuoritusTila.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
-        valmistumispaiva = s.suoritusPvm.toJava,
-        opintojaksot = createVirtaOpintojaksoHierarkia(s.suoritukset.toSeq)
+        valmistumispaiva = suoritus.suoritusPvm.toJava,
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
       ))
-
-    // Monta ei-tutkintosuoritusta opiskeluoikeudella -> näytetään yhtenä suorituksena
-    case suoritukset if suoritukset.nonEmpty =>
-      Seq(KKSuoritusUI(
-        tunniste = oo.tunniste,
-        nimi = getKKSuoritusNimi(None, Some(oo), Some(koodistoProvider)),
+    case suoritus: KKSynteettinenSuoritus =>
+      Some(KKSuoritusUI(
+        tunniste = suoritus.tunniste,
+        nimi = getKKSuoritusNimi(Some(suoritus), Some(oo), Some(koodistoProvider)),
         oppilaitos = getKKOppilaitos(oo.myontaja, organisaatioProvider),
-        tila = convertKKSuoritusTila(oo),
+        tila = SuoritusTila.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
-        valmistumispaiva = Optional.of(oo.loppuPvm),
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset.toSeq)
+        valmistumispaiva = suoritus.suoritusPvm.toJava,
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
       ))
-
-    case _ => Seq.empty
+    case _ => None
   }
 
   def getKKTutkinnot(

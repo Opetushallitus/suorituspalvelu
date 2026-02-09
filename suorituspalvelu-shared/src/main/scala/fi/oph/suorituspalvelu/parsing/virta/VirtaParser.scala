@@ -35,7 +35,9 @@ case class VirtaOpiskeluoikeus(
   Laajuus: VirtaLaajuus,
   LoppuPvm: LocalDate,
   koulutusmoduulitunniste: String = "",
+  // Tiloja on aina vähintään yksi
   @JacksonXmlElementWrapper(useWrapping = false) Tila: Seq[VirtaTila],
+  // Jaksoja voi olla nolla
   @JacksonXmlElementWrapper(useWrapping = false) Jakso: Seq[VirtaJakso],
   Koulutusala: VirtaOpiskeluoikeusKoulutusala,
   Tyyppi: String,
