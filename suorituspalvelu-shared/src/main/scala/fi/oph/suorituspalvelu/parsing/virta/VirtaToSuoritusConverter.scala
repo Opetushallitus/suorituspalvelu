@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeusTila, Opintosuoritus, Suoritus, VirtaOpiskeluoikeus, VirtaTutkinto}
-import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import org.slf4j.LoggerFactory
 
 import java.util.UUID
 
@@ -9,6 +9,7 @@ import java.util.UUID
  * Muuntaa Kosken suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
  */
 object VirtaToSuoritusConverter {
+  val LOG = LoggerFactory.getLogger(getClass)
 
   var VIRTA_TUTKINTO_LAJI = 1
   var VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
@@ -36,12 +37,39 @@ object VirtaToSuoritusConverter {
       case "5" => KKOpiskeluoikeusTila.PAATTYNYT  // luopunut
       case "6" => KKOpiskeluoikeusTila.PAATTYNYT  // päättynyt
 
-  def toOpiskeluoikeudet(virtaSuoritukset: VirtaSuoritukset): Seq[VirtaOpiskeluoikeus] = {
-    val suorituksetByOpiskeluoikeusTunniste = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o => o.Opintosuoritukset).flatten.groupBy(_.opiskeluoikeusAvain)
+  private def withOpiskeluoikeusAvaimet(suoritukset: Seq[fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus]): Seq[fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus] = {
+    val suoritusParentsByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus] =
+      suoritukset.flatMap(suoritus => suoritus.Sisaltyvyys.map(_.avain -> suoritus)).toMap
 
-    val oikeudet = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o =>
+    def getBranchOpiskeluoikeusAvain(suoritus: Option[fi.oph.suorituspalvelu.parsing.virta.Opintosuoritus]): Option[String] = {
+        suoritus match {
+          case Some(s) =>
+            if (s.opiskeluoikeusAvain == null || s.opiskeluoikeusAvain.isEmpty)
+              getBranchOpiskeluoikeusAvain(suoritusParentsByAvain.get(s.avain))
+            else
+              s.opiskeluoikeusAvain
+          case _ => None
+        }
+    }
+
+    suoritukset.map(suoritus => {
+      val parentOpiskeluoikeusAvain = getBranchOpiskeluoikeusAvain(Some(suoritus))
+      if (parentOpiskeluoikeusAvain.isEmpty) {
+       // Suoritukselle löytynyt opiskeluoikeus-avainta, eli suoritus ei kuulu mihinkään opiskeluoikeuteen
+       LOG.debug("Ei löydetty opiskeluoikeutta VIRTA-suoritukselle avaimella " + suoritus.avain)
+       suoritus
+      } else {
+        suoritus.copy(opiskeluoikeusAvain = parentOpiskeluoikeusAvain)
+      }
+    })
+
+  }
+
+  def toOpiskeluoikeudet(virtaSuoritukset: VirtaSuoritukset): Seq[VirtaOpiskeluoikeus] = {
+    val oikeudet = virtaSuoritukset.Body.OpiskelijanKaikkiTiedotResponse.Virta.flatMap(o => {
+      val opintosuoritukset = withOpiskeluoikeusAvaimet(o.Opintosuoritukset.getOrElse(Seq.empty))
       o.Opiskeluoikeudet.map(oo => {
-        val oikeudenSuoritukset: Set[Suoritus] = toSuoritukset(oo, suorituksetByOpiskeluoikeusTunniste.getOrElse(oo.avain, Seq.empty)).toSet
+        val oikeudenSuoritukset: Set[Suoritus] = toSuoritukset(oo, opintosuoritukset.filter(_.opiskeluoikeusAvain.getOrElse("") == oo.avain)).toSet
         val virtaTila = oo.Tila.maxBy(t => t.AlkuPvm).Koodi
         VirtaOpiskeluoikeus(
           UUID.randomUUID(),
@@ -54,7 +82,7 @@ object VirtaToSuoritusConverter {
           oo.Myontaja,
           oikeudenSuoritukset
         )
-      }))
+      })})
     oikeudet
   }
 
@@ -62,6 +90,7 @@ object VirtaToSuoritusConverter {
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opintosuoritukset.flatMap(suoritus => {
+        val osaSuoritukset = suoritus.Sisaltyvyys.map(_.avain)
         suoritus.Laji match
           case 1 => Some(VirtaTutkinto(
             UUID.randomUUID(),
@@ -75,7 +104,8 @@ object VirtaToSuoritusConverter {
             suoritus.Myontaja,
             suoritus.Kieli,
             suoritus.Koulutuskoodi.get,
-            suoritus.opiskeluoikeusAvain
+            suoritus.opiskeluoikeusAvain.get,
+            osaSuoritukset
           ))
           case 2 => Some(Opintosuoritus(
             UUID.randomUUID(),
@@ -96,8 +126,9 @@ object VirtaToSuoritusConverter {
             suoritus.Kieli,
             suoritus.Koulutusala.map(k => k.Koodi.koodi).get,
             suoritus.Koulutusala.map(k => k.Koodi.versio).get,
-            suoritus.Opinnaytetyo.map(o => "1".equals(o)).getOrElse(false),
-            suoritus.opiskeluoikeusAvain
+            suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
+            suoritus.opiskeluoikeusAvain.get,
+            osaSuoritukset
           ))
           case default => None
       })
