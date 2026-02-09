@@ -145,7 +145,7 @@ enum SuoritusTila:
 enum SuoritusTapa:
   case NAYTTOTUTKINTO
 
-case class OOOppilaitosNimi(
+case class UIOppilaitosNimi(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Tampereen yliopisto sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -154,9 +154,9 @@ case class OOOppilaitosNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class OOOppilaitos(
+case class UIOppilaitos(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: OOOppilaitosNimi,
+  @BeanProperty nimi: UIOppilaitosNimi,
   @(Schema @field)(example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oid: String
 )
@@ -185,7 +185,7 @@ case class UIOpiskeluoikeus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: UIOpiskeluoikeusNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: OOOppilaitos,
+  @BeanProperty oppilaitos: UIOppilaitos,
   @(Schema @field)(example = "2020-01-01", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty voimassaolonAlku: LocalDate,
   @(Schema @field)(example = "2024-12-31", requiredMode = RequiredMode.REQUIRED)
@@ -194,22 +194,6 @@ case class UIOpiskeluoikeus(
   @BeanProperty supaTila: OpiskeluoikeusTila,
   @(Schema @field)(example = "optio", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virtaTila: UIOpiskeluoikeusVirtaTila
-)
-
-case class KKOppilaitosNimi(
-  @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Tampereen yliopisto sv", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Tampereen yliopisto en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String],
-)
-
-case class KKOppilaitos(
-  @(Schema @field)(description = "Oppilaitoksen nimi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: KKOppilaitosNimi,
-  @(Schema @field)(description = "Oppilaitoksen tunniste", example = "1.2.3.4", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oid: String
 )
 
 case class KKOpintojaksoNimi(
@@ -249,7 +233,7 @@ case class KKSuoritus(
   @(Schema @field)(description = "Tutkinnon nimi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: KKSuoritusNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: KKOppilaitos,
+  @BeanProperty oppilaitos: UIOppilaitos,
   @(Schema @field)(description = "Tutkinnon tila", example = "KESKEN", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tila: SuoritusTila,
   @(Schema @field)(example = "2024-12-31")

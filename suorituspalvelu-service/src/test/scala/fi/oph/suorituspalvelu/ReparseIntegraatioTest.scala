@@ -89,6 +89,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       UUID.randomUUID(),
       "",
       "",
+      None,
       LocalDate.now(),
       LocalDate.now(),
       Koodi("arvo", "koodisto", None),

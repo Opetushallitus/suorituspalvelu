@@ -21,7 +21,13 @@ object OrganisaatioUtil {
           tyypit = org.tyypit
         )
         val childrenMap = flatten(org.children)
-        acc + (org.oid -> o) ++ childrenMap
+
+        val withOidItem = acc + (org.oid -> o)
+
+        org.oppilaitosKoodi match {
+          case Some(oppilaitosKoodi) => withOidItem + (oppilaitosKoodi -> o) ++ childrenMap
+          case _ => withOidItem ++ childrenMap
+        }
       }
     }
     flatten(hierarkia)

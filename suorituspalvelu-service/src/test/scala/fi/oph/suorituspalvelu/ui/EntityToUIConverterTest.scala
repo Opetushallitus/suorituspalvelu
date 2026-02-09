@@ -619,7 +619,8 @@ class EntityToUIConverterTest {
     val virtaOpiskeluoikeus = VirtaOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
       virtaTunniste = "",
-      koulutusKoodi = "671103",
+      tyyppiKoodi = "1",
+      koulutusKoodi = Some("671103"),
       alkuPvm = LocalDate.parse("2020-01-01"),
       loppuPvm = LocalDate.parse("2021-01-01"),
       virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
@@ -669,8 +670,8 @@ class EntityToUIConverterTest {
         Optional.empty(),
         Optional.of(KOULUTUKSEN_NIMI_EN)
       ),
-      OOOppilaitos(
-        OOOppilaitosNimi(
+      UIOppilaitos(
+        UIOppilaitosNimi(
           Optional.of(ORGANISAATION_NIMI_FI),
           Optional.of(ORGANISAATION_NIMI_SV),
           Optional.of(ORGANISAATION_NIMI_EN)
@@ -703,8 +704,8 @@ class EntityToUIConverterTest {
       myontaja = "10108",
       kieli = "fi",
       koulutusKoodi = "671103",
-      opiskeluoikeusAvain = "xxx002",
-      osaSuoritusAvaimet = Seq.empty,
+      opiskeluoikeusAvain = Some("xxx002"),
+      suoritukset = Seq.empty,
       avain = ""
     )
 
@@ -713,6 +714,19 @@ class EntityToUIConverterTest {
         Map(virtaTutkinto.myontaja -> Organisaatio("1.2.3", OrganisaatioNimi("fi", "sv", "en"), None, Seq.empty, Seq.empty))
     }
 
+    val opiskeluoikeus = VirtaOpiskeluoikeus(
+      null,
+      null,
+      null,
+      None,
+      null,
+      null,
+      Koodi("1", "", None),
+      KKOpiskeluoikeusTila.VOIMASSA,
+      virtaTutkinto.myontaja,
+      Set(virtaTutkinto)
+    )
+
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritus(
       virtaTutkinto.tunniste,
       KKSuoritusNimi(
@@ -720,19 +734,19 @@ class EntityToUIConverterTest {
         virtaTutkinto.nimiSv.toJava,
         virtaTutkinto.nimiEn.toJava
       ),
-      KKOppilaitos(
-        KKOppilaitosNimi(
+      UIOppilaitos(
+        UIOppilaitosNimi(
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.fi),
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.sv),
           Optional.of(organisaatioProvider.haeOrganisaationTiedot(virtaTutkinto.myontaja).get.nimi.en)
         ),
-        virtaTutkinto.myontaja
+        "1.2.3"
       ),
       SuoritusTila.VALMIS,
       Optional.of(virtaTutkinto.aloitusPvm),
       Optional.of(virtaTutkinto.suoritusPvm),
       java.util.List.of()
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(opiskeluoikeus), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
 
   @Test def testConvertYlioppilasTutkinto(): Unit = {
