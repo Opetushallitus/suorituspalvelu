@@ -62,8 +62,7 @@ case class VirtaSuoritusKoulutusala(Koodi: VirtaKoodi)
 @JsonDeserialize(classOf[NimiDeserializer])
 case class VirtaNimi(kieli: Option[String], nimi: String)
 
-@JsonDeserialize(classOf[SisaltyvyysDeserializer])
-case class VirtaSuoritusviite(avain: String)
+case class VirtaSuoritusviite(sisaltyvaOpintosuoritusAvain: String)
 
 case class VirtaOpintosuoritus(
                                 Kieli: String,
@@ -105,15 +104,6 @@ class KoodiDeserializer extends JsonDeserializer[VirtaKoodi] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaKoodi =
     val mixin = p.readValueAs(classOf[KoulutusAlaTaiKoodiMixIn])
     VirtaKoodi(mixin.versio, mixin.value)
-}
-
-class SisaltyvyysDeserializer extends JsonDeserializer[VirtaSuoritusviite] {
-  override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaSuoritusviite =
-    val value = p.readValueAs(classOf[Any])
-    value match
-      case sisaltyvyys: Map[_, _] =>
-        val sisaltyvyysMap = sisaltyvyys.asInstanceOf[Map[String, String]]
-        VirtaSuoritusviite(sisaltyvyysMap("sisaltyvaOpintosuoritusAvain"))
 }
 
 class NimiDeserializer extends JsonDeserializer[VirtaNimi] {
