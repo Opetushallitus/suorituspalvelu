@@ -57,7 +57,8 @@ object MockEntityToUIConverter {
       ),
       tila = KESKEN,
       aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
-      valmistumispaiva = Optional.empty()
+      valmistumispaiva = Optional.empty(),
+      opintojaksot = java.util.List.of()
     ))
 
   def getYOTutkinto(): List[YOTutkinto] =

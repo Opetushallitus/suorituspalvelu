@@ -730,7 +730,8 @@ class EntityToUIConverterTest {
       ),
       SuoritusTila.VALMIS,
       Optional.of(virtaTutkinto.aloitusPvm),
-      Optional.of(virtaTutkinto.suoritusPvm)
+      Optional.of(virtaTutkinto.suoritusPvm),
+      java.util.List.of()
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(VirtaOpiskeluoikeus(null, null, null, null, null, Koodi("1", "", None), KKOpiskeluoikeusTila.VOIMASSA, virtaTutkinto.myontaja, Set(virtaTutkinto))), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
 

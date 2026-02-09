@@ -250,6 +250,20 @@ export interface IIBTutkintoNimi {
   en?: string;
 }
 
+export interface IKKOpintojakso {
+  tunniste: string;
+  nimi: IKKOpintojaksoNimi;
+  laajuus: number;
+  arvosana?: string;
+  opintojaksot: IKKOpintojakso[];
+}
+
+export interface IKKOpintojaksoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IKKOppilaitos {
   nimi: IKKOppilaitosNimi;
   oid: string;
@@ -268,6 +282,7 @@ export interface IKKSuoritus {
   tila: SuoritusTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  opintojaksot: IKKOpintojakso[];
 }
 
 export interface IKKSuoritusNimi {
@@ -871,8 +886,8 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'EI_VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "EI_VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";
