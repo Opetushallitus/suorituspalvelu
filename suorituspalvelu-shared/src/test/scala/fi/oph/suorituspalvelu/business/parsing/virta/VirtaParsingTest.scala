@@ -191,8 +191,8 @@ class VirtaParsingTest {
 
     Assertions.assertEquals("fi", suoritus.kieli)
 
-    Assertions.assertEquals(5, suoritus.koulutusala)
-    Assertions.assertEquals("ohjausala", suoritus.koulutusalaKoodisto)
+    Assertions.assertEquals(Some(5), suoritus.koulutusala)
+    Assertions.assertEquals(Some("ohjausala"), suoritus.koulutusalaKoodisto)
 
     Assertions.assertEquals(Some(LocalDate.parse("2014-09-17")), suoritus.hyvaksilukuPvm)
     Assertions.assertEquals(false, suoritus.opinnaytetyo)

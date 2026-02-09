@@ -296,8 +296,8 @@ object VirtaToSuoritusConverter {
           arvosana = suoritus.Arvosana.map(_.arvosana),
           arvosanaAsteikko = suoritus.Arvosana.map(_.asteikko),
           kieli = suoritus.Kieli,
-          koulutusala = suoritus.Koulutusala.map(_.Koodi.koodi).get,
-          koulutusalaKoodisto = suoritus.Koulutusala.map(_.Koodi.versio).get,
+          koulutusala = suoritus.Koulutusala.map(_.Koodi.koodi),
+          koulutusalaKoodisto = suoritus.Koulutusala.map(_.Koodi.versio),
           opinnaytetyo = suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
           opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
           suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {

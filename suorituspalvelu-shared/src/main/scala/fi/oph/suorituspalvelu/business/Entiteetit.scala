@@ -453,8 +453,8 @@ case class KKOpintosuoritus(
   arvosana: Option[String],
   arvosanaAsteikko: Option[String],
   kieli: String,
-  koulutusala: Int,
-  koulutusalaKoodisto: String,
+  koulutusala: Option[Int],
+  koulutusalaKoodisto: Option[String],
   opinnaytetyo: Boolean,
   opiskeluoikeusAvain: Option[String],
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
