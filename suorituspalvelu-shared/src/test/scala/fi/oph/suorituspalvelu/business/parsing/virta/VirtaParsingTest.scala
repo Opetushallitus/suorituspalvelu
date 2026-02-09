@@ -268,6 +268,11 @@ class VirtaParsingTest {
     Assertions.assertEquals(Some("Fail-Pass"), suoritus.arvosanaAsteikko)
 
   @Test def testSuorituksetHierarkia(): Unit = {
+    // Varmistetaan että Virta-datasta muodostuu vastaavanlainen monitasoinen suoritushierarkia kuin Virrasta
+    // Taso 1: Tutkinto (HUMANISTISTEN TIETEIDEN KANDIDAATTI)
+    // Taso 2: Opintosuoritus (LOGOPEDIAN PERUS- JA AINEOPINNOT, 105 op)
+    // Taso 3: Opintosuoritus (LOGOPEDIAN PERUSOPINNOT, 25 op)
+    // Taso 4: Kaksi opintosuoritusta (yksittäiset opintojaksot, 3 op kumpikin)
     val suoritukset = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
       """
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -437,6 +442,11 @@ class VirtaParsingTest {
   }
 
   @Test def testMoveOpintojaksotUnderOnlyTutkinto(): Unit = {
+    // Testi varmistaa, että irralliset opintojaksot siirretään ainoan tutkinnon alle:
+    // Virta-datassa tutkinto ja opintojaksot ovat samalla tasolla ilman sisältyvyysviittauksia,
+    // mutta ne muunnetaan hierarkiseksi rakenteeksi:
+    // Taso 1: Tutkinto (Kasvatustieteiden kandidaatti, 180 op)
+    // Taso 2: Kaksi opintosuoritusta (MAT201 "Analyysi I" 5 op, FYS101 "Fysiikan perusteet" 10 op)
     val opiskeluoikeus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
       """
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -539,6 +549,11 @@ class VirtaParsingTest {
   }
 
   @Test def testAddSyntheticKeskenrainenTutkinnonSuoritus(): Unit = {
+    // Testi varmistaa, että aktiiviselle opiskeluoikeudelle luodaan synteettinen keskeneräinen tutkinto,
+    // kun Virta-datassa on opiskeluoikeus koulutuskoodilla mutta ei valmistunutta tutkinto-suoritusta.
+    // Opintojaksot siirretään synteettisen tutkinnon alle:
+    // Taso 1: Synteettinen kesken-tutkinto (751101, ei suorituspäivää, aloituspvm 2020-08-01)
+    // Taso 2: Yksi opintosuoritus (MAT101 "Matematiikan perusteet" 5 op)
     val opiskeluoikeus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
       """
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -602,32 +617,45 @@ class VirtaParsingTest {
     Assertions.assertEquals("MAT101", opintojakso.komoTunniste)
   }
 
-  @Test def testTutkintoonJohtavaWithoutKoulutuskoodi(): Unit = {
+  @Test def testTutkintoonJohtavaPaattynytWithSuoritukset(): Unit = {
+    // Varmistetaan, että päättyneelle tutkintoon johtavalle opiskeluoikeudelle ei luoda synteettistä suoritusta,
+    // kun Virta-datassa on Jakso-elementissä koulutuskoodi, mutta ei valmistunutta tutkintoa.
+    // - Opiskeluoikeus on tutkintoon johtava (tyyppi=1)
+    // - Opiskeluoikeus on päättynyt (tila=3)
+    // - Jakso sisältää koulutuskoodin
+    // - Löytyy kaksi suoritusta, jotka eivät ole tutkintoja, eivätkä niillä ole koulutuskoodia
+    // Taso 1: Kaksi opintosuoritusta (BIO102 "Biologian perusteet" 5 op ja MAT101 "Matematiikan perusteet" 10 op)
     val opiskeluoikeus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
       """
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
         |  <SOAP-ENV:Body>
         |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
         |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
-        |        <virta:Opiskelija avain="C11">
+        |        <virta:Opiskelija avain="C13">
         |          <virta:Opiskeluoikeudet>
-        |            <virta:Opiskeluoikeus opiskelijaAvain="C11" avain="xxx005">
-        |              <virta:AlkuPvm>2021-08-01</virta:AlkuPvm>
+        |            <virta:Opiskeluoikeus opiskelijaAvain="C13" avain="xxx007">
+        |              <virta:AlkuPvm>2019-08-01</virta:AlkuPvm>
+        |              <virta:LoppuPvm>2021-12-31</virta:LoppuPvm>
         |              <virta:Tila>
-        |                <virta:AlkuPvm>2021-08-01</virta:AlkuPvm>
+        |                <virta:AlkuPvm>2019-08-01</virta:AlkuPvm>
         |                <virta:Koodi>1</virta:Koodi>
+        |              </virta:Tila>
+        |              <virta:Tila>
+        |                <virta:AlkuPvm>2021-12-31</virta:AlkuPvm>
+        |                <virta:Koodi>3</virta:Koodi>
         |              </virta:Tila>
         |              <virta:Tyyppi>1</virta:Tyyppi>
         |              <virta:Myontaja>10089</virta:Myontaja>
         |              <virta:Jakso>
-        |                <virta:AlkuPvm>2021-08-01</virta:AlkuPvm>
-        |                <virta:Nimi kieli="fi">Erityinen koulutusohjelma</virta:Nimi>
+        |                <virta:Koulutuskoodi>751101</virta:Koulutuskoodi>
+        |                <virta:AlkuPvm>2019-08-01</virta:AlkuPvm>
+        |                <virta:Nimi kieli="fi">Kasvatustieteiden kandidaatti</virta:Nimi>
         |              </virta:Jakso>
         |            </virta:Opiskeluoikeus>
         |          </virta:Opiskeluoikeudet>
         |          <virta:Opintosuoritukset>
-        |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx005" opiskelijaAvain="C11" koulutusmoduulitunniste="BIO101" avain="op101">
-        |              <virta:SuoritusPvm>2022-01-15</virta:SuoritusPvm>
+        |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx007" opiskelijaAvain="C13" koulutusmoduulitunniste="BIO102" avain="op301">
+        |              <virta:SuoritusPvm>2020-05-15</virta:SuoritusPvm>
         |              <virta:Laajuus>
         |                <virta:Opintopiste>5.0</virta:Opintopiste>
         |              </virta:Laajuus>
@@ -635,8 +663,25 @@ class VirtaParsingTest {
         |                <virta:Viisiportainen>4</virta:Viisiportainen>
         |              </virta:Arvosana>
         |              <virta:Myontaja>10089</virta:Myontaja>
-        |              <virta:Laji>1</virta:Laji>
-        |              <virta:Nimi kieli="fi">Tutkinto ilman koulutuskoodia</virta:Nimi>
+        |              <virta:Laji>2</virta:Laji>
+        |              <virta:Nimi kieli="fi">Biologian perusteet</virta:Nimi>
+        |              <virta:Kieli>fi</virta:Kieli>
+        |              <virta:Koulutusala>
+        |                <virta:Koodi versio="ohjausala">1</virta:Koodi>
+        |              </virta:Koulutusala>
+        |              <virta:Opinnaytetyo>0</virta:Opinnaytetyo>
+        |            </virta:Opintosuoritus>
+        |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx007" opiskelijaAvain="C13" koulutusmoduulitunniste="MAT101" avain="op302">
+        |              <virta:SuoritusPvm>2020-09-20</virta:SuoritusPvm>
+        |              <virta:Laajuus>
+        |                <virta:Opintopiste>10.0</virta:Opintopiste>
+        |              </virta:Laajuus>
+        |              <virta:Arvosana>
+        |                <virta:Viisiportainen>5</virta:Viisiportainen>
+        |              </virta:Arvosana>
+        |              <virta:Myontaja>10089</virta:Myontaja>
+        |              <virta:Laji>2</virta:Laji>
+        |              <virta:Nimi kieli="fi">Matematiikan perusteet</virta:Nimi>
         |              <virta:Kieli>fi</virta:Kieli>
         |              <virta:Koulutusala>
         |                <virta:Koodi versio="ohjausala">1</virta:Koodi>
@@ -650,17 +695,77 @@ class VirtaParsingTest {
         |  </SOAP-ENV:Body>
         |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[KKOpiskeluoikeus]
 
-    Assertions.assertEquals(1, opiskeluoikeus.suoritukset.size)
-    val synteettinen = opiskeluoikeus.suoritukset.head.asInstanceOf[KKTutkinto]
+    Assertions.assertEquals(2, opiskeluoikeus.suoritukset.size)
+    val suoritusList = opiskeluoikeus.suoritukset.toList
+    val suoritus1 = suoritusList.head.asInstanceOf[KKOpintosuoritus]
 
-    Assertions.assertEquals(Some("Tutkinto ilman koulutuskoodia"), synteettinen.nimi.flatMap(_.fi))
-    Assertions.assertEquals(Some(LocalDate.parse("2022-01-15")), synteettinen.suoritusPvm)
-    Assertions.assertEquals("10089", synteettinen.myontaja)
-    Assertions.assertEquals(Some("xxx005"), synteettinen.opiskeluoikeusAvain)
-    Assertions.assertEquals(0, synteettinen.suoritukset.size)
+    Assertions.assertEquals(Some(Kielistetty(Some("Biologian perusteet"),None,None)), suoritus1.nimi)
+    Assertions.assertEquals(Some(LocalDate.parse("2020-05-15")), suoritus1.suoritusPvm)
+    Assertions.assertEquals("10089", suoritus1.myontaja)
+    Assertions.assertEquals(Some("xxx007"), suoritus1.opiskeluoikeusAvain)
+    Assertions.assertEquals(0, suoritus1.suoritukset.size)
+
+    val suoritus2 = suoritusList(1).asInstanceOf[KKOpintosuoritus]
+
+    Assertions.assertEquals(Some(Kielistetty(Some("Matematiikan perusteet"),None,None)), suoritus2.nimi)
+    Assertions.assertEquals(Some(LocalDate.parse("2020-09-20")), suoritus2.suoritusPvm)
+    Assertions.assertEquals("10089", suoritus2.myontaja)
+    Assertions.assertEquals(Some("xxx007"), suoritus2.opiskeluoikeusAvain)
+    Assertions.assertEquals(0, suoritus2.suoritukset.size)
   }
 
-  @Test def testPaattynytOpiskeluoikeusWithoutDegree(): Unit = {
+  @Test def testTutkintoonJohtavaPaattnynytNoSuoritukset(): Unit = {
+    // Varmistetaan, että päättyneelle tutkintoon johtavalle opiskeluoikeudelle luodaan synteettinen suoritus,
+    // kun opiskelukoikeudella ei ole lainkaan suorituksia.
+    // - Opiskeluoikeus on tutkintoon johtava (tyyppi=1)
+    // - Opiskeluoikeus on päättynyt (tila=3)
+    // - Opiskeluoikeudella ei ole suorituksia
+    // Taso 1: Yksi synteettinen suoritus
+    val opiskeluoikeus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
+      """
+        |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+        |  <SOAP-ENV:Body>
+        |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
+        |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
+        |        <virta:Opiskelija avain="C13">
+        |          <virta:Opiskeluoikeudet>
+        |            <virta:Opiskeluoikeus opiskelijaAvain="C13" avain="xxx007">
+        |              <virta:AlkuPvm>2019-08-01</virta:AlkuPvm>
+        |              <virta:LoppuPvm>2021-12-31</virta:LoppuPvm>
+        |              <virta:Tila>
+        |                <virta:AlkuPvm>2019-08-01</virta:AlkuPvm>
+        |                <virta:Koodi>1</virta:Koodi>
+        |              </virta:Tila>
+        |              <virta:Tila>
+        |                <virta:AlkuPvm>2021-12-31</virta:AlkuPvm>
+        |                <virta:Koodi>3</virta:Koodi>
+        |              </virta:Tila>
+        |              <virta:Tyyppi>1</virta:Tyyppi>
+        |              <virta:Myontaja>10089</virta:Myontaja>
+        |            </virta:Opiskeluoikeus>
+        |          </virta:Opiskeluoikeudet>
+        |        </virta:Opiskelija>
+        |      </virta:Virta>
+        |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
+        |  </SOAP-ENV:Body>
+        |</SOAP-ENV:Envelope>""".stripMargin)).head.asInstanceOf[KKOpiskeluoikeus]
+
+    Assertions.assertEquals(1, opiskeluoikeus.suoritukset.size)
+    val suoritus = opiskeluoikeus.suoritukset.head.asInstanceOf[KKSynteettinenSuoritus]
+
+    Assertions.assertEquals(None, suoritus.nimi) // Nimi on None kun koulutuskoodi on määritelty
+    Assertions.assertEquals(Some(LocalDate.parse("2021-12-31")), suoritus.suoritusPvm)
+    Assertions.assertEquals("10089", suoritus.myontaja)
+    Assertions.assertEquals(Some("xxx007"), suoritus.opiskeluoikeusAvain)
+    Assertions.assertEquals(0, suoritus.suoritukset.size)
+  }
+
+  @Test def testAddSyntheticWrapperForAvoinYliopistoOpintojakso(): Unit = {
+    // Varmistetaan, että päättyneelle ei-tutkintoon johtavalle "Avoimen opinnot"-tyyppiselle (13) opiskeluoikeudelle luodaan synteettinen suoritus.
+    // Virta-datassa on päättynyt opiskeluoikeus, jolle opintojaksot sisällytetään osasuorituksina (tyyppi=13, ei tutkintoon johtava, päättynyt 2021-12-31)
+    // Virta-datassa vain yksi suoritus, mutta se ei ole tutkinto, joten luodaan synteettinen suoritus:
+    // Taso 1: Synteettinen suoritus (ei koulutuskoodia, nimi "Kasvatustiede" opiskeluoikeudesta, ei suorituspäivää)
+    // Taso 2: Yksi opintosuoritus (PSY101 "Psykologian perusteet" 10 op)
     val opiskeluoikeus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaData(
       """
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -680,7 +785,7 @@ class VirtaParsingTest {
         |                <virta:AlkuPvm>2021-12-31</virta:AlkuPvm>
         |                <virta:Koodi>4</virta:Koodi>
         |              </virta:Tila>
-        |              <virta:Tyyppi>8</virta:Tyyppi>
+        |              <virta:Tyyppi>13</virta:Tyyppi>
         |              <virta:Myontaja>10089</virta:Myontaja>
         |              <virta:Jakso>
         |                <virta:Koulutuskoodi>751101</virta:Koulutuskoodi>
@@ -729,8 +834,6 @@ class VirtaParsingTest {
     Assertions.assertEquals("PSY101", opintojakso.komoTunniste)
     Assertions.assertEquals(Some("Psykologian perusteet"), opintojakso.nimi.flatMap(_.fi))
   }
-
-
 }
 
 
