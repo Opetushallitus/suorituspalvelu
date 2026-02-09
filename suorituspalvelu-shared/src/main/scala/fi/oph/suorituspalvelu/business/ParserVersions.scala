@@ -4,11 +4,11 @@ package fi.oph.suorituspalvelu.business
  * Eri lähdejärjestelmien parserin versiot.
  *
  * Versionumero pitää kasvattaa joka kertaa, kun parser/converter logiikka muuttuu
- * niin että se vaikuttaa lopoputulokseen.
+ * niin että se vaikuttaa lopputulokseen.
  */
 object ParserVersions {
   val KOSKI = 2
-  val VIRTA = 1
+  val VIRTA = 2
   val YTR = 1
   val SYOTETTY_PERUSOPETUS = 1
   val SYOTETYT_OPPIAINEET = 1
