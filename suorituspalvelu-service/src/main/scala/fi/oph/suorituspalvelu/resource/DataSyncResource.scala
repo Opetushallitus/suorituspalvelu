@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 
 import java.util.{Optional, UUID}
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROI_PATH, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAKU_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROI_PATH, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_HAUT_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAKU_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAKU_PATH, YTR_DATASYNC_HENKILOT_PATH}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, ReparseFailureResponse, ReparsePayload, ReparseSuccessResponse, SyncJob, SyncJobFailureResponse, SyncJobStatusResponse, SyncResponse, SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{KoskiService, ReparseService, VirtaService, YTRService}
@@ -123,12 +123,12 @@ class DataSyncResource {
   }
 
   @PostMapping(
-    path = Array(KOSKI_DATASYNC_HAKU_PATH),
+    path = Array(KOSKI_DATASYNC_HAUT_PATH),
     consumes = Array(MediaType.APPLICATION_JSON_VALUE),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Päivittää haun hakijoiden tiedot Koskesta",
+    summary = "Päivittää hakujen hakijoiden tiedot Koskesta",
     description = "SUPA seuraa KOSKI-tietoihin tapahtuvia muutoksia, ja tietojen päivitys SUPAan tapahtuu normaalisti\n" +
       "näiden muutosten seurauksena. Tämän endpointin avulla päivitys on kuitenkin mahdollista tehdä manuaalisesti esim.\n" +
       "virheiden selvittämistä tai nopeaa korjaamista varten.",
@@ -143,7 +143,7 @@ class DataSyncResource {
   def paivitaKoskiTiedotHaulle(@RequestBody bytes: Array[Byte], request: HttpServletRequest): ResponseEntity[SyncResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
-      LogContext(path = KOSKI_DATASYNC_HAKU_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+      LogContext(path = KOSKI_DATASYNC_HAUT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
@@ -154,29 +154,30 @@ class DataSyncResource {
           .flatMap(_ =>
             // deserialisoidaan
             try
-              Right(objectMapper.readValue(bytes, classOf[KoskiPaivitaTiedotHaullePayload]).hakuOid)
+              Right(objectMapper.readValue(bytes, classOf[KoskiPaivitaTiedotHaullePayload]).hakuOidit)
             catch
               case e: Exception =>
-                LOG.error("payloadin deserialisointi KOSKI-tietojen päivittämisessä haulle epäonnistui", e)
+                LOG.error("payloadin deserialisointi KOSKI-tietojen päivittämisessä hauille epäonnistui", e)
                 Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
-          .flatMap(hakuOid =>
+          .flatMap(hakuOids =>
             // validoidaan parametri
-            val virheet = Validator.validateHakuOid(hakuOid.toScala, true)
+            val virheet = hakuOids.toScala.map(oids => oids.asScala.flatMap(oid => Validator.validateHakuOid(Some(oid), true)).toSet)
+              .getOrElse(Set(Validator.VALIDATION_HAKUOID_TYHJA))
             if (virheet.isEmpty)
-              Right(hakuOid.get)
+              Right(hakuOids.get.asScala.toSet)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
-          .map(hakuOid => {
+          .map(hakuOids => {
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map("hakuOid" -> hakuOid), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
-            LOG.info(s"Haetaan Koski-tiedot haun $hakuOid henkilöille")
-            val jobId = koskiService.startRefreshKoskiForHaku(hakuOid)
+            AuditLog.log(user, Map("hakuOids" -> hakuOids.mkString(",")), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
+            LOG.info(s"Haetaan Koski-tiedot hakujen ${hakuOids.mkString(",")} henkilöille")
+            val jobId = koskiService.startRefreshKoskiForHaku(hakuOids)
             ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(jobId))
           })
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
     catch
       case e: Exception =>
-        LOG.error(s"KOSKI-tietojen päivitys haulle epäonnistui", e)
+        LOG.error(s"KOSKI-tietojen päivitys hauille epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(KoskiSyncFailureResponse(Seq(KOSKI_DATASYNC_500_VIRHE).asJava))
   }
 

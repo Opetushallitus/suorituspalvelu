@@ -75,18 +75,25 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
 
   def startRefreshForHenkilot(personOids: Set[String]): UUID = refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
 
-  def refreshKoskiForHaku(hakuOid: String, ctx: SupaJobContext): SaferIterator[SyncResultForHenkilo] =
-    val personOids =
-      Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
-        .flatMap(_.personOid).toSet
-    syncKoskiForHenkilot(personOids, ctx)
+  def refreshKoskiForHaut(hakuOids: Set[String], ctx: SupaJobContext): SaferIterator[SyncResultForHenkilo] =
+    new SaferIterator(hakuOids.iterator).flatMap(hakuOid => {
+      try
+        val personOids =
+          Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
+            .flatMap(_.personOid).toSet
+        syncKoskiForHenkilot(personOids, ctx)
+      catch
+        case e: Exception =>
+          LOG.error(s"Henkilöiden tietojen päivittäminen Koskesta haulle $hakuOid epäonnistui", e)
+          Seq.empty
+    })
 
-  private val refreshHakuJob = scheduler.registerJob("refresh-koski-for-haku", (ctx, hakuOid) => {
-    val (changed, exceptions) = refreshKoskiForHaku(hakuOid, ctx)
+  private val refreshHakuJob = scheduler.registerJob("refresh-koski-for-haku", (ctx, hakuOids) => {
+    val (changed, exceptions) = refreshKoskiForHaut(mapper.readValue(hakuOids, classOf[Set[String]]), ctx)
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
   }, Seq.empty)
 
-  def startRefreshKoskiForHaku(hakuOid: String): UUID = refreshHakuJob.run(hakuOid)
+  def startRefreshKoskiForHaku(hakuOids: Set[String]): UUID = refreshHakuJob.run(mapper.writeValueAsString(hakuOids))
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
