@@ -63,11 +63,17 @@ class TarjontaIntegration {
   }
 
   def tarkistaHaunAktiivisuus(hakuOid: String): Boolean = {
-    val ohjausparametrit: Ohjausparametrit = getOhjausparametrit(hakuOid)
-    val haku: Option[KoutaHaku] = getHaku(hakuOid)
-    haku.exists(h => hakuOnAktiivinen(h, ohjausparametrit))
+    try
+      val ohjausparametrit: Ohjausparametrit = getOhjausparametrit(hakuOid)
+      val haku: Option[KoutaHaku] = getHaku(hakuOid)
+      haku.exists(h => hakuOnAktiivinen(h, ohjausparametrit))
+    catch
+      case e: Exception =>
+        LOG.error(s"Virhe haun $hakuOid aktiivisuuden tarkistamisessa", e)
+        false
   }
 
+  
   //Haku on aktiivinen, jos sen ensimmäisen hakuajan alkuhetki on menneisyydessä
   // ja sen ohjausparametri PH_HKP = hakukierroksen päättymishetki on tulevaisuudessa.
   def hakuOnAktiivinen(haku: KoutaHaku, ohjausparametrit: Ohjausparametrit): Boolean = {
