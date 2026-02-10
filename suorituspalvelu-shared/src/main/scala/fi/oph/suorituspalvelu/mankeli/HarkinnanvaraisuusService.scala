@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHakukohde, Ohjausparametrit}
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 import java.time.{Instant, LocalDate, ZoneId}
@@ -32,6 +33,8 @@ case class HakemuksenHarkinnanvaraisuus(hakemusOid: String,
                                         hakutoiveet: List[HakutoiveenHarkinnanvaraisuus])
 
 object HarkinnanvaraisuusPaattely {
+
+  private val LOG = LoggerFactory.getLogger(HarkinnanvaraisuusPaattely.getClass)
 
   //Tämän jälkeen suoritettuja ma/ai yksilöllistämisiä ei enää huomioida harkinnanvaraisuuspäättelyssä.
   // Oppiaineen oppimäärän suoritukset (korotukset) kuitenkin huomioidaan myös tämän jälkeen.
@@ -96,6 +99,8 @@ object HarkinnanvaraisuusPaattely {
         case (true, None, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
         case (true, None, _, _) if ilmoitettuVanhaPeruskoulu && isAtaruIlmoitettuYksMatAi => HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI
         case (true, _, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
+          LOG.info(s"Harkinnanvaraisuuspäättely: käytetään hakemuksen ${hakemus.hakemusOid} " +
+            s"hakukohteessa ${hakutoive.hakukohdeOid} hakemukselta tullutta arvoa ${harkinnanvaraisuusHakukohteelleHakemukselta}")
           harkinnanvaraisuusHakukohteelleHakemukselta match {
             case "0" => HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET
             case "1" => HarkinnanvaraisuudenSyy.ATARU_SOSIAALISET_SYYT
