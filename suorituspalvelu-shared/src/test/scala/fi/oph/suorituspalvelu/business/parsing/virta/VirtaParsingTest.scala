@@ -235,6 +235,11 @@ class VirtaParsingTest {
         |                      <virta:Nimi>Hyväksytty</virta:Nimi>
         |                      <virta:LaskennallinenArvo>2.0</virta:LaskennallinenArvo>
         |                    </virta:AsteikkoArvosana>
+        |                    <virta:AsteikkoArvosana avain="10979858">
+        |                      <virta:Koodi>HYL</virta:Koodi>
+        |                      <virta:Nimi>Hylätty</virta:Nimi>
+        |                      <virta:LaskennallinenArvo>1.0</virta:LaskennallinenArvo>
+        |                    </virta:AsteikkoArvosana>
         |                  </virta:Asteikko>
         |                  <virta:Koodi>10979859</virta:Koodi>
         |                </virta:Muu>
