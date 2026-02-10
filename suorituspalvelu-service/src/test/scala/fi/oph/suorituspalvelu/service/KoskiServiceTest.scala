@@ -41,7 +41,7 @@ class KoskiServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testRetryPassesFilterWithAktiivinenHaku(): Unit =
     val oppijaOid = "1.2.246.562.24.00000000101"
-    val hakuOid = "1.2.246.562.29.00000000101"
+    val hakuOid = "1.2.246.562.29.00000000000000000101"
     val data = KoskiDataForOppija(oppijaOid, Seq(Left(new Exception("test data"))))
 
     Mockito.when(koskiIntegration.retryKoskiResultFile(s"$FILE_URL/a"))
@@ -88,4 +88,23 @@ class KoskiServiceTest extends BaseIntegraatioTesti {
 
     val results = koskiService.retryKoskiResultFiles(Seq(s"$FILE_URL/c"))
     Assertions.assertFalse(results.hasNext, "Henkilö ilman aktiivista hakua tai ysiluokkaa pitäisi filtteröidä pois")
+
+  /**
+   * d) Henkilö haulla jonka OID ei ole Kouta-muotoinen (ei 35 merkkiä) filtteröidään pois.
+   *
+   * Vanhan tarjonnan hauille on erikoiskäsittely (ne todetaan ei-aktiiviksi ja suodattuvat pois), koska muuten tapahtuisi
+   * virhe kun yritetään hakea ohjausparametreja joita vanhan tarjonnan hauilla ei ole.
+   */
+  @Test def testRetryFilteredOutWithNonKoutaHakuOid(): Unit =
+    val oppijaOid = "1.2.246.562.24.00000000104"
+    val hakuOid = "1.2.246.562.29.00000000104"
+    val data = KoskiDataForOppija(oppijaOid, Seq(Left(new Exception("test data"))))
+
+    Mockito.when(koskiIntegration.retryKoskiResultFile(s"$FILE_URL/d"))
+      .thenReturn(SaferIterator(Iterator(data)))
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaOid)))
+      .thenReturn(Future.successful(Map(oppijaOid -> Seq(hakuOid))))
+
+    val results = koskiService.retryKoskiResultFiles(Seq(s"$FILE_URL/d"))
+    Assertions.assertFalse(results.hasNext, "Ei-Kouta-muotoisen haun OID:n pitäisi filtteröidä pois")
 }
