@@ -39,15 +39,8 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
   def prosessoiMuuttuneetHakemukset(hakemukset: Seq[AtaruHakemusBaseFields]): Unit =
     if(hakemukset.nonEmpty)
       // KOSKI-tiedot haetaan aina
-      koskiService.startRefreshForHenkilot(hakemukset.map(_.personOid).toSet)
-
-      // Virta- ja YTR-tiedot haetaan henkilöille vain jos hakemus on KK-hakemus
-      val kkHakemusHenkilot = hakemukset
-        .filter(h => tarjontaIntegration.getHaku(h.applicationSystemId)
-          .exists(_.kohdejoukkoKoodiUri
-            .exists(_.contains("haunkohdejoukko_12")
-      ))).map(_.personOid).toSet
-      if(kkHakemusHenkilot.nonEmpty)
-        virtaService.startRefreshForHenkilot(kkHakemusHenkilot)
-        ytrService.startRefreshForHenkilot(kkHakemusHenkilot)
+      val henkilot = hakemukset.map(_.personOid).toSet
+      koskiService.startRefreshForHenkilot(henkilot)
+      virtaService.startRefreshForHenkilot(henkilot)
+      ytrService.startRefreshForHenkilot(henkilot)
 }
