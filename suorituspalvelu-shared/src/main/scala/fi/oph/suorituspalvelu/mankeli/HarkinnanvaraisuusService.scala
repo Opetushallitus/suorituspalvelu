@@ -95,7 +95,7 @@ object HarkinnanvaraisuusPaattely {
         case (true, None, Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), _) => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
         case (true, None, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
         case (true, None, _, _) if ilmoitettuVanhaPeruskoulu && isAtaruIlmoitettuYksMatAi => HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI
-        case (true, None, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
+        case (true, _, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
           harkinnanvaraisuusHakukohteelleHakemukselta match {
             case "0" => HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET
             case "1" => HarkinnanvaraisuudenSyy.ATARU_SOSIAALISET_SYYT

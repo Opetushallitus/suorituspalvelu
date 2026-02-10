@@ -348,7 +348,7 @@ class HarkinnanvaraisuusPaattelyTest {
       HAKUKOHDE_OID_2 -> createHakukohde(HAKUKOHDE_OID_2, true)
     )
 
-    val opiskeluoikeudet = Seq[Opiskeluoikeus]()
+    val opiskeluoikeudet = Seq(createOpiskeluoikeusWithOppimaara(false, true, SuoritusTila.VALMIS, Some(LocalDate.parse("2025-05-30"))))
     val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
 
     // Test for ATARU_OPPIMISVAIKEUDET
