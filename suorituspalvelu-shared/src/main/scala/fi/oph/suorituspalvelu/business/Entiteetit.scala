@@ -305,6 +305,7 @@ case class LukionOppimaara(
   oppilaitos: Oppilaitos,
   koskiTila: Koodi,
   supaTila: SuoritusTila,
+  aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
   suoritusKieli: Option[Koodi],
   koulusivistyskieli: Set[Koodi]
