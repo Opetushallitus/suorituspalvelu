@@ -40,7 +40,7 @@ object ApiConstants {
 
   final val YTR_DATASYNC_PATH                               = DATASYNC_PATH + "/ytr"
   final val YTR_DATASYNC_HENKILOT_PATH                      = YTR_DATASYNC_PATH + "/henkilot"
-  final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
+  final val YTR_DATASYNC_HAUT_PATH                          = YTR_DATASYNC_PATH + "/haut"
   final val YTR_DATASYNC_AKTIIVISET_PATH                    = YTR_DATASYNC_PATH + "/aktiiviset/"
   final val YTR_DATASYNC_500_VIRHE                          = "Tietojen päivitys YTR-järjestelmästä epäonnistui"
 
