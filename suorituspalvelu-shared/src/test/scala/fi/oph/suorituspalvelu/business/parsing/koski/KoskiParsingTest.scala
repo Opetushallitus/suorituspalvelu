@@ -52,7 +52,7 @@ class KoskiParsingTest {
       }
     }).next().headOption
 
-  private def getFirstSuoritusFromJson(data: String): Suoritus =
+  private def getFirstSuoritusFromJson(data: String): Option[Suoritus] =
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
     splitData.flatMap(henkilo => {
       henkilo.opiskeluoikeudet.map {
@@ -61,7 +61,7 @@ class KoskiParsingTest {
           KoskiToSuoritusConverter.toSuoritukset(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER, true)
         case Left(exception) => Assertions.fail(exception)
       }
-    }).next().head
+    }).next().headOption
 
   @Test def testAmmatillisetOpiskeluoikeudet(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
@@ -180,7 +180,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[AmmatillinenPerustutkinto]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenPerustutkinto]
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.koskiTila)
 
   @Test def testAmmatillisenTutkinnonKentat(): Unit =
@@ -249,7 +249,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[AmmatillinenPerustutkinto]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenPerustutkinto]
 
     Assertions.assertNotNull(tutkinto.tunniste)
     Assertions.assertEquals(Koodi("351301", "koulutus", Some(12)), tutkinto.koodi)
@@ -324,7 +324,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[AmmatillinenPerustutkinto]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenPerustutkinto]
 
     val osaSuoritus = tutkinto.osat.head
     Assertions.assertNotNull(osaSuoritus.tunniste)
@@ -409,7 +409,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[AmmatillinenPerustutkinto]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenPerustutkinto]
 
     val osaAlue = tutkinto.osat.head.osaAlueet.head
     Assertions.assertNotNull(osaAlue.tunniste)
@@ -476,7 +476,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[AmmattiTutkinto]
+        |""".stripMargin).get.asInstanceOf[AmmattiTutkinto]
 
     Assertions.assertNotNull(tutkinto.tunniste)
     Assertions.assertEquals(Koodi("437109", "koulutus", Some(12)), tutkinto.koodi)
@@ -544,7 +544,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[ErikoisAmmattiTutkinto]
+        |""".stripMargin).get.asInstanceOf[ErikoisAmmattiTutkinto]
 
     Assertions.assertNotNull(tutkinto.tunniste)
     Assertions.assertEquals(Koodi("437109", "koulutus", Some(12)), tutkinto.koodi)
@@ -613,7 +613,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[Telma]
+        |""".stripMargin).get.asInstanceOf[Telma]
 
     Assertions.assertNotNull(telma.tunniste)
     Assertions.assertEquals(Koodi("999903", "koulutus", Some(12)), telma.koodi)
@@ -760,13 +760,36 @@ class KoskiParsingTest {
         |                "koodistoUri": "kieli"
         |              }
         |            ]
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "9",
+        |                "nimi": {
+        |                  "fi": "9. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "9A",
+        |            "alkamispäivä": "2023-08-15",
+        |            "vahvistus": {
+        |              "päivä": "2024-06-01"
+        |            },
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
         |          }
         |        ]
         |      }
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaara]
 
     Assertions.assertNotNull(oppimaara.tunniste)
     Assertions.assertTrue(oppimaara.versioTunniste.isEmpty)
@@ -832,13 +855,33 @@ class KoskiParsingTest {
         |                "rajattuOppimäärä": true
         |              }
         |            ]
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "9",
+        |                "nimi": {
+        |                  "fi": "9. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "9A",
+        |            "alkamispäivä": "2023-08-15",
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
         |          }
         |        ]
         |      }
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaara]
 
     val oppiaine = oppimaara.aineet.head
     Assertions.assertNotNull(oppiaine.tunniste)
@@ -939,7 +982,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaara]
 
     Assertions.assertEquals("9G", oppimaara.luokka.get)
     Assertions.assertEquals(
@@ -1013,9 +1056,74 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaara]
 
     Assertions.assertEquals(Set.empty, oppimaara.lahtokoulut)
+
+  @Test def testPerusopetuksenOppimaaraEiYlaastetta(): Unit =
+    val result = getFirstSuoritusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2021-06-02",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "6",
+        |                "nimi": {
+        |                  "fi": "6. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "6A",
+        |            "alkamispäivä": "2019-08-15",
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin)
+    Assertions.assertTrue(result.isEmpty, "Ilman yläastetta ei pitäisi syntyä PerusopetuksenOppimaara-suoritusta")
 
   @Test def testNuortenPerusopetuksenOppiaineenOppimaara(): Unit =
     val oppimaara = getFirstSuoritusFromJson(
@@ -1081,7 +1189,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus]
 
     Assertions.assertNotNull(oppimaara.tunniste)
     Assertions.assertTrue(oppimaara.versioTunniste.isEmpty)
@@ -1196,7 +1304,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[PerusopetuksenOppimaara]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaara]
 
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Hatsalan klassillinen koulu"), None, None), "1.2.246.562.10.32727448402"), oppimaara.oppilaitos)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), oppimaara.koskiTila)
@@ -1315,7 +1423,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[Tuva]
+        |""".stripMargin).get.asInstanceOf[Tuva]
 
     Assertions.assertNotNull(tuva.tunniste)
     Assertions.assertEquals(Some("Tutkintokoulutukseen valmentava koulutuksen suoritus"), tuva.nimi.fi)
@@ -1462,7 +1570,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[VapaaSivistystyo]
+        |""".stripMargin).get.asInstanceOf[VapaaSivistystyo]
 
     Assertions.assertNotNull(vst.tunniste)
     Assertions.assertEquals(Some("Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille"), vst.nimi.fi)
@@ -1797,7 +1905,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[EBTutkinto]
+        |""".stripMargin).get.asInstanceOf[EBTutkinto]
 
     // Test basic tutkinto properties
     Assertions.assertNotNull(tutkinto.tunniste)
@@ -1921,7 +2029,7 @@ class KoskiParsingTest {
         |    ]
         |  }
         |]
-        |""".stripMargin).asInstanceOf[LukionOppimaara]
+        |""".stripMargin).get.asInstanceOf[LukionOppimaara]
 
     Assertions.assertEquals("1.2.246.562.10.57118763579", lukionOppimaara.oppilaitos.oid)
     Assertions.assertEquals(Kielistetty(Some("Testin lukio"), Some("Test gymnasium"), Some("Test high school")), lukionOppimaara.oppilaitos.nimi)

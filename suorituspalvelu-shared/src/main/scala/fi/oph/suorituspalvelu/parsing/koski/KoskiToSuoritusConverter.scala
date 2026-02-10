@@ -452,7 +452,7 @@ object KoskiToSuoritusConverter {
     }
   }
 
-  def toPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara = {
+  def toPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppimaara] = {
     val oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
       fi.oph.suorituspalvelu.business.Oppilaitos(
         o.nimi,
@@ -475,7 +475,14 @@ object KoskiToSuoritusConverter {
           case default => None
       })
 
-    PerusopetuksenOppimaara(
+    // Palautetaan oppimäärä ylipäänsä vain jos kyseessä yläaste. Ala-asteen oppimäärillä ei merkitystä 2. asteen
+    // hakeutumisen tai valintojen kannalta
+    val hasYlaaste = opiskeluoikeus.suoritukset.get
+      .filter(s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA)
+      .exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists(Set("7", "8", "9").contains))
+    if (!hasYlaaste) return None
+
+    Some(PerusopetuksenOppimaara(
       tunniste = UUID.randomUUID(),
       versioTunniste = None,
       oppilaitos = oppilaitos,
@@ -491,7 +498,7 @@ object KoskiToSuoritusConverter {
       lahtokoulut = lahtokoulut,
       syotetty = false,
       vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
-    )
+    ))
   }
 
   val YHTEISET_AINEET = List(
@@ -696,7 +703,7 @@ object KoskiToSuoritusConverter {
           suoritus.tyyppi.koodiarvo match
             case SUORITYSTYYPPI_AMMATILLINENTUTKINTO              => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
             case SUORITYSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIMAARA  => Some(toAikuistenPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider))
-            case SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA           => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider))
+            case SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA           => toPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider)
             case SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA         => None // vuosiluokkien tiedot käsitellään osana perusopetuksen oppimäärää
             case SUORITYSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA
               if suoritus.arviointi.exists(_.nonEmpty)            => Some(toPerusopetuksenOppiaineenOppimaara(opiskeluoikeus, suoritus))
