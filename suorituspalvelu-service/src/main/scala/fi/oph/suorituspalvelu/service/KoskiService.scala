@@ -11,7 +11,7 @@ import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConvert
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.InitializingBean
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.stereotype.Component
 import slick.jdbc.JdbcBackend
@@ -25,7 +25,7 @@ import scala.concurrent.duration.DurationInt
 @Component
 class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
                    tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider,
-                   opiskeluoikeusParsingService: OpiskeluoikeusParsingService) {
+                   opiskeluoikeusParsingService: OpiskeluoikeusParsingService, @Value("${integrations.koski.cron}") cron: String) {
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
 
@@ -51,7 +51,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
           LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
           prevStart.map(_.toString).orNull
     } else start.toString
-  }, "0 */2 * * * *")
+  }, cron)
 
   def refreshKoskiChangesSince(ctx: SupaJobContext, since: Instant): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
