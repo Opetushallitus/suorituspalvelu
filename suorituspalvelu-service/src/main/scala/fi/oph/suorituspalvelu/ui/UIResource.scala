@@ -192,7 +192,9 @@ class UIResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid.get), AuditOperation.HaeVuodetUI, None)
 
-            val vuodet = uiService.haeVuodet(oppilaitosOid.get)
+            // rekisterinpitäjille ei rajoiteta ohjausvelvollisuuden keston perusteella, muille rajoitetaan
+            val paivamaara = if(securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
+            val vuodet = uiService.haeVuodet(paivamaara, oppilaitosOid.get)
             Right(ResponseEntity.status(HttpStatus.OK).body(VuodetSuccessResponse(vuodet.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[VuodetResponse]])
@@ -246,7 +248,9 @@ class UIResource {
               UI_LUOKAT_VUOSI_PARAM_NAME -> vuosi.get
             ), AuditOperation.HaeLuokatUI, None)
 
-            val luokat = uiService.haeLuokat(oppilaitosOid.get, vuosi.get.toInt)
+            // rekisterinpitäjille ei rajoiteta ohjausvelvollisuuden keston perusteella, muille rajoitetaan
+            val paivamaara = if(securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
+            val luokat = uiService.haeLuokat(paivamaara, oppilaitosOid.get, vuosi.get.toInt)
             Right(ResponseEntity.status(HttpStatus.OK).body(LuokatSuccessResponse(luokat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuokatResponse]])

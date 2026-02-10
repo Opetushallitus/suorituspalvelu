@@ -385,6 +385,33 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
+  private def haeLahtokoulunOppilaatStatement(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Option[Int], luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): slick.jdbc.SQLActionBuilder =
+    sql"""
+        WITH
+        -- Generoidaan lista ohjausvastuista joilla oikea näkyvyys, ts. päättymispäivää seuraavan vuoden tammikuun loppuun
+        henkilot_loppu AS NOT MATERIALIZED (
+          SELECT
+            henkilo_oid,
+            valmistumisvuosi,
+            luokka,
+            CASE
+              WHEN suorituksen_loppu IS NULL THEN 'infinity'::date
+              ELSE (SELECT DATE_TRUNC('year', suorituksen_loppu) + INTERVAL '1 year 1 months') -- ohjausvastuun loppua seuraavan vuoden tammikuun loppu
+            END as loppu
+          FROM lahtokoulut
+          WHERE oppilaitos_oid=$oppilaitosOid
+          AND (${!valmistumisVuosi.isDefined} OR valmistumisvuosi=$valmistumisVuosi)
+          AND (${!luokka.isDefined} OR luokka=$luokka)
+          AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
+          AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
+          AND (${!lahtokouluTyypit.isDefined} OR suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(tyypit => tyypit.map(p => s"'$p'").mkString(",")).getOrElse("")}]))
+        )
+        -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
+        SELECT henkilo_oid, valmistumisvuosi, luokka
+        FROM henkilot_loppu
+        WHERE ${paivamaara.isEmpty} OR loppu>${paivamaara.getOrElse(LocalDate.now).toString}::date
+       """
+
   /**
    * Palauttaa henkilöt jotka lähettävien katselijalla on oikeus nähdä tarkastusnäkymässä ohjausvelvollisuuden tai jälkitarkastelun (ks. alla)
    * perusteella. Haku perustuu seuraaviin oletuksiin:
@@ -403,32 +430,28 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
    * @param arvosanaPuuttuu       jos tämä true haetaan vain henkilöitä joiden ohjausvelvollisuuden perusteena on perusopetuksen suorittaminen ja henkilöllä ei ole perusopetuksen oppimäärän suoritusta jolta löytyvät kaikki yhteisten aineiden arvosanat (ei siis tarvitse olla sama suoritus jos henkilö esim. vaihtanut koulua)
    *                              jos false niin haetaan kaikkia
    */
-  def haeLahtokoulunOppilaat(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[(String, Option[String])] =
-    Await.result(db.run(
-      sql"""
-          WITH
-          -- Generoidaan lista ohjausvastuista joilla oikea näkyvyys, ts. päättymispäivää seuraavan vuoden tammikuun loppuun
-          henkilot_loppu AS NOT MATERIALIZED (
-            SELECT
-              henkilo_oid,
-              luokka,
-              CASE
-                WHEN suorituksen_loppu IS NULL THEN 'infinity'::date
-                ELSE (SELECT DATE_TRUNC('year', suorituksen_loppu) + INTERVAL '1 year 1 months') -- ohjausvastuun loppua seuraavan vuoden tammikuun loppu
-              END as loppu
-            FROM lahtokoulut
-            WHERE oppilaitos_oid=$oppilaitosOid
-            AND valmistumisvuosi=$valmistumisVuosi
-            AND (${!luokka.isDefined} OR luokka=$luokka)
-            AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
-            AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
-            AND suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
-          )
-          -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
-          SELECT henkilo_oid, luokka
-          FROM henkilot_loppu
-          WHERE ${paivamaara.isEmpty} OR loppu>${paivamaara.getOrElse(LocalDate.now).toString}::date
-         """.as[(String, Option[String])]), DB_TIMEOUT).toSet
+  def haeLahtokoulunOppilaat(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Option[Int], luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[(String, Option[String])] =
+    Await.result(db.run(haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, valmistumisVuosi, luokka, keskenTaiKeskeytynyt, arvosanaPuuttuu, Some(lahtokouluTyypit))
+      .as[(String, Int, Option[String])]), DB_TIMEOUT).map((henkiloOid, valmistumisVuosi, luokka) => (henkiloOid, luokka)).toSet
+
+  /**
+   * Palauttaa vuodet joille löytyy henkilöitä jotka lähettävien katselijalla on oikeus nähdä tarkastusnäkymässä, ks. haeLahtokoulunOppilaat.
+   */
+  def haeVuodet(paivamaara: Option[LocalDate], oppilaitosOid: String, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): Set[String] =
+    val s = sql"""SELECT DISTINCT valmistumisvuosi::text FROM (""".concat(
+      haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, None, None, false, false, lahtokouluTyypit)).concat(
+      sql""") AS vuodet""")
+    Await.result(db.run(s.as[String]), DB_TIMEOUT).toSet
+
+  /**
+   * Palauttaa luokat joille löytyy henkilöitä jotka lähettävien katselijalla on oikeus nähdä tarkastusnäkymässä, ks. haeLahtokoulunOppilaat.
+   */
+  def haeLuokat(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Int, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): Set[String] = {
+    val s = sql"""SELECT DISTINCT luokka FROM (""".concat(
+      haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, Some(valmistumisVuosi), None, false, false, lahtokouluTyypit)).concat(
+      sql""") AS luokat""")
+    Await.result(db.run(s.as[String]), DB_TIMEOUT).toSet
+  }
 
   def haeLahtokoulut(henkiloOidit: Set[String]): Set[Lahtokoulu] =
     Await.result(db.run(
@@ -455,24 +478,6 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           SELECT DISTINCT oppilaitos_oid
           FROM lahtokoulut
           WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
-        """.as[String]), DB_TIMEOUT).toSet
-
-  def haeVuodet(oppilaitosOid: String, lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[String] =
-    Await.result(db.run(
-      sql"""
-          SELECT DISTINCT valmistumisVuosi
-          FROM lahtokoulut
-          WHERE oppilaitos_oid=$oppilaitosOid
-          AND suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
-        """.as[String]), DB_TIMEOUT).toSet
-
-  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] =
-    Await.result(db.run(
-      sql"""
-          SELECT DISTINCT luokka
-          FROM lahtokoulut
-          WHERE oppilaitos_oid=$oppilaitosOid
-          AND valmistumisvuosi=$valmistumisVuosi
         """.as[String]), DB_TIMEOUT).toSet
 
   def haeHenkilotJaLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[(String, String)] =

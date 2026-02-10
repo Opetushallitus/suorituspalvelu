@@ -242,6 +242,11 @@ enum LahtokouluTyyppi(val defaultLuokka: Option[String]):
   case TELMA extends LahtokouluTyyppi(Some("TELMA"))
   case VAPAA_SIVISTYSTYO extends LahtokouluTyyppi(Some("Vapaa sivistystyö"))
 
+object LahtokouluTyyppi {
+
+  val LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
+}
+
 case class Lahtokoulu(
   suorituksenAlku: LocalDate,
   suorituksenLoppu: Option[LocalDate],
