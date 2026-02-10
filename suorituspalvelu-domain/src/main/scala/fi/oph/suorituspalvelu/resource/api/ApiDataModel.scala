@@ -93,8 +93,8 @@ case class YTRPaivitaTiedotHenkilollePayload(
 }
 
 case class VirtaPaivitaTiedotHaullePayload(
-  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty hakuOid: Optional[String]) {
+  @(Schema @field)(example = "[\"" + ESIMERKKI_HAKU_OID + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOidit: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
 }
