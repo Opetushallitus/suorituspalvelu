@@ -62,7 +62,11 @@ class TarjontaIntegration {
     haut.values.filter(h => hakuOnAktiivinen(h, ohjausparametrit(h.oid))).toSeq
   }
 
+  private val KOUTA_OID_LENGTH = 35
+
   def tarkistaHaunAktiivisuus(hakuOid: String): Boolean = {
+    // Vanhan tarjonnan haulle erikoiskäsittely koska ohjausparametrien hausta seuraa virhe (koska niitä ei ole).
+    if (hakuOid.length != KOUTA_OID_LENGTH) return false
     val ohjausparametrit: Ohjausparametrit = getOhjausparametrit(hakuOid)
     val haku: Option[KoutaHaku] = getHaku(hakuOid)
     haku.exists(h => hakuOnAktiivinen(h, ohjausparametrit))
