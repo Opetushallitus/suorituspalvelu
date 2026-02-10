@@ -14,7 +14,8 @@ import scala.concurrent.duration.DurationInt
 @Component
 class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: HakemuspalveluClient, tarjontaIntegration: TarjontaIntegration,
                         virtaService: VirtaService, ytrService: YTRService, koskiService: KoskiService,
-                        @Value("${integrations.ataru.cron}") cron: String) {
+                        @Value("${integrations.ataru.cron}") cron: String,
+                        @Value("${integrations.ataru.ytr-refresh-enabled}") ytrRefreshEnabled: Boolean) {
 
   val LOG = LoggerFactory.getLogger(classOf[HakemuksetService])
 
@@ -42,5 +43,5 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
       val henkilot = hakemukset.map(_.personOid).toSet
       koskiService.startRefreshForHenkilot(henkilot)
       virtaService.startRefreshForHenkilot(henkilot)
-      ytrService.startRefreshForHenkilot(henkilot)
+      if (ytrRefreshEnabled) ytrService.startRefreshForHenkilot(henkilot)
 }

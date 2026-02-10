@@ -32,6 +32,7 @@ integrations:
     cron: "0 */2 * * * *"
   ataru:
     cron: "0 */2 * * * *"
+    ytr-refresh-enabled: false
   ytr:
     username: username
     password: password
