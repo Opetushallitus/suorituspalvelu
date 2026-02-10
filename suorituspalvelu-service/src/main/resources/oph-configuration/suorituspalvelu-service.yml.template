@@ -34,6 +34,10 @@ integrations:
     username: {{suorituspalvelu_app_username}}
     password: {{suorituspalvelu_app_password}}
     base-url: {{suorituspalvelu_koski_base_url}}
+    cron: {{suorituspalvelu_koski_polling_cron}}
+  ataru:
+    cron: {{suorituspalvelu_ataru_polling_cron}}
+    ytr-refresh-enabled: {{suorituspalvelu_ataru_ytr_refresh_enabled}}
   virta:
     jarjestelma: {{suoritusrekisteri_virta_jarjestelma}}
     tunnus: {{suoritusrekisteri_virta_tunnus}}

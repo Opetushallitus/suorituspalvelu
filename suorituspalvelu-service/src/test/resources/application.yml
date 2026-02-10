@@ -29,6 +29,10 @@ integrations:
     username: username
     password: password
     base-url: https://virkailija.testiopintopolku.fi
+    cron: "0 */2 * * * *"
+  ataru:
+    cron: "0 */2 * * * *"
+    ytr-refresh-enabled: false
   ytr:
     username: username
     password: password

@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemusBaseFields, HakemuspalveluClient}
 import fi.oph.suorituspalvelu.jobs.SupaScheduler
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 import java.time.Instant
@@ -12,7 +13,9 @@ import scala.concurrent.duration.DurationInt
 
 @Component
 class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: HakemuspalveluClient, tarjontaIntegration: TarjontaIntegration,
-                        virtaService: VirtaService, ytrService: YTRService, koskiService: KoskiService) {
+                        virtaService: VirtaService, ytrService: YTRService, koskiService: KoskiService,
+                        @Value("${integrations.ataru.cron}") cron: String,
+                        @Value("${integrations.ataru.ytr-refresh-enabled}") ytrRefreshEnabled: Boolean) {
 
   val LOG = LoggerFactory.getLogger(classOf[HakemuksetService])
 
@@ -32,20 +35,13 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
           prevStart.map(_.toString).orNull
     else
       start.toString
-  }, "0 */2 * * * *")
+  }, cron)
 
   def prosessoiMuuttuneetHakemukset(hakemukset: Seq[AtaruHakemusBaseFields]): Unit =
     if(hakemukset.nonEmpty)
       // KOSKI-tiedot haetaan aina
-      koskiService.startRefreshForHenkilot(hakemukset.map(_.personOid).toSet)
-
-      // Virta- ja YTR-tiedot haetaan henkilöille vain jos hakemus on KK-hakemus
-      val kkHakemusHenkilot = hakemukset
-        .filter(h => tarjontaIntegration.getHaku(h.applicationSystemId)
-          .exists(_.kohdejoukkoKoodiUri
-            .exists(_.contains("haunkohdejoukko_12")
-      ))).map(_.personOid).toSet
-      if(kkHakemusHenkilot.nonEmpty)
-        virtaService.startRefreshForHenkilot(kkHakemusHenkilot)
-        ytrService.startRefreshForHenkilot(kkHakemusHenkilot)
+      val henkilot = hakemukset.map(_.personOid).toSet
+      koskiService.startRefreshForHenkilot(henkilot)
+      virtaService.startRefreshForHenkilot(henkilot)
+      if (ytrRefreshEnabled) ytrService.startRefreshForHenkilot(henkilot)
 }
