@@ -2,8 +2,8 @@ package fi.oph.suorituspalvelu.jobs
 
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{ExecutionComplete, ExecutionOperations, FailureHandler, Task, TaskDescriptor}
-import com.github.kagkarlsson.scheduler.task.helper.{OneTimeTask, Tasks}
-import com.github.kagkarlsson.scheduler.task.schedule.{CronSchedule, Schedules}
+import com.github.kagkarlsson.scheduler.task.helper.{RecurringTask, Tasks}
+import com.github.kagkarlsson.scheduler.task.schedule.Schedules
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.jobs.SupaScheduler.LOG
 import fi.oph.suorituspalvelu.service.ErrorService
@@ -85,8 +85,8 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
   
   var scheduler: Scheduler = null
   var taskDescriptors: Map[String, TaskDescriptor[String]] = Map.empty
-  var tasks: List[Task[String]] = List.empty
-  var schedules: Map[String, CronSchedule] = Map.empty
+  var tasks: List[Task[?]] = List.empty
+  var recurringTasks: List[RecurringTask[String]] = List.empty
 
   /**
    * Rekisteröi erikseen ajettavan jobin
@@ -96,7 +96,7 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
    * @param retryTimeouts uudelleenyritysten odotusajat
    * @return
    */
-  def registerJob(name: String, job: SupaJob, retryTimeouts: Seq[Duration]): JobHandle = {
+  def registerJob(name: String, job: SupaJob, retryTimeouts: Seq[Duration]): JobHandle = this.synchronized {
     val taskDescriptor = TaskDescriptor.of(name, classOf[String])
     taskDescriptors = taskDescriptors + (name -> TaskDescriptor.of(name, classOf[String]))
     tasks = tasks :+ Tasks.oneTime(taskDescriptor)
@@ -129,15 +129,23 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
    * @param job       lambda (yleensä) joka sisältää jobin toiminnallisuuden
    * @param schedule  cron-aikataulu
    */
-  def scheduleJob(name: String, job: SupaScheduledJob, schedule: String): Unit = {
-    schedules = schedules + (name -> Schedules.cron(schedule))
-    registerJob(name, (ctx, data) => {
-      var result: Option[String] = None
-      try
-        result = Some(job.run(ctx, data))
-      finally
-        runJob(name, result.getOrElse(data), schedules(name).getInitialExecutionTime(Instant.now()))
-    }, Seq.empty)
+  def scheduleJob(name: String, job: SupaScheduledJob, schedule: String): Unit = this.synchronized {
+    val task = Tasks.recurring(TaskDescriptor.of(name, classOf[String]), Schedules.cron(schedule))
+      .executeStateful((instance, _) => {
+        var errors: List[SupaJobError] = List.empty
+        val jobId = UUID.randomUUID()
+        val ctx: SupaJobContext = new SupaJobContext {
+          override def updateProgress(progress: Double): Unit = kantaOperaatiot.updateJobStatus(jobId, name, progress)
+          override def reportError(message: String, exception: Option[Exception]): Unit = this.synchronized { errors = errors :+ SupaJobError(message, exception) }
+          override def getJobId: String = jobId.toString
+        }
+        ctx.updateProgress(0.0)
+        val result = job.run(ctx, instance.getData)
+        ctx.updateProgress(1.0)
+        errorService.reportErrors(name, errors.map(e => (e.message, e.exception)))
+        result
+      })
+    recurringTasks = recurringTasks :+ task
   }
 
   /**
@@ -146,15 +154,13 @@ class SupaScheduler(threads: Int, pollingInterval: Duration, dataSource: javax.s
   def start(): Unit =
     this.scheduler = Scheduler
       .create(dataSource, tasks.asJava)
+      .startTasks(recurringTasks.asJava)
       .threads(threads)
       .pollingInterval(pollingInterval)
       .enableImmediateExecution()
       .registerShutdownHook()
       .build();
     this.scheduler.start();
-    taskDescriptors
-      .filter((name, _) => schedules.contains(name))
-      .foreach((name, _) => runJob(name, null, schedules(name).getInitialExecutionTime(Instant.now())))
 
   /**
    * Sammuttaa schedulerin
