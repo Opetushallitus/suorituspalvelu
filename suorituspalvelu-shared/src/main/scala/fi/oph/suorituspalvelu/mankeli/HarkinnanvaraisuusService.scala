@@ -38,7 +38,7 @@ object HarkinnanvaraisuusPaattely {
 
   //Tämän jälkeen suoritettuja ma/ai yksilöllistämisiä ei enää huomioida harkinnanvaraisuuspäättelyssä.
   // Oppiaineen oppimäärän suoritukset (korotukset) kuitenkin huomioidaan myös tämän jälkeen.
-  val YKS_MAT_AI_SUORITUS_ENNEN_DATE = LocalDate.parse("2025-08-01")
+  val YKS_MAT_AI_SUORITUS_ENNEN_DATE = LocalDate.parse("2025-07-31")
 
   val ataruMatematiikkaJaAidinkieliYksilollistettyQuestions = Set("matematiikka-ja-aidinkieli-yksilollistetty_1", "matematiikka-ja-aidinkieli-yksilollistetty_2")
   val ataruHakukohdeHarkinnanvaraisuusPrefix = "harkinnanvaraisuus-reason_"

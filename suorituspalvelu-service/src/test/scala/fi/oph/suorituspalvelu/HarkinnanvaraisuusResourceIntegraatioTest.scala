@@ -222,8 +222,26 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid))
   }
 
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA))
-  @Test def testHaeHarkinnanvaraisuudetWithValintaKayttaja(): Unit = {
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA_CRUD))
+  @Test def testHaeHarkinnanvaraisuudetWithValintaKayttajaCrud(): Unit = {
+    val hakemusOid = "1.2.246.562.11.01000000000000023251"
+
+    // Setup minimal mocks to pass
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any()))
+      .thenReturn(Future.successful(Seq.empty))
+
+    // Execute the request
+    mvc.perform(jsonPost(ApiConstants.VALINNAT_HARKINNANVARAISUUS_PATH, HakemustenHarkinnanvaraisuudetPayload(List(hakemusOid).asJava))
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // Verify that service method was called
+    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA_READ_UPDATE))
+  @Test def testHaeHarkinnanvaraisuudetWithValintaKayttajaReadUpdate(): Unit = {
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
 
     // Setup minimal mocks to pass
