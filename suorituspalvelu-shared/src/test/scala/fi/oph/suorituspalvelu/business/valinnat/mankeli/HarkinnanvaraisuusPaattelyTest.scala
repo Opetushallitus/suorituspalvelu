@@ -98,7 +98,7 @@ class HarkinnanvaraisuusPaattelyTest {
       HarkinnanvaraisuusPaattely.hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet, vahvistettuViimeistaan))
   }
 
-  //Testi tapaukselle, jossa yksilöllistetty suoritus on vahvistettu ennen 2025-08-01.
+  //Testi tapaukselle, jossa yksilöllistetty suoritus on vahvistettu 2025-07-31 tai aiemmin.
   @Test
   def testHasYksilollistettyWithVahvistusPaivamaaraFilter(): Unit = {
     val leikkuriPaiva = LocalDate.parse("2026-05-30")
@@ -113,7 +113,7 @@ class HarkinnanvaraisuusPaattelyTest {
     Assertions.assertFalse(
       HarkinnanvaraisuusPaattely.hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet1, leikkuriPaiva))
 
-    // Case 2: Suoritus vahvistettu ennen leikkuripäivää ja myös ennen 2025-08-01.
+    // Case 2: Suoritus vahvistettu ennen leikkuripäivää ja myös 2025-07-31 tai aiemmin.
     val opiskeluoikeudet2 = Seq(
       createOpiskeluoikeusWithOppimaara(true, true, SuoritusTila.VALMIS, Some(ennenLeikkuripaivaa))
     )
@@ -122,12 +122,12 @@ class HarkinnanvaraisuusPaattelyTest {
       HarkinnanvaraisuusPaattely.hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet2, leikkuriPaiva))
   }
 
-  //Testi tapaukselle, jossa yksilöllistetty suoritus on 2025-08-01 jälkeen, eli yksilöllistämistietoa ei huomioida.
+  //Testi tapaukselle, jossa yksilöllistetty suoritus on 2025-07-31 jälkeen, eli yksilöllistämistietoa ei huomioida.
   @Test
-  def testHasYksilollistettyWithVahvistusPaivamaaraFilterAfter20250801(): Unit = {
+  def testHasYksilollistettyWithVahvistusPaivamaaraFilterAfter20250731(): Unit = {
     val leikkuriPaiva = LocalDate.parse("2026-05-30")
     val leikkuriPaivanJalkeen = leikkuriPaiva.plusDays(2)
-    val ennenLeikkuripaivaa = LocalDate.parse("2025-10-22")
+    val ennenLeikkuripaivaa = LocalDate.parse("2025-08-01")
 
     // Case 1: Suoritus vahvistettu leikkuripäivän jälkeen
     val opiskeluoikeudet1 = Seq(
@@ -137,7 +137,7 @@ class HarkinnanvaraisuusPaattelyTest {
     Assertions.assertFalse(
       HarkinnanvaraisuusPaattely.hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet1, leikkuriPaiva))
 
-    // Case 2: Suoritus vahvistettu ennen leikkuripäivää mutta 2025-08-01 jälkeen.
+    // Case 2: Suoritus vahvistettu ennen leikkuripäivää mutta 2025-07-31 jälkeen.
     val opiskeluoikeudet2 = Seq(
       createOpiskeluoikeusWithOppimaara(true, true, SuoritusTila.VALMIS, Some(ennenLeikkuripaivaa))
     )
