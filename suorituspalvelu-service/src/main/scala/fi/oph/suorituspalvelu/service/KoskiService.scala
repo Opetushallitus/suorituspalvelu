@@ -93,7 +93,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
   }, Seq.empty)
 
-  def startRefreshKoskiForHaku(hakuOids: Set[String]): UUID = refreshHakuJob.run(mapper.writeValueAsString(hakuOids))
+  def startRefreshKoskiForHaut(hakuOids: Set[String]): UUID = refreshHakuJob.run(mapper.writeValueAsString(hakuOids))
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()

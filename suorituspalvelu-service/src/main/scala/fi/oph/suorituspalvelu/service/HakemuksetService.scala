@@ -39,7 +39,6 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
 
   def prosessoiMuuttuneetHakemukset(hakemukset: Seq[AtaruHakemusBaseFields]): Unit =
     if(hakemukset.nonEmpty)
-      // KOSKI-tiedot haetaan aina
       val henkilot = hakemukset.map(_.personOid).toSet
       koskiService.startRefreshForHenkilot(henkilot)
       virtaService.startRefreshForHenkilot(henkilot)

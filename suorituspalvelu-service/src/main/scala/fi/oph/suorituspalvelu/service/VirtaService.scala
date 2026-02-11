@@ -133,17 +133,14 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   def syncVirtaForHaut(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))
 
   private def refreshVirtaForAktiivisetHaut(ctx: SupaJobContext): Unit =
-    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
-      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("haunkohdejoukko_12"))
-      .map(_.oid)
-
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut().map(_.oid)
     paivitettavatHaut.zipWithIndex.foreach((hakuOid, index) => {
       try
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
         case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
-      ctx.updateProgress((index+1)/paivitettavatHaut.size)
+      ctx.updateProgress((index+1).toDouble/paivitettavatHaut.size.toDouble)
     })
 
   private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-virta-for-aktiiviset-haut", (ctx, data) => refreshVirtaForAktiivisetHaut(ctx), Seq.empty)

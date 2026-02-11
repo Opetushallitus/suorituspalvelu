@@ -154,7 +154,7 @@ class DataSyncResource {
           .flatMap(_ =>
             // deserialisoidaan
             try
-              Right(objectMapper.readValue(bytes, classOf[KoskiPaivitaTiedotHaullePayload]).hakuOidit)
+              Right(objectMapper.readValue(bytes, classOf[KoskiPaivitaTiedotHaullePayload]).hakuOids)
             catch
               case e: Exception =>
                 LOG.error("payloadin deserialisointi KOSKI-tietojen päivittämisessä hauille epäonnistui", e)
@@ -171,7 +171,7 @@ class DataSyncResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map("hakuOids" -> hakuOids.mkString(",")), AuditOperation.PaivitaKoskiTiedotHaunHakijoille, None)
             LOG.info(s"Haetaan Koski-tiedot hakujen ${hakuOids.mkString(",")} henkilöille")
-            val jobId = koskiService.startRefreshKoskiForHaku(hakuOids)
+            val jobId = koskiService.startRefreshKoskiForHaut(hakuOids)
             ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(jobId))
           })
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
@@ -392,7 +392,7 @@ class DataSyncResource {
           .flatMap(_ =>
             // deserialisoidaan
             try
-              Right(objectMapper.readValue(bytes, classOf[VirtaPaivitaTiedotHaullePayload]).hakuOidit)
+              Right(objectMapper.readValue(bytes, classOf[VirtaPaivitaTiedotHaullePayload]).hakuOids)
             catch
               case e: Exception =>
                 LOG.error("payloadin deserialisointi Virta-tietojen päivittämisessä haulle epäonnistui", e)
@@ -557,7 +557,7 @@ class DataSyncResource {
           .flatMap(_ =>
             // deserialisoidaan
             try
-              Right(objectMapper.readValue(bytes, classOf[YTRPaivitaTiedotHaullePayload]).hakuOidit)
+              Right(objectMapper.readValue(bytes, classOf[YTRPaivitaTiedotHaullePayload]).hakuOids)
             catch
               case e: Exception =>
                 LOG.error("payloadin deserialisointi YTR-tietojen päivittämisessä haulle epäonnistui", e)
