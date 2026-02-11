@@ -79,8 +79,8 @@ case class ReparseFailureResponse(
   @BeanProperty virheet: java.util.List[String]) extends SyncResponse {}
 
 case class YTRPaivitaTiedotHaullePayload(
-  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty hakuOid: Optional[String]) {
+  @(Schema @field)(example = "[\"" + ESIMERKKI_HAKU_OID + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOids: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
 }
@@ -93,8 +93,8 @@ case class YTRPaivitaTiedotHenkilollePayload(
 }
 
 case class VirtaPaivitaTiedotHaullePayload(
-  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty hakuOid: Optional[String]) {
+  @(Schema @field)(example = "[\"" + ESIMERKKI_HAKU_OID + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOids: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
 }
@@ -107,8 +107,8 @@ case class VirtaPaivitaTiedotHenkilollePayload(
 }
 
 case class KoskiPaivitaTiedotHaullePayload(
-  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty hakuOid: Optional[String]) {
+  @(Schema @field)(example = "[\"" + ESIMERKKI_HAKU_OID + "\"]", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOids: Optional[java.util.List[String]]) {
 
   def this() = this(Optional.empty())
 }

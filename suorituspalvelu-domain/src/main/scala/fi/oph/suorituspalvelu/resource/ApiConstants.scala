@@ -34,13 +34,13 @@ object ApiConstants {
   final val KOSKI_DATASYNC_500_VIRHE                        = "Tietojen päivitys KOSKI-järjestelmästä epäonnistui"
   final val KOSKI_DATASYNC_ESIMERKKI_VIRHE                  = "henkilöOid:" + ESIMERKKI_OPPIJANUMERO + ", virheet: Henkilön tietojen päivitys epäonnistui"
 
-  final val KOSKI_DATASYNC_HAKU_PATH                        = KOSKI_DATASYNC_PATH + "/haku"
+  final val KOSKI_DATASYNC_HAUT_PATH                        = KOSKI_DATASYNC_PATH + "/haut"
   final val KOSKI_DATASYNC_MUUTTUNEET_PATH                  = KOSKI_DATASYNC_PATH + "/muuttuneet"
   final val KOSKI_DATASYNC_RETRY_PATH                       = KOSKI_DATASYNC_PATH + "/retry"
 
   final val YTR_DATASYNC_PATH                               = DATASYNC_PATH + "/ytr"
   final val YTR_DATASYNC_HENKILOT_PATH                      = YTR_DATASYNC_PATH + "/henkilot"
-  final val YTR_DATASYNC_HAKU_PATH                          = YTR_DATASYNC_PATH + "/haku"
+  final val YTR_DATASYNC_HAUT_PATH                          = YTR_DATASYNC_PATH + "/haut"
   final val YTR_DATASYNC_AKTIIVISET_PATH                    = YTR_DATASYNC_PATH + "/aktiiviset/"
   final val YTR_DATASYNC_500_VIRHE                          = "Tietojen päivitys YTR-järjestelmästä epäonnistui"
 
@@ -48,7 +48,7 @@ object ApiConstants {
   final val VIRTA_DATASYNC_PARAM_PLACEHOLDER                = "{" + VIRTA_DATASYNC_PARAM_NAME + "}"
   final val VIRTA_DATASYNC_PATH                             = DATASYNC_PATH + "/virta"
   final val VIRTA_DATASYNC_PATH_OPPIJA                      = VIRTA_DATASYNC_PATH + "/oppija/" + VIRTA_DATASYNC_PARAM_PLACEHOLDER
-  final val VIRTA_DATASYNC_HAKU_PATH                        = VIRTA_DATASYNC_PATH + "/haku/"
+  final val VIRTA_DATASYNC_HAUT_PATH                        = VIRTA_DATASYNC_PATH + "/haut/"
   final val VIRTA_DATASYNC_HENKILO_PATH                     = VIRTA_DATASYNC_PATH + "/henkilo"
   final val VIRTA_DATASYNC_AKTIIVISET_PATH                  = VIRTA_DATASYNC_PATH + "/aktiiviset/"
   final val VIRTA_DATASYNC_ESIMERKKI_VIRHE                  = "oppijaNumero ei ole validi oid"

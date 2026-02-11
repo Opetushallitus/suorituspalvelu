@@ -78,7 +78,6 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
 
   def refreshYTRForAktiivisetHaut(ctx: SupaJobContext): Unit = {
     val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
-      .filter(haku => !haku.kohdejoukkoKoodiUri.contains("haunkohdejoukko_12"))
     refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
   }
 

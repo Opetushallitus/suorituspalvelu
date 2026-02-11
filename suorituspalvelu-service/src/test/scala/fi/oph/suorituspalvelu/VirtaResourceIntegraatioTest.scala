@@ -145,19 +145,19 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testRefreshVirtaForHakuAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.29.01000000000000013275"))
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAUT_PATH, "1.2.246.562.29.01000000000000013275"))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testRefreshVirtaForHakuNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.29.01000000000000013275"))
+    mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAUT_PATH, "1.2.246.562.29.01000000000000013275"))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshVirtaForHakuMalformedOid(): Unit =
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, "1.2.246.562.23.01000000000000013275"))
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAUT_PATH, "1.2.246.562.23.01000000000000013275"))
       .andExpect(status().isBadRequest).andReturn()
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -202,7 +202,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(virtaClient.haeTiedotOppijanumerolle(aliasForHakijaOid2))
       .thenReturn(Future.successful(virtaXml))
 
-    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAKU_PATH, VirtaPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
+    val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HAUT_PATH, VirtaPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
       .andExpect(status().isOk()).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
 
@@ -224,7 +224,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     //Tarkistetaan että auditloki täsmää
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.PaivitaVirtaTiedotHaunHakijoille.name, auditLogEntry.operation)
-    Assertions.assertEquals(Map("hakuOid" -> hakuOid), auditLogEntry.target)
+    Assertions.assertEquals(Map("hakuOids" -> hakuOid), auditLogEntry.target)
   }
 
 }

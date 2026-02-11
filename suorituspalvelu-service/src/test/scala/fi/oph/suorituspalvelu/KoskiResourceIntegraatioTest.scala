@@ -106,19 +106,19 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithAnonymousUser
   @Test def testRefreshKoskiHakuAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
-    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, "payloadilla ei väliä"))
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAUT_PATH, "payloadilla ei väliä"))
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "kayttaja", authorities = Array())
   @Test def testRefreshKoskiHakuNotAllowed(): Unit =
     // tunnistettu käyttäjä jolla ei oikeuksia => 403
-    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, "payloadilla ei väliä"))
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAUT_PATH, "payloadilla ei väliä"))
       .andExpect(status().isForbidden())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshKoskiHakuMalformedJson(): Unit =
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, "tämä ei ole validia JSONia"))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAUT_PATH, "tämä ei ole validia JSONia"))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(ApiConstants.DATASYNC_JSON_VIRHE)),
@@ -129,7 +129,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakuOid = "1.2.246.562.28.01000000000000056245"
 
     // ei validi oid ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, KoskiPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAUT_PATH, KoskiPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_HAKUOID_EI_VALIDI + hakuOid)),
@@ -146,7 +146,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAKU_PATH, KoskiPaivitaTiedotHaullePayload(Optional.of(hakuOid))))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HAUT_PATH, KoskiPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
       .andExpect(status().isOk).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
 
@@ -160,7 +160,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.PaivitaKoskiTiedotHaunHakijoille.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      "hakuOid" -> hakuOid,
+      "hakuOids" -> hakuOid,
     ), auditLogEntry.target)
   }
 
