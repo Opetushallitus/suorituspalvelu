@@ -2,7 +2,6 @@ import { Alert, Stack, Box } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Route } from './+types/TarkastusLayout';
 import { queryOptionsGetOppija } from '@/lib/suorituspalvelu-queries';
-import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { TarkastusSidebar } from '@/components/TarkastusSidebar';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { queryClient } from '@/lib/queryClient';
@@ -12,6 +11,7 @@ import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 import { isOppijaNumero } from '@/lib/common';
 import { useIsTarkastusnakymaAllowed } from '@/hooks/useIsTarkastusnakymaAllowed';
 import { DoNotDisturb } from '@mui/icons-material';
+import { MainContent } from '@/components/MainContent';
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const { oppijaNumero } = params;
@@ -57,11 +57,9 @@ export default function TarkastusLayout() {
       <TarkastusSearchControls />
       <Stack direction="row">
         <TarkastusSidebar />
-        <main style={{ flexGrow: 1 }}>
-          <QuerySuspenseBoundary>
-            <TarkastusContent />
-          </QuerySuspenseBoundary>
-        </main>
+        <MainContent>
+          <TarkastusContent />
+        </MainContent>
       </Stack>
     </>
   );

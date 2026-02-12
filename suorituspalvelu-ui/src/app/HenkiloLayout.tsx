@@ -1,7 +1,5 @@
-import { Box } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { isHenkilotunnus, isValidOppijaTunniste } from '@/lib/common';
-import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { HenkiloSearchControls } from '@/components/HenkiloSearchControls';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import { OppijanTiedotPage } from './OppijanTiedotPage';
@@ -12,6 +10,7 @@ import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 import { useEffect } from 'react';
 import { isEmptyish } from 'remeda';
 import { FullSpinner } from '@/components/FullSpinner';
+import { MainContent } from '@/components/MainContent';
 
 const HenkiloTunnisteella = () => {
   const { t } = useTranslations();
@@ -64,20 +63,18 @@ export default function HenkiloLayout() {
 
   if (!isHenkilohakuAllowed) {
     return (
-      <Box component="main">
+      <MainContent>
         <ResultPlaceholder text={t('search.henkilohaku-ei-oikeuksia')} />
-      </Box>
+      </MainContent>
     );
   }
 
   return (
     <>
       <HenkiloSearchControls />
-      <Box component="main">
-        <QuerySuspenseBoundary>
-          <HenkiloTunnisteella />
-        </QuerySuspenseBoundary>
-      </Box>
+      <MainContent>
+        <HenkiloTunnisteella />
+      </MainContent>
     </>
   );
 }
