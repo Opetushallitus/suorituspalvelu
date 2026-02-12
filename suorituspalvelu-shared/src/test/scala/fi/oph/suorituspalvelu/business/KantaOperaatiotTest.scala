@@ -652,10 +652,10 @@ class KantaOperaatiotTest {
       Lahtokoulu(LocalDate.parse("2024-10-01"), None, uusiOppilaitosOid, Some(valmistumisVuosi), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), 1)
 
-    // helmikuussa henkilö ei enää näy vanhan koulun listalla
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2025-02-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    // helmikuussa henkilö ei enää näy vanhan koulun listalla (maaliskuussa demoa varten)
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2025-03-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
     // mutta uudella listalla näkyy
-    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2025-02-01")), uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2025-03-01")), uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
   @Test def testHaeOhjattavatOppijatEiPvmRajausta(): Unit =
     val henkiloNumero = "1.2.246.562.24.99988877766"
@@ -1257,7 +1257,7 @@ class KantaOperaatiotTest {
 
     // Opo-näkyvyys loppunut, ei palauteta
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio4.get, Set.empty, Seq(
-      Lahtokoulu(LocalDate.parse("2024-08-18"), Some(LocalDate.parse("2025-05-31")), oppilaitosOid, Some(valmistumisVuosi), "9D", Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+      Lahtokoulu(LocalDate.parse("2023-08-18"), Some(LocalDate.parse("2024-05-31")), oppilaitosOid, Some(valmistumisVuosi), "9D", Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), ParserVersions.KOSKI)
 
     // Väärä suoritustyyppi, ei palauteta
