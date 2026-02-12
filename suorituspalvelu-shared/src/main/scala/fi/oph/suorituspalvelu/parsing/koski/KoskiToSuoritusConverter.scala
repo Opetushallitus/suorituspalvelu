@@ -463,7 +463,8 @@ object KoskiToSuoritusConverter {
       s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA
     ).exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists("9".equals))
     val loytyyJaksoIlmanLoppua = opiskeluoikeus.lisätiedot.flatMap(_.kotiopetusjaksot).getOrElse(List.empty).exists(_.loppu.isEmpty)
-    loytyyJaksoIlmanLoppua || !hasYsiluokka
+    val loytyyJaksoLopulla = opiskeluoikeus.lisätiedot.flatMap(_.kotiopetusjaksot).getOrElse(List.empty).exists(_.loppu.isDefined)
+    loytyyJaksoIlmanLoppua || (loytyyJaksoLopulla && !hasYsiluokka)
   }
 
   def isYlaAste(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean = {

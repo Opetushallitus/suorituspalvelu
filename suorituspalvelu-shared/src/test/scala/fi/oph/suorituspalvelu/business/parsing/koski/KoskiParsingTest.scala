@@ -1287,6 +1287,76 @@ class KoskiParsingTest {
     Assertions.assertTrue(result.isEmpty, "Kotiopetuslaiselle ei pitäisi syntyä PerusopetuksenOppimaara-suoritusta")
   }
 
+  @Test def testPerusopetuksenOppimaaraEiKotiopetustaSeiskaluokka(): Unit = {
+    val oppimaara = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2021-06-02",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "7",
+        |                "nimi": {
+        |                  "fi": "7. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "7A",
+        |            "alkamispäivä": "2021-08-02",
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).map(_.asInstanceOf[PerusopetuksenOppimaara])
+
+    Assertions.assertTrue(oppimaara.isDefined)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Hatsalan klassillinen koulu"), None, None), "1.2.246.562.10.32727448402"), oppimaara.map(_.oppilaitos).get)
+    Assertions.assertEquals(Some(LocalDate.parse("2021-06-02")), oppimaara.map(_.aloitusPaivamaara).get)
+  }
+
   @Test def testNuortenPerusopetuksenOppiaineenOppimaara(): Unit =
     val oppimaara = getFirstSuoritusFromJson(
       """
