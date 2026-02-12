@@ -21,6 +21,7 @@ import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
+import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
@@ -1041,6 +1042,94 @@ class KantaOperaatiotTest {
       AvainArvoYliajoMuutos(None, poistoHetki, virkailijaOid, poistoselite),
       AvainArvoYliajoMuutos(Some("FI"), luomisHetki, virkailijaOid, luomisselite)
     ), this.kantaOperaatiot.haeYliajoMuutokset(personOid, hakuOid, avain))
+  }
+
+  @Test def testHarkinnanvaraisuusYliajoRoundtrip(): Unit = {
+    val hakemusOid = "1.2.246.562.11.01000000000000023251"
+    val hakukohdeOid = "1.2.246.562.20.00000000000000044758"
+    val virkailijaOid = "1.2.246.562.24.11223344556"
+    val luotu = Instant.now
+
+    val harkinnanvaraisuusYliajo = HarkinnanvaraisuusYliajo(
+      hakemusOid = hakemusOid,
+      hakukohdeOid = hakukohdeOid,
+      harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET),
+      virkailijaOid = virkailijaOid,
+      selite = "yliajettu"
+    )
+
+    //Save and fetch
+    this.kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(harkinnanvaraisuusYliajo))
+    val haetutYliajot = this.kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
+
+    // Verify results
+    Assertions.assertEquals(1, haetutYliajot.size)
+    Assertions.assertEquals(harkinnanvaraisuusYliajo.hakemusOid, haetutYliajot.head.hakemusOid)
+    Assertions.assertEquals(harkinnanvaraisuusYliajo.hakukohdeOid, haetutYliajot.head.hakukohdeOid)
+    Assertions.assertEquals(harkinnanvaraisuusYliajo.harkinnanvaraisuudenSyy, haetutYliajot.head.harkinnanvaraisuudenSyy)
+    Assertions.assertEquals(harkinnanvaraisuusYliajo.selite, haetutYliajot.head.selite)
+    Assertions.assertEquals(harkinnanvaraisuusYliajo.virkailijaOid, haetutYliajot.head.virkailijaOid)
+  }
+
+  @Test def testHarkinnanvaraisuusYliajonPoisto(): Unit = {
+    val hakemusOid = "1.2.246.562.11.01000000000000023251"
+    val hakukohdeOid1 = "1.2.246.562.20.00000000000000044758"
+    val hakukohdeOid2 = "1.2.246.562.20.00000000000000044759"
+    val virkailijaOid = "1.2.246.562.24.11223344556"
+
+    val yliajo1 = HarkinnanvaraisuusYliajo(
+      hakemusOid = hakemusOid,
+      hakukohdeOid = hakukohdeOid1,
+      harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET),
+      virkailijaOid = virkailijaOid,
+      selite = "yliajettu1"
+    )
+
+    val yliajo2 = HarkinnanvaraisuusYliajo(
+      hakemusOid = hakemusOid,
+      hakukohdeOid = hakukohdeOid2,
+      harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.SURE_EI_PAATTOTODISTUSTA),
+      virkailijaOid = virkailijaOid,
+      selite = "yliajettu2"
+    )
+
+    this.kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(yliajo1, yliajo2))
+
+    val haetutYliajot = this.kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
+    Assertions.assertEquals(2, haetutYliajot.size)
+
+    // Tarkistetaan hakukohteen 1 yliajo
+    var hakukohteen1Yliajo = haetutYliajot.find(_.hakukohdeOid == hakukohdeOid1).get
+    Assertions.assertEquals(hakemusOid, hakukohteen1Yliajo.hakemusOid)
+    Assertions.assertEquals(hakukohdeOid1, hakukohteen1Yliajo.hakukohdeOid)
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET, hakukohteen1Yliajo.harkinnanvaraisuudenSyy.get)
+    Assertions.assertEquals("yliajettu1", hakukohteen1Yliajo.selite)
+
+    // Tarkistetaan hakukohteen 2 yliajo
+    var hakukohteen2Yliajo = haetutYliajot.find(_.hakukohdeOid == hakukohdeOid2).get
+    Assertions.assertEquals(hakemusOid, hakukohteen2Yliajo.hakemusOid)
+    Assertions.assertEquals(hakukohdeOid2, hakukohteen2Yliajo.hakukohdeOid)
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.SURE_EI_PAATTOTODISTUSTA, hakukohteen2Yliajo.harkinnanvaraisuudenSyy.get)
+    Assertions.assertEquals("yliajettu2", hakukohteen2Yliajo.selite)
+
+    // Poistetaan yliajo hakukohteelta 2
+    this.kantaOperaatiot.poistaHarkinnanvaraisuusYliajo(hakemusOid, hakukohdeOid2, virkailijaOid, "ei huvita enää yliajaa")
+
+    // Tarkistetaan että vain hakukohteen 1 yliajo edelleen voimassa
+    val haetutYliajotAfter = this.kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
+    Assertions.assertEquals(2, haetutYliajotAfter.size)
+    hakukohteen1Yliajo = haetutYliajot.find(_.hakukohdeOid == hakukohdeOid1).get
+    Assertions.assertEquals(hakemusOid, hakukohteen1Yliajo.hakemusOid)
+    Assertions.assertEquals(hakukohdeOid1, hakukohteen1Yliajo.hakukohdeOid)
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET, hakukohteen1Yliajo.harkinnanvaraisuudenSyy.get)
+    Assertions.assertEquals("yliajettu1", hakukohteen1Yliajo.selite)
+
+    hakukohteen2Yliajo = haetutYliajotAfter.find(_.hakukohdeOid == hakukohdeOid2).get
+    Assertions.assertEquals(hakemusOid, hakukohteen2Yliajo.hakemusOid)
+    Assertions.assertEquals(hakukohdeOid2, hakukohteen2Yliajo.hakukohdeOid)
+    Assertions.assertEquals(None, hakukohteen2Yliajo.harkinnanvaraisuudenSyy)
+    Assertions.assertEquals("ei huvita enää yliajaa", hakukohteen2Yliajo.selite)
+
   }
 
   @Test def testCasMapping(): Unit = {
