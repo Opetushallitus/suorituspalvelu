@@ -22,7 +22,7 @@ case class Student(
                     firstnames: String,
                     graduationPeriod: Option[String] = None,
                     graduationDate: Option[String] = None,
-                    language: String,
+                    language: Option[String],
                     exams: Seq[Exam]
                   )
 

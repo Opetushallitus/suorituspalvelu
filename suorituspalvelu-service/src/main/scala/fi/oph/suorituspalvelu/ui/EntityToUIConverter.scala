@@ -242,7 +242,7 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[YOOpiskeluoikeus])
       .map(o => o.asInstanceOf[YOOpiskeluoikeus])
-      .flatMap(o => Seq(o.yoTutkinto))
+      .flatMap(o => o.yoTutkinto.map(t => Seq(t)).getOrElse(Seq.empty))
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.YOTutkinto])
       .map(t => {
         YOTutkinto(

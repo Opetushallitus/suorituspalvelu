@@ -361,7 +361,7 @@ case class GeneerinenOpiskeluoikeus(
   jaksot: List[OpiskeluoikeusJakso]
 ) extends Opiskeluoikeus, Tyypitetty
 
-case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: YOTutkinto) extends Opiskeluoikeus, Tyypitetty
+case class YOOpiskeluoikeus(tunniste: UUID, yoTutkinto: Option[YOTutkinto]) extends Opiskeluoikeus, Tyypitetty
 
 case class YOTutkinto(
   tunniste: UUID,
