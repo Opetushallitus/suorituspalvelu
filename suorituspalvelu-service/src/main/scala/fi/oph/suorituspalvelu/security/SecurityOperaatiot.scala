@@ -32,6 +32,15 @@ class SecurityOperaatiot(
   def onHakeneidenKatselija(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA)
 
+  def onValintaKayttaja(): Boolean = {
+    kayttajanOikeudet.exists(
+      Seq(
+        SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA_CRUD,
+        SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA_READ_UPDATE
+      ).contains(_)
+    )
+  }
+
   def onUIKayttaja(): Boolean =
     onRekisterinpitaja() || onOrganisaationKatselija() || onHakeneidenKatselija()
 

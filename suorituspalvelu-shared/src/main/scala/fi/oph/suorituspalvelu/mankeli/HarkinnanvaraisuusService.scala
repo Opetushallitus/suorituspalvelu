@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHakukohde, Ohjausparametrit}
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 import java.time.{Instant, LocalDate, ZoneId}
@@ -33,9 +34,11 @@ case class HakemuksenHarkinnanvaraisuus(hakemusOid: String,
 
 object HarkinnanvaraisuusPaattely {
 
+  private val LOG = LoggerFactory.getLogger(HarkinnanvaraisuusPaattely.getClass)
+
   //Tämän jälkeen suoritettuja ma/ai yksilöllistämisiä ei enää huomioida harkinnanvaraisuuspäättelyssä.
   // Oppiaineen oppimäärän suoritukset (korotukset) kuitenkin huomioidaan myös tämän jälkeen.
-  val YKS_MAT_AI_SUORITUS_ENNEN_DATE = LocalDate.parse("2025-08-01")
+  val YKS_MAT_AI_SUORITUS_ENNEN_DATE = LocalDate.parse("2025-07-31")
 
   val ataruMatematiikkaJaAidinkieliYksilollistettyQuestions = Set("matematiikka-ja-aidinkieli-yksilollistetty_1", "matematiikka-ja-aidinkieli-yksilollistetty_2")
   val ataruHakukohdeHarkinnanvaraisuusPrefix = "harkinnanvaraisuus-reason_"
@@ -95,7 +98,9 @@ object HarkinnanvaraisuusPaattely {
         case (true, None, Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), _) => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
         case (true, None, _, _) if !ilmoitettuVanhaPeruskoulu => HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA
         case (true, None, _, _) if ilmoitettuVanhaPeruskoulu && isAtaruIlmoitettuYksMatAi => HarkinnanvaraisuudenSyy.ATARU_YKS_MAT_AI
-        case (true, None, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
+        case (true, _, _, Some(harkinnanvaraisuusHakukohteelleHakemukselta)) =>
+          LOG.info(s"Harkinnanvaraisuuspäättely: käytetään hakemuksen ${hakemus.hakemusOid} " +
+            s"hakukohteessa ${hakutoive.hakukohdeOid} hakemukselta tullutta arvoa ${harkinnanvaraisuusHakukohteelleHakemukselta}")
           harkinnanvaraisuusHakukohteelleHakemukselta match {
             case "0" => HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET
             case "1" => HarkinnanvaraisuudenSyy.ATARU_SOSIAALISET_SYYT
