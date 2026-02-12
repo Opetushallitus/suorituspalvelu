@@ -149,6 +149,7 @@ class HarkinnanvaraisuusService {
             LOG.warn(s"Hakemuksen ${hakemus.hakemusOid} hakutoiveelle ${ht.hakukohdeOid} löytyi harkinnanvaraisuuden yliajo, mutta päätelty harkinnanvaraisuus on \"EI_HARKINNANVARAINEN_HAKUKOHDE\", jonka yliajaminen on kielletty! Palautetaan päätelty harkinnanvaraisuus.")
             ht
           } else {
+            LOG.warn(s"Yliajetaan hakemuksen ${hakemus.hakemusOid} hakutoiveen ${ht.hakukohdeOid} harkinnanvaraisuuden syy: ${ht.harkinnanvaraisuudenSyy} -> $syy")
             ht.copy(harkinnanvaraisuudenSyy = syy, yliajettu = true)
           }
         case None => ht
