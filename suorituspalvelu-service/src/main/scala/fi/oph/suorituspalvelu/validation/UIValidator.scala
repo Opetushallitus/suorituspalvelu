@@ -65,6 +65,7 @@ object UIValidator {
   final val VALIDATION_HAKEMUSOID_EI_VALIDI       = "backend-virhe.hakemusoid.ei_validi"
   final val VALIDATION_HAKUKOHDEOID_TYHJA         = "backend-virhe.hakukohdeoid.tyhja"
   final val VALIDATION_HAKUKOHDEOID_EI_VALIDI     = "backend-virhe.hakukohdeoid.ei_validi"
+  final val VALIDATION_HARKINNANVARAISUUDEN_SYY_TYHJA = "backend-virhe.harkinnanvaraisuuden_syy.tyhja"
   final val VALIDATION_HARKINNANVARAISUUDEN_SYY_EI_VALIDI = "backend-virhe.harkinnanvaraisuuden_syy.ei_validi"
 
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
@@ -371,7 +372,7 @@ object UIValidator {
 
   def validateHarkinnanvaraisuudenSyy(syy: Option[String], pakollinen: Boolean): Set[String] = {
     if (pakollinen && (syy.isEmpty || syy.exists(_.isEmpty)))
-      Set(VALIDATION_HARKINNANVARAISUUDEN_SYY_EI_VALIDI)
+      Set(VALIDATION_HARKINNANVARAISUUDEN_SYY_TYHJA)
     else if (syy.isDefined && !HarkinnanvaraisuudenSyy.values.map(_.toString).contains(syy.get))
       Set(VALIDATION_HARKINNANVARAISUUDEN_SYY_EI_VALIDI)
     else
@@ -382,7 +383,7 @@ object UIValidator {
     val yliajot = container.yliajot.toScala.map(_.asScala).getOrElse(List.empty)
     val hakemusOidErrors = yliajot.flatMap(y => validateHakemusOid(y.hakemusOid.toScala, true))
     val hakukohdeOidErrors = yliajot.flatMap(y => validateHakukohdeOid(y.hakukohdeOid.toScala, true))
-    val harkinnanvaraisuudenSyyErrors = yliajot.flatMap(y => validateHarkinnanvaraisuudenSyy(y.harkinnanvaraisuudenSyy.toScala, false))
+    val harkinnanvaraisuudenSyyErrors = yliajot.flatMap(y => validateHarkinnanvaraisuudenSyy(y.harkinnanvaraisuudenSyy.toScala, true))
     val seliteErrors = yliajot.flatMap(y => validateSelite(y.selite.toScala, true))
     (hakemusOidErrors ++ hakukohdeOidErrors ++ harkinnanvaraisuudenSyyErrors ++ seliteErrors).toSet
   }
