@@ -1046,7 +1046,7 @@ class UIResource {
               UIValidator.validateAvain(avain.toScala, pakollinen = true) ++
               UIValidator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true) ++
               UIValidator.validateHakuOid(hakuOid.toScala, pakollinen = true) ++
-              UIValidator.validateSelite(hakuOid.toScala, pakollinen = true)
+              UIValidator.validateSelite(selite.toScala, pakollinen = true)
             if (virheet.isEmpty)
               Right(None)
             else

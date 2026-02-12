@@ -2,14 +2,14 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Lahdejarjestelma, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, Ohjausparametrit, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_SELITE_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
@@ -1506,7 +1506,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .delete(ApiConstants.UI_POISTA_YLIAJO_PATH, "")
         .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
         .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
-        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, malformedAvain))
+        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, malformedAvain)
+        .queryParam(UI_VALINTADATA_SELITE_PARAM_NAME, "poiston selite"))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -1563,7 +1564,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .delete(ApiConstants.UI_POISTA_YLIAJO_PATH, "")
         .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
         .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
-        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, avainJokaPoistetaan))
+        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, avainJokaPoistetaan)
+        .queryParam(UI_VALINTADATA_SELITE_PARAM_NAME, "poiston selite"))
       .andExpect(status().isOk)
       .andReturn()
 
