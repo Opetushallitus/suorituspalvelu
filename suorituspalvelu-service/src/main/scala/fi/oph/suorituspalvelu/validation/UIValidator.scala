@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.validation
 
-import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
@@ -61,14 +61,21 @@ object UIValidator {
   final val VALIDATION_ARVO_EI_VALIDI             = "backend-virhe.arvo.ei_validi"
   final val VALIDATION_SELITE_TYHJA               = "backend-virhe.selite.tyhja"
   final val VALIDATION_SELITE_EI_VALIDI           = "backend-virhe.selite.ei_validi"
+  final val VALIDATION_HAKEMUSOID_TYHJA           = "backend-virhe.hakemusoid.tyhja"
+  final val VALIDATION_HAKEMUSOID_EI_VALIDI       = "backend-virhe.hakemusoid.ei_validi"
+  final val VALIDATION_HAKUKOHDEOID_TYHJA         = "backend-virhe.hakukohdeoid.tyhja"
+  final val VALIDATION_HAKUKOHDEOID_EI_VALIDI     = "backend-virhe.hakukohdeoid.ei_validi"
+  final val VALIDATION_HARKINNANVARAISUUDEN_SYY_EI_VALIDI = "backend-virhe.harkinnanvaraisuuden_syy.ei_validi"
 
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
+  val hakemusOidPattern: Regex = "^1\\.2\\.246\\.562\\.11\\.\\d+$".r
+  val hakukohdeOidPattern: Regex = "^1\\.2\\.246\\.562\\.20\\.\\d+$".r
 
   //Yliajojen avamissa ja arvoissa vain kirjaimia, numeroita ja alaviivoja.
   val avainArvoStringPattern: Regex = "^[a-zA-Z0-9_]*$".r
 
-  val yliajoSeliteStringPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d_.,:]*$".r
+  val yliajoSeliteStringPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d _.,:]*$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d \\-_]+$".r
@@ -285,11 +292,11 @@ object UIValidator {
   def validateSelite(selite: Option[String], pakollinen: Boolean): Set[String] = {
     if (selite.isEmpty || selite.exists(_.isEmpty))
       if (pakollinen)
-        Set(VALIDATION_ARVO_TYHJA)
+        Set(VALIDATION_SELITE_TYHJA)
       else
         Set.empty
     else if (!yliajoSeliteStringPattern.matches(selite.get))
-      Set(VALIDATION_ARVO_EI_VALIDI)
+      Set(VALIDATION_SELITE_EI_VALIDI)
     else
       Set.empty
   }
@@ -342,5 +349,41 @@ object UIValidator {
       validateHakuOid(container.hakuOid.toScala, true)
     ).flatten
     containerErrors ++ avainErrors ++ arvoErrors
+  }
+
+  def validateHakemusOid(hakemusOid: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (hakemusOid.isEmpty || hakemusOid.exists(_.isEmpty)))
+      Set(VALIDATION_HAKEMUSOID_TYHJA)
+    else if (hakemusOid.isDefined && !hakemusOidPattern.matches(hakemusOid.get))
+      Set(VALIDATION_HAKEMUSOID_EI_VALIDI)
+    else
+      Set.empty
+  }
+
+  def validateHakukohdeOid(hakukohdeOid: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (hakukohdeOid.isEmpty || hakukohdeOid.exists(_.isEmpty)))
+      Set(VALIDATION_HAKUKOHDEOID_TYHJA)
+    else if (hakukohdeOid.isDefined && !hakukohdeOidPattern.matches(hakukohdeOid.get))
+      Set(VALIDATION_HAKUKOHDEOID_EI_VALIDI)
+    else
+      Set.empty
+  }
+
+  def validateHarkinnanvaraisuudenSyy(syy: Option[String], pakollinen: Boolean): Set[String] = {
+    if (pakollinen && (syy.isEmpty || syy.exists(_.isEmpty)))
+      Set(VALIDATION_HARKINNANVARAISUUDEN_SYY_EI_VALIDI)
+    else if (syy.isDefined && !HarkinnanvaraisuudenSyy.values.map(_.toString).contains(syy.get))
+      Set(VALIDATION_HARKINNANVARAISUUDEN_SYY_EI_VALIDI)
+    else
+      Set.empty
+  }
+
+  def validateHarkinnanvaraisuusYliajot(container: fi.oph.suorituspalvelu.resource.ui.HarkinnanvaraisuusYliajoTallennusContainer): Set[String] = {
+    val yliajot = container.yliajot.toScala.map(_.asScala).getOrElse(List.empty)
+    val hakemusOidErrors = yliajot.flatMap(y => validateHakemusOid(y.hakemusOid.toScala, true))
+    val hakukohdeOidErrors = yliajot.flatMap(y => validateHakukohdeOid(y.hakukohdeOid.toScala, true))
+    val harkinnanvaraisuudenSyyErrors = yliajot.flatMap(y => validateHarkinnanvaraisuudenSyy(y.harkinnanvaraisuudenSyy.toScala, false))
+    val seliteErrors = yliajot.flatMap(y => validateSelite(y.selite.toScala, true))
+    (hakemusOidErrors ++ hakukohdeOidErrors ++ harkinnanvaraisuudenSyyErrors ++ seliteErrors).toSet
   }
 }

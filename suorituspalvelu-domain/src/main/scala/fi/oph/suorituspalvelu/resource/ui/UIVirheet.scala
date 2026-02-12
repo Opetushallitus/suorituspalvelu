@@ -26,6 +26,11 @@ object UIVirheet {
   final val UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_EPAONNISTUI = "backend-virhe.tallenna_yliajo_oppijalle.tallennus_epaonnistui"
   final val UI_TALLENNA_YLIAJO_OPPIJALLE_TUNTEMATON_OPPIJA     = "backend-virhe.tallenna_yliajo_oppijalle.oppijanumerolla_ei_loydy_henkiloa"
 
+  final val UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_TALLENNUS_EPAONNISTUI = "backend-virhe.tallenna_harkinnanvaraisuus_yliajo.tallennus_epaonnistui"
+  final val UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_JSON_EI_VALIDI        = "backend-virhe.tallenna_harkinnanvaraisuus_yliajo.json_ei_validi"
+  final val UI_HAE_HARKINNANVARAISUUS_YLIAJOT_HAKU_EPAONNISTUI          = "backend-virhe.hae_harkinnanvaraisuus_yliajot.haku_epaonnistui"
+  final val UI_POISTA_HARKINNANVARAISUUS_YLIAJO_EPAONNISTUI             = "backend-virhe.poista_harkinnanvaraisuus_yliajo.poisto_epaonnistui"
+
   final val UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI            = "backend-virhe.luo_perusopetuksen_oppimaara.json_ei_validi"
   final val UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA         = "backend-virhe.luo_perusopetuksen_oppimaara.oppijanumerolla_ei_loydy_henkiloa"
   final val UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI     = "backend-virhe.luo_perusopetuksen_oppimaara.tallennus_epaonnistui"

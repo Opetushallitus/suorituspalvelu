@@ -1,14 +1,14 @@
 package fi.oph.suorituspalvelu.ui
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma}
+import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, HarkinnanvaraisuusYliajo, KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
-import fi.oph.suorituspalvelu.mankeli.UseitaVahvistettujaOppimaariaException
+import fi.oph.suorituspalvelu.mankeli.{HarkinnanvaraisuudenSyy, UseitaVahvistettujaOppimaariaException}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
-import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_500_DESCRIPTION, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_OPPIJANUMERO_PARAM_NAME, UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME, UI_OPPIJAN_HAUT_PATH, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_EI_YHTEISTEN_ARVOSANAA_PARAM_NAME, UI_OPPILAITOS_HAKU_KESKEN_TAI_KESKEYTYNYT_PARAM_NAME, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_POISTA_YLIAJO_PATH, UI_TALLENNA_SUORITUS_OPPIAINE_PATH, UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH, UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_PATH, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_PATH}
-import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_EI_VALIDI, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI, UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_EPAONNISTUI, UI_POISTA_YLIAJO_EPAONNISTUI, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_EPAONNISTUI, UI_TIEDOT_HAKU_EPAONNISTUI, UI_TIEDOT_JSON_EI_VALIDI, UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE, UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, PoistaYliajoFailureResponse, PoistaYliajoSuccessResponse, PoistaYliajotResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaArvosanaVaihtoehto, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTilaVaihtoehto, SyotettavaSuoritusTilaVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaResponse, YliajonMuutosHistoriaSuccessResponse}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_VERSIOTUNNISTE, ESIMERKKI_VUOSI, ESIMERKKI_YLIAJO_AVAIN, ESIMERKKI_YLIAJO_SELITE, UI_400_DESCRIPTION, UI_403_DESCRIPTION, UI_500_DESCRIPTION, UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, UI_KAYTTAJAN_TIEDOT_PATH, UI_LUOKAT_OPPILAITOS_PARAM_NAME, UI_LUOKAT_PATH, UI_LUOKAT_VUOSI_PARAM_NAME, UI_OPPIJANUMERO_PARAM_NAME, UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME, UI_OPPIJAN_HAUT_PATH, UI_OPPILAITOKSET_PATH, UI_OPPILAITOS_HAKU_EI_YHTEISTEN_ARVOSANAA_PARAM_NAME, UI_OPPILAITOS_HAKU_KESKEN_TAI_KESKEYTYNYT_PARAM_NAME, UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, UI_OPPILAITOS_HAKU_PATH, UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH, UI_POISTA_SUORITUS_PATH, UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME, UI_POISTA_YLIAJO_PATH, UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, UI_TALLENNA_SUORITUS_OPPIAINE_PATH, UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH, UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, UI_TALLENNA_SUORITUS_VAIHTOEHDOT_PATH, UI_TALLENNA_YLIAJOT_PATH, UI_TIEDOT_PATH, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKEMUS_OID_PARAM_NAME, UI_VALINTADATA_HAKUKOHDE_OID_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_VALINTADATA_PATH, UI_VALINTADATA_SELITE_PARAM_NAME, UI_VUODET_OPPILAITOS_PARAM_NAME, UI_VUODET_PATH, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_PATH}
+import fi.oph.suorituspalvelu.resource.ui.UIVirheet.{UI_HAE_HARKINNANVARAISUUS_YLIAJOT_HAKU_EPAONNISTUI, UI_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIEDOT_HAKU_EPAONNISTUI, UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT, UI_LUO_SUORITUS_OPPIAINE_JSON_EI_VALIDI, UI_LUO_SUORITUS_OPPIAINE_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_OPPIAINE_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_PERUSOPETUS_JSON_EI_VALIDI, UI_LUO_SUORITUS_PERUSOPETUS_TALLENNUS_EPAONNISTUI, UI_LUO_SUORITUS_PERUSOPETUS_TUNTEMATON_OPPIJA, UI_LUO_SUORITUS_VAIHTOEHDOT_HAKU_EPAONNISTUI, UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI, UI_OPPILAITOS_HAKU_OPPILAITOS_PAKOLLINEN, UI_OPPILAITOS_HAKU_VUOSI_PAKOLLINEN, UI_POISTA_HARKINNANVARAISUUS_YLIAJO_EPAONNISTUI, UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT, UI_POISTA_SUORITUS_SUORITUS_EI_POISTETTAVISSA, UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA, UI_POISTA_SUORITUS_TALLENNUS_EPAONNISTUI, UI_POISTA_YLIAJO_EPAONNISTUI, UI_RAJAIMEN_TIEDOT_HAKU_EPAONNISTUI, UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_JSON_EI_VALIDI, UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_TALLENNUS_EPAONNISTUI, UI_TALLENNA_YLIAJO_OPPIJALLE_TALLENNUS_EPAONNISTUI, UI_TIEDOT_HAKU_EPAONNISTUI, UI_TIEDOT_JSON_EI_VALIDI, UI_VALINTADATA_GENEERINEN_BACKEND_VIRHE, UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA}
+import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppiaineenOppimaaraResponse, LuoPerusopetuksenOppiaineenOppimaaraSuccessResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponseOppiaineVirhe, LuoPerusopetuksenOppimaaraResponse, LuoPerusopetuksenOppimaaraSuccessResponse, LuoSuoritusDropdownDataFailureResponse, LuoSuoritusDropdownDataResponse, LuoSuoritusDropdownDataSuccessResponse, LuoSuoritusOppilaitoksetFailureResponse, LuoSuoritusOppilaitoksetResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatFailureResponse, LuokatResponse, LuokatSuccessResponse, OppijanHakuFailureResponse, OppijanHakuResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotResponse, OppijanTiedotSuccessResponse, OppijanValintaDataFailureResponse, OppijanValintaDataSuccessResponse, OppilaitosFailureResponse, OppilaitosResponse, OppilaitosSuccessResponse, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaSuoritusResponse, PoistaSuoritusSuccessResponse, PoistaYliajoFailureResponse, PoistaYliajoSuccessResponse, PoistaYliajotResponse, SyotettavaAidinkielenOppimaaraVaihtoehto, SyotettavaAidinkielenOppimaaraVaihtoehtoNimi, SyotettavaArvosanaVaihtoehto, SyotettavaOppiaineVaihtoehto, SyotettavaOppiaineVaihtoehtoNimi, SyotettavaSuoritusKieliVaihtoehto, SyotettavaSuoritusKieliVaihtoehtoNimi, SyotettavaSuoritusTilaVaihtoehto, SyotettavaSuoritusTilaVaihtoehtoNimi, SyotettavaSuoritusTyyppiVaihtoehto, SyotettavaSuoritusTyyppiVaihtoehtoNimi, SyotettavaVierasKieliVaihtoehto, SyotettavaVierasKieliVaihtoehtoNimi, SyotettavaYksilollistamisVaihtoehto, SyotettavaYksilollistamisVaihtoehtoNimi, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, TallennaYliajotOppijalleResponse, TallennaYliajotOppijalleSuccessResponse, VuodetFailureResponse, VuodetResponse, VuodetSuccessResponse, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaResponse, YliajonMuutosHistoriaSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityConstants, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaDataService}
 import fi.oph.suorituspalvelu.service.UIService.{KOODISTO_KIELIVALIKOIMA, KOODISTO_OPPIAINEET, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUKSENTILAT, KOODISTO_SUORITUKSENTYYPIT, KOODISTO_SUORITUSKIELET, SYOTETTAVAT_OPPIAINEET, SYOTETTAVAT_SUORITUSTILAT, SYOTETTAVAT_SUORITUSTYYPIT, SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT, SYOTETYN_OPPIMAARAN_SUORITUSKIELET, SYOTETYN_OPPIMAARAN_YKSILOLLISTAMINEN}
@@ -1028,7 +1028,7 @@ class UIResource {
                            @RequestParam(name = UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, required = true) @Parameter(description = "oppijanumero", example = ESIMERKKI_OPPIJANUMERO) oppijaNumero: Optional[String],
                            @RequestParam(name = UI_VALINTADATA_HAKU_PARAM_NAME, required = false) @Parameter(description = "haun oid", example = ESIMERKKI_HAKU_OID) hakuOid: Optional[String],
                            @RequestParam(name = UI_VALINTADATA_AVAIN_PARAM_NAME, required = false) @Parameter(description = "poistettavan yliajon avain", example = ESIMERKKI_YLIAJO_AVAIN) avain: Optional[String],
-                           @RequestParam(name = UI_VALINTADATA_AVAIN_PARAM_NAME, required = false) @Parameter(description = "poiston selite", example = ESIMERKKI_YLIAJO_SELITE) selite: Optional[String],
+                           @RequestParam(name = UI_VALINTADATA_SELITE_PARAM_NAME, required = false) @Parameter(description = "poiston selite", example = ESIMERKKI_YLIAJO_SELITE) selite: Optional[String],
                            request: HttpServletRequest): ResponseEntity[PoistaYliajotResponse] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
@@ -1069,5 +1069,179 @@ class UIResource {
       case e: Exception =>
         LOG.error("Yliajon poisto oppijalle epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(PoistaYliajoFailureResponse(java.util.Set.of(UI_POISTA_YLIAJO_EPAONNISTUI)))
+  }
+
+  @GetMapping(
+    path = Array(UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Hakee hakemukselle tallennetut harkinnanvaraisuusyliajot",
+    description = "Palauttaa hakemukselle tallennetut harkinnanvaraisuusyliajot. Pääsy on (ainakin toistaiseksi) rajattu rekisterinpitäjiin.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[HaeHarkinnanvaraisuusYliajotSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[HaeHarkinnanvaraisuusYliajotFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def haeHarkinnanvaraisuusYliajot(
+    @RequestParam(name = UI_VALINTADATA_HAKEMUS_OID_PARAM_NAME, required = true) @Parameter(description = "hakemuksen oid", example = ESIMERKKI_HAKEMUS_OID) hakemusOid: Optional[String],
+    request: HttpServletRequest
+  ): ResponseEntity[HaeHarkinnanvaraisuusYliajotResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            val virheet = UIValidator.validateHakemusOid(hakemusOid.toScala, pakollinen = true)
+            if (virheet.isEmpty)
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(HaeHarkinnanvaraisuusYliajotFailureResponse(virheet.asJava))))
+          .flatMap(_ =>
+            LOG.info(s"Haetaan harkinnanvaraisuusyliajot hakemukselle ${hakemusOid.get}")
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map(UI_VALINTADATA_HAKEMUS_OID_PARAM_NAME -> hakemusOid.get), AuditOperation.HaeHarkinnanvaraisuusYliajot, None)
+
+            val yliajot = kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid.get)
+            val yliajoDTOs = yliajot.map(y =>
+              HarkinnanvaraisuusYliajoDTO(
+                hakemusOid = Optional.of(y.hakemusOid),
+                hakukohdeOid = Optional.of(y.hakukohdeOid),
+                harkinnanvaraisuudenSyy = Optional.ofNullable(y.harkinnanvaraisuudenSyy.map(_.toString).orNull),
+                selite = Optional.of(y.selite)
+              )
+            )
+            Right(ResponseEntity.status(HttpStatus.OK).body(HaeHarkinnanvaraisuusYliajotSuccessResponse(yliajoDTOs.asJava)))))
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[HaeHarkinnanvaraisuusYliajotResponse]]
+    catch
+      case e: Exception =>
+        LOG.error("Harkinnanvaraisuusyliajojen haku epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(HaeHarkinnanvaraisuusYliajotFailureResponse(java.util.Set.of(UI_HAE_HARKINNANVARAISUUS_YLIAJOT_HAKU_EPAONNISTUI)))
+  }
+
+  @PostMapping(
+    path = Array(UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Tallentaa harkinnanvaraisuusyliajot hakemukselle",
+    description = "Tallentaa harkinnanvaraisuusyliajot. Pääsy on (ainakin toistaiseksi) rajattu rekisterinpitäjiin.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[TallennaHarkinnanvaraisuusYliajotSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[TallennaHarkinnanvaraisuusYliajotFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def tallennaHarkinnanvaraisuusYliajot(
+    @RequestBody bodyBytes: Array[Byte],
+    request: HttpServletRequest
+  ): ResponseEntity[TallennaHarkinnanvaraisuusYliajotResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            try
+              Right(objectMapper.readValue(bodyBytes, classOf[HarkinnanvaraisuusYliajoTallennusContainer]))
+            catch
+              case e: Exception =>
+                LOG.error("Harkinnanvaraisuusyliajojen deserialisointi epäonnistui")
+                Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(TallennaHarkinnanvaraisuusYliajotFailureResponse(java.util.Set.of(UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_JSON_EI_VALIDI)))))
+          .flatMap((yliajot: HarkinnanvaraisuusYliajoTallennusContainer) =>
+            val virheet: Set[String] = UIValidator.validateHarkinnanvaraisuusYliajot(yliajot)
+            if (virheet.isEmpty)
+              Right(yliajot)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(TallennaHarkinnanvaraisuusYliajotFailureResponse(
+                virheet.asJava
+              ))))
+          .flatMap((yliajoContainer: HarkinnanvaraisuusYliajoTallennusContainer) =>
+            val virkailijaOid = SecurityContextHolder.getContext.getAuthentication.getName
+            val yliajotToSave = yliajoContainer.yliajot.toScala.get.asScala.map(y =>
+              HarkinnanvaraisuusYliajo(
+                hakemusOid = y.hakemusOid.get,
+                hakukohdeOid = y.hakukohdeOid.get,
+                harkinnanvaraisuudenSyy = y.harkinnanvaraisuudenSyy.toScala.map(HarkinnanvaraisuudenSyy.valueOf),
+                virkailijaOid = virkailijaOid,
+                selite = y.selite.get
+              )
+            ).toSeq
+            LOG.info(s"Tallennetaan ${yliajotToSave.size} harkinnanvaraisuusyliajoa")
+            val user: User = AuditLog.getUser(request)
+            AuditLog.log(user, Map(), AuditOperation.TallennaHarkinnanvaraisuusYliajot, Some(yliajoContainer))
+
+            kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(yliajotToSave)
+            Right(ResponseEntity.status(HttpStatus.OK).body(TallennaHarkinnanvaraisuusYliajotSuccessResponse()))
+          )
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[TallennaHarkinnanvaraisuusYliajotResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Harkinnanvaraisuusyliajojen tallentaminen epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(TallennaHarkinnanvaraisuusYliajotFailureResponse(java.util.Set.of(UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_TALLENNUS_EPAONNISTUI)))
+  }
+
+  @DeleteMapping(
+    path = Array(UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Poistaa harkinnanvaraisuusyliajon hakemukselta",
+    description = "Poistaa yksittäisen harkinnanvaraisuusyliajon. Pääsy on (ainakin toistaiseksi) rajattu rekisterinpitäjiin.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Pyyntö vastaanotettu", content = Array(new Content(schema = new Schema(implementation = classOf[PoistaHarkinnanvaraisuusYliajoSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[PoistaHarkinnanvaraisuusYliajoFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def poistaHarkinnanvaraisuusYliajo(
+    @RequestParam(name = UI_VALINTADATA_HAKEMUS_OID_PARAM_NAME, required = true) @Parameter(description = "hakemuksen oid", example = ESIMERKKI_HAKEMUS_OID) hakemusOid: Optional[String],
+    @RequestParam(name = UI_VALINTADATA_HAKUKOHDE_OID_PARAM_NAME, required = true) @Parameter(description = "hakukohteen oid", example = ESIMERKKI_HAKUKOHDE_OID) hakukohdeOid: Optional[String],
+    @RequestParam(name = UI_VALINTADATA_SELITE_PARAM_NAME, required = true) @Parameter(description = "poiston selite", example = ESIMERKKI_YLIAJO_SELITE) selite: Optional[String],
+    request: HttpServletRequest
+  ): ResponseEntity[PoistaHarkinnanvaraisuusYliajoResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            val virheet =
+              UIValidator.validateHakemusOid(hakemusOid.toScala, pakollinen = true) ++
+              UIValidator.validateHakukohdeOid(hakukohdeOid.toScala, pakollinen = true) ++
+              UIValidator.validateSelite(selite.toScala, pakollinen = true)
+            if (virheet.isEmpty)
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaHarkinnanvaraisuusYliajoFailureResponse(virheet.asJava))))
+          .flatMap(_ =>
+            LOG.info(s"Poistetaan harkinnanvaraisuusyliajo hakemukselta ${hakemusOid.get} hakukohteessa ${hakukohdeOid.get}")
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user,
+              Map(
+                UI_VALINTADATA_HAKEMUS_OID_PARAM_NAME -> hakemusOid.get,
+                UI_VALINTADATA_HAKUKOHDE_OID_PARAM_NAME -> hakukohdeOid.get
+              ), AuditOperation.PoistaHarkinnanvaraisuusYliajo, None)
+
+            val virkailijaOid = SecurityContextHolder.getContext.getAuthentication.getName
+            kantaOperaatiot.poistaHarkinnanvaraisuusYliajo(hakemusOid.get, hakukohdeOid.get, virkailijaOid, selite.get)
+            Right(ResponseEntity.status(HttpStatus.OK).body(PoistaHarkinnanvaraisuusYliajoSuccessResponse()))))
+        .fold(e => e, r => r).asInstanceOf[ResponseEntity[PoistaHarkinnanvaraisuusYliajoResponse]]
+    catch
+      case e: Exception =>
+        LOG.error("Harkinnanvaraisuusyliajon poisto epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(PoistaHarkinnanvaraisuusYliajoFailureResponse(java.util.Set.of(UI_POISTA_HARKINNANVARAISUUS_YLIAJO_EPAONNISTUI)))
   }
 }

@@ -69,6 +69,12 @@ object AuditOperation {
 
   case object PoistaOppijanYliajot extends AuditOperation("POISTA YLIAJO OPPIJALTA UI")
 
+  case object HaeHarkinnanvaraisuusYliajot extends AuditOperation("HAE HARKINNANVARAISUUSYLIAJOT UI")
+
+  case object TallennaHarkinnanvaraisuusYliajot extends AuditOperation("TALLENNA HARKINNANVARAISUUSYLIAJOT UI")
+
+  case object PoistaHarkinnanvaraisuusYliajo extends AuditOperation("POISTA HARKINNANVARAISUUSYLIAJO UI")
+
   case object HaeValintadata extends AuditOperation("VALINTADATAN HAKU HAKUKOHTEELLE TAI HAKEMUKSILLE")
 
   case object HaeHakemustenHarkinnanvaraisuudet extends AuditOperation("HARKINNANVARAISUUSTIEDON HAKU HAKEMUKSILLE")
