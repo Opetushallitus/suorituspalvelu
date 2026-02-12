@@ -96,6 +96,7 @@ class KantaOperaatiotTest {
             DROP TABLE flyway_schema_history;
             DROP TABLE henkilot;
             DROP TABLE yliajot;
+            DROP TABLE harkinnanvaraisuus_yliajot;
           """), 5.seconds)
 
   /**
