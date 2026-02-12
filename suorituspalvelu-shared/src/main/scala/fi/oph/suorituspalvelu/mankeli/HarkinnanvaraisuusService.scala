@@ -1,15 +1,15 @@
 package fi.oph.suorituspalvelu.mankeli
 
-import org.springframework.beans.factory.annotation.Autowired
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHakukohde}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHakukohde, Ohjausparametrit}
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-import java.time.{Instant, LocalDate, ZoneId}
-import scala.concurrent.{Await, Future}
+import java.time.LocalDate
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 
 enum HarkinnanvaraisuudenSyy {
   case SURE_YKS_MAT_AI
@@ -26,7 +26,8 @@ enum HarkinnanvaraisuudenSyy {
 }
 
 case class HakutoiveenHarkinnanvaraisuus(hakukohdeOid: String,
-                                         harkinnanvaraisuudenSyy: HarkinnanvaraisuudenSyy)
+                                         harkinnanvaraisuudenSyy: HarkinnanvaraisuudenSyy,
+                                         yliajettu: Boolean = false)
 
 case class HakemuksenHarkinnanvaraisuus(hakemusOid: String,
                                         henkiloOid: String,
@@ -118,6 +119,7 @@ object HarkinnanvaraisuusPaattely {
 
 @Component
 class HarkinnanvaraisuusService {
+  private val LOG = LoggerFactory.getLogger(classOf[HarkinnanvaraisuusService])
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
@@ -127,16 +129,43 @@ class HarkinnanvaraisuusService {
 
   @Autowired val tarjontaIntegration: TarjontaIntegration = null
 
+  private def getHakemuksenHarkinnanvaraisuusValue(hakemus: AtaruValintalaskentaHakemus,
+                                         opiskeluoikeudet: Seq[Opiskeluoikeus],
+                                         vahvistusPaiva: LocalDate,
+                                         hakukohteetMap: Map[String, KoutaHakukohde],
+                                         ): HakemuksenHarkinnanvaraisuus = {
+    val paateltyHarkinnanvaraisuus = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus,
+      opiskeluoikeudet,
+      vahvistusPaiva,
+      hakukohteetMap
+    )
+    val harkinnanvaraisuusYliajot = kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemus.hakemusOid)
+    paateltyHarkinnanvaraisuus.copy(hakutoiveet = paateltyHarkinnanvaraisuus.hakutoiveet.map(ht => {
+      val yliajettuSyy = harkinnanvaraisuusYliajot.find(_.hakukohdeOid.equals(ht.hakukohdeOid)).flatMap(_.harkinnanvaraisuudenSyy)
+      yliajettuSyy match {
+        case Some(syy) =>
+          if (ht.harkinnanvaraisuudenSyy == HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN_HAKUKOHDE) {
+            LOG.warn(s"Hakemuksen ${hakemus.hakemusOid} hakutoiveelle ${ht.hakukohdeOid} löytyi harkinnanvaraisuuden yliajo, mutta päätelty harkinnanvaraisuus on \"EI_HARKINNANVARAINEN_HAKUKOHDE\", jonka yliajaminen on kielletty! Palautetaan päätelty harkinnanvaraisuus.")
+            ht
+          } else {
+            ht.copy(harkinnanvaraisuudenSyy = syy, yliajettu = true)
+          }
+        case None => ht
+      }
+    }))
+  }
+
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
     allOidsForPerson.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
   }
 
-  def getHakemuksenHarkinnanvaraisuudet(hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate) = {
+  def getHakemuksenHarkinnanvaraisuudet(hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): HakemuksenHarkinnanvaraisuus = {
     val hakemuksenHakukohteetMap = hakemus.hakutoiveet
       .map(hakutoive => tarjontaIntegration.getHakukohde(hakutoive.hakukohdeOid))
       .map(koutaHakukohde => (koutaHakukohde.oid, koutaHakukohde)).toMap
-    HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(hakemus, opiskeluoikeudet, vahvistettuViimeistaan, hakemuksenHakukohteetMap)
+    getHakemuksenHarkinnanvaraisuusValue(hakemus, opiskeluoikeudet, vahvistettuViimeistaan, hakemuksenHakukohteetMap)
   }
 
   def getHakemustenHarkinnanvaraisuudet(hakemusOids: Set[String]): Set[HakemuksenHarkinnanvaraisuus] = {
@@ -160,28 +189,9 @@ class HarkinnanvaraisuusService {
 
         hakemuksetForHaku.map { hakemus =>
           val opiskeluoikeudet = haeSupaTiedot(hakemus.personOid)
-          HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
-            hakemus,
-            opiskeluoikeudet,
-            vahvistusPaiva,
-            hakukohteetMap
-          )
+          getHakemuksenHarkinnanvaraisuusValue(hakemus, opiskeluoikeudet, vahvistusPaiva, hakukohteetMap)
         }
       }.toSet
     }
-  }
-
-
-  def getHakemuksenHarkinnanvaraisuudet(hakemusOid: String): HakemuksenHarkinnanvaraisuus = {
-    val hakemusF: Future[Seq[AtaruValintalaskentaHakemus]] = hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid))
-    val hakemus = Await.result(hakemusF, 20.seconds).headOption.getOrElse(throw new RuntimeException(s"Hakemusta $hakemusOid ei löytynyt!"))
-
-    val hakemuksenHakukohteetMap = hakemus.hakutoiveet
-      .map(hakutoive => tarjontaIntegration.getHakukohde(hakutoive.hakukohdeOid))
-      .map(koutaHakukohde => (koutaHakukohde.oid, koutaHakukohde)).toMap
-    val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(hakemus.hakuOid)
-    val suorituksetKannasta = haeSupaTiedot(hakemus.personOid)
-
-    HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(hakemus, suorituksetKannasta, ohjausparametrit.getVahvistuspaivaLocalDate, hakemuksenHakukohteetMap)
   }
 }

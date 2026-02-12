@@ -278,4 +278,288 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[HarkinnanvaraisuusFailureResponse])
     )
   }
+
+  /*
+   * Integraatiotestit harkinnanvaraisuusyliajojen palauttamiselle
+   */
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeHarkinnanvaraisuudetWithYliajoOverridesCalculatedValue(): Unit = {
+    val personOid = "1.2.246.562.24.21250967212"
+    val hakemusOid = "1.2.246.562.11.01000000000000023252"
+    val hakuOid = "1.2.246.562.29.01000000000000013276"
+    val hakukohdeOid = "1.2.246.562.20.00000000000000000003"
+    val virkailijaOid = "1.2.246.562.24.21250967987"
+
+    // Tallennetaan yliajo joka ylikirjoittaa lasketun harkinnanvaraisuuden
+    kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(
+      fi.oph.suorituspalvelu.business.HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_ULKOMAILLA_OPISKELTU),
+        virkailijaOid = virkailijaOid,
+        selite = "Manuaalinen yliajo testissä"
+      )
+    ))
+
+    val testHakemus = AtaruValintalaskentaHakemus(
+      hakemusOid = hakemusOid,
+      personOid = personOid,
+      hakuOid = hakuOid,
+      asiointikieli = "fi",
+      hakutoiveet = List(
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = Some("harkinnanvaraisesti_hyvaksyttavissa")
+        )
+      ),
+      maksuvelvollisuus = Map.empty,
+      keyValues = Map(
+        AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017",
+        "harkinnanvaraisuus-reason_" + hakukohdeOid -> "1"  // 1 = ATARU_OPPIMISVAIKEUDET (eri kuin yliajossa)
+      )
+    )
+
+    val hakukohde = KoutaHakukohde(
+      oid = hakukohdeOid,
+      voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true)
+    )
+
+    val ohjausparametrit = Ohjausparametrit(
+      suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)),
+      valintalaskentapaiva = Some(DateParam(1768290647351L))
+    )
+
+    // Setup mocks
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+      .thenReturn(Future.successful(Seq(testHakemus)))
+
+    Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid))
+      .thenReturn(hakukohde)
+
+    Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
+      .thenReturn(ohjausparametrit)
+
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
+
+    // Execute request
+    val result = mvc.perform(jsonPost(ApiConstants.VALINNAT_HARKINNANVARAISUUS_PATH, HakemustenHarkinnanvaraisuudetPayload(List(hakemusOid).asJava))
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // Verify response
+    val typeRef = new TypeReference[List[ValintaApiHakemuksenHarkinnanvaraisuus]] {}
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), typeRef)
+    Assertions.assertEquals(1, response.size)
+
+    val harkinnanvaraisuus = response.head
+    Assertions.assertEquals(hakemusOid, harkinnanvaraisuus.hakemusOid)
+    Assertions.assertEquals(1, harkinnanvaraisuus.hakutoiveet.size())
+
+    // Varmistetaan että yliajo on voimassa - ATARU_ULKOMAILLA_OPISKELTU eikä ATARU_OPPIMISVAIKEUDET
+    val hakutoive = harkinnanvaraisuus.hakutoiveet.asScala.head
+    Assertions.assertEquals(hakukohdeOid, hakutoive.hakukohdeOid)
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_ULKOMAILLA_OPISKELTU.toString, hakutoive.harkinnanvaraisuudenSyy,
+      "Yliajon pitäisi ylikirjoittaa laskettu harkinnanvaraisuus")
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeHarkinnanvaraisuudetMultipleHakutoiveetWithMixedYliajot(): Unit = {
+    val personOid = "1.2.246.562.24.21250967213"
+    val hakemusOid = "1.2.246.562.11.01000000000000023253"
+    val hakuOid = "1.2.246.562.29.01000000000000013277"
+    val hakukohdeOid1 = "1.2.246.562.20.00000000000000000004"
+    val hakukohdeOid2 = "1.2.246.562.20.00000000000000000005"
+    val hakukohdeOid3 = "1.2.246.562.20.00000000000000000006"
+    val virkailijaOid = "1.2.246.562.24.21250967987"
+
+    // Tallennetaan yliajo vain yhdelle hakutoiveelle
+    kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(
+      fi.oph.suorituspalvelu.business.HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid2,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.SURE_EI_PAATTOTODISTUSTA),
+        virkailijaOid = virkailijaOid,
+        selite = "Yliajo toiselle hakutoiveelle"
+      )
+    ))
+
+    val testHakemus = AtaruValintalaskentaHakemus(
+      hakemusOid = hakemusOid,
+      personOid = personOid,
+      hakuOid = hakuOid,
+      asiointikieli = "fi",
+      hakutoiveet = List(
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid1,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = None
+        ),
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid2,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = Some("harkinnanvaraisesti_hyvaksyttavissa")
+        ),
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid3,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = Some("harkinnanvaraisesti_hyvaksyttavissa")
+        )
+      ),
+      maksuvelvollisuus = Map.empty,
+      keyValues = Map(
+        AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017",
+        "harkinnanvaraisuus-reason_" + hakukohdeOid2 -> "0",  // ATARU_OPPIMISVAIKEUDET
+        "harkinnanvaraisuus-reason_" + hakukohdeOid3 -> "1"   // ATARU_SOSIAALISET_SYYT
+      )
+    )
+
+    val hakukohde1 = KoutaHakukohde(oid = hakukohdeOid1, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true))
+    val hakukohde2 = KoutaHakukohde(oid = hakukohdeOid2, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true))
+    val hakukohde3 = KoutaHakukohde(oid = hakukohdeOid3, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true))
+
+    val ohjausparametrit = Ohjausparametrit(
+      suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)),
+      valintalaskentapaiva = Some(DateParam(1768290647351L))
+    )
+
+    // Setup mocks
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+      .thenReturn(Future.successful(Seq(testHakemus)))
+
+    Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid1)).thenReturn(hakukohde1)
+    Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid2)).thenReturn(hakukohde2)
+    Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid3)).thenReturn(hakukohde3)
+    Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid)).thenReturn(ohjausparametrit)
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
+
+    val result = mvc.perform(jsonPost(ApiConstants.VALINNAT_HARKINNANVARAISUUS_PATH, HakemustenHarkinnanvaraisuudetPayload(List(hakemusOid).asJava))
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val typeRef = new TypeReference[List[ValintaApiHakemuksenHarkinnanvaraisuus]] {}
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), typeRef)
+    Assertions.assertEquals(1, response.size)
+
+    val harkinnanvaraisuus = response.head
+    Assertions.assertEquals(3, harkinnanvaraisuus.hakutoiveet.size())
+
+    // Ensimmäinen hakutoive: ei yliajoa, ei harkinnanvarainen
+    val hakutoive1 = harkinnanvaraisuus.hakutoiveet.asScala.find(_.hakukohdeOid == hakukohdeOid1).get
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN.toString, hakutoive1.harkinnanvaraisuudenSyy)
+
+    // Toinen hakutoive: yliajo SURE_EI_PAATTOTODISTUSTA (ylikirjoittaa ATARU_OPPIMISVAIKEUDET)
+    val hakutoive2 = harkinnanvaraisuus.hakutoiveet.asScala.find(_.hakukohdeOid == hakukohdeOid2).get
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.SURE_EI_PAATTOTODISTUSTA.toString, hakutoive2.harkinnanvaraisuudenSyy)
+
+    // Kolmas hakutoive: ei yliajoa, käytetään laskettua
+    val hakutoive3 = harkinnanvaraisuus.hakutoiveet.asScala.find(_.hakukohdeOid == hakukohdeOid3).get
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_SOSIAALISET_SYYT.toString, hakutoive3.harkinnanvaraisuudenSyy)
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeHarkinnanvaraisuudetYliajoDoesNotOverrideEiHarkinnanvarainenHakukohde(): Unit = {
+    val personOid = "1.2.246.562.24.21250967214"
+    val hakemusOid = "1.2.246.562.11.01000000000000023254"
+    val hakuOid = "1.2.246.562.29.01000000000000013278"
+    val hakukohdeOid = "1.2.246.562.20.00000000000000000007"
+    val virkailijaOid = "1.2.246.562.24.21250967987"
+
+    // Yritetään yliajaa hakukohde joka ei ole harkinnanvarainen
+    kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(
+      fi.oph.suorituspalvelu.business.HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET),
+        virkailijaOid = virkailijaOid,
+        selite = "Yritys yliajaa ei-harkinnanvarainen"
+      )
+    ))
+
+    val testHakemus = AtaruValintalaskentaHakemus(
+      hakemusOid = hakemusOid,
+      personOid = personOid,
+      hakuOid = hakuOid,
+      asiointikieli = "fi",
+      hakutoiveet = List(
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = None
+        )
+      ),
+      maksuvelvollisuus = Map.empty,
+      keyValues = Map(
+        AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017"
+      )
+    )
+
+    val hakukohde = KoutaHakukohde(
+      oid = hakukohdeOid,
+      voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false)  // Ei harkinnanvarainen hakukohde
+    )
+
+    val ohjausparametrit = Ohjausparametrit(
+      suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)),
+      valintalaskentapaiva = Some(DateParam(1768290647351L))
+    )
+
+    // Setup mocks
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+      .thenReturn(Future.successful(Seq(testHakemus)))
+
+    Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid)).thenReturn(hakukohde)
+    Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid)).thenReturn(ohjausparametrit)
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
+
+    // Execute request
+    val result = mvc.perform(jsonPost(ApiConstants.VALINNAT_HARKINNANVARAISUUS_PATH, HakemustenHarkinnanvaraisuudetPayload(List(hakemusOid).asJava))
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // Verify response
+    val typeRef = new TypeReference[List[ValintaApiHakemuksenHarkinnanvaraisuus]] {}
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), typeRef)
+    Assertions.assertEquals(1, response.size)
+
+    val harkinnanvaraisuus = response.head
+    Assertions.assertEquals(1, harkinnanvaraisuus.hakutoiveet.size())
+
+    // Varmistetaan että yliajo EI ole voimassa - pitäisi pysyä EI_HARKINNANVARAINEN_HAKUKOHDE
+    val hakutoive = harkinnanvaraisuus.hakutoiveet.asScala.head
+    Assertions.assertEquals(HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN_HAKUKOHDE.toString, hakutoive.harkinnanvaraisuudenSyy,
+      "EI_HARKINNANVARAINEN_HAKUKOHDE ei saa yliajaa")
+  }
 }
