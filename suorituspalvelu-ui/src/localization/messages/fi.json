@@ -195,7 +195,8 @@
     "lisatieto-kieli": "Lisätieto (oppimäärä)",
     "avaa-koski-jarjestelmassa": "Avaa tiedot Koski-järjestelmässä",
     "nayta-opintosuoritukset": "Näytä opintosuoritukset",
-    "piilota-opintosuoritukset": "Piilota opintosuoritukset"
+    "piilota-opintosuoritukset": "Piilota opintosuoritukset",
+    "opintojakso": "Opintojakso"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",

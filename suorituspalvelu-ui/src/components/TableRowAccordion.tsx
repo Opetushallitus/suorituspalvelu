@@ -8,26 +8,24 @@ import { truthyReactNodes, toId } from '@/lib/common';
 
 const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   ...theme.typography.h5,
-  display: 'flex',
-  justifyContent: 'flex-start',
   gap: theme.spacing(1),
-  alignItems: 'center',
   paddingLeft: 0,
+  border: 'none',
 }));
 
 /**
- * TableBodyAccordion yhdistää taulukon rivin ja Accordion-komponentin toiminnallisuutta.
+ * TableRowAccordion yhdistää taulukon rivin ja Accordion-komponentin toiminnallisuutta.
  * Komponentti näyttää taulukkorivin, jonka ensimmäinen solu on accordion-otsikko, jota klikkaamalla
- * voidaan avata tai sulkea accordionin sisältö. Semanttisesti komponentissa on kaksi tbody-elementtiä:
- * yksi accordion-otsikkoriville ja toinen accordionin sisällölle.
- * Avattava sisältö näytetään yhdessä solussa, joka on koko taulukon levyinen.
+ * voidaan avata tai sulkea accordionin sisältö. Semanttisesti komponentissa on kaksi elementtiä:
+ * - TableRow-elementti accordion-otsikkoriville.
+ * - Avattava sisältö näytetään TableBody-elementissä yhdessä solussa, joka on koko taulukon levyinen.
  *
  * @param title Otsikko, joka näytetään accordion-otsikkorivin ensimmäisessä solussa.
  * @param otherCells Accordion-otsikkorivin muut solut, jotka näytetään otsikkosolun jälkeen.
  * @param children Sisältö, joka näytetään avattavassa osiossa. Jos tyhjä, ei näytetä accordionia lainkaan.
  * @param contentCellStyle Tyylimäärittelyt avattavan sisällön solulle.
  */
-export const TableBodyAccordion = ({
+export const TableRowAccordion = ({
   title,
   children,
   otherCells,
@@ -57,45 +55,52 @@ export const TableBodyAccordion = ({
 
   return (
     <>
-      <TableBody>
-        <TableRow
-          sx={{
-            width: '100%',
-            borderTop: DEFAULT_BOX_BORDER,
-          }}
-        >
-          {hasChildren ? (
-            <AccordionHeaderCell id={headerId}>
-              <OphButton
-                variant="text"
-                aria-label={toggleButtonTitle}
-                sx={{ fontWeight: 400 }}
-                startIcon={
-                  <ExpandMore
-                    sx={{
-                      transform: isOpen ? 'rotate(180deg)' : 'none',
-                      color: ophColors.grey900,
-                    }}
-                  />
-                }
-                onClick={() => setIsOpen((open) => !open)}
-                aria-controls={contentId}
-                aria-expanded={isOpen ? 'true' : 'false'}
-              >
-                {title}
-              </OphButton>
-            </AccordionHeaderCell>
-          ) : (
-            <TableCell>{title}</TableCell>
-          )}
-          {otherCells}
-        </TableRow>
-      </TableBody>
+      <TableRow
+        sx={{
+          width: '100%',
+          borderTop: DEFAULT_BOX_BORDER,
+          border: 0,
+          paddingLeft: 0,
+        }}
+      >
+        {hasChildren ? (
+          <AccordionHeaderCell id={headerId}>
+            <OphButton
+              variant="text"
+              aria-label={toggleButtonTitle}
+              sx={{
+                fontWeight: 400,
+                padding: 0,
+                display: 'inline-flex',
+                textAlign: 'left',
+                border: 'none',
+              }}
+              startIcon={
+                <ExpandMore
+                  sx={{
+                    transform: isOpen ? 'rotate(180deg)' : 'none',
+                    color: ophColors.grey900,
+                  }}
+                />
+              }
+              onClick={() => setIsOpen((open) => !open)}
+              aria-controls={contentId}
+              aria-expanded={isOpen ? 'true' : 'false'}
+            >
+              {title}
+            </OphButton>
+          </AccordionHeaderCell>
+        ) : (
+          <TableCell>{title}</TableCell>
+        )}
+        {otherCells}
+      </TableRow>
       {hasChildren && (
         <TableBody
           sx={{
             minHeight: 0,
             display: isOpen ? 'table-row-group' : 'none',
+            borderBottom: DEFAULT_BOX_BORDER,
           }}
         >
           <TableRow>

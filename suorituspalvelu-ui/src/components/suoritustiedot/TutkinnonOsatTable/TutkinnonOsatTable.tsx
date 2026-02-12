@@ -2,7 +2,7 @@ import type { AmmatillinenTutkinnonOsa } from '@/types/ui-types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Table, TableCell, TableHead, TableRow } from '@mui/material';
 import { isEmpty } from 'remeda';
-import { TableBodyAccordion } from '@/components/TableBodyAccordion';
+import { TableRowAccordion } from '@/components/TableRowAccordion';
 import { styled } from '@/lib/theme';
 import { isKielistetty } from '@/lib/translation-utils';
 import { KokonaislaajuusRow } from './KokonaislaajuusRow';
@@ -51,7 +51,7 @@ export function TutkinnonOsatTable({
         {tutkinnonOsat.map((tutkinnonOsa) => {
           const arvosana = tutkinnonOsa.arvosana;
           return (
-            <TableBodyAccordion
+            <TableRowAccordion
               key={tutkinnonOsa.tunniste}
               contentCellStyle={{ paddingLeft: '46px' }}
               title={translateKielistetty(tutkinnonOsa.nimi)}
@@ -67,7 +67,7 @@ export function TutkinnonOsatTable({
               {!isEmpty(tutkinnonOsa.osaAlueet) && (
                 <OsaAlueetTable osaAlueet={tutkinnonOsa.osaAlueet} />
               )}
-            </TableBodyAccordion>
+            </TableRowAccordion>
           );
         })}
         <KokonaislaajuusRow
