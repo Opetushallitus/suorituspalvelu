@@ -1118,19 +1118,12 @@ class KantaOperaatiotTest {
 
     // Tarkistetaan että vain hakukohteen 1 yliajo edelleen voimassa
     val haetutYliajotAfter = this.kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
-    Assertions.assertEquals(2, haetutYliajotAfter.size)
-    hakukohteen1Yliajo = haetutYliajot.find(_.hakukohdeOid == hakukohdeOid1).get
+    Assertions.assertEquals(1, haetutYliajotAfter.size)
+    hakukohteen1Yliajo = haetutYliajotAfter.head
     Assertions.assertEquals(hakemusOid, hakukohteen1Yliajo.hakemusOid)
     Assertions.assertEquals(hakukohdeOid1, hakukohteen1Yliajo.hakukohdeOid)
     Assertions.assertEquals(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET, hakukohteen1Yliajo.harkinnanvaraisuudenSyy.get)
     Assertions.assertEquals("yliajettu1", hakukohteen1Yliajo.selite)
-
-    hakukohteen2Yliajo = haetutYliajotAfter.find(_.hakukohdeOid == hakukohdeOid2).get
-    Assertions.assertEquals(hakemusOid, hakukohteen2Yliajo.hakemusOid)
-    Assertions.assertEquals(hakukohdeOid2, hakukohteen2Yliajo.hakukohdeOid)
-    Assertions.assertEquals(None, hakukohteen2Yliajo.harkinnanvaraisuudenSyy)
-    Assertions.assertEquals("ei huvita enää yliajaa", hakukohteen2Yliajo.selite)
-
   }
 
   @Test def testCasMapping(): Unit = {

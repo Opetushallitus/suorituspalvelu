@@ -664,6 +664,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           selite
         FROM harkinnanvaraisuus_yliajot
         WHERE hakemus_oid = ${hakemusOid}
+          AND harkinnanvaraisuuden_syy IS NOT NULL
           AND upper(voimassaolo)='infinity'::timestamptz
         ORDER BY lower(voimassaolo) DESC
       """.as[(String, String, String, String, String)]
