@@ -112,9 +112,12 @@ object ApiConstants {
 
   final val UI_TALLENNA_YLIAJOT_PATH                        = UI_API_PREFIX + "/tallennayliajot"
   final val UI_POISTA_YLIAJO_PATH                           = UI_API_PREFIX + "/poistayliajo"
+
   final val UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH          = UI_API_PREFIX + "/haeharkinnanvaraisuusyliajot"
   final val UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH     = UI_API_PREFIX + "/tallennaharkinnanvaraisuusyliajot"
   final val UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH        = UI_API_PREFIX + "/poistaharkinnanvaraisuusyliajo"
+  final val UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME    = "hakemusOid"
+  final val UI_HARKIKNNANVARAISUUS_HAKUKOHDE_OID_PARAM_NAME = "hakukohdeOid"
 
   final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME         = "oppijaNumero"
   final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER  = "{" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME + "}"
@@ -124,9 +127,7 @@ object ApiConstants {
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"
   final val UI_VALINTADATA_AVAIN_PARAM_NAME                 = "avain"
-  final val UI_VALINTADATA_SELITE_PARAM_NAME                = "selite"
-  final val UI_VALINTADATA_HAKEMUS_OID_PARAM_NAME           = "hakemusOid"
-  final val UI_VALINTADATA_HAKUKOHDE_OID_PARAM_NAME         = "hakukohdeOid"
+
 
   final val UI_YLIAJOT_HISTORIA_PATH                        = UI_API_PREFIX + "/valintadatahistoria"
   final val UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME     = "oppijaNumero"
@@ -172,6 +173,9 @@ object ApiConstants {
   final val UI_500_DESCRIPTION                              = "Palvelin kohtasi odottamattoman tilanteen, joka esti pyynnön täyttämisen"
 
   final val UI_OPPIJANUMERO_PARAM_NAME                      = "oppijaNumero"
+  final val UI_SELITE_PARAM_NAME                            = "selite"
+
+
 
   /**
    * Swagger-kuvauksiin liittyvät esimerkkiarvot
@@ -208,5 +212,5 @@ object ApiConstants {
   final val ESIMERKKI_JOB_NIMI                              = "esimerkki-jobi"
   final val ESIMERKKI_JOB_TUNNISTE                          = "5cc3b63f-f3f8-40e9-b535-ba4027d490bb"
 
-  final val ESIMERKKI_HARKINNANVARAISUUDEN_SYY              = "Sosiaaliset syyt"
+  final val ESIMERKKI_HARKINNANVARAISUUDEN_SYY              = "ATARU_OPPIMISVAIKEUDET"
 }
