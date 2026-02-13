@@ -6,6 +6,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
+import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
 import java.util.UUID
@@ -14,6 +15,8 @@ import java.util.UUID
  * Muuntaa Kosken suoritusmallin suorituspuun SUPAn suoritusrakenteeksi
  */
 object KoskiToSuoritusConverter {
+
+  private val LOG = LoggerFactory.getLogger(KoskiToSuoritusConverter.getClass)
 
   val allowMissingFields = new ThreadLocal[Boolean]
 
@@ -452,46 +455,73 @@ object KoskiToSuoritusConverter {
     }
   }
 
-  def toPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara = {
-    val oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
-      fi.oph.suorituspalvelu.business.Oppilaitos(
-        o.nimi,
-        o.oid)).getOrElse(dummy())
+  //Kotiopetus-opiskeluoikeudeksi tulkitaan kaksi eri tapausta:
+  // -Opiskeluoikeus, jolla on kotiopetusjakso jolla ei ole loppupäivää.
+  // -Opiskeluoikeus, jolla on kotiopetusjakso jolla on loppupäivä, mutta ei 9. vuosiluokan luokkasuoritusta.
+  def isKotiopetus(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean = {
+    def hasYsiluokka = opiskeluoikeus.suoritukset.get.filter(
+      s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA
+    ).exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists("9".equals))
+    val loytyyJaksoIlmanLoppua = opiskeluoikeus.lisätiedot.flatMap(_.kotiopetusjaksot).getOrElse(List.empty).exists(_.loppu.isEmpty)
+    val loytyyJaksoLopulla = opiskeluoikeus.lisätiedot.flatMap(_.kotiopetusjaksot).getOrElse(List.empty).exists(_.loppu.isDefined)
+    loytyyJaksoIlmanLoppua || (loytyyJaksoLopulla && !hasYsiluokka)
+  }
 
-    val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
-    val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+  def isYlaAste(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean = {
+    opiskeluoikeus.suoritukset.get
+      .filter(s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA)
+      .exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists(Set("7", "8", "9").contains))
+  }
 
-    val lahtokoulut = opiskeluoikeus.suoritukset.get
-      .filter(s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA).flatMap(s => {
-        val luokkaAste = s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).getOrElse(dummy())
-        val luokka = s.luokka.getOrElse(dummy())
-        s.alkamispäivä match
-          // Luodaan lähtökoulu vain jos alkamispäivä määritelty. KOSKI-tiimin mukaan alkamispäivät määritelty ainakin
-          // viimeisen kuuden vuoden ajalta.
-          case Some(pvm) if Set("7", "8", "9").contains(luokkaAste) =>
-            val alkamispaiva = LocalDate.parse(pvm)
-            val vahvistuspaiva = s.vahvistus.map(v => LocalDate.parse(v.`päivä`))
-            Some(Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), luokka, supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste")))
-          case default => None
-      })
 
-    PerusopetuksenOppimaara(
-      tunniste = UUID.randomUUID(),
-      versioTunniste = None,
-      oppilaitos = oppilaitos,
-      luokka = lahtokoulut.maxByOption(_.suorituksenAlku).map(_.luokka),
-      koskiTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
-      supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
-      suoritusKieli = suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
-      koulusivistyskieli = suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
-      yksilollistaminen = getYksilollistaminen(opiskeluoikeus, suoritus),
-      aloitusPaivamaara = parseAloitus(opiskeluoikeus),
-      vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      aineet = aineet,
-      lahtokoulut = lahtokoulut,
-      syotetty = false,
-      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
-    )
+  def toPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppimaara] = {
+    if (isKotiopetus(opiskeluoikeus)) {
+      LOG.info(s"Ei muodosteta oppimäärää Koski-opiskeluoikeudelle ${opiskeluoikeus.oid}, koska kyse on kotiopetuslaisesta.")
+      None
+    } else if (!isYlaAste(opiskeluoikeus)) {
+      LOG.info(s"Ei muodosteta oppimäärää Koski-opiskeluoikeudelle ${opiskeluoikeus.oid}, koska luokkien 7-9 suorituksia ei löytynyt.")
+      None
+    } else {
+      val oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          o.nimi,
+          o.oid)).getOrElse(dummy())
+
+      val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
+      val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+
+      val lahtokoulut = opiskeluoikeus.suoritukset.get
+        .filter(s => s.tyyppi.koodiarvo == SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA).flatMap(s => {
+          val luokkaAste = s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).getOrElse(dummy())
+          val luokka = s.luokka.getOrElse(dummy())
+          s.alkamispäivä match
+            // Luodaan lähtökoulu vain jos alkamispäivä määritelty. KOSKI-tiimin mukaan alkamispäivät määritelty ainakin
+            // viimeisen kuuden vuoden ajalta.
+            case Some(pvm) if Set("7", "8", "9").contains(luokkaAste) =>
+              val alkamispaiva = LocalDate.parse(pvm)
+              val vahvistuspaiva = s.vahvistus.map(v => LocalDate.parse(v.`päivä`))
+              Some(Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), luokka, supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste")))
+            case default => None
+        })
+
+      Some(PerusopetuksenOppimaara(
+        tunniste = UUID.randomUUID(),
+        versioTunniste = None,
+        oppilaitos = oppilaitos,
+        luokka = lahtokoulut.maxByOption(_.suorituksenAlku).map(_.luokka),
+        koskiTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+        supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
+        suoritusKieli = suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
+        koulusivistyskieli = suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
+        yksilollistaminen = getYksilollistaminen(opiskeluoikeus, suoritus),
+        aloitusPaivamaara = parseAloitus(opiskeluoikeus),
+        vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+        aineet = aineet,
+        lahtokoulut = lahtokoulut,
+        syotetty = false,
+        vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
+      ))
+    }
   }
 
   val YHTEISET_AINEET = List(
@@ -696,7 +726,7 @@ object KoskiToSuoritusConverter {
           suoritus.tyyppi.koodiarvo match
             case SUORITYSTYYPPI_AMMATILLINENTUTKINTO              => Some(toAmmatillinenTutkinto(opiskeluoikeus, suoritus))
             case SUORITYSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIMAARA  => Some(toAikuistenPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider))
-            case SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA           => Some(toPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider))
+            case SUORITYSTYYPPI_PERUSOPETUKSENOPPIMAARA           => toPerusopetuksenOppimaara(opiskeluoikeus, suoritus, koodistoProvider)
             case SUORITYSTYYPPI_PERUSOPETUKSENVUOSILUOKKA         => None // vuosiluokkien tiedot käsitellään osana perusopetuksen oppimäärää
             case SUORITYSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA
               if suoritus.arviointi.exists(_.nonEmpty)            => Some(toPerusopetuksenOppiaineenOppimaara(opiskeluoikeus, suoritus))
