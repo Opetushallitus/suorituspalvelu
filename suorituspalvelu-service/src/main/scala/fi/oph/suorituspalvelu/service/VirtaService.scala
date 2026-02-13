@@ -108,7 +108,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     val succeeded = tulokset.filter(_.exception.isEmpty)
     LOG.info(s"Synkattiin onnistuneesti ${succeeded.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
     val failed = tulokset.filter(_.exception.isDefined)
-    LOG.error(s"Failed to sync ${failed.size} henkiloita VIRTA-tietojen synkronoinnissa")
+    if(failed.nonEmpty) LOG.error(s"Failed to sync ${failed.size} henkiloita VIRTA-tietojen synkronoinnissa")
     failed.foreach(r => LOG.error(s"Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
 
     tulokset

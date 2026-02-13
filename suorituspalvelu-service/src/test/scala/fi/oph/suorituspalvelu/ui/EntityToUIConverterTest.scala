@@ -875,7 +875,7 @@ class EntityToUIConverterTest {
         yhteispistemaara = a.pisteet.toJava,
         tutkintokerta = a.tutkintoKerta
       )).toList.asJava
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(YOOpiskeluoikeus(null, yoTutkinto)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).yoTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(YOOpiskeluoikeus(null, Some(yoTutkinto))), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).yoTutkinnot)
   }
 
   @Test def testConvertLukionOppimaara(): Unit = {

@@ -548,7 +548,7 @@ class KantaOperaatiotTest {
   @Test def testYTRRoundTrip(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO1, Lahdejarjestelma.YTR, Seq("{}"), Seq.empty, Instant.now(), "YTR", None).get
-    val opiskeluoikeus = YOOpiskeluoikeus(UUID.randomUUID(), YOTutkinto(UUID.randomUUID(), Koodi("fi", "kieli", Some(1)), SuoritusTila.KESKEN, None, Set.empty))
+    val opiskeluoikeus = YOOpiskeluoikeus(UUID.randomUUID(), Some(YOTutkinto(UUID.randomUUID(), Koodi("fi", "kieli", Some(1)), SuoritusTila.KESKEN, None, Set.empty)))
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.YTR)
 
     val haetutSuoritukset = this.kantaOperaatiot.haeSuoritukset(HENKILONUMERO1)
