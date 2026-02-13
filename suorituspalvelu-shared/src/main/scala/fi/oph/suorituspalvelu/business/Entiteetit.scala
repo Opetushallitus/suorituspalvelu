@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.business
 
 import com.fasterxml.jackson.annotation.{JsonCreator, JsonTypeInfo, JsonValue}
+import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiOpiskeluoikeusTila}
 
 import java.time.{Instant, LocalDate}
@@ -485,3 +486,11 @@ case class AvainArvoYliajoMuutos(
 )
 
 case class Job(tunniste: UUID, nimi: String, progress: BigDecimal, lastUpdated: Instant)
+
+case class HarkinnanvaraisuusYliajo(
+  hakemusOid: String,
+  hakukohdeOid: String,
+  harkinnanvaraisuudenSyy: Option[HarkinnanvaraisuudenSyy],
+  virkailijaOid: String,
+  selite: String
+)

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 
 implicit val setStringArray: SetParameter[Seq[String]] = mkArraySetParameter[String]("varchar")
 
@@ -652,4 +653,93 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     ), DB_TIMEOUT).toList
   }
 
+  def haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid: String): Seq[HarkinnanvaraisuusYliajo] = {
+    Await.result(db.run(
+      sql"""
+        SELECT
+          virkailija_oid,
+          hakemus_oid,
+          hakukohde_oid,
+          harkinnanvaraisuuden_syy,
+          selite
+        FROM harkinnanvaraisuus_yliajot
+        WHERE hakemus_oid = ${hakemusOid}
+          AND harkinnanvaraisuuden_syy IS NOT NULL
+          AND upper(voimassaolo)='infinity'::timestamptz
+        ORDER BY lower(voimassaolo) DESC
+      """.as[(String, String, String, String, String)]
+        .map(rows => rows.map {
+          case (virkailijaOid, hakemusOid, hakukohdeOid, harkinnanvaraisuudenSyy, selite) =>
+            HarkinnanvaraisuusYliajo(
+              hakemusOid = hakemusOid,
+              hakukohdeOid = hakukohdeOid,
+              harkinnanvaraisuudenSyy = Option.apply(harkinnanvaraisuudenSyy).map(HarkinnanvaraisuudenSyy.valueOf),
+              virkailijaOid = virkailijaOid,
+              selite = selite
+            )
+        })
+    ), DB_TIMEOUT)
+  }
+
+  def tallennaHarkinnanvaraisuusYliajot(yliajot: Seq[HarkinnanvaraisuusYliajo], tallennusHetki: Instant = Instant.now): Unit = {
+    // Päivitetään mahdollisten vanhojen versioiden voimassaolo loppumaan yliajon alkuhetkeen
+    val updateOldVersionsAction = DBIO.sequence(
+      yliajot.map { yliajo =>
+        sqlu"""
+        UPDATE harkinnanvaraisuus_yliajot
+        SET voimassaolo = tstzrange(lower(voimassaolo), ${tallennusHetki.toString}::timestamptz)
+        WHERE hakemus_oid = ${yliajo.hakemusOid}
+          AND hakukohde_oid = ${yliajo.hakukohdeOid}
+          AND upper(voimassaolo) = 'infinity'::timestamptz
+        """
+      }
+    )
+
+    // Luodaan uudet yliajot
+    val insertNewVersionsAction = DBIO.sequence(
+      yliajot.map { yliajo =>
+        sqlu"""
+        INSERT INTO harkinnanvaraisuus_yliajot (
+          hakemus_oid,
+          hakukohde_oid,
+          harkinnanvaraisuuden_syy,
+          virkailija_oid,
+          selite,
+          voimassaolo
+        ) VALUES (
+          ${yliajo.hakemusOid},
+          ${yliajo.hakukohdeOid},
+          ${yliajo.harkinnanvaraisuudenSyy.map(_.toString).orNull},
+          ${yliajo.virkailijaOid},
+          ${yliajo.selite},
+          tstzrange(${tallennusHetki.toString}::timestamptz, 'infinity'::timestamptz)
+        )
+        """
+      }
+    )
+
+    // Suoritetaan operaatiot samassa transaktiossa
+    Await.result(db.run(
+      DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
+    ), DB_TIMEOUT)
+  }
+
+  def poistaHarkinnanvaraisuusYliajo(
+    hakemusOid: String,
+    hakukohdeOid: String,
+    virkailijaOid: String,
+    selite: String,
+    poistoHetki: Instant = Instant.now
+  ): Unit = {
+    tallennaHarkinnanvaraisuusYliajot(
+      Seq(HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid,
+        harkinnanvaraisuudenSyy = None,
+        virkailijaOid = virkailijaOid,
+        selite = selite
+      )),
+      poistoHetki
+    )
+  }
 }

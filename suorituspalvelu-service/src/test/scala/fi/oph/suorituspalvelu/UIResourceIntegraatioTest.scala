@@ -2,14 +2,14 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Lahdejarjestelma, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, Ohjausparametrit, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
-import fi.oph.suorituspalvelu.mankeli.AvainArvoConstants
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
+import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_SELITE_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
@@ -1506,7 +1506,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .delete(ApiConstants.UI_POISTA_YLIAJO_PATH, "")
         .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
         .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
-        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, malformedAvain))
+        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, malformedAvain)
+        .queryParam(UI_SELITE_PARAM_NAME, "poiston selite"))
       .andExpect(status().isBadRequest)
       .andReturn()
 
@@ -1563,7 +1564,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .delete(ApiConstants.UI_POISTA_YLIAJO_PATH, "")
         .queryParam(UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, oppijaNumero)
         .queryParam(UI_VALINTADATA_HAKU_PARAM_NAME, hakuOid)
-        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, avainJokaPoistetaan))
+        .queryParam(UI_VALINTADATA_AVAIN_PARAM_NAME, avainJokaPoistetaan)
+        .queryParam(UI_SELITE_PARAM_NAME, "poiston selite"))
       .andExpect(status().isOk)
       .andReturn()
 
@@ -1846,6 +1848,340 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       ApiConstants.UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME -> ApiConstants.ESIMERKKI_OPPIJANUMERO,
       ApiConstants.UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME -> ApiConstants.ESIMERKKI_HAKU_OID,
       ApiConstants.UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME -> AvainArvoConstants.perusopetuksenKieliKey
+    ), auditLogEntry.target)
+  }
+
+  /*
+   * Integraatiotestit harkinnanvaraisuusyliajojen haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeHarkinnanvaraisuusYliajotAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, ApiConstants.ESIMERKKI_HAKEMUS_OID))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testHaeHarkinnanvaraisuusYliajotNotAllowed(): Unit =
+    // käyttäjällä ei ole rekisterinpitäjän oikeuksia
+    mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, ApiConstants.ESIMERKKI_HAKEMUS_OID))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeHarkinnanvaraisuusYliajotPuuttuvaHakemusOidBadRequest(): Unit = {
+    // hakemusOid puuttuu
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, ""))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(HaeHarkinnanvaraisuusYliajotFailureResponse(java.util.Set.of(UIValidator.VALIDATION_HAKEMUSOID_TYHJA)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[HaeHarkinnanvaraisuusYliajotFailureResponse]))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeHarkinnanvaraisuusYliajotVirheellinenHakemusOidBadRequest(): Unit = {
+    val virheellinenHakemusOid = "ei-validi-oid"
+
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, virheellinenHakemusOid))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(HaeHarkinnanvaraisuusYliajotFailureResponse(java.util.Set.of(UIValidator.VALIDATION_HAKEMUSOID_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[HaeHarkinnanvaraisuusYliajotFailureResponse]))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeHarkinnanvaraisuusYliajotAllowed(): Unit = {
+    val hakemusOid = "1.2.246.562.11.00000000001"
+    val hakukohdeOid1 = "1.2.246.562.20.00000000001"
+    val hakukohdeOid2 = "1.2.246.562.20.00000000002"
+    val virkailijaOid = "1.2.246.562.24.21250967987"
+
+    // tallennetaan harkinnanvaraisuusyliajoja
+    kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(
+      HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid1,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET),
+        virkailijaOid = virkailijaOid,
+        selite = "Oppimisvaikeudet dokumentoitu"
+      ),
+      HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid2,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_ULKOMAILLA_OPISKELTU),
+        virkailijaOid = virkailijaOid,
+        selite = "Ulkomailla opiskeltu"
+      )
+    ))
+
+    // haetaan yliajot
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_HAE_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, hakemusOid))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // varmistetaan että molemmat yliajot palautuvat
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[HaeHarkinnanvaraisuusYliajotSuccessResponse])
+    Assertions.assertEquals(2, response.yliajot.size())
+
+    val yliajot = response.yliajot.asScala.sortBy(_.hakukohdeOid.get)
+    Assertions.assertEquals(hakemusOid, yliajot.head.hakemusOid.get)
+    Assertions.assertEquals(hakukohdeOid1, yliajot.head.hakukohdeOid.get)
+    Assertions.assertEquals("ATARU_OPPIMISVAIKEUDET", yliajot.head.harkinnanvaraisuudenSyy.get)
+    Assertions.assertEquals("Oppimisvaikeudet dokumentoitu", yliajot.head.selite.get)
+
+    Assertions.assertEquals(hakemusOid, yliajot(1).hakemusOid.get)
+    Assertions.assertEquals(hakukohdeOid2, yliajot(1).hakukohdeOid.get)
+    Assertions.assertEquals("ATARU_ULKOMAILLA_OPISKELTU", yliajot(1).harkinnanvaraisuudenSyy.get)
+    Assertions.assertEquals("Ulkomailla opiskeltu", yliajot(1).selite.get)
+
+    // tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeHarkinnanvaraisuusYliajot.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME -> hakemusOid), auditLogEntry.target)
+  }
+
+  /*
+   * Integraatiotestit harkinnanvaraisuusyliajojen tallentamiselle
+   */
+
+  @WithAnonymousUser
+  @Test def testTallennaHarkinnanvaraisuusYliajotAnonymous(): Unit = {
+    val yliajoContainer = HarkinnanvaraisuusYliajoTallennusContainer(
+      yliajot = Optional.of(java.util.List.of())
+    )
+
+    val payload = objectMapper.writeValueAsString(yliajoContainer)
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(payload))
+      .andExpect(status().is3xxRedirection())
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testTallennaHarkinnanvaraisuusYliajotNotAllowed(): Unit = {
+    val hakemusOid = "1.2.246.562.11.00000000001"
+    val hakukohdeOid = "1.2.246.562.20.00000000001"
+
+    val yliajot = java.util.List.of(
+      HarkinnanvaraisuusYliajoDTO(
+        hakemusOid = Optional.of(hakemusOid),
+        hakukohdeOid = Optional.of(hakukohdeOid),
+        harkinnanvaraisuudenSyy = Optional.of("ATARU_OPPIMISVAIKEUDET"),
+        selite = Optional.of("Testaus")
+      )
+    )
+    val yliajoContainer = HarkinnanvaraisuusYliajoTallennusContainer(
+      yliajot = Optional.of(yliajot)
+    )
+
+    val payload = objectMapper.writeValueAsString(yliajoContainer)
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(payload))
+      .andExpect(status().isForbidden)
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaHarkinnanvaraisuusYliajotInvalidJsonBadRequest(): Unit = {
+    val invalidJson = "{invalid json}"
+
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(invalidJson))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(TallennaHarkinnanvaraisuusYliajotFailureResponse(java.util.Set.of(UIVirheet.UI_TALLENNA_HARKINNANVARAISUUS_YLIAJO_JSON_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaHarkinnanvaraisuusYliajotFailureResponse]))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaHarkinnanvaraisuusYliajotBadRequest(): Unit = {
+
+    val yliajot = java.util.List.of(
+      HarkinnanvaraisuusYliajoDTO(
+        hakemusOid = Optional.empty,
+        hakukohdeOid = Optional.empty,
+        harkinnanvaraisuudenSyy = Optional.empty,
+        selite = Optional.empty
+      )
+    )
+    val yliajoContainer = HarkinnanvaraisuusYliajoTallennusContainer(
+      yliajot = Optional.of(yliajot)
+    )
+
+    val payload = objectMapper.writeValueAsString(yliajoContainer)
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(payload))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(
+      TallennaHarkinnanvaraisuusYliajotFailureResponse(
+        java.util.Set.of(
+          UIValidator.VALIDATION_HAKEMUSOID_TYHJA,
+          UIValidator.VALIDATION_HAKUKOHDEOID_TYHJA,
+          UIValidator.VALIDATION_HARKINNANVARAISUUDEN_SYY_TYHJA,
+          UIValidator.VALIDATION_SELITE_TYHJA
+        )
+      ),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[TallennaHarkinnanvaraisuusYliajotFailureResponse]))
+  }
+
+  @WithMockUser(value = "1.2.246.562.24.21250967987", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaHarkinnanvaraisuusYliajotAllowed(): Unit = {
+    val hakemusOid = "1.2.246.562.11.00000000001"
+    val hakukohdeOid1 = "1.2.246.562.20.00000000001"
+    val hakukohdeOid2 = "1.2.246.562.20.00000000002"
+    val virkailijaOid = "1.2.246.562.24.21250967987" // Tämä tieto poimitaan sessiosta, katso MockUser
+
+    val yliajot = java.util.List.of(
+      HarkinnanvaraisuusYliajoDTO(
+        hakemusOid = Optional.of(hakemusOid),
+        hakukohdeOid = Optional.of(hakukohdeOid1),
+        harkinnanvaraisuudenSyy = Optional.of("ATARU_OPPIMISVAIKEUDET"),
+        selite = Optional.of("Oppimisvaikeudet dokumentoitu")
+      ),
+      HarkinnanvaraisuusYliajoDTO(
+        hakemusOid = Optional.of(hakemusOid),
+        hakukohdeOid = Optional.of(hakukohdeOid2),
+        harkinnanvaraisuudenSyy = Optional.of("ATARU_ULKOMAILLA_OPISKELTU"),
+        selite = Optional.of("Ulkomailla opiskeltu")
+      )
+    )
+    val yliajoContainer = HarkinnanvaraisuusYliajoTallennusContainer(
+      yliajot = Optional.of(yliajot)
+    )
+
+    val payload = objectMapper.writeValueAsString(yliajoContainer)
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_HARKINNANVARAISUUS_YLIAJOT_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(payload))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // varmistetaan että yliajot tallentuvat kantaan
+    val tallennetutYliajot = kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
+    Assertions.assertEquals(2, tallennetutYliajot.size)
+    Assertions.assertEquals(Set(virkailijaOid), tallennetutYliajot.map(_.virkailijaOid).toSet)
+    Assertions.assertEquals(Set(hakukohdeOid1, hakukohdeOid2), tallennetutYliajot.map(_.hakukohdeOid).toSet)
+
+    // tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.TallennaHarkinnanvaraisuusYliajot.name, auditLogEntry.operation)
+    Assertions.assertEquals(List(objectMapper.readValue(payload, classOf[Map[Any, Any]])), auditLogEntry.changes)
+  }
+
+  /*
+   * Integraatiotestit harkinnanvaraisuusyliajon poistamiselle
+   */
+
+  @WithAnonymousUser
+  @Test def testPoistaHarkinnanvaraisuusYliajoAnonymous(): Unit =
+    mvc.perform(MockMvcRequestBuilders
+        .delete(ApiConstants.UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, "1.2.246.562.11.00000000001")
+        .queryParam(ApiConstants.UI_HARKIKNNANVARAISUUS_HAKUKOHDE_OID_PARAM_NAME, "1.2.246.562.20.00000000001")
+        .queryParam(ApiConstants.UI_SELITE_PARAM_NAME, "Poistoselite"))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testPoistaHarkinnanvaraisuusYliajoNotAllowed(): Unit =
+    mvc.perform(MockMvcRequestBuilders
+        .delete(ApiConstants.UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, "1.2.246.562.11.00000000001")
+        .queryParam(ApiConstants.UI_HARKIKNNANVARAISUUS_HAKUKOHDE_OID_PARAM_NAME, "1.2.246.562.20.00000000001")
+        .queryParam(ApiConstants.UI_SELITE_PARAM_NAME, "Poistoselite"))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testPoistaHarkinnanvaraisuusYliajoBadRequest(): Unit = {
+    val hakukohdeOid = "1.2.246.562.20.00000000001"
+
+    val result = mvc.perform(MockMvcRequestBuilders
+        .delete(ApiConstants.UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH, ""))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(
+      PoistaHarkinnanvaraisuusYliajoFailureResponse(
+        java.util.Set.of(
+          UIValidator.VALIDATION_HAKUKOHDEOID_TYHJA,
+          UIValidator.VALIDATION_HAKEMUSOID_TYHJA,
+          UIValidator.VALIDATION_SELITE_TYHJA
+        )
+      ),
+      objectMapper.readValue(
+        result.getResponse.getContentAsString(Charset.forName("UTF-8")),
+        classOf[PoistaHarkinnanvaraisuusYliajoFailureResponse])
+      )
+  }
+
+  @WithMockUser(value = "1.2.246.562.24.21250967987", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testPoistaHarkinnanvaraisuusYliajoAllowed(): Unit = {
+    val hakemusOid = "1.2.246.562.11.00000000001"
+    val hakukohdeOid1 = "1.2.246.562.20.00000000001"
+    val hakukohdeOid2 = "1.2.246.562.20.00000000002"
+    val virkailijaOid = "1.2.246.562.24.21250967987" // Tämä tieto poimitaan sessiosta, katso MockUser
+
+    // tallennetaan kaksi harkinnanvaraisuusyliajoa
+    kantaOperaatiot.tallennaHarkinnanvaraisuusYliajot(Seq(
+      HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid1,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_OPPIMISVAIKEUDET),
+        virkailijaOid = virkailijaOid,
+        selite = "Yliajo 1"
+      ),
+      HarkinnanvaraisuusYliajo(
+        hakemusOid = hakemusOid,
+        hakukohdeOid = hakukohdeOid2,
+        harkinnanvaraisuudenSyy = Some(HarkinnanvaraisuudenSyy.ATARU_ULKOMAILLA_OPISKELTU),
+        virkailijaOid = virkailijaOid,
+        selite = "Yliajo 2"
+      )
+    ))
+
+    // varmistetaan että molemmat yliajot löytyvät
+    val yliajotEnnenPoistoa = kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
+    Assertions.assertEquals(2, yliajotEnnenPoistoa.size)
+
+    // poistetaan ensimmäinen yliajo
+    val result = mvc.perform(MockMvcRequestBuilders
+        .delete(ApiConstants.UI_POISTA_HARKINNANVARAISUUS_YLIAJO_PATH, "")
+        .queryParam(ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME, hakemusOid)
+        .queryParam(ApiConstants.UI_HARKIKNNANVARAISUUS_HAKUKOHDE_OID_PARAM_NAME, hakukohdeOid1)
+        .queryParam(ApiConstants.UI_SELITE_PARAM_NAME, "Poistetaan ensimmäinen yliajo"))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // varmistetaan että vain toinen yliajo jää jäljelle
+    val yliajotPoistonJalkeen = kantaOperaatiot.haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid)
+    Assertions.assertEquals(1, yliajotPoistonJalkeen.size)
+    Assertions.assertEquals(hakukohdeOid2, yliajotPoistonJalkeen.head.hakukohdeOid)
+
+    // tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PoistaHarkinnanvaraisuusYliajo.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.UI_HARKINNANVARAISUUS_HAKEMUS_OID_PARAM_NAME -> hakemusOid,
+      ApiConstants.UI_HARKIKNNANVARAISUUS_HAKUKOHDE_OID_PARAM_NAME -> hakukohdeOid1
     ), auditLogEntry.target)
   }
 }

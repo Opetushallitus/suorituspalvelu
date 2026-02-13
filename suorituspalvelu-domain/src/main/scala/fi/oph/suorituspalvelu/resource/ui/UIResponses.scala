@@ -1635,3 +1635,42 @@ case class YliajoTallennusContainer(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty yliajot: Optional[java.util.List[Yliajo]]
 )
+
+// HarkinnanvaraisuusYliajo DTOs
+case class HarkinnanvaraisuusYliajoDTO(
+  @(Schema @field)(example = ESIMERKKI_HAKEMUS_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakemusOid: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_HAKUKOHDE_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakukohdeOid: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_HARKINNANVARAISUUDEN_SYY, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty harkinnanvaraisuudenSyy: Optional[String],
+  @(Schema @field)(example = ESIMERKKI_YLIAJO_SELITE, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty selite: Optional[String]
+)
+
+case class HarkinnanvaraisuusYliajoTallennusContainer(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty yliajot: Optional[java.util.List[HarkinnanvaraisuusYliajoDTO]]
+)
+
+sealed trait HaeHarkinnanvaraisuusYliajotResponse
+case class HaeHarkinnanvaraisuusYliajotSuccessResponse(
+  @BeanProperty yliajot: java.util.List[HarkinnanvaraisuusYliajoDTO]
+) extends HaeHarkinnanvaraisuusYliajotResponse
+case class HaeHarkinnanvaraisuusYliajotFailureResponse(
+  @BeanProperty virheet: java.util.Set[String]
+) extends HaeHarkinnanvaraisuusYliajotResponse
+
+sealed trait TallennaHarkinnanvaraisuusYliajotResponse
+case class TallennaHarkinnanvaraisuusYliajotSuccessResponse() extends TallennaHarkinnanvaraisuusYliajotResponse
+case class TallennaHarkinnanvaraisuusYliajotFailureResponse(
+  @BeanProperty virheet: java.util.Set[String]
+) extends TallennaHarkinnanvaraisuusYliajotResponse
+
+sealed trait PoistaHarkinnanvaraisuusYliajoResponse
+case class PoistaHarkinnanvaraisuusYliajoSuccessResponse() extends PoistaHarkinnanvaraisuusYliajoResponse
+case class PoistaHarkinnanvaraisuusYliajoFailureResponse(
+  @BeanProperty virheet: java.util.Set[String]
+) extends PoistaHarkinnanvaraisuusYliajoResponse
+
+
