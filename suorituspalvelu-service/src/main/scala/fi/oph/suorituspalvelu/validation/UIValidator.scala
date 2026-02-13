@@ -76,7 +76,7 @@ object UIValidator {
   //Yliajojen avamissa ja arvoissa vain kirjaimia, numeroita ja alaviivoja.
   val avainArvoStringPattern: Regex = "^[a-zA-Z0-9_]*$".r
 
-  val yliajoSeliteStringPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d _.,:]*$".r
+  val yliajoSeliteStringPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d \\-_.,:]*$".r
 
   val vuosiPattern: Regex = "^20[0-9][0-9]$".r
   val luokkaPattern: Regex = "^[a-zA-ZåäöÅÄÖ\\d \\-_]+$".r
