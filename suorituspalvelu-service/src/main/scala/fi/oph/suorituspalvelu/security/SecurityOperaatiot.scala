@@ -26,6 +26,7 @@ class SecurityOperaatiot(
   def onPalveluKayttaja(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT)
 
+  //Tarkastusnäkymä
   def onOrganisaationKatselija(): Boolean =
     kayttajanOikeudet.contains(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA)
 

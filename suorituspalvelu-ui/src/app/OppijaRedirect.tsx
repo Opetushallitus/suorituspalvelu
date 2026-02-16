@@ -5,10 +5,10 @@ import type { Route } from './+types/OppijaRedirect';
 
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
   const kayttaja = await queryClient.ensureQueryData(queryOptionsGetKayttaja());
-  if (kayttaja?.isOrganisaationKatselija) {
-    throw redirect(`/tarkastus/${params.henkiloOid}`);
-  } else {
+  if (kayttaja?.isHakeneidenKatselija || kayttaja?.isRekisterinpitaja) {
     throw redirect(`/henkilo/${params.henkiloOid}`);
+  } else if (kayttaja?.isOrganisaationKatselija) {
+    throw redirect(`/tarkastus/${params.henkiloOid}`);
   }
 };
 
