@@ -78,7 +78,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA))
-  @Test def testHaeKayttajanTiedotAllowed(): Unit =
+  @Test def testHaeKayttajanTiedotOppijoidenKatselijaAllowed(): Unit = {
     // mockataan onr-vastaus
     Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
 
@@ -89,8 +89,25 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // asiointikieli on "fi" ja kyseessä on organisaation katselija
-    Assertions.assertEquals(KayttajaSuccessResponse("fi", false, true),
+    Assertions.assertEquals(KayttajaSuccessResponse("fi", false, true, false),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA))
+  @Test def testHaeKayttajanTiedotHakeneidenKatselijaAllowed(): Unit = {
+    // mockataan onr-vastaus
+    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
+
+    // haetaan käyttäjän tiedot
+    val result = mvc.perform(MockMvcRequestBuilders
+        .get(ApiConstants.UI_KAYTTAJAN_TIEDOT_PATH, ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // asiointikieli on "fi" ja kyseessä on organisaation katselija
+    Assertions.assertEquals(KayttajaSuccessResponse("fi", false, false, true),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KayttajaSuccessResponse]))
+  }
 
   /*
    * Integraatiotestit oppilaitoslistauksen haulle

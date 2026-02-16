@@ -18,6 +18,7 @@ test.describe('Etusivu', () => {
       await stubKayttajaResponse(page, {
         isRekisterinpitaja: true,
         isOrganisaationKatselija: false,
+        isHakeneidenKatselija: false,
       });
     });
 
@@ -54,11 +55,12 @@ test.describe('Etusivu', () => {
     });
   });
 
-  test.describe('tavallinen virkailija', () => {
+  test.describe('vastaanottava kayttaja', () => {
     test.beforeEach(async ({ page }) => {
       await stubKayttajaResponse(page, {
         isRekisterinpitaja: false,
         isOrganisaationKatselija: false,
+        isHakeneidenKatselija: true,
       });
     });
 
@@ -118,11 +120,12 @@ test.describe('Etusivu', () => {
     });
   });
 
-  test.describe('organisaation katselija', () => {
+  test.describe('pelkka organisaation katselija', () => {
     test.beforeEach(async ({ page }) => {
       await stubKayttajaResponse(page, {
         isRekisterinpitaja: false,
         isOrganisaationKatselija: true,
+        isHakeneidenKatselija: false,
       });
     });
 
@@ -177,6 +180,48 @@ test.describe('Etusivu', () => {
 
       await expect(
         page.getByText('Sinulla ei ole oikeuksia henkilöhakuun'),
+      ).toBeVisible();
+    });
+  });
+
+  test.describe('vastaanottava kayttaja ja organisaation katselija tuplarooli', () => {
+    test.beforeEach(async ({ page }) => {
+      await stubKayttajaResponse(page, {
+        isRekisterinpitaja: false,
+        isOrganisaationKatselija: true,
+        isHakeneidenKatselija: true,
+      });
+    });
+
+    test('ohjautuu juuresta henkilöhakuun', async ({ page }) => {
+      await page.goto('');
+      await expect(page).toHaveURL((url) =>
+        url.toString().endsWith('/henkilo'),
+      );
+    });
+
+    test('ohjautuu /redirect/:henkiloOid -polusta henkilöhakuun', async ({
+      page,
+    }) => {
+      await page.goto('redirect/1.2.3.4.5');
+      await expect(page).toHaveURL((url) =>
+        url.toString().endsWith('/henkilo/1.2.3.4.5'),
+      );
+    });
+
+    test('näytetään molemmat välilehdet', async ({ page }) => {
+      const searchTabNavi = page.getByRole('navigation', {
+        name: 'Oppijoiden hakunäkymän valitsin',
+      });
+      await page.goto('tarkastus');
+
+      await expect(searchTabNavi).toBeVisible();
+
+      await expect(
+        searchTabNavi.getByRole('link', { name: 'Henkilöhaku' }),
+      ).toBeVisible();
+      await expect(
+        searchTabNavi.getByRole('link', { name: 'Tarkastusnäkymä' }),
       ).toBeVisible();
     });
   });

@@ -18,7 +18,9 @@ case class KayttajaSuccessResponse(
   @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty isRekisterinpitaja: Boolean,
   @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty isOrganisaationKatselija: Boolean
+  @BeanProperty isOrganisaationKatselija: Boolean,
+  @(Schema @field)(example = "false", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty isHakeneidenKatselija: Boolean
 ) extends KayttajaResponse
 
 case class KayttajaFailureResponse(

@@ -83,6 +83,7 @@ test.describe('Oppijan tiedot', () => {
     await stubKayttajaResponse(page, {
       isRekisterinpitaja: false,
       isOrganisaationKatselija: false,
+      isHakeneidenKatselija: true,
     });
 
     await page.goto(`henkilo/${OPPIJANUMERO}`);
@@ -94,5 +95,25 @@ test.describe('Oppijan tiedot', () => {
     await expect(
       page.getByRole('link', { name: 'Avaa tiedot Koski-järjestelmässä' }),
     ).toBeHidden();
+  });
+
+  test('Koski-linkki näkyy jos käyttäjä on rekisterinpitäjä', async ({
+    page,
+  }) => {
+    await stubKayttajaResponse(page, {
+      isRekisterinpitaja: true,
+      isOrganisaationKatselija: false,
+      isHakeneidenKatselija: false,
+    });
+
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
+
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole('link', { name: 'Avaa tiedot Koski-järjestelmässä' }),
+    ).toBeVisible();
   });
 });

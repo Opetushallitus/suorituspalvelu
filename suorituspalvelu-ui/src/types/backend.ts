@@ -299,6 +299,7 @@ export interface IKayttajaSuccessResponse {
   asiointiKieli: string;
   isRekisterinpitaja: boolean;
   isOrganisaationKatselija: boolean;
+  isHakeneidenKatselija: boolean;
 }
 
 export interface ILukionOppiaine {
@@ -874,8 +875,8 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';
