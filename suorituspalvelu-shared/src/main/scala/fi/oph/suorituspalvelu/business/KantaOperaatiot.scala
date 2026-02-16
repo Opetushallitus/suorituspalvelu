@@ -397,7 +397,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             luokka,
             CASE
               WHEN suorituksen_loppu IS NULL THEN 'infinity'::date
-              ELSE (SELECT DATE_TRUNC('year', suorituksen_loppu) + INTERVAL '1 year 1 months') -- ohjausvastuun loppua seuraavan vuoden tammikuun loppu
+              ELSE (SELECT DATE_TRUNC('year', suorituksen_loppu) + INTERVAL '1 year 2 months') -- ohjausvastuun loppua seuraavan vuoden tammikuun loppu (helmikuun loppu toistaiseksi)
             END as loppu
           FROM lahtokoulut
           WHERE oppilaitos_oid=$oppilaitosOid
