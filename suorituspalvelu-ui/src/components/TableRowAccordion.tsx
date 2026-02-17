@@ -9,16 +9,37 @@ import { truthyReactNodes, toId } from '@/lib/common';
 const AccordionHeaderCell = styled(TableCell)(({ theme }) => ({
   ...theme.typography.h5,
   gap: theme.spacing(1),
-  paddingLeft: 0,
-  border: 'none',
 }));
+
+const TableRowAccordionBody = styled(TableBody)({
+  '& > tr': {
+    width: '100%',
+    border: 'none',
+    '& > .MuiTableCell-root': {
+      minHeight: 0,
+      lineHeight: '24px',
+      width: '100%',
+      border: 'none',
+    },
+  },
+  '& .table-row-accordion-content': {
+    borderBottom: DEFAULT_BOX_BORDER,
+    '& > .MuiTableCell-root': {
+      paddingLeft: '40px',
+      paddingRight: 0,
+      backgroundColor: ophColors.white,
+    },
+  },
+});
 
 /**
  * TableRowAccordion yhdistää taulukon rivin ja Accordion-komponentin toiminnallisuutta.
  * Komponentti näyttää taulukkorivin, jonka ensimmäinen solu on accordion-otsikko, jota klikkaamalla
- * voidaan avata tai sulkea accordionin sisältö. Semanttisesti komponentissa on kaksi elementtiä:
- * - TableRow-elementti accordion-otsikkoriville.
- * - Avattava sisältö näytetään TableBody-elementissä yhdessä solussa, joka on koko taulukon levyinen.
+ * voidaan avata tai sulkea accordionin sisältö. Semanttisesti komponentissa on kaksi TableBody-elementin
+ * sisällä kaksi TableRow-elementtiä:
+ * - Ensimmäinen TableRow-elementti sisältää Accordion-elementin otsikkorivin.
+ * - Avattava sisältö näytetään toisessa TableRow-elementissä yhdessä solussa, joka on koko taulukon levyinen.
+ *
  *
  * @param title Otsikko, joka näytetään accordion-otsikkorivin ensimmäisessä solussa.
  * @param otherCells Accordion-otsikkorivin muut solut, jotka näytetään otsikkosolun jälkeen.
@@ -29,7 +50,6 @@ export const TableRowAccordion = ({
   title,
   children,
   otherCells,
-  contentCellStyle,
 }: {
   title: string;
   otherCells: Array<React.ReactNode>;
@@ -54,15 +74,8 @@ export const TableRowAccordion = ({
     truthyReactNodes(React.Children.toArray(children)).length > 0;
 
   return (
-    <>
-      <TableRow
-        sx={{
-          width: '100%',
-          borderTop: DEFAULT_BOX_BORDER,
-          border: 0,
-          paddingLeft: 0,
-        }}
-      >
+    <TableRowAccordionBody>
+      <TableRow>
         {hasChildren ? (
           <AccordionHeaderCell id={headerId}>
             <OphButton
@@ -73,7 +86,6 @@ export const TableRowAccordion = ({
                 padding: 0,
                 display: 'inline-flex',
                 textAlign: 'left',
-                border: 'none',
               }}
               startIcon={
                 <ExpandMore
@@ -96,22 +108,17 @@ export const TableRowAccordion = ({
         {otherCells}
       </TableRow>
       {hasChildren && (
-        <TableBody
-          sx={{
-            minHeight: 0,
-            display: isOpen ? 'table-row-group' : 'none',
-            borderBottom: DEFAULT_BOX_BORDER,
-          }}
+        <TableRow
+          className="table-row-accordion-content"
+          sx={{ display: isOpen ? 'table-row' : 'none' }}
         >
-          <TableRow>
-            <TableCell colSpan={columnCount} sx={contentCellStyle}>
-              <Box id={contentId} role="region" aria-labelledby={headerId}>
-                {children}
-              </Box>
-            </TableCell>
-          </TableRow>
-        </TableBody>
+          <TableCell colSpan={columnCount}>
+            <Box id={contentId} role="region" aria-labelledby={headerId}>
+              {children}
+            </Box>
+          </TableCell>
+        </TableRow>
       )}
-    </>
+    </TableRowAccordionBody>
   );
 };

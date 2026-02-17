@@ -15,36 +15,33 @@ const FIXED_COLUMN_WIDTH_PX = 150;
 
 const StyledOpintosuorituksetTable = styled(Table)(({ theme }) => ({
   tableLayout: 'fixed',
-  borderBottom: 'none',
-  '.MuiTableCell-root': {
+  '& .MuiTableCell-root': {
+    border: 'none',
     width: `${FIXED_COLUMN_WIDTH_PX}px`,
+    padding: theme.spacing(1.5, 2),
     '&:nth-of-type(1)': {
       width: `calc(100% - ${FIXED_COLUMN_WIDTH_PX * 2}px)`,
     },
   },
   '& > thead > tr': {
-    borderBottom: DEFAULT_BOX_BORDER,
-    '.MuiTableCell-root': {
-      border: 'none',
+    '& .MuiTableCell-root': {
+      backgroundColor: ophColors.white,
+      borderBottom: DEFAULT_BOX_BORDER,
       whiteSpace: 'nowrap',
-      padding: theme.spacing(1.5),
     },
   },
-  '& > tr': {
-    borderBottom: 'none',
-    '.MuiTableCell-root': {
-      lineHeight: '22px',
+  '& > tbody': {
+    '& > tr:not(.table-row-accordion-content)': {
       border: 'none',
-      padding: theme.spacing(1.5),
+      '&:hover': {
+        backgroundColor: ophColors.lightBlue2,
+      },
     },
     '&:nth-of-type(even)': {
       backgroundColor: ophColors.grey50,
     },
     '&:nth-of-type(odd)': {
       backgroundColor: ophColors.white,
-    },
-    '&:hover': {
-      backgroundColor: ophColors.lightBlue2,
     },
   },
 }));
@@ -77,12 +74,6 @@ export function OpintosuorituksetTable({
           return (
             <TableRowAccordion
               key={opintosuoritus.tunniste}
-              contentCellStyle={{
-                paddingLeft: '38px',
-                paddingTop: 0,
-                paddingRight: 0,
-                marginRight: 0,
-              }}
               title={translateKielistetty(opintosuoritus.nimi)}
               otherCells={[
                 <TableCell key="laajuus">{opintosuoritus.laajuus}</TableCell>,
