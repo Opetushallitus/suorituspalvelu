@@ -81,6 +81,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   }
 
   def refreshVirtaForPersonOids(ctx: SupaJobContext, personOids: Set[String]): Seq[SyncResultForHenkilo] = {
+    LOG.info(s"(job id ${ctx.getJobId}) Starting VIRTA refresh for personOids: $personOids")
     val masterHenkilot = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), TIMEOUT).values.toSet
     val masterOids = masterHenkilot.map(_.oidHenkilo)
     val duplikaatit = Await.result(onrIntegration.getAliasesForPersonOids(masterHenkilot.map(_.oidHenkilo)), TIMEOUT).allOids
@@ -97,7 +98,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         .map(xmls => SyncResultForHenkilo(oppijaNumero, persist(oppijaNumero, xmls, Instant.now()), None))
         .recover {
           case e: Exception =>
-            val message = s"Henkilon $oppijaNumero VIRTA-tietojen päivittäminen epäonnistui"
+            val message = s"(job id ${ctx.getJobId}) Henkilon $oppijaNumero VIRTA-tietojen päivittäminen epäonnistui"
             LOG.error(message, e)
             ctx.reportError(message, Some(e))
             SyncResultForHenkilo(oppijaNumero, None, Some(e))
@@ -106,15 +107,20 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     }), VIRTA_CONCURRENCY, TIMEOUT).toList
 
     val succeeded = tulokset.filter(_.exception.isEmpty)
-    LOG.info(s"Synkattiin onnistuneesti ${succeeded.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa.")
     val failed = tulokset.filter(_.exception.isDefined)
-    LOG.error(s"Failed to sync ${failed.size} henkiloita VIRTA-tietojen synkronoinnissa")
-    failed.foreach(r => LOG.error(s"Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
+    LOG.info(s"(job id ${ctx.getJobId}) Synkattiin onnistuneesti ${succeeded.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa. ${failed.size} henkilön tietojen haussa oli ongelmia.")
+    LOG.error(s"(job id ${ctx.getJobId}) Failed to sync ${failed.size} henkiloita VIRTA-tietojen synkronoinnissa")
+    failed.foreach(r => LOG.error(s"(job id ${ctx.getJobId}) Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
 
     tulokset
   }
 
-  private val refreshOppijaJob = scheduler.registerJob("refresh-virta-for-oppija", (ctx, oppijaNumerot) => refreshVirtaForPersonOids(ctx, mapper.readValue(oppijaNumerot, classOf[Set[String]])), Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
+  private val refreshOppijaJob = scheduler.registerJob(
+    "refresh-virta-for-oppija",
+    (ctx, oppijaNumerot) => refreshVirtaForPersonOids(ctx, mapper.readValue(oppijaNumerot, classOf[Set[String]])),
+    Seq(Duration.ofSeconds(30),
+      Duration.ofSeconds(60))
+  )
 
   def startRefreshForHenkilot(henkiloNumerot: Set[String]): UUID = refreshOppijaJob.run(mapper.writeValueAsString(henkiloNumerot))
 
