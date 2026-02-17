@@ -8,7 +8,9 @@ import { formatFinnishDate, NDASH } from '@/lib/common';
 const Vuodet = ({ suoritus }: { suoritus: SuorituksenPerustiedot }) => {
   return (
     <OphTypography variant="body1" component="span">
-      {`(${formatFinnishDate(suoritus.aloituspaiva)} ${NDASH} ${formatFinnishDate(suoritus.valmistumispaiva)})`}
+      {suoritus.aloituspaiva || suoritus.valmistumispaiva
+        ? `(${formatFinnishDate(suoritus.aloituspaiva)} ${NDASH} ${formatFinnishDate(suoritus.valmistumispaiva)})`
+        : ''}
     </OphTypography>
   );
 };

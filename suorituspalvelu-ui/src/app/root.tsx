@@ -34,7 +34,6 @@ export default function App() {
 
 export const clientLoader = async () => {
   queryClient.ensureQueryData(queryOptionsGetKayttaja());
-  return null;
 };
 
 export function ErrorBoundary({ error }: { error: Error }) {

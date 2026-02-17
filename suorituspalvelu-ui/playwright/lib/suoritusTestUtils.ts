@@ -22,6 +22,33 @@ export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
     tila: 'Suoritus kesken',
     valmistusmipaiva: '-',
   },
+  additionalChecks: async (paper) => {
+    // Click the accordion to show opintosuoritukset
+    await paper
+      .getByRole('button', { name: 'Näytä opintosuoritukset' })
+      .click();
+
+    const opintosuorituksetTable = paper.getByRole('table');
+    await expectTableValues(opintosuorituksetTable, [
+      ['Opintojakso', 'Laajuus (op)', 'Arvosana'],
+      ['Kasvatustieteen perusteet', '5', '4'],
+      ['Opetuksen suunnittelu', '10', 'Hyväksytty'],
+      ['Tutkimusmenetelmät', '15', '3'],
+    ]);
+
+    // Expand the nested opintosuoritukset for "Opetuksen suunnittelu"
+    await paper
+      .getByRole('button', { name: 'Piilota Opetuksen suunnittelu' })
+      .click();
+
+    // Check nested opintosuoritukset
+    const nestedTable = paper.getByRole('table').nth(1);
+    await expectTableValues(nestedTable, [
+      ['Opintojakso', 'Laajuus (op)', 'Arvosana'],
+      ['Opetussuunnitelmat', '5', '3'],
+      ['Pedagogiset menetelmät', '5', '5'],
+    ]);
+  },
 };
 
 export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
@@ -193,7 +220,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       ['Viestintä- ja vuorovaikutusosaaminen', '11', 'Hyväksytty'],
       ['Matemaattis-luonnontieteellinen osaaminen', '11', 'Hyväksytty'],
       ['Yhteiskunta- ja työelämäosaaminen', '11', 'Hyväksytty'],
-      ['', 'Yht. 33 / 35 osp', ''],
+      ['', 'Yht. 33 / 35 osp'],
     ]);
     await ytoTable
       .getByRole('button', { name: 'Viestintä- ja vuorovaikutusosaaminen' })
@@ -230,7 +257,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       ['Ammatilliset tutkinnon osat', 'Laajuus (osp)', 'Arvosana'],
       ['Audiovisuaalisen kulttuurin perusteet', '11', '4'],
       ['Äänimaailman suunnittelu', '11', '4'],
-      ['', 'Yht. 22 / 145 osp', ''],
+      ['', 'Yht. 22 / 145 osp'],
     ]);
     await ammatillisetTutkinnonOsatTable
       .getByRole('button', { name: 'Audiovisuaalisen kulttuurin perusteet' })

@@ -22,6 +22,8 @@ import {
 import { useEffect } from 'react';
 import { queryClient } from '@/lib/queryClient';
 import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import { Box } from '@mui/system';
+import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -39,13 +41,21 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   const config = useConfig();
   const { data: kayttaja } = useKayttaja();
 
+  const henkiloNimi = formatHenkiloNimi(tiedot, t);
+
+  const tiedotTab = useSelectedTiedotTab();
+
   return (
     <Stack spacing={3} sx={{ padding: 2 }}>
-      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${formatHenkiloNimi(tiedot, t)}`}</title>
+      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${henkiloNimi}`}</title>
       <Stack spacing={2}>
         <OphTypography variant="h3" component="h2">
-          {formatHenkiloNimi(tiedot, t)}{' '}
-          <span style={{ fontWeight: 'normal' }}>({tiedot.henkiloTunnus})</span>
+          {henkiloNimi}{' '}
+          {tiedot.henkiloTunnus && (
+            <span style={{ fontWeight: 'normal' }}>
+              ({tiedot.henkiloTunnus})
+            </span>
+          )}
         </OphTypography>
         <Stack direction="row">
           <LabeledInfoItem
@@ -62,15 +72,17 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
           />
         </Stack>
         {kayttaja.isRekisterinpitaja && (
-          <ExternalLink
-            href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
-          >
-            {t('oppija.avaa-koski-jarjestelmassa')}
-          </ExternalLink>
+          <Box sx={{ alignSelf: 'flex-start' }}>
+            <ExternalLink
+              href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
+            >
+              {t('oppija.avaa-koski-jarjestelmassa')}
+            </ExternalLink>
+          </Box>
         )}
       </Stack>
       <TiedotTabNavi />
-      <QuerySuspenseBoundary>
+      <QuerySuspenseBoundary key={tiedotTab}>
         <Outlet
           context={
             { oppijaNumero: tiedot.oppijaNumero } satisfies OppijaContext
@@ -81,7 +93,7 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   );
 };
 
-export const OppijanTiedotPage = ({
+const OppijanTiedotWrapper = ({
   oppijaTunniste,
 }: {
   oppijaTunniste?: string;
@@ -107,15 +119,28 @@ export const OppijanTiedotPage = ({
   }, [foundOppijaNumero, oppijaTunniste, tiedot, setOppijaNumero]);
 
   const { t } = useTranslations();
+  return tiedot ? (
+    <OppijanTiedotContent tiedot={tiedot} />
+  ) : (
+    <ResultPlaceholder
+      text={t('search.henkiloa-ei-loytynyt', { oppijaTunniste })}
+    />
+  );
+};
+
+export const OppijanTiedotPage = ({
+  oppijaTunniste,
+}: {
+  oppijaTunniste?: string;
+}) => {
   return (
-    <>
-      {tiedot ? (
-        <OppijanTiedotContent tiedot={tiedot} />
-      ) : (
-        <ResultPlaceholder
-          text={t('search.henkiloa-ei-loytynyt', { oppijaTunniste })}
-        />
-      )}
-    </>
+    /* React-router käyttää React transitiota navigoitaessa, ja jos näkymän päivityksen aiheuttaa transitio, 
+    suspensen fallback-elementtiä ei näytetä, vaan vanha data pysyy näkyvissä (https://react.dev/reference/react/Suspense#caveats). 
+    React-query käyttää suspensea fallback-animaation näyttämiseen kun noudetaan dataa. 
+    Asetetaan key, jotta komponentti resetoituu ja näytetään latausanimaatio vaihdettaessa henkilöä.
+     */
+    <QuerySuspenseBoundary key={oppijaTunniste}>
+      <OppijanTiedotWrapper oppijaTunniste={oppijaTunniste} />
+    </QuerySuspenseBoundary>
   );
 };
