@@ -45,7 +45,11 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
       <Stack spacing={2}>
         <OphTypography variant="h3" component="h2">
           {formatHenkiloNimi(tiedot, t)}{' '}
-          <span style={{ fontWeight: 'normal' }}>({tiedot.henkiloTunnus})</span>
+          {tiedot.henkiloTunnus && (
+            <span style={{ fontWeight: 'normal' }}>
+              ({tiedot.henkiloTunnus})
+            </span>
+          )}
         </OphTypography>
         <Stack direction="row">
           <LabeledInfoItem
