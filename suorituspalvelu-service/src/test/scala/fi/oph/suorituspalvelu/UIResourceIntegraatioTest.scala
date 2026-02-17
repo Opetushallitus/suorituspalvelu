@@ -212,11 +212,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .replace(ApiConstants.UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_OPPILAITOS_OID), ""))
       .andExpect(status().isForbidden)
 
+  //Suora oikeus haettuun organisaatioon
   @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
-  @Test def testHaeVuodetAllowed(): Unit =
+  @Test def testHaeVuodetAllowed(): Unit = {
     val oppijanumero = "1.2.246.562.24.21583363331"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
     val valmistumisvuosi = 2025
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // tallennetaan valmis perusopetuksen oppimäärä
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
@@ -237,7 +239,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), None, oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-01"), None, oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -246,6 +248,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       List.empty
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
+
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
     // haetaan vuodet ja katsotaan että täsmää
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
@@ -263,6 +267,85 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(
       ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid
     ), auditLogEntry.target)
+  }
+
+  //Oikeus haetun organisaation parent-organisaatioon
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testHaeVuodetAliorganisaatiolleAllowed(): Unit = {
+    val oppijanumero = "1.2.246.562.24.21583363331"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val descendantOid = "1.2.246.562.10.52320123197"
+    val notAllowedOid = "1.2.246.562.10.52320123666"
+    val valmistumisvuosi = 2025
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
+
+    // tallennetaan valmis perusopetuksen oppimäärä
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      descendantOid,
+      Set(PerusopetuksenOppimaara(
+        UUID.randomUUID(),
+        None,
+        fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), descendantOid),
+        None,
+        Koodi("", "", None),
+        VALMIS,
+        Koodi("", "", None),
+        Set.empty,
+        None,
+        None,
+        Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
+        Set.empty,
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-01"), None, descendantOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
+        false
+      )),
+      None,
+      VALMIS,
+      List.empty
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
+
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+
+    // haetaan vuodet ja katsotaan että täsmää
+    val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
+        .replace(ApiConstants.UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER, descendantOid), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // vuosi näkyvissä edelleen opolla koska suoritus kesken
+    Assertions.assertEquals(VuodetSuccessResponse(java.util.List.of(valmistumisvuosi.toString)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VuodetSuccessResponse]))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeVuodetUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_NAME -> descendantOid
+    ), auditLogEntry.target)
+  }
+
+  //Ei oikeutta haettuun organisaatioon
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testHaeVuodetAliorganisaatiolleNotAllowed(): Unit = {
+    val oppijanumero = "1.2.246.562.24.21583363331"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val descendantOid = "1.2.246.562.10.52320123197"
+    val notAllowedOid = "1.2.246.562.10.52320123666"
+    val valmistumisvuosi = 2025
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
+
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+
+    // haetaan vuodet ja katsotaan että täsmää
+    val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_VUODET_PATH
+        .replace(ApiConstants.UI_VUODET_OPPILAITOS_PARAM_PLACEHOLDER, notAllowedOid), ""))
+      .andExpect(status().isForbidden)
+      .andReturn()
+  }
 
   /*
    * Integraatiotestit luokkalistauksen haulle
@@ -284,11 +367,13 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         .replace(ApiConstants.UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER, ApiConstants.ESIMERKKI_VUOSI), ""))
       .andExpect(status().isForbidden)
 
+  //Suora oikeus haettuun organisaatioon
   @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
-  @Test def testHaeLuokatAllowed(): Unit =
+  @Test def testHaeLuokatAllowed(): Unit = {
     val oppijanumero = "1.2.246.562.24.21583363331"
     val oppilaitosOid = "1.2.246.562.10.52320123196"
     val valmistumisvuosi = 2025
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // tallennetaan valmis perusopetuksen vuosiluokka
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
@@ -309,7 +394,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-18"), None, oppilaitosOid, Some(valmistumisvuosi), "9G", Some(VALMIS), None, VUOSILUOKKA_9)),
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-18"), None, oppilaitosOid, Some(valmistumisvuosi), "9G", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false
       )),
@@ -318,6 +403,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       List.empty
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
 
     // haetaan luokat ja katsotaan että täsmää,
     val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
@@ -337,6 +423,88 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid,
       ApiConstants.UI_LUOKAT_VUOSI_PARAM_NAME -> valmistumisvuosi.toString
     ), auditLogEntry.target)
+  }
+
+
+  //Oikeus haetun organisaatoin parent-organisaatioon
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testHaeLuokatAliorganisaatiolleAllowed(): Unit = {
+    val oppijanumero = "1.2.246.562.24.21583363331"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val descendantOid = "1.2.246.562.10.52320123197"
+    val valmistumisvuosi = 2025
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
+
+    // tallennetaan valmis perusopetuksen vuosiluokka
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijanumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(PerusopetuksenOpiskeluoikeus(
+      UUID.randomUUID(),
+      None,
+      descendantOid,
+      Set(PerusopetuksenOppimaara(
+        UUID.randomUUID(),
+        None,
+        fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), descendantOid),
+        None,
+        Koodi("", "", None),
+        VALMIS,
+        Koodi("", "", None),
+        Set.empty,
+        None,
+        None,
+        None,
+        Set.empty,
+        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-18"), None, descendantOid, Some(valmistumisvuosi), "9G", Some(VALMIS), None, VUOSILUOKKA_9)),
+        false,
+        false
+      )),
+      None,
+      VALMIS,
+      List.empty
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+
+    // haetaan luokat ja katsotaan että täsmää,
+    val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
+        .replace(ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER, descendantOid)
+        .replace(ApiConstants.UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER, valmistumisvuosi.toString), ""))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    // Koska suoritus on kesken, henkilö on edeleen opon nähtävissä ja luokka palautuu
+    Assertions.assertEquals(LuokatSuccessResponse(java.util.List.of("9G")),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LuokatSuccessResponse]))
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeLuokatUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_NAME -> descendantOid,
+      ApiConstants.UI_LUOKAT_VUOSI_PARAM_NAME -> valmistumisvuosi.toString
+    ), auditLogEntry.target)
+  }
+
+
+  //Ei oikeutta haettuun organisaatioon
+  @WithMockUser(value = "kayttaja", authorities = Array(ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
+  @Test def testHaeLuokatAliorganisaatiolleNotAllowed(): Unit = {
+    val oppijanumero = "1.2.246.562.24.21583363331"
+    val oppilaitosOid = "1.2.246.562.10.52320123196"
+    val descendantOid = "1.2.246.562.10.52320123197"
+    val notDescendantOid = "1.2.246.562.10.52320123666"
+    val valmistumisvuosi = 2025
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq(descendantOid), Seq.empty)
+
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+
+    // haetaan luokat ja katsotaan että täsmää,
+    val result = mvc.perform(MockMvcRequestBuilders.get(ApiConstants.UI_LUOKAT_PATH
+        .replace(ApiConstants.UI_LUOKAT_OPPILAITOS_PARAM_PLACEHOLDER, notDescendantOid)
+        .replace(ApiConstants.UI_LUOKAT_VUOSI_PARAM_PLACEHOLDER, valmistumisvuosi.toString), ""))
+      .andExpect(status().isForbidden)
+      .andReturn()
+  }
 
   /*
    * Integraatiotestit oppilaitoksen oppijoiden haulle
