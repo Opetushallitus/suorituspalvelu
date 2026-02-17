@@ -51,8 +51,10 @@ export const SimpleAccordion = ({
       <Box
         id={contentId}
         sx={{
+          width: '100%',
           display: 'grid',
           gridTemplateRows: isOpen ? '1fr' : '0fr',
+          transition: `${TRANSITION_DURATION_MS}ms grid-template-rows ease`,
         }}
       >
         <Box sx={{ overflow: 'hidden' }}>{children}</Box>
