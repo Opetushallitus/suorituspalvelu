@@ -20,6 +20,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.session.FlushMode
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession
 import org.springframework.session.web.http.{CookieSerializer, DefaultCookieSerializer}
 import jakarta.servlet.Filter
@@ -35,7 +36,7 @@ import slick.jdbc.JdbcBackend
  */
 @Configuration
 @EnableWebSecurity
-@EnableJdbcHttpSession
+@EnableJdbcHttpSession(flushMode = FlushMode.IMMEDIATE)
 class SecurityConfiguration {
   private def  isFrontEndRoute: String => Boolean = path =>
     path.equals("/index.html") || path.equals("/") || path.startsWith("/henkilo") || path.startsWith("/tarkastus") || path.startsWith("/redirect")
