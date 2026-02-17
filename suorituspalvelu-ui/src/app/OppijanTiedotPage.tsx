@@ -22,6 +22,7 @@ import {
 import { useEffect } from 'react';
 import { queryClient } from '@/lib/queryClient';
 import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import { Box } from '@mui/system';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -39,12 +40,14 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   const config = useConfig();
   const { data: kayttaja } = useKayttaja();
 
+  const henkiloNimi = formatHenkiloNimi(tiedot, t);
+
   return (
     <Stack spacing={3} sx={{ padding: 2 }}>
-      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${formatHenkiloNimi(tiedot, t)}`}</title>
+      <title>{`${t('suorituspalvelu')} - ${t('oppija.otsikko')} - ${henkiloNimi}`}</title>
       <Stack spacing={2}>
         <OphTypography variant="h3" component="h2">
-          {formatHenkiloNimi(tiedot, t)}{' '}
+          {henkiloNimi}{' '}
           {tiedot.henkiloTunnus && (
             <span style={{ fontWeight: 'normal' }}>
               ({tiedot.henkiloTunnus})
@@ -66,11 +69,13 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
           />
         </Stack>
         {kayttaja.isRekisterinpitaja && (
-          <ExternalLink
-            href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
-          >
-            {t('oppija.avaa-koski-jarjestelmassa')}
-          </ExternalLink>
+          <Box sx={{ alignSelf: 'flex-start' }}>
+            <ExternalLink
+              href={`${config.routes.yleiset.koskiOppijaLinkUrl}${tiedot.oppijaNumero}`}
+            >
+              {t('oppija.avaa-koski-jarjestelmassa')}
+            </ExternalLink>
+          </Box>
         )}
       </Stack>
       <TiedotTabNavi />
@@ -111,16 +116,12 @@ const OppijanTiedotWrapper = ({
   }, [foundOppijaNumero, oppijaTunniste, tiedot, setOppijaNumero]);
 
   const { t } = useTranslations();
-  return (
-    <>
-      {tiedot ? (
-        <OppijanTiedotContent tiedot={tiedot} />
-      ) : (
-        <ResultPlaceholder
-          text={t('search.henkiloa-ei-loytynyt', { oppijaTunniste })}
-        />
-      )}
-    </>
+  return tiedot ? (
+    <OppijanTiedotContent tiedot={tiedot} />
+  ) : (
+    <ResultPlaceholder
+      text={t('search.henkiloa-ei-loytynyt', { oppijaTunniste })}
+    />
   );
 };
 
