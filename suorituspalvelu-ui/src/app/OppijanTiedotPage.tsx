@@ -85,7 +85,7 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   );
 };
 
-export const OppijanTiedotPage = ({
+const OppijanTiedotWrapper = ({
   oppijaTunniste,
 }: {
   oppijaTunniste?: string;
@@ -121,5 +121,22 @@ export const OppijanTiedotPage = ({
         />
       )}
     </>
+  );
+};
+
+export const OppijanTiedotPage = ({
+  oppijaTunniste,
+}: {
+  oppijaTunniste?: string;
+}) => {
+  return (
+    /* React-router käyttää React transitiota navigoitaessa, ja jos näkymän päivityksen aiheuttaa transitio, 
+    suspensen fallback-elementtiä ei näytetä, vaan vanha data pysyy näkyvissä (https://react.dev/reference/react/Suspense#caveats). 
+    React-query käyttää suspensea fallback-animaation näyttämiseen kun noudetaan dataa. 
+    Asetetaan key, jotta komponentti resetoituu ja näytetään latausanimaatio vaihdettaessa henkilöä.
+     */
+    <QuerySuspenseBoundary key={oppijaTunniste}>
+      <OppijanTiedotWrapper oppijaTunniste={oppijaTunniste} />
+    </QuerySuspenseBoundary>
   );
 };
