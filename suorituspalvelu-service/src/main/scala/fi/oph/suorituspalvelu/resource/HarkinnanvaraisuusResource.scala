@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuusService
+import fi.oph.suorituspalvelu.mankeli.{HakemuksenHarkinnanvaraisuus, HarkinnanvaraisuusService}
 import fi.oph.suorituspalvelu.resource.ApiConstants.*
 import fi.oph.suorituspalvelu.resource.api.{HakemustenHarkinnanvaraisuudetPayload, HarkinnanvaraisuusFailureResponse, HarkinnanvaraisuusResponse, HarkinnanvaraisuusSuccessResponse, ValintaApiHakemuksenHarkinnanvaraisuus, ValintaApiHakukohteenHarkinnanvaraisuus}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
@@ -83,8 +83,6 @@ class HarkinnanvaraisuusResource {
           // validoidaan parametrit
           val hakemusOids = Option(payload.hakemusOids).map(_.asScala).getOrElse(Seq.empty)
           hakemusOids match {
-            case hakemusOids if hakemusOids.size > HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA =>
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(HarkinnanvaraisuusFailureResponse(java.util.List.of(HARKINNANVARAISUUS_HAKEMUKSET_LIIKAA))))
             case hakemusOids if hakemusOids.isEmpty =>
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(HarkinnanvaraisuusFailureResponse(java.util.List.of(HARKINNANVARAISUUS_PUUTTUVA_PARAMETRI))))
             case hakemusOids =>

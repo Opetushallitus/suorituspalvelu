@@ -171,6 +171,21 @@ class HarkinnanvaraisuusService {
 
   @Autowired val tarjontaIntegration: TarjontaIntegration = null
 
+  private def safeGetHakemuksenHarkinnanvaraisuusValue(
+    hakemus: AtaruValintalaskentaHakemus,
+    opiskeluoikeudet: Seq[Opiskeluoikeus],
+    vahvistusPaiva: LocalDate,
+    hakukohteetMap: Map[String, KoutaHakukohde]
+    ): Option[HakemuksenHarkinnanvaraisuus] = {
+    try {
+      Some(getHakemuksenHarkinnanvaraisuusValue(hakemus, opiskeluoikeudet, vahvistusPaiva, hakukohteetMap))
+    } catch {
+      case t: Throwable =>
+        LOG.error(s"Virhe hakemuksen ${hakemus.hakemusOid} harkinnanvaraisuuspäättelyssä: ", t)
+        None
+    }
+  }
+
   private def getHakemuksenHarkinnanvaraisuusValue(
     hakemus: AtaruValintalaskentaHakemus,
     opiskeluoikeudet: Seq[Opiskeluoikeus],
@@ -227,7 +242,7 @@ class HarkinnanvaraisuusService {
     } else {
       val hakemuksetF: Future[Seq[AtaruValintalaskentaHakemus]] =
         hakemuspalveluClient.getValintalaskentaHakemukset(None, true, hakemusOids)
-      val hakemukset = Await.result(hakemuksetF, 2.minutes)
+      val hakemukset = Await.result(hakemuksetF, 5.minutes)
 
       val hakuOidsToHakemukset = hakemukset.groupBy(_.hakuOid)
 
@@ -243,8 +258,8 @@ class HarkinnanvaraisuusService {
 
         hakemuksetForHaku.map { hakemus =>
           val opiskeluoikeudet = haeSupaTiedot(hakemus.personOid)
-          getHakemuksenHarkinnanvaraisuusValue(hakemus, opiskeluoikeudet, vahvistusPaiva, hakukohteetMap)
-        }
+          safeGetHakemuksenHarkinnanvaraisuusValue(hakemus, opiskeluoikeudet, vahvistusPaiva, hakukohteetMap)
+        }.filter(_.isDefined).flatten
       }.toSet
     }
   }

@@ -72,14 +72,15 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
   }
 
   private val refreshHenkilotJob = scheduler.registerJob("refresh-koski-for-henkilot", (ctx, personOids) => {
-    LOG.info(s"(job id ${ctx.getJobId}) Starting refreshHenkilotJob from Koski for personOids: $personOids")
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan refresh-koski-for-henkilot henkiloOideille: $personOids")
+    //Kerätään tulokset palautuvasta SaferIteratorista jotta sisältö sivuvaikutuksineen tulee käsitellyksi.
     val (changed, exceptions) = syncKoskiForHenkilot(mapper.readValue(personOids, classOf[Set[String]]), ctx)
       .foldLeft((0, 0))((counts, result) => (counts._1 + {
         result.versio.map(_ => 1).getOrElse(0)
       }, counts._2 + {
         result.exception.map(_ => 1).getOrElse(0)
       }))
-    LOG.info(s"(job id ${ctx.getJobId}) Finished refreshHenkilotJob ${ctx.getJobId} from Koski for personOids: $personOids. Persons changed: $changed, exceptions: $exceptions.")
+    LOG.info(s"(job id ${ctx.getJobId}) : refresh-koski-for-henkilot henkiloOideille $personOids valmistui. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
   }, Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
 
   def startRefreshForHenkilot(personOids: Set[String]): UUID = refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
