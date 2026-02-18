@@ -220,7 +220,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       ['Viestintä- ja vuorovaikutusosaaminen', '11', 'Hyväksytty'],
       ['Matemaattis-luonnontieteellinen osaaminen', '11', 'Hyväksytty'],
       ['Yhteiskunta- ja työelämäosaaminen', '11', 'Hyväksytty'],
-      ['', 'Yht. 33 / 35 osp', ''],
+      ['', 'Yht. 33 / 35 osp'],
     ]);
     await ytoTable
       .getByRole('button', { name: 'Viestintä- ja vuorovaikutusosaaminen' })
@@ -257,7 +257,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
       ['Ammatilliset tutkinnon osat', 'Laajuus (osp)', 'Arvosana'],
       ['Audiovisuaalisen kulttuurin perusteet', '11', '4'],
       ['Äänimaailman suunnittelu', '11', '4'],
-      ['', 'Yht. 22 / 145 osp', ''],
+      ['', 'Yht. 22 / 145 osp'],
     ]);
     await ammatillisetTutkinnonOsatTable
       .getByRole('button', { name: 'Audiovisuaalisen kulttuurin perusteet' })

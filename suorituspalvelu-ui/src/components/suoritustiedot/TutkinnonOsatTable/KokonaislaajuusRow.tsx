@@ -17,17 +17,16 @@ export const KokonaislaajuusRow = ({
   const { t } = useTranslations();
   const totalLaajuus = sumBy(osat, (osa) => osa.laajuus ?? 0);
   return (
-    <TableBody>
+    <TableBody style={{ borderBottom: 'none' }}>
       <TableRow>
         <TableCell />
-        <TableCell>
+        <TableCell colSpan={2}>
           {t('oppija.lyhenne-yhteensa')}{' '}
           <SemiBold>
             {totalLaajuus} / {maxKokonaislaajuus}{' '}
             {t('oppija.lyhenne-osaamispiste')}
           </SemiBold>
         </TableCell>
-        <TableCell />
       </TableRow>
     </TableBody>
   );
