@@ -48,10 +48,8 @@ const StyledOpintosuorituksetTable = styled(Table)(({ theme }) => ({
 
 export function OpintosuorituksetTable({
   opintosuoritukset,
-  level = 0,
 }: {
   opintosuoritukset: KorkeakouluSuoritus['opintojaksot'];
-  level?: number;
 }) {
   const { t, translateKielistetty } = useTranslations();
 
@@ -87,7 +85,6 @@ export function OpintosuorituksetTable({
               {!isEmpty(opintosuoritus.opintojaksot) && (
                 <OpintosuorituksetTable
                   opintosuoritukset={opintosuoritus.opintojaksot}
-                  level={level + 1}
                 />
               )}
             </TableRowAccordion>
