@@ -14,11 +14,10 @@ case class OrganisaatioNimi(fi: String, sv: String, en: String)
 
 case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String], tyypit: Seq[String])
 
-case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio], tyypit: Seq[String], oppilaitosKoodi: Option[String] = None)
+case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio], organisaatiotyypit: Seq[String], oppilaitosKoodi: Option[String] = None)
 
 case class HierarkiaResponse(numHits: Int, organisaatiot: Seq[HierarkiaOrganisaatio])
-// TODO: tämä pitää evaluoida uudelleen kun ruvetaan miettimään käyttöoikeuksia. Jos organisaatiohierarkia haetaan
-//  kokonaisuudessaan niin tämä haku voi olla turha
+
 class OrganisaatioClient(environmentBaseUrl: String) {
 
   val LOG = LoggerFactory.getLogger(classOf[OrganisaatioClient]);
