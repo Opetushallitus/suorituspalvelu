@@ -49,7 +49,69 @@
       },
       "tila": "KESKEN",
       "aloituspaiva": "2025-12-11",
-      "valmistumispaiva": null
+      "valmistumispaiva": null,
+      "opintojaksot": [
+        {
+          "tunniste": "op1",
+          "nimi": {
+            "fi": "Kasvatustieteen perusteet",
+            "sv": "Grunderna i pedagogik",
+            "en": "Foundations of Education"
+          },
+          "laajuus": 5,
+          "arvosana": "4",
+          "opintojaksot": []
+        },
+        {
+          "tunniste": "op2",
+          "nimi": {
+            "fi": "Opetuksen suunnittelu",
+            "sv": "Planering av undervisning",
+            "en": "Instructional Design"
+          },
+          "laajuus": 10,
+          "arvosana": {
+            "fi": "Hyväksytty",
+            "sv": "Godkänd",
+            "en": "Passed"
+          },
+          "opintojaksot": [
+            {
+              "tunniste": "op2-1",
+              "nimi": {
+                "fi": "Opetussuunnitelmat",
+                "sv": "Läroplaner",
+                "en": "Curricula"
+              },
+              "laajuus": 5,
+              "arvosana": "3",
+              "opintojaksot": []
+            },
+            {
+              "tunniste": "op2-2",
+              "nimi": {
+                "fi": "Pedagogiset menetelmät",
+                "sv": "Pedagogiska metoder",
+                "en": "Pedagogical Methods"
+              },
+              "laajuus": 5,
+              "arvosana": "5",
+              "opintojaksot": []
+            }
+          ]
+        },
+        {
+          "tunniste": "op3",
+          "nimi": {
+            "fi": "Tutkimusmenetelmät",
+            "sv": "Forskningsmetoder",
+            "en": "Research Methods"
+          },
+          "laajuus": 15,
+          "arvosana": "3",
+          "opintojaksot": []
+        }
+      ]
     }
   ],
   "yoTutkinnot": [
