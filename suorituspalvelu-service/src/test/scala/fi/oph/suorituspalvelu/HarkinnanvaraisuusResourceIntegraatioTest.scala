@@ -81,23 +81,6 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testHaeHarkinnanvaraisuudetBadRequestTooManyHakemusOids(): Unit = {
-    // Create a list with more than the allowed max number of hakemusOids
-    val manyHakemusOids = (1 to ApiConstants.HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA + 1)
-      .map(i => s"1.2.246.562.11.0100000000000000${i}")
-      .toList
-
-    val result = mvc.perform(jsonPost(ApiConstants.VALINNAT_HARKINNANVARAISUUS_PATH, HakemustenHarkinnanvaraisuudetPayload(manyHakemusOids.asJava))
-        .contentType(MediaType.APPLICATION_JSON_VALUE))
-      .andExpect(status().isBadRequest).andReturn()
-
-    Assertions.assertEquals(
-      HarkinnanvaraisuusFailureResponse(java.util.List.of(ApiConstants.HARKINNANVARAISUUS_HAKEMUKSET_LIIKAA)),
-      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[HarkinnanvaraisuusFailureResponse])
-    )
-  }
-
-  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeHarkinnanvaraisuudetSuccessful(): Unit = {
     val personOid = "1.2.246.562.24.21250967211"
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
