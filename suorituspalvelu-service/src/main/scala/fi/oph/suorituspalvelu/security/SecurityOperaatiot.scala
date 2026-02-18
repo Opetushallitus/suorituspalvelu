@@ -51,9 +51,8 @@ class SecurityOperaatiot(
       .map(rooliWithOrg => rooliWithOrg.split("_").last)
   }
 
-  //Filtteröidään käyttäjäoikeuksista sellaiset organisaatiot, joihin käyttäjällä on oikeus
-  def getOrganisaatiotOikeuksille(tarvittavatRoolit: Set[String]) = {
-    //Todo, tarkat oikeudet kuntoon. Nyt varsinaisia Supa-oikeuksia ei edes ole. Pitää myös miettiä, mitä oikeuksia mihinkin operaatioon oikeasti halutaan tarkistella.
+  //Filtteröidään oikeuksista sellaiset organisaatiot, joihin löytyy suoraan haettu oikeus
+  private def getOrganisaatiotOikeuksille(tarvittavatRoolit: Set[String]) = {
     val riittavatOikeudet = getKayttajanOikeudet().filter(oikeus => tarvittavatRoolit.exists(rooli => oikeus.startsWith(rooli)))
     getOrganisaatioOidsFromRoolit(riittavatOikeudet)
   }
@@ -61,6 +60,7 @@ class SecurityOperaatiot(
   def getAuthorization(tarvittavatRoolit: Set[String], organisaatioProvider: OrganisaatioProvider): VirkailijaAuthorization = {
     val rekPit = onRekisterinpitaja()
     val organisaatiotOikeuksista = if (!rekPit) getOrganisaatiotOikeuksille(tarvittavatRoolit) else Set.empty
+    //Käsitellään suorat oikeudet niin, että käyttäjällä on samat oikeudet myös näiden aliorganisaatioille
     val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
     VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot)
   }

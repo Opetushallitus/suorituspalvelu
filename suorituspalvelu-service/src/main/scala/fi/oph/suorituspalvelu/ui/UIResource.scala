@@ -83,7 +83,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
-            if(securityOperaatiot.onUIKayttaja())
+            if (securityOperaatiot.onUIKayttaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -93,7 +93,7 @@ class UIResource {
             val onOrganisaationKatselija = securityOperaatiot.onOrganisaationKatselija()
             val onHakeneidenKatselija = securityOperaatiot.onHakeneidenKatselija()
             val storedKieli = Option.apply(session.getAttribute(ASIOINTIKIELI_SESSION_KEY).asInstanceOf[String])
-            if(storedKieli.isDefined)
+            if (storedKieli.isDefined)
               Right(ResponseEntity.status(HttpStatus.OK).body(KayttajaSuccessResponse(
                 asiointiKieli = storedKieli.get,
                 isRekisterinpitaja = onRekisterinpitaja,
@@ -103,7 +103,7 @@ class UIResource {
             else
               val principal = SecurityContextHolder.getContext.getAuthentication.getPrincipal.asInstanceOf[UserDetails]
               val kieli = Await.result(this.onrIntegration.getAsiointikieli(principal.getUsername), ONR_TIMEOUT)
-              if(kieli.isEmpty)
+              if (kieli.isEmpty)
                 Left(ResponseEntity.status(HttpStatus.NOT_FOUND).body(KayttajaFailureResponse(java.util.Set.of(UI_KAYTTAJAN_TIETOJA_EI_LOYTYNYT))))
               else
                 session.setAttribute(ASIOINTIKIELI_SESSION_KEY, kieli.get)
@@ -141,7 +141,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
-            if(securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onOrganisaationKatselija())
+            if (securityOperaatiot.onRekisterinpitaja() || securityOperaatiot.onOrganisaationKatselija())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -150,7 +150,7 @@ class UIResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map.empty, AuditOperation.HaeOppilaitoksetUI, None)
 
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(ResponseEntity.status(HttpStatus.OK).body(OppilaitosSuccessResponse(uiService.haeKaikkiOppilaitoksetJoissaPKSuorituksia().toList.asJava)))
             else
               val virkailijaAuth = securityOperaatiot.getAuthorization(SecurityConstants.ROOLIT_OPPIJA_HAULLE, organisaatioProvider)
@@ -184,8 +184,9 @@ class UIResource {
       LogContext(path = UI_VUODET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
-            // tarkastetaan oikeudet, ei rekisterinpitäjällä pitää olla organisaation katselija-oikeus valittuun oppilaitokseen
-            if(securityOperaatiot.onRekisterinpitaja() || oppilaitosOid.toScala.exists(oid => securityOperaatiot.getOrganisaatiotOikeuksille(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA)).contains(oid)))
+            // tarkastetaan oikeudet, ei rekisterinpitäjällä pitää olla organisaation katselija-oikeus valittuun oppilaitokseen tai sen parent-organisaatioon
+            val virkailijaAuth = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider)
+            if (virkailijaAuth.onRekisterinpitaja || oppilaitosOid.toScala.exists(oppilaitos => virkailijaAuth.oikeudellisetOrganisaatiot.contains(oppilaitos)))
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -193,7 +194,7 @@ class UIResource {
             // validoidaan parametri
             val virheet: Set[String] = UIValidator.validateOppilaitosOid(oppilaitosOid.toScala, true)
 
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right(suoritus)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VuodetFailureResponse(virheet.asJava))))
@@ -203,7 +204,7 @@ class UIResource {
             AuditLog.log(user, Map(UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid.get), AuditOperation.HaeVuodetUI, None)
 
             // rekisterinpitäjille ei rajoiteta ohjausvelvollisuuden keston perusteella, muille rajoitetaan
-            val paivamaara = if(securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
+            val paivamaara = if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
             val vuodet = uiService.haeVuodet(paivamaara, oppilaitosOid.get)
             Right(ResponseEntity.status(HttpStatus.OK).body(VuodetSuccessResponse(vuodet.toList.asJava)))
           )
@@ -228,15 +229,16 @@ class UIResource {
       new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def haeLuokat(@PathVariable(UI_LUOKAT_OPPILAITOS_PARAM_NAME)  @Parameter(description = "oppilaitoksen tunniste", example = ESIMERKKI_OPPILAITOS_OID, required = true) oppilaitosOid: Optional[String],
-                @PathVariable(UI_LUOKAT_VUOSI_PARAM_NAME)  @Parameter(description = "vuosi", example = ESIMERKKI_OPPILAITOS_OID, required = true) vuosi: Optional[String],
+                @PathVariable(UI_LUOKAT_VUOSI_PARAM_NAME)  @Parameter(description = "vuosi", example = ESIMERKKI_VUOSI, required = true) vuosi: Optional[String],
                 request: HttpServletRequest): ResponseEntity[LuokatResponse] =
     try
       val securityOperaatiot = new SecurityOperaatiot
       LogContext(path = UI_LUOKAT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
-            // tarkastetaan oikeudet, ei rekisterinpitäjällä pitää olla organisaation katselija-oikeus valittuun oppilaitokseen
-            if(securityOperaatiot.onRekisterinpitaja() || oppilaitosOid.toScala.exists(oid => securityOperaatiot.getOrganisaatiotOikeuksille(SecurityConstants.ROOLIT_OPPIJA_HAULLE).contains(oid)))
+            // tarkastetaan oikeudet, ei rekisterinpitäjällä pitää olla organisaation katselija-oikeus valittuun oppilaitokseen tai sen parent-organisaatioon
+            val virkailijaAuth = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider)
+            if (virkailijaAuth.onRekisterinpitaja || oppilaitosOid.toScala.exists(oppilaitos => virkailijaAuth.oikeudellisetOrganisaatiot.contains(oppilaitos)))
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -246,7 +248,7 @@ class UIResource {
               UIValidator.validateOppilaitosOid(oppilaitosOid.toScala, true),
               UIValidator.validateVuosi(vuosi.toScala, true)
             ).flatten
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right(suoritus)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuokatFailureResponse(virheet.asJava))))
@@ -259,7 +261,7 @@ class UIResource {
             ), AuditOperation.HaeLuokatUI, None)
 
             // rekisterinpitäjille ei rajoiteta ohjausvelvollisuuden keston perusteella, muille rajoitetaan
-            val paivamaara = if(securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
+            val paivamaara = if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
             val luokat = uiService.haeLuokat(paivamaara, oppilaitosOid.get, vuosi.get.toInt)
             Right(ResponseEntity.status(HttpStatus.OK).body(LuokatSuccessResponse(luokat.toList.asJava)))
           )
@@ -300,7 +302,7 @@ class UIResource {
           .flatMap(_ =>
             // tarkastetaan oikeudet, täytyy olla joka rekisterinpitäjä tai vaihtoehtoisesti organisaation katselija valitussa oppilaitoksessa
             val virkailijaAuth = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider)
-            if(!securityOperaatiot.onRekisterinpitaja() && oppilaitos.toScala.exists(oppilaitos => !virkailijaAuth.oikeudellisetOrganisaatiot.contains(oppilaitos)))
+            if (!virkailijaAuth.onRekisterinpitaja && oppilaitos.toScala.exists(oppilaitos => !virkailijaAuth.oikeudellisetOrganisaatiot.contains(oppilaitos)))
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build)
             else
               Right(virkailijaAuth))
@@ -314,7 +316,7 @@ class UIResource {
               UIValidator.validateVuosi(vuosi.toScala, pakollinen = false),
               UIValidator.validateLuokka(luokka.toScala, pakollinen = false)
             ).flatten
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanHakuFailureResponse(virheet.asJava))))
@@ -326,7 +328,7 @@ class UIResource {
               UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
               UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME -> luokka.orElse(null),
             ), AuditOperation.HaeOppilaitoksenOppijatUI, None)
-            val oppijat = uiService.haeOhjattavat(if(securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now), oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
+            val oppijat = uiService.haeOhjattavat(if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now), oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
             Right(ResponseEntity.status(HttpStatus.OK).body(OppijanHakuSuccessResponse(oppijat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanHakuResponse]])
@@ -361,7 +363,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan että käyttäjällä on organisaation- tai hakijoiden katselija oikeudet
-            if(securityOperaatiot.onUIKayttaja())
+            if (securityOperaatiot.onUIKayttaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -379,7 +381,7 @@ class UIResource {
               UIValidator.validateTunniste(oppijanTiedotRequest.tunniste.toScala),
               UIValidator.validateAikaleima(oppijanTiedotRequest.aikaleima.toScala, false)
             ).flatten
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right((oppijanTiedotRequest.tunniste.get, oppijanTiedotRequest.aikaleima.toScala.map(Instant.parse)))
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanTiedotFailureResponse(virheet.asJava))))
@@ -399,7 +401,7 @@ class UIResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), AuditOperation.HaeOppijaTiedotUI, None)
             val oppijanTiedot = uiService.haeOppijanSuoritukset(oppijaNumero, ajanhetki)
-            if(oppijanTiedot.isEmpty)
+            if (oppijanTiedot.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(""))
             else
               Right(ResponseEntity.status(HttpStatus.OK).body(oppijanTiedot))
@@ -431,13 +433,13 @@ class UIResource {
       LogContext(path = UI_OPPIJAN_HAUT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             val virheet = UIValidator.validateOppijanumero(oppijaNumero.toScala, pakollinen = true)
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right(oppijaNumero.get)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanHautFailureResponse(virheet.asJava))))
@@ -477,7 +479,7 @@ class UIResource {
           .flatMap(_ =>
             // tarkastetaan oikeudet
             val securityOperaatiot = new SecurityOperaatiot
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -515,7 +517,7 @@ class UIResource {
           .flatMap(_ =>
             // tarkastetaan oikeudet
             val securityOperaatiot = new SecurityOperaatiot
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -646,7 +648,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -663,7 +665,7 @@ class UIResource {
             val yleisetVirheet = UIValidator.validatePerusopetuksenOppimaaranYleisetKentat(suoritus, koodistoProvider)
             val oppiaineKohtaisetVirheet = UIValidator.validatePerusopetuksenOppimaaranYksittaisetOppiaineet(suoritus.oppiaineet, koodistoProvider)
 
-            if(yleisetVirheet.isEmpty && oppiaineKohtaisetVirheet.isEmpty)
+            if (yleisetVirheet.isEmpty && oppiaineKohtaisetVirheet.isEmpty)
               Right(suoritus)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuoPerusopetuksenOppimaaraFailureResponse(
@@ -672,7 +674,7 @@ class UIResource {
               ))))
           .flatMap(suoritus =>
             // varmistetaan että henkilö löytyy
-            if(Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), ONR_TIMEOUT))
+            if (Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), ONR_TIMEOUT))
               Right(suoritus)
             else
               LOG.error(s"Perusopetuksen oppimaaran suorituksen tallennus oppijalle ${suoritus.oppijaOid.get} epäonnistui, henkilöä ei löydy ONR:stä")
@@ -684,7 +686,7 @@ class UIResource {
             val now = Instant.now()
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), Lahdejarjestelma.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, now, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.SYOTETTY_PERUSOPETUS), None)
 
-            if(versio.isEmpty)
+            if (versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
@@ -724,7 +726,7 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
@@ -739,13 +741,13 @@ class UIResource {
           .flatMap(suoritus =>
             // validoidaan tallennettava suoritus
             val virheet: Set[String] = UIValidator.validatePerusopetuksenOppiaineenOppimaarat(suoritus, koodistoProvider)
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right(suoritus)
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(LuoPerusopetuksenOppiaineenOppimaaraFailureResponse(virheet.asJava))))
           .flatMap(suoritus =>
             // varmistetaan että henkilö löytyy
-            if(Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), ONR_TIMEOUT))
+            if (Await.result(onrIntegration.henkiloExists(suoritus.oppijaOid.get), ONR_TIMEOUT))
               Right(suoritus)
             else
               LOG.error(s"Perusopetuksen oppiaineen oppimaaran suorituksen tallennus oppijalle ${suoritus.oppijaOid.get} epäonnistui, henkilöä ei löydy ONR:stä")
@@ -757,7 +759,7 @@ class UIResource {
             val now = Instant.now()
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), Lahdejarjestelma.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, now, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.SYOTETTY_PERUSOPETUS), None)
 
-            if(versio.isEmpty)
+            if (versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
             else {
               val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.get.tunniste, suoritus, koodistoProvider, organisaatioProvider))
@@ -792,21 +794,21 @@ class UIResource {
         Right(None)
           .flatMap(_ =>
             // tarkastetaan oikeudet
-            if(securityOperaatiot.onRekisterinpitaja())
+            if (securityOperaatiot.onRekisterinpitaja())
               Right(None)
             else
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // validoidaan version tunniste
             val virheet = UIValidator.validateVersioTunniste(versioTunniste.toScala)
-            if(virheet.isEmpty)
+            if (virheet.isEmpty)
               Right(UUID.fromString(versioTunniste.get()))
             else
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaSuoritusFailureResponse(virheet.asJava))))
           .flatMap(versioTunniste =>
             // varmistetaan että versio olemassa
             val versio = this.kantaOperaatiot.haeVersio(versioTunniste)
-            if(versio.isEmpty)
+            if (versio.isEmpty)
               Left(ResponseEntity.status(HttpStatus.GONE).body(PoistaSuoritusFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_SUORITUSTA_EI_LOYTYNYT))))
             else
               versio.get.lahdeJarjestelma match
@@ -822,7 +824,7 @@ class UIResource {
             versio.lahdeJarjestelma match
               case Lahdejarjestelma.SYOTETTY_PERUSOPETUS => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppimaaranSuoritus, None)
               case Lahdejarjestelma.SYOTETYT_OPPIAINEET => AuditLog.log(user, Map(UI_POISTA_SUORITUS_VERSIOTUNNISTE_PARAM_NAME -> versio.tunniste.toString), AuditOperation.PoistaPerusopetuksenOppiaineenOppimaaranSuoritus, None)
-            if(!this.kantaOperaatiot.paataVersionVoimassaolo(versio.tunniste)) {
+            if (!this.kantaOperaatiot.paataVersionVoimassaolo(versio.tunniste)) {
               // versio oli jo poistettu
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(PoistaSuoritusFailureResponse(java.util.Set.of(UI_POISTA_SUORITUS_SUORITUS_EI_VOIMASSA))))
             } else

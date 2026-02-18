@@ -4,7 +4,18 @@ import fi.oph.suorituspalvelu.integration.client.{Organisaatio, HierarkiaOrganis
 
 object OrganisaatioUtil {
 
-  def flattenHierarkia(hierarkia: Seq[HierarkiaOrganisaatio]): Map[String, Organisaatio] = {
+  val varhaiskasvatuksenOrganisaatiotyypit = Set("organisaatiotyyppi_07", "organisaatiotyyppi_08")
+
+  def filterAndFlattenHierarkia(hierarkia: Seq[HierarkiaOrganisaatio]): Map[String, Organisaatio] = {
+    //Säästetään vain sellaiset organisaatiot, joilla on vähintään yksi muu kuin varhaiskasvatuksen organisaatiotyyppi
+    def filterOutVarhaiskasvatus(hierarkia: Seq[HierarkiaOrganisaatio]): Seq[HierarkiaOrganisaatio] = {
+      hierarkia.collect {
+        case org if org.organisaatiotyypit.toSet.exists(!varhaiskasvatuksenOrganisaatiotyypit.contains(_)) =>
+          // Keep this org but also filter its children recursively
+          org.copy(children = filterOutVarhaiskasvatus(org.children))
+      }
+    }
+
     def collectDescendantOids(org: HierarkiaOrganisaatio): Seq[String] = {
       val childrenOids = org.children.flatMap(child => child.oid +: collectDescendantOids(child))
       childrenOids
@@ -18,7 +29,7 @@ object OrganisaatioUtil {
           nimi = org.nimi,
           parentOid = org.parentOid,
           allDescendantOids = descendantOids,
-          tyypit = org.tyypit
+          tyypit = org.organisaatiotyypit
         )
         val childrenMap = flatten(org.children)
 
@@ -30,6 +41,7 @@ object OrganisaatioUtil {
         }
       }
     }
-    flatten(hierarkia)
+    val withoutVarhaiskasvatus = filterOutVarhaiskasvatus(hierarkia)
+    flatten(withoutVarhaiskasvatus)
   }
 }
