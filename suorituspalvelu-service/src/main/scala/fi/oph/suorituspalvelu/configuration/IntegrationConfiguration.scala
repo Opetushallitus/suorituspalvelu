@@ -137,7 +137,7 @@ class IntegrationConfiguration {
         .refreshAfterWrite(Duration.ofHours(3))
         .build[String, Map[String, Organisaatio]](_ => {
           val tuoreHierarkia = Await.result(organisaatioClient.haeHierarkia(), ORGANISAATIO_TIMEOUT)
-          OrganisaatioUtil.flattenHierarkia(tuoreHierarkia)
+          OrganisaatioUtil.filterAndFlattenHierarkia(tuoreHierarkia)
         })
 
       override def orgLookupTable(): Map[String, Organisaatio] =
