@@ -23,6 +23,7 @@ import { useEffect } from 'react';
 import { queryClient } from '@/lib/queryClient';
 import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 import { Box } from '@mui/system';
+import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 
 const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
@@ -41,6 +42,8 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   const { data: kayttaja } = useKayttaja();
 
   const henkiloNimi = formatHenkiloNimi(tiedot, t);
+
+  const tiedotTab = useSelectedTiedotTab();
 
   return (
     <Stack spacing={3} sx={{ padding: 2 }}>
@@ -79,7 +82,7 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
         )}
       </Stack>
       <TiedotTabNavi />
-      <QuerySuspenseBoundary>
+      <QuerySuspenseBoundary key={tiedotTab}>
         <Outlet
           context={
             { oppijaNumero: tiedot.oppijaNumero } satisfies OppijaContext
