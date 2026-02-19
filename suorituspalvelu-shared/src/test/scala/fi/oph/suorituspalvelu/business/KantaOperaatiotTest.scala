@@ -1328,7 +1328,7 @@ class KantaOperaatiotTest {
       Lahtokoulu(LocalDate.parse("2024-08-18"), None, oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), ParserVersions.KOSKI)
 
-    // Eri valmistumisvuosi, ei palauteta
+    // Täsmää myös hakuehtoihin, koska kesken-tilaiset näytetään myös myöhemmillä vuosilla
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(
       Lahtokoulu(LocalDate.parse("2023-08-18"), None, oppilaitosOid, Some(2024), "9B", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), ParserVersions.KOSKI)
@@ -1351,7 +1351,7 @@ class KantaOperaatiotTest {
     // Haetaan luokat - vain 9A pitäisi palautua
     val luokat = this.kantaOperaatiot.haeLuokat(Some(LocalDate.now), oppilaitosOid, valmistumisVuosi, Some(Set(VUOSILUOKKA_9)))
 
-    Assertions.assertEquals(Set("9A"), luokat)
+    Assertions.assertEquals(Set("9A", "9B"), luokat)
   }
 
   @Test def testHaeVuodet(): Unit = {
