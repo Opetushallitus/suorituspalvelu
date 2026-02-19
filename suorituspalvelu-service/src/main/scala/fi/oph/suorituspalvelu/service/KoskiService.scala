@@ -42,13 +42,21 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
   scheduler.scheduleJob("koski-poll-muuttuneet", (ctx, data) => {
     val start = Instant.now()
     val prevStart = Option.apply(data).map(Instant.parse(_))
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan koski-poll-muuttuneet alkaen: $prevStart")
     if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
       try
-        refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(60))
+        //Kerätään tulokset palautuvasta SaferIteratorista jotta sisältö sivuvaikutuksineen tulee käsitellyksi.
+        val (changed, exceptions) = refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(60))
+          .foldLeft((0, 0))((counts, result) => (counts._1 + {
+            result.versio.map(_ => 1).getOrElse(0)
+          }, counts._2 + {
+            result.exception.map(_ => 1).getOrElse(0)
+          }))
+        LOG.info(s"(job id ${ctx.getJobId}) : koski-poll-muuttuneet alkaen $prevStart valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
         start.toString
       catch
         case e: Exception =>
-          LOG.error("Muuttuneiden KOSKI-tietojen pollaus epäonnistui", e)
+          LOG.error(s"(job id ${ctx.getJobId}) Muuttuneiden KOSKI-tietojen pollaus alkaen $prevStart epäonnistui", e)
           prevStart.map(_.toString).orNull
     } else start.toString
   }, cron)
