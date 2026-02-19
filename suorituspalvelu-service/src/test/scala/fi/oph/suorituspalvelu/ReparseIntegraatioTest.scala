@@ -123,7 +123,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
   @Test def testUudelleenParseroiYTR(): Unit = {
     // tallennetaan versio ja parseroitua dataa
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, Lahdejarjestelma.YTR, Seq.empty, Seq.empty, Instant.now(), "YTR", None).get
-    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(YOOpiskeluoikeus(UUID.randomUUID(), YOTutkinto(UUID.randomUUID(), Koodi("arvo", "koodisto", None), VALMIS, None, Set.empty)))
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(YOOpiskeluoikeus(UUID.randomUUID(), Some(YOTutkinto(UUID.randomUUID(), Koodi("arvo", "koodisto", None), VALMIS, None, Set.empty))))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.YTR)
 
     // suoritetaan kutsu ja parseroidaan vastaus
