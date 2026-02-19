@@ -397,8 +397,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               WHEN tila=${SuoritusTila.KESKEN.toString} AND suorituksen_loppu IS NULL
                 THEN ARRAY(
                   SELECT generate_series(
-                    LEAST(extract(year from suorituksen_alku)::int + 1, ${LocalDate.now.getYear}),
-                    ${LocalDate.now.getYear}
+                    least(extract(year from suorituksen_alku)::int + 1, ${LocalDate.now.getYear}),
+                    greatest(extract(year from suorituksen_alku)::int + 1, ${LocalDate.now.getYear})
                   ))
               ELSE ARRAY[valmistumisvuosi]
             END as vuodet,
