@@ -5,7 +5,6 @@ import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ErrorView } from '@/components/ErrorView';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { Box, Stack } from '@mui/material';
-import { useCallback, useEffect, useTransition } from 'react';
 import {
   queryOptionsGetOppijanHaut,
   queryOptionsGetValintadata,
@@ -16,7 +15,6 @@ import { DoNotDisturb } from '@mui/icons-material';
 import { OphSelectFormField } from '@opetushallitus/oph-design-system';
 import { only } from 'remeda';
 import { useQueryParam } from '@/hooks/useQueryParam';
-import { FullSpinner } from '@/components/FullSpinner';
 import { queryClient } from '@/lib/queryClient';
 import {
   useOutletContext,
@@ -40,26 +38,12 @@ const OpiskelijavalinnanTiedotPageContent = ({
   );
   const [urlHakuOid, setUrlHakuOid] = useQueryParam(HAKU_QUERY_PARAM_NAME);
 
-  // Ilman transitiota hakua vaihdettaessa ei tule näkyviin latausindikaattoria
-  const [isHakuSwitching, startHakuSwitchTransition] = useTransition();
-
-  const setHakuOidWithTransition = useCallback(
-    (hakuOid: string) => {
-      startHakuSwitchTransition(() => {
-        setUrlHakuOid(hakuOid);
-      });
-    },
-    [setUrlHakuOid],
-  );
-
   const onlyHakuOid = only(haut)?.hakuOid;
 
   // Jos vain yksi haku valittavissa eikä URL-parametrissa valittu, asetetaan ainut haku URL-parametriksi
-  useEffect(() => {
-    if (!urlHakuOid && onlyHakuOid) {
-      setHakuOidWithTransition(onlyHakuOid);
-    }
-  }, [urlHakuOid, onlyHakuOid, setHakuOidWithTransition]);
+  if (!urlHakuOid && onlyHakuOid) {
+    setUrlHakuOid(onlyHakuOid);
+  }
 
   const isValidHakuOid =
     urlHakuOid == null || haut.find((h) => h.hakuOid === urlHakuOid);
@@ -94,28 +78,24 @@ const OpiskelijavalinnanTiedotPageContent = ({
           options={hakuOptions}
           errorMessage={hakuError}
           onChange={(event) => {
-            setHakuOidWithTransition(event.target.value);
+            setUrlHakuOid(event.target.value);
           }}
         />
       </Stack>
       <Box sx={{ paddingTop: 1 }}>
-        {isHakuSwitching ? (
-          <FullSpinner />
-        ) : (
-          isValidHakuOid && (
-            <QuerySuspenseBoundary>
-              {selectedHakuOid ? (
-                <OpiskelijavalinnanTiedotContent
-                  oppijaNumero={oppijaNumero}
-                  hakuOid={selectedHakuOid}
-                />
-              ) : (
-                <ResultPlaceholder
-                  text={t('opiskelijavalinnan-tiedot.valitse-haku')}
-                />
-              )}
-            </QuerySuspenseBoundary>
-          )
+        {isValidHakuOid && (
+          <QuerySuspenseBoundary key={selectedHakuOid}>
+            {selectedHakuOid ? (
+              <OpiskelijavalinnanTiedotContent
+                oppijaNumero={oppijaNumero}
+                hakuOid={selectedHakuOid}
+              />
+            ) : (
+              <ResultPlaceholder
+                text={t('opiskelijavalinnan-tiedot.valitse-haku')}
+              />
+            )}
+          </QuerySuspenseBoundary>
         )}
       </Box>
     </Stack>
