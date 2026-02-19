@@ -37,7 +37,9 @@ integrations:
     cron: {{suorituspalvelu_koski_polling_cron}}
   ataru:
     cron: {{suorituspalvelu_ataru_polling_cron}}
-    ytr-refresh-enabled: {{suorituspalvelu_ataru_ytr_refresh_enabled}}
+    koski-refresh-enabled: {{suorituspalvelu_ataru_koski_refresh_enabled | default('true')}}
+    virta-refresh-enabled: {{suorituspalvelu_ataru_virta_refresh_enabled | default('true')}}
+    ytr-refresh-enabled: {{suorituspalvelu_ataru_ytr_refresh_enabled | default('true')}}
   virta:
     jarjestelma: {{suoritusrekisteri_virta_jarjestelma}}
     tunnus: {{suoritusrekisteri_virta_tunnus}}

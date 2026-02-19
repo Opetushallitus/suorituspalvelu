@@ -32,6 +32,8 @@ integrations:
     cron: "0 */2 * * * *"
   ataru:
     cron: "0 */2 * * * *"
+    koski-refresh-enabled: false
+    virta-refresh-enabled: false
     ytr-refresh-enabled: false
   ytr:
     username: username
