@@ -91,7 +91,7 @@ object HarkinnanvaraisuusPaattely {
     hakukohteet: Map[String, KoutaHakukohde]
   ): HakemuksenHarkinnanvaraisuus = {
 
-    val tuoreinPeruskoulusuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet)
+    val tuoreinPeruskoulusuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet, salliMontaValmista = true)
 
     val deadlineOhitettu = LocalDate.now().isAfter(vahvistettuViimeistaan)
     val pohjakoulutusHakemukselta =
@@ -124,7 +124,8 @@ object HarkinnanvaraisuusPaattely {
         hakukohteenHarkinnanvaraisuusHakemukselta
       ) match {
         case (false, _, _, _) => HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN_HAKUKOHDE
-        case (true, Some(tuoreinPeruskoulu), _, _) if tuoreinPeruskoulu.supaTila.equals(SuoritusTila.KESKEYTYNYT) =>
+        case (true, Some(tuoreinPeruskoulu), _, _)
+          if tuoreinPeruskoulu.supaTila.equals(SuoritusTila.KESKEYTYNYT) =>
           HarkinnanvaraisuudenSyy.SURE_EI_PAATTOTODISTUSTA
         case (true, Some(tuoreinPeruskoulu), _, _)
           if tuoreinPeruskoulu.supaTila.equals(SuoritusTila.KESKEN) && deadlineOhitettu =>
