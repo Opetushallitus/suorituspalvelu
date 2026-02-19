@@ -560,19 +560,20 @@ object AvainArvoConverter {
   }
 
   //Valitaan vahvistettu peruskoulu jos löytyy, tuorein kesken-tilainen jos ei ole vahvistettua ja tuorein keskeytynyt jos ei ole kesken-tilaisia.
-  def etsiViimeisinPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Option[PerusopetuksenOppimaara] = {
+  def etsiViimeisinPeruskoulu(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], salliMontaValmista: Boolean): Option[PerusopetuksenOppimaara] = {
     val perusopetuksenOpiskeluoikeudet = opiskeluoikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
     val (vahvistetut, eiVahvistetut) =
       perusopetuksenOpiskeluoikeudet
         .flatMap(po => po.suoritukset.find(_.isInstanceOf[PerusopetuksenOppimaara]).map(_.asInstanceOf[PerusopetuksenOppimaara]))
         .partition(o => o.vahvistusPaivamaara.isDefined)
 
-    if (vahvistetut.size > 1) {
+    //Jos on tarpeen vain tarkistaa että löytyy joku valmis-tilainen eikä muulla sisällöllä ole merkitystä, ei ole pakko räjähtää.
+    if (!salliMontaValmista && vahvistetut.size > 1) {
       LOG.error(s"Oppijalle $personOid löytyi enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
       throw new UseitaVahvistettujaOppimaariaException(s"Oppijalle $personOid enemmän kuin yksi vahvistettu perusopetuksen oppimäärä!")
     }
 
-    val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.headOption
+    val valmisOppimaara: Option[PerusopetuksenOppimaara] = vahvistetut.maxByOption(_.aloitusPaivamaara)
 
     //Jos kesken- tai keskeytynyt-tilaisia on useita, käytetään sitä jonka alkamispävä on myöhäisin.
     val keskenOppimaara: Option[PerusopetuksenOppimaara] = eiVahvistetut.filter(s => !SuoritusTila.KESKEYTYNYT.equals(s.supaTila)).maxByOption(_.aloitusPaivamaara)
@@ -613,7 +614,7 @@ object AvainArvoConverter {
   def convertPeruskouluArvot(personOid: String, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
     def oppimaaraVahvistettuAjoissa(o: PerusopetuksenOppimaara): Boolean = o.vahvistusPaivamaara.exists(pvm => pvm.isBefore(vahvistettuViimeistaan) || pvm.equals(vahvistettuViimeistaan))
 
-    val perusopetuksenOppimaara: Option[PerusopetuksenOppimaara] = etsiViimeisinPeruskoulu(personOid, opiskeluoikeudet)
+    val perusopetuksenOppimaara: Option[PerusopetuksenOppimaara] = etsiViimeisinPeruskoulu(personOid, opiskeluoikeudet, false)
     val oppiaineenOppimaarat: Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus] = etsiVahvistetutOppiaineenOppimaarat(opiskeluoikeudet)
 
     val arvot = (perusopetuksenOppimaara, hakemus) match {

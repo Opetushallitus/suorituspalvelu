@@ -423,6 +423,67 @@ class HarkinnanvaraisuusPaattelyTest {
     )
   }
 
+  @Test
+  def testSyncHarkinnanvaraisuusWithMultipleValmisPerusopetus(): Unit = {
+    val hakukohteet = Map(
+      HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true),
+      HAKUKOHDE_OID_2 -> createHakukohde(HAKUKOHDE_OID_2, true)
+    )
+
+    val perusopetus1 = createOpiskeluoikeusWithOppimaara(
+      maYksilollistetty = false,
+      aiYksilollistetty = false,
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2025-06-01"))
+    )
+
+    val perusopetus2 = createOpiskeluoikeusWithOppimaara(
+      maYksilollistetty = true,
+      aiYksilollistetty = true,
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2024-05-30"))
+    )
+
+    val opiskeluoikeudet = Seq(perusopetus1, perusopetus2)
+    val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
+    val hakemus = BASE_HAKEMUS
+
+    val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
+    )
+
+    Assertions.assertEquals(
+      HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI,
+      result.hakutoiveet(0).harkinnanvaraisuudenSyy,
+      "Pitää palauttaa SURE_YKS_MAT_AI kaikille hakutoiveille"
+    )
+
+    Assertions.assertEquals(
+      HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI,
+      result.hakutoiveet(1).harkinnanvaraisuudenSyy,
+      "Pitää palauttaa SURE_YKS_MAT_AI kaikille hakutoiveille"
+    )
+
+    val oppiaineKorotus = createOpiskeluoikeusWithOppiaineenOppimaara("MA", false)
+    val opiskeluoikeudetWithKorotus = Seq(perusopetus1, perusopetus2, oppiaineKorotus)
+
+    val resultWithKorotus = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudetWithKorotus, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
+    )
+
+    Assertions.assertEquals(
+      HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN,
+      resultWithKorotus.hakutoiveet(0).harkinnanvaraisuudenSyy,
+      "Pitää palauttaa EI_HARKINNANVARAINEN kun löytyy korotus joka yliajaa yksilöllistetyn oppiaineen"
+    )
+
+    Assertions.assertEquals(
+      HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN,
+      resultWithKorotus.hakutoiveet(1).harkinnanvaraisuudenSyy,
+      "Pitää palauttaa EI_HARKINNANVARAINEN kun löytyy korotus joka yliajaa yksilöllistetyn oppiaineen"
+    )
+  }
+
   private def createOpiskeluoikeusWithOppimaara(maYksilollistetty: Boolean,
                                                 aiYksilollistetty: Boolean,
                                                 tila: SuoritusTila,
