@@ -5,14 +5,14 @@ import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaat
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.{AfterAll, AfterEach, Assertions, BeforeAll, BeforeEach, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import slick.jdbc.JdbcBackend.Database
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import slick.jdbc.PostgresProfile.api.*
 
 import java.time.{Instant, LocalDate}
-import scala.concurrent.duration.{DurationInt, pairIntToDuration}
+import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
@@ -29,15 +29,13 @@ import java.util.concurrent.atomic.AtomicInteger
 @TestInstance(Lifecycle.PER_CLASS)
 class KantaOperaatiotTest {
 
-  class OphPostgresContainer(dockerImageName: String) extends PostgreSQLContainer[OphPostgresContainer](dockerImageName) {}
-
   val DATABASE_NAME = "suorituspalvelu"
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(64))
 
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiotTest])
 
-  var postgres: PostgreSQLContainer[_] = new PostgreSQLContainer("postgres:15")
+  var postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
     postgres.withDatabaseName(DATABASE_NAME)
     postgres.withUsername("app")
     postgres.withPassword("app")

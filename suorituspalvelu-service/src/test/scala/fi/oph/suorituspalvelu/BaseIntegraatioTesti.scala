@@ -25,16 +25,14 @@ import org.springframework.test.web.servlet.request.{MockHttpServletRequestBuild
 import org.springframework.test.web.servlet.setup.{DefaultMockMvcBuilder, MockMvcBuilders, MockMvcConfigurer}
 import org.springframework.boot.test.system.{CapturedOutput, OutputCaptureExtension}
 import org.springframework.web.context.WebApplicationContext
-import org.testcontainers.containers.PostgreSQLContainer
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
+import org.testcontainers.postgresql.PostgreSQLContainer
 import slick.jdbc.PostgresProfile.api.*
 
 import java.util.UUID
 import javax.sql.DataSource
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-
-class OphPostgresContainer(dockerImageName: String) extends PostgreSQLContainer[OphPostgresContainer](dockerImageName) {}
 
 case class AuditLogEntry(operation: String, target: Map[String, Any], changes: List[Any])
 
@@ -61,7 +59,7 @@ class BaseIntegraatioTesti {
   val POSTGRES_USERNAME     = "app"
   val POSTGRES_PASSWORD     = "app"
 
-  val postgres: OphPostgresContainer = new OphPostgresContainer("postgres:15")
+  val postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
     .withDatabaseName(POSTGRES_DATABASENAME)
     .withUsername(POSTGRES_USERNAME)
     .withPassword(POSTGRES_PASSWORD)
