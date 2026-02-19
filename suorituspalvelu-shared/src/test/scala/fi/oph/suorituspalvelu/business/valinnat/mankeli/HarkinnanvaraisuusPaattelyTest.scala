@@ -423,6 +423,66 @@ class HarkinnanvaraisuusPaattelyTest {
     )
   }
 
+  @Test
+  def testSyncHarkinnanvaraisuusWithMultipleValmisPerusopetus(): Unit = {
+    val hakukohteet = Map(
+      HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true),
+      HAKUKOHDE_OID_2 -> createHakukohde(HAKUKOHDE_OID_2, true)
+    )
+
+    // Create multiple completed basic education records
+    val perusopetus1 = createOpiskeluoikeusWithOppimaara(
+      maYksilollistetty = false,
+      aiYksilollistetty = false,
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2025-06-01"))
+    )
+
+    val perusopetus2 = createOpiskeluoikeusWithOppimaara(
+      maYksilollistetty = true,
+      aiYksilollistetty = true,
+      SuoritusTila.VALMIS,
+      Some(LocalDate.parse("2024-05-30"))
+    )
+
+    val opiskeluoikeudet = Seq(perusopetus1, perusopetus2)
+    val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
+    val hakemus = BASE_HAKEMUS
+
+    val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
+    )
+
+    // Since one of the records has both MA and AI individualized and is before the cutoff date,
+    // we expect SURE_YKS_MAT_AI
+    Assertions.assertEquals(
+      HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI,
+      result.hakutoiveet(0).harkinnanvaraisuudenSyy,
+      "Should return SURE_YKS_MAT_AI when at least one record has both MA and AI individualized"
+    )
+
+    Assertions.assertEquals(
+      HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI,
+      result.hakutoiveet(1).harkinnanvaraisuudenSyy,
+      "Should return SURE_YKS_MAT_AI for all eligible hakukohde"
+    )
+
+    // Test with a korotus (grade improvement) that overrides one of the individualized subjects
+    val oppiaineKorotus = createOpiskeluoikeusWithOppiaineenOppimaara("MA", false)
+    val opiskeluoikeudetWithKorotus = Seq(perusopetus1, perusopetus2, oppiaineKorotus)
+
+    val resultWithKorotus = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudetWithKorotus, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
+    )
+
+    // The korotus should override the individualized subject, so no more YKS_MAT_AI
+    Assertions.assertNotEquals(
+      HarkinnanvaraisuudenSyy.SURE_YKS_MAT_AI,
+      resultWithKorotus.hakutoiveet(0).harkinnanvaraisuudenSyy,
+      "Should not return SURE_YKS_MAT_AI when there's a korotus that overrides an individualized subject"
+    )
+  }
+
   private def createOpiskeluoikeusWithOppimaara(maYksilollistetty: Boolean,
                                                 aiYksilollistetty: Boolean,
                                                 tila: SuoritusTila,
