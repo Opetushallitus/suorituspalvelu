@@ -1,12 +1,12 @@
 package fi.oph.suorituspalvelu
 
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
 object DevApp {
 
-  private val postgres: PostgreSQLContainer[_] = new PostgreSQLContainer("postgres:15")
+  private val postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
 
   private def startContainers(): Unit =
     postgres.withUsername("app")

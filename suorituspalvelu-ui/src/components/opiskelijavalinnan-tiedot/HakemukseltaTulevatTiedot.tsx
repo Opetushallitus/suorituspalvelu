@@ -11,6 +11,10 @@ export const HakemukseltaTulevatTiedot = ({
 }) => {
   const { t } = useTranslations();
 
+  const avainArvotHakemukselta = valintaData.avainArvot.filter(
+    (avainArvo) => avainArvo.metadata.arvoOnHakemukselta,
+  );
+
   return (
     <AccordionBox
       id="hakemukselta-tulevat-tiedot"
@@ -20,7 +24,7 @@ export const HakemukseltaTulevatTiedot = ({
       defaultExpanded={false}
     >
       <AvainArvotSection
-        avainarvot={sortBy(valintaData.avainArvot, prop('avain'))}
+        avainarvot={sortBy(avainArvotHakemukselta, prop('avain'))}
       />
     </AccordionBox>
   );
