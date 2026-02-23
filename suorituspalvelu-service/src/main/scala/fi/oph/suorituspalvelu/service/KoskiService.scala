@@ -68,8 +68,10 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
     processKoskiDataForOppijat(ctx, filtteroity, fetchedAt)
 
   private val refreshKoskiChangesSinceJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan refresh-koski-changes-since alkaen: $alkaen")
     val (changed, exceptions) = refreshKoskiChangesSince(ctx, Instant.parse(alkaen))
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
+    LOG.info(s"(job id ${ctx.getJobId}) : refresh-koski-changes-since alkaen $alkaen valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
   }, Seq.empty)
 
   def startRefreshForKoskiChangesSince(alkaen: Instant): UUID = refreshKoskiChangesSinceJob.run(alkaen.toString)
@@ -102,7 +104,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         syncKoskiForHenkilot(personOids, ctx)
       catch
         case e: Exception =>
-          LOG.error(s"Henkilöiden tietojen päivittäminen Koskesta haulle $hakuOid epäonnistui", e)
+          LOG.error(s"(job id ${ctx.getJobId}) Henkilöiden tietojen päivittäminen Koskesta haulle $hakuOid epäonnistui", e)
           Seq.empty
     })
 
