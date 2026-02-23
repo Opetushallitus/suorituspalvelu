@@ -159,16 +159,20 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
       oppija.opiskeluoikeudet.map {
         case Right(opiskeluoikeus) =>
           try {
-            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppija.oppijaOid, Lahdejarjestelma.KOSKI, Seq(opiskeluoikeus.data), Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero))
+            val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(opiskeluoikeus.oppijaOid, Lahdejarjestelma.KOSKI, Seq(opiskeluoikeus.data), Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero))
             versio.foreach(v => {
-              LOG.info(s"Versio tallennettu henkilön ${oppija.oppijaOid} opiskeluoikeudelle ${opiskeluoikeus.oid}")
+              if (oppija.oppijaOid != opiskeluoikeus.oppijaOid) {
+                LOG.info(s"(job id ${ctx.getJobId}) Versio tallennettu henkilön ${opiskeluoikeus.oppijaOid} opiskeluoikeudelle ${opiskeluoikeus.oid}. Opiskeluoikeuden oppijaOid oli eri kuin masterOid.")
+              } else {
+                LOG.info(s"(job id ${ctx.getJobId}) Versio tallennettu henkilön ${opiskeluoikeus.oppijaOid} opiskeluoikeudelle ${opiskeluoikeus.oid}")
+              }
               val oikeudet = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(opiskeluoikeus.data)), koodistoProvider)
               kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, oikeudet.toSet, KoskiUtil.getLahtokouluMetadata(oikeudet.toSet), ParserVersions.KOSKI)
             })
             SyncResultForHenkilo(oppija.oppijaOid, versio, None)
           } catch {
             case e: Exception =>
-              val message = s"Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui"
+              val message = s"(job id ${ctx.getJobId}) Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui"
               LOG.error(message, e)
               ctx.reportError(message, Some(e))
               SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))

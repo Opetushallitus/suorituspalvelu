@@ -22,9 +22,14 @@ import java.util.concurrent.atomic.AtomicInteger
 
 case class SplitattavaKoskiData(oppijaOid: String, opiskeluoikeudet: Seq[Map[String, Any]])
 
-case class KoskiDataForOppija(oppijaOid: String, opiskeluoikeudet: Seq[Either[Exception, KoskiOpiskeluoikeus]])
+case class KoskiDataForOppija(oppijaOid: String, //Huom. Tämä oppijaOid-kenttä sisältää masterOidin.
+                              opiskeluoikeudet: Seq[Either[Exception, KoskiOpiskeluoikeus]])
 
-case class KoskiOpiskeluoikeus(oid: String, versioNumero: Int, aikaleima: Instant, data: String)
+case class KoskiOpiskeluoikeus(oid: String,
+                               oppijaOid: String, //Versiot tallennetaan oppijanumeron alle.
+                               versioNumero: Int,
+                               aikaleima: Instant,
+                               data: String)
 
 object KoskiIntegration {
 
@@ -60,10 +65,12 @@ object KoskiIntegration {
         KoskiDataForOppija(data.get.oppijaOid, data.get.opiskeluoikeudet.map(opiskeluoikeus => {
           try
             val oid = opiskeluoikeus("oid").toString
+            val oppijaOid = opiskeluoikeus("oppijaOid").toString
             val versionumero = opiskeluoikeus("versionumero").toString.toInt
             val aikaleima = parseVoimassaolonAlku(opiskeluoikeus("aikaleima").toString)
             Right(KoskiOpiskeluoikeus(
               oid,
+              oppijaOid,
               versionumero,
               aikaleima,
               MAPPER.writeValueAsString(opiskeluoikeus)))

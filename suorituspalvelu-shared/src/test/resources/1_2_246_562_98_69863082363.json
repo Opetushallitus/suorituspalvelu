@@ -1,49 +1,10 @@
 [
   {
-    "henkilö": {
-      "oid": "1.2.246.562.98.69863082363",
-      "hetu": "231213A950H",
-      "syntymäaika": "2013-12-23",
-      "etunimet": "Mona Elisabeth",
-      "kutsumanimi": "Mona Elisabeth",
-      "sukunimi": "Henriksson Tes",
-      "äidinkieli": {
-        "koodiarvo": "VK",
-        "nimi": {
-          "fi": "viittomakieli",
-          "sv": "teckenspråk",
-          "en": "Sign language"
-        },
-        "lyhytNimi": {
-          "fi": "viittomakieli",
-          "sv": "teckenspråk",
-          "en": "Sign language"
-        },
-        "koodistoUri": "kieli",
-        "koodistoVersio": 1
-      },
-      "kansalaisuus": [
-        {
-          "koodiarvo": "246",
-          "nimi": {
-            "fi": "Suomi",
-            "sv": "Finland",
-            "en": "Finland"
-          },
-          "lyhytNimi": {
-            "fi": "FI",
-            "sv": "FI",
-            "en": "FI"
-          },
-          "koodistoUri": "maatjavaltiot2",
-          "koodistoVersio": 2
-        }
-      ],
-      "turvakielto": false
-    },
+    "oppijaOid": "1.2.246.562.98.69863082363",
     "opiskeluoikeudet": [
       {
         "oid": "1.2.246.562.15.51360952199",
+        "oppijaOid": "1.2.246.562.98.69863082363",
         "versionumero": 1,
         "aikaleima": "2025-06-16T11:47:27.101575",
         "oppilaitos": {

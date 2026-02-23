@@ -71,6 +71,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "tyyppi": {
         |          "koodiarvo": "ammatillinenkoulutus",
         |          "koodistoUri": "opiskeluoikeudentyyppi",
@@ -121,6 +122,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.21583363224",
         |        "oid": "1.2.246.562.15.24186343661",
         |        "versionumero": 5,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
@@ -142,6 +144,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -191,6 +194,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -269,6 +273,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -342,6 +347,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.40483869857",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -426,6 +432,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.35986177022",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.35986177022",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -494,6 +501,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.35986177022",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.35986177022",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -562,6 +570,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.21583363224",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -655,6 +664,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "tyyppi": {
         |          "koodiarvo": "perusopetus",
         |          "koodistoUri": "opiskeluoikeudentyyppi",
@@ -715,6 +725,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -809,6 +820,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -901,6 +913,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -999,6 +1012,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1068,6 +1082,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1135,6 +1150,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1215,6 +1231,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1295,6 +1312,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1365,6 +1383,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.21583363224",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1440,6 +1459,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "tyyppi": {
         |          "koodiarvo": "aikuistenperusopetus",
         |          "koodistoUri": "opiskeluoikeudentyyppi",
@@ -1494,6 +1514,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.30563266636",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1552,6 +1573,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.21583363224",
         |        "tyyppi": {
         |          "koodiarvo": "tuva",
         |          "koodistoUri": "opiskeluoikeudentyyppi",
@@ -1597,6 +1619,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.21583363224",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.21583363224",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1675,6 +1698,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.75291104630",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.75291104630",
         |        "tyyppi": {
         |          "koodiarvo": "vapaansivistystyonkoulutus",
         |          "koodistoUri": "opiskeluoikeudentyyppi",
@@ -1720,6 +1744,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.75291104630",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.75291104630",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -1825,6 +1850,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.75291104630",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.75291104630",
         |        "tyyppi": {
         |          "koodiarvo": "vapaansivistystyonkoulutus",
         |          "koodistoUri": "opiskeluoikeudentyyppi",
@@ -1912,6 +1938,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.35986177022",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.35986177022",
         |        "versionumero": 127,
         |        "aikaleima": "2024-09-12T15:12:40.365225",
         |        "oid": "1.2.246.562.15.50478693398",
@@ -2203,6 +2230,7 @@ class KoskiParsingTest {
         |    "oppijaOid": "1.2.246.562.24.24698338212",
         |    "opiskeluoikeudet": [
         |      {
+        |        "oppijaOid": "1.2.246.562.24.24698338212",
         |        "versionumero": 299,
         |        "aikaleima": "2025-11-25T08:57:51.633360",
         |        "oid": "1.2.246.562.15.99636591200",
