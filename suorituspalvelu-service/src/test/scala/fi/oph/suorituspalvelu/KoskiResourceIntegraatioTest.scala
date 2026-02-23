@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
 import fi.oph.suorituspalvelu.jobs.SupaScheduler
+import fi.oph.suorituspalvelu.service.KoskiService
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -48,6 +49,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @Autowired
   var supaScheduler: SupaScheduler = null
+
+  @Autowired
+  var koskiService: KoskiService = null
 
   // -- Koski sync for oppijat --
 
@@ -339,6 +343,26 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // tarkistetaan että suorituksia oletettu määrä
     val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero)
     Assertions.assertEquals(1, haetut.head._2.size)
+  }
+
+  // -- refresh-koski-for-henkilot jobi --
+
+  @Test def testRefreshKoskiForHenkilotJob(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.91423219238"
+    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_24_91423219238.json").mkString.getBytes())
+
+    // mockataan KOSKI-vastaus
+    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero)))
+      .thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+
+    // ajetaan jobi schedulerin kautta
+    val jobId = koskiService.startRefreshForHenkilot(Set(oppijaNumero))
+
+    waitUntilReady(jobId)
+
+    // tarkistetaan että kantaan on tallentunut kolme opiskeluoikeutta
+    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    Assertions.assertEquals(3, haetut.size)
   }
 
 }
