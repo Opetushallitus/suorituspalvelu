@@ -116,7 +116,7 @@ class BaseIntegraatioTesti {
     Await.result(database.run(
       sqlu"""
              DELETE FROM task_status;
-             DELETE FROM scheduled_tasks;
+             DELETE FROM scheduled_tasks WHERE task_instance<>'recurring';
              DELETE FROM lahtokoulut;
              DELETE FROM versiot;
              DELETE FROM henkilot;
@@ -166,4 +166,13 @@ class BaseIntegraatioTesti {
     if(!this.kantaOperaatiot.getLastJobStatuses(None, Some(tunniste), 1).exists(_.progress==1.0))
       Thread.sleep(200)
       waitUntilReady(tunniste, retries - 1)
+
+  def waitForScheduledTask(name: String, retries: Int = 30): Unit =
+    if(retries == 0) Assertions.fail(s"Scheduled task $name not found")
+    val count = Await.result(database.run(
+      sql"SELECT COUNT(*) FROM scheduled_tasks WHERE task_name = $name AND picked = false".as[Int].head
+    ), 5.seconds)
+    if(count == 0)
+      Thread.sleep(500)
+      waitForScheduledTask(name, retries - 1)
 }

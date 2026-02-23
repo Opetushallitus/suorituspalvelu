@@ -1,8 +1,10 @@
 package fi.oph.suorituspalvelu
 
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
+import fi.oph.suorituspalvelu.jobs.SupaScheduler
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.*
 import org.mockito
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -42,6 +45,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  @Autowired
+  var supaScheduler: SupaScheduler = null
 
   // -- Koski sync for oppijat --
 
@@ -252,7 +258,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testRefreshKoskiMuuttuneetMalformedUrl(): Unit =
+  @Test def testRefreshKoskiRetryMalformedUrl(): Unit =
     val invalidUrl = "tämä ei ole validi url"
 
     // ei validi aikaleima ei sallittu
@@ -291,6 +297,48 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(
       "tiedostot" -> fileUrl,
     ), auditLogEntry.target)
+  }
+
+  // -- Koski-poll-muuttuneet toistuva jobi --
+
+  @Test def testKoskiPollMuuttuneet(): Unit = {
+    val aikaleima = "2025-09-28T10:15:30Z"
+    val oppijaNumero = "1.2.246.562.98.69863082363"
+    val hakuOid = "1.2.246.562.29.00000000000000044639"
+
+    // toistuva jobi vähentää 60 sekuntia edellisen ajon aikaleimasta
+    val expectedSince = Instant.parse(aikaleima).minusSeconds(60)
+
+    // mockataan Kosken, hakemuspalvelun ja tarjonnan vastaukset
+    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
+    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(expectedSince))
+      .thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero)))
+      .thenReturn(Future.successful(Map(oppijaNumero -> Seq(hakuOid))))
+    Mockito.when(tarjontaIntegration.tarkistaHaunAktiivisuus(hakuOid))
+      .thenReturn(true)
+
+    // odotetaan että scheduler on rekisteröinyt toistuvan taskin uudelleen
+    waitForScheduledTask("koski-poll-muuttuneet")
+
+    // ajoitetaan toistuva jobi ajettavaksi heti testin aikaleimalla tiladata-arvona, jolloin jobi näkee edellisen ajon
+    // tapahtuneen kyseisellä aikaleimalla ja hakee muuttuneet tiedot 60 sekuntia aiemmin alkaen
+    supaScheduler.scheduler.reschedule(
+      TaskDescriptor.of("koski-poll-muuttuneet", classOf[String]).instanceId("recurring"),
+      Instant.now(),
+      aikaleima)
+
+    // odotetaan kunnes opiskeluoikeus löytyy kannasta
+    def waitForSuoritukset(retries: Int = 30): Unit =
+      if (retries == 0) Assertions.fail("Suorituksia ei löytynyt")
+      if (!kantaOperaatiot.haeSuoritukset(oppijaNumero).exists((versio, opiskeluoikeudet) => opiskeluoikeudet.nonEmpty))
+        Thread.sleep(200)
+        waitForSuoritukset(retries - 1)
+    waitForSuoritukset()
+
+    // tarkistetaan että suorituksia oletettu määrä
+    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    Assertions.assertEquals(1, haetut.head._2.size)
   }
 
 }
