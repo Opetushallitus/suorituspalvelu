@@ -2300,5 +2300,51 @@ class KoskiParsingTest {
     Assertions.assertEquals(None, lukionOppimaara.suoritusKieli)
     Assertions.assertEquals(Set(Koodi("FI", "kieli", None)), lukionOppimaara.koulusivistyskieli)
 
+  @Test def testVersionsSavedUnderCorrectOpiskeluoikeudenOppija(): Unit = {
+    val masterOid = "1.2.246.562.24.98765432987"
+    val opiskeluoikeusOppijaOid1 = "1.2.246.562.24.98765432123"
+    val opiskeluoikeusOppijaOid2 = "1.2.246.562.24.98765432234"
 
+    val minimalJsonData =
+      s"""[
+      {
+        "oppijaOid": "$masterOid",
+        "aikaleima": "2025-02-23T10:00:00.000000",
+        "opiskeluoikeudet": [
+          {
+            "oid": "1.2.246.562.15.12345678888",
+            "oppijaOid": "$opiskeluoikeusOppijaOid1",
+            "versionumero": 1,
+            "aikaleima": "2025-02-23T10:00:00.000000",
+            "suoritukset": []
+          },
+          {
+            "oid": "1.2.246.562.15.12345678999",
+            "oppijaOid": "$opiskeluoikeusOppijaOid2",
+            "versionumero": 1,
+            "aikaleima": "2025-02-23T10:00:00.000000",
+            "suoritukset": []
+          }
+        ]
+      }
+    ]"""
+
+    val inputStream = new java.io.ByteArrayInputStream(minimalJsonData.getBytes("UTF-8"))
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(inputStream).toList
+
+    // Verify parsing extracts correct oppijaOid for version saving
+    splitData.foreach(koskiDataForOppija => {
+      koskiDataForOppija.opiskeluoikeudet.foreach {
+        case Right(opiskeluoikeus) =>
+          val expectedOid = opiskeluoikeus.oid match {
+            case "1.2.246.562.15.12345678888" => opiskeluoikeusOppijaOid1
+            case "1.2.246.562.15.12345678999" => opiskeluoikeusOppijaOid2
+          }
+          val oppijaOidInOpiskeluoikeus = opiskeluoikeus.oppijaOid
+          Assertions.assertNotEquals(masterOid, oppijaOidInOpiskeluoikeus)
+          Assertions.assertEquals(expectedOid, oppijaOidInOpiskeluoikeus)
+        case Left(exception) => Assertions.fail(exception)
+      }
+    })
+  }
 }
