@@ -16,6 +16,8 @@ import org.mockito
 import org.mockito.Mockito
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.service.YTRService
+import org.springframework.beans.factory.annotation.Autowired
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{SyncSuccessJobResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -46,6 +48,9 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired
+  var ytrService: YTRService = null
 
   def toInputStreams(z: ZipInputStream): Iterator[InputStream] = {
     Iterator
@@ -269,6 +274,46 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     //Odotellaan että tiedot asynkronisesti synkkaava YTR_REFRESH_TASK_FOR_AKTIIVISET ehtii pyörähtää
     waitUntilReady(response.jobId)
+  }
+
+  // -- refresh-ytr-for-henkilot jobi --
+
+  @Test def testRefreshYtrForHenkilotJob(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.91423219111"
+
+    val sourceFile = "/ytr_single.json"
+    val personJson = new String(this.getClass.getResourceAsStream(sourceFile).readAllBytes(), "UTF-8")
+
+    val hetuToPersonOid = Map(
+      "150875-935M" -> oppijaNumero
+    )
+
+    val onrData = hetuToPersonOid.values.map(personOid => {
+      personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None, None)
+    }).toMap
+
+    // mockataan ONR- ja YTR-vastaukset
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+      .thenReturn(Future.successful(onrData))
+    Mockito.when(ytrClient.fetchOne(YtrHetuPostData(hetuToPersonOid.keySet.head, Some(List.empty))))
+      .thenReturn(Future.successful(Some(personJson)))
+
+    // ajetaan jobi schedulerin kautta
+    val jobId = ytrService.startRefreshForHenkilot(Set(oppijaNumero))
+
+    waitUntilReady(jobId)
+
+    // tarkistetaan että kantaan on tallennettu oppijalle yksi versio
+    val versiot = kantaOperaatiot.haeHenkilonVersiot(oppijaNumero)
+    Assertions.assertEquals(1, versiot.size)
+    Assertions.assertEquals(Lahdejarjestelma.YTR, versiot.head.lahdeJarjestelma)
+
+    val data = kantaOperaatiot.haeData(versiot.head)
+    val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
+    parsed.foreach(p => Assertions.assertTrue(p.ssn.isEmpty))
+
+    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    Assertions.assertFalse(suoritukset.isEmpty)
   }
 
 }
