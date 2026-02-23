@@ -265,7 +265,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshKoskiRetryAllowed(): Unit = {
     val fileUrl = "https://valid.url.fi"
-    val oppijaNumero = "1_2_246_562_98_69863082363"
+    val oppijaNumero = "1.2.246.562.98.69863082363"
     val valmistumisvuosi = LocalDate.now.getYear
 
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
