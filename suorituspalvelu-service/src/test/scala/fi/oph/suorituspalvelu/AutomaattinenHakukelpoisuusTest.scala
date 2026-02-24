@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, Koe, Koodi, Opiskeluoikeus, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koe, Koodi, Opiskeluoikeus, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -58,6 +58,99 @@ class AutomaattinenHakukelpoisuusTest {
     val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
 
     Assertions.assertFalse(result, "Keskeneräisellä YO-tutkinnolla ei pitäisi olla automaattisesti hakukelpoinen")
+  }
+
+  @Test
+  def testGetAutomaattinenHakukelpoisuusEBTutkinnolla(): Unit = {
+    val ebTutkinto = EBTutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("European Baccalaureate"), Some("Europeisk studentexamen"), Some("European Baccalaureate")),
+      koodi = Koodi("301103", "koulutus", Some(12)),
+      oppilaitos = createEBOppilaitos(),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", None),
+      supaTila = VALMIS,
+      aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
+      vahvistusPaivamaara = Some(LocalDate.now().minusDays(60)),
+      osasuoritukset = createEBOppiaineet()
+    )
+
+    val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = OPISKELUOIKEUS_OID,
+      tyyppi = Koodi("ebtutkinto", "opiskeluoikeudentyyppi", None),
+      oppilaitosOid = OPPILAITOS_OID,
+      suoritukset = Set(ebTutkinto),
+      tila = None,
+      jaksot = List.empty
+    )
+
+    val opiskeluoikeudet = Seq(geneerinenOpiskeluoikeus)
+
+    val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
+
+    Assertions.assertTrue(result, "EB-tutkinnolla pitäisi olla automaattisesti hakukelpoinen")
+  }
+
+  @Test
+  def testGetAutomaattinenHakukelpoisuusEBTutkintoKeskenaEiHakukelpoinen(): Unit = {
+    val ebTutkinto = EBTutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("European Baccalaureate"), Some("Europeisk studentexamen"), Some("European Baccalaureate")),
+      koodi = Koodi("301103", "koulutus", Some(12)),
+      oppilaitos = createEBOppilaitos(),
+      koskiTila = Koodi("lasna", "koskiopiskeluoikeudentila", None),
+      supaTila = KESKEN,
+      aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
+      vahvistusPaivamaara = None, // Ei valmistumispäivää
+      osasuoritukset = createEBOppiaineet()
+    )
+
+    val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = OPISKELUOIKEUS_OID,
+      tyyppi = Koodi("ebtutkinto", "opiskeluoikeudentyyppi", None),
+      oppilaitosOid = OPPILAITOS_OID,
+      suoritukset = Set(ebTutkinto),
+      tila = None,
+      jaksot = List.empty
+    )
+
+    val opiskeluoikeudet = Seq(geneerinenOpiskeluoikeus)
+
+    val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
+
+    Assertions.assertFalse(result, "Keskeneräisellä EB-tutkinnolla ei pitäisi olla automaattisesti hakukelpoinen")
+  }
+
+  @Test
+  def testGetAutomaattinenHakukelpoisuusEBTutkintoValmisIlmanVahvistusta(): Unit = {
+    val ebTutkinto = EBTutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("European Baccalaureate"), Some("Europeisk studentexamen"), Some("European Baccalaureate")),
+      koodi = Koodi("301103", "koulutus", Some(12)),
+      oppilaitos = createEBOppilaitos(),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", None),
+      supaTila = VALMIS, // VALMIS-tila mutta ei vahvistuspäivämäärää
+      aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
+      vahvistusPaivamaara = None, // Ei vahvistuspäivämäärää
+      osasuoritukset = createEBOppiaineet()
+    )
+
+    val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = OPISKELUOIKEUS_OID,
+      tyyppi = Koodi("ebtutkinto", "opiskeluoikeudentyyppi", None),
+      oppilaitosOid = OPPILAITOS_OID,
+      suoritukset = Set(ebTutkinto),
+      tila = None,
+      jaksot = List.empty
+    )
+
+    val opiskeluoikeudet = Seq(geneerinenOpiskeluoikeus)
+
+    val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
+
+    Assertions.assertFalse(result, "EB-tutkinto ilman vahvistuspäivämäärää ei ole hakukelpoinen")
   }
 
   @Test
@@ -386,4 +479,33 @@ class AutomaattinenHakukelpoisuusTest {
       oid
     )
   }
+
+  private def createEBOppilaitos(oid: String = OPPILAITOS_OID): Oppilaitos = {
+    Oppilaitos(
+      Kielistetty(Some("European School of Helsinki"), Some("Europaskolan i Helsingfors"), Some("European School of Helsinki")),
+      oid
+    )
+  }
+
+  private def createEBOppiaineet(): Set[EBOppiaine] = {
+    Set(
+      EBOppiaine(
+        tunniste = UUID.randomUUID(),
+        nimi = Kielistetty(Some("Ensimmäinen kieli (L1)"), Some("Första språket (L1)"), Some("First Language (L1)")),
+        koodi = Koodi("L1", "eboppiaineet", Some(1)),
+        laajuus = Some(EBLaajuus(BigDecimal(4.0), Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+        suorituskieli = Koodi("FI", "kieli", Some(1)),
+        osasuoritukset = Set.empty
+      ),
+      EBOppiaine(
+        tunniste = UUID.randomUUID(),
+        nimi = Kielistetty(Some("Toinen kieli (L2)"), Some("Andra språket (L2)"), Some("Second Language (L2)")),
+        koodi = Koodi("L2", "eboppiaineet", Some(1)),
+        laajuus = Some(EBLaajuus(BigDecimal(3.0), Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+        suorituskieli = Koodi("EN", "kieli", Some(1)),
+        osasuoritukset = Set.empty
+      )
+    )
+  }
+
 }

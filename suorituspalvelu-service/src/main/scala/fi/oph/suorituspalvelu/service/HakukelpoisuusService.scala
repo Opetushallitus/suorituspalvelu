@@ -2,7 +2,6 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, SuoritusTila, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
-import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuusPaattely
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -42,8 +41,9 @@ object AutomaattinenHakukelpoisuus {
         .exists(amm => amm.vahvistusPaivamaara.isDefined && amm.supaTila.equals(SuoritusTila.VALMIS))
 
     val automaattisestiHakukelpoinen = hasYo || hasEb || hasAmmatillinenPerustutkinto || hasAmmatillinenTutkinto || hasAmmatillinenErikoisTutkinto
-    LOG.info(s"Henkilön $personOid hakukelpoisuus: $automaattisestiHakukelpoinen (yo - $hasYo, eb - $hasEb, ammatillinen perustutkinto - $hasAmmatillinenPerustutkinto, " +
-      s"ammatillinen tutkinto - $hasAmmatillinenTutkinto, ammatillinen erikoistutkinto - $hasAmmatillinenErikoisTutkinto)")
+    LOG.info(s"Henkilön $personOid automaattinen hakukelpoisuus: $automaattisestiHakukelpoinen " +
+      s"(yo - $hasYo, eb - $hasEb, amm-perus - $hasAmmatillinenPerustutkinto, " +
+      s"amm-tutkinto - $hasAmmatillinenTutkinto, amm-erikois - $hasAmmatillinenErikoisTutkinto)")
     automaattisestiHakukelpoinen
   }
 }
