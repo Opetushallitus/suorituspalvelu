@@ -79,6 +79,8 @@ object AuditOperation {
 
   case object HaeHakemustenHarkinnanvaraisuudet extends AuditOperation("HARKINNANVARAISUUSTIEDON HAKU HAKEMUKSILLE")
 
+  case object HaeHenkiloidenAutomaattisetHakukelpoisuudet extends AuditOperation("AUTOMAATTISEN HAKUKELPOISUUSTIEDON HAKU HENKILÖILLE")
+
   case object Uudelleenparseroi extends AuditOperation("LÄHDEDATAN UUDELLEENPARSEROINTI")
 
   case object HaeJobData extends AuditOperation("JOBIEN TIETOJEN HAKU")

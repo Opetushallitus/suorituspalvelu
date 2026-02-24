@@ -72,7 +72,7 @@ class HakukelpoisuusService {
     }
   }
 
-  def getHenkiloidenHakukelpoisuudet(henkiloOids: Set[String]): Map[String, Boolean] = {
+  def getAutomaattisetHakukelpoisuudet(henkiloOids: Set[String]): Map[String, Boolean] = {
     henkiloOids.map(oid => oid -> getAutomaattinenHakukelpoisuus(oid)).toMap
   }
 
