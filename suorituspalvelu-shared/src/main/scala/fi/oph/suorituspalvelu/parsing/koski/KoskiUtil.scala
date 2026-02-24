@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
@@ -38,6 +38,7 @@ object KoskiUtil {
       case oo: GeneerinenOpiskeluoikeus => oo.suoritukset.collect {
         case s: Tuva => s.lahtokoulu
         case s: VapaaSivistystyo => s.lahtokoulu
+        case s: PerusopetukseenValmistavaOpetus => s.lahtokoulu
       }
     }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku)
 

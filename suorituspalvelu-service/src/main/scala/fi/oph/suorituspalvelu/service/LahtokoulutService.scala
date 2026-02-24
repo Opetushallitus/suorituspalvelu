@@ -25,11 +25,11 @@ class LahtokoulutService {
   val ONR_TIMEOUT = 10.seconds
   
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
-    kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, Some(LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA))
+    kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, None)
   }
 
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
-    kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi).map((henkilo, luokka) => henkilo -> luokka)
+    kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi, None).map((henkilo, luokka) => henkilo -> luokka)
   }
 
   def haeLahtokouluAuthorizations(henkiloOid: String): Seq[LahtokouluAuthorization] = {
