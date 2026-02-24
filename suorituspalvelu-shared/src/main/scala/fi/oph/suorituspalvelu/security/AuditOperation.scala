@@ -33,6 +33,8 @@ object AuditOperation {
 
   case object HaeOppijanHautUI extends AuditOperation("HAE OPPIJAN HAUT UI")
 
+  case object HaeOppijanVastaanototUI extends AuditOperation("HAE OPPIJAN VASTAANOTOT UI")
+
   case object HaeOppijaValintaDataUI extends AuditOperation("HAE OPPIJA VALINTADATA UI")
 
   case object HaeOppijaValintaDataAvainMuutoksetUI extends AuditOperation("HAE OPPIJA VALINTADATA AVAIN MUUTOKSET UI")

@@ -108,11 +108,11 @@ case class OppijanHakuFailureResponse(
 trait OppijanHautResponse()
 
 case class HakuNimi(
-  @(Schema @field)(example = "Esimerkki haku", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Korkeakoulujen kevään 2026 toinen yhteishaku", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Exempel ansökning", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Högskolornas andra gemensamma ansökan, våren 2026", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Example application", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(example = "Joint Application to Degree Programmes in Finnish/Swedish, Spring 2026", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String]
 )
 
@@ -1240,6 +1240,49 @@ case class PerusopetuksenOppiaineenOppimaaraNimi(
   @BeanProperty en: Optional[String]
 )
 
+case class HakukohdeNimi(
+  @(Schema @field)(example = "Tuotantotalous, tekniikan kandidaatti ja diplomi-insinööri (3 v + 2 v)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Produktionsekonomi, teknologie kandidat och diplomingenjör (3 år + 2 år)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Industrial Engineering and Management, Bachelor of Science (Technology) and Master of Science (Technology) (3 yrs + 2 yrs)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
+)
+
+case class HakukohdeOppilaitosNimi(
+  @(Schema @field)(example = "Aalto-yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Aalto-universitetet", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Aalto University", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
+)
+
+
+case class VastaanottoHakukohdeOppilaitos(
+  @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty oid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: HakukohdeOppilaitosNimi
+)
+
+case class VastaanottoUI(
+  @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuOid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakuNimi: HakuNimi,
+  @(Schema @field)(example = ESIMERKKI_HAKUKOHDE_OID, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakukohdeOid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakukohdeNimi: HakukohdeNimi,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakukohdeOppilaitokset: java.util.List[VastaanottoHakukohdeOppilaitos],
+  @(Schema @field)(example = "VastaanotaSitovasti", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty vastaanottoAction: String,
+  @(Schema @field)(example = ESIMERKKI_AIKALEIMA, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty vastaanottoaika: String
+)
+
 case class OppijanTiedotRequest(
   @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: Optional[String],
@@ -1291,6 +1334,30 @@ case class OppijanTiedotFailureResponse(
   @(Schema @field)(example = UI_TIEDOT_HAKU_EPAONNISTUI)
   @BeanProperty virheet: java.util.Set[String]
 ) extends OppijanTiedotResponse
+
+case class OppijanVastaanototRequest(
+  @(Schema @field)(example = ESIMERKKI_OPPIJANUMERO, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: Optional[String]
+)
+
+trait OppijanVastaanototResponse()
+
+case class VanhaVastaanottoUI(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty hakukohdeNimi: String,
+  @(Schema @field)(example = ESIMERKKI_AIKALEIMA, requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty vastaanottoaika: String
+)
+
+case class OppijanVastaanototSuccessResponse(
+  @BeanProperty vastaanotot: java.util.List[VastaanottoUI],
+  @BeanProperty vanhatVastaanotot: java.util.List[VanhaVastaanottoUI]
+) extends OppijanVastaanototResponse
+
+case class OppijanVastaanototFailureResponse(
+  @(Schema @field)(example = UIVirheet.UI_VASTAANOTOT_HAKU_EPAONNISTUI)
+  @BeanProperty virheet: java.util.Set[String]
+) extends OppijanVastaanototResponse
 
 case class AvainArvoYliajoUI(
   @BeanProperty avain: String,

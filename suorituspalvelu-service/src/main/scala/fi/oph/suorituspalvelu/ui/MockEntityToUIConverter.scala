@@ -1160,6 +1160,8 @@ object MockEntityToUIConverter {
       )
     ))
 
+  def getVastaanotot(): Seq[VastaanottoUI] = Seq.empty
+
   def getOppijanTiedot(): OppijanTiedotSuccessResponse = {
     OppijanTiedotSuccessResponse(
       // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
@@ -1187,7 +1189,7 @@ object MockEntityToUIConverter {
       vapaaSivistystyoKoulutukset =               getVapaaSivistystyoKoulutukset().asJava,
       perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat().asJava,
       perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset().toJava,
-      perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava,
+      perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava
     )
   }
 }
