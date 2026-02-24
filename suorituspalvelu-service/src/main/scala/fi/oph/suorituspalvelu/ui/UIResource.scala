@@ -456,6 +456,72 @@ class UIResource {
         LOG.error(s"Oppijan ${oppijaNumero} hakujen hakeminen käyttöliitymälle epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(OppijanHautFailureResponse(java.util.Set.of(UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI)))
 
+  @PostMapping(
+    path = Array(UI_VASTAANOTOT_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE),
+    consumes = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Palauttaa käyttöliittymälle oppijan vastaanotot valinta-tulos-servicestä.",
+    description = "Tämä rajapinta palauttaa yksittäisen oppijan vastaanotot valinta-tulos-servicestä. " +
+      "Pääsy on sallittu rekisterinpitäjille, organisaation katselijoille ja hakijoiden katselijoille.",
+    requestBody =
+      new SwaggerRequestBody(
+        required = true,
+        content = Array(new Content(schema = new Schema(implementation = classOf[OppijanVastaanototRequest])))),
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Lista vastaanotoista", content = Array(new Content(schema = new Schema(implementation = classOf[OppijanVastaanototSuccessResponse])))),
+      new ApiResponse(responseCode = "400", description = UI_400_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[OppijanVastaanototFailureResponse])))),
+      new ApiResponse(responseCode = "403", description = UI_403_DESCRIPTION, content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+  ))
+  def haeOppijanVastaanotot(@RequestBody bodyBytes: Array[Byte],
+                            request: HttpServletRequest): ResponseEntity[OppijanVastaanototResponse] =
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = UI_VASTAANOTOT_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            if (securityOperaatiot.onUIKayttaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            try
+              Right(objectMapper.readValue(bodyBytes, classOf[OppijanVastaanototRequest]))
+            catch
+              case e: Exception =>
+                LOG.error("Vastaanottopynnön deserialisointi epäonnistui")
+                Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanVastaanototFailureResponse(java.util.Set.of(UI_VASTAANOTOT_HAKU_EPAONNISTUI)))))
+          .flatMap((vastaanototRequest: OppijanVastaanototRequest) =>
+            val virheet = UIValidator.validateOppijanumero(vastaanototRequest.tunniste.toScala, true)
+            if (virheet.isEmpty)
+              Right(vastaanototRequest.tunniste.get)
+            else
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(OppijanVastaanototFailureResponse(virheet.asJava))))
+          .flatMap(tunniste =>
+            this.uiService.resolveOppijaNumero(tunniste).map(oppijaNumero => oppijaNumero).toRight(ResponseEntity.status(HttpStatus.NOT_FOUND).build))
+          .flatMap(oppijaNumero =>
+            if (this.uiService.hasOppijanKatseluOikeus(oppijaNumero))
+              Right(oppijaNumero)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(oppijaNumero =>
+            LOG.info(s"Haetaan käyttöliittymälle vastaanotot oppijalta ${oppijaNumero}")
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), AuditOperation.HaeOppijanVastaanototUI, None)
+            val vastaanotot = uiService.haeOppijanVastaanotot(oppijaNumero)
+            if (vastaanotot.isEmpty)
+              Left(ResponseEntity.status(HttpStatus.NOT_FOUND).build)
+            else
+              val (opintopolku, vanhat) = vastaanotot.get
+              Right(ResponseEntity.status(HttpStatus.OK).body(OppijanVastaanototSuccessResponse(opintopolku.asJava, vanhat.asJava)))
+          )
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanVastaanototResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Oppijan vastaanottotietojen hakeminen käyttöliitymälle epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(OppijanVastaanototFailureResponse(java.util.Set.of(UI_VASTAANOTOT_HAKU_EPAONNISTUI)))
+
   @GetMapping(
     path = Array(UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH),
     produces = Array(MediaType.APPLICATION_JSON_VALUE)

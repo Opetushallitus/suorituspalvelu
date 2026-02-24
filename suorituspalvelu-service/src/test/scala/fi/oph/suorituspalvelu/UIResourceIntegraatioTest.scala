@@ -3,16 +3,16 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, Ohjausparametrit, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OpintopolkuVastaanotto, Organisaatio, OrganisaatioNimi, VTSClient, VanhaTarjontaHaku, VanhaTarjontaHakukohde, Vastaanotot}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
+import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, OppijanVastaanototFailureResponse, OppijanVastaanototRequest, OppijanVastaanototSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_SELITE_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
-import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.validation.UIValidator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -48,6 +48,15 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
+
+  @MockitoBean
+  var vtsClient: VTSClient = null
+
+  @MockitoBean
+  var hakuProvider: HakuProvider = null
+
+  @MockitoBean
+  var hakukohdeProvider: HakukohdeProvider = null
 
   /*
    * Integraatiotestit käyttäjän tietojen haulle
@@ -1039,6 +1048,207 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijanHautUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(ApiConstants.UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+
+  /*
+   * Integraatiotestit vastaanottotietojen haulle
+   */
+
+  @WithAnonymousUser
+  @Test def testHaeOppijanVastaanototAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    val request = OppijanVastaanototRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA))
+  @Test def testHaeOppijanVastaanototPersonNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia juuri tähän henkilöön => 403
+    val request = OppijanVastaanototRequest(Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanVastaanototMalformedParameters(): Unit =
+    // ei validi oid ei sallittu
+    val request = OppijanVastaanototRequest(Optional.of("tämä ei ole validi oid"))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isBadRequest)
+      .andReturn()
+
+    Assertions.assertEquals(OppijanVastaanototFailureResponse(java.util.Set.of(UIValidator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanVastaanototFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanVastaanototNotFound(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967216"
+
+    // mockataan ONR-vastaus - henkilöä ei löydy
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map.empty))
+
+    // suoritetaan kutsu
+    val request = OppijanVastaanototRequest(Optional.of(oppijaNumero))
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isNotFound)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanVastaanototEiVastaanottoja(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967230"
+
+    // mockataan ONR-vastaukset
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+
+    // mockataan VTS-vastaus - ei vastaanottoja
+    Mockito.when(vtsClient.fetchVastaanotot(oppijaNumero)).thenReturn(Future.successful(None))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanVastaanototRequest(Optional.of(oppijaNumero))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanVastaanototSuccessResponse])
+    Assertions.assertEquals(0, response.vastaanotot.size())
+
+    // Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijanVastaanototUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanVastaanototAllowed(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967231"
+    val hakuOid = "1.2.246.562.29.00000000000000000010"
+    val hakukohdeOid = "1.2.246.562.20.00000000000000000010"
+    val oppilaitosOid = "1.2.246.562.10.00000000001"
+
+    // vanha tarjonta -vastaanottodata (lyhyemmät OID:t)
+    val vanhaHakuOid = "1.2.246.562.29.173428182"
+    val vanhaHakukohdeOid = "1.2.246.562.20.841926583"
+    val vanhaTarjoajaOid1 = "1.2.246.562.10.00000000002"
+    val vanhaTarjoajaOid2 = "1.2.246.562.10.00000000003"
+
+    // mockataan ONR-vastaukset
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+
+    // mockataan VTS-vastaus: yksi Kouta-vastaanotto ja yksi vanhan tarjonnan vastaanotto
+    val koutaVastaanotto = OpintopolkuVastaanotto(oppijaNumero, hakuOid, hakukohdeOid, "VastaanotaSitovasti", "2025-07-15T10:00:00Z")
+    val vanhaVastaanotto = OpintopolkuVastaanotto(oppijaNumero, vanhaHakuOid, vanhaHakukohdeOid, "VastaanotaEhdollisesti", "2024-08-01T12:00:00Z")
+    Mockito.when(vtsClient.fetchVastaanotot(oppijaNumero)).thenReturn(Future.successful(Some(Vastaanotot(Seq(koutaVastaanotto, vanhaVastaanotto), Seq.empty))))
+
+    // mockataan Kouta-vastaukset
+    val koutaHaku = KoutaHaku(
+      oid = hakuOid,
+      tila = "julkaistu",
+      nimi = Map("fi" -> "Testihaku"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"),
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(LocalDate.now().getYear)
+    )
+    val koutaHakukohde = KoutaHakukohde(
+      oid = hakukohdeOid,
+      organisaatioOid = oppilaitosOid,
+      nimi = Map("fi" -> "Testihakukohde"),
+      voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = None
+    )
+    Mockito.when(hakuProvider.haeHaku(hakuOid)).thenReturn(Some(koutaHaku))
+    Mockito.when(hakukohdeProvider.haeHakukohde(hakukohdeOid)).thenReturn(Some(koutaHakukohde))
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(Organisaatio(oppilaitosOid, OrganisaatioNimi("Testikoulu", "Testskola", "Test school"), None, Seq.empty, Seq.empty)))
+
+    // mockataan vanhan tarjonnan vastaukset (useampi tarjoaja)
+    val vanhaHaku = VanhaTarjontaHaku(oid = vanhaHakuOid, nimi = Map("kieli_fi" -> "Vanha testihaku", "kieli_sv" -> "Gammalt testansökan"))
+    val vanhaHakukohde = VanhaTarjontaHakukohde(
+      oid = vanhaHakukohdeOid,
+      hakukohteenNimet = Map("kieli_fi" -> "Vanha testihakukohde"),
+      tarjoajaNimet = Map("fi" -> "Tarjoaja 1", "fi" -> "Tarjoaja 2"),
+      tarjoajaOids = List(vanhaTarjoajaOid1, vanhaTarjoajaOid2),
+      hakuOid = vanhaHakuOid
+    )
+    Mockito.when(hakuProvider.haeHaku(vanhaHakuOid)).thenReturn(Some(vanhaHaku))
+    Mockito.when(hakukohdeProvider.haeHakukohde(vanhaHakukohdeOid)).thenReturn(Some(vanhaHakukohde))
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(vanhaTarjoajaOid1)).thenReturn(Some(Organisaatio(vanhaTarjoajaOid1, OrganisaatioNimi("Vanha koulu 1", "Gamla skolan 1", "Old school 1"), None, Seq.empty, Seq.empty)))
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(vanhaTarjoajaOid2)).thenReturn(Some(Organisaatio(vanhaTarjoajaOid2, OrganisaatioNimi("Vanha koulu 2", "Gamla skolan 2", "Old school 2"), None, Seq.empty, Seq.empty)))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanVastaanototRequest(Optional.of(oppijaNumero))
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanVastaanototSuccessResponse])
+    Assertions.assertEquals(2, response.vastaanotot.size())
+
+    // tarkistetaan Kouta-vastaanotto
+    val v = response.vastaanotot.get(0)
+    Assertions.assertEquals(hakuOid, v.hakuOid)
+    Assertions.assertEquals("Testihaku", v.hakuNimi.fi.get)
+    Assertions.assertEquals(hakukohdeOid, v.hakukohdeOid)
+    Assertions.assertEquals("Testihakukohde", v.hakukohdeNimi.fi.get)
+    Assertions.assertEquals(1, v.hakukohdeOppilaitokset.size())
+    Assertions.assertEquals(oppilaitosOid, v.hakukohdeOppilaitokset.get(0).oid)
+    Assertions.assertEquals("Testikoulu", v.hakukohdeOppilaitokset.get(0).nimi.fi.get)
+    Assertions.assertEquals("VastaanotaSitovasti", v.vastaanottoAction)
+    Assertions.assertEquals("2025-07-15T10:00:00Z", v.vastaanottoaika)
+
+    // tarkistetaan vanhan tarjonnan vastaanotto
+    val vanha = response.vastaanotot.get(1)
+    Assertions.assertEquals(vanhaHakuOid, vanha.hakuOid)
+    Assertions.assertEquals("Vanha testihaku", vanha.hakuNimi.fi.get)
+    Assertions.assertEquals("Gammalt testansökan", vanha.hakuNimi.sv.get)
+    Assertions.assertEquals(vanhaHakukohdeOid, vanha.hakukohdeOid)
+    Assertions.assertEquals("Vanha testihakukohde", vanha.hakukohdeNimi.fi.get)
+    Assertions.assertEquals(2, vanha.hakukohdeOppilaitokset.size())
+    Assertions.assertEquals(vanhaTarjoajaOid1, vanha.hakukohdeOppilaitokset.get(0).oid)
+    Assertions.assertEquals("Vanha koulu 1", vanha.hakukohdeOppilaitokset.get(0).nimi.fi.get)
+    Assertions.assertEquals(vanhaTarjoajaOid2, vanha.hakukohdeOppilaitokset.get(1).oid)
+    Assertions.assertEquals("Vanha koulu 2", vanha.hakukohdeOppilaitokset.get(1).nimi.fi.get)
+    Assertions.assertEquals("VastaanotaEhdollisesti", vanha.vastaanottoAction)
+    Assertions.assertEquals("2024-08-01T12:00:00Z", vanha.vastaanottoaika)
+
+    // Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijanVastaanototUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeOppijanVastaanototVTSError(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967232"
+
+    // mockataan ONR-vastaukset
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+
+    // mockataan VTS-vastaus palauttamaan virheen
+    Mockito.when(vtsClient.fetchVastaanotot(oppijaNumero)).thenReturn(Future.failed(new RuntimeException("VTS connection failed")))
+
+    // suoritetaan kutsu ja tarkistetaan että palautetaan 500
+    val request = OppijanVastaanototRequest(Optional.of(oppijaNumero))
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_VASTAANOTOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isInternalServerError)
 
   /*
    * Integraatiotestit suorituksen tallennuksen vaihtoehtojen haulle
