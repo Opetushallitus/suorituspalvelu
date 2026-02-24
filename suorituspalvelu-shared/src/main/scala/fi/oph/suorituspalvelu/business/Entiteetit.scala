@@ -239,13 +239,16 @@ enum LahtokouluTyyppi(val defaultLuokka: Option[String]):
   case VUOSILUOKKA_8 extends LahtokouluTyyppi(None)
   case VUOSILUOKKA_9 extends LahtokouluTyyppi(None)
   case AIKUISTEN_PERUSOPETUS extends LahtokouluTyyppi(Some("Aikuisten perusopetus"))
+  case PERUSOPETUKSEEN_VALMISTAVA_OPETUS extends LahtokouluTyyppi(Some("Perusopetukseen valmistava opetus"))
   case TUVA extends LahtokouluTyyppi(Some("TUVA"))
   case TELMA extends LahtokouluTyyppi(Some("TELMA"))
   case VAPAA_SIVISTYSTYO extends LahtokouluTyyppi(Some("Vapaa sivistystyö"))
 
 object LahtokouluTyyppi {
 
-  val LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
+  val SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT = Set(AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
+
+  val KOSKESTA_TUOTAVAT = Set(VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
 }
 
 case class Lahtokoulu(
@@ -304,6 +307,10 @@ case class PerusopetuksenOppimaara(
   lahtokoulut: Set[Lahtokoulu],
   syotetty: Boolean, // Käsin tallennetulle tiedolle true, muutoin false.
   vuosiluokkiinSitoutumatonOpetus: Boolean
+) extends Suoritus, Tyypitetty
+
+case class PerusopetukseenValmistavaOpetus(
+  lahtokoulu: Lahtokoulu,
 ) extends Suoritus, Tyypitetty
 
 case class LukionOppimaara(
