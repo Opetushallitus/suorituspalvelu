@@ -2,13 +2,13 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.LAHTOKOULUT_ILMAN_7_JA_8_LUOKKALAISIA
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl, VanhaTarjontaClient, VTSClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.security.{SecurityConstants, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.ui.EntityToUIConverter
-import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.validation.Validator
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,7 +18,7 @@ import java.time.{Instant, LocalDate}
 import java.util.Optional
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.jdk.OptionConverters.*
 import scala.jdk.CollectionConverters.*
 
@@ -116,8 +116,14 @@ class UIService {
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
   @Autowired val koodistoProvider: KoodistoProvider = null
+  
+  @Autowired val koutaHakuProvider: HakuProvider = null
+  
+  @Autowired val koutaHakukohdeProvider: HakukohdeProvider = null
 
   @Autowired val tarjontaIntegration: fi.oph.suorituspalvelu.integration.TarjontaIntegration = null
+
+  @Autowired val vtsClient: VTSClient = null
 
   val ONR_TIMEOUT = 10.seconds
 
@@ -203,10 +209,29 @@ class UIService {
             Set(henkiloOid)
       }
 
-      val suoritukset = haeAliakset(henkiloOid).flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
+      val aliakset = haeAliakset(henkiloOid)
+      val suoritukset = aliakset.flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
         masterHenkilo.hetu, masterHenkilo.oidHenkilo, henkiloOid, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
       })
+
+  def haeOppijanVastaanotot(henkiloOid: String): Option[(Seq[VastaanottoUI], Seq[VanhaVastaanottoUI])] =
+    resolveMasterHenkilo(henkiloOid).map(masterHenkilo => {
+      def haeAliakset(oppijaOid: String): Set[String] = {
+        try
+          Set(Set(henkiloOid), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
+        catch
+          case e: Exception =>
+            LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + henkiloOid, e)
+            Set(henkiloOid)
+      }
+
+      val aliakset = haeAliakset(henkiloOid)
+      val vastaanotot = Await.result(Future.sequence(aliakset.map(oid => vtsClient.fetchVastaanotot(oid))).map(_.flatten), 30.seconds)
+      val opintopolku = EntityToUIConverter.getVastaanotot(vastaanotot.flatMap(_.opintopolku).toSeq, koutaHakuProvider, koutaHakukohdeProvider, organisaatioProvider)
+      val vanhat = EntityToUIConverter.getVanhatVastaanotot(vastaanotot.flatMap(_.vanhat).toSeq)
+      (opintopolku, vanhat)
+    })
 
   /**
    * Tarkastaa onko käyttäjällä oikeuksia nähdä oppijat tiedot. Tarkastetaan sekä rekisterinpitäjä-status että

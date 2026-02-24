@@ -2,10 +2,11 @@ package fi.oph.suorituspalvelu.configuration
 
 import scala.concurrent.duration.DurationInt
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
-import fi.oph.suorituspalvelu.integration.{KoskiIntegration, TarjontaIntegration, OnrIntegrationImpl}
+import fi.oph.suorituspalvelu.integration.TarjontaIntegration.KOUTA_OID_LENGTH
+import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl, TarjontaIntegration, VanhaTarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, YtrClient}
-import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, VTSClient, VanhaTarjontaClient, YtrClient}
+import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
@@ -34,6 +35,14 @@ class IntegrationConfiguration {
   @Bean
   def getKoutaIntegration(): TarjontaIntegration =
     new TarjontaIntegration
+
+  @Bean
+  def getVanhaTarjontaClient(@Value("${integrations.koski.base-url}") envBaseUrl: String): VanhaTarjontaClient =
+    new VanhaTarjontaClient(envBaseUrl)
+
+  @Bean
+  def getVanhaTarjontaIntegration(): VanhaTarjontaIntegration =
+    new VanhaTarjontaIntegration
 
   @Bean
   def getKoskiClient(@Value("${integrations.koski.username}") user: String,
@@ -124,6 +133,27 @@ class IntegrationConfiguration {
     new KoutaClient(casClient, envBaseUrl)
   }
 
+  @Bean
+  def getVTSClient(@Value("${integrations.koski.username}") user: String,
+                   @Value("${integrations.koski.password}") password: String,
+                   @Value("${integrations.koski.base-url}") envBaseUrl: String): VTSClient = {
+
+    val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
+    val casConfig: CasConfig = new CasConfig.CasConfigBuilder(
+      user,
+      password,
+      envBaseUrl + "/cas",
+      envBaseUrl + "/valinta-tulos-service",
+      CALLER_ID,
+      CALLER_ID,
+      "/auth/login")
+      .setJsessionName("session").build
+
+    val casClient: CasClient = CasClientBuilder.build(casConfig)
+
+    new VTSClient(casClient, envBaseUrl)
+  }
+
   private val ORGANISAATIO_TIMEOUT = 30.seconds
 
   @Bean
@@ -158,4 +188,18 @@ class IntegrationConfiguration {
     (koodisto: String) =>
       cache.get(koodisto)
   }
+
+  @Bean
+  def getHakuProvider(tarjontaIntegration: TarjontaIntegration, vanhaTarjontaIntegration: VanhaTarjontaIntegration): HakuProvider =
+    hakuOid =>
+      if (hakuOid.length == KOUTA_OID_LENGTH) tarjontaIntegration.getHaku(hakuOid)
+      else vanhaTarjontaIntegration.getHaku(hakuOid)
+
+  @Bean
+  def getHakukohdeProvider(tarjontaIntegration: TarjontaIntegration, vanhaTarjontaIntegration: VanhaTarjontaIntegration): HakukohdeProvider =
+    hakukohdeOid =>
+      if (hakukohdeOid.length == KOUTA_OID_LENGTH) Some(tarjontaIntegration.getHakukohde(hakukohdeOid))
+      else Some(vanhaTarjontaIntegration.getHakukohde(hakukohdeOid))
+
+
 }

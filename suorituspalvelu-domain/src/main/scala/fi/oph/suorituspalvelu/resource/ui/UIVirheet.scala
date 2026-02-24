@@ -47,4 +47,6 @@ object UIVirheet {
   final val UI_VALINTADATA_USEITA_VAHVISTETTUJA_OPPIMAARIA     = "backend-virhe.valintadata.useita_vahvistettuja_oppimaaria"
 
   final val UI_OPPIJAN_HAUT_HAKU_EPAONNISTUI                   = "backend-virhe.oppijan_haut.haku_epaonnistui"
+
+  final val UI_VASTAANOTOT_HAKU_EPAONNISTUI                    = "backend-virhe.vastaanotot.haku_epaonnistui"
 }

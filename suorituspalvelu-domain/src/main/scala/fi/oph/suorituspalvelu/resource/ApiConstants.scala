@@ -123,6 +123,8 @@ object ApiConstants {
   final val UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER  = "{" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_NAME + "}"
   final val UI_OPPIJAN_HAUT_PATH                            = UI_API_PREFIX + "/oppijanhaut/" + UI_OPPIJAN_HAUT_OPPIJANUMERO_PARAM_PLACEHOLDER
 
+  final val UI_VASTAANOTOT_PATH                             = UI_API_PREFIX + "/vastaanotot"
+
   final val UI_VALINTADATA_PATH                             = UI_API_PREFIX + "/valintadata"
   final val UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME          = "oppijaNumero"
   final val UI_VALINTADATA_HAKU_PARAM_NAME                  = "hakuOid"

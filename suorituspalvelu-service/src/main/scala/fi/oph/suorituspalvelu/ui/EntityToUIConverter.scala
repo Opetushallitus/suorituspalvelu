@@ -2,13 +2,14 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOpintojaksoNimiUI, KKOpintojaksoUI, KKOppilaitosUI, KKOppilaitosNimiUI, KKSuoritusNimiUI, KKSuoritusUI, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaaraNimi, LukionOppimaaraUI, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OpiskeluoikeusNimiUI, OpiskeluoikeusTila, OpiskeluoikeusUI, OpiskeluoikeusVirtaTilaUI, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, TuvaUI, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaine, DIAOppiaineNimi, DIATutkinto, DIATutkintoNimi, DIAVastaavuusTodistus, DIAVastaavuusTodistusNimi, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, HakuNimi, HakukohdeNimi, HakukohdeOppilaitosNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOpintojaksoNimiUI, KKOpintojaksoUI, KKOppilaitosNimiUI, KKOppilaitosUI, KKSuoritusNimiUI, KKSuoritusUI, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaaraNimi, LukionOppimaaraUI, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OpiskeluoikeusNimiUI, OpiskeluoikeusTila, OpiskeluoikeusUI, OpiskeluoikeusVirtaTilaUI, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, OppilaitosNimi, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, PreIBNimi, SuoritusTila, Telma, TelmaNimi, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, TuvaUI, VanhaVastaanottoUI, VastaanottoHakukohdeOppilaitos, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, VastaanottoUI, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.service.UIService.EXAMPLE_OPPIJA_OID
-import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 
 import java.time.LocalDate
 import java.util.Optional
@@ -719,7 +720,44 @@ object EntityToUIConverter {
       }).toList
   }
 
-  def getOppijanTiedot(etunimet: Option[String], sukunimi: Option[String], hetu: Option[String], oppijaNumero: String, henkiloOid: String, syntymaAika: Option[LocalDate], opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): OppijanTiedotSuccessResponse = {
+  def getVastaanotot(vastaanotot: Seq[OpintopolkuVastaanotto], hakuProvider: HakuProvider, hakukohdeProvider: HakukohdeProvider, organisaatioProvider: OrganisaatioProvider): Seq[VastaanottoUI] =
+    vastaanotot.map(v => {
+      val haku = hakuProvider.haeHaku(v.hakuOid).get
+      val hakukohde = hakukohdeProvider.haeHakukohde(v.hakukohdeOid).get
+
+      val hakukohdeOrganisaatioIds = hakukohde match
+        case hakukohde: KoutaHakukohde => List(hakukohde.organisaatioOid)
+        case hakukohde: VanhaTarjontaHakukohde => hakukohde.tarjoajaOids
+      val hakukohdeOppilaitokset = hakukohdeOrganisaatioIds.flatMap(oid =>
+        organisaatioProvider.haeOrganisaationTiedot(oid).map(org =>
+          VastaanottoHakukohdeOppilaitos(oid, HakukohdeOppilaitosNimi(Optional.ofNullable(org.nimi.fi), Optional.ofNullable(org.nimi.sv), Optional.ofNullable(org.nimi.en)))
+        )
+      )
+
+      VastaanottoUI(
+        hakuOid = v.hakuOid,
+        hakuNimi = haku match
+          case haku: KoutaHaku => HakuNimi(haku.nimi.get("fi").toJava, haku.nimi.get("sv").toJava, haku.nimi.get("en").toJava)
+          case haku: VanhaTarjontaHaku => HakuNimi(haku.nimi.get("kieli_fi").toJava, haku.nimi.get("kieli_sv").toJava, haku.nimi.get("kieli_en").toJava),
+        hakukohdeOid = v.hakukohdeOid,
+        hakukohdeNimi = hakukohde match
+          case hakukohde: KoutaHakukohde => HakukohdeNimi(hakukohde.nimi.get("fi").toJava, hakukohde.nimi.get("sv").toJava, hakukohde.nimi.get("en").toJava)
+          case hakukohde: VanhaTarjontaHakukohde => HakukohdeNimi(hakukohde.hakukohteenNimet.get("kieli_fi").toJava, hakukohde.hakukohteenNimet.get("kieli_sv").toJava, hakukohde.hakukohteenNimet.get("kieli_en").toJava),
+        hakukohdeOppilaitokset = hakukohdeOppilaitokset.asJava,
+        vastaanottoAction = v.vastaanottoAction,
+        vastaanottoaika = v.vastaanottoaika
+      )
+    })
+
+  def getVanhatVastaanotot(vanhatVastaanotot: Seq[VanhaVastaanotto]): Seq[VanhaVastaanottoUI] =
+    vanhatVastaanotot.map(v => VanhaVastaanottoUI(
+      hakukohdeNimi = v.hakukohde,
+      vastaanottoaika = v.vastaanottoaika
+    ))
+
+  def getOppijanTiedot(etunimet: Option[String], sukunimi: Option[String], hetu: Option[String], oppijaNumero: String, henkiloOid: String,
+                       syntymaAika: Option[LocalDate], opiskeluoikeudet: Set[Opiskeluoikeus],
+                       organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): OppijanTiedotSuccessResponse = {
     if(EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
       MockEntityToUIConverter.getOppijanTiedot()
     else

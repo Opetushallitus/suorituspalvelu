@@ -4,11 +4,17 @@ import fi.oph.suorituspalvelu.integration.client.{KoutaClient, KoutaHaku, KoutaH
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
+import fi.oph.suorituspalvelu.integration.TarjontaIntegration.KOUTA_OID_LENGTH
 
 import java.time.{LocalDateTime, ZoneId}
 import java.time.format.DateTimeFormatter
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Await
+
+object TarjontaIntegration {
+
+  val KOUTA_OID_LENGTH = 35
+}
 
 class TarjontaIntegration {
 
@@ -61,8 +67,6 @@ class TarjontaIntegration {
 
     haut.values.filter(h => hakuOnAktiivinen(h, ohjausparametrit(h.oid))).toSeq
   }
-
-  private val KOUTA_OID_LENGTH = 35
 
   def tarkistaHaunAktiivisuus(hakuOid: String): Boolean = {
     // Vanhan tarjonnan haulle erikoiskäsittely koska ohjausparametrien hausta seuraa virhe (koska niitä ei ole).
