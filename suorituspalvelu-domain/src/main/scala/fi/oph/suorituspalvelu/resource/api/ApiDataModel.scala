@@ -213,11 +213,6 @@ case class HakemustenHarkinnanvaraisuudetPayload(
   @BeanProperty hakemusOids: java.util.List[String]
 )
 
-case class AutomaattinenHakukelpoisuusPayload(
-  @(Schema @field)(example = "[\"" + ESIMERKKI_HAKUKOHDE_OID + "\"]", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty henkiloOids: java.util.List[String]
-)
-
 case class ValintalaskentaDataPayload(
   @(Schema @field)(example = ESIMERKKI_HAKU_OID, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakuOid: Optional[String],
@@ -302,13 +297,15 @@ trait AutomaattinenHakukelpoisuusResponse
 
 case class AutomaattinenHakukelpoisuusSuccessResponse(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty automaattisetHakukelpoisuudet: java.util.Map[String, Boolean]
+  @BeanProperty henkiloOid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty automaattisestiHakukelpoinen: Boolean
 ) extends AutomaattinenHakukelpoisuusResponse
 
 case class AutomaattinenHakukelpoisuusFailureResponse(
   @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
   @BeanProperty virheet: java.util.List[String]
-) extends HarkinnanvaraisuusResponse
+) extends AutomaattinenHakukelpoisuusResponse
 
 trait HarkinnanvaraisuusResponse
 

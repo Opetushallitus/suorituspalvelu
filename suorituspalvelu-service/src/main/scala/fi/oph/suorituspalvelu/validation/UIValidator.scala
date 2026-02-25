@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenS
 import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
+import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, henkiloOidPattern, oppilaitosOidPattern}
 
 import java.time.{Instant, LocalDate}
 import java.util.{Optional, UUID}
@@ -97,7 +97,7 @@ object UIValidator {
         Set(VALIDATION_OPPIJANUMERO_TYHJA)
       else
         Set.empty
-    else if(!Validator.oppijaOidPattern.matches(oppijaNumero.get))
+    else if(!Validator.henkiloOidPattern.matches(oppijaNumero.get))
       Set(VALIDATION_OPPIJANUMERO_EI_VALIDI)
     else
       Set.empty
@@ -119,7 +119,7 @@ object UIValidator {
   def validateTunniste(tunniste: Option[String]): Set[String] = {
     if (tunniste.isEmpty || tunniste.get.isEmpty)
       Set(VALIDATION_TUNNISTE_TYHJA)
-    else if (!hetuPattern.matches(tunniste.get) && !oppijaOidPattern.matches(tunniste.get))
+    else if (!hetuPattern.matches(tunniste.get) && !henkiloOidPattern.matches(tunniste.get))
       Set(VALIDATION_TUNNISTE_EI_VALIDI)
     else
       Set.empty
