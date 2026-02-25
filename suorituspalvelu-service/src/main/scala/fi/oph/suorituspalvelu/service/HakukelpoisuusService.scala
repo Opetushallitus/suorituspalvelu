@@ -61,19 +61,15 @@ class HakukelpoisuusService {
     allOidsForPerson.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
   }
 
-  def getAutomaattinenHakukelpoisuus(personOid: String): Boolean = {
+  def paatteleAutomaattinenHakukelpoisuus(personOid: String): Boolean = {
     try {
       val opiskeluoikeudet = haeSupaTiedot(personOid)
       AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(personOid, opiskeluoikeudet)
     } catch {
       case t: Throwable =>
         LOG.error(s"Virhe pääteltäessä automaattista hakukelpoisuutta henkilölle $personOid:", t)
-        false
+        throw t
     }
-  }
-
-  def getAutomaattisetHakukelpoisuudet(henkiloOids: Set[String]): Map[String, Boolean] = {
-    henkiloOids.map(oid => oid -> getAutomaattinenHakukelpoisuus(oid)).toMap
   }
 
 }

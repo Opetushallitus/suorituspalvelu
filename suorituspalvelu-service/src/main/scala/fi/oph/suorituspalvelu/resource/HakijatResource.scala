@@ -176,7 +176,7 @@ class HakijatResource {
               Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
           .flatMap(_ =>
             // validoidaan parametrit
-            val virheet: Set[String] = Validator.validateOppijanumero(henkiloOid.toScala, true)
+            val virheet: Set[String] = Validator.validateHenkiloOid(henkiloOid.toScala, true)
             if (virheet.isEmpty)
               Right(henkiloOid.get)
             else
