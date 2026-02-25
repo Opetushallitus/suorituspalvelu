@@ -99,8 +99,8 @@ class DataSyncResource {
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(KOSKI_DATASYNC_HENKILOT_LIIKAA))))
             } else {
               val virheet: Set[String] = personOids.toScala
-                .map(oids => oids.asScala.flatMap(o => Validator.validateOppijanumero(Some(o), true)).toSet)
-                .getOrElse(Set(Validator.VALIDATION_OPPIJANUMERO_TYHJA))
+                .map(oids => oids.asScala.flatMap(o => Validator.validateHenkiloOid(Some(o), true)).toSet)
+                .getOrElse(Set(Validator.VALIDATION_HENKILOOID_TYHJA))
               if (virheet.isEmpty)
                 Right(personOids.get.asScala)
               else
@@ -342,11 +342,11 @@ class DataSyncResource {
                 Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
           .flatMap(henkiloOid =>
             // validoidaan parametri
-            val virheet = Validator.validateOppijanumero(henkiloOid, true)
+            val virheet = Validator.validateHenkiloOid(henkiloOid, true)
             if (virheet.isEmpty)
               Right(henkiloOid.get)
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_HENKILOOID_EI_VALIDI)))))
           .map(henkiloOid =>
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(VIRTA_DATASYNC_PARAM_NAME -> henkiloOid), AuditOperation.PaivitaVirtaTiedot, None)
@@ -499,11 +499,11 @@ class DataSyncResource {
           .flatMap(personOids =>
             // validoidaan parametri
             if (personOids.isEmpty)
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_TYHJA))))
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of(Validator.VALIDATION_HENKILOOID_TYHJA))))
             else if (personOids.toSet.size > 5000)
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of("Korkeintaan 5000 henkilöä kerrallaan"))))
             else
-              val virheet: Set[String] = personOids.get.flatMap(oid => Validator.validateOppijanumero(Some(oid), true)).toSet
+              val virheet: Set[String] = personOids.get.flatMap(oid => Validator.validateHenkiloOid(Some(oid), true)).toSet
               if (virheet.isEmpty)
                 Right(personOids.get)
               else
