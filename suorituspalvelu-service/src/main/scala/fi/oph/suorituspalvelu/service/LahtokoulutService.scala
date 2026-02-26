@@ -29,7 +29,7 @@ class LahtokoulutService {
   }
 
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
-    kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi, None).map((henkilo, luokka) => henkilo -> luokka)
+    kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi, None)
   }
 
   def haeLahtokouluAuthorizations(henkiloOid: String): Seq[LahtokouluAuthorization] = {

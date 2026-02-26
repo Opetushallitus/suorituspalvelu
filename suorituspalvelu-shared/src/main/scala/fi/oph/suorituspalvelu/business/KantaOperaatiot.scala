@@ -451,7 +451,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     lahtokouluTyypit: Set[LahtokouluTyyppi]
   ): Set[(String, Option[String])] = {
     val s = haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, valmistumisVuosi, luokka, keskenTaiKeskeytynyt, arvosanaPuuttuu, Some(lahtokouluTyypit))
-    Await.result(db.run(s.as[(String, Option[String])]), DB_TIMEOUT).map((henkiloOid, luokka) => (henkiloOid, luokka)).toSet
+    Await.result(db.run(s.as[(String, Option[String])]), DB_TIMEOUT).toSet
   }
 
   /**
@@ -497,7 +497,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       sql"""
           SELECT DISTINCT oppilaitos_oid
           FROM lahtokoulut
-          WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
+          WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}]::varchar[])
         """.as[String]), DB_TIMEOUT).toSet
 
   def haeHenkilotJaLuokat(oppilaitosOid: String, valmistumisVuosi: Int, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): Set[(String, String)] =
