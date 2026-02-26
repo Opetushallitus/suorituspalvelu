@@ -177,6 +177,14 @@ object VirtaToSuoritusConverter {
     )
   }
 
+  /**
+   * VIRTA-datassa suoritusten hierarkinen rakenne on vaihtelee. Korjataan suoritushierarkiaa reunatapauksissa, jotta
+   * saadaan juuritason suoritukset yhdenmukaisemmiksi ja järkevämpään muotoon esittämistä varten.
+   *
+   * @param suoritukset Suorituspalvelun suorituksiksi muunnetut VIRTA-suoritukset
+   * @param opiskeluoikeus VIRTA-opiskeluoikeus, jonka suorituksia ollaan muuntamassa
+   * @return Suoritukset, joiden rakennetta on korjattu tarvittaessa
+   */
   private def fixSuoritusRoots(suoritukset: Seq[Suoritus], opiskeluoikeus: VirtaOpiskeluoikeus): Seq[Suoritus] = {
     if (isTutkintoonJohtavaOpiskeluoikeusTyyppi(opiskeluoikeus.Tyyppi)) {
       val opiskeluoikeusJaksoKoulutuskoodit = opiskeluoikeus.Jakso.flatMap(_.Koulutuskoodi)
@@ -191,12 +199,13 @@ object VirtaToSuoritusConverter {
         moveOpintojaksotUnderTutkintoWhenNeeded(suoritukset)
       } else if (opiskeluoikeusJaksoKoulutuskoodit.nonEmpty && !isPaattynytOpiskeluoikeus(opiskeluoikeus)) {
         addKeskenerainenTutkinnonSuoritus(suoritukset, opiskeluoikeus)
-      } else {
+      // Jos tutkintoon johtavalla opiskeluoikeudella ei ole suorituksia, lisätään synteettinen suoritus.
+      // Näin saadaan suorituksiin näkyviin keskeytynyt tai valmis tutkinto, vaikka opiskeluoikeudella ei ole lainkaan suorituksia.
+      } else if (suoritukset.isEmpty) {
         val viimeisinTutkintoKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
-        if (suoritukset.isEmpty)
-          Seq(createSyntheticSuoritusWrapper(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi))
-        else
-          suoritukset
+        Seq(createSyntheticSuoritusWrapper(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi))
+      } else {
+        suoritukset
       }
     } else if (sisallytaOpintojaksotOsasuorituksina(opiskeluoikeus.Tyyppi)) {
       val (rootSuoritukset, osaSuoritukset) = suoritukset.partition(_.isInstanceOf[KKTutkinto])
