@@ -2,19 +2,16 @@ package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9, KOSKESTA_TUOTAVAT}
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, Opiskeluoikeus, ParserVersions, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.KOSKESTA_TUOTAVAT
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, ParserVersions, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
+import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import org.slf4j.{Logger, LoggerFactory}
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.beans.factory.annotation.{Autowired, Value}
-import org.springframework.context.annotation.{Bean, Configuration}
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import slick.jdbc.JdbcBackend
 
 import java.time.{Duration, Instant, LocalDate}
 import java.util.UUID
