@@ -1,14 +1,17 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
-import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter.isTutkintoonJohtavaOpiskeluoikeusTyyppi
-import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
+import fi.oph.suorituspalvelu.business.{
+  AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus,
+  KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus,
+  PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus,
+  PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus
+}
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.service.UIService.EXAMPLE_OPPIJA_OID
+import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 
 import java.time.LocalDate
@@ -40,9 +43,7 @@ object EntityToUIConverter {
 
   def getOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): List[OpiskeluoikeusUI] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[KKOpiskeluoikeus])
-      .map(o => o.asInstanceOf[KKOpiskeluoikeus])
-      .filter(o => isTutkintoonJohtavaOpiskeluoikeusTyyppi(o.tyyppiKoodi))
+      .collect{ case oo: KKOpiskeluoikeus if oo.isTutkintoonJohtava => oo }
       .map(o => OpiskeluoikeusUI(
         o.tunniste,
         nimi = o.koulutusKoodi.map(koulutusKoodi => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(koulutusKoodi).map(k =>

@@ -110,7 +110,7 @@ object VirtaToSuoritusConverter {
     "7" // Tohtorintutkinto
   )
 
-  def isTutkintoonJohtavaOpiskeluoikeusTyyppi(opiskeluoikeusTyyppi: String): Boolean =
+  private def isTutkintoonJohtavaOpiskeluoikeusTyyppi(opiskeluoikeusTyyppi: String): Boolean =
     TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeusTyyppi)
 
   // Jos juuritasolla vain yksi tutkinto ja opintosuorituksia, eikä tutkinnolla ole osasuorituksia,
@@ -273,6 +273,7 @@ object VirtaToSuoritusConverter {
               ), // otetaan viimeisin opiskeluoikeuden tila
               supaTila = convertVirtaOpiskeluoikeusTila(virtaTila),
               myontaja = oo.Myontaja,
+              isTutkintoonJohtava = isTutkintoonJohtavaOpiskeluoikeusTyyppi(oo.Tyyppi),
               suoritukset =
                 fixSuoritusRoots(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet
             )
