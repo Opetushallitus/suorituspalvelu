@@ -102,8 +102,8 @@ object VirtaToSuoritusConverter {
   }
 
   private val TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT = Set("1", "2", "3", "4", "6", "7")
-  private def isTutkintoonJohtava(opiskeluoikeus: VirtaOpiskeluoikeus) =
-    TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeus.Tyyppi)
+  def isTutkintoonJohtavaOpiskeluoikeusTyyppi(opiskeluoikeusTyyppi: String): Boolean =
+    TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeusTyyppi)
 
   // Jos vain yksi tutkinto ja tavallisia opintosuorituksia, siirretään kaikki opintosuoritukset tutkinnon alle
   private def moveOpintojaksotUnderRootSuoritusIfNecessary(suoritukset: Seq[Suoritus]): Seq[Suoritus] = {
@@ -186,7 +186,7 @@ object VirtaToSuoritusConverter {
   }
 
   private def fixSuoritusRoots(suoritukset: Seq[Suoritus], opiskeluoikeus: VirtaOpiskeluoikeus): Seq[Suoritus] = {
-    if (isTutkintoonJohtava(opiskeluoikeus)) {
+    if (isTutkintoonJohtavaOpiskeluoikeusTyyppi(opiskeluoikeus.Tyyppi)) {
       val opiskeluoikeusJaksoKoulutuskoodit = opiskeluoikeus.Jakso.flatMap(_.Koulutuskoodi)
       val suoritusLoytyyKoulutuskoodilla = opiskeluoikeusJaksoKoulutuskoodit.exists(jaksoKoulutusKoodi => {
         suoritukset.exists {
