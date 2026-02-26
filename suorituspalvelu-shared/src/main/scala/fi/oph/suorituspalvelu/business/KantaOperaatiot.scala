@@ -44,6 +44,7 @@ object KantaOperaatiot {
     mapper.registerSubtypes(
       classOf[PerusopetuksenOpiskeluoikeus],
       classOf[PerusopetuksenOppimaara],
+      classOf[PerusopetukseenValmistavaOpetus],
       classOf[AmmatillinenOpiskeluoikeus],
       classOf[PoistettuOpiskeluoikeus],
       classOf[KKOpiskeluoikeus],
@@ -412,7 +413,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           AND (${luokka.isEmpty} OR luokka=${luokka.getOrElse("")})
           AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
           AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
-          AND (${lahtokouluTyypit.isEmpty} OR suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(_.map(p => s"'$p'").mkString(",")).getOrElse("")}]))
+          AND (${lahtokouluTyypit.isEmpty} OR suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(_.map(p => s"'$p'").mkString(",")).getOrElse("")}]::varchar[]))
         )
         -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
         SELECT henkilo_oid, luokka, vuodet
@@ -450,7 +451,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     lahtokouluTyypit: Set[LahtokouluTyyppi]
   ): Set[(String, Option[String])] = {
     val s = haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, valmistumisVuosi, luokka, keskenTaiKeskeytynyt, arvosanaPuuttuu, Some(lahtokouluTyypit))
-    Await.result(db.run(s.as[(String, Option[String])]), DB_TIMEOUT).map((henkiloOid, luokka) => (henkiloOid, luokka)).toSet
+    Await.result(db.run(s.as[(String, Option[String])]), DB_TIMEOUT).toSet
   }
 
   /**
@@ -496,17 +497,14 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       sql"""
           SELECT DISTINCT oppilaitos_oid
           FROM lahtokoulut
-          WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}])
+          WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}]::varchar[])
         """.as[String]), DB_TIMEOUT).toSet
 
-  def haeHenkilotJaLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[(String, String)] =
-    Await.result(db.run(
-      sql"""
-          SELECT DISTINCT henkilo_oid, luokka
-          FROM lahtokoulut
-          WHERE oppilaitos_oid=$oppilaitosOid
-          AND valmistumisvuosi=$valmistumisVuosi
-        """.as[(String, String)]), DB_TIMEOUT).toSet
+  def haeHenkilotJaLuokat(oppilaitosOid: String, valmistumisVuosi: Int, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): Set[(String, String)] =
+    val s = sql"""SELECT DISTINCT henkilo_oid, luokka FROM (""".concat(
+      haeLahtokoulunOppilaatStatement(None, oppilaitosOid, Some(valmistumisVuosi), None, false, false, lahtokouluTyypit)).concat(
+      sql""") AS henkilotjaluokat""")
+    Await.result(db.run(s.as[(String, String)]), DB_TIMEOUT).toSet
 
   def paataVersionVoimassaolo(tunniste: UUID): Boolean =
     LOG.info(s"päätetään version $tunniste voimassaolo")
