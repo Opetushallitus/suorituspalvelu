@@ -289,18 +289,16 @@ object VirtaToSuoritusConverter {
   }
 
   private def toSuoritus(
-    suoritus: fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus,
-    suorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus],
+    suoritus: VirtaOpintosuoritus,
+    suorituksetByAvain: Map[String, VirtaOpintosuoritus],
     // jos ei opiskeluoikeutta, kyseessä suoritus ilman opiskeluoikeutta eli on luotu synteettinen opiskeluoikeus
-    opiskeluoikeus: Option[fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus]
+    opiskeluoikeus: Option[VirtaOpiskeluoikeus]
   ): Option[Suoritus] = {
-    // Suoritus ilman opiskeluoikeutta -> asetetaan tila valmiiksi
-    val supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS)
     suoritus.Laji match
       case VIRTA_TUTKINTO_LAJI => Some(KKTutkinto(
           tunniste = UUID.randomUUID(),
           nimi = virtaNimiToKielistetty(suoritus.Nimi),
-          supaTila = supaTila,
+          supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS),
           komoTunniste = suoritus.koulutusmoduulitunniste,
           opintoPisteet = suoritus.Laajuus.Opintopiste,
           aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
@@ -319,7 +317,7 @@ object VirtaToSuoritusConverter {
       case VIRTA_OPINTOSUORITUS_LAJI => Some(KKOpintosuoritus(
           tunniste = UUID.randomUUID(),
           nimi = virtaNimiToKielistetty(suoritus.Nimi),
-          supaTila = supaTila,
+          supaTila = SuoritusTila.VALMIS,
           komoTunniste = suoritus.koulutusmoduulitunniste,
           opintoPisteet = suoritus.Laajuus.Opintopiste,
           opintoviikot = None,
@@ -348,8 +346,8 @@ object VirtaToSuoritusConverter {
 
   def toSuoritukset(
     opiskeluoikeus: Option[VirtaOpiskeluoikeus],
-    opintosuoritukset: Seq[fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus],
-    allSuorituksetByAvain: Map[String, fi.oph.suorituspalvelu.parsing.virta.VirtaOpintosuoritus] = Map.empty,
+    opintosuoritukset: Seq[VirtaOpintosuoritus],
+    allSuorituksetByAvain: Map[String, VirtaOpintosuoritus] = Map.empty,
     allowMissingFieldsForTests: Boolean = false
   ): Seq[Suoritus] =
     try
