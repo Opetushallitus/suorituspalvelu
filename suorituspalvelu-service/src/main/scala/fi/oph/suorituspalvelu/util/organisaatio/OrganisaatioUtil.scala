@@ -29,7 +29,8 @@ object OrganisaatioUtil {
           nimi = org.nimi,
           parentOid = org.parentOid,
           allDescendantOids = descendantOids,
-          tyypit = org.organisaatiotyypit
+          tyypit = org.organisaatiotyypit,
+          oppilaitosTyyppi = org.oppilaitostyyppi
         )
         val childrenMap = flatten(org.children)
 
