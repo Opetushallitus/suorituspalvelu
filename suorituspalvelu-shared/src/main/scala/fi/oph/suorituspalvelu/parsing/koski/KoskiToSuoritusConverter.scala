@@ -126,6 +126,16 @@ object KoskiToSuoritusConverter {
               if (arvioinnit.nonEmpty)
                 Some(arvioinnit.maxBy(arviointi => arviointi.arvosana.koodiarvo.toDouble))
               else None
+            case "arviointiasteikkodiatutkinto" =>
+              //Koodistossa on S, muut numeerisia
+              val numeeriset = arvioinnit.filter(arv => !arv.arvosana.koodiarvo.equals("S"))
+              val parasArviointi: Option[KoskiArviointi] = {
+                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
+                else {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("S"))
+                }
+              }
+              parasArviointi
             case _ =>
               ???
           }
@@ -632,7 +642,7 @@ object KoskiToSuoritusConverter {
     val parasArviointi: Option[KoskiArviointi] = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoeuropeanschoolofhelsinkifinalmark"))
+          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkodiatutkinto"))
         .getOrElse(Set.empty)
       valitseParasArviointi(arvioinnit)
     }
@@ -795,7 +805,7 @@ object KoskiToSuoritusConverter {
   val SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS                    = "tuvakoulutuksensuoritus"
   val SUORITYSTYYPPI_VAPAASIVISTYSTYOSUORITUS                   = "vstoppivelvollisillesuunnattukoulutus"
   val SUORITYSTYYPPI_EB                                         = "ebtutkinto"
-  val SUORITYSTYYPPI_DIA                                        = "diatutkinto"
+  val SUORITYSTYYPPI_DIA                                        = "diatutkintovaihe"
   val SUORITYSTYYPPI_LUKIONOPPIMAARA                            = "lukionoppimaara"
 
   def toSuoritukset(opiskeluoikeudet: Seq[KoskiOpiskeluoikeus], koodistoProvider: KoodistoProvider, allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] = {
