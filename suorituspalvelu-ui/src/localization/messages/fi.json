@@ -198,14 +198,14 @@
     "virta-nimi": "VIRTA-nimi",
     "sektori-label": "Sektori",
     "sektori": {
-      "yo": "YO",
-      "amk": "AMK"
+      "YO": "YO",
+      "AMK": "AMK"
     },
     "tutkintotaso-label": "Tutkintotaso",
     "tutkintotaso": {
-      "ylempi": "Ylempi korkeakoulututkinto",
-      "alempi": "Alempi korkeakoulututkinto",
-      "tohtori": "Tohtorintutkinto"
+      "YLEMPI": "Ylempi korkeakoulututkinto",
+      "ALEMPI": "Alempi korkeakoulututkinto",
+      "TOHTORI": "Tohtorintutkinto"
     }
   },
   "suorituksen-tila": {

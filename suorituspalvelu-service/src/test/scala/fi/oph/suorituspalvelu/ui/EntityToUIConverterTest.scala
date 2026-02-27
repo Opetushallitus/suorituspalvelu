@@ -627,11 +627,13 @@ class EntityToUIConverterTest {
       supaTila = KKOpiskeluoikeusTila.VOIMASSA,
       myontaja = ORGANISAATION_OID,
       isTutkintoonJohtava = true,
+      kieli = Some("fi"),
       suoritukset = Set.empty
     )
 
     val virtaEiTutkintoonJohtavaOpiskeluoikeus = virtaOpiskeluoikeus.copy(
       tyyppiKoodi = "5",
+      isTutkintoonJohtava = false
     )
 
     val ORGANISAATION_NIMI_FI = "Lapin ammattikorkeakoulu"
@@ -639,7 +641,7 @@ class EntityToUIConverterTest {
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
     val organisaatioProvider = new OrganisaatioProvider {
       override def orgLookupTable(): Map[String, Organisaatio] = {
-        Map(ORGANISAATION_OID -> Organisaatio(ORGANISAATION_OID, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty, Seq.empty))
+        Map(ORGANISAATION_OID -> Organisaatio(ORGANISAATION_OID, OrganisaatioNimi(ORGANISAATION_NIMI_FI, ORGANISAATION_NIMI_SV, ORGANISAATION_NIMI_EN), None, Seq.empty, Seq.empty, Some("oppilaitostyyppi_42#1")))
       }
     }
 
@@ -691,8 +693,8 @@ class EntityToUIConverterTest {
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
       ),
-      Optional.empty,
-      Optional.empty
+      Optional.of(KKTutkintotasoUI.ALEMPI),
+      Optional.of(KKSektoriUI.YO)
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(virtaOpiskeluoikeus, virtaEiTutkintoonJohtavaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
   }
 
@@ -788,6 +790,7 @@ class EntityToUIConverterTest {
       supaTila = KKOpiskeluoikeusTila.VOIMASSA,
       myontaja = virtaTutkinto.myontaja,
       isTutkintoonJohtava = false,
+      kieli = Some("fi"),
       suoritukset = Set(virtaTutkinto)
     )
 

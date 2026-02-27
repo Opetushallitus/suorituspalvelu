@@ -46,19 +46,19 @@ object EntityToUIConverter {
     )
   }
 
-  private def getTutkintotaso(oo: KKOpiskeluoikeus): Optional[String] = oo.tyyppiKoodi match {
-    case "1" | "2"  => Optional.of("alempi")
-    case "3" | "4" => Optional.of("ylempi")
-    case "7" => Optional.of("tohtori")
+  private def getTutkintotaso(oo: KKOpiskeluoikeus): Optional[KKTutkintotasoUI] = oo.tyyppiKoodi match {
+    case "1" | "2"  => Optional.of(KKTutkintotasoUI.ALEMPI)
+    case "3" | "4" => Optional.of(KKTutkintotasoUI.YLEMPI)
+    case "7" => Optional.of(KKTutkintotasoUI.TOHTORI)
     case _ => Optional.empty
   }
 
-  private def getSektori(myontaja: String, organisaatioProvider: OrganisaatioProvider): Optional[String] =
+  private def getSektori(myontaja: String, organisaatioProvider: OrganisaatioProvider): Optional[KKSektoriUI] =
     organisaatioProvider.haeOrganisaationTiedot(myontaja)
       .flatMap(org => {
         org.oppilaitosTyyppi.map(_.split("#").head) match {
-          case Some("oppilaitostyyppi_41") => Some("amk")
-          case Some("oppilaitostyyppi_42") | Some("oppilaitostyyppi_66") => Some("yo")
+          case Some("oppilaitostyyppi_41") => Some(KKSektoriUI.AMK)
+          case Some("oppilaitostyyppi_42") | Some("oppilaitostyyppi_66") => Some(KKSektoriUI.YO)
           case _ => None
         }
       }).toJava
@@ -237,7 +237,7 @@ object EntityToUIConverter {
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
-        suorituskieli = Optional.empty,
+        suorituskieli = getSuorituskieliFromKoodi(oo.kieli, koodistoProvider),
         isTutkintoonJohtava = oo.isTutkintoonJohtava,
         tutkintotaso = getTutkintotaso(oo),
         sektori = getSektori(suoritus.myontaja, organisaatioProvider),

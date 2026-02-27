@@ -147,6 +147,15 @@ enum SuoritusTilaUI:
 enum SuoritusTapaUI:
   case NAYTTOTUTKINTO
 
+enum KKTutkintotasoUI:
+  case ALEMPI
+  case YLEMPI
+  case TOHTORI
+
+enum KKSektoriUI:
+  case AMK
+  case YO
+
 case class KKOppilaitosNimiUI(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -197,9 +206,9 @@ case class OpiskeluoikeusUI(
   @(Schema @field)(example = "optio", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virtaTila: OpiskeluoikeusVirtaTilaUI,
   @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tutkintotaso: Optional[String],
+  @BeanProperty tutkintotaso: Optional[KKTutkintotasoUI],
   @(Schema @field)(example = "amk", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty sektori: Optional[String]
+  @BeanProperty sektori: Optional[KKSektoriUI]
 )
 
 case class KKOpintojaksoNimiUI(
@@ -268,9 +277,9 @@ case class KKSuoritusUI(
   @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty isTutkintoonJohtava: Boolean,
   @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tutkintotaso: Optional[String],
+  @BeanProperty tutkintotaso: Optional[KKTutkintotasoUI],
   @(Schema @field)(example = "amk", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty sektori: Optional[String]
+  @BeanProperty sektori: Optional[KKSektoriUI],
 )
 
 case class YOKoeNimi(
