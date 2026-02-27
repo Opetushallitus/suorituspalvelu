@@ -147,7 +147,8 @@ object EntityToUIConverter {
         aloituspaiva = Optional.empty(),
         valmistumispaiva = Optional.empty(),
         suorituskieli = getSuorituskieliFromKoodi(Some(suoritus.kieli), koodistoProvider),
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
+        isTutkintoonJohtava = false,
       ))
       case suoritukset => Seq(KKSuoritusUI(
         tunniste = oo.tunniste,
@@ -162,7 +163,8 @@ object EntityToUIConverter {
         aloituspaiva = Optional.empty,
         valmistumispaiva = Optional.empty,
         suorituskieli = Optional.empty,
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset)
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset),
+        isTutkintoonJohtava = false
       ))
     }
   }
@@ -182,7 +184,8 @@ object EntityToUIConverter {
         aloituspaiva = tutkinto.aloitusPvm.toJava,
         valmistumispaiva = tutkinto.suoritusPvm.toJava,
         opintojaksot = createVirtaOpintojaksoHierarkia(tutkinto.suoritukset.toSeq),
-        suorituskieli = getSuorituskieliFromKoodi(tutkinto.kieli, koodistoProvider)
+        suorituskieli = getSuorituskieliFromKoodi(tutkinto.kieli, koodistoProvider),
+        isTutkintoonJohtava = oo.isTutkintoonJohtava
       ))
     case suoritus: KKOpintosuoritus =>
       Some(KKSuoritusUI(
@@ -194,7 +197,8 @@ object EntityToUIConverter {
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
-        suorituskieli = getSuorituskieliFromKoodi(Some(suoritus.kieli), koodistoProvider)
+        suorituskieli = getSuorituskieliFromKoodi(Some(suoritus.kieli), koodistoProvider),
+        isTutkintoonJohtava = oo.isTutkintoonJohtava
       ))
     case suoritus: KKSynteettinenSuoritus =>
       Some(KKSuoritusUI(
@@ -207,6 +211,7 @@ object EntityToUIConverter {
         valmistumispaiva = suoritus.suoritusPvm.toJava,
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
         suorituskieli = Optional.empty,
+        isTutkintoonJohtava = oo.isTutkintoonJohtava
       ))
     case _ => None
   }

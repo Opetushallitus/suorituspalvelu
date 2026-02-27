@@ -260,7 +260,9 @@ case class KKSuoritusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(example = "")
-  @BeanProperty opintojaksot: java.util.List[KKOpintojaksoUI]
+  @BeanProperty opintojaksot: java.util.List[KKOpintojaksoUI],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty isTutkintoonJohtava: Boolean,
 )
 
 case class YOKoeNimi(
