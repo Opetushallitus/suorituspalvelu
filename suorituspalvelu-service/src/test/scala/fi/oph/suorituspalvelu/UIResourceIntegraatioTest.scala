@@ -1909,7 +1909,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals("Eurooppalainen ylioppilastutkinto (EB)", ebTutkintoResponse.nimi.fi.get())
     Assertions.assertEquals(oppilaitosOid, ebTutkintoResponse.oppilaitos.oid)
     Assertions.assertEquals(oppilaitosNimi, ebTutkintoResponse.oppilaitos.nimi.fi.get())
-    Assertions.assertEquals(fi.oph.suorituspalvelu.resource.ui.SuoritusTila.VALMIS.toString, ebTutkintoResponse.tila.toString)
+    Assertions.assertEquals(fi.oph.suorituspalvelu.resource.ui.SuoritusTilaUI.VALMIS.toString, ebTutkintoResponse.tila.toString)
     Assertions.assertEquals("2022-08-15", ebTutkintoResponse.aloituspaiva.get().toString)
     Assertions.assertEquals("2023-06-30", ebTutkintoResponse.valmistumispaiva.get().toString)
 

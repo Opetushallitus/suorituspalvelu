@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organ
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTapa.NAYTTOTUTKINTO
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTOTUTKINTO
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.junit.jupiter.api.*
@@ -89,7 +89,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -170,7 +170,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -231,7 +231,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -294,7 +294,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
@@ -331,7 +331,7 @@ class EntityToUIConverterTest {
         ),
         tutkinto.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo
@@ -371,7 +371,7 @@ class EntityToUIConverterTest {
         ),
         telma.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       Optional.of(telma.aloitusPaivamaara),
       telma.vahvistusPaivamaara.toJava,
       telma.suoritusKieli.arvo
@@ -410,7 +410,7 @@ class EntityToUIConverterTest {
         ),
         tuva.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       Optional.of(tuva.aloitusPaivamaara),
       tuva.vahvistusPaivamaara.toJava,
       tuva.hyvaksyttyLaajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
@@ -454,7 +454,7 @@ class EntityToUIConverterTest {
         ),
         vst.oppilaitos.oid
       ),
-      SuoritusTila.VALMIS,
+      SuoritusTilaUI.VALMIS,
       Optional.of(vst.aloitusPaivamaara),
       vst.vahvistusPaivamaara.toJava,
       vst.suoritusKieli.arvo,
@@ -543,7 +543,7 @@ class EntityToUIConverterTest {
         ),
         oid = oppimaara.oppilaitos.oid
       ),
-      tila = SuoritusTila.valueOf(oppimaara.supaTila.toString),
+      tila = SuoritusTilaUI.valueOf(oppimaara.supaTila.toString),
       aloituspaiva = oppimaara.aloitusPaivamaara.toJava,
       valmistumispaiva = oppimaara.vahvistusPaivamaara.toJava,
       suorituskieli = oppimaara.suoritusKieli.arvo,
@@ -685,7 +685,7 @@ class EntityToUIConverterTest {
       ),
       virtaOpiskeluoikeus.alkuPvm,
       virtaOpiskeluoikeus.loppuPvm,
-      OpiskeluoikeusTila.VOIMASSA,
+      OpiskeluoikeusTilaUI.VOIMASSA,
       OpiskeluoikeusVirtaTilaUI(
         Optional.of(KOULUTUKSEN_TILA_FI),
         Optional.empty(),
@@ -789,8 +789,9 @@ class EntityToUIConverterTest {
       suoritukset = Set(virtaTutkinto)
     )
 
-    Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritusUI(
+    Assertions.assertEquals(java.util.List.of(KKSuoritusUI(
       virtaTutkinto.tunniste,
+      Optional.empty,
       Optional.of(KKSuoritusNimiUI(
         virtaTutkinto.nimi.flatMap(_.fi).toJava,
         virtaTutkinto.nimi.flatMap(_.sv).toJava,
@@ -804,7 +805,7 @@ class EntityToUIConverterTest {
         ),
         "1.2.3"
       ),
-      SuoritusTila.KESKEN,
+      SuoritusTilaUI.KESKEN,
       virtaTutkinto.aloitusPvm.toJava,
       virtaTutkinto.suoritusPvm.toJava,
       java.util.List.of(
@@ -867,7 +868,7 @@ class EntityToUIConverterTest {
         ),
         oid = UIService.YTL_ORGANISAATIO_OID
       ),
-      tila = SuoritusTila.valueOf(yoTutkinto.supaTila.toString),
+      tila = SuoritusTilaUI.valueOf(yoTutkinto.supaTila.toString),
       valmistumispaiva = yoTutkinto.valmistumisPaiva.toJava,
       suorituskieli = "FI",
       yoKokeet = yoTutkinto.aineet.map(a => YOKoe(
@@ -911,7 +912,7 @@ class EntityToUIConverterTest {
         ),
         oid = lukionOppimaara.oppilaitos.oid
       ),
-      tila = SuoritusTila.VALMIS,
+      tila = SuoritusTilaUI.VALMIS,
       aloituspaiva = lukionOppimaara.aloitusPaivamaara.toJava,
       valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
       suorituskieli = "FI"

@@ -284,6 +284,7 @@ export interface IKKSuoritusNimiUI {
 export interface IKKSuoritusUI {
   tunniste: string;
   nimi?: IKKSuoritusNimiUI;
+  virtaNimi?: IKKSuoritusNimiUI;
   oppilaitos: IKKOppilaitosUI;
   tila: SuoritusTila;
   aloituspaiva?: string;
@@ -875,8 +876,8 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = 'VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTila = ("VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type Suoritustapa = 'NAYTTOTUTKINTO';
+export type Suoritustapa = "NAYTTOTUTKINTO";

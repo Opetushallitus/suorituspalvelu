@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTilaUI.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_ETUNIMET, EXAMPLE_HETU, EXAMPLE_OPPIJA_OID, EXAMPLE_SUKUNIMI}
 
@@ -31,7 +31,7 @@ object MockEntityToUIConverter {
         ),
         voimassaolonAlku = LocalDate.parse("2001-08-01"),
         voimassaolonLoppu = LocalDate.parse("2025-12-11"),
-        OpiskeluoikeusTila.VOIMASSA,
+        OpiskeluoikeusTilaUI.VOIMASSA,
         OpiskeluoikeusVirtaTilaUI(
           Optional.of("aktiivinen"),
           Optional.of("aktiv"),
@@ -46,6 +46,11 @@ object MockEntityToUIConverter {
         fi = Optional.of("Kasvatust. maist., kasvatustiede"),
         sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
         en = Optional.of("Kasvatust. maist., kasvatustiede en")
+      )),
+      virtaNimi = Optional.of(KKSuoritusNimiUI(
+        fi = Optional.of("Kasvatustieteen maisteri"),
+        sv = Optional.empty,
+        en = Optional.empty
       )),
       oppilaitos = KKOppilaitosUI(
         nimi = KKOppilaitosNimiUI(
@@ -669,7 +674,7 @@ object MockEntityToUIConverter {
         painotettuKeskiarvo = Optional.of(4.34),
         ytot = java.util.List.of(),
         ammatillisenTutkinnonOsat = java.util.List.of(),
-        suoritustapa = Optional.of(SuoritusTapa.NAYTTOTUTKINTO)
+        suoritustapa = Optional.of(SuoritusTapaUI.NAYTTOTUTKINTO)
       )
     )
 
