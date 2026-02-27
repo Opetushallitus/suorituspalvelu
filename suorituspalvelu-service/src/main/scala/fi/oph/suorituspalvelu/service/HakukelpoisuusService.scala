@@ -24,6 +24,11 @@ object AutomaattinenHakukelpoisuus {
         .flatMap(_.suoritukset)
         .collect { case s: fi.oph.suorituspalvelu.business.EBTutkinto => s }
         .exists(eb => eb.vahvistusPaivamaara.isDefined && eb.supaTila.equals(SuoritusTila.VALMIS))
+    val hasDIA =
+      opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
+        .flatMap(_.suoritukset)
+        .collect { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }
+        .exists(eb => eb.vahvistusPaivamaara.isDefined && eb.supaTila.equals(SuoritusTila.VALMIS))
     val hasAmmatillinenPerustutkinto =
       opiskeluoikeudet.collect { case o: AmmatillinenOpiskeluoikeus => o }
         .flatMap(_.suoritukset)
@@ -40,9 +45,9 @@ object AutomaattinenHakukelpoisuus {
         .collect { case s: fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto => s }
         .exists(amm => amm.vahvistusPaivamaara.isDefined && amm.supaTila.equals(SuoritusTila.VALMIS))
 
-    val automaattisestiHakukelpoinen = hasYo || hasEb || hasAmmatillinenPerustutkinto || hasAmmatillinenTutkinto || hasAmmatillinenErikoisTutkinto
+    val automaattisestiHakukelpoinen = hasYo || hasEb || hasDIA || hasAmmatillinenPerustutkinto || hasAmmatillinenTutkinto || hasAmmatillinenErikoisTutkinto
     LOG.info(s"Henkilön $personOid automaattinen hakukelpoisuus: $automaattisestiHakukelpoinen " +
-      s"(yo - $hasYo, eb - $hasEb, amm-perus - $hasAmmatillinenPerustutkinto, " +
+      s"(yo - $hasYo, eb - $hasEb, dia - $hasDIA, amm-perus - $hasAmmatillinenPerustutkinto, " +
       s"amm-tutkinto - $hasAmmatillinenTutkinto, amm-erikois - $hasAmmatillinenErikoisTutkinto)")
     automaattisestiHakukelpoinen
   }
