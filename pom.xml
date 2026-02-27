@@ -14,7 +14,6 @@
     <modules>
         <module>suorituspalvelu-service</module>
         <module>suorituspalvelu-shared</module>
-        <module>suorituspalvelu-paattelyt</module>
         <module>suorituspalvelu-domain</module>
     </modules>
 
@@ -42,11 +41,6 @@
             <dependency>
                 <groupId>fi.oph.suorituspalvelu</groupId>
                 <artifactId>suorituspalvelu-shared</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fi.oph.suorituspalvelu</groupId>
-                <artifactId>suorituspalvelu-paattelyt</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -108,7 +108,7 @@ case class VirtaOpiskelijanKaikkiTiedot(Virta: Seq[VirtaOpiskelija])
 
 case class Body(OpiskelijanKaikkiTiedotResponse: VirtaOpiskelijanKaikkiTiedot)
 
-case class VirtaSuoritukset(Header: Header, Body: Body)
+case class VirtaTiedotResponse(Header: Header, Body: Body)
 
 class KoulutusalaDeserializer extends JsonDeserializer[VirtaOpiskeluoikeusKoulutusala] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): VirtaOpiskeluoikeusKoulutusala =
@@ -174,9 +174,10 @@ object VirtaParser {
     mapper
   }
 
-  def parseVirtaData(suoritukset: String): VirtaSuoritukset =
-    parseVirtaData(new ByteArrayInputStream(suoritukset.getBytes))
+  def parseVirtaOpiskelijat(suoritukset: String): Seq[VirtaOpiskelija] =
+    parseVirtaOpiskelijat(new ByteArrayInputStream(suoritukset.getBytes))
 
-  def parseVirtaData(suoritukset: InputStream): VirtaSuoritukset =
-    MAPPER.readValue(suoritukset, classOf[VirtaSuoritukset])
+  def parseVirtaOpiskelijat(suoritukset: InputStream): Seq[VirtaOpiskelija] =
+    MAPPER.readValue(suoritukset, classOf[VirtaTiedotResponse]).Body.OpiskelijanKaikkiTiedotResponse.Virta
+
 }

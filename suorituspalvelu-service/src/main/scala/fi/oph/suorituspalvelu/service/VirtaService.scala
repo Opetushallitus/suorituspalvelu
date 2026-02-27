@@ -10,7 +10,7 @@ import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo,
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.jobs.{SupaJobContext, SupaScheduler}
-import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaSuoritukset, VirtaToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -71,8 +71,8 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
     versio.foreach(v => {
       LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
-      val parseroidut = hetulessXmls.map(xml => VirtaParser.parseVirtaData(new ByteArrayInputStream(xml.getBytes)))
-      val konvertoidut = parseroidut.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p))
+      val virtaOpiskelijat = hetulessXmls.flatMap(VirtaParser.parseVirtaOpiskelijat)
+      val konvertoidut = VirtaToSuoritusConverter.toOpiskeluoikeudet(virtaOpiskelijat)
       kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet, Seq.empty, ParserVersions.VIRTA)
       LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle $oppijaNumero, yhteensä ${konvertoidut.size} suoritusta.")
     })
