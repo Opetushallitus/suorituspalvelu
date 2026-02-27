@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koe, Koodi, Opiskeluoikeus, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, DIAOppiaine, DIATutkinto, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koe, Koodi, Opiskeluoikeus, Oppilaitos, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -473,6 +473,109 @@ class AutomaattinenHakukelpoisuusTest {
     Assertions.assertFalse(result, "Ammatillinen tutkinto ilman vahvistuspäivämäärää ei ole hakukelpoinen")
   }
 
+  @Test
+  def testGetAutomaattinenHakukelpoisuusDIATutkinnolla(): Unit = {
+    val diaTutkinto = DIATutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("Deutsche Internationale Abitur"), Some("Deutsche Internationale Abitur"), Some("Deutsche Internationale Abitur")),
+      koodi = Koodi("301104", "koulutus", Some(12)),
+      oppilaitos = createDIAOppilaitos(),
+      suorituskieli = Koodi("DE", "kieli", None),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", None),
+      supaTila = VALMIS,
+      aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
+      vahvistusPaivamaara = Some(LocalDate.now().minusDays(45)),
+      osasuoritukset = Set.empty
+    )
+
+    val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = OPISKELUOIKEUS_OID,
+      tyyppi = Koodi("diatutkinto", "opiskeluoikeudentyyppi", None),
+      oppilaitosOid = OPPILAITOS_OID,
+      suoritukset = Set(diaTutkinto),
+      tila = None,
+      jaksot = List.empty
+    )
+
+    val opiskeluoikeudet = Seq(geneerinenOpiskeluoikeus)
+
+    val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
+
+    Assertions.assertTrue(result, "DIA-tutkinnolla pitäisi olla automaattisesti hakukelpoinen")
+  }
+
+  @Test
+  def testGetAutomaattinenHakukelpoisuusDIATutkintoKeskenaEiHakukelpoinen(): Unit = {
+    val diaTutkinto = DIATutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("Deutsche Internationale Abitur"), Some("Deutsche Internationale Abitur"), Some("Deutsche Internationale Abitur")),
+      koodi = Koodi("301104", "koulutus", Some(12)),
+      oppilaitos = createDIAOppilaitos(),
+      suorituskieli = Koodi("DE", "kieli", None),
+      koskiTila = Koodi("lasna", "koskiopiskeluoikeudentila", None),
+      supaTila = KESKEN,
+      aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
+      vahvistusPaivamaara = None, // Ei valmistumispäivää
+      osasuoritukset = Set.empty
+    )
+
+    val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = OPISKELUOIKEUS_OID,
+      tyyppi = Koodi("diatutkinto", "opiskeluoikeudentyyppi", None),
+      oppilaitosOid = OPPILAITOS_OID,
+      suoritukset = Set(diaTutkinto),
+      tila = None,
+      jaksot = List.empty
+    )
+
+    val opiskeluoikeudet = Seq(geneerinenOpiskeluoikeus)
+
+    val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
+
+    Assertions.assertFalse(result, "Keskeneräisellä DIA-tutkinnolla ei pitäisi olla automaattisesti hakukelpoinen")
+  }
+
+  @Test
+  def testGetAutomaattinenHakukelpoisuusDIATutkintoValmisIlmanVahvistusta(): Unit = {
+    val diaTutkinto = DIATutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("Deutsche Internationale Abitur"), Some("Deutsche Internationale Abitur"), Some("Deutsche Internationale Abitur")),
+      koodi = Koodi("301104", "koulutus", Some(12)),
+      oppilaitos = createDIAOppilaitos(),
+      suorituskieli = Koodi("DE", "kieli", None),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", None),
+      supaTila = VALMIS, // VALMIS-tila mutta ei vahvistuspäivämäärää
+      aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
+      vahvistusPaivamaara = None, // Ei vahvistuspäivämäärää
+      osasuoritukset = Set.empty
+    )
+
+    val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = OPISKELUOIKEUS_OID,
+      tyyppi = Koodi("diatutkinto", "opiskeluoikeudentyyppi", None),
+      oppilaitosOid = OPPILAITOS_OID,
+      suoritukset = Set(diaTutkinto),
+      tila = None,
+      jaksot = List.empty
+    )
+
+    val opiskeluoikeudet = Seq(geneerinenOpiskeluoikeus)
+
+    val result = AutomaattinenHakukelpoisuus.getAutomaattinenHakukelpoisuus(PERSON_OID, opiskeluoikeudet)
+
+    Assertions.assertFalse(result, "DIA-tutkinnolla ilman vahvistuspäivämäärää ei ole hakukelpoinen")
+  }
+
+  private def createDIAOppilaitos(oid: String = OPPILAITOS_OID): Oppilaitos = {
+    Oppilaitos(
+      Kielistetty(Some("Deutsche Schule Helsinki"), Some("Deutsche Schule Helsinki"), Some("Deutsche Schule Helsinki")),
+      oid
+    )
+  }
+
   private def createOppilaitos(oid: String = OPPILAITOS_OID): Oppilaitos = {
     Oppilaitos(
       Kielistetty(Some("Testikoulu"), None, None),
@@ -507,5 +610,4 @@ class AutomaattinenHakukelpoisuusTest {
       )
     )
   }
-
 }
