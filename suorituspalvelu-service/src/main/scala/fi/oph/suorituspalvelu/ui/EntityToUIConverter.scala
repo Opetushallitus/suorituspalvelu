@@ -121,7 +121,7 @@ object EntityToUIConverter {
     kielikoodi: Option[String],
     koodistoProvider: KoodistoProvider
   ): Optional[SuorituskieliUI] =
-    getKoodiNimi[SuorituskieliUI](kielikoodi, KOODISTO_SUORITUSKIELET, koodistoProvider)
+    getKoodiNimi[SuorituskieliUI](kielikoodi.map(_.toUpperCase), KOODISTO_SUORITUSKIELET, koodistoProvider)
 
   private def kielistettyToKKSuoritusNimi(kielistetty: Kielistetty): KKSuoritusNimiUI = {
     KKSuoritusNimiUI(
