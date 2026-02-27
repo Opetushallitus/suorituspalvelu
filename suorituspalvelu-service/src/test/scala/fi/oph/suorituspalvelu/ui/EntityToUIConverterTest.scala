@@ -629,6 +629,10 @@ class EntityToUIConverterTest {
       suoritukset = Set.empty
     )
 
+    val virtaEiTutkintoonJohtavaOpiskeluoikeus = virtaOpiskeluoikeus.copy(
+      tyyppiKoodi = "5",
+    )
+
     val ORGANISAATION_NIMI_FI = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_SV = "Lapin ammattikorkeakoulu"
     val ORGANISAATION_NIMI_EN = "Lapland University of Applied Sciences"
@@ -686,7 +690,7 @@ class EntityToUIConverterTest {
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
       )
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(virtaOpiskeluoikeus, virtaEiTutkintoonJohtavaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
   }
 
   @Test def testConvertKKTutkinto(): Unit = {
