@@ -408,6 +408,7 @@ case class KKOpiskeluoikeus(
   supaTila: KKOpiskeluoikeusTila,
   myontaja: String,
   isTutkintoonJohtava: Boolean,
+  kieli: Option[String],
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
   suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus]
 ) extends KKOpiskeluoikeusBase(synteettinen = false)
