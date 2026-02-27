@@ -102,6 +102,44 @@ case class EBTutkinto(
   osasuoritukset: Set[EBOppiaine]
 ) extends Suoritus, Tyypitetty
 
+case class DIAArvosana(arvosana: Koodi,
+                       hyvaksytty: Boolean)
+
+case class DIALaajuus(arvo: BigDecimal, yksikko: Koodi)
+
+case class DIAOppiaineenOsasuoritus(nimi: Kielistetty,
+                                    koodi: Koodi, // Final, Oral, Written.
+                                    arvosana: DIAArvosana, // Jos ei ole arvosanaa, ei luoda koko osasuoritusta
+                                    laajuus: Option[DIALaajuus]) //mutta tietomalli kuitenkin sallii puuttumisen.
+
+case class DIAOppiaineenKoesuoritus(nimi: Kielistetty,
+                                    koodi: Koodi, //kirjallinenkoe, suullinenkoe
+                                    arvosana: DIAArvosana,
+                                    laajuus: Option[DIALaajuus]
+                                   )
+
+case class DIAVastaavuustodistuksenTiedot(keskiarvo: BigDecimal,
+                                          lukioOpintojenLaajuus: DIALaajuus)
+
+case class DIAOppiaine(tunniste: UUID,
+                       nimi: Kielistetty,
+                       koodi: Koodi,
+                       laajuus: Option[EBLaajuus],
+                       osaAlue: Option[Koodi],
+                       vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot],
+                       koesuoritukset: Set[DIAOppiaineenKoesuoritus]) //Poimitaan mukaan vain sellaiset osasuoritukset, jotka ovat koesuorituksia: kirjallinenkoe, suullinenkoe
+
+case class DIATutkinto(tunniste: UUID,
+                       nimi: Kielistetty,
+                       koodi: Koodi,
+                       oppilaitos: Oppilaitos,
+                       suorituskieli: Koodi,
+                       koskiTila: Koodi,
+                       supaTila: SuoritusTila,
+                       aloitusPaivamaara: Option[LocalDate],
+                       vahvistusPaivamaara: Option[LocalDate],
+                       osasuoritukset: Set[DIAOppiaine]) extends Suoritus, Tyypitetty
+
 case class OpiskeluoikeusJakso(alku: LocalDate, tila: SuoritusTila)
 
 case class ErikoisAmmattiTutkinto(
@@ -375,10 +413,10 @@ case class YOTutkinto(
 ) extends Suoritus
 
 case class Koe(
-  tunniste: UUID, 
-  koodi: Koodi, 
-  tutkintoKerta: LocalDate, 
-  arvosana: Koodi, 
+  tunniste: UUID,
+  koodi: Koodi,
+  tutkintoKerta: LocalDate,
+  arvosana: Koodi,
   pisteet: Option[Int]
 )
 
