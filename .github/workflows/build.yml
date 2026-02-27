@@ -44,7 +44,6 @@ jobs:
           path: |
             suorituspalvelu-service/target
             suorituspalvelu-domain/target
-            suorituspalvelu-paattelyt/target
             suorituspalvelu-shared/target
           key: ${{ github.sha }}
   lint-and-test-frontend:
@@ -107,7 +106,6 @@ jobs:
           path: |
             suorituspalvelu-service/target
             suorituspalvelu-domain/target
-            suorituspalvelu-paattelyt/target
             suorituspalvelu-shared/target
           key: ${{ github.sha }}
 
