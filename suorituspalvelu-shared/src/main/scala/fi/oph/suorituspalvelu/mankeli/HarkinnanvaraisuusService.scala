@@ -48,8 +48,8 @@ object HarkinnanvaraisuusPaattely {
   // Oppiaineen oppimäärän suoritukset (korotukset) kuitenkin huomioidaan myös tämän jälkeen.
   val YKS_MAT_AI_SUORITUS_ENNEN_DATE = LocalDate.parse("2025-07-31")
 
-  val ataruMatematiikkaJaAidinkieliYksilollistettyQuestions =
-    Set("matematiikka-ja-aidinkieli-yksilollistetty_1", "matematiikka-ja-aidinkieli-yksilollistetty_2")
+  val ataruMatematiikkaJaAidinkieliYksilollistettyQuestion =
+    "matematiikka-ja-aidinkieli-yksilollistetty"
   val ataruHakukohdeHarkinnanvaraisuusPrefix = "harkinnanvaraisuus-reason_"
 
   def hasYksilollistettyMatematiikkaJaAidinkieli(
@@ -98,9 +98,9 @@ object HarkinnanvaraisuusPaattely {
       hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey).flatMap(v => Option.apply(v))
 
     val isSupaYksMatAi = hasYksilollistettyMatematiikkaJaAidinkieli(opiskeluoikeudet, vahvistettuViimeistaan)
-    val isAtaruIlmoitettuYksMatAi = hakemus.keyValues.filter(kv =>
-      ataruMatematiikkaJaAidinkieliYksilollistettyQuestions.contains(kv._1)
-    ).values.exists(_.equals("1"))
+    val isAtaruIlmoitettuYksMatAi = hakemus.keyValues.exists {
+      case (k, v) => k == ataruMatematiikkaJaAidinkieliYksilollistettyQuestion && v == "1"
+    }
 
     val hakutoiveet = hakemus.hakutoiveet.map(hakutoive => {
       val hakukohteenHarkinnanvaraisuusHakemukselta: Option[String] =
