@@ -719,7 +719,7 @@ class VirtaParsingTest {
     Assertions.assertEquals(0, suoritus2.suoritukset.size)
   }
 
-  @Test def testTutkintoonJohtavaPaattnynytNoSuoritukset(): Unit = {
+  @Test def testTutkintoonJohtavaPaattynytNoSuoritukset(): Unit = {
     // Varmistetaan, että päättyneelle tutkintoon johtavalle opiskeluoikeudelle luodaan synteettinen suoritus,
     // kun opiskelukoikeudella ei ole lainkaan suorituksia.
     // - Opiskeluoikeus on tutkintoon johtava (tyyppi=1)
@@ -1138,6 +1138,92 @@ class VirtaParsingTest {
 
     Assertions.assertEquals(1, suoritukset1.size)
     Assertions.assertEquals(1, suoritukset2.size)
+  }
+
+  @Test def testSynteettinenOpiskeluoikeusGroupsByMyontaja(): Unit = {
+    // Varmistetaan, että opiskeluoikeuksiin kuulumattomat suoritukset ryhmitellään myöntäjän mukaan samaan synteettiseen opiskeluoikeuteen
+    // Virta-datassa ei ole opiskeluoikeuksia, mutta kolme orpoa suoritusta:
+    // - Kaksi suoritusta myöntäjältä 10108
+    // - Yksi suoritus myöntäjältä 10089
+    // Tulos:
+    // - Kaksi KKSynteettinenOpiskeluoikeus-instanssia:
+    //   1. Myöntäjä 10108 jossa kaksi suoritusta
+    //   2. Myöntäjä 10089 jossa yksi suoritus
+    val opiskeluoikeudet = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaOpiskelijat(
+      """
+        |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+        |  <SOAP-ENV:Body>
+        |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
+        |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
+        |        <virta:Opiskelija avain="C10">
+        |          <virta:Opintosuoritukset>
+        |            <virta:Opintosuoritus opiskeluoikeusAvain="eiOlemassa1" opiskelijaAvain="C10" koulutusmoduulitunniste="MAT101" avain="orphan1">
+        |              <virta:SuoritusPvm>2019-06-15</virta:SuoritusPvm>
+        |              <virta:Laajuus>
+        |                <virta:Opintopiste>10</virta:Opintopiste>
+        |              </virta:Laajuus>
+        |              <virta:Arvosana>
+        |                <virta:Viisiportainen>5</virta:Viisiportainen>
+        |              </virta:Arvosana>
+        |              <virta:Myontaja>10108</virta:Myontaja>
+        |              <virta:Laji>2</virta:Laji>
+        |              <virta:Nimi kieli="fi">Matematiikka 1</virta:Nimi>
+        |              <virta:Kieli>fi</virta:Kieli>
+        |              <virta:Opinnaytetyo>0</virta:Opinnaytetyo>
+        |            </virta:Opintosuoritus>
+        |            <virta:Opintosuoritus opiskeluoikeusAvain="eiOlemassa2" opiskelijaAvain="C10" koulutusmoduulitunniste="FYS201" avain="orphan2">
+        |              <virta:SuoritusPvm>2019-08-20</virta:SuoritusPvm>
+        |              <virta:Laajuus>
+        |                <virta:Opintopiste>15</virta:Opintopiste>
+        |              </virta:Laajuus>
+        |              <virta:Arvosana>
+        |                <virta:Viisiportainen>3</virta:Viisiportainen>
+        |              </virta:Arvosana>
+        |              <virta:Myontaja>10108</virta:Myontaja>
+        |              <virta:Laji>2</virta:Laji>
+        |              <virta:Nimi kieli="fi">Fysiikka 2</virta:Nimi>
+        |              <virta:Kieli>fi</virta:Kieli>
+        |              <virta:Opinnaytetyo>0</virta:Opinnaytetyo>
+        |            </virta:Opintosuoritus>
+        |            <virta:Opintosuoritus opiskeluoikeusAvain="eiOlemassa3" opiskelijaAvain="C10" koulutusmoduulitunniste="KEM101" avain="orphan3">
+        |              <virta:SuoritusPvm>2019-09-10</virta:SuoritusPvm>
+        |              <virta:Laajuus>
+        |                <virta:Opintopiste>5</virta:Opintopiste>
+        |              </virta:Laajuus>
+        |              <virta:Arvosana>
+        |                <virta:Viisiportainen>4</virta:Viisiportainen>
+        |              </virta:Arvosana>
+        |              <virta:Myontaja>10089</virta:Myontaja>
+        |              <virta:Laji>2</virta:Laji>
+        |              <virta:Nimi kieli="fi">Kemia 1</virta:Nimi>
+        |              <virta:Kieli>fi</virta:Kieli>
+        |              <virta:Opinnaytetyo>0</virta:Opinnaytetyo>
+        |            </virta:Opintosuoritus>
+        |          </virta:Opintosuoritukset>
+        |        </virta:Opiskelija>
+        |      </virta:Virta>
+        |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
+        |  </SOAP-ENV:Body>
+        |</SOAP-ENV:Envelope>""".stripMargin))
+
+    Assertions.assertEquals(2, opiskeluoikeudet.length)
+    Assertions.assertTrue(opiskeluoikeudet.forall(_.isInstanceOf[KKSynteettinenOpiskeluoikeus]))
+
+    val synteettisetOpiskeluoikeudet = opiskeluoikeudet.map(_.asInstanceOf[KKSynteettinenOpiskeluoikeus])
+
+    // Myöntäjä 10108 jossa kaksi suoritusta
+    val oo10108 = synteettisetOpiskeluoikeudet.find(_.myontaja == "10108").get
+    Assertions.assertEquals(2, oo10108.suoritukset.size)
+    val suoritukset10108 = oo10108.suoritukset.toSeq.map(_.asInstanceOf[KKOpintosuoritus])
+    Assertions.assertTrue(suoritukset10108.exists(_.komoTunniste == "MAT101"))
+    Assertions.assertTrue(suoritukset10108.exists(_.komoTunniste == "FYS201"))
+
+    // Myöntäjä 10089 jossa yksi suoritus
+    val oo10089 = synteettisetOpiskeluoikeudet.find(_.myontaja == "10089").get
+    Assertions.assertEquals(1, oo10089.suoritukset.size)
+    val suoritus10089 = oo10089.suoritukset.head.asInstanceOf[KKOpintosuoritus]
+    Assertions.assertEquals("KEM101", suoritus10089.komoTunniste)
+    Assertions.assertEquals(Some("Kemia 1"), suoritus10089.nimi.flatMap(_.fi))
   }
 }
 

@@ -217,8 +217,9 @@ object VirtaToSuoritusConverter {
   def toOpiskeluoikeudet(virtaOpiskelijat: Seq[VirtaOpiskelija]): Seq[KKOpiskeluoikeusBase] = {
     var seenOpiskeluoikeusIds: Set[String] = Set.empty
     var seenSuoritusIds: Set[String] = Set.empty
+    var synteettisetOpiskeluoikeudetByMyontaja: Map[String, KKSynteettinenOpiskeluoikeus] = Map()
 
-    virtaOpiskelijat.flatMap(opiskelija => {
+    val kkOpiskeluoikeudet = virtaOpiskelijat.flatMap(opiskelija => {
       val virtaOpiskeluoikeudet = opiskelija.Opiskeluoikeudet.filterNot(oo =>
         seenOpiskeluoikeusIds.contains(getVirtaOpiskeluoikeusAvain(oo))
       )
@@ -268,15 +269,28 @@ object VirtaToSuoritusConverter {
             (muutSuoritukset, opiskeluOikeus :: opiskeluOikeudet)
         }
 
-      val synteettisetOpiskeluoikeudet = orphanSuoritukset.groupBy(_.Myontaja).map { case (myontaja, suoritukset) =>
-        KKSynteettinenOpiskeluoikeus(
-          UUID.randomUUID(),
-          myontaja,
-          toSuoritukset(None, suoritukset, suorituksetByAvain).toSet
-        )
+      orphanSuoritukset.groupBy(_.Myontaja).foreach { case (myontaja, suoritukset) =>
+        synteettisetOpiskeluoikeudetByMyontaja.get(myontaja) match {
+          case Some(synteettinenOikeus) => {
+            synteettisetOpiskeluoikeudetByMyontaja +=
+              (myontaja -> synteettinenOikeus.copy(
+                suoritukset = synteettinenOikeus.suoritukset ++
+                  suoritukset.flatMap(toSuoritus(_, suorituksetByAvain, None))
+              ))
+          }
+          case _ =>
+            synteettisetOpiskeluoikeudetByMyontaja +=
+              (myontaja -> KKSynteettinenOpiskeluoikeus(
+                UUID.randomUUID(),
+                myontaja,
+                toSuoritukset(None, suoritukset, suorituksetByAvain).toSet
+              ))
+        }
       }
-      opiskeluoikeudet ++ synteettisetOpiskeluoikeudet
+      opiskeluoikeudet
     })
+
+    kkOpiskeluoikeudet ++ synteettisetOpiskeluoikeudetByMyontaja.values
   }
 
   private def virtaNimiToKielistetty(virtaNimi: Seq[VirtaNimi]) = {
