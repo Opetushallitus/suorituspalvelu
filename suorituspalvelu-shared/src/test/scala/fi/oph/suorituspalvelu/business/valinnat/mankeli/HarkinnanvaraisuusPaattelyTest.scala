@@ -322,7 +322,7 @@ class HarkinnanvaraisuusPaattelyTest {
     val hakemus = BASE_HAKEMUS.copy(
       keyValues = Map(
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2015",
-        "matematiikka-ja-aidinkieli-yksilollistetty_1" -> "1"
+        "matematiikka-ja-aidinkieli-yksilollistetty" -> "1"
       )
     )
 
