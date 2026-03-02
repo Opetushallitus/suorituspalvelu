@@ -36,6 +36,7 @@ export const getConfiguration = async () => {
         tallennaYliajotUrl: `${suorituspalveluBackendUrl}/ui/tallennayliajot`,
         poistaYliajoUrl: `${suorituspalveluBackendUrl}/ui/poistayliajo`,
         oppijanHautUrl: `${suorituspalveluBackendUrl}/ui/oppijanhaut`,
+        oppijanVastaanototUrl: `${suorituspalveluBackendUrl}/ui/vastaanotot`,
         valintadataHistoriaUrl: `${suorituspalveluBackendUrl}/ui/valintadatahistoria`,
       },
     },
