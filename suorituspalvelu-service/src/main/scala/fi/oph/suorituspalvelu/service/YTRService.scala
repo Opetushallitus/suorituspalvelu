@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
-import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrIntegration}
+import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrFetchMode, YtrIntegration}
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.slf4j.LoggerFactory
@@ -52,12 +52,12 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
       }
   }
 
-  def fetchAndPersistStudents(personOids: Set[String], ctx: SupaJobContext = DUMMY_JOB_CTX): Seq[SyncResultForHenkilo] = {
+  def fetchAndPersistStudents(personOids: Set[String], mode: YtrFetchMode, ctx: SupaJobContext = DUMMY_JOB_CTX): Seq[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
-    ytrIntegration.fetchAndProcessStudents(personOids).map(r => safePersistSingle(r, fetchedAt, ctx)).toSeq
+    ytrIntegration.fetchAndProcessStudents(personOids, mode).map(r => safePersistSingle(r, fetchedAt, ctx)).toSeq
   }
 
-  private val refreshHenkilotJob = scheduler.registerJob("refresh-ytr-for-henkilot", (ctx, oppijaNumerot) => fetchAndPersistStudents(mapper.readValue(oppijaNumerot, classOf[Set[String]]), ctx), Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
+  private val refreshHenkilotJob = scheduler.registerJob("refresh-ytr-for-henkilot", (ctx, oppijaNumerot) => fetchAndPersistStudents(mapper.readValue(oppijaNumerot, classOf[Set[String]]), YtrFetchMode.SingleApi, ctx), Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
 
   def startRefreshForHenkilot(personOids: Set[String]): UUID =
     refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
@@ -66,7 +66,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
-        fetchAndPersistStudents(personOids, ctx)
+        fetchAndPersistStudents(personOids, YtrFetchMode.BatchApi, ctx)
         ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
       catch
         case e: Exception =>
