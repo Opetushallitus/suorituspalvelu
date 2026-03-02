@@ -64,8 +64,8 @@ export const TableRowAccordion = ({
   const contentId = `accordion-table-content-${toId(title)}`;
 
   const toggleButtonTitle = isOpen
-    ? `${t('oppija.nayta')} ${title}`
-    : `${t('oppija.piilota')} ${title}`;
+    ? `${t('oppija.piilota')} ${title}`
+    : `${t('oppija.nayta')} ${title}`;
 
   const columnCount = (otherCells?.length ?? 0) + 1;
 
