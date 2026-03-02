@@ -196,6 +196,20 @@
     "piilota-opintosuoritukset": "Piilota opintosuoritukset",
     "opintojakso": "Opintojakso"
   },
+  "vastaanotto": {
+    "vastaanotot": "Vastaanotot",
+    "haku": "Haku",
+    "oppilaitos": "Oppilaitos",
+    "tila": "Vastaanoton tila",
+    "vastaanottoaika": "Vastaanottoaika"
+  },
+  "vastaanotto-action": {
+    "vastaanotasitovasti": "Vastaanotettu sitovasti",
+    "vastaanotaehdollisesti": "Vastaanotettu ehdollisesti",
+    "peruuta": "Peruutettu",
+    "peru": "Peruttu",
+    "merkitsemyohastyneeksi": "Merkitty myöhästyneeksi"
+  },
   "suorituksen-tila": {
     "VALMIS": "valmis",
     "KESKEN": "kesken",
