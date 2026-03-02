@@ -23,6 +23,9 @@ case class Section(sectionId: String, sectionPoints: Option[String])
 //Henkilölle ei välttämättä löydy mitään
 case class YtrDataForHenkilo(personOid: String, resultJson: Option[String])
 
+enum YtrFetchMode:
+  case SingleApi, BatchApi
+
 class YtrIntegration {
 
   private val LOG: Logger = LoggerFactory.getLogger(classOf[YtrIntegration])
@@ -100,11 +103,13 @@ class YtrIntegration {
     Await.result(resultF, timeout).iterator
   }
 
-  def fetchAndProcessStudents(personOids: Set[String]): Iterator[YtrDataForHenkilo] = {
+  def fetchAndProcessStudents(personOids: Set[String], mode: YtrFetchMode): Iterator[YtrDataForHenkilo] = {
     personOids match {
       case oids if oids.isEmpty => Iterator.empty
-      case oids if oids.size < 5 => fetchAndProcessYtrWithSingleApi(oids, 1.minute)
-      case oids => processHenkilosInBatches(oids, 4.hours)
+      case oids => mode match {
+        case YtrFetchMode.SingleApi => fetchAndProcessYtrWithSingleApi(oids, 30.minutes)
+        case YtrFetchMode.BatchApi => processHenkilosInBatches(oids, 4.hours)
+      }
     }
   }
 

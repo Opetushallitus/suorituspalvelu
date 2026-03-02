@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.resource
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
+import fi.oph.suorituspalvelu.integration.ytr.{YtrFetchMode, YtrIntegration}
 
 import java.util.{Optional, UUID}
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
@@ -467,7 +467,8 @@ class DataSyncResource {
   @Operation(
     summary = "Päivittää yksittäisten henkilöiden tiedot YTR:stä",
     description = "Tietojen päivitys YTR:stä SUPAan tapahtuu normaalisti eräajona. Tämän endpointin avulla päivitys on " +
-      "kuitenkin mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
+      "kuitenkin mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten. " +
+      "Käyttää YTR:n yksittäishaku-rajapintaa (single api).",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[YTRPaivitaTiedotHenkilollePayload])))),
@@ -500,8 +501,8 @@ class DataSyncResource {
             // validoidaan parametri
             if (personOids.isEmpty)
               Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_TYHJA))))
-            else if (personOids.toSet.size > 5000)
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of("Korkeintaan 5000 henkilöä kerrallaan"))))
+            else if (personOids.toSet.size > 1000)
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YtrSyncFailureResponse(java.util.List.of("Korkeintaan 1000 henkilöä kerrallaan"))))
             else
               val virheet: Set[String] = personOids.get.flatMap(oid => Validator.validateOppijanumero(Some(oid), true)).toSet
               if (virheet.isEmpty)
@@ -512,7 +513,7 @@ class DataSyncResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map("personOids" -> personOids.mkString("Array(", ", ", ")")), AuditOperation.PaivitaYtrTiedotHenkiloille, None)
             LOG.info(s"Haetaan Ytr-tiedot henkilöille ${personOids.mkString("Array(", ", ", ")")}")
-            val (changed, exceptions) = ytrService.fetchAndPersistStudents(personOids.toSet)
+            val (changed, exceptions) = ytrService.fetchAndPersistStudents(personOids.toSet, YtrFetchMode.SingleApi)
               .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0) }))
             LOG.info(s"Tallennettiin yhteensä ${changed} muuttunutta versiotietoa. Yhteensä ${exceptions} henkilön tietojen tallennuksessa oli ongelmia.")
             ResponseEntity.status(HttpStatus.OK).body(YtrSyncSuccessResponse(changed, exceptions))
@@ -533,7 +534,8 @@ class DataSyncResource {
   @Operation(
     summary = "Päivittää hakujen hakijoiden tiedot YTR:stä",
     description = "SUPAan tapahtuu normaalisti eräajona. Tämän endpointin avulla päivitys on kuitenkin mahdollista tehdä " +
-      "manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
+      "manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten. " +
+      "Käyttää YTR:n massahaku-rajapintaa (batch api). HUOM: tätä ei saa kutsua samanaikaisesti päivittäisen täyssynkronoinnin kanssa.",
     requestBody = new io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       content = Array(new Content(schema = new Schema(implementation = classOf[YTRPaivitaTiedotHaullePayload])))),
@@ -592,7 +594,8 @@ class DataSyncResource {
   @Operation(
     summary = "Päivittää aktiivisten hakujen hakijoiden tiedot YTR:stä",
     description = "Tietojen päivitys SUPAan tapahtuu normaalisti eräajolla. Tämän endpointin avulla päivitys on kuitenkin " +
-      "mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten.",
+      "mahdollista tehdä manuaalisesti esim. virheiden selvittämistä tai nopeaa korjaamista varten. " +
+      "Käyttää YTR:n massahaku-rajapintaa (batch api). HUOM: tätä ei saa kutsua samanaikaisesti päivittäisen täyssynkronoinnin kanssa.",
     responses = Array(
       new ApiResponse(responseCode = "200", description =  "Synkkaus käynnistetty, palauttaa job-id:n",
         content = Array(new Content(schema = new Schema(implementation = classOf[SyncSuccessJobResponse])))),
