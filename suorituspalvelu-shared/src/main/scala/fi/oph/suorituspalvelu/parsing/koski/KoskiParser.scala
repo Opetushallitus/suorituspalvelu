@@ -41,12 +41,16 @@ case class KoskiArviointi(arvosana: KoskiKoodi,
 case class KoskiLaajuus(arvo: BigDecimal,
                         yksikkö: Option[KoskiKoodi])
 
+case class KoskiVastaavuustodistuksenTiedot(keskiarvo: BigDecimal,
+                                            lukioOpintojenLaajuus: KoskiLaajuus)
+
 case class KoskiOsaSuoritus(tyyppi: KoskiSuoritusTyyppi,
                             koulutusmoduuli: Option[KoskiKoulutusModuuli],
                             arviointi: Option[Set[KoskiArviointi]],
                             `yksilöllistettyOppimäärä`: Option[Boolean],
                             `rajattuOppimäärä`: Option[Boolean],
                             suorituskieli: Option[KoskiSuoritusKieli],
+                            vastaavuustodistuksenTiedot: Option[KoskiVastaavuustodistuksenTiedot],
                             osasuoritukset: Option[Set[KoskiOsaSuoritus]])
 
 case class KoskiSuoritusKieli(koodiarvo: String,
@@ -62,7 +66,8 @@ case class KoskiKoulutusModuuli(tunniste: Option[KoskiKoodi],
                                 koulutustyyppi: Option[KoskiKoodi],
                                 laajuus: Option[KoskiLaajuus],
                                 kieli: Option[KoskiKoodi],
-                                pakollinen: Option[Boolean])
+                                pakollinen: Option[Boolean],
+                                osaAlue: Option[KoskiKoodi])
 
 case class KoskiSuoritusTyyppi(koodiarvo: String,
                                koodistoUri: String,

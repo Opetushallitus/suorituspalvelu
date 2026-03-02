@@ -416,7 +416,7 @@ case class LukionOppiaineenOppimaara(
   @BeanProperty oppiaineet: java.util.List[LukionOppiaine]
 )
 
-case class DIATutkintoNimi(
+case class DIATutkintoNimiUI(
   @(Schema @field)(example = "DIA-tutkinto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "DIA-tutkinto sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -425,11 +425,11 @@ case class DIATutkintoNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class DIATutkinto(
+case class DIATutkintoUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: DIATutkintoNimi,
+  @BeanProperty nimi: DIATutkintoNimiUI,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -442,7 +442,7 @@ case class DIATutkinto(
   @BeanProperty suorituskieli: String
 )
 
-case class DIAOppiaineNimi(
+case class DIAOppiaineNimiUI(
   @(Schema @field)(example = "Historia", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Historia sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -451,11 +451,11 @@ case class DIAOppiaineNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class DIAOppiaine(
+case class DIAOppiaineUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: DIAOppiaineNimi,
+  @BeanProperty nimi: DIAOppiaineNimiUI,
   @(Schema @field)(
     description = "Oppiaineen laajuus (vuosiviikkotuntia)",
     example = "3",
@@ -466,7 +466,7 @@ case class DIAOppiaine(
   @BeanProperty keskiarvo: BigDecimal
 )
 
-case class DIAVastaavuusTodistusNimi(
+case class DIAVastaavuusTodistusNimiUI(
   @(Schema @field)(example = "DIA vastaavuustodistus", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "DIA vastaavuustodistus sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -475,11 +475,11 @@ case class DIAVastaavuusTodistusNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class DIAVastaavuusTodistus(
+case class DIAVastaavuusTodistusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: DIAVastaavuusTodistusNimi,
+  @BeanProperty nimi: DIAVastaavuusTodistusNimiUI,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: YOOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -491,9 +491,9 @@ case class DIAVastaavuusTodistus(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty kieletKirjallisuusTaide: java.util.List[DIAOppiaine],
+  @BeanProperty kieletKirjallisuusTaide: java.util.List[DIAOppiaineUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty matematiikkaLuonnontieteet: java.util.List[DIAOppiaine]
+  @BeanProperty matematiikkaLuonnontieteet: java.util.List[DIAOppiaineUI]
 )
 
 case class EBOppiaineNimiUI(
@@ -1305,8 +1305,8 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty yoTutkinnot: java.util.List[YOTutkinto],
   @BeanProperty lukionOppimaara: Optional[LukionOppimaaraUI],
   @BeanProperty lukionOppiaineenOppimaarat: java.util.List[LukionOppiaineenOppimaara],
-  @BeanProperty diaTutkinto: Optional[DIATutkinto],
-  @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistus],
+  @BeanProperty diaTutkinto: Optional[DIATutkintoUI],
+  @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistusUI],
   @BeanProperty ebTutkinto: Optional[EBTutkintoUI],
   @BeanProperty ibTutkinto: Optional[IBTutkinto],
   @BeanProperty preIB: Optional[PreIB],

@@ -293,6 +293,20 @@ case class ValintalaskentaApiHakemus(
   @BeanProperty avainMetatiedotDTO: java.util.List[ValintalaskentaApiAvainMetatiedotDTO] //Lisätään nämä myöhemmässä vaiheessa, tai yhdistetään avain-arvoihin (vaatii muutoksia valintaperusteisiin jos yhdistetään)
 )
 
+trait AutomaattinenHakukelpoisuusResponse
+
+case class AutomaattinenHakukelpoisuusSuccessResponse(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty henkiloOid: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty automaattisestiHakukelpoinen: Boolean
+) extends AutomaattinenHakukelpoisuusResponse
+
+case class AutomaattinenHakukelpoisuusFailureResponse(
+  @(Schema @field)(example = LAHETTAVAT_ESIMERKKI_VIRHE)
+  @BeanProperty virheet: java.util.List[String]
+) extends AutomaattinenHakukelpoisuusResponse
+
 trait HarkinnanvaraisuusResponse
 
 case class HarkinnanvaraisuusSuccessResponse(

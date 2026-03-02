@@ -15,8 +15,8 @@ import scala.jdk.OptionConverters.*
  */
 object Validator {
 
-  final val VALIDATION_OPPIJANUMERO_TYHJA         = "oppijaNumero: Kenttä on pakollinen"
-  final val VALIDATION_OPPIJANUMERO_EI_VALIDI     = "oppijaNumero: Oppijanumero ei ole validi oppija oid"
+  final val VALIDATION_HENKILOOID_TYHJA           = "henkiloOid: Kenttä on pakollinen"
+  final val VALIDATION_HENKILOOID_EI_VALIDI       = "henkiloOid: Oppijanumero ei ole validi oppija oid"
   final val VALIDATION_HAKUOID_TYHJA              = "hakuOid: Kenttä on pakollinen"
   final val VALIDATION_HAKUOID_EI_VALIDI          = "hakuOid ei ole validi: "
   final val VALIDATION_HAKUKOHDEOID_TYHJA         = "hakukohdeOid: Kenttä on pakollinen"
@@ -38,7 +38,7 @@ object Validator {
   final val VALIDATION_JOBIN_NIMI_TYHJA           = "jobin nimi: Jobin nimi on pakollinen"
   final val VALIDATION_JOBIN_NIMI_EI_VALIDI       = "jobin nimi: Jobin nimi ei ole validi: "
 
-  val oppijaOidPattern: Regex = "^1\\.2\\.246\\.562\\.(24|98)\\.\\d+$".r
+  val henkiloOidPattern: Regex = "^1\\.2\\.246\\.562\\.(24|98)\\.\\d+$".r
   val hakuOidPattern: Regex = "^1\\.2\\.246\\.562\\.29\\.\\d+$".r
   val hakukohdeOidPattern: Regex = "^1\\.2\\.246\\.562\\.20\\.\\d+$".r
   val oppilaitosOidPattern: Regex = "^1\\.2\\.246\\.562\\.10\\.\\d+$".r
@@ -51,16 +51,18 @@ object Validator {
 
   val jobinNimiPattern: Regex = "^[0-9A-Za-z_-]+$".r
 
-  def validateOppijanumero(oppijaNumero: Option[String], pakollinen: Boolean): Set[String] =
-    if (oppijaNumero.isEmpty || oppijaNumero.get.isEmpty)
+  def validateHenkiloOid(henkiloOid: Option[String], pakollinen: Boolean): Set[String] = {
+    println(s"validating $henkiloOid")
+    if (henkiloOid.isEmpty || henkiloOid.get.isEmpty)
       if(pakollinen)
-        Set(VALIDATION_OPPIJANUMERO_TYHJA)
+        Set(VALIDATION_HENKILOOID_TYHJA)
       else
         Set.empty
-    else if(!oppijaOidPattern.matches(oppijaNumero.get))
-      Set(VALIDATION_OPPIJANUMERO_EI_VALIDI)
+    else if(!henkiloOidPattern.matches(henkiloOid.get))
+      Set(VALIDATION_HENKILOOID_EI_VALIDI)
     else
       Set.empty
+  }
 
   def validateMuokattujalkeen(aikaleima: Option[String], pakollinen: Boolean): Set[String] =
     if (aikaleima.isEmpty || aikaleima.get.isEmpty)
@@ -77,9 +79,9 @@ object Validator {
 
   def validatePersonOids(personOids: Set[String]): Set[String] = {
     if (personOids.isEmpty)
-      Set(VALIDATION_OPPIJANUMERO_TYHJA)
+      Set(VALIDATION_HENKILOOID_TYHJA)
     else {
-      val nonValid = personOids.filter(!oppijaOidPattern.matches(_))
+      val nonValid = personOids.filter(!henkiloOidPattern.matches(_))
       if (nonValid.nonEmpty)
         Set(VALIDATION_EI_VALIDIT_OIDIT + nonValid)
       else

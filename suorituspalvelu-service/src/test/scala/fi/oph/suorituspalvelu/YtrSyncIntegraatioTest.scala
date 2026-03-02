@@ -126,7 +126,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HENKILOT_PATH, YTRPaivitaTiedotHenkilollePayload(Optional.of(List("1.2.246.562.25.01000000000000056245").asJava))))
       .andExpect(status().isBadRequest).andReturn()
 
-    Assertions.assertEquals(YtrSyncFailureResponse(List(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI).asJava),
+    Assertions.assertEquals(YtrSyncFailureResponse(List(Validator.VALIDATION_HENKILOOID_EI_VALIDI).asJava),
       objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[YtrSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))

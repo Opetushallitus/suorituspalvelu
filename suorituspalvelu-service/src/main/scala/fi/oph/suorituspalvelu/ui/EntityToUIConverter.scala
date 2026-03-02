@@ -4,6 +4,11 @@ import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, 
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
+import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTilaUI.{KESKEN, KESKEYTYNYT, VALMIS}
+import fi.oph.suorituspalvelu.resource.ui.{AikuistenPerusopetuksenOppimaara, AikuistenPerusopetuksenOppimaaraNimi, AmmatillinenOppilaitos, AmmatillinenOppilaitosNimi, Ammatillinentutkinto, AmmatillinentutkintoNimi, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillisenTutkinnonOsaAlueNimi, AmmatillisenTutkinnonOsaNimi, Ammattitutkinto, AmmattitutkintoNimi, AvainArvoContainerUI, AvainArvoMetadataUI, AvainArvoYliajoUI, DIAOppiaineUI, DIAOppiaineNimiUI, DIATutkintoUI, DIATutkintoNimiUI, DIAVastaavuusTodistusUI, DIAVastaavuusTodistusNimiUI, EBOppiaineNimiUI, EBOppiaineOsasuoritusUI, EBOppiaineUI, EBTutkintoNimi, EBTutkintoUI, Erikoisammattitutkinto, ErikoisammattitutkintoNimi, IBOppiaine, IBOppiaineNimi, IBSuoritus, IBSuoritusNimi, IBTutkinto, IBTutkintoNimi, KKOpintojaksoNimiUI, KKOpintojaksoUI, KKOppilaitosUI, KKOppilaitosNimiUI, KKSuoritusNimiUI, KKSuoritusUI, LukionOppiaine, LukionOppiaineNimi, LukionOppiaineenOppimaara, LukionOppiaineenOppimaaraNimi, LukionOppimaaraNimi, LukionOppimaaraUI, NuortenPerusopetuksenOppiaineenOppimaaraNimi, OpiskeluoikeusNimiUI, OpiskeluoikeusTilaUI, OpiskeluoikeusUI, OpiskeluoikeusVirtaTilaUI, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, PKOppilaitos, PKOppilaitosNimi, PerusopetuksenOppiaineNimi, PerusopetuksenOppiaineUI, PerusopetuksenOppiaineenOppimaaraNimi, PerusopetuksenOppiaineenOppimaaratUI, PerusopetuksenOppimaara78Luokkalaiset, PerusopetuksenOppimaara78LuokkalaisetNimi, PerusopetuksenOppimaaraNimi, PerusopetuksenOppimaaraUI, PreIB, PreIBNimi, SuoritusTilaUI, Telma, TelmaNimi, TuvaLaajuus, TuvaLaajuusYksikko, TuvaNimi, TuvaUI, VapaaSivistystyoKoulutus, VapaaSivistystyoKoulutusNimi, VapaaSivistystyoLaajuus, VapaaSivistystyoLaajuusYksikko, VapaaSivistystyoOppilaitos, VapaaSivistystyoOppilaitosNimi, YOKoe, YOKoeNimi, YOOppilaitos, YOOppilaitosNimi, YOTutkinto, YOTutkintoNimi, YTO, YTOArvosana, YTONimi, YTOOsaAlue, YTOOsaAlueNimi, Yksilollistaminen, YksilollistamisNimi}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 
@@ -333,9 +338,9 @@ object EntityToUIConverter {
   def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] =
     List.empty[LukionOppiaineenOppimaara]
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkinto] = None
+  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkintoUI] = None
 
-  def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistus] =
+  def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistusUI] =
     None
 
   def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[EBTutkintoUI] = {

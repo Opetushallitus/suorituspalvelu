@@ -11,15 +11,15 @@ class ValidatorTest {
 
   // oppijanumero
   @Test def testValidateOppijanumeroRequiredMissing(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_OPPIJANUMERO_TYHJA), Validator.validateOppijanumero(None, true))
+    Assertions.assertEquals(Set(Validator.VALIDATION_HENKILOOID_TYHJA), Validator.validateHenkiloOid(None, true))
   }
 
   @Test def testValidateOppijanumeroInvalid(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI), Validator.validateOppijanumero(Some("tämä ei ole validi oppijanumero"), true))
+    Assertions.assertEquals(Set(Validator.VALIDATION_HENKILOOID_EI_VALIDI), Validator.validateHenkiloOid(Some("tämä ei ole validi oppijanumero"), true))
   }
 
   @Test def testValidateOppijanumeroValid(): Unit = {
-    Assertions.assertEquals(Set.empty, Validator.validateOppijanumero(Some(ApiConstants.ESIMERKKI_OPPIJANUMERO), true))
+    Assertions.assertEquals(Set.empty, Validator.validateHenkiloOid(Some(ApiConstants.ESIMERKKI_OPPIJANUMERO), true))
   }
 
   // muokattuJalkeen
@@ -79,7 +79,7 @@ class ValidatorTest {
 
   // personOid
   @Test def testValidatePersonOidsEmpty(): Unit = {
-    Assertions.assertEquals(Set(Validator.VALIDATION_OPPIJANUMERO_TYHJA), Validator.validatePersonOids(Set.empty))
+    Assertions.assertEquals(Set(Validator.VALIDATION_HENKILOOID_TYHJA), Validator.validatePersonOids(Set.empty))
   }
 
   @Test def testValidatePersonOidsInvalid(): Unit = {
