@@ -96,6 +96,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       supaTila = VOIMASSA,
       myontaja = "",
       isTutkintoonJohtava = false,
+      kieli = Some("fi"),
       suoritukset = Set.empty
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.VIRTA)

@@ -267,7 +267,7 @@ object VirtaToSuoritusConverter {
             val (opiskeluoikeudenSuoritukset, muutSuoritukset) =
               remainingSuoritusRoots.partition(sisaltyyOpiskeluoikeuteen(_, oo, suorituksetByAvain))
             val jakso = latestJakso(oo)
-
+            
             val kkOpiskeluoikeus = KKOpiskeluoikeus(
               tunniste = UUID.randomUUID(),
               virtaTunniste = oo.avain,
@@ -283,6 +283,7 @@ object VirtaToSuoritusConverter {
               supaTila = convertVirtaOpiskeluoikeusTila(virtaTila),
               myontaja = oo.Myontaja,
               isTutkintoonJohtava = isTutkintoonJohtavaOpiskeluoikeusTyyppi(oo.Tyyppi),
+              kieli = jakso.flatMap(_.Koulutuskieli),
               suoritukset =
                 fixSuoritusRoots(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet
             )
