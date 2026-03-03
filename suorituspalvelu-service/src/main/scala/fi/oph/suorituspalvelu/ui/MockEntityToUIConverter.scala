@@ -1174,34 +1174,36 @@ object MockEntityToUIConverter {
       )
     ))
 
+  def getVastaanotot(): Seq[VastaanottoUI] = Seq.empty
+
   def getOppijanTiedot(): OppijanTiedotSuccessResponse = {
     OppijanTiedotSuccessResponse(
       // TODO: oppijan tietojen osalta pitää päättää haetaanko reaaliaikaisesti ONR:stä vai miten toimitaan
-      etunimet = Optional.of(EXAMPLE_ETUNIMET),
-      sukunimi = Optional.of(EXAMPLE_SUKUNIMI),
-      henkiloTunnus = Optional.of(EXAMPLE_HETU),
-      syntymaAika = Optional.of(LocalDate.parse(ESIMERKKI_SYNTYMAIKA)),
-      oppijaNumero = EXAMPLE_OPPIJA_OID,
-      henkiloOID = EXAMPLE_OPPIJA_OID,
-      opiskeluoikeudet = getOpiskeluoikeudet().asJava,
-      kkTutkinnot = getKKTutkinnot().asJava,
-      yoTutkinnot = getYOTutkinto().asJava,
-      lukionOppimaara = getLukionOppimaara().toJava,
-      lukionOppiaineenOppimaarat = getLukionOppiaineenOppimaarat().asJava,
-      diaTutkinto = getDiaTutkinto().toJava,
-      diaVastaavuusTodistus = getDiaVastaavuusTodistus().toJava,
-      ebTutkinto = getEBTutkinto().toJava,
-      ibTutkinto = getIBTutkinto().toJava,
-      preIB = getPreIB().toJava,
-      ammatillisetPerusTutkinnot = getAmmatillisetPerusTutkinnot().asJava,
-      ammattitutkinnot = getAmmattitutkinnot().asJava,
-      erikoisammattitutkinnot = getErikoisAmmattitutkinnot().asJava,
-      telmat = getTelmat().asJava,
-      tuvat = getTuvat().asJava,
-      vapaaSivistystyoKoulutukset = getVapaaSivistystyoKoulutukset().asJava,
-      perusopetuksenOppimaarat = getPerusopetuksenOppimaarat().asJava,
-      perusopetuksenOppimaara78Luokkalaiset = getPerusopetuksenOppimaarat78Luokkalaiset().toJava,
-      perusopetuksenOppiaineenOppimaarat = getPerusopetuksenOppiaineenOppimaarat().asJava
+      etunimet =                                  Optional.of(EXAMPLE_ETUNIMET),
+      sukunimi =                                  Optional.of(EXAMPLE_SUKUNIMI),
+      henkiloTunnus =                             Optional.of(EXAMPLE_HETU),
+      syntymaAika =                               Optional.of(LocalDate.parse(ESIMERKKI_SYNTYMAIKA)),
+      oppijaNumero =                              EXAMPLE_OPPIJA_OID,
+      henkiloOID =                                EXAMPLE_OPPIJA_OID,
+      opiskeluoikeudet =                          getOpiskeluoikeudet().asJava,
+      kkTutkinnot =                               getKKTutkinnot().asJava,
+      yoTutkinnot =                               getYOTutkinto().asJava,
+      lukionOppimaara =                           getLukionOppimaara().toJava,
+      lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat().asJava,
+      diaTutkinto =                               getDiaTutkinto().toJava,
+      diaVastaavuusTodistus =                     getDiaVastaavuusTodistus().toJava,
+      ebTutkinto =                                getEBTutkinto().toJava,
+      ibTutkinto =                                getIBTutkinto().toJava,
+      preIB =                                     getPreIB().toJava,
+      ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot().asJava,
+      ammattitutkinnot =                          getAmmattitutkinnot().asJava,
+      erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot().asJava,
+      telmat =                                    getTelmat().asJava,
+      tuvat =                                     getTuvat().asJava,
+      vapaaSivistystyoKoulutukset =               getVapaaSivistystyoKoulutukset().asJava,
+      perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat().asJava,
+      perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset().toJava,
+      perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat().asJava
     )
   }
 }

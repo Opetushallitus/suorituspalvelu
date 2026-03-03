@@ -1,6 +1,7 @@
 import { Stack } from '@mui/material';
 import { Opiskeluoikeudet } from '@/components/suoritustiedot/Opiskeluoikeudet';
 import { Suoritukset } from '@/components/suoritustiedot/Suoritukset';
+import { Vastaanotot } from '@/components/suoritustiedot/Vastaanotot';
 import { useOppija } from '@/lib/suorituspalvelu-queries';
 import { SuoritusManagerProvider } from '@/lib/suoritusManager';
 import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
@@ -22,6 +23,7 @@ export default function SuoritustiedotPage() {
       <Stack spacing={6}>
         <SuoritusManagerProvider>
           <Opiskeluoikeudet oppijanTiedot={tiedot} />
+          <Vastaanotot oppijaNumero={tiedot.oppijaNumero} />
           <Suoritukset oppijanTiedot={tiedot} />
         </SuoritusManagerProvider>
       </Stack>

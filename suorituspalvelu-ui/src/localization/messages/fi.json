@@ -212,6 +212,20 @@
     "nayta-tutkintoon-johtamattomat-kk-suoritukset": "Näytä tutkintoon johtamattomat korkeakoulusuoritukset",
     "piilota-tutkintoon-johtamattomat-kk-suoritukset": "Piilota tutkintoon johtamattomat korkeakoulusuoritukset"
   },
+  "vastaanotto": {
+    "vastaanotot": "Vastaanotot",
+    "haku": "Haku",
+    "oppilaitos": "Oppilaitos",
+    "tila": "Vastaanoton tila",
+    "vastaanottoaika": "Vastaanottoaika"
+  },
+  "vastaanotto-action": {
+    "vastaanotasitovasti": "Vastaanotettu sitovasti",
+    "vastaanotaehdollisesti": "Vastaanotettu ehdollisesti",
+    "peruuta": "Peruutettu",
+    "peru": "Peruttu",
+    "merkitsemyohastyneeksi": "Merkitty myöhästyneeksi"
+  },
   "suorituksen-tila": {
     "VALMIS": "valmis",
     "KESKEN": "kesken",

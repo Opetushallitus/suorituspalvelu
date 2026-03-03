@@ -3,6 +3,7 @@ import {
   getKayttaja,
   getOppija,
   getOppijanHaut,
+  getOppijanVastaanotot,
   getOppilaitokset,
   getOppilaitosVuodet,
   getOppilaitosVuosiLuokat,
@@ -118,6 +119,16 @@ export const queryOptionsGetOppijanHaut = (oppijaOid: string) =>
     queryKey: ['getOppijanHaut', oppijaOid],
     queryFn: () => getOppijanHaut(oppijaOid),
   });
+
+export const queryOptionsGetOppijanVastaanotot = (tunniste: string) =>
+  queryOptions({
+    queryKey: ['getOppijanVastaanotot', tunniste],
+    queryFn: () => getOppijanVastaanotot(tunniste),
+  });
+
+export const useOppijanVastaanotot = (oppijaNumero: string) => {
+  return useApiSuspenseQuery(queryOptionsGetOppijanVastaanotot(oppijaNumero));
+};
 
 export const queryOptionsGetOppilaitosVuosiOptions = ({
   oppilaitosOid,
