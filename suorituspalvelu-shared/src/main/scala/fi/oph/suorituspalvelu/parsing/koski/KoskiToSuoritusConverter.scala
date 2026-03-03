@@ -694,7 +694,7 @@ object KoskiToSuoritusConverter {
       tunniste = UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
-      laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => EBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
+      laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => DIALaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
       osaAlue = osaSuoritus.koulutusmoduuli.flatMap(_.osaAlue).map(o => asKoodiObject(o)),
       vastaavuustodistuksenTiedot = vastaavuustodistuksenTiedot,
       koesuoritukset = osaSuoritus.osasuoritukset.map((osaSuoritukset: Set[KoskiOsaSuoritus]) => {

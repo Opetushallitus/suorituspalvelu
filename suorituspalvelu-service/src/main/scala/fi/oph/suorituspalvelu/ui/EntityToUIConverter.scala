@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, DIAOppiaine, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -343,13 +343,65 @@ object EntityToUIConverter {
         )
       ).headOption
 
-  def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] =
+  def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] = {
     List.empty[LukionOppiaineenOppimaara]
+  }
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkintoUI] = None
+  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkintoUI] = {
+    def toDiaOppiaineUI(oppiaine: DIAOppiaine) = {
+      val kirjallinen = oppiaine.koesuoritukset.find(os => os.koodi.arvo.equals("kirjallinenkoe"))
+      val suullinen = oppiaine.koesuoritukset.find(os => os.koodi.arvo.equals("suullinenkoe"))
+      DIAOppiaineUI(
+        tunniste = oppiaine.tunniste,
+        nimi = DIAOppiaineNimiUI(
+          fi = oppiaine.nimi.fi.toJava,
+          sv = oppiaine.nimi.sv.toJava,
+          en = oppiaine.nimi.en.toJava
+        ),
+        laajuus = oppiaine.laajuus.map(_.arvo).toJava,
+        kirjallinen = kirjallinen.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
+        suullinen = suullinen.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
+        vastaavuustodistus = oppiaine.vastaavuustodistuksenTiedot.map(_.keskiarvo).map(_.toInt).toJava
+      )
+    }
 
-  def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistusUI] =
-    None
+    val dia =
+      opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
+        .flatMap(_.suoritukset).collectFirst { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }
+
+    dia.map(diaTutkinto =>
+      val kieletKirjallisuusTaide: List[DIAOppiaineUI] = diaTutkinto.osasuoritukset.filter((o: DIAOppiaine) => o.osaAlue.map(_.arvo).exists(_.equals("1"))).map(toDiaOppiaineUI).toList
+      val matematiikkaLuonnontieteet: List[DIAOppiaineUI] = diaTutkinto.osasuoritukset.filter(o => o.osaAlue.map(_.arvo).exists(_.equals("2"))).map(toDiaOppiaineUI).toList
+      val yhteiskuntatieteet: List[DIAOppiaineUI] = diaTutkinto.osasuoritukset.filter(o => o.osaAlue.map(_.arvo).exists(_.equals("3"))).map(toDiaOppiaineUI).toList
+
+      val sk = diaTutkinto.suorituskieli.arvo
+
+      DIATutkintoUI(
+        tunniste = diaTutkinto.tunniste,
+        nimi = DIATutkintoNimiUI(
+          fi = diaTutkinto.nimi.fi.toJava,
+          sv = diaTutkinto.nimi.sv.toJava,
+          en = diaTutkinto.nimi.en.toJava
+        ),
+        oppilaitos =
+          YOOppilaitos(
+            nimi = YOOppilaitosNimi(
+              fi = diaTutkinto.oppilaitos.nimi.fi.toJava,
+              sv = diaTutkinto.oppilaitos.nimi.sv.toJava,
+              en = diaTutkinto.oppilaitos.nimi.en.toJava
+            ),
+            oid = diaTutkinto.oppilaitos.oid
+          ),
+        tila = SuoritusTilaUI.valueOf(diaTutkinto.supaTila.toString),
+        aloituspaiva = diaTutkinto.aloitusPaivamaara.toJava,
+        valmistumispaiva = diaTutkinto.vahvistusPaivamaara.toJava,
+        suorituskieli = diaTutkinto.suorituskieli.arvo,
+        kieletKirjallisuusTaide = kieletKirjallisuusTaide.asJava,
+        matematiikkaLuonnontieteet = matematiikkaLuonnontieteet.asJava,
+        yhteiskuntatieteet = yhteiskuntatieteet.asJava)
+    )
+
+  }
 
   def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[EBTutkintoUI] = {
     opiskeluoikeudet
@@ -812,7 +864,6 @@ object EntityToUIConverter {
         lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
         lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
         diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet).toJava,
-        diaVastaavuusTodistus =                     getDiaVastaavuusTodistus(opiskeluoikeudet).toJava,
         ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
         ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
         preIB =                                     getPreIB(opiskeluoikeudet).toJava,
