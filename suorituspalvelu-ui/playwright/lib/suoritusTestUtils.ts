@@ -354,6 +354,77 @@ export const TALOUS_JA_HENKILOSTOALAN_ERIKOISAMMATTITUTKINTO_SUORITUS: SuoritusS
     },
   };
 
+export const OSITTAINEN_AMMATILLINEN_TUTKINTO_SUORITUS: SuoritusSpec = {
+  perustiedot: {
+    title: `Autoalan perustutkinto, osittainen (15.1.2024 ${NDASH} 15.12.2024)`,
+    oppilaitos: 'Stadin ammatti- ja aikuisopisto',
+    tila: 'Suoritus valmis',
+    valmistumispaiva: '15.12.2024',
+    suorituskieli: 'suomi',
+  },
+  additionalChecks: async (paper) => {
+    await expect(paper.getByLabel('Suoritustapa')).toHaveText('Näyttötutkinto');
+    await expect(paper.getByLabel('Korotettu painotettu keskiarvo')).toHaveText(
+      '3,75',
+    );
+
+    const ytoTable = paper.getByTestId('yhteiset-tutkinnon-osat-table');
+    await expectTableValues(ytoTable, [
+      ['Yhteiset tutkinnon osat', 'Laajuus (osp)', 'Arvosana', 'Korotus'],
+      ['Viestintä- ja vuorovaikutusosaaminen', '', '', ''],
+    ]);
+
+    await ytoTable
+      .getByRole('button', {
+        name: 'Viestintä- ja vuorovaikutusosaaminen',
+      })
+      .click();
+    const viestintaRegion = paper.getByRole('region', {
+      name: 'Viestintä- ja vuorovaikutusosaaminen',
+    });
+    await expect(viestintaRegion).toBeVisible();
+    const viestintaOsaAlueetTable = viestintaRegion.getByRole('table');
+    await expectTableValues(viestintaOsaAlueetTable, [
+      ['Osa-alue', 'Laajuus (osp)', 'Arvosana', 'Korotus'],
+      ['Viestintä ja vuorovaikutus äidinkielellä', '4', '3', 'kyllä'],
+      ['Toiminta digitaalisessa ympäristössä', '2', '2', 'ei'],
+    ]);
+
+    const ammatillisetTutkinnonOsatTable = paper.getByTestId(
+      'ammatilliset-tutkinnon-osat-table',
+    );
+    await expectTableValues(ammatillisetTutkinnonOsatTable, [
+      ['Ammatilliset tutkinnon osat', 'Laajuus (osp)', 'Arvosana', 'Korotus'],
+      ['Ajoneuvojen huoltaminen', '', '', ''],
+      ['Ajoneuvojen korjaaminen', '25', '3', 'kyllä'],
+    ]);
+
+    await ammatillisetTutkinnonOsatTable
+      .getByRole('button', { name: 'Ajoneuvojen huoltaminen' })
+      .click();
+    const ajoneuvojenHuoltaminenRegion = paper.getByRole('region', {
+      name: 'Ajoneuvojen huoltaminen',
+    });
+    const ajoneuvojenHuoltaminenOsaAlueetTable =
+      ajoneuvojenHuoltaminenRegion.getByRole('table');
+    await expectTableValues(ajoneuvojenHuoltaminenOsaAlueetTable, [
+      ['Osa-alue', 'Laajuus (osp)', 'Arvosana', 'Korotus'],
+      ['Moottorin huolto', '15', '4', 'kyllä'],
+    ]);
+
+    await expect(
+      ammatillisetTutkinnonOsatTable.getByRole('cell', {
+        name: 'Ajoneuvojen korjaaminen',
+      }),
+    ).toBeVisible();
+    await expect(
+      ammatillisetTutkinnonOsatTable.getByRole('button', {
+        name: 'Ajoneuvojen korjaaminen',
+      }),
+    ).toBeHidden();
+  },
+};
+
 export const TELMA_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Työhön ja itsenäiseen elämään valmentava koulutus (1.6.2017 ${NDASH} 1.6.2017)`,

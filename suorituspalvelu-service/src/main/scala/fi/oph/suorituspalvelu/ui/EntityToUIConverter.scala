@@ -588,6 +588,7 @@ object EntityToUIConverter {
           korotettuPainotettuKeskiarvo = t.korotettuKeskiarvo.toJava,
           ytot = t.osat
             .filter(o => o.yto)
+            .filter(o => o.osaAlueet.exists(osa => osa.korotettu.isDefined))
             .map(o => YTO(
               o.tunniste,
               nimi = YTONimi(
@@ -601,20 +602,23 @@ object EntityToUIConverter {
                 a.nimi.sv.toJava,
                 a.nimi.en.toJava
               )).toJava,
-              osaAlueet = o.osaAlueet.map(oa => YTOOsaAlue(
-                nimi = YTOOsaAlueNimi(
-                  fi = oa.nimi.fi.toJava,
-                  sv = oa.nimi.sv.toJava,
-                  en = oa.nimi.en.toJava
-                ),
-                laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                arvosana = oa.arvosana.map(a => a.arvo).toJava,
-                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
-              )).toList.asJava,
+              osaAlueet = o.osaAlueet
+                .filter(oa => oa.korotettu.isDefined)
+                .map(oa => YTOOsaAlue(
+                  nimi = YTOOsaAlueNimi(
+                    fi = oa.nimi.fi.toJava,
+                    sv = oa.nimi.sv.toJava,
+                    en = oa.nimi.en.toJava
+                  ),
+                  laajuus = oa.laajuus.map(l => l.arvo).toJava,
+                  arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
             )).toList.asJava,
           ammatillisenTutkinnonOsat = t.osat
             .filter(o => !o.yto)
+            .filter(o => o.osaAlueet.exists(osa => osa.korotettu.isDefined))
             .map(o => AmmatillisenTutkinnonOsa(
               o.tunniste,
               nimi = AmmatillisenTutkinnonOsaNimi(
@@ -624,16 +628,18 @@ object EntityToUIConverter {
               ),
               laajuus = o.laajuus.map(l => l.arvo).toJava,
               arvosana = o.arvosana.map(a => a.koodi.arvo).toJava,
-              osaAlueet = o.osaAlueet.map(oa => AmmatillisenTutkinnonOsaAlue(
-                nimi = AmmatillisenTutkinnonOsaAlueNimi(
-                  fi = oa.nimi.fi.toJava,
-                  sv = oa.nimi.sv.toJava,
-                  en = oa.nimi.en.toJava
-                ),
-                laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                arvosana = oa.arvosana.map(a => a.arvo).toJava,
-                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
-              )).toList.asJava,
+              osaAlueet = o.osaAlueet
+                .filter(oa => oa.korotettu.isDefined)
+                .map(oa => AmmatillisenTutkinnonOsaAlue(
+                  nimi = AmmatillisenTutkinnonOsaAlueNimi(
+                    fi = oa.nimi.fi.toJava,
+                    sv = oa.nimi.sv.toJava,
+                    en = oa.nimi.en.toJava
+                  ),
+                  laajuus = oa.laajuus.map(l => l.arvo).toJava,
+                  arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
             )).toList.asJava,
           suoritustapa = if (nayttoTutkinto) Optional.of(SuoritusTapaUI.NAYTTOTUTKINTO) else Optional.empty()
