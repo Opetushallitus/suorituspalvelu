@@ -144,17 +144,21 @@ function DiaVastaavuusTodistusOppiaineet({
   const { t, translateKielistetty } = useTranslations();
 
   return (
-    'kieletKirjallisuusTaide' in suoritus && (
+    ('kieletKirjallisuusTaide' in suoritus ||
+      'matematiikkaLuonnontieteet' in suoritus ||
+      'yhteiskuntatieteet' in suoritus) && (
       <StripedTable stripeGroup="body">
         <TableHead>
           <TableRow>
             <TableCell>{t('oppija.oppiaine')}</TableCell>
+            <TableCell>{t('oppija.kirjallinen')}</TableCell>
+            <TableCell>{t('oppija.suullinen')}</TableCell>
+            <TableCell>{t('oppija.vastaavuustodistus')}</TableCell>
             <TableCell>
               {t('oppija.laajuus-yksikolla', {
                 unit: t('oppija.lyhenne-vuosiviikkotunti'),
               })}
             </TableCell>
-            <TableCell>{t('oppija.keskiarvo')}</TableCell>
           </TableRow>
         </TableHead>
         {!isEmpty(suoritus.kieletKirjallisuusTaide) && (
@@ -169,8 +173,10 @@ function DiaVastaavuusTodistusOppiaineet({
                 <IndentedCell>
                   {translateKielistetty(oppiaine.nimi)}
                 </IndentedCell>
+                <TableCell>{oppiaine?.kirjallinen}</TableCell>
+                <TableCell>{oppiaine?.suullinen}</TableCell>
+                <TableCell>{oppiaine?.vastaavuustodistus}</TableCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -178,7 +184,7 @@ function DiaVastaavuusTodistusOppiaineet({
         {!isEmpty(suoritus.matematiikkaLuonnontieteet) && (
           <TableBody>
             <TableRow>
-              <TableCell colSpan={3}>
+              <TableCell colSpan={5}>
                 {t('oppija.matematiikka-ja-luonnontieteet')}
               </TableCell>
             </TableRow>
@@ -187,8 +193,30 @@ function DiaVastaavuusTodistusOppiaineet({
                 <IndentedCell>
                   {translateKielistetty(oppiaine.nimi)}
                 </IndentedCell>
+                <TableCell>{oppiaine?.kirjallinen}</TableCell>
+                <TableCell>{oppiaine?.suullinen}</TableCell>
+                <TableCell>{oppiaine?.vastaavuustodistus}</TableCell>
                 <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        )}
+        {!isEmpty(suoritus.yhteiskuntatieteet) && (
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={3}>
+                {t('oppija.yhteiskuntatieteet')}
+              </TableCell>
+            </TableRow>
+            {suoritus.yhteiskuntatieteet.map((oppiaine) => (
+              <TableRow key={oppiaine.tunniste}>
+                <IndentedCell>
+                  {translateKielistetty(oppiaine.nimi)}
+                </IndentedCell>
+                <TableCell>{oppiaine?.kirjallinen}</TableCell>
+                <TableCell>{oppiaine?.suullinen}</TableCell>
+                <TableCell>{oppiaine?.vastaavuustodistus}</TableCell>
+                <TableCell>{oppiaine.laajuus}</TableCell>
               </TableRow>
             ))}
           </TableBody>
