@@ -3,8 +3,8 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
+import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
-import fi.oph.suorituspalvelu.service.UIService.EXAMPLE_OPPIJA_OID
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 
 import java.time.LocalDate
@@ -16,6 +16,18 @@ object EntityToUIConverter {
   val KOULUTUS_KOODISTO = "koulutus"
   val VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
   val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
+
+  private def getKoodiNimi[N <: NimiBase](
+    koodiArvo: Option[String],
+    koodisto: String,
+    koodistoProvider: KoodistoProvider): Optional[N] =
+    koodiArvo.flatMap(arvo => koodistoProvider.haeKoodisto(koodisto).get(arvo).map(k =>
+      NimiBase(
+        fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
+        sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
+        en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
+      ).asInstanceOf[N]
+    )).toJava
 
   private def getKKOppilaitos(myontaja: String, organisaatioProvider: OrganisaatioProvider) = {
     val oppilaitosTiedot = organisaatioProvider.haeOrganisaationTiedot(myontaja)
@@ -38,32 +50,19 @@ object EntityToUIConverter {
     opiskeluoikeudet
       .collect{ case oo: KKOpiskeluoikeus if oo.isTutkintoonJohtava => oo }
       .map(o => OpiskeluoikeusUI(
-        o.tunniste,
-        nimi = o.koulutusKoodi.map(koulutusKoodi => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(koulutusKoodi).map(k =>
-          OpiskeluoikeusNimiUI(
-            fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
-            sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
-            en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
-          ))).getOrElse(
-            koodistoProvider.haeKoodisto(VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO).get(o.tyyppiKoodi).map(k =>
-              OpiskeluoikeusNimiUI(
-                fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
-                sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
-                en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
-              )))
-          .getOrElse(OpiskeluoikeusNimiUI(Optional.empty(), Optional.empty(), Optional.empty())),
+        tunniste = o.tunniste,
+        nimi = getKoodiNimi[OpiskeluoikeusNimiUI](o.koulutusKoodi, KOULUTUS_KOODISTO, koodistoProvider)
+          .orElse(
+            getKoodiNimi[OpiskeluoikeusNimiUI](Some(o.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO, koodistoProvider)
+              .orElse(OpiskeluoikeusNimiUI(Optional.empty(), Optional.empty(), Optional.empty()))
+          ),
         oppilaitos = getKKOppilaitos(o.myontaja, organisaatioProvider),
-        o.alkuPvm,
-        o.loppuPvm,
-        OpiskeluoikeusTilaUI.valueOf(o.supaTila.toString),
-        {
-          val tilaKoodi = koodistoProvider.haeKoodisto(VIRTA_OO_TILA_KOODISTO).get(o.virtaTila.arvo)
-          OpiskeluoikeusVirtaTilaUI(
-            tilaKoodi.flatMap(k => k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi)).toJava,
-            tilaKoodi.flatMap(k => k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi)).toJava,
-            tilaKoodi.flatMap(k => k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi)).toJava,
-          )
-        }
+        voimassaolonAlku = o.alkuPvm,
+        voimassaolonLoppu = o.loppuPvm,
+        supaTila = OpiskeluoikeusTilaUI.valueOf(o.supaTila.toString),
+        virtaTila = getKoodiNimi[OpiskeluoikeusVirtaTilaUI](Some(o.virtaTila.arvo), VIRTA_OO_TILA_KOODISTO, koodistoProvider).orElse(
+          OpiskeluoikeusVirtaTilaUI(Optional.empty, Optional.empty, Optional.empty
+        ))
       )).toList
 
   private def createVirtaOpintojaksoHierarkia(
@@ -96,17 +95,14 @@ object EntityToUIConverter {
       case "5" => SuoritusTilaUI.KESKEYTYNYT // luopunut
       case "6" => SuoritusTilaUI.KESKEYTYNYT // päättynyt
 
-  private def getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus: Option[KKOpiskeluoikeus], koodistoProvider: KoodistoProvider): Option[KKSuoritusNimiUI] = {
-    opiskeluoikeus match {
-      case Some(oo) => koodistoProvider.haeKoodisto(VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO).get(oo.tyyppiKoodi).map(k =>
-        KKSuoritusNimiUI(
-          fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
-          sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
-          en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
-        ))
-      case _ => None
-    }
-  }
+  private def getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus: Option[KKOpiskeluoikeus], koodistoProvider: KoodistoProvider): Option[KKSuoritusNimiUI] =
+    getKoodiNimi[KKSuoritusNimiUI](opiskeluoikeus.map(_.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO, koodistoProvider).toScala
+
+  private def getSuorituskieliFromKoodi(
+    kielikoodi: Option[String],
+    koodistoProvider: KoodistoProvider
+  ): Optional[SuorituskieliUI] =
+    getKoodiNimi[SuorituskieliUI](kielikoodi, KOODISTO_SUORITUSKIELET, koodistoProvider)
 
   private def kielistettyToKKSuoritusNimi(kielistetty: Kielistetty): KKSuoritusNimiUI = {
     KKSuoritusNimiUI(
@@ -124,14 +120,8 @@ object EntityToUIConverter {
     (suoritus match {
       case Some(tutkinto: KKTutkinto) =>
         koodistoProviderOption.flatMap(koodistoProvider =>
-        tutkinto.koulutusKoodi.flatMap(koulutusKoodi =>
-          koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(koulutusKoodi).map(k =>
-            KKSuoritusNimiUI(
-              fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
-              sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
-              en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava,
-            ))
-        ).orElse(getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus, koodistoProvider)))
+          getKoodiNimi[KKSuoritusNimiUI](tutkinto.koulutusKoodi, KOULUTUS_KOODISTO, koodistoProvider).toScala
+          .orElse(getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus, koodistoProvider)))
       case Some(opintosuoritus: KKOpintosuoritus) =>
         opintosuoritus.nimi.map(kielistettyToKKSuoritusNimi)
           .orElse(koodistoProviderOption.flatMap(getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus, _)))
@@ -144,7 +134,8 @@ object EntityToUIConverter {
 
   private def convertSyntheticKkOpiskeluoikeusSuoritukset(
     oo: KKSynteettinenOpiskeluoikeus,
-    organisaatioProvider: OrganisaatioProvider
+    organisaatioProvider: OrganisaatioProvider,
+    koodistoProvider: KoodistoProvider
   ): Seq[KKSuoritusUI] = {
     oo.suoritukset.toSeq match {
       case Seq(suoritus: KKOpintosuoritus) => Seq(KKSuoritusUI(
@@ -155,6 +146,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.VALMIS,
         aloituspaiva = Optional.empty(),
         valmistumispaiva = Optional.empty(),
+        suorituskieli = getSuorituskieliFromKoodi(Some(suoritus.kieli), koodistoProvider),
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
       ))
       case suoritukset => Seq(KKSuoritusUI(
@@ -169,6 +161,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.VALMIS,
         aloituspaiva = Optional.empty,
         valmistumispaiva = Optional.empty,
+        suorituskieli = Optional.empty,
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset)
       ))
     }
@@ -188,7 +181,8 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(tutkinto.supaTila.toString),
         aloituspaiva = tutkinto.aloitusPvm.toJava,
         valmistumispaiva = tutkinto.suoritusPvm.toJava,
-        opintojaksot = createVirtaOpintojaksoHierarkia(tutkinto.suoritukset.toSeq)
+        opintojaksot = createVirtaOpintojaksoHierarkia(tutkinto.suoritukset.toSeq),
+        suorituskieli = getSuorituskieliFromKoodi(tutkinto.kieli, koodistoProvider)
       ))
     case suoritus: KKOpintosuoritus =>
       Some(KKSuoritusUI(
@@ -199,7 +193,8 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
+        suorituskieli = getSuorituskieliFromKoodi(Some(suoritus.kieli), koodistoProvider)
       ))
     case suoritus: KKSynteettinenSuoritus =>
       Some(KKSuoritusUI(
@@ -210,7 +205,8 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq)
+        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
+        suorituskieli = Optional.empty,
       ))
     case _ => None
   }
@@ -222,7 +218,7 @@ object EntityToUIConverter {
   ): List[KKSuoritusUI] = {
     opiskeluoikeudet.flatMap({
       case synteettinenOpiskeluoikeus: KKSynteettinenOpiskeluoikeus =>
-        convertSyntheticKkOpiskeluoikeusSuoritukset(synteettinenOpiskeluoikeus, organisaatioProvider)
+        convertSyntheticKkOpiskeluoikeusSuoritukset(synteettinenOpiskeluoikeus, organisaatioProvider, koodistoProvider)
       case opiskeluoikeus: KKOpiskeluoikeus =>
         convertNormalKkOpiskeluoikeusSuoritukset(opiskeluoikeus, organisaatioProvider, koodistoProvider)
       case _ => Seq.empty
@@ -637,11 +633,7 @@ object EntityToUIConverter {
           luokka = om.luokka.toJava,
           yksilollistaminen = om.yksilollistaminen.map((y: PerusopetuksenYksilollistaminen) => Yksilollistaminen(
             PerusopetuksenYksilollistaminen.toIntValue(y),
-            koodistoProvider.haeKoodisto(UIService.KOODISTO_POHJAKOULUTUS).get(PerusopetuksenYksilollistaminen.toIntValue(y).toString).map(ya => YksilollistamisNimi(
-              ya.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava,
-              ya.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava,
-              ya.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
-            )).get
+            getKoodiNimi[YksilollistamisNimi](Some(PerusopetuksenYksilollistaminen.toIntValue(y).toString), KOODISTO_POHJAKOULUTUS, koodistoProvider).get
           )).toJava,
           // halutaan näyttää vain valmistuneen suorituksen oppiaineet
           oppiaineet = (if (om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS) om.aineet else Set.empty).map(a => PerusopetuksenOppiaineUI(
