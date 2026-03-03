@@ -12,12 +12,16 @@ const TRANSITION_DURATION_MS = 200;
 export const SimpleAccordion = ({
   titleOpen,
   titleClosed,
+  ariaLabelOpen,
+  ariaLabelClosed,
   titleVariant = 'body1',
   titleComponent = 'label',
   children,
 }: {
-  titleOpen: React.ReactNode;
-  titleClosed: React.ReactNode;
+  titleOpen: string;
+  titleClosed: string;
+  ariaLabelClosed?: string;
+  ariaLabelOpen?: string;
   titleVariant?: 'body1' | 'label' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5';
   titleComponent?: 'label' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5';
   children: React.ReactNode;
@@ -53,6 +57,11 @@ export const SimpleAccordion = ({
         onClick={() => setIsOpen((open) => !open)}
         aria-controls={contentId}
         aria-expanded={isOpen ? 'true' : 'false'}
+        aria-label={
+          isOpen
+            ? (ariaLabelOpen ?? titleOpen)
+            : (ariaLabelClosed ?? titleClosed)
+        }
       >
         <OphTypography
           component={titleComponent}
