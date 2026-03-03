@@ -289,7 +289,11 @@ export interface IKKSuoritusUI {
   tila: SuoritusTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  suorituskieli?: ISuorituskieliUI;
   opintojaksot: IKKOpintojaksoUI[];
+  isTutkintoonJohtava: boolean;
+  tutkintotaso?: string;
+  sektori?: string;
 }
 
 export interface IKayttajaFailureResponse {
@@ -394,6 +398,8 @@ export interface IOpiskeluoikeusUI {
   voimassaolonLoppu: string;
   supaTila: OpiskeluoikeusTila;
   virtaTila: IOpiskeluoikeusVirtaTilaUI;
+  tutkintotaso?: string;
+  sektori?: string;
 }
 
 export interface IOpiskeluoikeusVirtaTilaUI {
@@ -587,6 +593,12 @@ export interface IPreIB {
 }
 
 export interface IPreIBNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface ISuorituskieliUI {
   fi?: string;
   sv?: string;
   en?: string;
@@ -876,8 +888,8 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type OpiskeluoikeusTila = ("VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTila = 'VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTila = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTila = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type Suoritustapa = "NAYTTOTUTKINTO";
+export type Suoritustapa = 'NAYTTOTUTKINTO';

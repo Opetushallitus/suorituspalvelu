@@ -691,6 +691,8 @@ class EntityToUIConverterTest {
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
       ),
+      Optional.empty,
+      Optional.empty
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(virtaOpiskeluoikeus, virtaEiTutkintoonJohtavaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
   }
 
@@ -808,6 +810,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.KESKEN,
       virtaTutkinto.aloitusPvm.toJava,
       virtaTutkinto.suoritusPvm.toJava,
+      Optional.empty,
       java.util.List.of(
         KKOpintojaksoUI(
           opintojakso.tunniste,
@@ -832,7 +835,10 @@ class EntityToUIConverterTest {
             )
           )
         )
-      )
+      ),
+      opiskeluoikeus.isTutkintoonJohtava,
+      Optional.empty,
+      Optional.empty,
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(opiskeluoikeus), organisaatioProvider, DUMMY_KOODISTOPROVIDER).kkTutkinnot)
   }
 
