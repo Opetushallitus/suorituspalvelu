@@ -2,4 +2,4 @@ package-lock.json
 package.json
 pnpm-lock.yaml
 pnpm-workspace.yaml
-src/types/backend.ts
+suorituspalvelu-ui/src/types/backend.ts
