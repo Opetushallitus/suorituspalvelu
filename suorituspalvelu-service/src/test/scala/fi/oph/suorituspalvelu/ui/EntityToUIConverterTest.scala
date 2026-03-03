@@ -122,7 +122,28 @@ class EntityToUIConverterTest {
           )).toList.asJava
         ))
         .toList.asJava,
-      java.util.List.of(),
+      tutkinto.osat
+        .filter(osa => !osa.yto)
+        .map(osa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsa(
+          osa.tunniste,
+          AmmatillisenTutkinnonOsaNimi(
+            osa.nimi.fi.toJava,
+            osa.nimi.sv.toJava,
+            osa.nimi.en.toJava
+          ),
+          osa.laajuus.map(l => l.arvo).toJava,
+          osa.arvosana.map(_.koodi.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
+            AmmatillisenTutkinnonOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava
+          )).toList.asJava
+        ))
+        .toList.asJava,
       Optional.empty()
     )), EntityToUIConverter.getAmmatillisetPerusTutkinnot(Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty))))
   }
@@ -176,7 +197,28 @@ class EntityToUIConverterTest {
       tutkinto.suoritusKieli.arvo,
       Optional.empty(),
       java.util.List.of(),
-      java.util.List.of(),
+      tutkinto.osat
+        .filter(osa => !osa.yto)
+        .map(osa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsa(
+          osa.tunniste,
+          AmmatillisenTutkinnonOsaNimi(
+            osa.nimi.fi.toJava,
+            osa.nimi.sv.toJava,
+            osa.nimi.en.toJava
+          ),
+          osa.laajuus.map(l => l.arvo).toJava,
+          osa.arvosana.map(_.koodi.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
+            AmmatillisenTutkinnonOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava
+          )).toList.asJava
+        ))
+        .toList.asJava,
       Optional.of(NAYTTOTUTKINTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
