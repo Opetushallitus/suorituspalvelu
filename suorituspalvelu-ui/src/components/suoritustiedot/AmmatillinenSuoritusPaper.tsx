@@ -15,7 +15,11 @@ export const AmmatillinenSuoritusPaper = ({
 }) => {
   const { t } = useTranslations();
   return (
-    <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.green2}>
+    <SuoritusInfoPaper
+      suoritus={suoritus}
+      topColor={ophColors.green2}
+      nameSuffix={suoritus.osittainen ? t('oppija.osittainen') : undefined}
+    >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <InfoItemRow slotAmount={4}>
         {'suoritustapa' in suoritus && suoritus.suoritustapa && (

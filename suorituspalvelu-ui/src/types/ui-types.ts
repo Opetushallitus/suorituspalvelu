@@ -25,6 +25,7 @@ import type {
   IEBOppiaineUI,
   IIBOppiaine,
   IAmmatillisenTutkinnonOsa,
+  IOsittainenAmmatillinenTutkinto,
   IYTO,
   ILuoSuoritusDropdownDataSuccessResponse,
   IYksilollistaminen,
@@ -104,7 +105,8 @@ export type AmmatillinenSuoritus = (
   | IAmmatillinentutkinto
   | IAmmattitutkinto
   | IErikoisammattitutkinto
-) & { koulutustyyppi: 'ammatillinen' };
+  | IOsittainenAmmatillinenTutkinto
+) & { koulutustyyppi: 'ammatillinen'; osittainen?: boolean };
 
 export type TUVASuoritus = ITuvaUI & {
   koulutustyyppi: 'tuva';

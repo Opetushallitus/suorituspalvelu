@@ -447,6 +447,7 @@ export interface IOppijanTiedotSuccessResponse {
   ibTutkinto?: IIBTutkinto;
   preIB?: IPreIB;
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
+  osittaisetAmmatillisetTutkinnot: IOsittainenAmmatillinenTutkinto[];
   ammattitutkinnot: IAmmattitutkinto[];
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
   telmat: ITelma[];
@@ -484,6 +485,26 @@ export interface IOppilaitosNimi {
 
 export interface IOppilaitosSuccessResponse {
   oppilaitokset: IOppilaitos[];
+}
+
+export interface IOsittainenAmmatillinenTutkinto {
+  tunniste: string;
+  nimi: IOsittainenAmmatillinentutkintoNimi;
+  oppilaitos: IAmmatillinenOppilaitos;
+  tila: SuoritusTila;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  suorituskieli: string;
+  painotettuKeskiarvo?: number;
+  ytot: IYTO[];
+  ammatillisenTutkinnonOsat: IAmmatillisenTutkinnonOsa[];
+  suoritustapa?: Suoritustapa;
+}
+
+export interface IOsittainenAmmatillinentutkintoNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
 export interface IPKOppilaitos {
