@@ -27,7 +27,7 @@ export const PerusopetusSuoritusAdder = ({
     <Stack
       direction="column"
       spacing={2}
-      sx={{ alignItems: 'flex-start', marginBottom: 2 }}
+      sx={{ alignItems: 'flex-start', marginBottom: 3 }}
     >
       <OphButton
         variant="outlined"
