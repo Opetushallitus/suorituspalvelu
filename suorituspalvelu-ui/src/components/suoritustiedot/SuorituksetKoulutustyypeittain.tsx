@@ -7,9 +7,12 @@ import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';
 import { TuvaSuoritusPaper } from './TuvaSuoritusPaper';
 import { PerusopetusSuoritusPaper } from './PerusopetusSuoritusPaper';
-import type { OppijanTiedot } from '@/types/ui-types';
+import type { KorkeakouluSuoritus, OppijanTiedot } from '@/types/ui-types';
 import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
 import React from 'react';
+import { partition } from 'remeda';
+import { AccordionBox } from '../AccordionBox';
+import { useTranslations } from '@/hooks/useTranslations';
 
 function SuoritusSection({
   heading,
@@ -31,6 +34,40 @@ function SuoritusSection({
   );
 }
 
+const KorkeakouluSuoritukset = ({
+  suoritukset,
+}: {
+  suoritukset: Array<KorkeakouluSuoritus>;
+}) => {
+  const { t } = useTranslations();
+
+  const [tutkintoonJohtavat, tutkintoonJohtamattomat] = partition(
+    suoritukset,
+    (s) => s.isTutkintoonJohtava,
+  );
+
+  return (
+    <>
+      {tutkintoonJohtavat.map((suoritus) => (
+        <KorkeakouluSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
+      ))}
+      <AccordionBox
+        id="tutkintoon-johtamattomat"
+        title={t('oppija.tutkintoon-johtamattomat-kk-suoritukset')}
+      >
+        <Stack spacing={4}>
+          {tutkintoonJohtamattomat.map((suoritus) => (
+            <KorkeakouluSuoritusPaper
+              key={suoritus.tunniste}
+              suoritus={suoritus}
+            />
+          ))}
+        </Stack>
+      </AccordionBox>
+    </>
+  );
+};
+
 export function SuorituksetKoulutustyypeittain({
   oppijanTiedot,
 }: {
@@ -43,14 +80,11 @@ export function SuorituksetKoulutustyypeittain({
   return (
     <Stack spacing={4}>
       <SuoritusSection heading={t('oppija.korkeakoulutus')}>
-        {suoritukset
-          .filter((s) => s.koulutustyyppi === 'korkeakoulutus')
-          ?.map((suoritus) => (
-            <KorkeakouluSuoritusPaper
-              key={suoritus.tunniste}
-              suoritus={suoritus}
-            />
-          ))}
+        <KorkeakouluSuoritukset
+          suoritukset={suoritukset.filter(
+            (s) => s.koulutustyyppi === 'korkeakoulutus',
+          )}
+        />
       </SuoritusSection>
       <SuoritusSection heading={t('oppija.lukiokoulutus')}>
         {suoritukset
