@@ -330,7 +330,7 @@ object VirtaToSuoritusConverter {
           aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
           suoritusPvm = Some(suoritus.SuoritusPvm),
           myontaja = suoritus.Myontaja,
-          kieli = Some(suoritus.Kieli),
+          kieli = suoritus.Kieli,
           koulutusKoodi = suoritus.Koulutuskoodi,
           opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
           suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {

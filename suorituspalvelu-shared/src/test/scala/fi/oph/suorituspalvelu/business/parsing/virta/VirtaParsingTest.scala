@@ -191,7 +191,7 @@ class VirtaParsingTest {
     Assertions.assertEquals(Some("Professional Communications"), suoritus.nimi.flatMap(_.en))
     Assertions.assertEquals(None, suoritus.nimi.flatMap(_.sv))
 
-    Assertions.assertEquals("fi", suoritus.kieli)
+    Assertions.assertEquals(Some("fi"), suoritus.kieli)
 
     Assertions.assertEquals(Some(5), suoritus.koulutusala)
     Assertions.assertEquals(Some("ohjausala"), suoritus.koulutusalaKoodisto)
