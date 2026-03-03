@@ -75,7 +75,7 @@ case class VirtaNimi(kieli: Option[String], nimi: String)
 case class VirtaSuoritusviite(sisaltyvaOpintosuoritusAvain: String)
 
 case class VirtaOpintosuoritus(
-  Kieli: String,
+  Kieli: Option[String],
   Organisaatio: Option[VirtaOrganisaatio],
   Tyyppi: String,
   SuoritusPvm: LocalDate,

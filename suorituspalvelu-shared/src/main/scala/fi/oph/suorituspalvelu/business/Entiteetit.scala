@@ -463,7 +463,7 @@ case class KKOpintosuoritus(
   jarjestavaOsuus: Option[BigDecimal],
   arvosana: Option[String],
   arvosanaAsteikko: Option[String],
-  kieli: String,
+  kieli: Option[String],
   koulutusala: Option[Int],
   koulutusalaKoodisto: Option[String],
   opinnaytetyo: Boolean,
