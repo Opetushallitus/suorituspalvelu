@@ -70,6 +70,12 @@ const KorkeakouluSuorituksetSection = ({
         <SimpleAccordion
           titleOpen={t('oppija.tutkintoon-johtamattomat-kk-suoritukset')}
           titleClosed={t('oppija.tutkintoon-johtamattomat-kk-suoritukset')}
+          ariaLabelOpen={t(
+            'oppija.piilota-tutkintoon-johtamattomat-kk-suoritukset',
+          )}
+          ariaLabelClosed={t(
+            'oppija.nayta-tutkintoon-johtamattomat-kk-suoritukset',
+          )}
           titleVariant="h4"
           titleComponent="h3"
         >
