@@ -33,6 +33,7 @@ import type {
   IAvainArvoContainerUI,
   IYliajo,
   IOppijanValintaDataSuccessResponse,
+  IOppija,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTilaUI;
@@ -58,6 +59,8 @@ export type Kielistetty = {
 export type Opiskeluoikeus = IOpiskeluoikeusUI;
 
 export type OppijanTiedot = IOppijanTiedotSuccessResponse;
+
+export type OppijaSearchItem = IOppija;
 
 export type YOKoe = IYOKoe;
 

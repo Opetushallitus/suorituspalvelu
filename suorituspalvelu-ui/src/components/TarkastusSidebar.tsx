@@ -2,7 +2,7 @@ import {
   useOppilaitoksenOppijatSearchResult,
   useOppilaitoksenOppijatSearchParamsState,
 } from '@/hooks/useOppilaitoksenOppijatSearch';
-import { NavLink } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import { QuerySuspenseBoundary } from './QuerySuspenseBoundary';
 import { LeftPanel } from './LeftPanel';
 import { useCallback } from 'react';
@@ -15,6 +15,57 @@ import { SearchInput } from './SearchInput';
 import { Box, Stack } from '@mui/material';
 import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
 import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
+import type { SearchNavigationState } from '@/types/navigation';
+import { omit } from 'remeda';
+import type { OppijaSearchItem } from '@/types/ui-types';
+
+const HenkiloLink = ({ oppija }: { oppija: OppijaSearchItem }) => {
+  const { t } = useTranslate();
+  const searchTab = useSelectedSearchTab();
+  const tiedotTab = useSelectedTiedotTab();
+
+  const { searchParams } = useOppilaitoksenOppijatSearchParamsState();
+
+  const { oppijaNumero } = useOppijaNumeroParamState();
+
+  const henkiloNimi = formatHenkiloNimi(oppija, t);
+  const luokat = oppija.luokat?.join(', ');
+  const henkiloTunnus = oppija.hetu;
+
+  const ariaLabel = `${henkiloNimi}${
+    henkiloTunnus
+      ? ', ' + t('sivupalkki.henkilotunnus') + ': ' + henkiloTunnus
+      : ''
+  }${luokat ? ', ' + t('sivupalkki.luokka') + ': ' + luokat : ''}`;
+
+  const location = useLocation();
+  const locationState = location.state as SearchNavigationState;
+
+  return (
+    <NavLink
+      prefetch="intent"
+      aria-label={ariaLabel}
+      className={
+        oppijaNumero === oppija.oppijaNumero ? NAV_LIST_SELECTED_ITEM_CLASS : ''
+      }
+      to={{
+        pathname: `/${searchTab}/${oppijaNumero}/${tiedotTab ?? ''}`,
+        search: new URLSearchParams(
+          omit(searchParams, ['suodatus']),
+        ).toString(),
+      }}
+      state={locationState}
+    >
+      <OphTypography variant="label" color="inherit">
+        {henkiloNimi}
+      </OphTypography>
+      <Stack direction="row" sx={{ justifyContent: 'space-between', gap: 2 }}>
+        <OphTypography color={ophColors.black}> {oppija.hetu}</OphTypography>
+        <OphTypography> {luokat}</OphTypography>
+      </Stack>
+    </NavLink>
+  );
+};
 
 const SidebarContent = () => {
   const { searchParams, setSearchParams, hasValidSearchParams } =
@@ -23,11 +74,6 @@ const SidebarContent = () => {
   const { data, totalCount } = useOppilaitoksenOppijatSearchResult();
 
   const { t } = useTranslate();
-
-  const { oppijaNumero } = useOppijaNumeroParamState();
-
-  const searchTab = useSelectedSearchTab();
-  const tiedotTab = useSelectedTiedotTab();
 
   const onClear = useCallback(() => {
     setSearchParams({ suodatus: '' });
@@ -65,46 +111,9 @@ const SidebarContent = () => {
             })}
           </OphTypography>
           <NavigationList tabIndex={0} aria-label={t('sivupalkki.navigaatio')}>
-            {data?.map((oppija) => {
-              const henkiloNimi = formatHenkiloNimi(oppija, t);
-              const luokat = oppija.luokat?.join(', ');
-              const henkiloTunnus = oppija.hetu;
-              const ariaLabel = `${henkiloNimi}${
-                henkiloTunnus
-                  ? ', ' + t('sivupalkki.henkilotunnus') + ': ' + henkiloTunnus
-                  : ''
-              }${luokat ? ', ' + t('sivupalkki.luokka') + ': ' + luokat : ''}`;
-              return (
-                <NavLink
-                  key={oppija.oppijaNumero}
-                  prefetch="intent"
-                  aria-label={ariaLabel}
-                  className={
-                    oppijaNumero === oppija.oppijaNumero
-                      ? NAV_LIST_SELECTED_ITEM_CLASS
-                      : ''
-                  }
-                  to={{
-                    pathname: `/${searchTab}/${oppija.oppijaNumero}/${tiedotTab ?? ''}`,
-                    search: new URLSearchParams(searchParams).toString(),
-                  }}
-                >
-                  <OphTypography variant="label" color="inherit">
-                    {formatHenkiloNimi(oppija, t)}
-                  </OphTypography>
-                  <Stack
-                    direction="row"
-                    sx={{ justifyContent: 'space-between', gap: 2 }}
-                  >
-                    <OphTypography color={ophColors.black}>
-                      {' '}
-                      {oppija.hetu}
-                    </OphTypography>
-                    <OphTypography> {luokat}</OphTypography>
-                  </Stack>
-                </NavLink>
-              );
-            })}
+            {data?.map((oppija) => (
+              <HenkiloLink key={oppija.oppijaNumero} oppija={oppija} />
+            ))}
           </NavigationList>
         </>
       ) : (

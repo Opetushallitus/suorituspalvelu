@@ -9,7 +9,7 @@ import {
   expectSuoritukset,
   HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS,
   IB_SUORITUS,
-  KORKEAKOULU_SUORITUS,
+  TUTKINTOON_JOHTAVA_KORKEAKOULU_SUORITUS,
   LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS,
   LUKION_OPPIMAARA_SUORITUS,
   MAANMITTAUSALAN_PERUSTUTKINTO_SUORITUS,
@@ -23,7 +23,9 @@ import {
   TUVA_SUORITUS,
   VAPAA_SIVISTYSTYO_SUORITUS,
   YOTUTKINTO_SUORITUS,
+  TUTKINTOON_JOHTAMATON_KORKEAKOULU_SUORITUS,
 } from './lib/suoritusTestUtils';
+import { expectLabeledValues } from './lib/playwrightUtils';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
 
@@ -65,17 +67,36 @@ test.describe('Suoritustiedot', () => {
       }),
     ).toBeVisible();
 
-    await expect(opiskeluoikeusPaper.getByLabel('Oppilaitos')).toHaveText(
-      'Tampereen yliopisto',
-    );
-    await expect(opiskeluoikeusPaper.getByLabel('Voimassaolo')).toHaveText(
-      `1.8.2001 ${NDASH} 11.12.2025Voimassa(aktiivinen)`,
-    );
+    await expectLabeledValues(opiskeluoikeusPaper, [
+      {
+        label: 'Oppilaitos',
+        value: 'Tampereen yliopisto',
+      },
+      {
+        label: 'Voimassaolo',
+        value: `1.8.2001 ${NDASH} 11.12.2025Voimassa(aktiivinen)`,
+      },
+      {
+        label: 'Sektori',
+        value: 'YO',
+      },
+      {
+        label: 'Tutkintotaso',
+        value: 'Ylempi korkeakoulututkinto',
+      },
+    ]);
   });
 
   test('Suoritukset koulutustyypeittäin', async ({ page }) => {
+    await page
+      .getByRole('button', {
+        name: 'Näytä tutkintoon johtamattomat korkeakoulusuoritukset',
+      })
+      .click();
+
     await expectSuoritukset(page, [
-      KORKEAKOULU_SUORITUS,
+      TUTKINTOON_JOHTAVA_KORKEAKOULU_SUORITUS,
+      TUTKINTOON_JOHTAMATON_KORKEAKOULU_SUORITUS,
       YOTUTKINTO_SUORITUS,
       LUKION_OPPIMAARA_SUORITUS,
       LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS,

@@ -7,20 +7,27 @@ import { AmmatillinenSuoritusPaper } from './AmmatillinenSuoritusPaper';
 import { VapaaSivistystyoSuoritusPaper } from './VapaaSivistystyoSuoritusPaper';
 import { TuvaSuoritusPaper } from './TuvaSuoritusPaper';
 import { PerusopetusSuoritusPaper } from './PerusopetusSuoritusPaper';
-import type { OppijanTiedot } from '@/types/ui-types';
+import type { OppijanTiedot, Suoritus } from '@/types/ui-types';
 import { useSuorituksetFlattened } from '@/hooks/useSuorituksetFlattened';
 import React from 'react';
+import { partition } from 'remeda';
+import { useTranslations } from '@/hooks/useTranslations';
+import { truthyReactNodes } from '@/lib/common';
+import { SimpleAccordion } from '../SimpleAccordion';
 
-function SuoritusSection({
+function SuorituksetSection({
   heading,
   children,
 }: {
   heading: string;
   children: React.ReactNode;
 }) {
+  const hasChildren =
+    // eslint-disable-next-line @eslint-react/no-children-to-array
+    truthyReactNodes(React.Children.toArray(children)).length > 0;
+
   return (
-    // eslint-disable-next-line @eslint-react/no-children-count
-    React.Children.count(children) > 0 && (
+    hasChildren && (
       <Box sx={{ marginBottom: 4 }}>
         <OphTypography variant="h4" component="h3" sx={{ marginBottom: 2 }}>
           {heading}
@@ -30,6 +37,61 @@ function SuoritusSection({
     )
   );
 }
+
+const KorkeakouluSuorituksetSection = ({
+  suoritukset,
+}: {
+  suoritukset: Array<Suoritus>;
+}) => {
+  const { t } = useTranslations();
+
+  const korkeakouluSuoritukset = suoritukset.filter(
+    (s) => s.koulutustyyppi === 'korkeakoulutus',
+  );
+
+  const [tutkintoonJohtavat, tutkintoonJohtamattomat] = partition(
+    korkeakouluSuoritukset,
+    (s) => s.isTutkintoonJohtava,
+  );
+
+  return (
+    <>
+      <SuorituksetSection
+        heading={t('oppija.tutkintoon-johtavat-kk-suoritukset')}
+      >
+        {tutkintoonJohtavat.map((suoritus) => (
+          <KorkeakouluSuoritusPaper
+            key={suoritus.tunniste}
+            suoritus={suoritus}
+          />
+        ))}
+      </SuorituksetSection>
+      {tutkintoonJohtamattomat.length > 0 && (
+        <SimpleAccordion
+          titleOpen={t('oppija.tutkintoon-johtamattomat-kk-suoritukset')}
+          titleClosed={t('oppija.tutkintoon-johtamattomat-kk-suoritukset')}
+          ariaLabelOpen={t(
+            'oppija.piilota-tutkintoon-johtamattomat-kk-suoritukset',
+          )}
+          ariaLabelClosed={t(
+            'oppija.nayta-tutkintoon-johtamattomat-kk-suoritukset',
+          )}
+          titleVariant="h4"
+          titleComponent="h3"
+        >
+          <Stack spacing={4} sx={{ paddingTop: 2 }}>
+            {tutkintoonJohtamattomat.map((suoritus) => (
+              <KorkeakouluSuoritusPaper
+                key={suoritus.tunniste}
+                suoritus={suoritus}
+              />
+            ))}
+          </Stack>
+        </SimpleAccordion>
+      )}
+    </>
+  );
+};
 
 export function SuorituksetKoulutustyypeittain({
   oppijanTiedot,
@@ -42,17 +104,8 @@ export function SuorituksetKoulutustyypeittain({
 
   return (
     <Stack spacing={4}>
-      <SuoritusSection heading={t('oppija.korkeakoulutus')}>
-        {suoritukset
-          .filter((s) => s.koulutustyyppi === 'korkeakoulutus')
-          ?.map((suoritus) => (
-            <KorkeakouluSuoritusPaper
-              key={suoritus.tunniste}
-              suoritus={suoritus}
-            />
-          ))}
-      </SuoritusSection>
-      <SuoritusSection heading={t('oppija.lukiokoulutus')}>
+      <KorkeakouluSuorituksetSection suoritukset={suoritukset} />
+      <SuorituksetSection heading={t('oppija.lukiokoulutus')}>
         {suoritukset
           .filter(
             (s) =>
@@ -63,8 +116,8 @@ export function SuorituksetKoulutustyypeittain({
           ?.map((suoritus) => (
             <LukioSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
           ))}
-      </SuoritusSection>
-      <SuoritusSection heading={t('oppija.ammatillinen-koulutus')}>
+      </SuorituksetSection>
+      <SuorituksetSection heading={t('oppija.ammatillinen-koulutus')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'ammatillinen')
           ?.map((suoritus) => (
@@ -73,15 +126,15 @@ export function SuorituksetKoulutustyypeittain({
               suoritus={suoritus}
             />
           ))}
-      </SuoritusSection>
-      <SuoritusSection heading={t('oppija.tuva')}>
+      </SuorituksetSection>
+      <SuorituksetSection heading={t('oppija.tuva')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'tuva')
           ?.map((suoritus) => (
             <TuvaSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
           ))}
-      </SuoritusSection>
-      <SuoritusSection heading={t('oppija.vapaa-sivistystyo')}>
+      </SuorituksetSection>
+      <SuorituksetSection heading={t('oppija.vapaa-sivistystyo')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'vapaa-sivistystyo')
           ?.map((suoritus) => (
@@ -90,8 +143,8 @@ export function SuorituksetKoulutustyypeittain({
               suoritus={suoritus}
             />
           ))}
-      </SuoritusSection>
-      <SuoritusSection heading={t('oppija.perusopetus')}>
+      </SuorituksetSection>
+      <SuorituksetSection heading={t('oppija.perusopetus')}>
         {suoritukset
           .filter((s) => s.koulutustyyppi === 'perusopetus')
           ?.map((suoritus) => (
@@ -101,7 +154,7 @@ export function SuorituksetKoulutustyypeittain({
               suoritus={suoritus}
             />
           ))}
-      </SuoritusSection>
+      </SuorituksetSection>
     </Stack>
   );
 }
