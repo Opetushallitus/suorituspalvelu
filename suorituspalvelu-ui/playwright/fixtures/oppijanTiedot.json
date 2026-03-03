@@ -50,6 +50,19 @@
       "tila": "KESKEN",
       "aloituspaiva": "2025-12-11",
       "valmistumispaiva": null,
+      "isTutkintoonJohtava": true,
+      "suorituskieli": {
+        "fi": "suomi",
+        "sv": "finska",
+        "en": "Finnish"
+      },
+      "virtaNimi": {
+        "fi": "Kasvatustieteen maisteri",
+        "sv": "Kasvatustieteen maisteri sv",
+        "en": "Kasvatustieteen maisteri en"
+      },
+      "tutkintotaso": "YLEMPI",
+      "sektori": "YO",
       "opintojaksot": [
         {
           "tunniste": "op1",
@@ -109,6 +122,46 @@
           },
           "laajuus": 15,
           "arvosana": "3",
+          "opintojaksot": []
+        }
+      ]
+    },
+    {
+      "tunniste": "cbf7b579-b44a-4e46-b227-f4749c005fdc",
+      "nimi": {
+        "fi": "Avoimen opinnot",
+        "sv": "Öppna studier",
+        "en": "Open Studies"
+      },
+      "oppilaitos": {
+        "nimi": {
+          "fi": "Helsingin yliopisto",
+          "sv": "Helsingfors universitet",
+          "en": "University of Helsinki"
+        },
+        "oid": "1.2.3.5"
+      },
+      "isTutkintoonJophtava": false,
+      "tila": "KESKEN",
+      "aloituspaiva": "2024-12-11",
+      "valmistumispaiva": null,
+      "isTutkintoonJohtava": false,
+      "sektori": "YO",
+      "suorituskieli": {
+        "fi": "suomi",
+        "sv": "finska",
+        "en": "Finnish"
+      },
+      "opintojaksot": [
+        {
+          "tunniste": "op1",
+          "nimi": {
+            "fi": "Kasvatustieteen perusteet",
+            "sv": "Grunderna i pedagogik",
+            "en": "Foundations of Education"
+          },
+          "laajuus": 5,
+          "arvosana": "4",
           "opintojaksot": []
         }
       ]

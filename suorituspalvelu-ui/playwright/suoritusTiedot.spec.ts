@@ -9,7 +9,7 @@ import {
   expectSuoritukset,
   HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS,
   IB_SUORITUS,
-  KORKEAKOULU_SUORITUS,
+  TUTKINTOON_JOHTAVA_KORKEAKOULU_SUORITUS,
   LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS,
   LUKION_OPPIMAARA_SUORITUS,
   MAANMITTAUSALAN_PERUSTUTKINTO_SUORITUS,
@@ -23,6 +23,7 @@ import {
   TUVA_SUORITUS,
   VAPAA_SIVISTYSTYO_SUORITUS,
   YOTUTKINTO_SUORITUS,
+  TUTKINTOON_JOHTAMATON_KORKEAKOULU_SUORITUS,
 } from './lib/suoritusTestUtils';
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
@@ -74,8 +75,12 @@ test.describe('Suoritustiedot', () => {
   });
 
   test('Suoritukset koulutustyypeittäin', async ({ page }) => {
+    await page
+      .getByRole('button', { name: 'Korkeakoulutus - tutkintoon johtamaton' })
+      .click();
     await expectSuoritukset(page, [
-      KORKEAKOULU_SUORITUS,
+      TUTKINTOON_JOHTAVA_KORKEAKOULU_SUORITUS,
+      TUTKINTOON_JOHTAMATON_KORKEAKOULU_SUORITUS,
       YOTUTKINTO_SUORITUS,
       LUKION_OPPIMAARA_SUORITUS,
       LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS,
