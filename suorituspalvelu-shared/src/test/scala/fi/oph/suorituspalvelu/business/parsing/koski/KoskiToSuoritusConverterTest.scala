@@ -110,7 +110,7 @@ class KoskiToSuoritusConverterTest {
   def testGetYksilollistaminen(): Unit = {
     val baseSuoritus = KoskiSuoritus(
       null, null, null, null, null, null,
-      osasuoritukset = Some(Set.empty), null, null, null, null, null
+      osasuoritukset = Some(Set.empty), null, null, null, null, null, null
     )
 
     val baseOikeus =  KoskiOpiskeluoikeus(
@@ -122,7 +122,7 @@ class KoskiToSuoritusConverterTest {
         null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, null)), null,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
-        null, null
+        null, null, null
       )
     }
 
@@ -261,6 +261,7 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = None,
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
       jääLuokalle = None
@@ -283,6 +284,7 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = Some(Set.empty),
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
       jääLuokalle = None
@@ -314,7 +316,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     val suoritus = KoskiSuoritus(
@@ -327,6 +330,7 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = Some(Set(osasuoritus)),
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
       jääLuokalle = None
@@ -361,7 +365,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     val suoritus = KoskiSuoritus(
@@ -374,9 +379,10 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = Some(Set(osasuoritus)),
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
-      jääLuokalle = None
+      jääLuokalle = None,
     )
     val result = KoskiToSuoritusConverter.getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false)
 
@@ -415,7 +421,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     val osasuoritus2 = KoskiOsaSuoritus(
@@ -440,7 +447,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     val suoritus = KoskiSuoritus(
@@ -453,6 +461,7 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = Some(Set(osasuoritus1, osasuoritus2)),
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
       jääLuokalle = None
@@ -505,7 +514,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     // Non-approved osasuoritus
@@ -537,7 +547,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     val suoritus = KoskiSuoritus(
@@ -550,6 +561,7 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = Some(Set(osasuoritus1, osasuoritus2)),
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
       jääLuokalle = None
@@ -597,7 +609,8 @@ class KoskiToSuoritusConverterTest {
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
-      osasuoritukset = None
+      osasuoritukset = None,
+      korotettu = None
     )
 
     val suoritus = KoskiSuoritus(
@@ -610,6 +623,7 @@ class KoskiToSuoritusConverterTest {
       osasuoritukset = Some(Set(osasuoritus)),
       arviointi = None,
       keskiarvo = None,
+      korotettuKeskiarvo = None,
       suoritustapa = None,
       luokka = None,
       jääLuokalle = None

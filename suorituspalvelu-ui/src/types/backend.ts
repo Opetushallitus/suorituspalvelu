@@ -496,8 +496,9 @@ export interface IOsittainenAmmatillinenTutkinto {
   valmistumispaiva?: string;
   suorituskieli: string;
   painotettuKeskiarvo?: number;
-  ytot: IYTO[];
-  ammatillisenTutkinnonOsat: IAmmatillisenTutkinnonOsa[];
+  korotettuPainotettuKeskiarvo?: number;
+  ytot: IOsittaisenYTO[];
+  ammatillisenTutkinnonOsat: IOsittaisenAmmatillisenTutkinnonOsa[];
   suoritustapa?: Suoritustapa;
 }
 
@@ -505,6 +506,38 @@ export interface IOsittainenAmmatillinentutkintoNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IOsittaisenAmmatillisenTutkinnonOsa {
+  tunniste: string;
+  nimi: IAmmatillisenTutkinnonOsaNimi;
+  laajuus?: number;
+  arvosana?: string;
+  osaAlueet: IOsittaisenAmmatillisenTutkinnonOsaAlue[];
+  korotettu: boolean;
+}
+
+export interface IOsittaisenAmmatillisenTutkinnonOsaAlue {
+  nimi: IAmmatillisenTutkinnonOsaAlueNimi;
+  laajuus?: number;
+  arvosana?: string;
+  korotettu: boolean;
+}
+
+export interface IOsittaisenYTO {
+  tunniste: string;
+  nimi: IYTONimi;
+  laajuus?: number;
+  arvosana?: IYTOArvosana;
+  osaAlueet: IOsittaisenYTOOsaAlue[];
+  korotettu: boolean;
+}
+
+export interface IOsittaisenYTOOsaAlue {
+  nimi: IYTOOsaAlueNimi;
+  laajuus?: number;
+  arvosana?: string;
+  korotettu: boolean;
 }
 
 export interface IPKOppilaitos {

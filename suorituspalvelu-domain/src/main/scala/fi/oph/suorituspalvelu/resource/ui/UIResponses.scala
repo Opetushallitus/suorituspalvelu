@@ -678,6 +678,40 @@ case class YTO(
   @BeanProperty osaAlueet: java.util.List[YTOOsaAlue]
 )
 
+case class OsittaisenYTOOsaAlue(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: YTOOsaAlueNimi,
+  @(Schema @field)(
+    description = "Tutkinnon osa-alueen laajuus (osaamispistettä)",
+    example = "11",
+    requiredMode = RequiredMode.REQUIRED
+  )
+  @BeanProperty laajuus: Optional[BigDecimal],
+  @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty korotettu: Boolean
+)
+
+case class OsittaisenYTO(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: YTONimi,
+  @(Schema @field)(
+    description = "Tutkinnon osan laajuus (osaamispistettä)",
+    example = "11",
+    requiredMode = RequiredMode.REQUIRED
+  )
+  @BeanProperty laajuus: Optional[BigDecimal],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[YTOArvosana],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty osaAlueet: java.util.List[OsittaisenYTOOsaAlue],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty korotettu: Boolean
+)
+
 case class AmmatillisenTutkinnonOsaAlueNimi(
   @(Schema @field)(
     example = "Toimiminen ajoneuvoalan liiketoimintaympäristössä 1",
@@ -886,6 +920,40 @@ case class Telma(
   @BeanProperty suorituskieli: String
 )
 
+case class OsittaisenAmmatillisenTutkinnonOsaAlue(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: AmmatillisenTutkinnonOsaAlueNimi,
+  @(Schema @field)(
+    description = "Tutkinnon osa-alueen laajuus (osaamispistettä)",
+    example = "11",
+    requiredMode = RequiredMode.REQUIRED
+  )
+  @BeanProperty laajuus: Optional[BigDecimal],
+  @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty korotettu: Boolean
+)
+
+case class OsittaisenAmmatillisenTutkinnonOsa(
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: UUID,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: AmmatillisenTutkinnonOsaNimi,
+  @(Schema @field)(
+    description = "Tutkinnon osan laajuus (osaamispistettä)",
+    example = "11",
+    requiredMode = RequiredMode.REQUIRED
+  )
+  @BeanProperty laajuus: Optional[BigDecimal],
+  @(Schema @field)(example = "4", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty osaAlueet: java.util.List[OsittaisenAmmatillisenTutkinnonOsaAlue],
+  @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty korotettu: Boolean
+)
+
 case class OsittainenAmmatillinentutkintoNimi(
   @(Schema @field)(example = "Kasvatus- ja ohjausalan perustutkinto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -915,9 +983,9 @@ case class OsittainenAmmatillinenTutkinto(
   @(Schema @field)(example = "2.20")
   @BeanProperty korotettuPainotettuKeskiarvo: Optional[BigDecimal],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty ytot: java.util.List[YTO],
+  @BeanProperty ytot: java.util.List[OsittaisenYTO],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty ammatillisenTutkinnonOsat: java.util.List[AmmatillisenTutkinnonOsa],
+  @BeanProperty ammatillisenTutkinnonOsat: java.util.List[OsittaisenAmmatillisenTutkinnonOsa],
   @(Schema @field)(example = "Näyttötutkinto")
   @BeanProperty suoritustapa: Optional[SuoritusTapa]
 )

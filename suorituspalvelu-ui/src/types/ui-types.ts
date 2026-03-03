@@ -26,7 +26,9 @@ import type {
   IIBOppiaine,
   IAmmatillisenTutkinnonOsa,
   IOsittainenAmmatillinenTutkinto,
+  IOsittaisenAmmatillisenTutkinnonOsa,
   IYTO,
+  IOsittaisenYTO,
   ILuoSuoritusDropdownDataSuccessResponse,
   IYksilollistaminen,
   IPoistaSuoritusFailureResponse,
@@ -158,10 +160,21 @@ export type Language = 'fi' | 'sv' | 'en';
 
 export type AmmatillinenTutkinnonOsa = IAmmatillisenTutkinnonOsa | IYTO;
 
+export type OsittainenAmmatillinenTutkinnonOsa =
+  | IOsittaisenAmmatillisenTutkinnonOsa
+  | IOsittaisenYTO;
+
 export type TutkinnonOsanOsaAlue = {
   nimi: Kielistetty;
   laajuus?: number;
   arvosana?: string;
+};
+
+export type OsittaisenTutkinnonOsanOsaAlue = {
+  nimi: Kielistetty;
+  laajuus?: number;
+  arvosana?: string;
+  korotettu: boolean;
 };
 
 export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;

@@ -157,7 +157,7 @@ case class AmmatillinenTutkintoOsittainen(
   korotettuKeskiarvo: Option[BigDecimal],
   suoritustapa: Koodi,
   suoritusKieli: Koodi,
-  osat: Set[AmmatillisenTutkinnonOsa]
+  osat: Set[OsittaisenAmmatillisenTutkinnonOsa]
 ) extends Suoritus, Tyypitetty
 
 case class AmmatillisenTutkinnonOsaAlue(
@@ -177,6 +177,27 @@ case class AmmatillisenTutkinnonOsa(
   arvosana: Option[Arvosana],
   laajuus: Option[Laajuus],
   osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]
+) extends Tyypitetty
+
+case class OsittaisenAmmatillisenTutkinnonOsaAlue(
+  tunniste: UUID,
+  nimi: Kielistetty,
+  koodi: Koodi,
+  arvosana: Option[Koodi],
+  laajuus: Option[Laajuus],
+  korotettu: Boolean
+) extends Tyypitetty
+
+case class OsittaisenAmmatillisenTutkinnonOsa(
+  tunniste: UUID,
+  nimi: Kielistetty,
+  koodi: Koodi,
+  yto: Boolean,
+  arviointiPaiva: Option[LocalDate],
+  arvosana: Option[Arvosana],
+  laajuus: Option[Laajuus],
+  osaAlueet: Set[OsittaisenAmmatillisenTutkinnonOsaAlue],
+  korotettu: Boolean
 ) extends Tyypitetty
 
 case class TelmaOsasuoritus(
