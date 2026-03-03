@@ -144,6 +144,22 @@ case class AmmatillinenPerustutkinto(
   osat: Set[AmmatillisenTutkinnonOsa]
 ) extends Suoritus, Tyypitetty
 
+case class AmmatillinenTutkintoOsittainen(
+  tunniste: UUID,
+  nimi: Kielistetty,
+  koodi: Koodi,
+  oppilaitos: Oppilaitos,
+  koskiTila: Koodi,
+  supaTila: SuoritusTila,
+  aloitusPaivamaara: Option[LocalDate],
+  vahvistusPaivamaara: Option[LocalDate],
+  keskiarvo: Option[BigDecimal],
+  korotettuKeskiarvo: Option[BigDecimal],
+  suoritustapa: Koodi,
+  suoritusKieli: Koodi,
+  osat: Set[AmmatillisenTutkinnonOsa]
+) extends Suoritus, Tyypitetty
+
 case class AmmatillisenTutkinnonOsaAlue(
   tunniste: UUID,
   nimi: Kielistetty,

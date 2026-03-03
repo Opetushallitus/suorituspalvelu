@@ -910,8 +910,16 @@ case class OsittainenAmmatillinenTutkinto(
   @BeanProperty valmistumispaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
+  @(Schema @field)(example = "4.34", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty painotettuKeskiarvo: Optional[BigDecimal],
+  @(Schema @field)(example = "2.20")
+  @BeanProperty korotettuPainotettuKeskiarvo: Optional[BigDecimal],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty ammatillisenTutkinnonOsat: java.util.List[AmmatillisenTutkinnonOsa]
+  @BeanProperty ytot: java.util.List[YTO],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty ammatillisenTutkinnonOsat: java.util.List[AmmatillisenTutkinnonOsa],
+  @(Schema @field)(example = "Näyttötutkinto")
+  @BeanProperty suoritustapa: Optional[SuoritusTapa]
 )
 
 case class TuvaNimi(
@@ -1277,6 +1285,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty ibTutkinto: Optional[IBTutkinto],
   @BeanProperty preIB: Optional[PreIB],
   @BeanProperty ammatillisetPerusTutkinnot: java.util.List[Ammatillinentutkinto],
+  @BeanProperty osittaisetAmmatillisetTutkinnot: java.util.List[OsittainenAmmatillinenTutkinto],
   @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
   @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
   @BeanProperty telmat: java.util.List[Telma],

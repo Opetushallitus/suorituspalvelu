@@ -1180,6 +1180,7 @@ object MockEntityToUIConverter {
       ibTutkinto =                                getIBTutkinto().toJava,
       preIB =                                     getPreIB().toJava,
       ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot().asJava,
+      osittaisetAmmatillisetTutkinnot =           List.empty[OsittainenAmmatillinenTutkinto].asJava,
       ammattitutkinnot =                          getAmmattitutkinnot().asJava,
       erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot().asJava,
       telmat =                                    getTelmat().asJava,
