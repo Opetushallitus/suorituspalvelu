@@ -155,6 +155,10 @@ enum KKSektoriUI:
   case AMK
   case YO
 
+enum Korotus:
+  case KOROTETTU
+  case KOROTUKSENYRITYS
+
 case class KKOppilaitosNimiUI(
   @(Schema @field)(example = "Tampereen yliopisto", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -652,7 +656,9 @@ case class YTOOsaAlue(
   )
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String]
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty korotettu: Optional[Korotus]
 )
 
 case class YTONimi(
@@ -687,7 +693,9 @@ case class YTO(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[YTOArvosana],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty osaAlueet: java.util.List[YTOOsaAlue]
+  @BeanProperty osaAlueet: java.util.List[YTOOsaAlue],
+  @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty korotettu: Optional[Korotus]
 )
 
 case class AmmatillisenTutkinnonOsaAlueNimi(
@@ -715,7 +723,9 @@ case class AmmatillisenTutkinnonOsaAlue(
   )
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String]
+  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty korotettu: Optional[Korotus]
 )
 
 case class AmmatillisenTutkinnonOsaNimi(
@@ -744,7 +754,9 @@ case class AmmatillisenTutkinnonOsa(
   @(Schema @field)(example = "4", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[String],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty osaAlueet: java.util.List[AmmatillisenTutkinnonOsaAlue]
+  @BeanProperty osaAlueet: java.util.List[AmmatillisenTutkinnonOsaAlue],
+  @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty korotettu: Optional[Korotus]
 )
 
 case class AmmatillinenOppilaitosNimi(
@@ -898,20 +910,11 @@ case class Telma(
   @BeanProperty suorituskieli: String
 )
 
-case class OsittainenAmmatillinentutkintoNimi(
-  @(Schema @field)(example = "Kasvatus- ja ohjausalan perustutkinto", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Kasvatus- ja ohjausalan perustutkinto sv", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Kasvatus- ja ohjausalan perustutkinto en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String]
-)
-
-case class OsittainenAmmatillinenTutkinto(
+case class OsittainenAmmatillinenTutkintoUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: OsittainenAmmatillinentutkintoNimi,
+  @BeanProperty nimi: AmmatillinentutkintoNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: AmmatillinenOppilaitos,
   @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
@@ -922,8 +925,14 @@ case class OsittainenAmmatillinenTutkinto(
   @BeanProperty valmistumispaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
+  @(Schema @field)(example = "2.20")
+  @BeanProperty korotettuPainotettuKeskiarvo: Optional[BigDecimal],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty ammatillisenTutkinnonOsat: java.util.List[AmmatillisenTutkinnonOsa]
+  @BeanProperty ytot: java.util.List[YTO],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty ammatillisenTutkinnonOsat: java.util.List[AmmatillisenTutkinnonOsa],
+  @(Schema @field)(example = "Näyttötutkinto")
+  @BeanProperty suoritustapa: Optional[SuoritusTapaUI]
 )
 
 case class TuvaNimi(
@@ -1331,6 +1340,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty ibTutkinto: Optional[IBTutkinto],
   @BeanProperty preIB: Optional[PreIB],
   @BeanProperty ammatillisetPerusTutkinnot: java.util.List[Ammatillinentutkinto],
+  @BeanProperty osittaisetAmmatillisetTutkinnot: java.util.List[OsittainenAmmatillinenTutkintoUI],
   @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
   @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
   @BeanProperty telmat: java.util.List[Telma],

@@ -51,7 +51,8 @@ case class KoskiOsaSuoritus(tyyppi: KoskiSuoritusTyyppi,
                             `rajattuOppimäärä`: Option[Boolean],
                             suorituskieli: Option[KoskiSuoritusKieli],
                             vastaavuustodistuksenTiedot: Option[KoskiVastaavuustodistuksenTiedot],
-                            osasuoritukset: Option[Set[KoskiOsaSuoritus]])
+                            osasuoritukset: Option[Set[KoskiOsaSuoritus]],
+                            korotettu: Option[KoskiKoodi])
 
 case class KoskiSuoritusKieli(koodiarvo: String,
                               koodistoUri: String,
@@ -84,6 +85,8 @@ case class KoskiSuoritus(tyyppi: KoskiSuoritusTyyppi,
                          osasuoritukset: Option[Set[KoskiOsaSuoritus]],
                          arviointi: Option[Set[KoskiArviointi]],
                          keskiarvo: Option[BigDecimal],
+                         korotettuKeskiarvo: Option[BigDecimal],
+                         korotettuOpiskeluoikeusOid: Option[String],
                          suoritustapa: Option[KoskiSuoritusTapa],
                          luokka: Option[String],
                          `jääLuokalle`: Option[Boolean])
