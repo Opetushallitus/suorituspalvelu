@@ -28,7 +28,9 @@
         "fi": "aktiivinen",
         "sv": "aktiv",
         "en": "active"
-      }
+      },
+      "sektori": "YO",
+      "tutkintotaso": "YLEMPI"
     }
   ],
   "kkTutkinnot": [
