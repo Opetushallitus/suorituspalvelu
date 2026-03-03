@@ -49,6 +49,7 @@ class VirtaParsingTest {
         |                <virta:Koulutuskoodi>726302</virta:Koulutuskoodi>
         |                <virta:AlkuPvm>2018-01-01</virta:AlkuPvm>
         |                <virta:LoppuPvm>2019-01-01</virta:LoppuPvm>
+        |                <virta:Koulutuskieli>fi</virta:Koulutuskieli>
         |              </virta:Jakso>
         |            </virta:Opiskeluoikeus>
         |          </virta:Opiskeluoikeudet>
@@ -65,6 +66,7 @@ class VirtaParsingTest {
     Assertions.assertEquals(LocalDate.parse("2019-01-01"), opiskeluoikeus.loppuPvm)
     Assertions.assertEquals(Koodi("3", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), opiskeluoikeus.virtaTila) // viimeiseksi alkanut tila on voimassa
     Assertions.assertEquals("01901", opiskeluoikeus.myontaja)
+    Assertions.assertEquals(Some("fi"), opiskeluoikeus.kieli)
 
   @Test def testVirtatutkinnonKentat(): Unit =
     val suoritus = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaOpiskelijat("""

@@ -393,7 +393,9 @@ sealed trait KKOpiskeluoikeusBase(synteettinen: Boolean) extends Opiskeluoikeus,
 case class KKOpiskeluoikeus(
   tunniste: UUID,
   virtaTunniste: String,
+  // Opiskeluoikeuden tyyppi, koodiarvo, viitaa koodistoon "virtaopiskeluoikeudentyyppi"
   tyyppiKoodi: String,
+  // Opiskeluoikeuten liityvä koulutus. Koodiarvo, viittaa koodistoon "koulutus"
   koulutusKoodi: Option[String],
   alkuPvm: LocalDate,
   loppuPvm: LocalDate,
