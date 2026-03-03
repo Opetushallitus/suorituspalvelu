@@ -91,10 +91,6 @@ export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
       ...s,
       koulutustyyppi: 'lukio',
     }));
-    addSortedSuoritukset(oppijanTiedot.diaVastaavuusTodistus, (s) => ({
-      ...s,
-      koulutustyyppi: 'lukio',
-    }));
     addSortedSuoritukset(oppijanTiedot.ebTutkinto, (s) => ({
       ...s,
       koulutustyyppi: 'eb',
