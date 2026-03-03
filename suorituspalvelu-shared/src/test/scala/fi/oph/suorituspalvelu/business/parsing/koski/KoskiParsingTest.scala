@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_8, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillinenTutkintoOsittainen, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.*
@@ -561,6 +561,243 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
+
+  @Test def testAmmatillisenTutkinnonOsittaisenKentat(): Unit =
+    val tutkinto = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.40483869857",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.41945921983",
+        |          "nimi": {
+        |            "fi": "Stadin ammattiopisto",
+        |            "sv": "Stadin ammattiopisto sv",
+        |            "en": "Stadin ammattiopisto en"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-06-06"
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "ammatillinentutkintoosittainen"
+        |            },
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "351301",
+        |                "nimi": {
+        |                  "fi": "Ajoneuvoalan perustutkinto"
+        |                },
+        |                "koodistoUri": "koulutus",
+        |                "koodistoVersio": 12
+        |              },
+        |              "koulutustyyppi": {
+        |                "koodiarvo": "1",
+        |                "koodistoUri": "koulutustyyppi",
+        |                "koodistoVersio": 2
+        |              }
+        |            },
+        |            "keskiarvo": 1.0,
+        |            "vahvistus": {
+        |               "päivä": "2023-03-15"
+        |            },
+        |            "suoritustapa": {
+        |              "koodiarvo": "reformi",
+        |              "koodistoUri": "ammatillisentutkinnonsuoritustapa",
+        |              "koodistoVersio": 1
+        |            },
+        |            "suorituskieli": {
+        |              "koodiarvo": "FI",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
+        |            }
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenTutkintoOsittainen]
+
+    Assertions.assertNotNull(tutkinto.tunniste)
+    Assertions.assertEquals(Koodi("351301", "koulutus", Some(12)), tutkinto.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Ajoneuvoalan perustutkinto"), None, None), tutkinto.nimi)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
+    Assertions.assertEquals(Koodi("reformi", "ammatillisentutkinnonsuoritustapa", Some(1)), tutkinto.suoritustapa)
+    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("Stadin ammattiopisto"), Some("Stadin ammattiopisto sv"), Some("Stadin ammattiopisto en")), "1.2.246.562.10.41945921983"), tutkinto.oppilaitos)
+
+  @Test def testAmmatillisenTutkinnonOsittaisenOsasuoritukset(): Unit =
+    val tutkinto = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.40483869857",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "ammatillinentutkintoosittainen"
+        |            },
+        |            "koulutusmoduuli": {
+        |              "koulutustyyppi": {
+        |                "koodiarvo": "1"
+        |              }
+        |            },
+        |            "osasuoritukset": [
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "106727",
+        |                    "nimi": {
+        |                      "fi": "Viestintä- ja vuorovaikutusosaaminen"
+        |                    },
+        |                    "koodistoUri": "tutkinnonosat",
+        |                    "koodistoVersio": 2
+        |                  },
+        |                  "laajuus": {
+        |                    "arvo": 20.0,
+        |                    "yksikkö": {
+        |                      "koodiarvo": "6",
+        |                      "koodistoUri": "opintojenlaajuusyksikko",
+        |                      "koodistoVersio": 1
+        |                    }
+        |
+        |                  }
+        |                },
+        |                "arviointi": [
+        |                  {
+        |                    "arvosana": {
+        |                      "koodiarvo": "Hyväksytty",
+        |                      "nimi": {
+        |                        "fi": "Hyväksytty"
+        |                      },
+        |                      "koodistoUri": "arviointiasteikkoammatillinen15",
+        |                      "koodistoVersio": 1
+        |                    },
+        |                    "päivä": "2023-03-15"
+        |                  }
+        |                ]
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenTutkintoOsittainen]
+
+    val osaSuoritus = tutkinto.osat.head
+    Assertions.assertNotNull(osaSuoritus.tunniste)
+    Assertions.assertEquals(Koodi("106727", "tutkinnonosat", Some(2)), osaSuoritus.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None), osaSuoritus.nimi)
+    Assertions.assertEquals(true, osaSuoritus.yto) // koodi 106727 kuuluu yleisiin tutkinnon osiin
+    Assertions.assertEquals(Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", Some(1)), Kielistetty(Some("Hyväksytty"), None, None))), osaSuoritus.arvosana)
+    Assertions.assertEquals(Some(Laajuus(20, Koodi("6", "opintojenlaajuusyksikko", Some(1)), None, None)), osaSuoritus.laajuus)
+
+  @Test def testAmmatillisenTutkinnonOsittaisenOsaAlueet(): Unit =
+    val tutkinto = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.40483869857",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.40483869857",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "ammatillinentutkintoosittainen"
+        |            },
+        |            "koulutusmoduuli": {
+        |              "koulutustyyppi": {
+        |                "koodiarvo": "1"
+        |              }
+        |            },
+        |            "osasuoritukset": [
+        |              {
+        |                "osasuoritukset": [
+        |                  {
+        |                    "koulutusmoduuli": {
+        |                      "tunniste": {
+        |                        "koodiarvo": "VVAI22",
+        |                        "nimi": {
+        |                          "fi": "Viestintä ja vuorovaikutus äidinkielellä"
+        |                        },
+        |                        "koodistoUri": "ammatillisenoppiaineet",
+        |                        "koodistoVersio": 1
+        |                      },
+        |                      "laajuus": {
+        |                        "arvo": 4.0,
+        |                        "yksikkö": {
+        |                          "koodiarvo": "6",
+        |                          "koodistoUri": "opintojenlaajuusyksikko",
+        |                          "koodistoVersio": 1
+        |                        }
+        |                      }
+        |                    },
+        |                    "arviointi": [
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "1",
+        |                          "nimi": {
+        |                            "fi": "1"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoammatillinen15",
+        |                          "koodistoVersio": 1
+        |                        }
+        |                      },
+        |                      {
+        |                        "arvosana": {
+        |                          "koodiarvo": "3",
+        |                          "nimi": {
+        |                            "fi": "1"
+        |                          },
+        |                          "koodistoUri": "arviointiasteikkoammatillinen15",
+        |                          "koodistoVersio": 1
+        |                        }
+        |                      }
+        |                    ]
+        |                  }
+        |                ]
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).get.asInstanceOf[AmmatillinenTutkintoOsittainen]
+
+    val osaAlue = tutkinto.osat.head.osaAlueet.head
+    Assertions.assertNotNull(osaAlue.tunniste)
+    Assertions.assertEquals(Koodi("VVAI22", "ammatillisenoppiaineet", Some(1)), osaAlue.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Viestintä ja vuorovaikutus äidinkielellä"), None, None), osaAlue.nimi)
+    Assertions.assertEquals(Some(Koodi("3", "arviointiasteikkoammatillinen15", Some(1))), osaAlue.arvosana)
+    Assertions.assertEquals(Some(Laajuus(4, Koodi("6", "opintojenlaajuusyksikko", Some(1)), None, None)), osaAlue.laajuus)
 
   @Test def testTelma(): Unit = {
     val telma = getFirstSuoritusFromJson(
