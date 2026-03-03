@@ -314,8 +314,6 @@ object EntityToUIConverter {
 
   def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkintoUI] = {
     def toDiaOppiaineUI(oppiaine: DIAOppiaine) = {
-      val kirjallinen = oppiaine.koesuoritukset.find(os => os.koodi.arvo.equals("kirjallinenkoe"))
-      val suullinen = oppiaine.koesuoritukset.find(os => os.koodi.arvo.equals("suullinenkoe"))
       DIAOppiaineUI(
         tunniste = oppiaine.tunniste,
         nimi = DIAOppiaineNimiUI(
@@ -324,8 +322,8 @@ object EntityToUIConverter {
           en = oppiaine.nimi.en.toJava
         ),
         laajuus = oppiaine.laajuus.map(_.arvo).toJava,
-        kirjallinen = kirjallinen.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
-        suullinen = suullinen.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
+        kirjallinen = oppiaine.kirjallinenKoe.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
+        suullinen = oppiaine.suullinenKoe.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
         vastaavuustodistus = oppiaine.vastaavuustodistuksenTiedot.map(_.keskiarvo).map(_.toInt).toJava
       )
     }
