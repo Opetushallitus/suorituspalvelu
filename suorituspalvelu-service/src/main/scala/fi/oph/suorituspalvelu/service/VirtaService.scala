@@ -58,7 +58,9 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  final val TIMEOUT = 30.seconds
+  final val ONR_TIMEOUT = 5.minutes
+  final val HAKEMUSPALVELU_TIMEOUT = 1.minutes
+  final val VIRTA_TIMEOUT = 2.minutes //Timeout yhden henkilön tietojen haulle ja persistoinnille
 
   final val VIRTA_CONCURRENCY = 3
 
@@ -82,9 +84,9 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
   def refreshVirtaForPersonOids(ctx: SupaJobContext, personOids: Set[String]): Seq[SyncResultForHenkilo] = {
     LOG.info(s"(job id ${ctx.getJobId}) Starting VIRTA refresh for personOids: $personOids")
-    val masterHenkilot = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), TIMEOUT).values.toSet
+    val masterHenkilot = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), ONR_TIMEOUT).values.toSet
     val masterOids = masterHenkilot.map(_.oidHenkilo)
-    val duplikaatit = Await.result(onrIntegration.getAliasesForPersonOids(masterHenkilot.map(_.oidHenkilo)), TIMEOUT).allOids
+    val duplikaatit = Await.result(onrIntegration.getAliasesForPersonOids(masterHenkilot.map(_.oidHenkilo)), ONR_TIMEOUT).allOids
       .filter(oid => !masterOids.contains(oid))
 
     // konstruoidaan lista (henkiloOid, Set[hetu]) tupleja joille sitten suoritetaan Virtahaku, muiden kuin masterhenkilöiden
@@ -104,7 +106,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
             SyncResultForHenkilo(oppijaNumero, None, Some(e))
           case t: Throwable => throw t
         }
-    }), VIRTA_CONCURRENCY, TIMEOUT).toList
+    }), VIRTA_CONCURRENCY, VIRTA_TIMEOUT).toList
 
     val succeeded = tulokset.filter(_.exception.isEmpty)
     val failed = tulokset.filter(_.exception.isDefined)
@@ -128,7 +130,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
-        val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+        val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
         case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
@@ -142,7 +144,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut().map(_.oid)
     paivitettavatHaut.zipWithIndex.foreach((hakuOid, index) => {
       try
-        val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+        val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
         case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
