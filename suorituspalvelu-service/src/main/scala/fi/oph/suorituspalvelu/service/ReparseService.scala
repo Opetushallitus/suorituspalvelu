@@ -55,8 +55,8 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
         try
           if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
           val (_, _, data) = kantaOperaatiot.haeData(versio)
-          val parsed = data.map(d => VirtaParser.parseVirtaData(d))
-          val converted: Set[Opiskeluoikeus] = parsed.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p)).toSet
+          val virtaOpiskelijat = data.flatMap(VirtaParser.parseVirtaOpiskelijat)
+          val converted: Set[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(virtaOpiskelijat).toSet
           if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.VIRTA)
         catch
           case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} VIRTA-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)

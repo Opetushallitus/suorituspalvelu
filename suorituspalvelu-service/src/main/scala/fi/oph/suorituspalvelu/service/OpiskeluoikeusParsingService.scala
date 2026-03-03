@@ -114,8 +114,8 @@ class OpiskeluoikeusParsingService(
         (converted, ParserVersions.KOSKI)
 
       case Lahdejarjestelma.VIRTA =>
-        val parsed = xmlData.map(d => VirtaParser.parseVirtaData(d))
-        val converted: Set[Opiskeluoikeus] = parsed.flatMap(p => VirtaToSuoritusConverter.toOpiskeluoikeudet(p)).toSet
+        val parsed = xmlData.flatMap(VirtaParser.parseVirtaOpiskelijat)
+        val converted: Set[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(parsed).toSet
         (converted, ParserVersions.VIRTA)
 
       case Lahdejarjestelma.YTR =>

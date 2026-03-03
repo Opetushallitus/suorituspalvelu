@@ -86,16 +86,17 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     // tallennetaan versio ja parseroitua dataa
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(ApiConstants.ESIMERKKI_OPPIJANUMERO, Lahdejarjestelma.VIRTA, Seq.empty, Seq.empty, Instant.now(), "VIRTA", None).get
     val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(KKOpiskeluoikeus(
-      UUID.randomUUID(),
-      "",
-      "",
-      None,
-      LocalDate.now(),
-      LocalDate.now(),
-      Koodi("arvo", "koodisto", None),
-      VOIMASSA,
-      "",
-      Set.empty
+      tunniste = UUID.randomUUID(),
+      virtaTunniste = "",
+      tyyppiKoodi = "",
+      koulutusKoodi = None,
+      alkuPvm = LocalDate.now(),
+      loppuPvm = LocalDate.now(),
+      virtaTila = Koodi("arvo", "koodisto", None),
+      supaTila = VOIMASSA,
+      myontaja = "",
+      isTutkintoonJohtava = false,
+      suoritukset = Set.empty
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.VIRTA)
 

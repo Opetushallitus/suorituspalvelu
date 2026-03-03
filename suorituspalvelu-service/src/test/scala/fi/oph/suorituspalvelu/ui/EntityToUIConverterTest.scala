@@ -626,7 +626,12 @@ class EntityToUIConverterTest {
       virtaTila = Koodi("1", VirtaToSuoritusConverter.VIRTA_OO_TILA_KOODISTO, None), // aktiivinen
       supaTila = KKOpiskeluoikeusTila.VOIMASSA,
       myontaja = ORGANISAATION_OID,
+      isTutkintoonJohtava = true,
       suoritukset = Set.empty
+    )
+
+    val virtaEiTutkintoonJohtavaOpiskeluoikeus = virtaOpiskeluoikeus.copy(
+      tyyppiKoodi = "5",
     )
 
     val ORGANISAATION_NIMI_FI = "Lapin ammattikorkeakoulu"
@@ -685,8 +690,8 @@ class EntityToUIConverterTest {
         Optional.of(KOULUTUKSEN_TILA_FI),
         Optional.empty(),
         Optional.of(KOULUTUKSEN_TILA_EN)
-      )
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(virtaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
+      ),
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(virtaOpiskeluoikeus, virtaEiTutkintoonJohtavaOpiskeluoikeus), organisaatioProvider, koulutusProvider).opiskeluoikeudet)
   }
 
   @Test def testConvertKKTutkinto(): Unit = {
@@ -771,16 +776,17 @@ class EntityToUIConverterTest {
     }
 
     val opiskeluoikeus = KKOpiskeluoikeus(
-      null,
-      null,
-      null,
-      None,
-      null,
-      null,
-      Koodi("1", "", None),
-      KKOpiskeluoikeusTila.VOIMASSA,
-      virtaTutkinto.myontaja,
-      Set(virtaTutkinto)
+      tunniste = null,
+      virtaTunniste = null,
+      tyyppiKoodi = null,
+      koulutusKoodi = None,
+      alkuPvm = null,
+      loppuPvm = null,
+      virtaTila = Koodi("1", "", None),
+      supaTila = KKOpiskeluoikeusTila.VOIMASSA,
+      myontaja = virtaTutkinto.myontaja,
+      isTutkintoonJohtava = false,
+      suoritukset = Set(virtaTutkinto)
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.KKSuoritusUI(
