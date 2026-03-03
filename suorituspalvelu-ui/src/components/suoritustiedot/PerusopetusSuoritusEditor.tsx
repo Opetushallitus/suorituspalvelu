@@ -32,11 +32,7 @@ export const PerusopetusSuoritusEditor = ({
 
   return (
     <Box>
-      <Stack
-        direction="column"
-        spacing={2}
-        sx={{ alignItems: 'flex-start', marginBottom: 2 }}
-      >
+      <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start' }}>
         {suoritusFields && mode === 'existing' ? (
           <EditSuoritusPaper
             mode={mode}
