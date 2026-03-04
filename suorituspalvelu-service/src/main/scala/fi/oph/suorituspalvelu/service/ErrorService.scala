@@ -23,7 +23,7 @@ class SupaErrorService(emailService: EmailService) extends ErrorService {
     if !EMAIL_ENABLED_JOBS.contains(jobName) then return
 
     val htmlContent = s"<p>Tausta-ajo <strong>$jobName</strong> päättyi ${errors.size} virheeseen.</p>"
-    val exceptionMessages: Seq[String] = errors.map(_._1)
+    val exceptionMessages: Seq[String] = errors.map((message, exception) => s"$message (${exception.map(e => s"${e.getClass.getSimpleName}: ${e.getMessage})").getOrElse("Ei poikkeusta")})")
 
     try {
       emailService.sendErrorSummaryEmail(
