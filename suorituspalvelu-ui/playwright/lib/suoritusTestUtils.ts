@@ -483,6 +483,8 @@ export async function expectSuoritukset(
   ).toBeVisible();
   const suoritusPapers = page.getByTestId('suoritus-paper');
 
+  await expect(suoritusPapers).toHaveCount(suoritusSpecs.length);
+
   for (const [index, spec] of suoritusSpecs.entries()) {
     const paper = suoritusPapers.nth(index);
     await expectPerustiedot(paper, spec.perustiedot);
