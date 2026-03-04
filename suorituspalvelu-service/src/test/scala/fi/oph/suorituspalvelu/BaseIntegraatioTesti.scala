@@ -161,9 +161,9 @@ class BaseIntegraatioTesti {
       .accept(MediaType.APPLICATION_JSON_VALUE)
       .content(objectMapper.writeValueAsString(body))
 
-  def waitUntilReady(tunniste: UUID, retries: Int = 30): Unit =
+  def waitUntilReady(tunniste: UUID, retries: Int = 30, threadSleepMs: Long = 200): Unit =
     if(retries == 0) Assertions.fail("Jobi ei valmistunut")
     if(!this.kantaOperaatiot.getLastJobStatuses(None, Some(tunniste), 1).exists(_.progress==1.0))
-      Thread.sleep(200)
+      Thread.sleep(threadSleepMs)
       waitUntilReady(tunniste, retries - 1)
 }

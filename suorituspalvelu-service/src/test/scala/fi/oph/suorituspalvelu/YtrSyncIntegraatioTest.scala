@@ -288,7 +288,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
     val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
 
-    waitUntilReady(ytrSyncResponse.jobId)
+    waitUntilReady(ytrSyncResponse.jobId, 30, 5000)
 
     // Tarkistetaan että pollMassOperation-kutsuja tuli 2 (1 failure + 1 success)
     Mockito.verify(ytrClient, Mockito.times(2)).pollMassOperation(opUuid)
