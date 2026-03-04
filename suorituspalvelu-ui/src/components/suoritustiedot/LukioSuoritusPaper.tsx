@@ -136,11 +136,7 @@ const IBOppiaineetTable = ({
   );
 };
 
-function DiaVastaavuusTodistusOppiaineet({
-  suoritus,
-}: {
-  suoritus: LukioSuoritus;
-}) {
+function DiaTutkintoOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
   const { t, translateKielistetty } = useTranslations();
 
   return (
@@ -236,8 +232,12 @@ function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
       default:
         return <LukionOppiaineetList oppiaineet={suoritus.oppiaineet} />;
     }
-  } else if ('kieletKirjallisuusTaide' in suoritus) {
-    return <DiaVastaavuusTodistusOppiaineet suoritus={suoritus} />;
+  } else if (
+    'kieletKirjallisuusTaide' in suoritus ||
+    'matematiikkaLuonnontieteet' in suoritus ||
+    'yhteiskuntatieteet' in suoritus
+  ) {
+    return <DiaTutkintoOppiaineet suoritus={suoritus} />;
   }
   return null;
 }

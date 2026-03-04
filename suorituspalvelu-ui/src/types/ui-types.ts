@@ -6,7 +6,7 @@ import type {
   ILukionOppimaaraUI,
   ILukionOppiaineenOppimaara,
   IYOTutkinto,
-  IDIAVastaavuusTodistusUI,
+  IDIATutkintoUI,
   IEBTutkintoUI,
   IIBTutkinto,
   IPreIB,
@@ -32,7 +32,6 @@ import type {
   IAvainArvoContainerUI,
   IYliajo,
   IOppijanValintaDataSuccessResponse,
-  IDIATutkintoUI,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTilaUI;
@@ -96,7 +95,6 @@ export type LukioSuoritus =
       | ILukionOppimaaraUI
       | ILukionOppiaineenOppimaara
       | IDIATutkintoUI
-      | IDIAVastaavuusTodistusUI
       | IPreIB
     ) & { koulutustyyppi: 'lukio' });
 
