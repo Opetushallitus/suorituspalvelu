@@ -243,6 +243,77 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     })
   }
 
+  // Testataan että henkilön tiedot löytyvät oikein kun YTR palauttaa datan vanhalla hetulla
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshYtrForHakuVanhallaHetulla(): Unit = {
+    // Henkilö 1: ONR:ssä nykyinen hetu on "010199-900U", mutta YTR palauttaa tiedot vanhalla hetulla "150875-935M"
+    val vanhaHetu = "150875-935M"
+    val nykyinenHetu = "010199-900U"
+    val personOid1 = "1.2.246.562.24.91423259222"
+
+    val personOids = Seq(
+      personOid1,
+      "1.2.246.562.24.91423259333",
+      "1.2.246.562.24.91423259444",
+      "1.2.246.562.24.91423259555",
+      "1.2.246.562.24.91423259666"
+    )
+
+    val ataruTiedot = personOids.map(personOid => AtaruHakemuksenHenkilotiedot("hakemusOid", Some(personOid), None))
+
+    val opUuid = UUID.randomUUID().toString
+    val massOperation = YtrMassOperation(opUuid)
+    val pollResponse = YtrMassOperationQueryResponse("2025-08-15T14:20:57.073511+03:00", "oph-transfer-generation",
+      Some("2025-08-15T14:20:57.288401+03:00"), None, None)
+
+    // Henkilö 1: nykyinen hetu eri kuin YTR:n palauttama, vanha hetu kaikkiHetut-listassa
+    val onrData = Map(
+      personOid1 -> OnrMasterHenkilo(personOid1, None, None, Some(nykyinenHetu), Some(Seq(vanhaHetu)), None),
+      "1.2.246.562.24.91423259333" -> OnrMasterHenkilo("1.2.246.562.24.91423259333", None, None, Some("080578-945T"), None, None),
+      "1.2.246.562.24.91423259444" -> OnrMasterHenkilo("1.2.246.562.24.91423259444", None, None, Some("040577-967N"), None, None),
+      "1.2.246.562.24.91423259555" -> OnrMasterHenkilo("1.2.246.562.24.91423259555", None, None, Some("080562-9273"), None, None),
+      "1.2.246.562.24.91423259666" -> OnrMasterHenkilo("1.2.246.562.24.91423259666", None, None, Some("060864-933X"), None, None)
+    )
+
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    // ytr_mass.json sisältää henkilön 1 datan hetulla "150875-935M" (vanha hetu)
+    val sourceFile = "/ytr_mass.json"
+    val zippedBytes = doZip(this.getClass.getResourceAsStream(sourceFile)).readAllBytes()
+
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
+      .thenReturn(Future.successful(ataruTiedot))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(personOids.toSet))
+      .thenReturn(Future.successful(onrData))
+    Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
+      .thenReturn(Future.successful(massOperation))
+    Mockito.when(ytrClient.pollMassOperation(opUuid))
+      .thenReturn(Future.successful(pollResponse))
+    Mockito.when(ytrClient.fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString()))
+      .thenReturn(Future.successful(Some(zippedBytes)))
+
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAUT_PATH, YTRPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
+      .andExpect(status().isOk).andReturn()
+    val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(ytrSyncResponse.jobId)
+
+    // Tarkistetaan erityisesti että henkilö 1, jonka YTR-data palautui vanhalla hetulla, löytyi oikein
+    val versiot1 = kantaOperaatiot.haeHenkilonVersiot(personOid1)
+    Assertions.assertEquals(1, versiot1.size, s"Henkilölle $personOid1 pitäisi löytyä yksi versio vanhalla hetulla haettuna")
+    Assertions.assertEquals(Lahdejarjestelma.YTR, versiot1.head.lahdeJarjestelma)
+
+    val suoritukset1 = kantaOperaatiot.haeSuoritukset(personOid1)
+    Assertions.assertFalse(suoritukset1.isEmpty, s"Henkilöllä $personOid1 pitäisi olla suorituksia")
+
+    // Tarkistetaan myös muut henkilöt
+    personOids.foreach(personOid => {
+      val versiot = kantaOperaatiot.haeHenkilonVersiot(personOid)
+      Assertions.assertEquals(1, versiot.size)
+      Assertions.assertEquals(Lahdejarjestelma.YTR, versiot.head.lahdeJarjestelma)
+    })
+  }
+
   // Testataan aktiivisten hakujen oppijoiden tietojen päivitys YTR:stä
 
   @WithAnonymousUser

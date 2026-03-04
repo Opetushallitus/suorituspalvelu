@@ -116,7 +116,9 @@ class YtrIntegration {
     val henkiloMap = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), timeout)
 
     val personsWithHetu = henkiloMap.values.filter(_.hetu.isDefined)
-    val personOidByHetu = personsWithHetu.map(h => (h.hetu.get, h.oidHenkilo)).toMap
+    val personOidByHetu = personsWithHetu.flatMap { h =>
+      (h.kaikkiHetut.getOrElse(Seq.empty) :+ h.hetu.get).map(hetu => (hetu, h.oidHenkilo))
+    }.toMap
     val ytrParams = personsWithHetu.map { h => (h.oidHenkilo, YtrHetuPostData(h.hetu.get, Some(h.kaikkiHetut.getOrElse(Seq.empty)))) }.toSeq
     val batches = ytrParams.grouped(YTR_BATCH_SIZE).map(_.toSet).toSeq
 
