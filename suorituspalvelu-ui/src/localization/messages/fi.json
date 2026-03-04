@@ -194,7 +194,23 @@
     "avaa-koski-jarjestelmassa": "Avaa tiedot Koski-järjestelmässä",
     "nayta-opintosuoritukset": "Näytä opintosuoritukset",
     "piilota-opintosuoritukset": "Piilota opintosuoritukset",
-    "opintojakso": "Opintojakso"
+    "opintojakso": "Opintojakso",
+    "virta-nimi": "VIRTA-nimi",
+    "sektori-label": "Sektori",
+    "sektori": {
+      "YO": "YO",
+      "AMK": "AMK"
+    },
+    "tutkintotaso-label": "Tutkintotaso",
+    "tutkintotaso": {
+      "YLEMPI": "Ylempi korkeakoulututkinto",
+      "ALEMPI": "Alempi korkeakoulututkinto",
+      "TOHTORI": "Tohtorintutkinto"
+    },
+    "tutkintoon-johtavat-kk-suoritukset": "Korkeakoulutus - tutkintoon johtava",
+    "tutkintoon-johtamattomat-kk-suoritukset": "Korkeakoulutus - tutkintoon johtamaton",
+    "nayta-tutkintoon-johtamattomat-kk-suoritukset": "Näytä tutkintoon johtamattomat korkeakoulusuoritukset",
+    "piilota-tutkintoon-johtamattomat-kk-suoritukset": "Piilota tutkintoon johtamattomat korkeakoulusuoritukset"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",

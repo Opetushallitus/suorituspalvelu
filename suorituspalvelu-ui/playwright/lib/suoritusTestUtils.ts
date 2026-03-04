@@ -6,7 +6,7 @@ type Perustiedot = {
   title: string;
   oppilaitos: string;
   tila: string;
-  valmistusmipaiva: string;
+  valmistumispaiva: string;
   suorituskieli?: string;
 };
 
@@ -15,14 +15,23 @@ type SuoritusSpec = {
   additionalChecks?: (paper: Locator) => Promise<void>;
 };
 
-export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
+export const TUTKINTOON_JOHTAVA_KORKEAKOULU_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Kasvatust. maist., kasvatustiede (11.12.2025 ${NDASH} )`,
     oppilaitos: 'Tampereen yliopisto',
     tila: 'Suoritus kesken',
-    valmistusmipaiva: '-',
+    suorituskieli: 'suomi',
+    valmistumispaiva: '-',
   },
   additionalChecks: async (paper) => {
+    await expect(paper.getByLabel('Sektori')).toHaveText('YO');
+    await expect(paper.getByLabel('VIRTA-nimi')).toHaveText(
+      'Kasvatustieteen maisteri',
+    );
+    await expect(paper.getByLabel('Tutkintotaso')).toHaveText(
+      'Ylempi korkeakoulututkinto',
+    );
+
     // Click the accordion to show opintosuoritukset
     await paper
       .getByRole('button', { name: 'Näytä opintosuoritukset' })
@@ -38,7 +47,7 @@ export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
 
     // Expand the nested opintosuoritukset for "Opetuksen suunnittelu"
     await paper
-      .getByRole('button', { name: 'Piilota Opetuksen suunnittelu' })
+      .getByRole('button', { name: 'Näytä Opetuksen suunnittelu' })
       .click();
 
     // Check nested opintosuoritukset
@@ -51,12 +60,37 @@ export const KORKEAKOULU_SUORITUS: SuoritusSpec = {
   },
 };
 
+export const TUTKINTOON_JOHTAMATON_KORKEAKOULU_SUORITUS: SuoritusSpec = {
+  perustiedot: {
+    title: `Avoimen opinnot (11.12.2024 ${NDASH} )`,
+    oppilaitos: 'Helsingin yliopisto',
+    tila: 'Suoritus kesken',
+    suorituskieli: 'suomi',
+    valmistumispaiva: '-',
+  },
+  additionalChecks: async (paper) => {
+    await expect(paper.getByLabel('Sektori')).toHaveText('YO');
+    await expect(paper.getByLabel('VIRTA-nimi')).toHaveText('-');
+
+    // Click the accordion to show opintosuoritukset
+    await paper
+      .getByRole('button', { name: 'Näytä opintosuoritukset' })
+      .click();
+
+    const opintosuorituksetTable = paper.getByRole('table');
+    await expectTableValues(opintosuorituksetTable, [
+      ['Opintojakso', 'Laajuus (op)', 'Arvosana'],
+      ['Kasvatustieteen perusteet', '5', '4'],
+    ]);
+  },
+};
+
 export const YOTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Ylioppilastutkinto ( ${NDASH} 1.6.2019)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2019',
+    valmistumispaiva: '1.6.2019',
   },
   additionalChecks: async (paper) => {
     const yoTable = paper.getByRole('table');
@@ -77,7 +111,7 @@ export const LUKION_OPPIMAARA_SUORITUS: SuoritusSpec = {
     title: `Lukion oppimäärä (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
   },
   additionalChecks: async (paper) => {
     const oppiaineListItems = paper
@@ -96,7 +130,7 @@ export const LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
     title: `Lukion oppiaineen oppimäärä (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
   },
   additionalChecks: async (paper) => {
     const oppiaineListItems = paper
@@ -115,7 +149,7 @@ export const DIA_TUTKINTO_SUORITUS: SuoritusSpec = {
     title: `DIA-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
 };
@@ -125,7 +159,7 @@ export const DIA_VASTAAVUUSTODISTUS_SUORITUS: SuoritusSpec = {
     title: `DIA-vastaavuustodistus (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -147,7 +181,7 @@ export const EB_SUORITUS: SuoritusSpec = {
     title: `EB-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -175,7 +209,7 @@ export const IB_SUORITUS: SuoritusSpec = {
     title: `IB-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -201,7 +235,7 @@ export const PRE_IB_SUORITUS: SuoritusSpec = {
     title: `Pre-IB (31.12.2023 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
 };
@@ -210,7 +244,7 @@ export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
     title: `Puutarha-alan perustutkinto (31.12.2024 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -294,7 +328,7 @@ export const HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
     title: `Hevostalouden perustutkinto (31.12.2024 ${NDASH} 31.12.2024)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '31.12.2024',
+    valmistumispaiva: '31.12.2024',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -308,7 +342,7 @@ export const MAANMITTAUSALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
     title: `Maanmittausalan ammattitutkinto (1.6.2017 ${NDASH} 1.6.2017)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2017',
+    valmistumispaiva: '1.6.2017',
     suorituskieli: 'suomi',
   },
 };
@@ -319,7 +353,7 @@ export const TALOUS_JA_HENKILOSTOALAN_ERIKOISAMMATTITUTKINTO_SUORITUS: SuoritusS
       title: `Talous- ja henkilöstöalan erikoisammattitutkinto (1.6.2017 ${NDASH} 1.6.2017)`,
       oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
       tila: 'Suoritus valmis',
-      valmistusmipaiva: '1.6.2017',
+      valmistumispaiva: '1.6.2017',
       suorituskieli: 'suomi',
     },
   };
@@ -329,7 +363,7 @@ export const TELMA_SUORITUS: SuoritusSpec = {
     title: `Työhön ja itsenäiseen elämään valmentava koulutus (1.6.2017 ${NDASH} 1.6.2017)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2017',
+    valmistumispaiva: '1.6.2017',
     suorituskieli: 'suomi',
   },
 };
@@ -339,7 +373,7 @@ export const TUVA_SUORITUS: SuoritusSpec = {
     title: `Tutkintokoulutukseen valmentava koulutus (31.12.2023 ${NDASH} 1.6.2017)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2017',
+    valmistumispaiva: '1.6.2017',
   },
   additionalChecks: async (paper) => {
     await expect(paper.getByLabel('Suoritettu')).toHaveText('38 vk');
@@ -351,7 +385,7 @@ export const VAPAA_SIVISTYSTYO_SUORITUS: SuoritusSpec = {
     title: `Vapaan sivistystyön koulutus (31.12.2023 ${NDASH} )`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus keskeytynyt',
-    valmistusmipaiva: '-',
+    valmistumispaiva: '-',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -364,7 +398,7 @@ export const PERUSOPETUKSEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
     title: `Perusopetuksen oppimäärä (31.12.2015 ${NDASH} 1.6.2016)`,
     oppilaitos: 'Keltinmäen koulu',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2016',
+    valmistumispaiva: '1.6.2016',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -396,7 +430,7 @@ export const PERUSOPETUKSEN_OPPIMAARA_78LUOKKA_SUORITUS: SuoritusSpec = {
     title: `Perusopetuksen oppimäärä (31.12.2015 ${NDASH} 1.6.2016)`,
     oppilaitos: 'Keltinmäen koulu',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2016',
+    valmistumispaiva: '1.6.2016',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -410,7 +444,7 @@ export const PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
     title: `Perusopetuksen oppiaineen oppimäärä (31.12.2015 ${NDASH} 1.6.2016)`,
     oppilaitos: 'Keltinmäen koulu',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '1.6.2016',
+    valmistumispaiva: '1.6.2016',
     suorituskieli: 'suomi',
   },
   additionalChecks: async (paper) => {
@@ -431,7 +465,7 @@ async function expectPerustiedot(paper: Locator, perustiedot: Perustiedot) {
   );
   await expect(paper.getByLabel('Tila')).toHaveText(perustiedot.tila);
   await expect(paper.getByLabel('Valmistumispäivä')).toHaveText(
-    perustiedot.valmistusmipaiva,
+    perustiedot.valmistumispaiva,
   );
   if (perustiedot.suorituskieli) {
     await expect(paper.getByLabel('Suorituskieli')).toHaveText(
@@ -448,6 +482,8 @@ export async function expectSuoritukset(
     page.getByRole('heading', { name: 'Suoritukset' }),
   ).toBeVisible();
   const suoritusPapers = page.getByTestId('suoritus-paper');
+
+  await expect(suoritusPapers).toHaveCount(suoritusSpecs.length);
 
   for (const [index, spec] of suoritusSpecs.entries()) {
     const paper = suoritusPapers.nth(index);

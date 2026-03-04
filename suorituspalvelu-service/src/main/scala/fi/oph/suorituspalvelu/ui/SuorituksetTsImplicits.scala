@@ -14,7 +14,7 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val optionalEBTutkinto: TSType[Optional[EBTutkintoUI]] = TSType.sameAs[Optional[EBTutkintoUI], Option[EBTutkintoUI]]
   implicit val optionalIBTutkinto: TSType[Optional[IBTutkinto]] = TSType.sameAs[Optional[IBTutkinto], Option[IBTutkinto]]
   implicit val optionalPreIB: TSType[Optional[PreIB]] = TSType.sameAs[Optional[PreIB], Option[PreIB]]
-  implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapa]] = TSType.sameAs[Optional[SuoritusTapa], Option[SuoritusTapa]]
+  implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapaUI]] = TSType.sameAs[Optional[SuoritusTapaUI], Option[SuoritusTapaUI]]
   implicit val optionalYTOArvosana: TSType[Optional[YTOArvosana]] = TSType.sameAs[Optional[YTOArvosana], Option[YTOArvosana]]
   implicit val optionalYksilollistaminen: TSType[Optional[Yksilollistaminen]] = TSType.sameAs[Optional[Yksilollistaminen], Option[Yksilollistaminen]]
   implicit val ammatillisenTutkinnonOsaTSType: TSType[AmmatillisenTutkinnonOsa] = TSType.fromCaseClass
@@ -33,6 +33,8 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val ytoTSType: TSType[YTO] = TSType.fromCaseClass
   implicit val ammatillinenTutkintoTSType: TSType[Ammatillinentutkinto] = TSType.fromCaseClass
   implicit val optionalKkSuoritusNimiTsType: TSType[Optional[KKSuoritusNimiUI]] = TSType.sameAs[Optional[KKSuoritusNimiUI], Option[KKSuoritusNimiUI]]
+  implicit val suorituskieliTSType: TSType[SuorituskieliUI] = TSType.fromCaseClass
+  implicit val optionalSuorituskieliTSType: TSType[Optional[SuorituskieliUI]] = TSType.sameAs[Optional[SuorituskieliUI], Option[SuorituskieliUI]]
   // Rekursiivinen tyyppi
   implicit val kkOpintojaksoTsType: TSType[KKOpintojaksoUI] = {
     implicit val recursiveRef: TSType[KKOpintojaksoUI] = TSType.external[KKOpintojaksoUI]("IKKOpintojaksoUI")

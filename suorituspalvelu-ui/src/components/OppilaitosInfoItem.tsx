@@ -7,14 +7,17 @@ import type { SuorituksenPerustiedot } from '@/types/ui-types';
 
 export function OppilaitosInfoItem({
   oppilaitos,
+  sx,
 }: {
   oppilaitos: SuorituksenPerustiedot['oppilaitos'];
+  sx?: React.CSSProperties;
 }) {
   const { t, translateKielistetty } = useTranslations();
   const config = useConfig();
 
   return (
     <LabeledInfoItem
+      sx={sx}
       label={t('oppija.oppilaitos')}
       value={
         <ExternalLink href={getOppilaitosLinkUrl(config, oppilaitos.oid)}>

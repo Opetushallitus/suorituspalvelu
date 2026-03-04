@@ -101,9 +101,27 @@ export const Opiskeluoikeudet = ({
                 >
                   {translateKielistetty(oo.nimi)}
                 </OphTypography>
-                <Stack direction="row">
-                  <OppilaitosInfoItem oppilaitos={oo.oppilaitos} />
+                <Stack direction="row" gap={1}>
+                  <OppilaitosInfoItem
+                    oppilaitos={oo.oppilaitos}
+                    sx={{ flex: '1 1 300px' }}
+                  />
                   <LabeledInfoItem
+                    sx={{ flex: '0 1 150px' }}
+                    label={t('oppija.sektori-label')}
+                    value={oo.sektori ? t(`oppija.sektori.${oo.sektori}`) : '-'}
+                  />
+                  <LabeledInfoItem
+                    sx={{ flex: '0 1 260px' }}
+                    label={t('oppija.tutkintotaso-label')}
+                    value={
+                      oo.tutkintotaso
+                        ? t(`oppija.tutkintotaso.${oo.tutkintotaso}`)
+                        : '-'
+                    }
+                  />
+                  <LabeledInfoItem
+                    sx={{ flex: '0 0 400px' }}
                     label={t('oppija.voimassaolo')}
                     value={<VoimassaoloIndicator opiskeluoikeus={oo} />}
                   />

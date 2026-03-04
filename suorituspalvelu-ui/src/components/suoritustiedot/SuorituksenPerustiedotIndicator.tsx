@@ -10,6 +10,7 @@ import { CheckCircle, DoNotDisturb, HourglassTop } from '@mui/icons-material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { OppilaitosInfoItem } from '@/components/OppilaitosInfoItem';
 import { formatFinnishDate } from '@/lib/common';
+import { isKielistetty } from '@/lib/translation-utils';
 
 const SuorituksenTilaIcon = ({ tila }: { tila: SuorituksenTila }) => {
   switch (tila) {
@@ -54,7 +55,13 @@ export const SuorituksenPerustiedotIndicator = ({
 }: {
   perustiedot: SuorituksenPerustiedot;
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
+
+  const suorituskieli = perustiedot.suorituskieli
+    ? isKielistetty(perustiedot.suorituskieli)
+      ? translateKielistetty(perustiedot.suorituskieli)
+      : t(`kieli.${perustiedot.suorituskieli}`)
+    : '-';
 
   return (
     <Stack direction="row">
@@ -71,12 +78,10 @@ export const SuorituksenPerustiedotIndicator = ({
           />
         }
       />
-      {perustiedot.suorituskieli && (
-        <LabeledInfoItem
-          label={t('oppija.suorituskieli')}
-          value={t(`kieli.${perustiedot.suorituskieli}`)}
-        />
-      )}
+      <LabeledInfoItem
+        label={t('oppija.suorituskieli')}
+        value={suorituskieli}
+      />
     </Stack>
   );
 };
