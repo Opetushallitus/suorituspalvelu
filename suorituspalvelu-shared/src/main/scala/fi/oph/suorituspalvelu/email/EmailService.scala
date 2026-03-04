@@ -68,16 +68,17 @@ class EmailService(@Value("${email.enabled:false}") sendingEnabled: Boolean,
     sendEmail(subject, html)
   }
 
-  def sendErrorSummaryEmail(subject: String, htmlContent: String, exceptionMessages: Seq[String]): Unit = {
-    val errorMessages = exceptionMessages
-      .map(exceptionMessage => s"<li>${escapeHtml(exceptionMessage)}</li>")
+  def sendErrorSummaryEmail(jobName: String, errorMessages: Seq[String]): Unit = {
+    val errorMessagesHtml = errorMessages
+      .map(msg => s"<li>${escapeHtml(msg)}</li>")
       .mkString("\n    ")
 
     val html = errorSummaryEmailTemplate
-      .replace("{{CONTENT}}", htmlContent)
-      .replace("{{ERROR_MESSAGES}}", errorMessages)
+      .replace("{{JOB_NAME}}", escapeHtml(jobName))
+      .replace("{{ERROR_COUNT}}", errorMessages.size.toString)
+      .replace("{{ERROR_MESSAGES}}", errorMessagesHtml)
 
-    sendEmail(subject, html)
+    sendEmail(s"Suorituspalvelu: $jobName - ${errorMessages.size} virhettä", html)
   }
 
   private def sendEmail(subject: String, html: String): Unit = {
