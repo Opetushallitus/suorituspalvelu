@@ -199,13 +199,15 @@ object VirtaToSuoritusConverter {
         moveOpintojaksotUnderTutkintoWhenNeeded(suoritukset)
       } else if (opiskeluoikeusJaksoKoulutuskoodit.nonEmpty && !isPaattynytOpiskeluoikeus(opiskeluoikeus)) {
         addKeskenerainenTutkinnonSuoritus(suoritukset, opiskeluoikeus)
-      // Jos tutkintoon johtavalla opiskeluoikeudella ei ole suorituksia, lisätään synteettinen suoritus.
-      // Näin saadaan suorituksiin näkyviin keskeytynyt tai valmis tutkinto, vaikka opiskeluoikeudella ei ole lainkaan suorituksia.
-      } else if (suoritukset.isEmpty) {
+      // Jos vain yksi tutkinto juuritasolla, ei luoda synteettistä suoritusta
+      } else if (suoritukset.length == 1 && suoritukset.head.isInstanceOf[KKTutkinto]) {
+        suoritukset
+        // Muussa tapauksessa luodaan synteettinen tutkinnon päätason suoritus
+        // - ei suorituksia (esim. keskeytynyt suoritus)
+        // - juuritasolla vain opintosuorituksia, halutaan kuitenkin esittää tutkintona
+      } else {
         val viimeisinTutkintoKoodi = latestJakso(opiskeluoikeus).flatMap(_.Koulutuskoodi)
         Seq(createSyntheticSuoritusWrapper(suoritukset, opiskeluoikeus, viimeisinTutkintoKoodi))
-      } else {
-        suoritukset
       }
     } else if (sisallytaOpintojaksotOsasuorituksina(opiskeluoikeus.Tyyppi)) {
       val (rootSuoritukset, osaSuoritukset) = suoritukset.partition(_.isInstanceOf[KKTutkinto])
