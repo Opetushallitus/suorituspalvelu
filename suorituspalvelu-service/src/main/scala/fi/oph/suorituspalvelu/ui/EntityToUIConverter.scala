@@ -47,9 +47,9 @@ object EntityToUIConverter {
   }
 
   private def getTutkintotaso(oo: KKOpiskeluoikeus): Optional[KKTutkintotasoUI] = oo.tyyppiKoodi match {
-    case "1" | "2"  => Optional.of(KKTutkintotasoUI.ALEMPI)
-    case "3" | "4" => Optional.of(KKTutkintotasoUI.YLEMPI)
-    case "7" => Optional.of(KKTutkintotasoUI.TOHTORI)
+    case "1" | "2"  => Optional.of(KKTutkintotasoUI.ALEMPI) // Ammattikorkeakoulututkinto tai Alempi korkeakoulututkinto
+    case "3" | "4" => Optional.of(KKTutkintotasoUI.YLEMPI) // Ylempi ammattikorkeakoulututkinto tai Ylempi korkeakoulututkinto
+    case "7" => Optional.of(KKTutkintotasoUI.TOHTORI) // Tohtorintutkinto
     case _ => Optional.empty
   }
 
@@ -57,8 +57,8 @@ object EntityToUIConverter {
     organisaatioProvider.haeOrganisaationTiedot(myontaja)
       .flatMap(org => {
         org.oppilaitosTyyppi.map(_.split("#").head) match {
-          case Some("oppilaitostyyppi_41") => Some(KKSektoriUI.AMK)
-          case Some("oppilaitostyyppi_42") | Some("oppilaitostyyppi_66") => Some(KKSektoriUI.YO)
+          case Some("oppilaitostyyppi_41") => Some(KKSektoriUI.AMK) // Ammattikorkeakoulut
+          case Some("oppilaitostyyppi_42") | Some("oppilaitostyyppi_66") => Some(KKSektoriUI.YO) //Yliopistot tai kesäyliopistot
           case _ => None
         }
       }).toJava
@@ -104,15 +104,6 @@ object EntityToUIConverter {
         case _ => None
       }.toList.asJava
   }
-
-  private def convertKKSuoritusTila(opiskeluoikeus: KKOpiskeluoikeus): SuoritusTilaUI =
-    opiskeluoikeus.virtaTila.arvo match
-      case "1" => SuoritusTilaUI.KESKEN // aktiivinen
-      case "2" => SuoritusTilaUI.KESKEN // optio
-      case "3" => SuoritusTilaUI.VALMIS // valmistunut
-      case "4" => SuoritusTilaUI.KESKEYTYNYT // passivoitu
-      case "5" => SuoritusTilaUI.KESKEYTYNYT // luopunut
-      case "6" => SuoritusTilaUI.KESKEYTYNYT // päättynyt
 
   private def getKKOpiskeluoikeusTyyppiNimi(opiskeluoikeus: Option[KKOpiskeluoikeus], koodistoProvider: KoodistoProvider): Option[KKSuoritusNimiUI] =
     getKoodiNimi[KKSuoritusNimiUI](opiskeluoikeus.map(_.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO, koodistoProvider).toScala
