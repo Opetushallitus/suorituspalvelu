@@ -5,7 +5,6 @@ import VASTAANOTOT from './fixtures/vastaanotot.json' with { type: 'json' };
 import { NDASH } from '@/lib/common';
 import {
   DIA_TUTKINTO_SUORITUS,
-  DIA_VASTAAVUUSTODISTUS_SUORITUS,
   EB_SUORITUS,
   expectSuoritukset,
   HEVOSTALOUDEN_PERUSTUTKINTO_SUORITUS,
@@ -102,7 +101,6 @@ test.describe('Suoritustiedot', () => {
       LUKION_OPPIMAARA_SUORITUS,
       LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS,
       DIA_TUTKINTO_SUORITUS,
-      DIA_VASTAAVUUSTODISTUS_SUORITUS,
       EB_SUORITUS,
       IB_SUORITUS,
       PRE_IB_SUORITUS,

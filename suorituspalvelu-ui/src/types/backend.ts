@@ -95,51 +95,38 @@ export interface IAvainArvoYliajoUI {
   selite: string;
 }
 
-export interface IDIAOppiaine {
-  tunniste: string;
-  nimi: IDIAOppiaineNimi;
-  laajuus: number;
-  keskiarvo: number;
-}
-
-export interface IDIAOppiaineNimi {
+export interface IDIAOppiaineNimiUI {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IDIATutkinto {
+export interface IDIAOppiaineUI {
   tunniste: string;
-  nimi: IDIATutkintoNimi;
+  nimi: IDIAOppiaineNimiUI;
+  laajuus?: number;
+  kirjallinen?: number;
+  suullinen?: number;
+  vastaavuustodistus?: number;
+}
+
+export interface IDIATutkintoNimiUI {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IDIATutkintoUI {
+  tunniste: string;
+  nimi: IDIATutkintoNimiUI;
   oppilaitos: IYOOppilaitos;
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
   suorituskieli: string;
-}
-
-export interface IDIATutkintoNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface IDIAVastaavuusTodistus {
-  tunniste: string;
-  nimi: IDIAVastaavuusTodistusNimi;
-  oppilaitos: IYOOppilaitos;
-  tila: SuoritusTilaUI;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
-  kieletKirjallisuusTaide: IDIAOppiaine[];
-  matematiikkaLuonnontieteet: IDIAOppiaine[];
-}
-
-export interface IDIAVastaavuusTodistusNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
+  kieletKirjallisuusTaide: IDIAOppiaineUI[];
+  matematiikkaLuonnontieteet: IDIAOppiaineUI[];
+  yhteiskuntatieteet: IDIAOppiaineUI[];
 }
 
 export interface IEBOppiaineNimiUI {
@@ -460,8 +447,7 @@ export interface IOppijanTiedotSuccessResponse {
   yoTutkinnot: IYOTutkinto[];
   lukionOppimaara?: ILukionOppimaaraUI;
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
-  diaTutkinto?: IDIATutkinto;
-  diaVastaavuusTodistus?: IDIAVastaavuusTodistus;
+  diaTutkinto?: IDIATutkintoUI;
   ebTutkinto?: IEBTutkintoUI;
   ibTutkinto?: IIBTutkinto;
   preIB?: IPreIB;

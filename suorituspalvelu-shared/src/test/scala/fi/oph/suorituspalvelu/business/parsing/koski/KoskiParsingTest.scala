@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_8, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, DIALaajuus, DIATutkinto, EBArvosana, EBLaajuus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.*
@@ -2395,5 +2395,53 @@ class KoskiParsingTest {
         case Left(exception) => Assertions.fail(exception)
       }
     })
+  }
+
+  @Test def testDiaTutkinto(): Unit = {
+    val fileName = "/1_2_246_562_24_12308879060.json"
+    val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
+    val oikeudet: Seq[GeneerinenOpiskeluoikeus] = splitData.flatMap(henkilo => {
+      henkilo.opiskeluoikeudet.flatMap {
+        case Right(opiskeluoikeus) =>
+          val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
+          KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER).collect {
+            case o: GeneerinenOpiskeluoikeus => o
+          }
+        case Left(exception) => Assertions.fail(exception)
+      }
+    })
+
+    val tutkinto = oikeudet.head.suoritukset.collect {case dia: DIATutkinto => dia}.head
+
+    Assertions.assertNotNull(tutkinto.tunniste)
+    Assertions.assertEquals(Koodi("301103", "koulutus", Some(12)), tutkinto.koodi)
+    Assertions.assertEquals("Deutsche Internationale Abitur; Reifeprüfung", tutkinto.nimi.fi.get)
+    Assertions.assertEquals(Some(LocalDate.parse("2012-09-01")), tutkinto.aloitusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2016-06-04")), tutkinto.vahvistusPaivamaara)
+    Assertions.assertEquals(Koodi("EN", "kieli", Some(1)), tutkinto.suorituskieli)
+    Assertions.assertTrue(tutkinto.osasuoritukset.nonEmpty, "osasuoritukset should not be empty")
+
+    //Kirjallinen koe pitäisi löytyä äidinkielelle
+    val aidinkieli = tutkinto.osasuoritukset.filter(_.koodi.arvo == "AI").head
+    Assertions.assertTrue(aidinkieli.kirjallinenKoe.isDefined)
+    val kirjallinenKoe = aidinkieli.kirjallinenKoe.get
+    Assertions.assertEquals(Koodi("kirjallinenkoe", "diapaattokoe", Some(1)), kirjallinenKoe.koodi)
+    Assertions.assertEquals("5", kirjallinenKoe.arvosana.arvosana.arvo)
+    Assertions.assertEquals(true, kirjallinenKoe.arvosana.hyvaksytty)
+
+    //Vastaavuustodistuksen tiedot pitäisi löytyä äidinkielelle
+    Assertions.assertEquals(BigDecimal("4.0"), aidinkieli.vastaavuustodistuksenTiedot.get.keskiarvo)
+
+    //Suullinen koe pitäisi löytyä matematiikalle
+    val matematiikka = tutkinto.osasuoritukset.filter(_.koodi.arvo == "MA").head
+    Assertions.assertTrue(matematiikka.suullinenKoe.isDefined)
+    val suullinenKoe = matematiikka.suullinenKoe.get
+    Assertions.assertEquals(Koodi("suullinenkoe", "diapaattokoe", Some(1)), suullinenKoe.koodi)
+    Assertions.assertEquals("6", suullinenKoe.arvosana.arvosana.arvo)
+    Assertions.assertEquals(true, suullinenKoe.arvosana.hyvaksytty)
+
+    //Mukana olevaa A-kieli ei pidä löytyä osasuorituksista, koska sillä ei ole kirjallista koetta, suullista koetta tai vastaavuustodistuksen tietoja.
+    val aKieli = tutkinto.osasuoritukset.filter(_.koodi.arvo == "A")
+    Assertions.assertTrue(aKieli.isEmpty, "A-kieli should not be present")
   }
 }

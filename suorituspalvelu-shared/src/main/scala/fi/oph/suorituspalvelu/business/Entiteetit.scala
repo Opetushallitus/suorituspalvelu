@@ -124,10 +124,11 @@ case class DIAVastaavuustodistuksenTiedot(keskiarvo: BigDecimal,
 case class DIAOppiaine(tunniste: UUID,
                        nimi: Kielistetty,
                        koodi: Koodi,
-                       laajuus: Option[EBLaajuus],
-                       osaAlue: Option[Koodi],
+                       laajuus: Option[DIALaajuus],
+                       osaAlue: Option[Koodi], // kieletKirjallisuusTaide 1, matematiikkaLuonnontieteet 2, yhteiskuntatieteet 3
                        vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot],
-                       koesuoritukset: Set[DIAOppiaineenKoesuoritus]) //Poimitaan mukaan vain sellaiset osasuoritukset, jotka ovat koesuorituksia: kirjallinenkoe, suullinenkoe
+                       kirjallinenKoe: Option[DIAOppiaineenKoesuoritus],
+                       suullinenKoe: Option[DIAOppiaineenKoesuoritus])
 
 case class DIATutkinto(tunniste: UUID,
                        nimi: Kielistetty,

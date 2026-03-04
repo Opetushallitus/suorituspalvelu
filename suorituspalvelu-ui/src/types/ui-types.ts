@@ -6,8 +6,7 @@ import type {
   ILukionOppimaaraUI,
   ILukionOppiaineenOppimaara,
   IYOTutkinto,
-  IDIATutkinto,
-  IDIAVastaavuusTodistus,
+  IDIATutkintoUI,
   IEBTutkintoUI,
   IIBTutkinto,
   IPreIB,
@@ -95,8 +94,7 @@ export type LukioSuoritus =
       | IYOTutkinto
       | ILukionOppimaaraUI
       | ILukionOppiaineenOppimaara
-      | IDIATutkinto
-      | IDIAVastaavuusTodistus
+      | IDIATutkintoUI
       | IPreIB
     ) & { koulutustyyppi: 'lukio' });
 
