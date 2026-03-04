@@ -204,9 +204,9 @@ case class OpiskeluoikeusUI(
   @BeanProperty supaTila: OpiskeluoikeusTilaUI,
   @(Schema @field)(example = "optio", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty virtaTila: OpiskeluoikeusVirtaTilaUI,
-  @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty tutkintotaso: Optional[KKTutkintotasoUI],
-  @(Schema @field)(example = "amk", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "amk", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sektori: Optional[KKSektoriUI]
 )
 
@@ -275,9 +275,9 @@ case class KKSuoritusUI(
   @BeanProperty opintojaksot: java.util.List[KKOpintojaksoUI],
   @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty isTutkintoonJohtava: Boolean,
-  @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty tutkintotaso: Optional[KKTutkintotasoUI],
-  @(Schema @field)(example = "amk", requiredMode = RequiredMode.REQUIRED)
+  @(Schema @field)(example = "amk", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sektori: Optional[KKSektoriUI],
 )
 

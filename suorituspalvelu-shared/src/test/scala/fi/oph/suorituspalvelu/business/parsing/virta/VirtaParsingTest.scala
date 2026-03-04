@@ -1161,7 +1161,7 @@ class VirtaParsingTest {
     Assertions.assertEquals(Some("Kemia 1"), suoritus10089.nimi.flatMap(_.fi))
   }
 
-  @Test def testAddSyntheticSuoritusRootforOpiskeluoikeusWithOnlyOpintosuoritusRoots(): Unit = {
+  @Test def testAddSyntheticSuoritusRootForOpiskeluoikeusWithOnlyOpintosuoritusRoots(): Unit = {
     // Varmistetaan, että tutkintoon johtavalle opiskeluoikeudelle, jolla on vain opintosuorituksia juuritasolla ilman tutkintoa,
     // luodaan synteettinen suoritus, joka sisältää opintosuoritukset osasuorituksina.
     // Virta-datassa on opiskeluoikeus, jolla on yksi opintosuoritus mutta ei tutkintoa.
