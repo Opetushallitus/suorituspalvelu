@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
@@ -65,9 +66,9 @@ object EntityToUIConverter {
   }
 
   private def getTutkintotaso(oo: KKOpiskeluoikeus): Optional[KKTutkintotasoUI] = oo.tyyppiKoodi match {
-    case "1" | "2"  => Optional.of(KKTutkintotasoUI.ALEMPI) // Ammattikorkeakoulututkinto tai Alempi korkeakoulututkinto
-    case "3" | "4" => Optional.of(KKTutkintotasoUI.YLEMPI) // Ylempi ammattikorkeakoulututkinto tai Ylempi korkeakoulututkinto
-    case "7" => Optional.of(KKTutkintotasoUI.TOHTORI) // Tohtorintutkinto
+    case VirtaOpiskeluoikeusTyyppi.AMMATTIKORKEAKOULUTUTKINTO | VirtaOpiskeluoikeusTyyppi.ALEMPI_KORKEAKOULUTUTKINTO  => Optional.of(KKTutkintotasoUI.ALEMPI) // Ammattikorkeakoulututkinto tai Alempi korkeakoulututkinto
+    case VirtaOpiskeluoikeusTyyppi.YLEMPI_AMMATTIKORKEAKOULUTUTKINTO | VirtaOpiskeluoikeusTyyppi.YLEMPI_KORKEAKOULUTUTKINTO => Optional.of(KKTutkintotasoUI.YLEMPI) // Ylempi ammattikorkeakoulututkinto tai Ylempi korkeakoulututkinto
+    case VirtaOpiskeluoikeusTyyppi.TOHTORINTUTKINTO => Optional.of(KKTutkintotasoUI.TOHTORI) // Tohtorintutkinto
     case _ => Optional.empty
   }
 
@@ -75,8 +76,8 @@ object EntityToUIConverter {
     organisaatioProvider.haeOrganisaationTiedot(myontaja)
       .flatMap(org => {
         org.oppilaitosTyyppi.map(_.split("#").head) match {
-          case Some("oppilaitostyyppi_41") => Some(KKSektoriUI.AMK) // Ammattikorkeakoulut
-          case Some("oppilaitostyyppi_42") | Some("oppilaitostyyppi_66") => Some(KKSektoriUI.YO) //Yliopistot tai kesäyliopistot
+          case Some(Oppilaitostyyppi.AMMATTIKORKEAKOULU) => Some(KKSektoriUI.AMK) // Ammattikorkeakoulut
+          case Some(Oppilaitostyyppi.YLIOPISTO) | Some(Oppilaitostyyppi.KESAYLIOPISTO) => Some(KKSektoriUI.YO) //Yliopistot tai kesäyliopistot
           case _ => None
         }
       }).toJava

@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
+import fi.oph.suorituspalvelu.business.KKConstants.VirtaOpiskeluoikeusTyyppi
 import fi.oph.suorituspalvelu.business.{
   KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus,
   KKSynteettinenSuoritus, KKTutkinto, Suoritus, SuoritusTila
@@ -90,8 +91,8 @@ object VirtaToSuoritusConverter {
     suorituksetByAvain: Map[String, VirtaOpintosuoritus],
     rootSuoritus: Option[VirtaOpintosuoritus] = None
   ): Boolean = {
-    isSuorituksenOpiskeluoikeus(suoritus, opiskeluoikeus) &&
-    suorituksenOpiskeluoikeusIsMissingOrMatches(rootSuoritus, opiskeluoikeus) ||
+    (isSuorituksenOpiskeluoikeus(suoritus, opiskeluoikeus) &&
+      suorituksenOpiskeluoikeusIsMissingOrMatches(rootSuoritus, opiskeluoikeus)) ||
     suoritus.Sisaltyvyys.exists(sis => {
       suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain) match {
         case Some(s) =>
@@ -101,17 +102,8 @@ object VirtaToSuoritusConverter {
     })
   }
 
-  private val TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT = Set(
-    "1", // Ammattikorkeakoulututkinto
-    "2", // Alempi korkeakoulututkinto
-    "3", // Ylempi ammattikorkeakoulututkinto
-    "4", // Ylempi korkeakoulututkinto
-    "6", // Lisensiaatintutkinto
-    "7" // Tohtorintutkinto
-  )
-
   private def isTutkintoonJohtavaOpiskeluoikeusTyyppi(opiskeluoikeusTyyppi: String): Boolean =
-    TUTKINTOON_JOHTAVAT_OPISKELUOIKEUS_TYYPIT.contains(opiskeluoikeusTyyppi)
+    VirtaOpiskeluoikeusTyyppi.TUTKINTOON_JOHTAVAT.contains(opiskeluoikeusTyyppi)
 
   // Jos juuritasolla vain yksi tutkinto ja opintosuorituksia, eikä tutkinnolla ole osasuorituksia,
   // siirretään kaikki opintosuoritukset tutkinnon alle
@@ -148,8 +140,8 @@ object VirtaToSuoritusConverter {
 
   private def sisallytaOpintojaksotOsasuorituksina(opiskeluoikeusTyyppi: String) = {
     Set(
-      "8", // Kotimainen opiskelijaliikkuvuus
-      "13" // Avoimen opinnot
+      VirtaOpiskeluoikeusTyyppi.KOTIMAINEN_OPISKELIJALIIKKUVUUS,
+      VirtaOpiskeluoikeusTyyppi.AVOIMEN_OPINNOT
     ).contains(opiskeluoikeusTyyppi)
   }
 
