@@ -57,9 +57,11 @@ export const SuorituksenPerustiedotIndicator = ({
 }) => {
   const { t, translateKielistetty } = useTranslations();
 
-  const suorituskieli = isKielistetty(perustiedot.suorituskieli)
-    ? (translateKielistetty(perustiedot.suorituskieli) ?? '-')
-    : (perustiedot.suorituskieli ?? '-');
+  const suorituskieli = perustiedot.suorituskieli
+    ? isKielistetty(perustiedot.suorituskieli)
+      ? translateKielistetty(perustiedot.suorituskieli)
+      : t(`kieli.${perustiedot.suorituskieli}`)
+    : '-';
 
   return (
     <Stack direction="row">
