@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
-import fi.oph.suorituspalvelu.resource.ui.{SuoritusTila, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
+import fi.oph.suorituspalvelu.resource.ui.{SuoritusTilaUI, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, YliajoTallennusContainer}
 import fi.oph.suorituspalvelu.service.UIService.*
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.validation.Validator.{hakuOidPattern, hetuPattern, oppijaOidPattern, oppilaitosOidPattern}
@@ -157,7 +157,7 @@ object UIValidator {
       Set(VALIDATION_TILA_TYHJA)
     else
       try
-        SuoritusTila.valueOf(tila.get)
+        SuoritusTilaUI.valueOf(tila.get)
         Set.empty
       catch
         case default => Set(VALIDATION_TILA_EI_VALIDI)
