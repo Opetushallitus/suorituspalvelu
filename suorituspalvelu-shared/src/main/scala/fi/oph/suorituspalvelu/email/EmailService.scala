@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.email
 
-import jakarta.mail.internet.MimeMessage
+import jakarta.mail.internet.{InternetAddress, MimeMessage}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.{JavaMailSender, JavaMailSenderImpl, MimeMessageHelper}
@@ -19,7 +19,8 @@ class EmailService(@Value("${email.enabled:false}") sendingEnabled: Boolean,
                    @Value("${email.smtp.password:}") smtpPassword: String,
                    @Value("${email.smtp.use_authentication:false}") useAuthentication: Boolean,
                    @Value("${email.smtp.use_tls:false}") useTLS: Boolean,
-                   @Value("${email.recipients:}") recipientsList: String) {
+                   @Value("${email.recipients:}") recipientsList: String,
+                   @Value("${email.sender-name:Suorituspalvelu}") senderName: String) {
 
   private val LOG = LoggerFactory.getLogger(classOf[EmailService])
 
@@ -70,7 +71,7 @@ class EmailService(@Value("${email.enabled:false}") sendingEnabled: Boolean,
     try {
       val message: MimeMessage = mailSender.createMimeMessage()
       val helper = MimeMessageHelper(message, false, "UTF-8")
-      helper.setFrom(senderAddress)
+      helper.setFrom(InternetAddress(senderAddress, senderName))
       helper.setTo(recipients)
       helper.setSubject(subject)
       helper.setText(html, true)

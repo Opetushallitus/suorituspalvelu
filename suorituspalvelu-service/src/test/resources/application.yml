@@ -26,6 +26,7 @@ spring:
 email:
   enabled: false
   sender: noreply@opintopolku.fi
+  sender-name: Suorituspalvelu
   recipients: ""
   smtp:
     host: localhost

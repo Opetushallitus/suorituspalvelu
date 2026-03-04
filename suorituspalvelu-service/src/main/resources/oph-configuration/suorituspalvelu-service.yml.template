@@ -31,6 +31,7 @@ spring:
 email:
   enabled: {{suorituspalvelu_email_enabled | default('false')}}
   sender: {{suorituspalvelu_email_sender | default('noreply@opintopolku.fi')}}
+  sender-name: {{suorituspalvelu_email_sender_name | default('Suorituspalvelu')}}
   recipients: {{suorituspalvelu_email_recipients | default('')}}
   smtp:
     host: {{host_smtp | default('invalid.domain')}}
