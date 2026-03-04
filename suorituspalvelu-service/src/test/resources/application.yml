@@ -23,6 +23,17 @@ spring:
     password: app
   flyway:
     baseline-on-migrate: true
+email:
+  enabled: false
+  sender: noreply@opintopolku.fi
+  recipients: ""
+  smtp:
+    host: localhost
+    port: 25
+    username: ""
+    password: ""
+    use_authentication: false
+    use_tls: false
 
 integrations:
   koski:
