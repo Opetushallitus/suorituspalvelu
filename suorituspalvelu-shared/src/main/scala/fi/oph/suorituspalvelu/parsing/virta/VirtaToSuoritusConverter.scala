@@ -191,8 +191,8 @@ object VirtaToSuoritusConverter {
         moveOpintojaksotUnderTutkintoWhenNeeded(suoritukset)
       } else if (opiskeluoikeusJaksoKoulutuskoodit.nonEmpty && !isPaattynytOpiskeluoikeus(opiskeluoikeus)) {
         addKeskenerainenTutkinnonSuoritus(suoritukset, opiskeluoikeus)
-      // Jos vain yksi tutkinto juuritasolla, ei luoda synteettistä suoritusta
-      } else if (suoritukset.length == 1 && suoritukset.head.isInstanceOf[KKTutkinto]) {
+        // Jos vain tutkinto-suorituksia juuritasolla, ei luoda synteettistä suoritusta
+      } else if (suoritukset.nonEmpty && suoritukset.forall(_.isInstanceOf[KKTutkinto])) {
         suoritukset
         // Muussa tapauksessa luodaan synteettinen tutkinnon päätason suoritus
         // - ei suorituksia (esim. keskeytynyt suoritus)
@@ -261,7 +261,7 @@ object VirtaToSuoritusConverter {
             val (opiskeluoikeudenSuoritukset, muutSuoritukset) =
               remainingSuoritusRoots.partition(sisaltyyOpiskeluoikeuteen(_, oo, suorituksetByAvain))
             val jakso = latestJakso(oo)
-            
+
             val kkOpiskeluoikeus = KKOpiskeluoikeus(
               tunniste = UUID.randomUUID(),
               virtaTunniste = oo.avain,
