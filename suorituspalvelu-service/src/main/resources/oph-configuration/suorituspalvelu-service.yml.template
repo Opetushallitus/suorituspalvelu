@@ -37,8 +37,8 @@ email:
     port: {{port_smtp | default('25')}}
     username: {{suorituspalvelu_email_smtp_username | default('')}}
     password: {{suorituspalvelu_email_smtp_password | default('')}}
-    use_authentication: {{suorituspalvelu_email_smtp_use_authentication | default('false')}}
-    use_tls: {{suorituspalvelu_email_smtp_use_tls | default('false')}}
+    use_authentication: {{suorituspalvelu_email_smtp_use_authentication | default('true')}}
+    use_tls: {{suorituspalvelu_email_smtp_use_tls | default('true')}}
 
 integrations:
   koski:
