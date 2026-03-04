@@ -58,7 +58,8 @@ export function SuorituksetKoulutustyypeittain({
             (s) =>
               s.koulutustyyppi === 'lukio' ||
               s.koulutustyyppi === 'eb' ||
-              s.koulutustyyppi === 'ib',
+              s.koulutustyyppi === 'ib' ||
+              s.koulutustyyppi === 'dia',
           )
           ?.map((suoritus) => (
             <LukioSuoritusPaper key={suoritus.tunniste} suoritus={suoritus} />
