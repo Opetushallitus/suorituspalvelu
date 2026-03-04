@@ -206,7 +206,8 @@
       "YLEMPI": "Ylempi korkeakoulututkinto",
       "ALEMPI": "Alempi korkeakoulututkinto",
       "TOHTORI": "Tohtorintutkinto"
-    }
+    },
+    "tutkintoon-johtamattomat-kk-suoritukset": "Tutkintoon johtamattomat korkeakoulusuoritukset"
   },
   "suorituksen-tila": {
     "VALMIS": "valmis",
