@@ -930,3 +930,4 @@ export type OpiskeluoikeusTilaUI = 'VOIMASSA' | 'PAATTYNYT';
 export type SuoritusTilaUI = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
 export type SuoritustapaUI = 'OPS' | 'REFORMI' | 'NAYTTO';
+
