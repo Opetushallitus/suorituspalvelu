@@ -69,7 +69,8 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
       Set.empty,
       lahtokoulut,
       false,
-      false
+      false,
+      None
     )
 
   def tallennaOppimaara(oppijaOid: String, tila: SuoritusTila, suoritukset: Set[Suoritus]): Unit =

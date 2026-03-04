@@ -76,7 +76,8 @@ object VirkailijaToSuoritusConverter {
           aineet = aineet,
           lahtokoulut = Set(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka.get, Some(supaTila), Some(yhteisenAineenArvosanaPuuttuu(aineet)), VUOSILUOKKA_9)),
           syotetty = true,
-          false //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
+          vuosiluokkiinSitoutumatonOpetus = false, //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
+          luokkaAste = Some(9)
         )
       ),
       None,

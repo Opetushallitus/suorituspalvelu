@@ -504,6 +504,15 @@ object KoskiToSuoritusConverter {
             case default => None
         })
 
+      val maxLuokkaAste = lahtokoulut
+        .map(_.suoritusTyyppi)
+        .collect {
+          case LahtokouluTyyppi.VUOSILUOKKA_7 => 7
+          case LahtokouluTyyppi.VUOSILUOKKA_8 => 8
+          case LahtokouluTyyppi.VUOSILUOKKA_9 => 9
+        }
+        .maxOption
+
       Some(PerusopetuksenOppimaara(
         tunniste = UUID.randomUUID(),
         versioTunniste = None,
@@ -519,7 +528,8 @@ object KoskiToSuoritusConverter {
         aineet = aineet,
         lahtokoulut = lahtokoulut,
         syotetty = false,
-        vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
+        vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true))),
+        luokkaAste = maxLuokkaAste
       ))
     }
   }
@@ -583,7 +593,8 @@ object KoskiToSuoritusConverter {
       aineet = aineet,
       lahtokoulut = Set(Lahtokoulu(aloitus.get, vahvistus, oppilaitos.oid, aloitus.map(_.getYear + 1), AIKUISTEN_PERUSOPETUS.defaultLuokka.get, supaTila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), AIKUISTEN_PERUSOPETUS)),
       syotetty = false,
-      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true)))
+      vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true))),
+      luokkaAste = None
     )
   }
 

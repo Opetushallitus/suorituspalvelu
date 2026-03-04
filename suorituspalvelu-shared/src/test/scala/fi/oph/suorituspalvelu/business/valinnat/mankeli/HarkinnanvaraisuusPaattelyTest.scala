@@ -524,7 +524,8 @@ class HarkinnanvaraisuusPaattelyTest {
       Set(matematiikka, aidinkieli),
       Set.empty,
       false,
-      false)
+      false,
+      None)
 
     PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
