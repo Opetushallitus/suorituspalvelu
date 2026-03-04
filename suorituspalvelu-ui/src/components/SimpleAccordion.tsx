@@ -77,6 +77,7 @@ export const SimpleAccordion = ({
       </OphButton>
       <Box
         id={contentId}
+        aria-hidden={!isOpen}
         sx={{
           width: '100%',
           display: 'grid',
