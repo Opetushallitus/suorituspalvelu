@@ -43,8 +43,8 @@ export type SuorituksenPerustiedot = {
     nimi: Kielistetty;
     oid: string;
   };
+  suorituskieli?: Kielistetty | string;
   tila: SuorituksenTila;
-  suorituskieli?: string;
   aloituspaiva?: string;
   valmistumispaiva?: string;
 };

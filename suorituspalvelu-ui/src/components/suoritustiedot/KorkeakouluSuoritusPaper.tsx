@@ -10,6 +10,8 @@ import { isEmpty } from 'remeda';
 import { TableRowAccordion } from '@/components/TableRowAccordion';
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import { isKielistetty } from '@/lib/translation-utils';
+import { InfoItemRow } from '../InfoItemRow';
+import { LabeledInfoItem } from '../LabeledInfoItem';
 
 const FIXED_COLUMN_WIDTH_PX = 150;
 
@@ -100,11 +102,35 @@ export const KorkeakouluSuoritusPaper = ({
 }: {
   suoritus?: KorkeakouluSuoritus | undefined;
 }) => {
-  const { t } = useTranslations();
+  const { t, translateKielistetty } = useTranslations();
   return (
     suoritus && (
       <SuoritusInfoPaper suoritus={suoritus} topColor={ophColors.red1}>
         <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
+        <InfoItemRow slotAmount={4}>
+          <LabeledInfoItem
+            label={t('oppija.virta-nimi')}
+            value={
+              suoritus.virtaNimi
+                ? translateKielistetty(suoritus.virtaNimi)
+                : '-'
+            }
+          />
+          <LabeledInfoItem
+            label={t('oppija.sektori-label')}
+            value={
+              suoritus.sektori ? t(`oppija.sektori.${suoritus.sektori}`) : '-'
+            }
+          />
+          <LabeledInfoItem
+            label={t('oppija.tutkintotaso-label')}
+            value={
+              suoritus.tutkintotaso
+                ? t(`oppija.tutkintotaso.${suoritus.tutkintotaso}`)
+                : '-'
+            }
+          />
+        </InfoItemRow>
         {!isEmptyish(suoritus?.opintojaksot) && (
           <SimpleAccordion
             titleClosed={t('oppija.nayta-opintosuoritukset')}
