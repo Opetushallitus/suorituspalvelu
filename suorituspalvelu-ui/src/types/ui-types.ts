@@ -87,9 +87,14 @@ export type IBSuoritus = IIBTutkinto & {
   koulutustyyppi: 'ib';
 };
 
+export type DIASuoritus = IDIATutkintoUI & {
+  koulutustyyppi: 'dia';
+};
+
 export type LukioSuoritus =
   | EBSuoritus
   | IBSuoritus
+  | DIASuoritus
   | ((
       | IYOTutkinto
       | ILukionOppimaaraUI
