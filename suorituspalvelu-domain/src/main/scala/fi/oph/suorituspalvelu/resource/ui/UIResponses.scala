@@ -12,7 +12,6 @@ import scala.beans.BeanProperty
 
 trait KayttajaResponse()
 
-sealed trait NimiBase(fi: Optional[String], sv: Optional[String], en: Optional[String])
 
 case class KayttajaSuccessResponse(
   @(Schema @field)(example = "fi", requiredMode = RequiredMode.REQUIRED)
@@ -178,8 +177,8 @@ case class OpiskeluoikeusNimiUI(
   @(Schema @field)(example = "Kasvatustieteen maisteri sv", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "Kasvatustieteen maisteri en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String]
-) extends NimiBase(fi, sv, en)
+  @BeanProperty en: Optional[String],
+)
 
 case class OpiskeluoikeusVirtaTilaUI(
   @(Schema @field)(example = "optio", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -188,7 +187,7 @@ case class OpiskeluoikeusVirtaTilaUI(
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "option", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String]
-) extends NimiBase(fi, sv, en)
+)
 
 case class OpiskeluoikeusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -244,7 +243,7 @@ case class KKSuoritusNimiUI(
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "Kasvatustieteen maisteri en", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String]
-) extends NimiBase(fi, sv, en)
+)
 
 case class SuorituskieliUI(
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -253,7 +252,7 @@ case class SuorituskieliUI(
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "English", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String]
-) extends NimiBase(fi, sv, en)
+)
 
 case class KKSuoritusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -1123,7 +1122,7 @@ case class YksilollistamisNimi(
     requiredMode = RequiredMode.NOT_REQUIRED
   )
   @BeanProperty en: Optional[String]
-) extends NimiBase(fi, sv, en)
+)
 
 case class Yksilollistaminen(
   @(Schema @field)(example = "2", requiredMode = RequiredMode.NOT_REQUIRED)

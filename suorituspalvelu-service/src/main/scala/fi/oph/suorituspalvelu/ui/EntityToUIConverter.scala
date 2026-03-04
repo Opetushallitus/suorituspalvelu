@@ -11,22 +11,40 @@ import java.time.LocalDate
 import java.util.Optional
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
-import scala.reflect.ClassTag
 
 object EntityToUIConverter {
   val KOULUTUS_KOODISTO = "koulutus"
   val VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
   val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
 
-  private def getKoodiNimi[N <: NimiBase](
+  // Structural type that defines the required shape (three Optional[String] fields)
+  type NimiLike = {
+    def fi: Optional[String]
+    def sv: Optional[String]
+    def en: Optional[String]
+  }
+
+  // Type class for constructing types with the NimiLike structure
+  trait NimiConstructor[N]:
+    def construct(fi: Optional[String], sv: Optional[String], en: Optional[String]): N
+
+  // Generic given instance for any case class with three Optional[String] parameters
+  // Uses Scala 3's Mirror to ensure compile-time type safety
+  given nimiConstructorForCaseClass[N <: NimiLike](using mirror: scala.deriving.Mirror.ProductOf[N] {
+    type MirroredElemTypes = (Optional[String], Optional[String], Optional[String])
+  }): NimiConstructor[N] with
+    def construct(fi: Optional[String], sv: Optional[String], en: Optional[String]): N =
+      mirror.fromProduct(Tuple3(fi, sv, en))
+
+  private def getKoodiNimi[N <: NimiLike](
     koodiArvo: Option[String],
     koodisto: String,
-    koodistoProvider: KoodistoProvider)(implicit ct: ClassTag[N]): Optional[N] =
+    koodistoProvider: KoodistoProvider)(using constructor: NimiConstructor[N]): Optional[N] =
     koodiArvo.flatMap(arvo => koodistoProvider.haeKoodisto(koodisto).get(arvo).map(k =>
-      val fi = k.metadata.find(m => m.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava
-      val sv = k.metadata.find(m => m.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava
-      val en = k.metadata.find(m => m.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
-      ct.runtimeClass.getDeclaredConstructors()(0).newInstance(fi, sv, en).asInstanceOf[N]
+      val fi = k.metadata.find(_.kieli.equalsIgnoreCase("fi")).map(_.nimi).toJava
+      val sv = k.metadata.find(_.kieli.equalsIgnoreCase("sv")).map(_.nimi).toJava
+      val en = k.metadata.find(_.kieli.equalsIgnoreCase("en")).map(_.nimi).toJava
+      constructor.construct(fi, sv, en)
     )).toJava
 
   private def getKKOppilaitos(myontaja: String, organisaatioProvider: OrganisaatioProvider) = {
