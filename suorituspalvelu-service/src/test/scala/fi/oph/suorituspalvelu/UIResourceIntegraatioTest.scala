@@ -174,7 +174,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${vuosi-1}-08-01"), Some(LocalDate.parse(s"$vuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
-        false
+        false,
+        None
       )),
       None,
       VALMIS,
@@ -241,7 +242,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-01"), None, oppilaitosOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
-        false
+        false,
+        None
       )),
       None,
       VALMIS,
@@ -300,7 +302,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-01"), None, descendantOid, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
-        false
+        false,
+        None
       )),
       None,
       VALMIS,
@@ -396,7 +399,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-18"), None, oppilaitosOid, Some(valmistumisvuosi), "9G", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
-        false
+        false,
+        None
       )),
       None,
       VALMIS,
@@ -456,7 +460,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-18"), None, descendantOid, Some(valmistumisvuosi), "9G", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
-        false
+        false,
+        None
       )),
       None,
       VALMIS,
@@ -635,7 +640,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         Set.empty,
         Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), luokka, Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
-        false
+        false,
+        None
       )),
       None,
       VALMIS,
