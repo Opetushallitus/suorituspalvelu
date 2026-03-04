@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, ParserVersions, VersioEntiteetti}
+import fi.oph.suorituspalvelu.email.EmailService
 import fi.oph.suorituspalvelu.integration.{SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrFetchMode, YtrIntegration, YtrPollFailed}
@@ -20,7 +21,8 @@ import scala.jdk.CollectionConverters.*
 
 @Service
 class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluClientImpl, ytrIntegration: YtrIntegration,
-                 tarjontaIntegration: TarjontaIntegration, kantaOperaatiot: KantaOperaatiot, @Value("${integrations.ytr.cron}") cron: String) {
+                 tarjontaIntegration: TarjontaIntegration, kantaOperaatiot: KantaOperaatiot, @Value("${integrations.ytr.cron}") cron: String,
+                 emailService: EmailService) {
 
   val LOG = LoggerFactory.getLogger(classOf[YTRService])
 
@@ -75,7 +77,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
           throw e
         case e: Exception =>
           val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui"
-          LOG.error(message,  e)
+          LOG.error(message, e)
           ctx.reportError(message, Some(e))
     })
   }

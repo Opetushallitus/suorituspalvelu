@@ -48,15 +48,12 @@ class EmailService(@Value("${email.enabled:false}") sendingEnabled: Boolean,
     try source.mkString finally source.close()
   }
 
+  private val errorSummaryEmailTemplate: String = {
+    val source = Source.fromResource("email/error-summary-email.html")
+    try source.mkString finally source.close()
+  }
+
   def sendErrorEmail(subject: String, htmlContent: String, exception: Throwable): Unit = {
-    if !sendingEnabled then
-      LOG.info(s"Sähköpostin lähetys ei käytössä, ei lähetetä viestiä: $subject")
-      return
-
-    if recipients.isEmpty then
-      LOG.warn(s"Vastaanottajia ei ole määritelty, ei lähetetä viestiä: $subject")
-      return
-
     val stackTraceStr = {
       val sw = StringWriter()
       exception.printStackTrace(PrintWriter(sw))
@@ -67,6 +64,30 @@ class EmailService(@Value("${email.enabled:false}") sendingEnabled: Boolean,
       .replace("{{CONTENT}}", htmlContent)
       .replace("{{EXCEPTION_MESSAGE}}", escapeHtml(exception.getMessage))
       .replace("{{STACK_TRACE}}", escapeHtml(stackTraceStr))
+
+    sendEmail(subject, html)
+  }
+
+  def sendErrorSummaryEmail(subject: String, htmlContent: String, exceptionMessages: Seq[String]): Unit = {
+    val errorMessages = exceptionMessages
+      .map(exceptionMessage => s"<li>${escapeHtml(exceptionMessage)}</li>")
+      .mkString("\n    ")
+
+    val html = errorSummaryEmailTemplate
+      .replace("{{CONTENT}}", htmlContent)
+      .replace("{{ERROR_MESSAGES}}", errorMessages)
+
+    sendEmail(subject, html)
+  }
+
+  private def sendEmail(subject: String, html: String): Unit = {
+    if !sendingEnabled then
+      LOG.info(s"Sähköpostin lähetys ei käytössä, ei lähetetä viestiä: $subject")
+      return
+
+    if recipients.isEmpty then
+      LOG.warn(s"Vastaanottajia ei ole määritelty, ei lähetetä viestiä: $subject")
+      return
 
     try {
       val message: MimeMessage = mailSender.createMimeMessage()
