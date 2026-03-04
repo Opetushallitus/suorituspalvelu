@@ -1,6 +1,6 @@
 import type {
   IYOKoe,
-  SuoritusTila,
+  SuoritusTilaUI,
   ILukionOppiaine,
   IKKSuoritusUI,
   ILukionOppimaaraUI,
@@ -35,7 +35,7 @@ import type {
   IOppijanValintaDataSuccessResponse,
 } from './backend';
 
-export type SuorituksenTila = SuoritusTila;
+export type SuorituksenTila = SuoritusTilaUI;
 
 export type SuorituksenPerustiedot = {
   nimi?: Kielistetty;
