@@ -45,7 +45,8 @@ class EmailServiceTest {
       smtpPassword = "",
       useAuthentication = false,
       useTLS = false,
-      recipientsList = RECIPIENT
+      recipientsList = RECIPIENT,
+      senderName = "Suorituspalvelu"
     )
 
     val testException = RuntimeException("Testivirhe")
@@ -71,7 +72,8 @@ class EmailServiceTest {
       smtpPassword = "",
       useAuthentication = false,
       useTLS = false,
-      recipientsList = RECIPIENT
+      recipientsList = RECIPIENT,
+      senderName = "Suorituspalvelu"
     )
 
     emailService.sendErrorEmail(
@@ -90,7 +92,8 @@ class EmailServiceTest {
       smtpPassword = "",
       useAuthentication = false,
       useTLS = false,
-      recipientsList = ""
+      recipientsList = "",
+      senderName = "Suorituspalvelu"
     )
 
     emailService.sendErrorEmail(
