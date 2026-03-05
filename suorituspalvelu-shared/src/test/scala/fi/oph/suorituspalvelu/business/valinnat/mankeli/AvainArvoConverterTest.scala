@@ -983,7 +983,7 @@ class AvainArvoConverterTest {
     val oppimaaraEiLuokkaa = perusopetuksenOppimaaraBase.copy(luokkaAste = None)
     val opiskeluoikeusEiLuokkaa = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(oppimaaraEiLuokkaa), Some(lisatiedot), SuoritusTila.VALMIS, List.empty)
     val resultEiLuokkaa = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", Some(hakemus), Seq(opiskeluoikeusEiLuokkaa), leikkuriDeadlineEiOhitettu, DEFAULT_KOUTA_HAKU, None)
-    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), resultEiLuokkaa.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), resultEiLuokkaa.getAvainArvoMap().get(AvainArvoConstants.pohjakoulutusToinenAste))
   }
 
   private def getToisenAsteenPeruskoulutusOpiskeluoikeus(vahvistusPaiva: LocalDate = LocalDate.parse("2025-05-30")) = {

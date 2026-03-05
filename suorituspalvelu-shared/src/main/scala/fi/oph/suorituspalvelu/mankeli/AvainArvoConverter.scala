@@ -362,7 +362,7 @@ object AvainArvoConverter {
     if (deadlineOhitettu) {
       (suoritusValmis && vahvistettuAjoissa) || (suoritusKesken && arvosanoissaNelosia && !oppimaara.vuosiluokkiinSitoutumatonOpetus)
     } else {
-      ysiluokkalainen && (suoritusValmis || suoritusKesken)
+      (oppimaara.luokkaAste.isEmpty || ysiluokkalainen) && (suoritusValmis || suoritusKesken)
     }
   }
 
