@@ -23,7 +23,6 @@ export default function SuoritustiedotPage() {
       <Stack spacing={6}>
         <SuoritusManagerProvider>
           <Opiskeluoikeudet oppijanTiedot={tiedot} />
-          <Vastaanotot oppijaNumero={tiedot.oppijaNumero} />
           <Suoritukset oppijanTiedot={tiedot} />
           <Vastaanotot oppijaNumero={tiedot.oppijaNumero} />
         </SuoritusManagerProvider>
