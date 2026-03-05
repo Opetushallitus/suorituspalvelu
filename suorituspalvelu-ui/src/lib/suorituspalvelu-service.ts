@@ -9,6 +9,7 @@ import type {
   IOppijanHautSuccessResponse,
   IOppijanTiedotSuccessResponse,
   IOppijanValintaDataSuccessResponse,
+  IOppijanVastaanototSuccessResponse,
   IOppilaitosSuccessResponse,
   IVuodetSuccessResponse,
   IYliajonMuutosHistoriaSuccessResponse,
@@ -254,6 +255,20 @@ export const getOppijanHaut = async (oppijaOid: string) => {
 
   const res = await client.get<IOppijanHautSuccessResponse>(url);
   return res.data?.haut ?? [];
+};
+
+export const getOppijanVastaanotot = async (tunniste: string) => {
+  const config = await configPromise;
+
+  return nullWhenErrorMatches(
+    client
+      .post<IOppijanVastaanototSuccessResponse>(
+        config.routes.suorituspalvelu.oppijanVastaanototUrl,
+        { tunniste },
+      )
+      .then((res) => res.data),
+    isNotFoundError,
+  );
 };
 
 export const getOppilaitosVuodet = async ({

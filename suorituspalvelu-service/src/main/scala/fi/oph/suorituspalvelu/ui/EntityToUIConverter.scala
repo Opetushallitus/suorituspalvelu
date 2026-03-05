@@ -2,11 +2,13 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
+import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
-import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
+import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
 import java.util.Optional
@@ -14,6 +16,7 @@ import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
 object EntityToUIConverter {
+  private val LOG = LoggerFactory.getLogger(getClass)
   val KOULUTUS_KOODISTO = "koulutus"
   val VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
   val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
@@ -746,7 +749,53 @@ object EntityToUIConverter {
       }).toList
   }
 
-  def getOppijanTiedot(etunimet: Option[String], sukunimi: Option[String], hetu: Option[String], oppijaNumero: String, henkiloOid: String, syntymaAika: Option[LocalDate], opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): OppijanTiedotSuccessResponse = {
+  def getVastaanotot(vastaanotot: Seq[OpintopolkuVastaanotto], hakuProvider: HakuProvider, hakukohdeProvider: HakukohdeProvider, organisaatioProvider: OrganisaatioProvider): Seq[VastaanottoUI] =
+    vastaanotot.map(v => {
+      val haku = hakuProvider.haeHaku(v.hakuOid).getOrElse {
+        LOG.error(s"Hakua ei löytynyt OID:lla ${v.hakuOid}")
+        throw new RuntimeException(s"Hakua ei löytynyt OID:lla ${v.hakuOid}")
+      }
+      val hakukohde = hakukohdeProvider.haeHakukohde(v.hakukohdeOid).getOrElse {
+        LOG.error(s"Hakukohdetta ei löytynyt OID:lla ${v.hakukohdeOid}")
+        throw new RuntimeException(s"Hakukohdetta ei löytynyt OID:lla ${v.hakukohdeOid}")
+      }
+
+      val hakukohdeOrganisaatioIds = hakukohde match
+        case hakukohde: KoutaHakukohde => List(hakukohde.organisaatioOid)
+        case hakukohde: VanhaTarjontaHakukohde => hakukohde.tarjoajaOids
+      val hakukohdeOppilaitokset = hakukohdeOrganisaatioIds.flatMap(oid =>
+        organisaatioProvider.haeOrganisaationTiedot(oid) match
+          case Some(org) =>
+            Some(VastaanottoHakukohdeOppilaitos(oid, HakukohdeOppilaitosNimi(Optional.ofNullable(org.nimi.fi), Optional.ofNullable(org.nimi.sv), Optional.ofNullable(org.nimi.en))))
+          case None =>
+            LOG.error(s"Hakukohteen ${v.hakukohdeOid} tarjoajaorganisaatiota ei löytynyt OID:lla $oid")
+            None
+      )
+
+      VastaanottoUI(
+        hakuOid = v.hakuOid,
+        hakuNimi = haku match
+          case haku: KoutaHaku => HakuNimi(haku.nimi.get("fi").toJava, haku.nimi.get("sv").toJava, haku.nimi.get("en").toJava)
+          case haku: VanhaTarjontaHaku => HakuNimi(haku.nimi.get("kieli_fi").toJava, haku.nimi.get("kieli_sv").toJava, haku.nimi.get("kieli_en").toJava),
+        hakukohdeOid = v.hakukohdeOid,
+        hakukohdeNimi = hakukohde match
+          case hakukohde: KoutaHakukohde => HakukohdeNimi(hakukohde.nimi.get("fi").toJava, hakukohde.nimi.get("sv").toJava, hakukohde.nimi.get("en").toJava)
+          case hakukohde: VanhaTarjontaHakukohde => HakukohdeNimi(hakukohde.hakukohteenNimet.get("kieli_fi").toJava, hakukohde.hakukohteenNimet.get("kieli_sv").toJava, hakukohde.hakukohteenNimet.get("kieli_en").toJava),
+        hakukohdeOppilaitokset = hakukohdeOppilaitokset.asJava,
+        vastaanottoAction = v.vastaanottoAction,
+        vastaanottoaika = v.vastaanottoaika
+      )
+    })
+
+  def getVanhatVastaanotot(vanhatVastaanotot: Seq[VanhaVastaanotto]): Seq[VanhaVastaanottoUI] =
+    vanhatVastaanotot.map(v => VanhaVastaanottoUI(
+      hakukohdeNimi = v.hakukohde,
+      vastaanottoaika = v.vastaanottoaika
+    ))
+
+  def getOppijanTiedot(etunimet: Option[String], sukunimi: Option[String], hetu: Option[String], oppijaNumero: String, henkiloOid: String,
+                       syntymaAika: Option[LocalDate], opiskeluoikeudet: Set[Opiskeluoikeus],
+                       organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): OppijanTiedotSuccessResponse = {
     if(EXAMPLE_OPPIJA_OID.equals(oppijaNumero))
       MockEntityToUIConverter.getOppijanTiedot()
     else

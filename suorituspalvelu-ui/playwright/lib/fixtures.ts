@@ -24,6 +24,15 @@ export const test = base.extend<object>({
       });
     });
 
+    await page.route(`**/ui/vastaanotot`, async (route) => {
+      await route.fulfill({
+        json: {
+          vastaanotot: [],
+          vanhatVastaanotot: [],
+        },
+      });
+    });
+
     await use(page);
   },
 });

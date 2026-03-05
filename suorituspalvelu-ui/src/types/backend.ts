@@ -207,6 +207,18 @@ export interface IHakuNimi {
   en?: string;
 }
 
+export interface IHakukohdeNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IHakukohdeOppilaitosNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IIBOppiaine {
   tunniste: string;
   nimi: IIBOppiaineNimi;
@@ -474,6 +486,15 @@ export interface IOppijanValintaDataSuccessResponse {
   avainArvot: IAvainArvoContainerUI[];
 }
 
+export interface IOppijanVastaanototFailureResponse {
+  virheet: string[];
+}
+
+export interface IOppijanVastaanototSuccessResponse {
+  vastaanotot: IVastaanottoUI[];
+  vanhatVastaanotot: IVanhaVastaanottoUI[];
+}
+
 export interface IOppilaitos {
   nimi: IOppilaitosNimi;
   oid: string;
@@ -730,6 +751,11 @@ export interface ITuvaUI {
   laajuus?: ITuvaLaajuus;
 }
 
+export interface IVanhaVastaanottoUI {
+  hakukohdeNimi: string;
+  vastaanottoaika: string;
+}
+
 export interface IVapaaSivistystyoKoulutus {
   tunniste: string;
   nimi: IVapaaSivistystyoKoulutusNimi;
@@ -767,6 +793,21 @@ export interface IVapaaSivistystyoOppilaitosNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IVastaanottoHakukohdeOppilaitos {
+  oid: string;
+  nimi: IHakukohdeOppilaitosNimi;
+}
+
+export interface IVastaanottoUI {
+  hakuOid: string;
+  hakuNimi: IHakuNimi;
+  hakukohdeOid: string;
+  hakukohdeNimi: IHakukohdeNimi;
+  hakukohdeOppilaitokset: IVastaanottoHakukohdeOppilaitos[];
+  vastaanottoAction: string;
+  vastaanottoaika: string;
 }
 
 export interface IVuodetFailureResponse {

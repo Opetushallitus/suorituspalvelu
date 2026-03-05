@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from './lib/fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
+import VASTAANOTOT from './fixtures/vastaanotot.json' with { type: 'json' };
 import { NDASH } from '@/lib/common';
 import {
   DIA_TUTKINTO_SUORITUS,
@@ -115,6 +116,54 @@ test.describe('Suoritustiedot', () => {
       PERUSOPETUKSEN_OPPIMAARA_SUORITUS,
       PERUSOPETUKSEN_OPPIMAARA_78LUOKKA_SUORITUS,
       PERUSOPETUKSEN_OPPIAINEEN_OPPIMAARA_SUORITUS,
+    ]);
+  });
+
+  test('Vastaanotot', async ({ page }) => {
+    await page.route(`**/ui/vastaanotot`, async (route) => {
+      await route.fulfill({
+        json: VASTAANOTOT,
+      });
+    });
+
+    await page.goto(`/suorituspalvelu/henkilo/${OPPIJANUMERO}`);
+
+    await expect(
+      page.getByRole('heading', { name: 'Vastaanotot' }),
+    ).toBeVisible();
+
+    const vastaanottoPapers = page.getByTestId('vastaanotto-paper');
+    await expect(vastaanottoPapers).toHaveCount(1);
+
+    const vastaanottoPaper = vastaanottoPapers.first();
+    await expect(
+      vastaanottoPaper.getByRole('heading', {
+        name: 'Tietojenkäsittelytieteen kandiohjelma',
+      }),
+    ).toBeVisible();
+
+    await expectLabeledValues(vastaanottoPaper, [
+      { label: 'Haku', value: 'Korkeakoulujen yhteishaku kevät 2025' },
+      {
+        label: 'Oppilaitos',
+        value: 'Helsingin yliopisto (1.2.246.562.10.39218317368)',
+      },
+      { label: 'Vastaanoton tila', value: 'Vastaanotettu sitovasti' },
+      { label: 'Vastaanottoaika', value: '15.7.2025 13:30:00' },
+    ]);
+
+    const vanhaVastaanottoPapers = page.getByTestId('vanha-vastaanotto-paper');
+    await expect(vanhaVastaanottoPapers).toHaveCount(1);
+
+    const vanhaVastaanottoPaper = vanhaVastaanottoPapers.first();
+    await expect(
+      vanhaVastaanottoPaper.getByRole('heading', {
+        name: 'Oikeustieteen maisterin koulutus',
+      }),
+    ).toBeVisible();
+
+    await expectLabeledValues(vanhaVastaanottoPaper, [
+      { label: 'Vastaanottoaika', value: '1.8.2020 17:00:00' },
     ]);
   });
 });

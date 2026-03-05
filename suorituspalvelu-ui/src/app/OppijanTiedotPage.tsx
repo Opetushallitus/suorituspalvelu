@@ -16,6 +16,7 @@ import { QuerySuspenseBoundary } from '@/components/QuerySuspenseBoundary';
 import { ResultPlaceholder } from '@/components/ResultPlaceholder';
 import {
   queryOptionsGetOppija,
+  queryOptionsGetOppijanVastaanotot,
   useKayttaja,
   useOppija,
 } from '@/lib/suorituspalvelu-queries';
@@ -113,6 +114,10 @@ const OppijanTiedotWrapper = ({
           tiedot,
         );
       }
+      // Esiladataan vastaanotot rinnakkain muiden tietojen kanssa
+      queryClient.ensureQueryData(
+        queryOptionsGetOppijanVastaanotot(foundOppijaNumero),
+      );
       // Asetetaan oppijanumero-parametri URL:iin, jos oppija löytyi
       setOppijaNumero(foundOppijaNumero, { replace: true });
     }

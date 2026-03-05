@@ -1,0 +1,36 @@
+{
+  "vastaanotot": [
+    {
+      "hakuOid": "1.2.246.562.29.00000000000000000001",
+      "hakuNimi": {
+        "fi": "Korkeakoulujen yhteishaku kevät 2025",
+        "sv": "Högskolornas gemensamma ansökan våren 2025",
+        "en": "Joint application to higher education spring 2025"
+      },
+      "hakukohdeOid": "1.2.246.562.20.00000000000000000001",
+      "hakukohdeNimi": {
+        "fi": "Tietojenkäsittelytieteen kandiohjelma",
+        "sv": "Kandidatprogrammet i datavetenskap",
+        "en": "Bachelor's Programme in Computer Science"
+      },
+      "hakukohdeOppilaitokset": [
+        {
+          "oid": "1.2.246.562.10.39218317368",
+          "nimi": {
+            "fi": "Helsingin yliopisto",
+            "sv": "Helsingfors universitet",
+            "en": "University of Helsinki"
+          }
+        }
+      ],
+      "vastaanottoAction": "VastaanotaSitovasti",
+      "vastaanottoaika": "2025-07-15T10:30:00Z"
+    }
+  ],
+  "vanhatVastaanotot": [
+    {
+      "hakukohdeNimi": "Oikeustieteen maisterin koulutus",
+      "vastaanottoaika": "2020-08-01T14:00:00Z"
+    }
+  ]
+}
