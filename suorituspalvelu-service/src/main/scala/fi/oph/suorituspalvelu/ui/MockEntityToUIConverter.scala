@@ -228,10 +228,10 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getDiaTutkinto(): Option[DIATutkinto] =
-    Some(DIATutkinto(
+  def getDiaTutkinto(): Option[DIATutkintoUI] =
+    Some(DIATutkintoUI(
       tunniste = UUID.randomUUID(),
-      nimi = DIATutkintoNimi(
+      nimi = DIATutkintoNimiUI(
         fi = Optional.of("DIA-tutkinto"),
         sv = Optional.of("DIA-tutkinto sv"),
         en = Optional.of("DIA-tutkinto en")
@@ -250,71 +250,7 @@ object MockEntityToUIConverter {
       suorituskieli = "suomi"
     ))
 
-  def getDiaVastaavuusTodistus(): Option[DIAVastaavuusTodistus] =
-    Some(DIAVastaavuusTodistus(
-      tunniste = UUID.randomUUID(),
-      nimi = DIAVastaavuusTodistusNimi(
-        fi = Optional.of("DIA-vastaavuustodistus"),
-        sv = Optional.of("DIA-vastaavuustodistus sv"),
-        en = Optional.of("DIA-vastaavuustodistus en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
-      kieletKirjallisuusTaide = java.util.List.of(
-        DIAOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = DIAOppiaineNimi(
-            fi = Optional.of("A-kieli, englanti"),
-            sv = Optional.of("A-kieli, englanti sv"),
-            en = Optional.of("A-kieli, englanti en")
-          ),
-          laajuus = 3,
-          keskiarvo = 8.5
-        ),
-        DIAOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = DIAOppiaineNimi(
-            fi = Optional.of("Historia"),
-            sv = Optional.of("Historia sv"),
-            en = Optional.of("Historia en")
-          ),
-          laajuus = 2,
-          keskiarvo = 8.5
-        )
-      ),
-      matematiikkaLuonnontieteet = java.util.List.of(
-        DIAOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = DIAOppiaineNimi(
-            fi = Optional.of("Matematiikka"),
-            sv = Optional.of("Matematiikka sv"),
-            en = Optional.of("Matematiikka en")
-          ),
-          laajuus = 3,
-          keskiarvo = 6
-        ),
-        DIAOppiaine(
-          tunniste = UUID.randomUUID(),
-          nimi = DIAOppiaineNimi(
-            fi = Optional.of("Kuvataide"),
-            sv = Optional.of("Kuvataide sv"),
-            en = Optional.of("Kuvataide en")
-          ),
-          laajuus = 3,
-          keskiarvo = 8.5
-        )
-      )
-    ))
+  def getDiaVastaavuusTodistus(): Option[DIAVastaavuusTodistusUI] = None
 
   def getEBTutkinto(): Option[EBTutkintoUI] =
     Some(EBTutkintoUI(

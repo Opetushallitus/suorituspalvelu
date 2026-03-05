@@ -85,6 +85,10 @@ object ApiConstants {
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR        = "5000"
 
 
+  final val HAKUKELPOISUUS_HENKILO_PARAM_NAME               = "henkiloOid"
+  final val HAKUKELPOISUUS_HENKILO_PARAM_PLACEHOLDER        = "{" + HAKUKELPOISUUS_HENKILO_PARAM_NAME + "}"
+  final val VALINNAT_HAKUKELPOISUUS_PATH                    = VERSIONED_API_PREFIX + "/valinnat/hakukelpoisuus/" + HAKUKELPOISUUS_HENKILO_PARAM_PLACEHOLDER
+
   final val VALINTALASKENTA_VALINTADATA_PATH                = VERSIONED_API_PREFIX + "/valintalaskenta/valintadata"
   final val VALINNAT_HARKINNANVARAISUUS_PATH                = VERSIONED_API_PREFIX + "/valinnat/harkinnanvaraisuus"
   final val VALINTALASKENTA_EI_OIKEUKSIA                    = "Käyttäjällä ei ole oikeuksia hakea valintadataa"
@@ -107,6 +111,16 @@ object ApiConstants {
   final val HARKINNANVARAISUUS_500_VIRHE                    = "Harkinnanvaraisuustietojen haku epäonnistui"
   final val HARKINNANVARAISUUS_RESPONSE_400_DESCRIPTION     = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
   final val HARKINNANVARAISUUS_RESPONSE_403_DESCRIPTION     = "Käyttäjällä ei ole oikeuksia hakea harkinnanvaraisuustietoja"
+
+  final val AUTOM_HAKUKELPOISUUS_HAKEMUKSET_MAX_MAARA_STR   = "5000"
+  final val AUTOM_HAKUKELPOISUUS_EI_OIKEUKSIA               = "Käyttäjällä ei ole oikeuksia hakea automaattisen hakukelpoisuuden tietoja"
+  final val AUTOM_HAKUKELPOISUUS_HENKILOT_LIIKAA            = "Tiedot voi hakea korkeintaan 5000 henkilölle kerrallaan"
+  final val AUTOM_HAKUKELPOISUUS_PUUTTUVA_PARAMETRI         = "1-5000 henkiloOidia on annettava"
+  final val AUTOM_HAKUKELPOISUUS_HENKILOT_MAX_MAARA         = AUTOM_HAKUKELPOISUUS_HAKEMUKSET_MAX_MAARA_STR.toInt
+  final val AUTOM_HAKUKELPOISUUS_JSON_VIRHE                 = "JSON-deserialisointi epäonnistui"
+  final val AUTOM_HAKUKELPOISUUS_500_VIRHE                  = "Automaattisen hakukelpoisuustiedon haku epäonnistui"
+  final val AUTOM_HAKUKELPOISUUS_RESPONSE_400_DESCRIPTION   = "Pyyntö virheellinen, palauttaa listan pyynnössä olevista virheistä"
+  final val AUTOM_HAKUKELPOISUUS_RESPONSE_403_DESCRIPTION   = "Käyttäjällä ei ole oikeuksia hakea automaattisen hakukelpoisuuden tietoja"
 
   final val UI_TIEDOT_PATH                                  = UI_API_PREFIX + "/tiedot"
 

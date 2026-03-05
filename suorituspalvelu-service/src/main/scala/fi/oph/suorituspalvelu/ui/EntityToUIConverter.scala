@@ -343,9 +343,9 @@ object EntityToUIConverter {
   def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] =
     List.empty[LukionOppiaineenOppimaara]
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkinto] = None
+  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkintoUI] = None
 
-  def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistus] =
+  def getDiaVastaavuusTodistus(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIAVastaavuusTodistusUI] =
     None
 
   def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[EBTutkintoUI] = {

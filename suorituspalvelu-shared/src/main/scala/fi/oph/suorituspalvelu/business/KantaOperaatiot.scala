@@ -61,7 +61,8 @@ object KantaOperaatiot {
       classOf[VapaaSivistystyo],
       classOf[EBTutkinto],
       classOf[ErikoisAmmattiTutkinto],
-      classOf[LukionOppimaara])
+      classOf[LukionOppimaara],
+      classOf[DIATutkinto])
     mapper
   }
 

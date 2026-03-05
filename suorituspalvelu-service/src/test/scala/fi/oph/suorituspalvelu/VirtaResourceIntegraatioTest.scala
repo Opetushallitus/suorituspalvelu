@@ -88,7 +88,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HENKILO_PATH, VirtaPaivitaTiedotHenkilollePayload(Optional.of("tämä ei ole validi oid"))))
       .andExpect(status().isBadRequest).andReturn()
 
-    Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+    Assertions.assertEquals(VirtaSyncFailureResponse(java.util.List.of(Validator.VALIDATION_HENKILOOID_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[VirtaSyncFailureResponse]))
 
 

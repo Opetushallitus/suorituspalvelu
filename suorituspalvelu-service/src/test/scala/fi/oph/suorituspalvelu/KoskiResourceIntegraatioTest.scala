@@ -72,7 +72,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_HENKILOT_PATH, KoskiPaivitaTiedotHenkiloillePayload(Optional.of(List("1.2.246.562.25.01000000000000056245").asJava))))
       .andExpect(status().isBadRequest).andReturn()
 
-    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI)),
+    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_HENKILOOID_EI_VALIDI)),
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))

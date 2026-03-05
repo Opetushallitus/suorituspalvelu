@@ -259,7 +259,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
 
     // virhe on kuten pitää
     Assertions.assertEquals(LahtokoulutFailureResponse(java.util.Set.of(
-      Validator.VALIDATION_OPPIJANUMERO_EI_VALIDI
+      Validator.VALIDATION_HENKILOOID_EI_VALIDI
     )), objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[LahtokoulutFailureResponse]))
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SISAISET_RAJAPINNAT))
