@@ -26,11 +26,11 @@ class ErrorServiceTest {
       ("YTR-tietojen päivitys haulle 4.5.6 epäonnistui", Some(RuntimeException("Internal server error")))
     )
 
-    errorService.reportErrors("ytr-refresh-aktiiviset", errors)
+    errorService.reportErrors("refresh-ytr-for-aktiiviset-haut", errors)
 
     val messages = greenmail.getMessages()
     LOG.info(s"GreenMail-viestit: $messages")
-    Assertions.assertTrue(messages.contains("ytr-refresh-aktiiviset"), s"Jobin nimi puuttuu: $messages")
+    Assertions.assertTrue(messages.contains("refresh-ytr-for-aktiiviset-haut"), s"Jobin nimi puuttuu: $messages")
     Assertions.assertTrue(messages.contains("1.2.3"), s"Ensimmäinen virheviesti puuttuu: $messages")
     Assertions.assertTrue(messages.contains("4.5.6"), s"Toinen virheviesti puuttuu: $messages")
 
@@ -45,5 +45,5 @@ class ErrorServiceTest {
 
   @Test def testReportErrorsDoesNothingForEmptyErrors(): Unit =
     val errorService = SupaErrorService(greenmail.createEmailService())
-    errorService.reportErrors("ytr-refresh-aktiiviset", Seq.empty)
+    errorService.reportErrors("refresh-ytr-for-aktiiviset-haut", Seq.empty)
 }
