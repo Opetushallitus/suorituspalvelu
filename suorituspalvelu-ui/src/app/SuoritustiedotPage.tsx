@@ -25,6 +25,7 @@ export default function SuoritustiedotPage() {
           <Opiskeluoikeudet oppijanTiedot={tiedot} />
           <Vastaanotot oppijaNumero={tiedot.oppijaNumero} />
           <Suoritukset oppijanTiedot={tiedot} />
+          <Vastaanotot oppijaNumero={tiedot.oppijaNumero} />
         </SuoritusManagerProvider>
       </Stack>
     </QuerySuspenseBoundary>
