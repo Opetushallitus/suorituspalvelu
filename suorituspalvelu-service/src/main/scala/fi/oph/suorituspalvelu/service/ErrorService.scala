@@ -13,7 +13,7 @@ class SupaErrorService(emailService: EmailService) extends ErrorService {
 
   private val LOG = LoggerFactory.getLogger(classOf[SupaErrorService])
 
-  private val EMAIL_ENABLED_JOBS = Set("ytr-refresh-aktiiviset", "virta-refresh-aktiiviset")
+  private val EMAIL_ENABLED_JOBS = Set("ytr-refresh-aktiiviset", "virta-refresh-aktiiviset", "refresh-ytr-for-haut", "refresh-virta-for-haut")
 
   def reportErrors(jobName: String, errors: Seq[(String, Option[Exception])]): Unit = {
     if errors.isEmpty then return
