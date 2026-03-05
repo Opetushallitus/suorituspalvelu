@@ -2,19 +2,16 @@ package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.KOSKESTA_TUOTAVAT
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, ParserVersions, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, SyncResultForHenkilo, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, KoskiClient}
+import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import org.slf4j.{Logger, LoggerFactory}
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.beans.factory.annotation.{Autowired, Value}
-import org.springframework.context.annotation.{Bean, Configuration}
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import slick.jdbc.JdbcBackend
 
 import java.time.{Duration, Instant, LocalDate}
 import java.util.UUID
@@ -34,8 +31,6 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
 
   private val HENKILO_TIMEOUT = 5.minutes
   private val HAKEMUKSET_TIMEOUT = 1.minutes
-
-  final val YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS = Set(VUOSILUOKKA_9, TELMA, TUVA, VAPAA_SIVISTYSTYO)
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
@@ -150,8 +145,8 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
           case Right(oo) => Some(KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(oo.data)), koodistoProvider))
           case Left(e) => None
         }.flatten
-        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeudet.toSet) ||
-        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(YSILUOKKALAINEN_TAI_LISAPISTEKOULUTUS), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid).values.flatten.toSet)
+        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeudet.toSet) ||
+        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid).values.flatten.toSet)
 
       chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r))
     })

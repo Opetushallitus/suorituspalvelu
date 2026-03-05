@@ -52,9 +52,10 @@ object DevApp {
       System.setProperty("host.virkailija", virkailijaDomainOverride)
       System.setProperty("integrations.koski.base-url", virkailijaBaseUrl)
     } else {
-      System.setProperty("host.virkailija", "virkailija.testiopintopolku.fi")
-      System.setProperty("web.url.cas", "https://virkailija.testiopintopolku.fi/cas")
-      System.setProperty("web.url.cas-login", "https://virkailija.testiopintopolku.fi/cas/login")
+      val virkailijaDomain = "virkailija.testiopintopolku.fi"
+      System.setProperty("host.virkailija", virkailijaDomain)
+      System.setProperty("web.url.cas", s"https://$virkailijaDomain/cas")
+      System.setProperty("web.url.cas-login", s"https://$virkailijaDomain/cas/login")
     }
 
     // Docker-lokaaliajo käynnistää myös tietokannan, joten ei käynnistetä sitä tässä
