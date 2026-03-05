@@ -28,6 +28,18 @@ spring:
     password: {{host_postgresql_suorituspalvelu_app_password}}
   flyway:
     baseline-on-migrate: true
+email:
+  enabled: {{suorituspalvelu_email_enabled | default('false')}}
+  sender: {{suorituspalvelu_email_sender | default('noreply@opintopolku.fi')}}
+  sender-name: {{suorituspalvelu_email_sender_name | default('Suorituspalvelu')}}
+  recipients: {{suorituspalvelu_email_recipients | default('')}}
+  smtp:
+    host: {{suorituspalvelu_host_smtp | default('invalid.domain')}}
+    port: {{suorituspalvelu_port_smtp | default('25')}}
+    username: {{suorituspalvelu_email_smtp_username | default('')}}
+    password: {{suorituspalvelu_email_smtp_password | default('')}}
+    use_authentication: {{suorituspalvelu_email_smtp_use_authentication | default('true')}}
+    use_tls: {{suorituspalvelu_email_smtp_use_tls | default('true')}}
 
 integrations:
   koski:
