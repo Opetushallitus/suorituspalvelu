@@ -34,8 +34,8 @@ email:
   sender-name: {{suorituspalvelu_email_sender_name | default('Suorituspalvelu')}}
   recipients: {{suorituspalvelu_email_recipients | default('')}}
   smtp:
-    host: {{host_smtp | default('invalid.domain')}}
-    port: {{port_smtp | default('25')}}
+    host: {{suorituspalvelu_host_smtp | default('invalid.domain')}}
+    port: {{suorituspalvelu_port_smtp | default('25')}}
     username: {{suorituspalvelu_email_smtp_username | default('')}}
     password: {{suorituspalvelu_email_smtp_password | default('')}}
     use_authentication: {{suorituspalvelu_email_smtp_use_authentication | default('true')}}
