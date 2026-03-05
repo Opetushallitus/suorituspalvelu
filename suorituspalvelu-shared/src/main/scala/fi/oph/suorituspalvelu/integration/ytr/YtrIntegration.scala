@@ -23,6 +23,8 @@ case class Section(sectionId: String, sectionPoints: Option[String])
 //Henkilölle ei välttämättä löydy mitään
 case class YtrDataForHenkilo(personOid: String, resultJson: Option[String])
 
+class YtrPollFailed(message: String) extends RuntimeException(message)
+
 enum YtrFetchMode:
   case SingleApi, BatchApi
 
@@ -61,7 +63,7 @@ class YtrIntegration {
     })
   }
 
-  def pollUntilReady(uuid: String): Future[YtrMassOperationQueryResponse] = {
+  def pollUntilReady(uuid: String, retriesLeft: Int = 5, retryDelayMillis: Long = 5000): Future[YtrMassOperationQueryResponse] = {
     Thread.sleep(pollWaitMillis) //Todo, tarvitaanko fiksumpi odottelumekanismi
     ytrClient.pollMassOperation(uuid).flatMap((pollResult: YtrMassOperationQueryResponse) => {
       pollResult match {
@@ -69,11 +71,17 @@ class YtrIntegration {
           LOG.info(s"Valmista! $response")
           Future.successful(response)
         case response if response.failure.isDefined =>
-          LOG.error(s"Ytr failure: $response")
-          Future.failed(new RuntimeException("Ytr failure!"))
+          if (retriesLeft > 0) {
+            LOG.warn(s"Ytr failure: $response, yritetään uudelleen ${retryDelayMillis}ms kuluttua ($retriesLeft yritystä jäljellä)")
+            Thread.sleep(retryDelayMillis)
+            pollUntilReady(uuid, retriesLeft - 1, retryDelayMillis * 2)
+          } else {
+            LOG.error(s"Ytr failure: $response, ei enää uudelleenyrityksiä jäljellä")
+            Future.failed(new YtrPollFailed(s"Ytr failure: $response"))
+          }
         case response =>
           LOG.info(s"Ei vielä valmista, odotellaan hetki ja pollataan uudestaan $pollResult")
-          pollUntilReady(uuid)
+          pollUntilReady(uuid, retriesLeft, retryDelayMillis)
       }
     })
   }

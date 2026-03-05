@@ -243,6 +243,67 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     })
   }
 
+  // Testataan että massahaku onnistuu uudelleenyrityksellä kun pollaus palauttaa ensin virheen
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshYtrForHakuRetryOnPollFailure(): Unit = {
+    val hetuToPersonOid = Map(
+      "150875-935M" -> "1.2.246.562.24.91423259222",
+      "080578-945T" -> "1.2.246.562.24.91423259333",
+      "040577-967N" -> "1.2.246.562.24.91423259444",
+      "080562-9273" -> "1.2.246.562.24.91423259555",
+      "060864-933X" -> "1.2.246.562.24.91423259666"
+    )
+
+    val ataruTiedot = hetuToPersonOid.values.map(personOid => AtaruHakemuksenHenkilotiedot("hakemusOid", Some(personOid), None)).toSeq
+
+    val opUuid = UUID.randomUUID().toString
+    val massOperation = YtrMassOperation(opUuid)
+    val failureResponse = YtrMassOperationQueryResponse("2025-08-15T14:20:57.073511+03:00", "oph-transfer-generation",
+      None, Some("Temporary failure"), None)
+    val successResponse = YtrMassOperationQueryResponse("2025-08-15T14:20:57.073511+03:00", "oph-transfer-generation",
+      Some("2025-08-15T14:20:57.288401+03:00"), None, None)
+
+    val onrData = hetuToPersonOid.values.map(personOid => {
+      personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None, None)
+    }).toMap
+
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    val sourceFile = "/ytr_mass.json"
+    val zippedBytes = doZip(this.getClass.getResourceAsStream(sourceFile)).readAllBytes()
+
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
+      .thenReturn(Future.successful(ataruTiedot))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+      .thenReturn(Future.successful(onrData))
+    Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
+      .thenReturn(Future.successful(massOperation))
+    Mockito.when(ytrClient.pollMassOperation(opUuid))
+      .thenReturn(Future.successful(failureResponse))
+      .thenReturn(Future.successful(successResponse))
+    Mockito.when(ytrClient.fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString()))
+      .thenReturn(Future.successful(Some(zippedBytes)))
+
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAUT_PATH, YTRPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
+      .andExpect(status().isOk).andReturn()
+    val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(ytrSyncResponse.jobId, 30, 5000)
+
+    // Tarkistetaan että pollMassOperation-kutsuja tuli 2 (1 failure + 1 success)
+    Mockito.verify(ytrClient, Mockito.times(2)).pollMassOperation(opUuid)
+
+    // Tarkistetaan että tiedot tallennettiin onnistuneesti retryn jälkeen
+    hetuToPersonOid.values.foreach(personOid => {
+      val versiot = kantaOperaatiot.haeHenkilonVersiot(personOid)
+      Assertions.assertTrue(versiot.size == 1)
+      Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
+
+      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
+      Assertions.assertFalse(suoritukset.isEmpty)
+    })
+  }
+
   // Testataan että henkilön tiedot löytyvät oikein kun YTR palauttaa datan vanhalla hetulla
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshYtrForHakuVanhallaHetulla(): Unit = {
