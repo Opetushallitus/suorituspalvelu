@@ -345,7 +345,8 @@ case class PerusopetuksenOppimaara(
   aineet: Set[PerusopetuksenOppiaine],
   lahtokoulut: Set[Lahtokoulu],
   syotetty: Boolean, // Käsin tallennetulle tiedolle true, muutoin false.
-  vuosiluokkiinSitoutumatonOpetus: Boolean
+  vuosiluokkiinSitoutumatonOpetus: Boolean,
+  luokkaAste: Option[Int]
 ) extends Suoritus, Tyypitetty
 
 case class PerusopetukseenValmistavaOpetus(
