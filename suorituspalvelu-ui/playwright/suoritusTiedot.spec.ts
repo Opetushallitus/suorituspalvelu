@@ -3,7 +3,6 @@ import { test } from './lib/fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 import VASTAANOTOT from './fixtures/vastaanotot.json' with { type: 'json' };
 import { NDASH } from '@/lib/common';
-import { expectLabeledValues } from './lib/playwrightUtils';
 import {
   DIA_TUTKINTO_SUORITUS,
   EB_SUORITUS,
