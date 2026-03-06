@@ -123,7 +123,7 @@ export interface IDIATutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
-  suorituskieli: ISuorituskieliUI;
+  suorituskieli?: ISuorituskieliUI;
   kieletKirjallisuusTaide: IDIAOppiaineUI[];
   matematiikkaLuonnontieteet: IDIAOppiaineUI[];
   yhteiskuntatieteet: IDIAOppiaineUI[];

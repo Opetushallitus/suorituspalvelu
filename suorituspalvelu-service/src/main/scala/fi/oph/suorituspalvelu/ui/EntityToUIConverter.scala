@@ -400,7 +400,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(diaTutkinto.supaTila.toString),
         aloituspaiva = diaTutkinto.aloitusPaivamaara.toJava,
         valmistumispaiva = diaTutkinto.vahvistusPaivamaara.toJava,
-        suorituskieli = getSuorituskieliFromKoodi(Some(diaTutkinto.suorituskieli.arvo), koodistoProvider).get(),
+        suorituskieli = getSuorituskieliFromKoodi(Some(diaTutkinto.suorituskieli.arvo), koodistoProvider),
         kieletKirjallisuusTaide = kieletKirjallisuusTaide.asJava,
         matematiikkaLuonnontieteet = matematiikkaLuonnontieteet.asJava,
         yhteiskuntatieteet = yhteiskuntatieteet.asJava)

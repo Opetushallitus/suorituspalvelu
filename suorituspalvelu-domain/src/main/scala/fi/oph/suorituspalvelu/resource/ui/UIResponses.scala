@@ -438,7 +438,7 @@ case class DIATutkintoUI(
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: SuorituskieliUI,
+  @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty kieletKirjallisuusTaide: java.util.List[DIAOppiaineUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
