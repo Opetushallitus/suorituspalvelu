@@ -219,47 +219,45 @@ export interface IHakukohdeOppilaitosNimi {
   en?: string;
 }
 
-export interface IIBOppiaine {
-  tunniste: string;
-  nimi: IIBOppiaineNimi;
-  suoritukset: IIBSuoritus[];
-}
-
 export interface IIBOppiaineNimi {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IIBSuoritus {
-  tunniste: string;
-  nimi: IIBSuoritusNimi;
-  laajuus: number;
-  predictedGrade?: number;
-  arvosana: number;
-}
-
-export interface IIBSuoritusNimi {
+export interface IIBOppiaineSuoritusNimi {
   fi?: string;
   sv?: string;
   en?: string;
 }
 
-export interface IIBTutkinto {
+export interface IIBOppiaineUI {
+  nimi: IIBOppiaineNimi;
+  suoritukset: IIBSuoritusUI[];
+}
+
+export interface IIBSuoritusUI {
   tunniste: string;
-  nimi: IIBTutkintoNimi;
-  oppilaitos: IYOOppilaitos;
-  tila: SuoritusTilaUI;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
-  oppiaineet: IIBOppiaine[];
+  nimi: IIBOppiaineSuoritusNimi;
+  laajuus?: number;
+  predictedGrade?: string;
 }
 
 export interface IIBTutkintoNimi {
   fi?: string;
   sv?: string;
   en?: string;
+}
+
+export interface IIBTutkintoUI {
+  tunniste: string;
+  nimi: IIBTutkintoNimi;
+  oppilaitos: IYOOppilaitos;
+  tila: SuoritusTilaUI;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  suorituskieli?: ISuorituskieliUI;
+  oppiaineet: IIBOppiaineUI[];
 }
 
 export interface IKKOpintojaksoNimiUI {
@@ -463,7 +461,7 @@ export interface IOppijanTiedotSuccessResponse {
   diaTutkinto?: IDIATutkintoUI;
   diaVastaavuusTodistus?: IDIAVastaavuusTodistusUI;
   ebTutkinto?: IEBTutkintoUI;
-  ibTutkinto?: IIBTutkinto;
+  ibTutkinto?: IIBTutkintoUI;
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
   ammattitutkinnot: IAmmattitutkinto[];
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
@@ -600,6 +598,12 @@ export interface IPerusopetuksenOppimaaraUI {
 
 export interface IPoistaSuoritusFailureResponse {
   virheAvaimet: string[];
+}
+
+export interface ISuorituskieliUI {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
 export interface ISyotettavaAidinkielenOppimaaraVaihtoehto {

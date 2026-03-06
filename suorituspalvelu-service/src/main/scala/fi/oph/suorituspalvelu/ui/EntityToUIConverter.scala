@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, IBTutkinto, IBOppiaineSuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -404,8 +404,54 @@ object EntityToUIConverter {
   }
 
 
-  def getIBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[IBTutkinto] =
-    None
+  def getIBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[IBTutkintoUI] =
+    opiskeluoikeudet
+      .collect{ case oo: GeneerinenOpiskeluoikeus => oo }
+      .flatMap(o => o.suoritukset)
+      .collect{ case s: IBTutkinto => s }
+      .map((ibTutkinto: IBTutkinto) => {
+        val oppiaineetByRyhma = ibTutkinto.osasuoritukset.filter(_.predictedArvosana.nonEmpty).groupBy(_.ryhma)
+        IBTutkintoUI(
+          tunniste = ibTutkinto.tunniste,
+          nimi = IBTutkintoNimi(
+            fi = ibTutkinto.nimi.fi.toJava,
+            sv = ibTutkinto.nimi.sv.toJava,
+            en = ibTutkinto.nimi.en.toJava
+          ),
+          oppilaitos =
+            YOOppilaitos(
+              nimi = YOOppilaitosNimi(
+                fi = ibTutkinto.oppilaitos.nimi.fi.toJava,
+                sv = ibTutkinto.oppilaitos.nimi.sv.toJava,
+                en = ibTutkinto.oppilaitos.nimi.en.toJava
+              ),
+              oid = ibTutkinto.oppilaitos.oid
+            ),
+          tila = SuoritusTilaUI.valueOf(ibTutkinto.supaTila.toString),
+          aloituspaiva = ibTutkinto.aloitusPaivamaara.toJava,
+          valmistumispaiva = ibTutkinto.vahvistusPaivamaara.toJava,
+          suorituskieli = ibTutkinto.suorituskieli.flatMap(k => getKoodiNimi[SuorituskieliUI](Some(k.arvo), k.koodisto, koodistoProvider).toScala).toJava,
+          oppiaineet = oppiaineetByRyhma.map((ryhma, oppiaineet) => {
+            IBOppiaineUI(
+              nimi = IBOppiaineNimi(
+                fi = ryhma.nimi.fi.toJava,
+                sv = ryhma.nimi.sv.toJava,
+                en = ryhma.nimi.en.toJava
+              ),
+              suoritukset = oppiaineet.map(o => IBSuoritusUI(
+                tunniste = o.tunniste,
+                nimi = IBOppiaineSuoritusNimi(
+                  fi = o.nimi.fi.toJava,
+                  sv = o.nimi.sv.toJava,
+                  en = o.nimi.en.toJava
+                ),
+                predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava,
+                laajuus = o.laajuus.map(l => l.arvo).toJava,
+              )).toList.asJava
+            )
+          }).toList.asJava
+        )
+      }).headOption
 
   def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Ammatillinentutkinto] =
     opiskeluoikeudet
@@ -811,7 +857,7 @@ object EntityToUIConverter {
         diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet).toJava,
         diaVastaavuusTodistus =                     getDiaVastaavuusTodistus(opiskeluoikeudet).toJava,
         ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
-        ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
+        ibTutkinto =                                getIBTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
         ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet).asJava,
         ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
         erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,
