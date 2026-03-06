@@ -367,12 +367,19 @@ object EntityToUIConverter {
       opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
         .flatMap(_.suoritukset).collectFirst { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }
 
+    val DIA_KIELETKIRJALLISUUSTAIDE_KOODIARVO = "1"
+    val DIA_MATEMATIIKKALUONNONTIETEET_KOODIARVO = "2"
+    val DIA_YHTEISKUNTATIETEET_KOODIARVO = "3"
     dia.map(diaTutkinto =>
-      val kieletKirjallisuusTaide: List[DIAOppiaineUI] = diaTutkinto.osasuoritukset.filter((o: DIAOppiaine) => o.osaAlue.map(_.arvo).exists(_.equals("1"))).map(toDiaOppiaineUI).toList
-      val matematiikkaLuonnontieteet: List[DIAOppiaineUI] = diaTutkinto.osasuoritukset.filter(o => o.osaAlue.map(_.arvo).exists(_.equals("2"))).map(toDiaOppiaineUI).toList
-      val yhteiskuntatieteet: List[DIAOppiaineUI] = diaTutkinto.osasuoritukset.filter(o => o.osaAlue.map(_.arvo).exists(_.equals("3"))).map(toDiaOppiaineUI).toList
-
-      val sk = diaTutkinto.suorituskieli.arvo
+      val kieletKirjallisuusTaide: List[DIAOppiaineUI] =
+        diaTutkinto.osasuoritukset.filter((o: DIAOppiaine) => o.osaAlue.map(_.arvo).exists(_.equals(DIA_KIELETKIRJALLISUUSTAIDE_KOODIARVO)))
+          .map(toDiaOppiaineUI).toList
+      val matematiikkaLuonnontieteet: List[DIAOppiaineUI] =
+        diaTutkinto.osasuoritukset.filter(o => o.osaAlue.map(_.arvo).exists(_.equals(DIA_MATEMATIIKKALUONNONTIETEET_KOODIARVO)))
+          .map(toDiaOppiaineUI).toList
+      val yhteiskuntatieteet: List[DIAOppiaineUI] =
+        diaTutkinto.osasuoritukset.filter(o => o.osaAlue.map(_.arvo).exists(_.equals(DIA_YHTEISKUNTATIETEET_KOODIARVO)))
+          .map(toDiaOppiaineUI).toList
 
       DIATutkintoUI(
         tunniste = diaTutkinto.tunniste,
