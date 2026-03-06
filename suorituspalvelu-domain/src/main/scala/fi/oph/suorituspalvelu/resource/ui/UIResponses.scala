@@ -12,7 +12,6 @@ import scala.beans.BeanProperty
 
 trait KayttajaResponse()
 
-
 case class KayttajaSuccessResponse(
   @(Schema @field)(example = "fi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty asiointiKieli: String,
@@ -177,7 +176,7 @@ case class OpiskeluoikeusNimiUI(
   @(Schema @field)(example = "Kasvatustieteen maisteri sv", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty sv: Optional[String],
   @(Schema @field)(example = "Kasvatustieteen maisteri en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String],
+  @BeanProperty en: Optional[String]
 )
 
 case class OpiskeluoikeusVirtaTilaUI(
@@ -278,7 +277,7 @@ case class KKSuoritusUI(
   @(Schema @field)(example = "ylempi", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty tutkintotaso: Optional[KKTutkintotasoUI],
   @(Schema @field)(example = "amk", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty sektori: Optional[KKSektoriUI],
+  @BeanProperty sektori: Optional[KKSektoriUI]
 )
 
 case class YOKoeNimi(
@@ -560,7 +559,7 @@ case class EBTutkintoUI(
   @BeanProperty oppiaineet: java.util.List[EBOppiaineUI]
 )
 
-case class IBSuoritusNimi(
+case class IBOppiaineSuoritusNimi(
   @(Schema @field)(example = "Mathematical studies fi", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Mathematical studies sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -569,17 +568,15 @@ case class IBSuoritusNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class IBSuoritus(
+case class IBSuoritusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: IBSuoritusNimi,
+  @BeanProperty nimi: IBOppiaineSuoritusNimi,
   @(Schema @field)(description = "Oppiaineen laajuus (kurssia)", example = "3", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Int,
-  @(Schema @field)(example = "7")
-  @BeanProperty predictedGrade: Option[Int],
-  @(Schema @field)(example = "7", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Int
+  @BeanProperty laajuus: Optional[BigDecimal],
+  @(Schema @field)(description = "Ennustettu arvosana", example = "7")
+  @BeanProperty predictedGrade: Optional[String]
 )
 
 case class IBOppiaineNimi(
@@ -591,13 +588,11 @@ case class IBOppiaineNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class IBOppiaine(
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: UUID,
+case class IBOppiaineUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: IBOppiaineNimi,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suoritukset: java.util.List[IBSuoritus]
+  @BeanProperty suoritukset: java.util.List[IBSuoritusUI]
 )
 
 case class IBTutkintoNimi(
@@ -609,7 +604,7 @@ case class IBTutkintoNimi(
   @BeanProperty en: Optional[String]
 )
 
-case class IBTutkinto(
+case class IBTutkintoUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -623,9 +618,9 @@ case class IBTutkinto(
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
+  @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppiaineet: java.util.List[IBOppiaine]
+  @BeanProperty oppiaineet: java.util.List[IBOppiaineUI]
 )
 
 case class YTOOsaAlueNimi(
@@ -1324,7 +1319,7 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty diaTutkinto: Optional[DIATutkintoUI],
   @BeanProperty diaVastaavuusTodistus: Optional[DIAVastaavuusTodistusUI],
   @BeanProperty ebTutkinto: Optional[EBTutkintoUI],
-  @BeanProperty ibTutkinto: Optional[IBTutkinto],
+  @BeanProperty ibTutkinto: Optional[IBTutkintoUI],
   @BeanProperty ammatillisetPerusTutkinnot: java.util.List[Ammatillinentutkinto],
   @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
   @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],
