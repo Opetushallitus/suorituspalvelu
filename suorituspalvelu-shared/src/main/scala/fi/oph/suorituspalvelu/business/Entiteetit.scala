@@ -107,16 +107,10 @@ case class DIAArvosana(arvosana: Koodi,
 
 case class DIALaajuus(arvo: BigDecimal, yksikko: Koodi)
 
-case class DIAOppiaineenOsasuoritus(nimi: Kielistetty,
-                                    koodi: Koodi, // Final, Oral, Written.
-                                    arvosana: DIAArvosana, // Jos ei ole arvosanaa, ei luoda koko osasuoritusta
-                                    laajuus: Option[DIALaajuus]) //mutta tietomalli kuitenkin sallii puuttumisen.
-
 case class DIAOppiaineenKoesuoritus(nimi: Kielistetty,
                                     koodi: Koodi, //kirjallinenkoe, suullinenkoe
                                     arvosana: DIAArvosana,
-                                    laajuus: Option[DIALaajuus]
-                                   )
+                                    laajuus: Option[DIALaajuus])
 
 case class DIAVastaavuustodistuksenTiedot(keskiarvo: BigDecimal,
                                           lukioOpintojenLaajuus: DIALaajuus)
@@ -124,10 +118,11 @@ case class DIAVastaavuustodistuksenTiedot(keskiarvo: BigDecimal,
 case class DIAOppiaine(tunniste: UUID,
                        nimi: Kielistetty,
                        koodi: Koodi,
-                       laajuus: Option[EBLaajuus],
-                       osaAlue: Option[Koodi],
+                       laajuus: Option[DIALaajuus],
+                       osaAlue: Option[Koodi], // kieletKirjallisuusTaide 1, matematiikkaLuonnontieteet 2, yhteiskuntatieteet 3
                        vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot],
-                       koesuoritukset: Set[DIAOppiaineenKoesuoritus]) //Poimitaan mukaan vain sellaiset osasuoritukset, jotka ovat koesuorituksia: kirjallinenkoe, suullinenkoe
+                       kirjallinenKoe: Option[DIAOppiaineenKoesuoritus],
+                       suullinenKoe: Option[DIAOppiaineenKoesuoritus])
 
 case class DIATutkinto(tunniste: UUID,
                        nimi: Kielistetty,

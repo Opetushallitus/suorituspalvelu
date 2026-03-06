@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIAOppiaineenOsasuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
@@ -605,7 +605,7 @@ object KoskiToSuoritusConverter {
       lahtokoulu = Lahtokoulu(aloitus.get, vahvistus.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, aloitus.map(_.getYear + 1), PERUSOPETUKSEEN_VALMISTAVA_OPETUS.defaultLuokka.get, supaTila, None, PERUSOPETUKSEEN_VALMISTAVA_OPETUS)
     )
   }
-  
+
   def toEbOppiaineenOsasuoritus(osaSuoritus: KoskiOsaSuoritus): EBOppiaineenOsasuoritus = {
     //Voiko eb-alaosasuorituksella olla useita arviointeja? Jos voi, voiko arvioinneilla olla erilaisia koodistoja? Käytetäänkö aina koodistoa arviointiasteikkoeuropeanschoolofhelsinkifinalmark?
     val parasArviointi: Option[KoskiArviointi] = {
@@ -646,8 +646,8 @@ object KoskiToSuoritusConverter {
       }).getOrElse(Set.empty))
   }
 
-  def toDIAOppiaineenOsasuoritus(osaSuoritus: KoskiOsaSuoritus): DIAOppiaineenKoesuoritus = {
-    //Voiko eb-alaosasuorituksella olla useita arviointeja? Jos voi, voiko arvioinneilla olla erilaisia koodistoja? Käytetäänkö aina koodistoa arviointiasteikkoeuropeanschoolofhelsinkifinalmark?
+  def toDIAOppiaineenKoeSuoritus(osaSuoritus: KoskiOsaSuoritus): DIAOppiaineenKoesuoritus = {
+    //Voiko dia-alaosasuorituksella olla useita arviointeja? Jos voi, voiko arvioinneilla olla erilaisia koodistoja? Käytetäänkö aina koodistoa arviointiasteikkodiatutkinto?
     val parasArviointi: Option[KoskiArviointi] = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
@@ -664,44 +664,28 @@ object KoskiToSuoritusConverter {
     )
   }
 
-  def toDIAOppiaineenOsasuoritukset(osaSuoritukset: Seq[KoskiOsaSuoritus]): Seq[DIAOppiaineenKoesuoritus] = {
-    val halutut = osaSuoritukset.filter(_.koulutusmoduuli.flatMap(_.tunniste)
-      .exists(t =>
-        Seq("kirjallinenkoe", "suullinenkoe").contains(t.koodiarvo)
-      ))
-    halutut.map(toDIAOppiaineenOsasuoritus)
-  }
-
   def toDiaOppiaine(osaSuoritus: KoskiOsaSuoritus): DIAOppiaine = {
-    val arviointi = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoammatillinen15"))
-        .getOrElse(Set.empty)
-      valitseParasArviointi(arvioinnit)
-    }
-
     val vastaavuustodistuksenTiedot = osaSuoritus.vastaavuustodistuksenTiedot
       .map(vtt =>
         DIAVastaavuustodistuksenTiedot(
           vtt.keskiarvo,
           DIALaajuus(
             vtt.lukioOpintojenLaajuus.arvo,
-            asKoodiObject(vtt.lukioOpintojenLaajuus.yksikkö.get)))
-      )
+            asKoodiObject(vtt.lukioOpintojenLaajuus.yksikkö.get))))
+
+    val kirjallinen = osaSuoritus.osasuoritukset.getOrElse(Set.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "kirjallinenkoe"))
+    val suullinen = osaSuoritus.osasuoritukset.getOrElse(Set.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "suullinenkoe"))
 
     DIAOppiaine(
       tunniste = UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
-      laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => EBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
+      laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => DIALaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
       osaAlue = osaSuoritus.koulutusmoduuli.flatMap(_.osaAlue).map(o => asKoodiObject(o)),
       vastaavuustodistuksenTiedot = vastaavuustodistuksenTiedot,
-      koesuoritukset = osaSuoritus.osasuoritukset.map((osaSuoritukset: Set[KoskiOsaSuoritus]) => {
-        //Käsitellään vain sellaiset osasuoritukset, joilla on ainakin yksi arviointi.
-        val osaSuorituksetJoillaArviointi = osaSuoritukset.filter(o => o.arviointi.exists(_.nonEmpty))
-        osaSuorituksetJoillaArviointi.map(osaSuoritus => toDIAOppiaineenOsasuoritus(osaSuoritus))
-      }).getOrElse(Set.empty))
+      kirjallinenKoe = kirjallinen.map(toDIAOppiaineenKoeSuoritus),
+      suullinenKoe = suullinen.map(toDIAOppiaineenKoeSuoritus)
+    )
   }
 
   def toDiaTutkinto(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): DIATutkinto = {
@@ -722,7 +706,8 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      suoritus.osasuoritukset.map(oss => oss.map(o => toDiaOppiaine(o))).getOrElse(Set.empty))
+      suoritus.osasuoritukset.map(oss => oss.map(o => toDiaOppiaine(o))).getOrElse(Set.empty).filter(o => o.kirjallinenKoe.isDefined || o.suullinenKoe.isDefined || o.vastaavuustodistuksenTiedot.isDefined),
+    )
   }
 
   def toEbTutkinto(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): EBTutkinto = {

@@ -1,9 +1,12 @@
 import type {
+  DIASuoritus,
   EBOppiaine,
   IBOppiaine,
+  DIAOppiaine,
   LukionOppiaine,
   LukioSuoritus,
   YOKoe,
+  Kielistetty,
 } from '@/types/ui-types';
 import { SuoritusInfoPaper } from './SuoritusInfoPaper';
 import { ophColors } from '@opetushallitus/oph-design-system';
@@ -136,65 +139,81 @@ const IBOppiaineetTable = ({
   );
 };
 
-function DiaVastaavuusTodistusOppiaineet({
-  suoritus,
+interface DiaOppiaineCategory {
+  label: string;
+  oppiaineet: Array<DIAOppiaine>;
+}
+
+const DiaOppiaineSection = ({
+  category,
+  translateKielistetty,
 }: {
-  suoritus: LukioSuoritus;
-}) {
-  const { t, translateKielistetty } = useTranslations();
+  category: DiaOppiaineCategory;
+  translateKielistetty: (kielistetty: Kielistetty) => string;
+}) => {
+  if (isEmpty(category.oppiaineet)) {
+    return null;
+  }
 
   return (
-    'kieletKirjallisuusTaide' in suoritus && (
-      <StripedTable stripeGroup="body">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('oppija.oppiaine')}</TableCell>
-            <TableCell>
-              {t('oppija.laajuus-yksikolla', {
-                unit: t('oppija.lyhenne-vuosiviikkotunti'),
-              })}
-            </TableCell>
-            <TableCell>{t('oppija.keskiarvo')}</TableCell>
-          </TableRow>
-        </TableHead>
-        {!isEmpty(suoritus.kieletKirjallisuusTaide) && (
-          <TableBody>
-            <TableRow>
-              <TableCell colSpan={3}>
-                {t('oppija.kielet-kirjallisuus-taide')}
-              </TableCell>
-            </TableRow>
-            {suoritus.kieletKirjallisuusTaide.map((oppiaine) => (
-              <TableRow key={oppiaine.tunniste}>
-                <IndentedCell>
-                  {translateKielistetty(oppiaine.nimi)}
-                </IndentedCell>
-                <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
-        {!isEmpty(suoritus.matematiikkaLuonnontieteet) && (
-          <TableBody>
-            <TableRow>
-              <TableCell colSpan={3}>
-                {t('oppija.matematiikka-ja-luonnontieteet')}
-              </TableCell>
-            </TableRow>
-            {suoritus.matematiikkaLuonnontieteet.map((oppiaine) => (
-              <TableRow key={oppiaine.tunniste}>
-                <IndentedCell>
-                  {translateKielistetty(oppiaine.nimi)}
-                </IndentedCell>
-                <TableCell>{oppiaine.laajuus}</TableCell>
-                <TableCell>{pointToComma(oppiaine.keskiarvo)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
-      </StripedTable>
-    )
+    <TableBody>
+      <TableRow>
+        <TableCell colSpan={5}>{category.label}</TableCell>
+      </TableRow>
+      {category.oppiaineet.map((oppiaine) => (
+        <TableRow key={oppiaine.tunniste}>
+          <IndentedCell>{translateKielistetty(oppiaine.nimi)}</IndentedCell>
+          <TableCell>{oppiaine?.kirjallinen}</TableCell>
+          <TableCell>{oppiaine?.suullinen}</TableCell>
+          <TableCell>{oppiaine?.vastaavuustodistus}</TableCell>
+          <TableCell>{oppiaine.laajuus}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  );
+};
+
+function DiaTutkintoOppiaineet({ suoritus }: { suoritus: DIASuoritus }) {
+  const { t, translateKielistetty } = useTranslations();
+
+  const categories: Array<DiaOppiaineCategory> = [
+    {
+      label: t('oppija.kielet-kirjallisuus-taide'),
+      oppiaineet: suoritus.kieletKirjallisuusTaide || [],
+    },
+    {
+      label: t('oppija.matematiikka-ja-luonnontieteet'),
+      oppiaineet: suoritus.matematiikkaLuonnontieteet || [],
+    },
+    {
+      label: t('oppija.yhteiskuntatieteet'),
+      oppiaineet: suoritus.yhteiskuntatieteet || [],
+    },
+  ];
+
+  return (
+    <StripedTable stripeGroup="body">
+      <TableHead>
+        <TableRow>
+          <TableCell>{t('oppija.oppiaine')}</TableCell>
+          <TableCell>{t('oppija.kirjallinen')}</TableCell>
+          <TableCell>{t('oppija.suullinen')}</TableCell>
+          <TableCell>{t('oppija.vastaavuustodistus')}</TableCell>
+          <TableCell>
+            {t('oppija.laajuus-yksikolla', {
+              unit: t('oppija.lyhenne-vuosiviikkotunti'),
+            })}
+          </TableCell>
+        </TableRow>
+      </TableHead>
+      {categories.map((category) => (
+        <DiaOppiaineSection
+          key={category.label}
+          category={category}
+          translateKielistetty={translateKielistetty}
+        />
+      ))}
+    </StripedTable>
   );
 }
 
@@ -208,8 +227,8 @@ function LukionOppiaineet({ suoritus }: { suoritus: LukioSuoritus }) {
       default:
         return <LukionOppiaineetList oppiaineet={suoritus.oppiaineet} />;
     }
-  } else if ('kieletKirjallisuusTaide' in suoritus) {
-    return <DiaVastaavuusTodistusOppiaineet suoritus={suoritus} />;
+  } else if (suoritus.koulutustyyppi === 'dia') {
+    return <DiaTutkintoOppiaineet suoritus={suoritus} />;
   }
   return null;
 }
