@@ -149,7 +149,7 @@ export const DIA_TUTKINTO_SUORITUS: SuoritusSpec = {
     title: `Deutsche Internationale Abitur; Reifeprüfung (1.9.2012 ${NDASH} 4.6.2016)`,
     oppilaitos: 'Helsingin Saksalainen koulu',
     tila: 'Suoritus valmis',
-    valmistusmipaiva: '4.6.2016',
+    valmistumispaiva: '4.6.2016',
     suorituskieli: 'englanti',
   },
   additionalChecks: async (paper) => {
