@@ -241,7 +241,9 @@
     "PAATTYNYT": "päättynyt"
   },
   "suoritustapa": {
-    "NAYTTOTUTKINTO": "Näyttötutkinto"
+    "NAYTTO": "Näyttötutkinto",
+    "OPS": "Ammatillinen perustutkinto",
+    "REFORMI": "Reformin mukainen näyttö"
   },
   "muokkaus": {
     "suoritus": {

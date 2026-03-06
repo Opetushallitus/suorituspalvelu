@@ -668,7 +668,7 @@ object MockEntityToUIConverter {
         painotettuKeskiarvo = Optional.of(4.34),
         ytot = java.util.List.of(),
         ammatillisenTutkinnonOsat = java.util.List.of(),
-        suoritustapa = Optional.of(SuoritusTapaUI.NAYTTOTUTKINTO)
+        suoritustapa = Optional.of(SuoritusTapaUI.NAYTTO)
       )
     )
 

@@ -13,7 +13,7 @@ export const KokonaislaajuusRow = ({
   colSpan = 2,
 }: {
   osat: Array<{ laajuus?: number }>;
-  maxKokonaislaajuus: number;
+  maxKokonaislaajuus: number | undefined;
   colSpan?: number;
 }) => {
   const { t } = useTranslations();
@@ -25,7 +25,7 @@ export const KokonaislaajuusRow = ({
         <TableCell colSpan={colSpan}>
           {t('oppija.lyhenne-yhteensa')}{' '}
           <SemiBold>
-            {totalLaajuus} / {maxKokonaislaajuus}{' '}
+            {totalLaajuus} {maxKokonaislaajuus ? '/ ' + maxKokonaislaajuus : ''}{' '}
             {t('oppija.lyhenne-osaamispiste')}
           </SemiBold>
         </TableCell>

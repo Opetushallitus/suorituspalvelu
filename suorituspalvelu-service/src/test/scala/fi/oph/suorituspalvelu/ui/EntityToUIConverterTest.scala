@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organ
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTOTUTKINTO
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.{NAYTTO, OPS}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.junit.jupiter.api.*
@@ -151,7 +151,7 @@ class EntityToUIConverterTest {
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
-      Optional.empty()
+      Optional.of(SuoritusTapaUI.REFORMI)
     )), EntityToUIConverter.getAmmatillisetPerusTutkinnot(Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty))))
   }
 
@@ -229,7 +229,7 @@ class EntityToUIConverterTest {
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
-      Optional.of(NAYTTOTUTKINTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
+      Optional.of(NAYTTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
 
@@ -315,7 +315,7 @@ class EntityToUIConverterTest {
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
-      Optional.of(NAYTTOTUTKINTO)
+      Optional.of(OPS)
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
 
