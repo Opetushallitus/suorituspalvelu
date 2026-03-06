@@ -230,28 +230,7 @@ object MockEntityToUIConverter {
     ))
 
   def getDiaTutkinto(): Option[DIATutkintoUI] =
-    Some(DIATutkintoUI(
-      tunniste = UUID.randomUUID(),
-      nimi = DIATutkintoNimiUI(
-        fi = Optional.of("DIA-tutkinto"),
-        sv = Optional.of("DIA-tutkinto sv"),
-        en = Optional.of("DIA-tutkinto en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi"
-    ))
-
-  def getDiaVastaavuusTodistus(): Option[DIAVastaavuusTodistusUI] = None
+    None
 
   def getEBTutkinto(): Option[EBTutkintoUI] =
     Some(EBTutkintoUI(
@@ -1202,7 +1181,6 @@ object MockEntityToUIConverter {
       lukionOppimaara = getLukionOppimaara().toJava,
       lukionOppiaineenOppimaarat = getLukionOppiaineenOppimaarat().asJava,
       diaTutkinto = getDiaTutkinto().toJava,
-      diaVastaavuusTodistus = getDiaVastaavuusTodistus().toJava,
       ebTutkinto = getEBTutkinto().toJava,
       ibTutkinto = getIBTutkinto().toJava,
       preIB = getPreIB().toJava,

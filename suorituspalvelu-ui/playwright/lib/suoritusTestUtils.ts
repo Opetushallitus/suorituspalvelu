@@ -146,32 +146,28 @@ export const LUKION_OPPIAINEEN_OPPIMAARA_SUORITUS: SuoritusSpec = {
 
 export const DIA_TUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: `DIA-tutkinto (31.12.2023 ${NDASH} 31.12.2024)`,
-    oppilaitos: 'Ylioppilastutkintolautakunta',
+    title: `Deutsche Internationale Abitur; Reifeprüfung (1.9.2012 ${NDASH} 4.6.2016)`,
+    oppilaitos: 'Helsingin Saksalainen koulu',
     tila: 'Suoritus valmis',
-    valmistumispaiva: '31.12.2024',
-    suorituskieli: 'suomi',
-  },
-};
-
-export const DIA_VASTAAVUUSTODISTUS_SUORITUS: SuoritusSpec = {
-  perustiedot: {
-    title: `DIA-vastaavuustodistus (31.12.2023 ${NDASH} 31.12.2024)`,
-    oppilaitos: 'Ylioppilastutkintolautakunta',
-    tila: 'Suoritus valmis',
-    valmistumispaiva: '31.12.2024',
-    suorituskieli: 'suomi',
+    valmistumispaiva: '4.6.2016',
+    suorituskieli: 'englanti',
   },
   additionalChecks: async (paper) => {
     const diaTable = paper.getByRole('table');
     await expectTableValues(diaTable, [
-      ['Oppiaine', 'Laajuus (vvt)', 'Keskiarvo'],
+      [
+        'Oppiaine',
+        'Kirjallinen',
+        'Suullinen',
+        'Vastaavuustodistus',
+        'Laajuus (vvt)',
+      ],
       ['Kielet, kirjallisuus, taide'],
-      ['A-kieli, englanti', '3', '8,5'],
-      ['Historia', '2', '8,5'],
+      ['Äidinkieli', '5', '6', '4', '10'],
       ['Matematiikka ja luonnontieteet'],
-      ['Matematiikka', '3', '6'],
-      ['Kuvataide', '3', '8,5'],
+      ['Matematiikka', '3', '4', '6', '8'],
+      ['Yhteiskuntatieteet'],
+      ['Historia', '6', '5', '4', '6'],
     ]);
   },
 };

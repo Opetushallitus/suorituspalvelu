@@ -336,86 +336,68 @@
     }
   ],
   "diaTutkinto": {
-    "tunniste": "630d9fa7-ec19-4e26-bde8-9e2af4e4b6ac",
+    "tunniste": "2c95a4d9-b1e8-4e45-b042-2a9de6393b6b",
     "nimi": {
-      "fi": "DIA-tutkinto",
-      "sv": "DIA-tutkinto sv",
-      "en": "DIA-tutkinto en"
+      "fi": "Deutsche Internationale Abitur; Reifeprüfung",
+      "sv": "Deutsche Internationale Abitur; Reifeprüfung",
+      "en": "Deutsche Internationale Abitur; Reifeprüfung"
     },
     "oppilaitos": {
       "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
+        "fi": "Helsingin Saksalainen koulu",
+        "sv": "Helsingin Saksalainen koulu",
+        "en": "Helsingin Saksalainen koulu"
       },
-      "oid": "1.2.3.4"
+      "oid": "1.2.246.562.10.45093614456"
     },
     "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI"
-  },
-  "diaVastaavuusTodistus": {
-    "tunniste": "3a018106-dee4-4826-ab1c-56b88e0d1a90",
-    "nimi": {
-      "fi": "DIA-vastaavuustodistus",
-      "sv": "DIA-vastaavuustodistus sv",
-      "en": "DIA-vastaavuustodistus en"
+    "aloituspaiva": "2012-09-01",
+    "valmistumispaiva": "2016-06-04",
+    "suorituskieli": {
+      "fi": "englanti",
+      "sv": "engelska",
+      "en": "English"
     },
-    "oppilaitos": {
-      "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
-      },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI",
     "kieletKirjallisuusTaide": [
       {
-        "tunniste": "883049c1-f544-45c3-8122-f0a0746df4f6",
+        "tunniste": "91a81c6c-1f3d-4887-9e76-9aafdb02e114",
         "nimi": {
-          "fi": "A-kieli, englanti",
-          "sv": "A-kieli, englanti sv",
-          "en": "A-kieli, englanti en"
+          "fi": "Äidinkieli",
+          "sv": "Modersmål",
+          "en": "Mother tongue"
         },
-        "laajuus": 3,
-        "keskiarvo": 8.5
-      },
-      {
-        "tunniste": "c87c2468-ea25-49fd-827b-0224695a43c0",
-        "nimi": {
-          "fi": "Historia",
-          "sv": "Historia sv",
-          "en": "Historia en"
-        },
-        "laajuus": 2,
-        "keskiarvo": 8.5
+        "laajuus": 10.0,
+        "kirjallinen": "5",
+        "suullinen": "6",
+        "vastaavuustodistus": 4.0
       }
     ],
     "matematiikkaLuonnontieteet": [
       {
-        "tunniste": "747756ce-06c5-4176-b020-74aa4d29429c",
+        "tunniste": "21a81c6c-2f3d-4187-9a76-9aafdbs2e112",
         "nimi": {
           "fi": "Matematiikka",
-          "sv": "Matematiikka sv",
-          "en": "Matematiikka en"
+          "sv": "Matematik",
+          "en": "Mathematics"
         },
-        "laajuus": 3,
-        "keskiarvo": 6
-      },
+        "laajuus": 8.0,
+        "kirjallinen": "3",
+        "suullinen": "4",
+        "vastaavuustodistus": 6.0
+      }
+    ],
+    "yhteiskuntatieteet": [
       {
-        "tunniste": "618a7490-49b3-42a6-baef-5199cdb02ee6",
+        "tunniste": "31a81c5c-2f3b-4187-9a75-2aafabs2e113",
         "nimi": {
-          "fi": "Kuvataide",
-          "sv": "Kuvataide sv",
-          "en": "Kuvataide en"
+          "fi": "Historia",
+          "sv": "Historia",
+          "en": "History"
         },
-        "laajuus": 3,
-        "keskiarvo": 8.5
+        "laajuus": 6.0,
+        "kirjallinen": "6",
+        "suullinen": "5",
+        "vastaavuustodistus": 4.0
       }
     ]
   },

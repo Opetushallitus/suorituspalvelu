@@ -7,7 +7,7 @@ import type {
   ILukionOppimaaraUI,
   ILukionOppiaineenOppimaara,
   IYOTutkinto,
-  IDIAVastaavuusTodistusUI,
+  IDIATutkintoUI,
   IEBTutkintoUI,
   IIBTutkinto,
   IPreIB,
@@ -34,7 +34,7 @@ import type {
   IAvainArvoContainerUI,
   IYliajo,
   IOppijanValintaDataSuccessResponse,
-  IDIATutkintoUI,
+  IDIAOppiaineUI,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTilaUI;
@@ -78,6 +78,8 @@ export type IBOppiaine = IIBOppiaine;
 
 export type EBOppiaine = IEBOppiaineUI;
 
+export type DIAOppiaine = IDIAOppiaineUI;
+
 export type KorkeakouluSuoritus = IKKSuoritusUI & {
   koulutustyyppi: 'korkeakoulutus';
 };
@@ -90,15 +92,19 @@ export type IBSuoritus = IIBTutkinto & {
   koulutustyyppi: 'ib';
 };
 
+export type DIASuoritus = IDIATutkintoUI & {
+  koulutustyyppi: 'dia';
+};
+
 export type LukioSuoritus =
   | EBSuoritus
   | IBSuoritus
+  | DIASuoritus
   | ((
       | IYOTutkinto
       | ILukionOppimaaraUI
       | ILukionOppiaineenOppimaara
       | IDIATutkintoUI
-      | IDIAVastaavuusTodistusUI
       | IPreIB
     ) & { koulutustyyppi: 'lukio' });
 
