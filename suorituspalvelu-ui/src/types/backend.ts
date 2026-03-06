@@ -105,8 +105,8 @@ export interface IDIAOppiaineUI {
   tunniste: string;
   nimi: IDIAOppiaineNimiUI;
   laajuus?: number;
-  kirjallinen?: number;
-  suullinen?: number;
+  kirjallinen?: string;
+  suullinen?: string;
   vastaavuustodistus?: number;
 }
 
@@ -123,7 +123,7 @@ export interface IDIATutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
-  suorituskieli: string;
+  suorituskieli: ISuorituskieliUI;
   kieletKirjallisuusTaide: IDIAOppiaineUI[];
   matematiikkaLuonnontieteet: IDIAOppiaineUI[];
   yhteiskuntatieteet: IDIAOppiaineUI[];

@@ -32,6 +32,7 @@ import type {
   IAvainArvoContainerUI,
   IYliajo,
   IOppijanValintaDataSuccessResponse,
+  IDIAOppiaineUI,
 } from './backend';
 
 export type SuorituksenTila = SuoritusTilaUI;
@@ -74,6 +75,8 @@ export type LukionOppiaine = ILukionOppiaine | IEBOppiaineUI | IIBOppiaine;
 export type IBOppiaine = IIBOppiaine;
 
 export type EBOppiaine = IEBOppiaineUI;
+
+export type DIAOppiaine = IDIAOppiaineUI;
 
 export type KorkeakouluSuoritus = IKKSuoritusUI & {
   koulutustyyppi: 'korkeakoulutus';
