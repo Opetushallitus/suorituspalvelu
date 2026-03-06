@@ -30,7 +30,7 @@ const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
   const config = useConfig();
   return (
     <ExternalLink
-      href={config.routes.yleiset.oppijaNumeroLinkUrl + oppijaNumero}
+      href={config.routes.yleiset.oppijaNumeroLinkUrl + oppijaNumero + '?permissionCheckService=ATARU'}
     >
       {oppijaNumero}
     </ExternalLink>
