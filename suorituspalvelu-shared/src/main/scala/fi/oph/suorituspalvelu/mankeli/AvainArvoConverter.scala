@@ -353,6 +353,7 @@ object AvainArvoConverter {
 
   private def onKelpaavaOppimaara(oppimaara: PerusopetuksenOppimaara, deadline: LocalDate): Boolean = {
     val deadlineOhitettu = LocalDate.now().isAfter(deadline)
+    val ysiluokkalainen = oppimaara.luokkaAste.contains(9)
     val arvosanoissaNelosia = oppimaara.aineet.exists(a => a.pakollinen && a.arvosana.arvo.equals("4"))
     val suoritusValmis = oppimaara.vahvistusPaivamaara.isDefined
     val suoritusKesken = oppimaara.supaTila.equals(SuoritusTila.KESKEN)
@@ -361,7 +362,7 @@ object AvainArvoConverter {
     if (deadlineOhitettu) {
       (suoritusValmis && vahvistettuAjoissa) || (suoritusKesken && arvosanoissaNelosia && !oppimaara.vuosiluokkiinSitoutumatonOpetus)
     } else {
-      suoritusValmis || suoritusKesken
+      (oppimaara.luokkaAste.isEmpty || ysiluokkalainen) && (suoritusValmis || suoritusKesken)
     }
   }
 
