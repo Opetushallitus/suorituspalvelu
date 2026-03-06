@@ -50,6 +50,7 @@ object KantaOperaatiot {
       classOf[KKOpiskeluoikeus],
       classOf[KKSynteettinenOpiskeluoikeus],
       classOf[AmmatillinenPerustutkinto],
+      classOf[AmmatillinenTutkintoOsittainen],
       classOf[AmmattiTutkinto],
       classOf[GeneerinenOpiskeluoikeus],
       classOf[YOOpiskeluoikeus],

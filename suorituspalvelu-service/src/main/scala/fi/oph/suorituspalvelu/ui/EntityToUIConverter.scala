@@ -1,10 +1,11 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkintoOsittainen, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTO
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
@@ -418,8 +419,6 @@ object EntityToUIConverter {
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(t => {
-        // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
-        val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
         Ammatillinentutkinto(
           t.tunniste,
           nimi = AmmatillinentutkintoNimi(
@@ -462,10 +461,12 @@ object EntityToUIConverter {
                   en = oa.nimi.en.toJava
                 ),
                 laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                arvosana = oa.arvosana.map(a => a.arvo).toJava
-              )).toList.asJava
+                arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+              )).toList.asJava,
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
             )).toList.asJava,
-          ammatillisenTutkinnonOsat = if(t.suoritustapa.arvo!="ops") java.util.List.of() else t.osat
+          ammatillisenTutkinnonOsat = t.osat
             .filter(o => !o.yto)
             .map(o => AmmatillisenTutkinnonOsa(
               o.tunniste,
@@ -483,10 +484,101 @@ object EntityToUIConverter {
                   en = oa.nimi.en.toJava
                 ),
                 laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                arvosana = oa.arvosana.map(a => a.arvo).toJava
-              )).toList.asJava
+                arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+              )).toList.asJava,
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
             )).toList.asJava,
-          suoritustapa = if (nayttoTutkinto) Optional.of(SuoritusTapaUI.NAYTTOTUTKINTO) else Optional.empty()
+          suoritustapa = Optional.of(SuoritusTapaUI.valueOf(t.suoritustapa.arvo.toUpperCase)),
+        )
+      }).toList
+
+  def getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[OsittainenAmmatillinenTutkintoUI] =
+    opiskeluoikeudet
+      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
+      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+      .flatMap(o => o.suoritukset)
+      .filter(s => s.isInstanceOf[AmmatillinenTutkintoOsittainen])
+      .map(s => s.asInstanceOf[AmmatillinenTutkintoOsittainen])
+      .filter(t => t.korotettuOpiskeluoikeusOid.isDefined)
+      .map(t => {
+        OsittainenAmmatillinenTutkintoUI(
+          t.tunniste,
+          nimi = AmmatillinentutkintoNimi(
+            t.nimi.fi.toJava,
+            t.nimi.sv.toJava,
+            t.nimi.en.toJava
+          ),
+          oppilaitos = AmmatillinenOppilaitos(
+            AmmatillinenOppilaitosNimi(
+              t.oppilaitos.nimi.fi.toJava,
+              t.oppilaitos.nimi.sv.toJava,
+              t.oppilaitos.nimi.en.toJava
+            ),
+            t.oppilaitos.oid,
+          ),
+          tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
+          aloituspaiva = t.aloitusPaivamaara.toJava,
+          valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          suorituskieli = t.suoritusKieli.arvo,
+          korotettuPainotettuKeskiarvo = t.korotettuKeskiarvo.toJava,
+          ytot = t.osat
+            .filter(o => o.yto)
+            .filter(o => o.osaAlueet.exists(osa => osa.korotettu.isDefined))
+            .map(o => YTO(
+              o.tunniste,
+              nimi = YTONimi(
+                fi = o.nimi.fi.toJava,
+                sv = o.nimi.sv.toJava,
+                en = o.nimi.en.toJava
+              ),
+              laajuus = o.laajuus.map(l => l.arvo).toJava,
+              arvosana = o.arvosana.map(a => YTOArvosana(
+                a.nimi.fi.toJava,
+                a.nimi.sv.toJava,
+                a.nimi.en.toJava
+              )).toJava,
+              osaAlueet = o.osaAlueet
+                .filter(oa => oa.korotettu.isDefined)
+                .map(oa => YTOOsaAlue(
+                  nimi = YTOOsaAlueNimi(
+                    fi = oa.nimi.fi.toJava,
+                    sv = oa.nimi.sv.toJava,
+                    en = oa.nimi.en.toJava
+                  ),
+                  laajuus = oa.laajuus.map(l => l.arvo).toJava,
+                  arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                )).toList.asJava,
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+            )).toList.asJava,
+          ammatillisenTutkinnonOsat = t.osat
+            .filter(o => !o.yto)
+            .filter(o => o.osaAlueet.exists(osa => osa.korotettu.isDefined))
+            .map(o => AmmatillisenTutkinnonOsa(
+              o.tunniste,
+              nimi = AmmatillisenTutkinnonOsaNimi(
+                o.nimi.fi.toJava,
+                o.nimi.sv.toJava,
+                o.nimi.en.toJava
+              ),
+              laajuus = o.laajuus.map(l => l.arvo).toJava,
+              arvosana = o.arvosana.map(a => a.koodi.arvo).toJava,
+              osaAlueet = o.osaAlueet
+                .filter(oa => oa.korotettu.isDefined)
+                .map(oa => AmmatillisenTutkinnonOsaAlue(
+                  nimi = AmmatillisenTutkinnonOsaAlueNimi(
+                    fi = oa.nimi.fi.toJava,
+                    sv = oa.nimi.sv.toJava,
+                    en = oa.nimi.en.toJava
+                  ),
+                  laajuus = oa.laajuus.map(l => l.arvo).toJava,
+                  arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                )).toList.asJava,
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+            )).toList.asJava,
+          suoritustapa = Optional.empty()
         )
       }).toList
 
@@ -817,6 +909,7 @@ object EntityToUIConverter {
         ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
         preIB =                                     getPreIB(opiskeluoikeudet).toJava,
         ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet).asJava,
+        osittaisetAmmatillisetTutkinnot =           getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet).asJava,
         ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
         erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,
         telmat =                                    getTelmat(opiskeluoikeudet).asJava,

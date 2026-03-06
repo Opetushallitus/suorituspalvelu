@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organ
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTOTUTKINTO
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.{NAYTTO, OPS}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.junit.jupiter.api.*
@@ -58,8 +58,10 @@ class EntityToUIConverterTest {
             Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
             Koodi("106915", "ammatillisenoppiaineet", None),
             Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
-            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
-          ))
+            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+            None
+          )),
+          None
         ),
         AmmatillisenTutkinnonOsa(
           UUID.randomUUID(),
@@ -69,7 +71,8 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None), Kielistetty(Some("Hyväksytty"), None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty
+          Set.empty,
+          None
         )
       )
     )
@@ -118,12 +121,37 @@ class EntityToUIConverterTest {
               oa.nimi.en.toJava
             ),
             oa.laajuus.map(l => l.arvo).toJava,
-            oa.arvosana.map(a => a.arvo).toJava
-          )).toList.asJava
+            oa.arvosana.map(a => a.arvo).toJava,
+            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          )).toList.asJava,
+          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
-      java.util.List.of(),
-      Optional.empty()
+      tutkinto.osat
+        .filter(osa => !osa.yto)
+        .map(osa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsa(
+          osa.tunniste,
+          AmmatillisenTutkinnonOsaNimi(
+            osa.nimi.fi.toJava,
+            osa.nimi.sv.toJava,
+            osa.nimi.en.toJava
+          ),
+          osa.laajuus.map(l => l.arvo).toJava,
+          osa.arvosana.map(_.koodi.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
+            AmmatillisenTutkinnonOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava,
+            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          )).toList.asJava,
+          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+        ))
+        .toList.asJava,
+      Optional.of(SuoritusTapaUI.REFORMI)
     )), EntityToUIConverter.getAmmatillisetPerusTutkinnot(Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty))))
   }
 
@@ -150,7 +178,8 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           None,
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty
+          Set.empty,
+          None
         )
       )
     )
@@ -176,8 +205,31 @@ class EntityToUIConverterTest {
       tutkinto.suoritusKieli.arvo,
       Optional.empty(),
       java.util.List.of(),
-      java.util.List.of(),
-      Optional.of(NAYTTOTUTKINTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
+      tutkinto.osat
+        .filter(osa => !osa.yto)
+        .map(osa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsa(
+          osa.tunniste,
+          AmmatillisenTutkinnonOsaNimi(
+            osa.nimi.fi.toJava,
+            osa.nimi.sv.toJava,
+            osa.nimi.en.toJava
+          ),
+          osa.laajuus.map(l => l.arvo).toJava,
+          osa.arvosana.map(_.koodi.arvo).toJava,
+          osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
+            AmmatillisenTutkinnonOsaAlueNimi(
+              oa.nimi.fi.toJava,
+              oa.nimi.sv.toJava,
+              oa.nimi.en.toJava
+            ),
+            oa.laajuus.map(l => l.arvo).toJava,
+            oa.arvosana.map(a => a.arvo).toJava,
+            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          )).toList.asJava,
+          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+        ))
+        .toList.asJava,
+      Optional.of(NAYTTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
 
@@ -210,8 +262,10 @@ class EntityToUIConverterTest {
             Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
             Koodi("106915", "ammatillisenoppiaineet", None),
             Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
-            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
-          ))
+            Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
+            None
+          )),
+          None
         )
       )
     )
@@ -255,11 +309,13 @@ class EntityToUIConverterTest {
               oa.nimi.en.toJava
             ),
             oa.laajuus.map(l => l.arvo).toJava,
-            oa.arvosana.map(a => a.arvo).toJava
-          )).toList.asJava
+            oa.arvosana.map(a => a.arvo).toJava,
+            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          )).toList.asJava,
+          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
-      Optional.of(NAYTTOTUTKINTO)
+      Optional.of(OPS)
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
   }
 
