@@ -407,9 +407,6 @@ object EntityToUIConverter {
   def getIBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[IBTutkinto] =
     None
 
-  def getPreIB(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PreIB] =
-    None
-
   def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Ammatillinentutkinto] =
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
@@ -815,7 +812,6 @@ object EntityToUIConverter {
         diaVastaavuusTodistus =                     getDiaVastaavuusTodistus(opiskeluoikeudet).toJava,
         ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
         ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
-        preIB =                                     getPreIB(opiskeluoikeudet).toJava,
         ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet).asJava,
         ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
         erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,

@@ -632,26 +632,6 @@
       }
     ]
   },
-  "preIB": {
-    "tunniste": "f90889f2-c6d1-4677-9461-6d717b05c4c1",
-    "nimi": {
-      "fi": "Pre-IB",
-      "sv": "Pre-IB sv",
-      "en": "Pre-IB en"
-    },
-    "oppilaitos": {
-      "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
-      },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI"
-  },
   "ammatillisetPerusTutkinnot": [
     {
       "tunniste": "30cbef16-19d1-49ea-b52c-a7063998f640",
