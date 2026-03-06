@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, DIAOppiaine, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, DIAOppiaine, DIATutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -347,7 +347,7 @@ object EntityToUIConverter {
     List.empty[LukionOppiaineenOppimaara]
   }
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[DIATutkintoUI] = {
+  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[DIATutkintoUI] = {
     def toDiaOppiaineUI(oppiaine: DIAOppiaine) = {
       DIAOppiaineUI(
         tunniste = oppiaine.tunniste,
@@ -357,13 +357,13 @@ object EntityToUIConverter {
           en = oppiaine.nimi.en.toJava
         ),
         laajuus = oppiaine.laajuus.map(_.arvo).toJava,
-        kirjallinen = oppiaine.kirjallinenKoe.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
-        suullinen = oppiaine.suullinenKoe.map(_.arvosana.arvosana.arvo).map(_.toInt).toJava,
-        vastaavuustodistus = oppiaine.vastaavuustodistuksenTiedot.map(_.keskiarvo).map(_.toInt).toJava
+        kirjallinen = oppiaine.kirjallinenKoe.map(_.arvosana.arvosana.arvo).toJava,
+        suullinen = oppiaine.suullinenKoe.map(_.arvosana.arvosana.arvo).toJava,
+        vastaavuustodistus = oppiaine.vastaavuustodistuksenTiedot.map(_.keskiarvo).toJava
       )
     }
 
-    val dia =
+    val dia: Option[DIATutkinto] =
       opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
         .flatMap(_.suoritukset).collectFirst { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }
 
@@ -393,7 +393,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(diaTutkinto.supaTila.toString),
         aloituspaiva = diaTutkinto.aloitusPaivamaara.toJava,
         valmistumispaiva = diaTutkinto.vahvistusPaivamaara.toJava,
-        suorituskieli = diaTutkinto.suorituskieli.arvo,
+        suorituskieli = getSuorituskieliFromKoodi(Some(diaTutkinto.suorituskieli.arvo), koodistoProvider).get(),
         kieletKirjallisuusTaide = kieletKirjallisuusTaide.asJava,
         matematiikkaLuonnontieteet = matematiikkaLuonnontieteet.asJava,
         yhteiskuntatieteet = yhteiskuntatieteet.asJava)
@@ -861,7 +861,7 @@ object EntityToUIConverter {
         yoTutkinnot =                               getYOTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
         lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
         lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-        diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet).toJava,
+        diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
         ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
         ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
         preIB =                                     getPreIB(opiskeluoikeudet).toJava,

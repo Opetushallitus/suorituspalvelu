@@ -438,7 +438,7 @@ case class DIATutkintoUI(
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
+  @BeanProperty suorituskieli: SuorituskieliUI,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty kieletKirjallisuusTaide: java.util.List[DIAOppiaineUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -469,11 +469,11 @@ case class DIAOppiaineUI(
   )
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(example = "6", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty kirjallinen: Optional[Int],
+  @BeanProperty kirjallinen: Optional[String], //Kirjallisen kokeen arvosana, koodistosta arviointiasteikkodiatutkinto
   @(Schema @field)(example = "8", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty suullinen: Optional[Int],
+  @BeanProperty suullinen: Optional[String], //Suullisen kokeen arvosana, koodistosta arviointiasteikkodiatutkinto
   @(Schema @field)(example = "7", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty vastaavuustodistus: Optional[Int]
+  @BeanProperty vastaavuustodistus: Optional[BigDecimal] //Vastaavuustodistuksen tiedoista poimittu keskiarvo
 )
 
 case class EBOppiaineNimiUI(

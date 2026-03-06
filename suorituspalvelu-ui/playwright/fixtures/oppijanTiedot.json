@@ -353,7 +353,11 @@
     "tila": "VALMIS",
     "aloituspaiva": "2012-09-01",
     "valmistumispaiva": "2016-06-04",
-    "suorituskieli": "EN",
+    "suorituskieli": {
+      "fi": "englanti",
+      "sv": "engelska",
+      "en": "English"
+    },
     "kieletKirjallisuusTaide": [
       {
         "tunniste": "91a81c6c-1f3d-4887-9e76-9aafdb02e114",
@@ -363,9 +367,9 @@
           "en": "Mother tongue"
         },
         "laajuus": 10.0,
-        "kirjallinen": 5,
-        "suullinen": 6,
-        "vastaavuustodistus": 4
+        "kirjallinen": "5",
+        "suullinen": "6",
+        "vastaavuustodistus": 4.0
       }
     ],
     "matematiikkaLuonnontieteet": [
@@ -377,9 +381,9 @@
           "en": "Mathematics"
         },
         "laajuus": 8.0,
-        "kirjallinen": 3,
-        "suullinen": 4,
-        "vastaavuustodistus": 6
+        "kirjallinen": "3",
+        "suullinen": "4",
+        "vastaavuustodistus": 6.0
       }
     ],
     "yhteiskuntatieteet": [
@@ -391,9 +395,9 @@
           "en": "History"
         },
         "laajuus": 6.0,
-        "kirjallinen": 6,
-        "suullinen": 5,
-        "vastaavuustodistus": 4
+        "kirjallinen": "6",
+        "suullinen": "5",
+        "vastaavuustodistus": 4.0
       }
     ]
   },
