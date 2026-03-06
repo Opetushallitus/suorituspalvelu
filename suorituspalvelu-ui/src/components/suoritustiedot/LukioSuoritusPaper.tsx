@@ -102,37 +102,40 @@ const IBOppiaineetTable = ({
   const { t, translateKielistetty } = useTranslations();
 
   return (
-    <StripedTable stripeGroup="body">
-      <TableHead>
-        <TableRow>
-          <TableCell>{t('oppija.oppiaine')}</TableCell>
-          <TableCell>
-            {t('oppija.laajuus-yksikolla', {
-              unit: t('oppija.lyhenne-vuosiviikkotunti'),
-            })}
-          </TableCell>
-          <TableCell>{t('oppija.predicted-grade')}</TableCell>
-          <TableCell>{t('oppija.arvosana')}</TableCell>
-        </TableRow>
-      </TableHead>
-      {oppiaineet.map((oppiaine) => (
-        <TableBody key={oppiaine.tunniste}>
+    !isEmpty(oppiaineet) && (
+      <StripedTable stripeGroup="body">
+        <TableHead>
           <TableRow>
-            <TableCell colSpan={4}>
-              {translateKielistetty(oppiaine.nimi)}
+            <TableCell>{t('oppija.oppiaine')}</TableCell>
+            <TableCell>
+              {t('oppija.laajuus-yksikolla', {
+                unit: t('oppija.lyhenne-vuosiviikkotunti'),
+              })}
             </TableCell>
+            <TableCell>{t('oppija.predicted-grade')}</TableCell>
           </TableRow>
-          {oppiaine.suoritukset.map((suoritus) => (
-            <TableRow key={suoritus.tunniste}>
-              <IndentedCell>{translateKielistetty(suoritus.nimi)}</IndentedCell>
-              <TableCell>{suoritus.laajuus}</TableCell>
-              <TableCell>{suoritus.predictedGrade}</TableCell>
-              <TableCell>{suoritus.arvosana}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      ))}
-    </StripedTable>
+        </TableHead>
+        {oppiaineet.map((oppiaine) => {
+          const oppiaineNimi = translateKielistetty(oppiaine.nimi);
+          return (
+            <TableBody key={oppiaineNimi}>
+              <TableRow>
+                <TableCell colSpan={4}>{oppiaineNimi}</TableCell>
+              </TableRow>
+              {oppiaine.suoritukset.map((suoritus) => (
+                <TableRow key={suoritus.tunniste}>
+                  <IndentedCell>
+                    {translateKielistetty(suoritus.nimi)}
+                  </IndentedCell>
+                  <TableCell>{suoritus.laajuus}</TableCell>
+                  <TableCell>{suoritus.predictedGrade}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          );
+        })}
+      </StripedTable>
+    )
   );
 };
 
