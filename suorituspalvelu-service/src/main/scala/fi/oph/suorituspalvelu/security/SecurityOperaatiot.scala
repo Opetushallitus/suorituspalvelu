@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.security
 
+import fi.oph.suorituspalvelu.security.SecurityConstants.{HAKUKOHDERYHMA_OID_PREFIX, ORGANISAATIO_OID_PREFIX}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -57,10 +58,10 @@ class SecurityOperaatiot(
 
   def getAuthorization(tarvittavatRoolit: Set[String], organisaatioProvider: OrganisaatioProvider, myosHakukohderyhmat: Boolean = false): VirkailijaAuthorization = {
     val rekPit = onRekisterinpitaja()
-    val organisaatiotOikeuksista = if (!rekPit) getOidsOikeuksille(tarvittavatRoolit, "1.2.246.562.10.") else Set.empty
+    val organisaatiotOikeuksista = if (!rekPit) getOidsOikeuksille(tarvittavatRoolit, ORGANISAATIO_OID_PREFIX) else Set.empty
     //Käsitellään suorat oikeudet niin, että käyttäjällä on samat oikeudet myös näiden aliorganisaatioille
     val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
-    val hakukohderyhmatOikeuksista = if (!rekPit && myosHakukohderyhmat) getOidsOikeuksille(tarvittavatRoolit, "1.2.246.562.28.") else Set.empty
+    val hakukohderyhmatOikeuksista = if (!rekPit && myosHakukohderyhmat) getOidsOikeuksille(tarvittavatRoolit, HAKUKOHDERYHMA_OID_PREFIX) else Set.empty
     VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot ++ hakukohderyhmatOikeuksista)
   }
 

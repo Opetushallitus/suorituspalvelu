@@ -3,6 +3,9 @@ package fi.oph.suorituspalvelu.security
 object SecurityConstants {
 
   final val OPH_ORGANISAATIO_OID                    = "1.2.246.562.10.00000000001"
+  
+  final val ORGANISAATIO_OID_PREFIX                 = "1.2.246.562.10."
+  final val HAKUKOHDERYHMA_OID_PREFIX               = "1.2.246.562.28."
 
   final val SECURITY_ROOLI_PREFIX                   = "ROLE_APP_"
 
