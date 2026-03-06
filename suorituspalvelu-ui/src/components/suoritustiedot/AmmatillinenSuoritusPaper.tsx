@@ -68,7 +68,9 @@ export const AmmatillinenSuoritusPaper = ({
             <TutkinnonOsatTable
               tutkinnonOsat={suoritus.ytot}
               title={t('oppija.yhteiset-tutkinnon-osat')}
-              maxKokonaislaajuus={35}
+              maxKokonaislaajuus={
+                suoritus.suoritustapa == 'REFORMI' ? 35 : undefined
+              }
               testId="yhteiset-tutkinnon-osat-table"
             />
           )}
@@ -76,7 +78,9 @@ export const AmmatillinenSuoritusPaper = ({
             <TutkinnonOsatTable
               tutkinnonOsat={suoritus.ammatillisenTutkinnonOsat}
               title={t('oppija.ammatilliset-tutkinnon-osat')}
-              maxKokonaislaajuus={145}
+              maxKokonaislaajuus={
+                suoritus.suoritustapa == 'REFORMI' ? 145 : undefined
+              }
               testId="ammatilliset-tutkinnon-osat-table"
             />
           )}
