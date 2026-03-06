@@ -45,24 +45,23 @@ class SecurityOperaatiot(
   def onUIKayttaja(): Boolean =
     onRekisterinpitaja() || onOrganisaationKatselija() || onHakeneidenKatselija()
 
-  //Todo, otetaanko huomioon hakukohderyhmäkohtaiset oikeudet? (eri solmuluokka)
-  private def getOrganisaatioOidsFromRoolit(roolit: Set[String]): Set[String] = {
-    roolit.filter(rooli => rooli.contains("1.2.246.562.10."))
-      .map(rooliWithOrg => rooliWithOrg.split("_").last)
-  }
+  private def getOidsFromRoolit(roolit: Set[String], oidPrefix: String): Set[String] =
+    roolit.filter(_.contains(oidPrefix))
+      .map(_.split("_").last)
 
-  //Filtteröidään oikeuksista sellaiset organisaatiot, joihin löytyy suoraan haettu oikeus
-  private def getOrganisaatiotOikeuksille(tarvittavatRoolit: Set[String]) = {
+  //Filtteröidään oikeuksista sellaiset OIDit, joihin löytyy suoraan haettu oikeus
+  private def getOidsOikeuksille(tarvittavatRoolit: Set[String], oidPrefix: String): Set[String] = {
     val riittavatOikeudet = getKayttajanOikeudet().filter(oikeus => tarvittavatRoolit.exists(rooli => oikeus.startsWith(rooli)))
-    getOrganisaatioOidsFromRoolit(riittavatOikeudet)
+    getOidsFromRoolit(riittavatOikeudet, oidPrefix)
   }
 
-  def getAuthorization(tarvittavatRoolit: Set[String], organisaatioProvider: OrganisaatioProvider): VirkailijaAuthorization = {
+  def getAuthorization(tarvittavatRoolit: Set[String], organisaatioProvider: OrganisaatioProvider, myosHakukohderyhmat: Boolean = false): VirkailijaAuthorization = {
     val rekPit = onRekisterinpitaja()
-    val organisaatiotOikeuksista = if (!rekPit) getOrganisaatiotOikeuksille(tarvittavatRoolit) else Set.empty
+    val organisaatiotOikeuksista = if (!rekPit) getOidsOikeuksille(tarvittavatRoolit, "1.2.246.562.10.") else Set.empty
     //Käsitellään suorat oikeudet niin, että käyttäjällä on samat oikeudet myös näiden aliorganisaatioille
     val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
-    VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot)
+    val hakukohderyhmatOikeuksista = if (!rekPit && myosHakukohderyhmat) getOidsOikeuksille(tarvittavatRoolit, "1.2.246.562.28.") else Set.empty
+    VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot ++ hakukohderyhmatOikeuksista)
   }
 
 }
