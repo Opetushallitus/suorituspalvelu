@@ -271,7 +271,6 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi",
       oppiaineet = java.util.List.of(
         EBOppiaineUI(
           UUID.randomUUID(),
@@ -280,7 +279,7 @@ object MockEntityToUIConverter {
             sv = Optional.of("Mathematics sv"),
             en = Optional.of("Mathematics")
           ),
-          suorituskieli = "englanti",
+          suorituskieli = Optional.of(SuorituskieliUI(Optional.of("englanti"), Optional.empty(), Optional.empty())),
           laajuus = 4,
           written = Optional.of(EBOppiaineOsasuoritusUI(
             koodi = "Written",
@@ -299,7 +298,7 @@ object MockEntityToUIConverter {
             sv = Optional.of("First language, ranska sv"),
             en = Optional.of("First language, ranska en")
           ),
-          suorituskieli = "englanti",
+          suorituskieli = Optional.of(SuorituskieliUI(Optional.of("englanti"), Optional.empty(), Optional.empty())),
           laajuus = 3,
           written = Optional.of(EBOppiaineOsasuoritusUI(
             "Written",
@@ -321,7 +320,7 @@ object MockEntityToUIConverter {
             sv = Optional.of("Second language, saksa sv"),
             en = Optional.of("Second language, saksa en")
           ),
-          suorituskieli = "englanti",
+          suorituskieli = Optional.of(SuorituskieliUI(Optional.of("englanti"), Optional.empty(), Optional.empty())),
           laajuus = 3,
           written = Optional.of(EBOppiaineOsasuoritusUI(
             "Written",

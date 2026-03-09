@@ -182,7 +182,7 @@ export const EB_SUORITUS: SuoritusSpec = {
     oppilaitos: 'Ylioppilastutkintolautakunta',
     tila: 'Suoritus valmis',
     valmistumispaiva: '31.12.2024',
-    suorituskieli: 'suomi',
+    suorituskieli: '-',
   },
   additionalChecks: async (paper) => {
     const ebTable = paper.getByRole('table');
