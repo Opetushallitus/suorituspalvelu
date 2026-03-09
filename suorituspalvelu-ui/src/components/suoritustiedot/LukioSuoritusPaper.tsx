@@ -107,11 +107,7 @@ const IBOppiaineetTable = ({
         <TableHead>
           <TableRow>
             <TableCell>{t('oppija.oppiaine')}</TableCell>
-            <TableCell>
-              {t('oppija.laajuus-yksikolla', {
-                unit: t('oppija.lyhenne-vuosiviikkotunti'),
-              })}
-            </TableCell>
+            <TableCell>{t('oppija.laajuus')}</TableCell>
             <TableCell>{t('oppija.predicted-grade')}</TableCell>
           </TableRow>
         </TableHead>

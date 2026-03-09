@@ -215,7 +215,7 @@ export const IB_SUORITUS: SuoritusSpec = {
   additionalChecks: async (paper) => {
     const ibTable = paper.getByRole('table');
     await expectTableValues(ibTable, [
-      ['Oppiaine', 'Laajuus (vvt)', 'Predicted grade'],
+      ['Oppiaine', 'Laajuus', 'Predicted grade'],
       ['Studies in language and literature fi'],
       ['Language A: literature, suomi fi', '9', '7'],
       ['Language A: language and literature, englanti fi', '6', '7'],
