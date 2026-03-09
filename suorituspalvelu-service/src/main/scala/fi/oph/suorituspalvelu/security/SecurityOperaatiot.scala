@@ -51,17 +51,17 @@ class SecurityOperaatiot(
       .map(_.split("_").last)
 
   //Filtteröidään oikeuksista sellaiset OIDit, joihin löytyy suoraan haettu oikeus
-  private def getOidsOikeuksille(tarvittavatRoolit: Set[String], oidPrefix: String): Set[String] = {
+  private def getOidsForRoolit(tarvittavatRoolit: Set[String], oidPrefix: String): Set[String] = {
     val riittavatOikeudet = getKayttajanOikeudet().filter(oikeus => tarvittavatRoolit.exists(rooli => oikeus.startsWith(rooli)))
     getOidsFromRoolit(riittavatOikeudet, oidPrefix)
   }
 
   def getAuthorization(tarvittavatRoolit: Set[String], organisaatioProvider: OrganisaatioProvider, myosHakukohderyhmat: Boolean = false): VirkailijaAuthorization = {
     val rekPit = onRekisterinpitaja()
-    val organisaatiotOikeuksista = if (!rekPit) getOidsOikeuksille(tarvittavatRoolit, ORGANISAATIO_OID_PREFIX) else Set.empty
+    val organisaatiotOikeuksista = if (!rekPit) getOidsForRoolit(tarvittavatRoolit, ORGANISAATIO_OID_PREFIX) else Set.empty
     //Käsitellään suorat oikeudet niin, että käyttäjällä on samat oikeudet myös näiden aliorganisaatioille
     val aliorganisaatiot = organisaatiotOikeuksista.flatMap(o => organisaatioProvider.haeOrganisaationTiedot(o).map(_.allDescendantOids).getOrElse(Set.empty))
-    val hakukohderyhmatOikeuksista = if (!rekPit && myosHakukohderyhmat) getOidsOikeuksille(tarvittavatRoolit, HAKUKOHDERYHMA_OID_PREFIX) else Set.empty
+    val hakukohderyhmatOikeuksista = if (!rekPit && myosHakukohderyhmat) getOidsForRoolit(tarvittavatRoolit, HAKUKOHDERYHMA_OID_PREFIX) else Set.empty
     VirkailijaAuthorization(getUserOid(), rekPit, organisaatiotOikeuksista ++ aliorganisaatiot ++ hakukohderyhmatOikeuksista)
   }
 
