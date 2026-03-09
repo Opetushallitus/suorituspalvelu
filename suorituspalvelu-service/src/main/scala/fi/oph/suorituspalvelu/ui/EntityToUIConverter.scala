@@ -349,12 +349,17 @@ object EntityToUIConverter {
 
   def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[DIATutkintoUI] = {
     def toDiaOppiaineUI(oppiaine: DIAOppiaine) = {
+      def getVieraanKielenNimi(kieli: Option[Koodi], asiointiKieli: String): Option[String] =
+        kieli
+          .flatMap(kieli => koodistoProvider.haeKoodisto(UIService.KOODISTO_KIELIVALIKOIMA)
+          .get(kieli.arvo)
+            .flatMap(koodi => koodi.metadata.find(m => m.kieli.equalsIgnoreCase(asiointiKieli)).map(m => m.nimi)))
       DIAOppiaineUI(
         tunniste = oppiaine.tunniste,
         nimi = DIAOppiaineNimiUI(
-          fi = oppiaine.nimi.fi.toJava,
-          sv = oppiaine.nimi.sv.toJava,
-          en = oppiaine.nimi.en.toJava
+          fi = oppiaine.nimi.fi.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "fi").map(k => ", " + k).getOrElse("")).toJava,
+          sv = oppiaine.nimi.sv.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "sv").map(k => ", " + k).getOrElse("")).toJava,
+          en = oppiaine.nimi.en.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "en").map(k => ", " + k).getOrElse("")).toJava,
         ),
         laajuus = oppiaine.laajuus.map(_.arvo).toJava,
         kirjallinen = oppiaine.kirjallinenKoe.map(_.arvosana.arvosana.arvo).toJava,
