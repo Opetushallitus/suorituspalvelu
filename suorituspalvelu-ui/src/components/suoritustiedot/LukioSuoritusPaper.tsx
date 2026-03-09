@@ -75,7 +75,7 @@ const EBOppiaineetTable = ({
         <TableBody key={row.tunniste}>
           <TableRow>
             <TableCell>{translateKielistetty(row.nimi)}</TableCell>
-            <TableCell>{row.suorituskieli}</TableCell>
+            <TableCell>{translateKielistetty(row.suorituskieli)}</TableCell>
             <TableCell>{row.laajuus}</TableCell>
             <TableCell />
           </TableRow>
