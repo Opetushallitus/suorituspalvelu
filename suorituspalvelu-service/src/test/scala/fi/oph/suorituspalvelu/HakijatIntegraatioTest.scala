@@ -212,6 +212,9 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+
     // haetaan luokat
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.LAHETTAVAT_HENKILOT_PATH
