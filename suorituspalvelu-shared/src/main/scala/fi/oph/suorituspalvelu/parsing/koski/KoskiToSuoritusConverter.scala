@@ -681,7 +681,7 @@ object KoskiToSuoritusConverter {
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => EBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
-      suorituskieli = osaSuoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(Koodi("EN", "kieli", Some(1))), //Fixme: massaluovutusrajapinnasta ei vielä tule eb-suorituskieltä, joten fallback.
+      suorituskieli = osaSuoritus.suorituskieli.map(suoritusKieli => asKoodiObject(suoritusKieli)).getOrElse(dummy()),
       osasuoritukset = osaSuoritus.osasuoritukset.map((osaSuoritukset: Set[KoskiOsaSuoritus]) => {
         //Käsitellään vain sellaiset osasuoritukset, joilla on ainakin yksi arviointi.
         val osaSuorituksetJoillaArviointi = osaSuoritukset.filter(o => o.arviointi.exists(_.nonEmpty))

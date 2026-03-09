@@ -409,7 +409,7 @@ object EntityToUIConverter {
 
   }
 
-  def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[EBTutkintoUI] = {
+  def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[EBTutkintoUI] = {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
@@ -425,7 +425,7 @@ object EntityToUIConverter {
               sv = o.nimi.sv.toJava,
               en = o.nimi.en.toJava
             ),
-            suorituskieli = o.suorituskieli.arvo,
+            suorituskieli = getKoodiNimi[SuorituskieliUI](Some(o.suorituskieli.arvo.toUpperCase), KOODISTO_SUORITUSKIELET, koodistoProvider),
             laajuus = o.laajuus.map(l => l.arvo).getOrElse(BigDecimal(0)),
             written = o.osasuoritukset.find(os => os.koodi.arvo.equals("Written"))
               .map(osw => EBOppiaineOsasuoritusUI(osw.koodi.arvo, BigDecimal.apply(osw.arvosana.arvosana.arvo))).toJava,
@@ -455,7 +455,6 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(ebTutkinto.supaTila.toString),
           aloituspaiva = ebTutkinto.aloitusPaivamaara.toJava,
           valmistumispaiva = ebTutkinto.vahvistusPaivamaara.toJava,
-          suorituskieli = "EN",
           oppiaineet = oppiaineet.toList.asJava
         )
       ).headOption
@@ -961,7 +960,7 @@ object EntityToUIConverter {
         lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
         lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
         diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
-        ebTutkinto =                                getEBTutkinto(opiskeluoikeudet).toJava,
+        ebTutkinto =                                getEBTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
         ibTutkinto =                                getIBTutkinto(opiskeluoikeudet).toJava,
         preIB =                                     getPreIB(opiskeluoikeudet).toJava,
         ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet).asJava,

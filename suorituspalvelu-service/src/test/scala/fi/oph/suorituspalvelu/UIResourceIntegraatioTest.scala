@@ -7,9 +7,9 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruP
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
-import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, OppijanVastaanototFailureResponse, OppijanVastaanototRequest, OppijanVastaanototSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
+import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, OppijanVastaanototFailureResponse, OppijanVastaanototRequest, OppijanVastaanototSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuorituskieliUI, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_SELITE_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_SELITE_PARAM_NAME, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, OrganisaatioProvider}
@@ -2138,7 +2138,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .orElse(null)
 
     Assertions.assertNotNull(l1Oppiaine)
-    Assertions.assertEquals("FI", l1Oppiaine.suorituskieli)
+    Assertions.assertEquals(Optional.of(SuorituskieliUI(Optional.of("suomi"),Optional.of("finska"),Optional.of("Finnish"))), l1Oppiaine.suorituskieli)
     Assertions.assertEquals(BigDecimal(4.0), l1Oppiaine.laajuus)
     Assertions.assertTrue(l1Oppiaine.written.isPresent)
     Assertions.assertEquals(BigDecimal(9.0), l1Oppiaine.written.get().arvosana)
@@ -2154,7 +2154,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .orElse(null)
 
     Assertions.assertNotNull(l2Oppiaine)
-    Assertions.assertEquals("EN", l2Oppiaine.suorituskieli)
+    Assertions.assertEquals(Optional.of(SuorituskieliUI(Optional.of("englanti"),Optional.of("engelska"),Optional.of("English"))), l2Oppiaine.suorituskieli)
     Assertions.assertEquals(BigDecimal(3.0), l2Oppiaine.laajuus)
     Assertions.assertFalse(l2Oppiaine.written.isPresent)
     Assertions.assertFalse(l2Oppiaine.oral.isPresent)
