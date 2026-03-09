@@ -414,9 +414,9 @@ object EntityToUIConverter {
         IBTutkintoUI(
           tunniste = ibTutkinto.tunniste,
           nimi = IBTutkintoNimi(
-            fi = ibTutkinto.nimi.fi.toJava,
-            sv = ibTutkinto.nimi.sv.toJava,
-            en = ibTutkinto.nimi.en.toJava
+            fi = Optional.of("IB-koulutus"),
+            sv = Optional.of("IB-utbildning"),
+            en = Optional.of("IB education")
           ),
           oppilaitos =
             YOOppilaitos(
@@ -446,7 +446,7 @@ object EntityToUIConverter {
                   en = o.nimi.en.toJava
                 ),
                 predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava,
-                laajuus = o.laajuus.map(l => l.arvo).toJava,
+                laajuus = o.laajuus.map(_.arvo).toJava,
               )).toList.asJava
             )
           }).toList.asJava
