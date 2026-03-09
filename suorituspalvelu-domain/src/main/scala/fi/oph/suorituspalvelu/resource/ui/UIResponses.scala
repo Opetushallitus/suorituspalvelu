@@ -110,9 +110,15 @@ trait OppijanHautResponse()
 case class HakuNimi(
   @(Schema @field)(example = "Korkeakoulujen kevään 2026 toinen yhteishaku", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Högskolornas andra gemensamma ansökan, våren 2026", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(
+    example = "Högskolornas andra gemensamma ansökan, våren 2026",
+    requiredMode = RequiredMode.NOT_REQUIRED
+  )
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Joint Application to Degree Programmes in Finnish/Swedish, Spring 2026", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(
+    example = "Joint Application to Degree Programmes in Finnish/Swedish, Spring 2026",
+    requiredMode = RequiredMode.NOT_REQUIRED
+  )
   @BeanProperty en: Optional[String]
 )
 
@@ -559,7 +565,7 @@ case class EBTutkintoUI(
   @BeanProperty oppiaineet: java.util.List[EBOppiaineUI]
 )
 
-case class IBOppiaineSuoritusNimi(
+case class IBSuoritusNimiUI(
   @(Schema @field)(example = "Mathematical studies fi", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Mathematical studies sv", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -572,8 +578,8 @@ case class IBSuoritusUI(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: IBOppiaineSuoritusNimi,
-  @(Schema @field)(description = "Oppiaineen laajuus (kurssia)", example = "3", requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty nimi: IBSuoritusNimiUI,
+  @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(description = "Ennustettu arvosana", example = "7")
   @BeanProperty predictedGrade: Optional[String]
@@ -1243,11 +1249,21 @@ case class PerusopetuksenOppiaineenOppimaaraNimi(
 )
 
 case class HakukohdeNimi(
-  @(Schema @field)(example = "Tuotantotalous, tekniikan kandidaatti ja diplomi-insinööri (3 v + 2 v)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(
+    example = "Tuotantotalous, tekniikan kandidaatti ja diplomi-insinööri (3 v + 2 v)",
+    requiredMode = RequiredMode.NOT_REQUIRED
+  )
   @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Produktionsekonomi, teknologie kandidat och diplomingenjör (3 år + 2 år)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(
+    example = "Produktionsekonomi, teknologie kandidat och diplomingenjör (3 år + 2 år)",
+    requiredMode = RequiredMode.NOT_REQUIRED
+  )
   @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Industrial Engineering and Management, Bachelor of Science (Technology) and Master of Science (Technology) (3 yrs + 2 yrs)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(
+    example =
+      "Industrial Engineering and Management, Bachelor of Science (Technology) and Master of Science (Technology) (3 yrs + 2 yrs)",
+    requiredMode = RequiredMode.NOT_REQUIRED
+  )
   @BeanProperty en: Optional[String]
 )
 
@@ -1259,7 +1275,6 @@ case class HakukohdeOppilaitosNimi(
   @(Schema @field)(example = "Aalto University", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty en: Optional[String]
 )
-
 
 case class VastaanottoHakukohdeOppilaitos(
   @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID, requiredMode = RequiredMode.REQUIRED)

@@ -1011,7 +1011,7 @@ class EntityToUIConverterTest {
     Assertions.assertEquals(1, ryhma1.suoritukset.size())
     val suoritus1 = ryhma1.suoritukset.get(0)
     Assertions.assertEquals(oppiaineTunniste1, suoritus1.tunniste)
-    Assertions.assertEquals(IBOppiaineSuoritusNimi(
+    Assertions.assertEquals(IBSuoritusNimiUI(
       fi = Optional.of("Suomi A"),
       sv = Optional.of("Finska A"),
       en = Optional.of("Finnish A")
@@ -1028,7 +1028,7 @@ class EntityToUIConverterTest {
     Assertions.assertEquals(1, ryhma2.suoritukset.size())
     val suoritus2 = ryhma2.suoritukset.get(0)
     Assertions.assertEquals(oppiaineTunniste2, suoritus2.tunniste)
-    Assertions.assertEquals(IBOppiaineSuoritusNimi(
+    Assertions.assertEquals(IBSuoritusNimiUI(
       fi = Optional.of("Matematiikka: pitkä oppimäärä"),
       sv = Optional.of("Matematik: lång kurs"),
       en = Optional.of("Mathematics: Analysis and Approaches HL")

@@ -440,7 +440,7 @@ object EntityToUIConverter {
               ),
               suoritukset = oppiaineet.map(o => IBSuoritusUI(
                 tunniste = o.tunniste,
-                nimi = IBOppiaineSuoritusNimi(
+                nimi = IBSuoritusNimiUI(
                   fi = o.nimi.fi.toJava,
                   sv = o.nimi.sv.toJava,
                   en = o.nimi.en.toJava

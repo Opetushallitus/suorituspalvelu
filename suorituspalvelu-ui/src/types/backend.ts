@@ -225,20 +225,20 @@ export interface IIBOppiaineNimi {
   en?: string;
 }
 
-export interface IIBOppiaineSuoritusNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
 export interface IIBOppiaineUI {
   nimi: IIBOppiaineNimi;
   suoritukset: IIBSuoritusUI[];
 }
 
+export interface IIBSuoritusNimiUI {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IIBSuoritusUI {
   tunniste: string;
-  nimi: IIBOppiaineSuoritusNimi;
+  nimi: IIBSuoritusNimiUI;
   laajuus?: number;
   predictedGrade?: string;
 }
