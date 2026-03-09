@@ -2660,6 +2660,7 @@ class KoskiParsingTest {
 
     //Kirjallinen koe pitäisi löytyä äidinkielelle
     val aidinkieli = tutkinto.osasuoritukset.filter(_.koodi.arvo == "AI").head
+    Assertions.assertEquals("DE", aidinkieli.kieli.map(_.arvo).get)
     Assertions.assertTrue(aidinkieli.kirjallinenKoe.isDefined)
     val kirjallinenKoe = aidinkieli.kirjallinenKoe.get
     Assertions.assertEquals(Koodi("kirjallinenkoe", "diapaattokoe", Some(1)), kirjallinenKoe.koodi)

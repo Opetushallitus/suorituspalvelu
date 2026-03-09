@@ -718,12 +718,12 @@ object KoskiToSuoritusConverter {
 
     val kirjallinen = osaSuoritus.osasuoritukset.getOrElse(Set.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "kirjallinenkoe"))
     val suullinen = osaSuoritus.osasuoritukset.getOrElse(Set.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "suullinenkoe"))
-
     DIAOppiaine(
       tunniste = UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
       laajuus = osaSuoritus.koulutusmoduuli.flatMap(k => k.laajuus.map(l => DIALaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
+      kieli = osaSuoritus.koulutusmoduuli.flatMap(km => km.kieli.map(k => asKoodiObject(k))),
       osaAlue = osaSuoritus.koulutusmoduuli.flatMap(_.osaAlue).map(o => asKoodiObject(o)),
       vastaavuustodistuksenTiedot = vastaavuustodistuksenTiedot,
       kirjallinenKoe = kirjallinen.map(toDIAOppiaineenKoeSuoritus),

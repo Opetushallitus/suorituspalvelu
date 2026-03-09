@@ -124,6 +124,7 @@ case class DIAOppiaine(tunniste: UUID,
                        koodi: Koodi,
                        laajuus: Option[DIALaajuus],
                        osaAlue: Option[Koodi], // kieletKirjallisuusTaide 1, matematiikkaLuonnontieteet 2, yhteiskuntatieteet 3
+                       kieli: Option[Koodi],
                        vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot],
                        kirjallinenKoe: Option[DIAOppiaineenKoesuoritus],
                        suullinenKoe: Option[DIAOppiaineenKoesuoritus])
