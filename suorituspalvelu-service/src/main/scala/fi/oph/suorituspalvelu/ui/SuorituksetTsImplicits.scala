@@ -6,10 +6,11 @@ import fi.oph.suorituspalvelu.resource.ui.*
 import java.util.Optional
 
 trait SuorituksetTsImplicits extends SharedTsImplicits {
+  implicit val suorituskieliTSType: TSType[SuorituskieliUI] = TSType.fromCaseClass
+  implicit val optionalSuorituskieliTSType: TSType[Optional[SuorituskieliUI]] = TSType.sameAs[Optional[SuorituskieliUI], Option[SuorituskieliUI]]
   implicit val optionalYoTutkintoTSType: TSType[Optional[YOTutkinto]] = TSType.sameAs[Optional[YOTutkinto], Option[YOTutkinto]]
   implicit val optionalLukionOppimaara: TSType[Optional[LukionOppimaaraUI]] = TSType.sameAs[Optional[LukionOppimaaraUI], Option[LukionOppimaaraUI]]
   implicit val optionalDIATutkinto: TSType[Optional[DIATutkintoUI]] = TSType.sameAs[Optional[DIATutkintoUI], Option[DIATutkintoUI]]
-  implicit val optionalDIAVastaavuusTodistus: TSType[Optional[DIAVastaavuusTodistusUI]] = TSType.sameAs[Optional[DIAVastaavuusTodistusUI], Option[DIAVastaavuusTodistusUI]]
   implicit val optionalEBSuoritus: TSType[Optional[EBOppiaineOsasuoritusUI]] = TSType.sameAs[Optional[EBOppiaineOsasuoritusUI], Option[EBOppiaineOsasuoritusUI]]
   implicit val optionalEBTutkinto: TSType[Optional[EBTutkintoUI]] = TSType.sameAs[Optional[EBTutkintoUI], Option[EBTutkintoUI]]
   implicit val optionalIBTutkinto: TSType[Optional[IBTutkinto]] = TSType.sameAs[Optional[IBTutkinto], Option[IBTutkinto]]
@@ -33,12 +34,10 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val ytoTSType: TSType[YTO] = TSType.fromCaseClass
   implicit val ammatillinenTutkintoTSType: TSType[Ammatillinentutkinto] = TSType.fromCaseClass
   implicit val optionalKkSuoritusNimiTsType: TSType[Optional[KKSuoritusNimiUI]] = TSType.sameAs[Optional[KKSuoritusNimiUI], Option[KKSuoritusNimiUI]]
-  implicit val suorituskieliTSType: TSType[SuorituskieliUI] = TSType.fromCaseClass
-  implicit val optionalSuorituskieliTSType: TSType[Optional[SuorituskieliUI]] = TSType.sameAs[Optional[SuorituskieliUI], Option[SuorituskieliUI]]
   implicit val vastaanottoHakukohdeOppilaitosTSType: TSType[VastaanottoHakukohdeOppilaitos] = TSType.fromCaseClass
   implicit val vastaanottoTSType: TSType[VastaanottoUI] = TSType.fromCaseClass
   implicit val vanhaVastaanottoTSType: TSType[VanhaVastaanottoUI] = TSType.fromCaseClass
-  
+
   // Rekursiivinen tyyppi
   implicit val kkOpintojaksoTsType: TSType[KKOpintojaksoUI] = {
     implicit val recursiveRef: TSType[KKOpintojaksoUI] = TSType.external[KKOpintojaksoUI]("IKKOpintojaksoUI")

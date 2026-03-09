@@ -104,8 +104,10 @@ export interface IDIAOppiaineNimiUI {
 export interface IDIAOppiaineUI {
   tunniste: string;
   nimi: IDIAOppiaineNimiUI;
-  laajuus: number;
-  keskiarvo: number;
+  laajuus?: number;
+  kirjallinen?: string;
+  suullinen?: string;
+  vastaavuustodistus?: number;
 }
 
 export interface IDIATutkintoNimiUI {
@@ -121,25 +123,10 @@ export interface IDIATutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
-  suorituskieli: string;
-}
-
-export interface IDIAVastaavuusTodistusNimiUI {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface IDIAVastaavuusTodistusUI {
-  tunniste: string;
-  nimi: IDIAVastaavuusTodistusNimiUI;
-  oppilaitos: IYOOppilaitos;
-  tila: SuoritusTilaUI;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
+  suorituskieli?: ISuorituskieliUI;
   kieletKirjallisuusTaide: IDIAOppiaineUI[];
   matematiikkaLuonnontieteet: IDIAOppiaineUI[];
+  yhteiskuntatieteet: IDIAOppiaineUI[];
 }
 
 export interface IEBOppiaineNimiUI {
@@ -461,7 +448,6 @@ export interface IOppijanTiedotSuccessResponse {
   lukionOppimaara?: ILukionOppimaaraUI;
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
   diaTutkinto?: IDIATutkintoUI;
-  diaVastaavuusTodistus?: IDIAVastaavuusTodistusUI;
   ebTutkinto?: IEBTutkintoUI;
   ibTutkinto?: IIBTutkinto;
   preIB?: IPreIB;
