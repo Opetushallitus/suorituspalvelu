@@ -143,7 +143,7 @@ export interface IEBOppiaineOsasuoritusUI {
 export interface IEBOppiaineUI {
   tunniste: string;
   nimi: IEBOppiaineNimiUI;
-  suorituskieli: string;
+  suorituskieli?: ISuorituskieliUI;
   laajuus: number;
   written?: IEBOppiaineOsasuoritusUI;
   oral?: IEBOppiaineOsasuoritusUI;
@@ -163,7 +163,6 @@ export interface IEBTutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
-  suorituskieli: string;
   oppiaineet: IEBOppiaineUI[];
 }
 

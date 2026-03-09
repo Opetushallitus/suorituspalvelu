@@ -419,7 +419,6 @@
     "tila": "VALMIS",
     "aloituspaiva": "2023-12-31",
     "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI",
     "oppiaineet": [
       {
         "tunniste": "6c039282-c1b3-4917-9965-b4dd75819b02",
@@ -428,7 +427,11 @@
           "sv": "Mathematics sv",
           "en": "Mathematics"
         },
-        "suorituskieli": "englanti",
+        "suorituskieli": {
+          "fi": "englanti",
+          "sv": "engelska",
+          "en": "English"
+        },
         "laajuus": 4,
         "written": {
           "tunniste": "23cd85dd-bc50-40a6-9474-c6993c735960",
@@ -447,7 +450,11 @@
           "sv": "First language, ranska sv",
           "en": "First language, ranska en"
         },
-        "suorituskieli": "englanti",
+        "suorituskieli": {
+          "fi": "englanti",
+          "sv": "engelska",
+          "en": "English"
+        },
         "laajuus": 3,
         "written": {
           "tunniste": "2dbe94fa-325e-49c8-bdf5-d1969380f2b9",
@@ -469,7 +476,11 @@
           "sv": "Second language, saksa sv",
           "en": "Second language, saksa en"
         },
-        "suorituskieli": "englanti",
+        "suorituskieli": {
+          "fi": "englanti",
+          "sv": "engelska",
+          "en": "English"
+        },
         "laajuus": 3,
         "written": {
           "tunniste": "1b4a57a7-5176-4d17-894d-5e4ce388ae2a",

@@ -497,8 +497,8 @@ case class EBOppiaineUI(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: EBOppiaineNimiUI,
-  @(Schema @field)(example = "englanti", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(
     description = "Oppiaineen laajuus (vuosiviikkotuntia)",
     example = "3",
@@ -535,8 +535,6 @@ case class EBTutkintoUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
-  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineet: java.util.List[EBOppiaineUI]
 )
