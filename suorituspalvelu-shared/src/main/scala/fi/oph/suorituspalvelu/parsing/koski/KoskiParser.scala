@@ -47,6 +47,7 @@ case class KoskiVastaavuustodistuksenTiedot(keskiarvo: BigDecimal,
 case class KoskiOsaSuoritus(tyyppi: KoskiSuoritusTyyppi,
                             koulutusmoduuli: Option[KoskiKoulutusModuuli],
                             arviointi: Option[Set[KoskiArviointi]],
+                            predictedArviointi: Option[Set[KoskiArviointi]],  // IB-tutkinnon ennustettu arviointi
                             `yksilöllistettyOppimäärä`: Option[Boolean],
                             `rajattuOppimäärä`: Option[Boolean],
                             suorituskieli: Option[KoskiSuoritusKieli],
@@ -68,7 +69,8 @@ case class KoskiKoulutusModuuli(tunniste: Option[KoskiKoodi],
                                 laajuus: Option[KoskiLaajuus],
                                 kieli: Option[KoskiKoodi],
                                 pakollinen: Option[Boolean],
-                                osaAlue: Option[KoskiKoodi])
+                                osaAlue: Option[KoskiKoodi],
+                                `ryhmä`: Option[KoskiKoodi]) // IB-tutkinnon osasuoritusten ryhmittely
 
 case class KoskiSuoritusTyyppi(koodiarvo: String,
                                koodistoUri: String,

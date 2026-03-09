@@ -211,30 +211,21 @@ export const IB_SUORITUS: SuoritusSpec = {
   additionalChecks: async (paper) => {
     const ibTable = paper.getByRole('table');
     await expectTableValues(ibTable, [
-      ['Oppiaine', 'Laajuus (vvt)', 'Predicted grade', 'Arvosana'],
+      ['Oppiaine', 'Laajuus', 'Predicted grade'],
       ['Studies in language and literature fi'],
-      ['Language A: literature, suomi fi', '9', '7', '7'],
-      ['Language A: language and literature, englanti fi', '6', '7', '7'],
+      ['Language A: literature, suomi fi', '9', '7'],
+      ['Language A: language and literature, englanti fi', '6', '7'],
       ['Individuals and societies fi'],
-      ['History fi', '3', '7', '7'],
-      ['Psychology fi', '3', '7', '7'],
+      ['History fi', '3', '7'],
+      ['Psychology fi', '3', '7'],
       ['Experimental sciences fi'],
-      ['Biology fi', '3', '7', '7'],
+      ['Biology fi', '3', '7'],
       ['Mathematics fi'],
-      ['Mathematical studies fi', '3', '7', '7'],
+      ['Mathematical studies fi', '3', '7'],
     ]);
   },
 };
 
-export const PRE_IB_SUORITUS: SuoritusSpec = {
-  perustiedot: {
-    title: `Pre-IB (31.12.2023 ${NDASH} 31.12.2024)`,
-    oppilaitos: 'Ylioppilastutkintolautakunta',
-    tila: 'Suoritus valmis',
-    valmistumispaiva: '31.12.2024',
-    suorituskieli: 'suomi',
-  },
-};
 export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Puutarha-alan perustutkinto (31.12.2024 ${NDASH} 31.12.2024)`,

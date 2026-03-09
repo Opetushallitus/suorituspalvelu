@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -984,6 +984,115 @@ class EntityToUIConverterTest {
       valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
       suorituskieli = "FI"
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("lukiokoulutus", "opiskeluoikeudentyyppi", None), "", Set(lukionOppimaara), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).lukionOppimaara)
+  }
+
+  @Test def testConvertIBTutkinto(): Unit = {
+    val tunniste = UUID.randomUUID()
+    val oppiaineTunniste1 = UUID.randomUUID()
+    val oppiaineTunniste2 = UUID.randomUUID()
+
+    val ibTutkinto = IBTutkinto(
+      tunniste = tunniste,
+      nimi = Kielistetty(Some("IB-tutkinto"), Some("IB-examen"), Some("IB Diploma Programme")),
+      koodi = Koodi("301102", "koulutus", Some(12)),
+      oppilaitos = Oppilaitos(Kielistetty(Some("International School of Helsinki"), Some("International School of Helsinki sv"), Some("International School of Helsinki en")), "1.2.246.562.10.73383452576"),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
+      vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
+      suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
+      osasuoritukset = Set(
+        IBOppiaineSuoritus(
+          tunniste = oppiaineTunniste1,
+          nimi = Kielistetty(Some("Suomi A"), Some("Finska A"), Some("Finnish A")),
+          koodi = Koodi("FIN_A", "oppiaineetib", Some(1)),
+          ryhma = IBOppiaineRyhma(
+            nimi = Kielistetty(Some("Kielet: Ensimmäinen kieli"), Some("Språk: Första språket"), Some("Language: First Language")),
+            koodi = Koodi("1", "aineryhmaib", Some(1))
+          ),
+          predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
+          laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          suorituskieli = Some(Koodi("FI", "kieli", Some(1)))
+        ),
+        IBOppiaineSuoritus(
+          tunniste = oppiaineTunniste2,
+          nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics: Analysis and Approaches HL")),
+          koodi = Koodi("MAA", "oppiaineetib", Some(1)),
+          ryhma = IBOppiaineRyhma(
+            nimi = Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")),
+            koodi = Koodi("5", "aineryhmaib", Some(1))
+          ),
+          predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
+          laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          suorituskieli = Some(Koodi("EN", "kieli", Some(1)))
+        )
+      )
+    )
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ibtutkinto", "opiskeluoikeudentyyppi", None), "", Set(ibTutkinto), None, List.empty)),
+      DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
+    ).ibTutkinto
+
+    Assertions.assertTrue(result.isPresent)
+    val ui = result.get()
+
+    Assertions.assertEquals(tunniste, ui.tunniste)
+    Assertions.assertEquals(IBTutkintoNimi(
+      fi = Optional.of("IB-koulutus"),
+      sv = Optional.of("IB-utbildning"),
+      en = Optional.of("IB education")
+    ), ui.nimi)
+    Assertions.assertEquals(YOOppilaitos(
+      nimi = YOOppilaitosNimi(
+        fi = Optional.of("International School of Helsinki"),
+        sv = Optional.of("International School of Helsinki sv"),
+        en = Optional.of("International School of Helsinki en")
+      ),
+      oid = "1.2.246.562.10.73383452576"
+    ), ui.oppilaitos)
+    Assertions.assertEquals(SuoritusTilaUI.VALMIS, ui.tila)
+    Assertions.assertEquals(Optional.of(LocalDate.parse("2021-08-18")), ui.aloituspaiva)
+    Assertions.assertEquals(Optional.of(LocalDate.parse("2024-05-31")), ui.valmistumispaiva)
+    // DUMMY_KOODISTOPROVIDER palauttaa tyhjän, joten suorituskieli on tyhjä
+    Assertions.assertEquals(Optional.empty(), ui.suorituskieli)
+
+    Assertions.assertEquals(2, ui.oppiaineet.size())
+
+    val ryhma1 = ui.oppiaineet.asScala.find(_.nimi.fi.get() == "Kielet: Ensimmäinen kieli").get
+    Assertions.assertEquals(IBOppiaineNimi(
+      fi = Optional.of("Kielet: Ensimmäinen kieli"),
+      sv = Optional.of("Språk: Första språket"),
+      en = Optional.of("Language: First Language")
+    ), ryhma1.nimi)
+    Assertions.assertEquals(1, ryhma1.suoritukset.size())
+    val suoritus1 = ryhma1.suoritukset.get(0)
+    Assertions.assertEquals(oppiaineTunniste1, suoritus1.tunniste)
+    Assertions.assertEquals(IBSuoritusNimiUI(
+      fi = Optional.of("Suomi A"),
+      sv = Optional.of("Finska A"),
+      en = Optional.of("Finnish A")
+    ), suoritus1.nimi)
+    Assertions.assertEquals(Optional.of("6"), suoritus1.predictedGrade)
+    Assertions.assertEquals(Optional.of(BigDecimal(1.0)), suoritus1.laajuus)
+
+    val ryhma2 = ui.oppiaineet.asScala.find(_.nimi.fi.get() == "Matematiikka").get
+    Assertions.assertEquals(IBOppiaineNimi(
+      fi = Optional.of("Matematiikka"),
+      sv = Optional.of("Matematik"),
+      en = Optional.of("Mathematics")
+    ), ryhma2.nimi)
+    Assertions.assertEquals(1, ryhma2.suoritukset.size())
+    val suoritus2 = ryhma2.suoritukset.get(0)
+    Assertions.assertEquals(oppiaineTunniste2, suoritus2.tunniste)
+    Assertions.assertEquals(IBSuoritusNimiUI(
+      fi = Optional.of("Matematiikka: pitkä oppimäärä"),
+      sv = Optional.of("Matematik: lång kurs"),
+      en = Optional.of("Mathematics: Analysis and Approaches HL")
+    ), suoritus2.nimi)
+    Assertions.assertEquals(Optional.of("7"), suoritus2.predictedGrade)
+    Assertions.assertEquals(Optional.of(BigDecimal(1.0)), suoritus2.laajuus)
   }
 
 }

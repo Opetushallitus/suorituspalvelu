@@ -9,8 +9,7 @@ import type {
   IYOTutkinto,
   IDIATutkintoUI,
   IEBTutkintoUI,
-  IIBTutkinto,
-  IPreIB,
+  IIBTutkintoUI,
   IAmmatillinentutkinto,
   IAmmattitutkinto,
   IErikoisammattitutkinto,
@@ -23,7 +22,7 @@ import type {
   IOpiskeluoikeusUI,
   ITelma,
   IEBOppiaineUI,
-  IIBOppiaine,
+  IIBOppiaineUI,
   IAmmatillisenTutkinnonOsa,
   IOsittainenAmmatillinenTutkintoUI,
   IYTO,
@@ -72,9 +71,9 @@ export type PerusopetuksenOppiaine = {
   valinnaisetArvosanat?: Array<string>;
 };
 
-export type LukionOppiaine = ILukionOppiaine | IEBOppiaineUI | IIBOppiaine;
+export type LukionOppiaine = ILukionOppiaine | IEBOppiaineUI;
 
-export type IBOppiaine = IIBOppiaine;
+export type IBOppiaine = IIBOppiaineUI;
 
 export type EBOppiaine = IEBOppiaineUI;
 
@@ -88,7 +87,7 @@ export type EBSuoritus = IEBTutkintoUI & {
   koulutustyyppi: 'eb';
 };
 
-export type IBSuoritus = IIBTutkinto & {
+export type IBSuoritus = IIBTutkintoUI & {
   koulutustyyppi: 'ib';
 };
 
@@ -105,7 +104,6 @@ export type LukioSuoritus =
       | ILukionOppimaaraUI
       | ILukionOppiaineenOppimaara
       | IDIATutkintoUI
-      | IPreIB
     ) & { koulutustyyppi: 'lukio' });
 
 export type AmmatillinenSuoritus = (

@@ -62,6 +62,7 @@ object KantaOperaatiot {
       classOf[KKOpintosuoritus],
       classOf[VapaaSivistystyo],
       classOf[EBTutkinto],
+      classOf[IBTutkinto],
       classOf[ErikoisAmmattiTutkinto],
       classOf[LukionOppimaara],
       classOf[DIATutkinto])
