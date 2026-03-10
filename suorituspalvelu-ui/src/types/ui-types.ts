@@ -1,5 +1,4 @@
 import type {
-  Korotus,
   IYOKoe,
   SuoritusTilaUI,
   ILukionOppiaine,
@@ -34,6 +33,8 @@ import type {
   IAvainArvoContainerUI,
   IYliajo,
   IOppijanValintaDataSuccessResponse,
+  IAmmatillisenTutkinnonOsaAlue,
+  IYTOOsaAlue,
   IDIAOppiaineUI,
 } from './backend';
 
@@ -165,12 +166,7 @@ export type Language = 'fi' | 'sv' | 'en';
 
 export type AmmatillinenTutkinnonOsa = IAmmatillisenTutkinnonOsa | IYTO;
 
-export type TutkinnonOsanOsaAlue = {
-  nimi: Kielistetty;
-  laajuus?: number;
-  arvosana?: string;
-  korotettu?: Korotus;
-};
+export type TutkinnonOsanOsaAlue = IAmmatillisenTutkinnonOsaAlue | IYTOOsaAlue;
 
 export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
 

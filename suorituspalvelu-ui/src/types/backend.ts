@@ -35,7 +35,7 @@ export interface IAmmatillisenTutkinnonOsa {
   tunniste: string;
   nimi: IAmmatillisenTutkinnonOsaNimi;
   laajuus?: number;
-  arvosana?: string;
+  arvosana?: IAmmatillisenTutkinnonOsaArvosana;
   osaAlueet: IAmmatillisenTutkinnonOsaAlue[];
   korotettu?: Korotus;
 }
@@ -43,11 +43,23 @@ export interface IAmmatillisenTutkinnonOsa {
 export interface IAmmatillisenTutkinnonOsaAlue {
   nimi: IAmmatillisenTutkinnonOsaAlueNimi;
   laajuus?: number;
-  arvosana?: string;
+  arvosana?: IAmmatillisenTutkinnonOsaAlueArvosana;
   korotettu?: Korotus;
 }
 
+export interface IAmmatillisenTutkinnonOsaAlueArvosana {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
 export interface IAmmatillisenTutkinnonOsaAlueNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IAmmatillisenTutkinnonOsaArvosana {
   fi?: string;
   sv?: string;
   en?: string;
@@ -873,15 +885,9 @@ export interface IYTO {
   tunniste: string;
   nimi: IYTONimi;
   laajuus?: number;
-  arvosana?: IYTOArvosana;
+  arvosana?: IAmmatillisenTutkinnonOsaArvosana;
   osaAlueet: IYTOOsaAlue[];
   korotettu?: Korotus;
-}
-
-export interface IYTOArvosana {
-  fi?: string;
-  sv?: string;
-  en?: string;
 }
 
 export interface IYTONimi {
@@ -893,7 +899,7 @@ export interface IYTONimi {
 export interface IYTOOsaAlue {
   nimi: IYTOOsaAlueNimi;
   laajuus?: number;
-  arvosana?: string;
+  arvosana?: IAmmatillisenTutkinnonOsaAlueArvosana;
   korotettu?: Korotus;
 }
 

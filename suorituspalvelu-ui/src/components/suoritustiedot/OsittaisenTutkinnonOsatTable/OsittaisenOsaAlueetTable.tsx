@@ -2,6 +2,7 @@ import { StripedTable } from '@/components/StripedTable';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { TutkinnonOsanOsaAlue } from '@/types/ui-types';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { isKielistetty } from '@/lib/translation-utils';
 
 export const OsittaisenOsaAlueetTable = ({
   osaAlueet,
@@ -31,7 +32,11 @@ export const OsittaisenOsaAlueetTable = ({
               <TableCell>{nimi}</TableCell>
               <TableCell>{osaAlue.laajuus}</TableCell>
               <TableCell>
-                {osaAlue.korotettu ? osaAlue.arvosana : undefined}
+                {osaAlue.korotettu
+                  ? isKielistetty(osaAlue.arvosana)
+                    ? translateKielistetty(osaAlue.arvosana)
+                    : osaAlue.arvosana
+                  : undefined}
               </TableCell>
               <TableCell>
                 {osaAlue.korotettu
