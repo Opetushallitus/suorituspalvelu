@@ -605,7 +605,7 @@ object KoskiToSuoritusConverter {
       lahtokoulu = Lahtokoulu(aloitus.get, vahvistus.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, aloitus.map(_.getYear + 1), PERUSOPETUKSEEN_VALMISTAVA_OPETUS.defaultLuokka.get, supaTila, None, PERUSOPETUKSEEN_VALMISTAVA_OPETUS)
     )
   }
-  
+
   def toEbOppiaineenOsasuoritus(osaSuoritus: KoskiOsaSuoritus): EBOppiaineenOsasuoritus = {
     //Voiko eb-alaosasuorituksella olla useita arviointeja? Jos voi, voiko arvioinneilla olla erilaisia koodistoja? Käytetäänkö aina koodistoa arviointiasteikkoeuropeanschoolofhelsinkifinalmark?
     val parasArviointi: Option[KoskiArviointi] = {
@@ -809,7 +809,7 @@ object KoskiToSuoritusConverter {
   val SUORITUSTYYPPI_PERUSOPETUKSENOPPIMAARA                    = "perusopetuksenoppimaara"
   val SUORITUSTYYPPI_PERUSOPETUKSENVUOSILUOKKA                  = "perusopetuksenvuosiluokka"
   val SUORITUSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA   = "nuortenperusopetuksenoppiaineenoppimaara"
-  val SUORITUSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIAINEENOPPIMAARA = "aikuistenperusopetuksenoppiaineenoppimaara"
+  val SUORITUSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIAINEENOPPIMAARA = "perusopetuksenoppiaineenoppimaara"
   val SUORITUSTYYPPI_PERUSOPETUKSEENVALMISTAVAOPETUS            = "perusopetukseenvalmistavaopetus"
   val SUORITUSTYYPPI_TELMA                                      = "telma"
   val SUORITUSTYYPPI_TUVAKOULUTUKSENSUORITUS                    = "tuvakoulutuksensuoritus"
