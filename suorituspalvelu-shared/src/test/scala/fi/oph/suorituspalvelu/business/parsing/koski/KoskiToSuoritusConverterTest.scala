@@ -121,7 +121,7 @@ class KoskiToSuoritusConverterTest {
         predictedArviointi = None,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
-        suorituskieli = None, null, null, null
+        null, null, null, None
       )
     }
 
