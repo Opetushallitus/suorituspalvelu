@@ -92,7 +92,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
-  private def isNewVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
+  private def isNewVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Option[Instant]): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
       SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json, data_xml
       FROM versiot
@@ -105,7 +105,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         true
       else
         val (alku, existingJsonData, existingXmlData) = result.head
-        if (fetchedAt.toEpochMilli <= Instant.parse(alku).toEpochMilli)
+        if (fetchedAt.nonEmpty && fetchedAt.get.toEpochMilli <= Instant.parse(alku).toEpochMilli)
           LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska aikaisemmin tallennettu versio on uudempi.")
           false
         else
@@ -212,6 +212,36 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
 
+  private def updateVersion(
+    henkiloOid: String,
+    lahdeJarjestelma: Lahdejarjestelma,
+    jsonData: Seq[String],
+    xmlData: Seq[String],
+    lahdeTunniste: String,
+    lahdeVersio: Int
+  ): DBIOAction[Option[VersioEntiteetti], NoStream, Effect] = {
+      LOG.info(s"Päivitetään lähdejärjestelmän ${lahdeJarjestelma.nimi} tiedot henkilölle $henkiloOid (lahdeVersio=$lahdeVersio)")
+      sql"""
+      UPDATE versiot
+      SET data_json=${jsonData}::jsonb[],
+          data_xml=${xmlData}::xml[]
+      WHERE henkilo_oid=${henkiloOid}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
+        AND lahdeversio=${lahdeVersio}
+      RETURNING jsonb_build_object(
+        'tunniste', tunniste,
+        'henkiloOid', henkilo_oid,
+        'alku', to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+        'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+        'lahdeJarjestelma', lahdejarjestelma,
+        'lahdeTunniste', lahdetunniste,
+        'lahdeVersio', lahdeversio,
+        'parserVersio', parser_versio
+      )::text
+    """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
+  }
+
   def tallennaJarjestelmaVersio(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, jsonData: Seq[String], xmlData: Seq[String], voimassaolonAlku: Instant, lahdeTunniste: String, lahdeVersio: Option[Int]): Option[VersioEntiteetti] =
     val insertHenkiloAction = sqlu"INSERT INTO henkilot(oid) VALUES (${henkiloOid}) ON CONFLICT DO NOTHING"
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${henkiloOid} FOR UPDATE"""
@@ -229,9 +259,14 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         case Some(lahdeVersio) =>
           // Versioned: check if same lahdeversio already exists
           findExistingVersionByLahdeVersio(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio).flatMap {
-            case Some(existingTunniste) =>
-              LOG.info(s"Versio lahdeVersio=$lahdeVersio henkilölle $henkiloOid on jo olemassa (tunniste=$existingTunniste), ohitetaan.")
-              DBIO.successful(None)
+            case Some(existingTunniste) => {
+              // Jos lisätty kenttiä rajapintaan, aikaleima ei välttämättä muutu. Välitetään siis None aikaleimana, jotta
+              // katsotaan ainoastaan onko data muttunut
+              isNewVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, jsonData, xmlData, None).flatMap {
+                case true => updateVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, lahdeTunniste, lahdeVersio)
+                case false => DBIO.successful(None)
+              }
+            }
             case None =>
               discontinuePreviousVersionedVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio, timestamp).flatMap(_ =>
                 insertNewVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, timestamp, lahdeTunniste, Some(lahdeVersio))
@@ -239,7 +274,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           }
         case None =>
           // Unversioned: check if this is a new version based on timestamp and data comparison
-          isNewVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, jsonData, xmlData, timestamp).flatMap {
+          isNewVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, jsonData, xmlData, Some(timestamp)).flatMap {
             case false =>
               DBIO.successful(None)
             case true =>
