@@ -94,6 +94,44 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def getUUID(): UUID =
     UUID.randomUUID()
 
+  private def dataHasChanged(existingJsonData: Seq[String], existingXmlData: Seq[String], jsonData: Seq[String], xmlData: Seq[String]): Boolean = {
+    val xmlChanged = existingXmlData.length != xmlData.length ||
+      existingXmlData.sorted.zip(xmlData.sorted).exists((existingItem, newItem) => {
+        val existingAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(existingItem, classOf[Map[Any, Any]]))
+        val newAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(newItem, classOf[Map[Any, Any]]))
+        !JSONCompare.compareJSON(existingAsJson, newAsJson, JSONCompareMode.NON_EXTENSIBLE).passed()
+      })
+    val jsonChanged = existingJsonData.length != jsonData.length ||
+      existingJsonData.sorted.zip(jsonData.sorted).exists((existingItem, newItem) =>
+        !JSONCompare.compareJSON(existingItem, newItem, JSONCompareMode.NON_EXTENSIBLE).passed()
+      )
+    xmlChanged || jsonChanged
+  }
+
+  private def shouldUpdateExistingVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String]): DBIOAction[Boolean, NoStream, Effect] =
+    sql"""
+      SELECT data_json, data_xml
+      FROM versiot
+      WHERE henkilo_oid=${henkiloOid}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
+        AND upper(voimassaolo)='infinity'::timestamptz
+    """.as[(Seq[String], Seq[String])].map(result =>
+      result.headOption match {
+        case Some(existingJsonData, existingXmlData) => {
+          val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
+          if (!hasChanged) {
+            LOG.info(s"Ei tarvetta päivittää versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+          }
+          hasChanged
+        }
+        case None => {
+          LOG.error(s"Yritetään päivittää versiota, mutta voimassaolevaa versiota ei löydy henkilölle $henkiloOid ja tunnisteella ${lahdeTunniste}.")
+          false
+        }
+      }
+    )
+
   private def isNewVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String], fetchedAt: Instant): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
       SELECT to_json(lower(voimassaolo)::timestamptz)#>>'{}' as alku, data_json, data_xml
@@ -102,29 +140,22 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         AND lahdejarjestelma=${lahdeJarjestelma.nimi}
         AND lahdetunniste=${lahdeTunniste}
         AND upper(voimassaolo)='infinity'::timestamptz
-    """.as[(String, Seq[String], Seq[String])].map(result => {
-      if (result.isEmpty)
-        true
-      else
-        val (alku, existingJsonData, existingXmlData) = result.head
-        if (fetchedAt.toEpochMilli <= Instant.parse(alku).toEpochMilli)
-          LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska aikaisemmin tallennettu versio on uudempi.")
-          false
-        else
-          val isNewXmlData = existingXmlData.length != xmlData.length ||
-            existingXmlData.sorted.zip(xmlData.sorted).exists((existingDataItem, dataItem) => {
-              val existingDataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(existingDataItem, classOf[Map[Any, Any]]))
-              val dataAsJson = MAPPER.writeValueAsString(XMLMAPPER.readValue(dataItem, classOf[Map[Any, Any]]))
-              !JSONCompare.compareJSON(existingDataAsJson, dataAsJson, JSONCompareMode.NON_EXTENSIBLE).passed()
-            })
-          val isNewJsonData = existingJsonData.length != jsonData.length ||
-            existingJsonData.sorted.zip(jsonData.sorted).exists((existingDataItem, dataItem) => {
-              !JSONCompare.compareJSON(existingDataItem, dataItem, JSONCompareMode.NON_EXTENSIBLE).passed()
-            })
-          if (!isNewXmlData && !isNewJsonData)
-            LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
-          isNewXmlData || isNewJsonData
-    })
+    """.as[(String, Seq[String], Seq[String])].map(result =>
+      result.headOption match {
+        case Some(alku, existingJsonData, existingXmlData) =>
+          if (fetchedAt.toEpochMilli <= Instant.parse(alku).toEpochMilli)
+            LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska aikaisemmin tallennettu versio on uudempi.")
+            false
+          else {
+            val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
+            if (!hasChanged) {
+              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+            }
+            hasChanged
+          }
+        case None => true
+      }
+    )
 
   private def findExistingVersionByLahdeVersio(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, lahdeVersio: Int): DBIOAction[Option[String], NoStream, Effect] =
     sql"""
@@ -214,6 +245,36 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
 
+  private def updateVersion(
+    henkiloOid: String,
+    lahdeJarjestelma: Lahdejarjestelma,
+    jsonData: Seq[String],
+    xmlData: Seq[String],
+    lahdeTunniste: String,
+    lahdeVersio: Int
+  ): DBIOAction[Option[VersioEntiteetti], NoStream, Effect] = {
+      LOG.info(s"Päivitetään lähdejärjestelmän ${lahdeJarjestelma.nimi} tiedot henkilölle $henkiloOid (lahdeVersio=$lahdeVersio)")
+      sql"""
+      UPDATE versiot
+      SET data_json=${jsonData}::jsonb[],
+          data_xml=${xmlData}::xml[]
+      WHERE henkilo_oid=${henkiloOid}
+        AND lahdejarjestelma=${lahdeJarjestelma.nimi}
+        AND lahdetunniste=${lahdeTunniste}
+        AND lahdeversio=${lahdeVersio}
+      RETURNING jsonb_build_object(
+        'tunniste', tunniste,
+        'henkiloOid', henkilo_oid,
+        'alku', to_json(lower(voimassaolo)::timestamptz)#>>'{}',
+        'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
+        'lahdeJarjestelma', lahdejarjestelma,
+        'lahdeTunniste', lahdetunniste,
+        'lahdeVersio', lahdeversio,
+        'parserVersio', parser_versio
+      )::text
+    """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
+  }
+
   def tallennaJarjestelmaVersio(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, jsonData: Seq[String], xmlData: Seq[String], voimassaolonAlku: Instant, lahdeTunniste: String, lahdeVersio: Option[Int]): Option[VersioEntiteetti] =
     val insertHenkiloAction = sqlu"INSERT INTO henkilot(oid) VALUES (${henkiloOid}) ON CONFLICT DO NOTHING"
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${henkiloOid} FOR UPDATE"""
@@ -232,8 +293,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           // Versioned: check if same lahdeversio already exists
           findExistingVersionByLahdeVersio(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio).flatMap {
             case Some(existingTunniste) =>
-              LOG.info(s"Versio lahdeVersio=$lahdeVersio henkilölle $henkiloOid on jo olemassa (tunniste=$existingTunniste), ohitetaan.")
-              DBIO.successful(None)
+              shouldUpdateExistingVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, jsonData, xmlData).flatMap {
+                case true => updateVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, lahdeTunniste, lahdeVersio)
+                case false => DBIO.successful(None)
+              }
             case None =>
               discontinuePreviousVersionedVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio, timestamp).flatMap(_ =>
                 insertNewVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, timestamp, lahdeTunniste, Some(lahdeVersio))
