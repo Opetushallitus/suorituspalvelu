@@ -252,9 +252,6 @@ class KantaOperaatiotTest {
     val versio3LopullinenTila = this.kantaOperaatiot.haeVersio(versio3.tunniste).get
     Assertions.assertTrue(versio3LopullinenTila.loppu.isEmpty, "Version 3 loppu pitäisi olla edelleen infinity")
 
-  /**
-   * Testataan että olemassaoleva versioitu versio päivitetään kun data muuttuu.
-   */
   @Test def testVersionumeroituVersioPaivitetaanKunDataMuuttuu(): Unit =
     val HENKILONUMERO = "1.2.3"
     val OO_NUMERO = "1.2.3"
@@ -276,6 +273,28 @@ class KantaOperaatiotTest {
 
     val (_, jsonData, _) = this.kantaOperaatiot.haeData(alkuperainenVersio)
     Assertions.assertEquals(Seq("{\"attr\": \"paivitetty\"}"), jsonData, "Alkuperäinen data päivitettiin")
+
+  @Test def testVersionumeroituVersioEiPaivitetaKunDataEiMuutu(): Unit =
+    val HENKILONUMERO = "1.2.3"
+    val OO_NUMERO = "1.2.3"
+    val baseTime = Instant.now()
+
+    // Tallennetaan versio
+    val alkuperainenVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(
+      HENKILONUMERO, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"alkuperainen\"}"), Seq.empty,
+      baseTime, OO_NUMERO, Some(1)
+    ).get
+
+    // Yritetään tallennetaan samalla datalla ja lahdeVersiolla - ei tehdä mitään.
+    val uusiVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(
+      HENKILONUMERO, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"alkuperainen\"}"), Seq.empty,
+      baseTime.plusSeconds(10), OO_NUMERO, Some(1)
+    )
+
+    Assertions.assertTrue(uusiVersio.isEmpty)
+
+    val (_, jsonData, _) = this.kantaOperaatiot.haeData(alkuperainenVersio)
+    Assertions.assertEquals(Seq("{\"attr\": \"alkuperainen\"}"), jsonData, "Data säilyy samana")
 
   /**
    * Testataan että kun samalla henkilöllä tallennetaan versioita rinnakkain syntyy katkeamaton voimassaolohistoria
