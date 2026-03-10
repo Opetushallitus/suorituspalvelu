@@ -597,7 +597,7 @@ class AutomaattinenHakukelpoisuusTest {
         nimi = Kielistetty(Some("Ensimmäinen kieli (L1)"), Some("Första språket (L1)"), Some("First Language (L1)")),
         koodi = Koodi("L1", "eboppiaineet", Some(1)),
         laajuus = Some(EBLaajuus(BigDecimal(4.0), Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-        suorituskieli = Koodi("FI", "kieli", Some(1)),
+        suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
         osasuoritukset = Set.empty
       ),
       EBOppiaine(
@@ -605,7 +605,7 @@ class AutomaattinenHakukelpoisuusTest {
         nimi = Kielistetty(Some("Toinen kieli (L2)"), Some("Andra språket (L2)"), Some("Second Language (L2)")),
         koodi = Koodi("L2", "eboppiaineet", Some(1)),
         laajuus = Some(EBLaajuus(BigDecimal(3.0), Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-        suorituskieli = Koodi("EN", "kieli", Some(1)),
+        suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
         osasuoritukset = Set.empty
       )
     )
