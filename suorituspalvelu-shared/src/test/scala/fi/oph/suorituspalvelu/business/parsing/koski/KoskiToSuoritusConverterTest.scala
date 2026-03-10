@@ -1,13 +1,11 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.KantaOperaatiot.KantaEntiteetit.{AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS, PERUSOPETUKSEN_OPISKELUOIKEUS}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.junit.jupiter.api.{Assertions, BeforeAll, Test, TestInstance}
+import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.time.LocalDate
 
@@ -123,7 +121,7 @@ class KoskiToSuoritusConverterTest {
         predictedArviointi = None,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
-        null, null, null, None
+        suorituskieli = None, null, null, null
       )
     }
 

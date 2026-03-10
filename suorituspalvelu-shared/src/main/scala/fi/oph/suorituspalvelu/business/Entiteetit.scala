@@ -90,7 +90,7 @@ case class EBOppiaine(
   nimi: Kielistetty,
   koodi: Koodi,
   laajuus: Option[EBLaajuus],
-  suorituskieli: Koodi,
+  suorituskieli: Option[Koodi],
   osasuoritukset: Set[EBOppiaineenOsasuoritus]
 )
 
