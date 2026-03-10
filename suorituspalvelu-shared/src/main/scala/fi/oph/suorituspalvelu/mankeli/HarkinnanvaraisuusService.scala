@@ -90,6 +90,8 @@ object HarkinnanvaraisuusPaattely {
     vahvistettuViimeistaan: LocalDate,
     hakukohteet: Map[String, KoutaHakukohde]
   ): HakemuksenHarkinnanvaraisuus = {
+    LOG.info(s"Aloitetaan harkinnanvaraisuuspäättely hakemukselle ${hakemus.hakemusOid}, henkilö ${hakemus.personOid}, " +
+      s"mukana ${opiskeluoikeudet.size} opiskeluoikeutta, vahvistettu vahvistettuViimeistaan ${vahvistettuViimeistaan}")
 
     val tuoreinPeruskoulusuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet, salliMontaValmista = true)
 
@@ -156,7 +158,9 @@ object HarkinnanvaraisuusPaattely {
       }
       HakutoiveenHarkinnanvaraisuus(hakutoive.hakukohdeOid, syy)
     })
-    HakemuksenHarkinnanvaraisuus(hakemus.hakemusOid, hakemus.personOid, hakutoiveet)
+    val result = HakemuksenHarkinnanvaraisuus(hakemus.hakemusOid, hakemus.personOid, hakutoiveet)
+    LOG.info(s"Harkinnanvaraisuuspäättelyn tulos: $result")
+    result
   }
 }
 
