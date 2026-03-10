@@ -253,10 +253,9 @@ class KantaOperaatiotTest {
     Assertions.assertTrue(versio3LopullinenTila.loppu.isEmpty, "Version 3 loppu pitäisi olla edelleen infinity")
 
   /**
-   * Testataan että olemassa olevaa versioitua versiota ei päivitetä vaikka data muuttuisi.
-   * Versioitu versio on jo tallennettu, joten uusi yritys samalla lahdeVersio-numerolla ohitetaan.
+   * Testataan että olemassaoleva versioitu versio päivitetään kun data muuttuu.
    */
-  @Test def testVersionumeroituVersiotaEiPaivitetaVaikkaDataMuuttuu(): Unit =
+  @Test def testVersionumeroituVersioPaivitetaanKunDataMuuttuu(): Unit =
     val HENKILONUMERO = "1.2.3"
     val OO_NUMERO = "1.2.3"
     val baseTime = Instant.now()
@@ -267,18 +266,16 @@ class KantaOperaatiotTest {
       baseTime, OO_NUMERO, Some(1)
     ).get
 
-    // Yritetään tallentaa uudella datalla (sama lahdeVersio) - pitäisi ohittaa
-    val tulos = this.kantaOperaatiot.tallennaJarjestelmaVersio(
+    // Tallennetaan uudella datalla (sama lahdeVersio) - olemassaoleva versio päivitetään.
+    val uusiVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"paivitetty\"}"), Seq.empty,
       baseTime.plusSeconds(10), OO_NUMERO, Some(1)
-    )
+    ).get
 
-    // Ei pitäisi palauttaa versiota koska sama lahdeVersio on jo olemassa
-    Assertions.assertTrue(tulos.isEmpty, "Samalla lahdeVersio-numerolla ei pitäisi palauttaa versiota")
+    Assertions.assertEquals(alkuperainenVersio, uusiVersio, "Päivityksessä palautuu sama versio kuin aiemmin samalla lähdeversiolla tallennettaessa")
 
-    // Alkuperäinen data pitäisi olla ennallaan
     val (_, jsonData, _) = this.kantaOperaatiot.haeData(alkuperainenVersio)
-    Assertions.assertEquals(Seq("{\"attr\": \"alkuperainen\"}"), jsonData, "Alkuperäinen data ei pitäisi muuttua")
+    Assertions.assertEquals(Seq("{\"attr\": \"paivitetty\"}"), jsonData, "Alkuperäinen data päivitettiin")
 
   /**
    * Testataan että kun samalla henkilöllä tallennetaan versioita rinnakkain syntyy katkeamaton voimassaolohistoria
