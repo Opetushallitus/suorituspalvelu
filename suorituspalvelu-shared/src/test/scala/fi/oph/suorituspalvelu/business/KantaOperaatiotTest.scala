@@ -252,7 +252,7 @@ class KantaOperaatiotTest {
     val versio3LopullinenTila = this.kantaOperaatiot.haeVersio(versio3.tunniste).get
     Assertions.assertTrue(versio3LopullinenTila.loppu.isEmpty, "Version 3 loppu pitäisi olla edelleen infinity")
 
-  @Test def testVersionumeroituVersioPaivitetaanKunDataMuuttuu(): Unit =
+  @Test def testVersionumeroituVersioPaivitetaanKunDataMuuttuuMuttaAikaleimaEiMuutu(): Unit =
     val HENKILONUMERO = "1.2.3"
     val OO_NUMERO = "1.2.3"
     val baseTime = Instant.now()
@@ -266,7 +266,7 @@ class KantaOperaatiotTest {
     // Tallennetaan uudella datalla (sama lahdeVersio) - olemassaoleva versio päivitetään.
     val uusiVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio(
       HENKILONUMERO, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"paivitetty\"}"), Seq.empty,
-      baseTime.plusSeconds(10), OO_NUMERO, Some(1)
+      baseTime, OO_NUMERO, Some(1)
     ).get
 
     Assertions.assertEquals(alkuperainenVersio, uusiVersio, "Päivityksessä palautuu sama versio kuin aiemmin samalla lähdeversiolla tallennettaessa")
@@ -274,7 +274,7 @@ class KantaOperaatiotTest {
     val (_, jsonData, _) = this.kantaOperaatiot.haeData(alkuperainenVersio)
     Assertions.assertEquals(Seq("{\"attr\": \"paivitetty\"}"), jsonData, "Alkuperäinen data päivitettiin")
 
-  @Test def testVersionumeroituVersioEiPaivitetaKunDataEiMuutu(): Unit =
+  @Test def testVersionumeroituVersioEiPaivitetaKunDataEiMuutuJaAikaleimaMuuttuu(): Unit =
     val HENKILONUMERO = "1.2.3"
     val OO_NUMERO = "1.2.3"
     val baseTime = Instant.now()
