@@ -96,6 +96,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         val personOids =
           Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
             .flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan KOSKI-tiedot haun $hakuOid hakijoille (${personOids.size} henkilöä)")
         syncKoskiForHenkilot(personOids, ctx)
       catch
         case e: Exception =>
@@ -109,6 +110,11 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
   }, Seq.empty)
 
   def startRefreshKoskiForHaut(hakuOids: Set[String]): UUID = refreshHakuJob.run(mapper.writeValueAsString(hakuOids))
+
+  def startRefreshKoskiForAktiivisetHaut(): UUID =
+    val aktiivisetHaut = tarjontaIntegration.aktiivisetHaut().map(_.oid)
+    LOG.info(s"Löytyi ${aktiivisetHaut.size} aktiivista hakua. Päivitetään KOSKI-tiedot näille hauille.")
+    refreshHakuJob.run(mapper.writeValueAsString(aktiivisetHaut))
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
