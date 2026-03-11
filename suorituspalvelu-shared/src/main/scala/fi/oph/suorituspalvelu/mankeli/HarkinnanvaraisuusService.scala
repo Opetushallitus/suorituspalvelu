@@ -231,7 +231,7 @@ class HarkinnanvaraisuusService {
       Set.empty
     } else {
       val hakemuksetF: Future[Seq[AtaruValintalaskentaHakemus]] =
-        hakemuspalveluClient.getValintalaskentaHakemukset(None, true, hakemusOids)
+        hakemuspalveluClient.getValintalaskentaHakemukset(None, haeHarkinnanvaraisuudet = true, hakemusOids, salliYksiloimattomat = true)
       val hakemukset = Await.result(hakemuksetF, 2.minutes)
 
       val hakuOidsToHakemukset = hakemukset.groupBy(_.hakuOid)
