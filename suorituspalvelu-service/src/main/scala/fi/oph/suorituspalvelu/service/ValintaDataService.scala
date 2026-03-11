@@ -210,7 +210,7 @@ class ValintaDataService {
     if (hakukohdeOid.isEmpty && hakemusOids.isEmpty)
       Future.successful(Seq.empty)
     else
-      hakemuspalveluClient.getValintalaskentaHakemukset(hakukohdeOid, toisenAsteenHaku, hakemusOids)
+      hakemuspalveluClient.getValintalaskentaHakemukset(hakukohdeOid, haeHarkinnanvaraisuudet = toisenAsteenHaku, hakemusOids, salliYksiloimattomat = false)
   }
 
   def selvitaHakijanHakemusOidHaussa(hakuOid: String, personOid: String): Future[Option[String]] = {
