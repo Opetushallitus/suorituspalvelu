@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse, KoutaHaku}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -291,6 +291,46 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(
       "tiedostot" -> fileUrl,
     ), auditLogEntry.target)
+  }
+
+  // -- Koski sync for aktiiviset haut --
+
+  @WithAnonymousUser
+  @Test def testRefreshKoskiAktiivisetAnonymous(): Unit =
+    // tuntematon käyttäjä ohjataan tunnistautumiseen
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_AKTIIVISET_PATH, null))
+      .andExpect(status().is3xxRedirection)
+
+  @WithMockUser(value = "kayttaja", authorities = Array())
+  @Test def testRefreshKoskiAktiivisetNotAllowed(): Unit =
+    // tunnistettu käyttäjä jolla ei oikeuksia => 403
+    mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_AKTIIVISET_PATH, null))
+      .andExpect(status().isForbidden)
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiAktiivisetAllowed(): Unit = {
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+    val oppijaNumero = "1.2.246.562.24.91423219238"
+
+    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_24_91423219238.json").mkString.getBytes())
+    Mockito.when(tarjontaIntegration.aktiivisetHaut()).thenReturn(Seq(KoutaHaku(hakuOid, "", Map.empty, "", Some("haunkohdejoukko_12"), List.empty, None, None)))
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid)).thenReturn(Future.successful(Seq(AtaruHakemuksenHenkilotiedot("hakemusOid", Some(oppijaNumero), None))))
+    Mockito.when(koskiIntegration.fetchKoskiTiedotForOppijat(Set(oppijaNumero))).thenReturn(new SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_AKTIIVISET_PATH, null))
+      .andExpect(status().isOk).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
+
+    // Odotellaan että tiedot asynkronisesti synkkaava job ehtii pyörähtää
+    waitUntilReady(response.jobId)
+
+    // tarkistetaan että kantaan on tallentunut opiskeluoikeudet
+    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    Assertions.assertEquals(3, haetut.size)
+
+    // katsotaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaKoskiTiedotAktiivisille.name, auditLogEntry.operation)
   }
 
 }

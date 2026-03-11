@@ -121,12 +121,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         case Some(existingJsonData, existingXmlData) => {
           val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
           if (!hasChanged) {
-            LOG.info(s"Ei tarvetta päivittää versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOid=$henkiloOid, lahdeJarjestelma=$lahdeJarjestelma, lahdeTunniste=$lahdeTunniste, lahdeVersio=$lahdeVersio).")
+            LOG.info(s"Ei tarvetta päivittää versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste, lahdeVersio=$lahdeVersio).")
           }
           hasChanged
         }
         case None => {
-          LOG.error(s"Yritetään päivittää versiota, mutta voimassaolevaa versiota ei löydy henkilölle (henkiloOid=$henkiloOid, lahdeJarjestelma=$lahdeJarjestelma, lahdeTunniste=$lahdeTunniste, lahdeVersio=${lahdeVersio}).")
+          LOG.error(s"Yritetään päivittää versiota, mutta voimassaolevaa versiota ei löydy henkilölle (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste, lahdeVersio=${lahdeVersio}).")
           false
         }
       }
@@ -144,12 +144,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       result.headOption match {
         case Some(alku, existingJsonData, existingXmlData) =>
           if (fetchedAt.toEpochMilli <= Instant.parse(alku).toEpochMilli)
-            LOG.info(s"Ei tarvetta tallentaa uutta versiota, koska aikaisemmin tallennettu versio on uudempi (henkiloOdid=$henkiloOid, lahdeJarjestelma=$lahdeJarjestelma, lahdeTunniste=$lahdeTunniste).")
+            LOG.info(s"Ei tarvetta tallentaa uutta versiota, koska aikaisemmin tallennettu versio on uudempi (henkiloOdid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             false
           else {
             val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
             if (!hasChanged) {
-              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla(henkiloOdid=$henkiloOid, lahdeJarjestelma=$lahdeJarjestelma, lahdeTunniste=$lahdeTunniste).")
+              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOdid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             }
             hasChanged
           }
