@@ -106,7 +106,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     xmlChanged || jsonChanged
   }
 
-  private def shouldUpdateExistingVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, jsonData: Seq[String], xmlData: Seq[String]): DBIOAction[Boolean, NoStream, Effect] =
+  private def shouldUpdateExistingVersion(henkiloOid: String, lahdeJarjestelma: Lahdejarjestelma, lahdeTunniste: String, lahdeVersio: Int, jsonData: Seq[String], xmlData: Seq[String]): DBIOAction[Boolean, NoStream, Effect] =
     sql"""
       SELECT data_json, data_xml
       FROM versiot
@@ -119,12 +119,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         case Some(existingJsonData, existingXmlData) => {
           val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
           if (!hasChanged) {
-            LOG.info(s"Ei tarvetta päivittää versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+            LOG.info(s"Ei tarvetta päivittää versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste, lahdeVersio=$lahdeVersio).")
           }
           hasChanged
         }
         case None => {
-          LOG.error(s"Yritetään päivittää versiota, mutta voimassaolevaa versiota ei löydy henkilölle $henkiloOid ja tunnisteella ${lahdeTunniste}.")
+          LOG.error(s"Yritetään päivittää versiota, mutta voimassaolevaa versiota ei löydy henkilölle (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste, lahdeVersio=${lahdeVersio}).")
           false
         }
       }
@@ -142,12 +142,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       result.headOption match {
         case Some(alku, existingJsonData, existingXmlData) =>
           if (fetchedAt.toEpochMilli <= Instant.parse(alku).toEpochMilli)
-            LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska aikaisemmin tallennettu versio on uudempi.")
+            LOG.info(s"Ei tarvetta tallentaa uutta versiota, koska aikaisemmin tallennettu versio on uudempi (henkiloOdid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             false
           else {
             val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
             if (!hasChanged) {
-              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle $henkiloOid, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla.")
+              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla(henkiloOdid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             }
             hasChanged
           }
@@ -251,7 +251,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     lahdeTunniste: String,
     lahdeVersio: Int
   ): DBIOAction[Option[VersioEntiteetti], NoStream, Effect] = {
-      LOG.info(s"Päivitetään lähdejärjestelmän ${lahdeJarjestelma.nimi} tiedot henkilölle $henkiloOid (lahdeVersio=$lahdeVersio)")
+      LOG.info(s"Päivitetään lähdejärjestelmän ${lahdeJarjestelma.nimi} tiedot henkilölle $henkiloOid (lahdeTunniste=$lahdeTunniste, lahdeVersio=$lahdeVersio)")
       sql"""
       UPDATE versiot
       SET data_json=${jsonData}::jsonb[],
@@ -291,7 +291,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           // Versioned: check if same lahdeversio already exists
           findExistingVersionByLahdeVersio(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio).flatMap {
             case Some(existingTunniste) =>
-              shouldUpdateExistingVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, jsonData, xmlData).flatMap {
+              shouldUpdateExistingVersion(henkiloOid, lahdeJarjestelma, lahdeTunniste, lahdeVersio, jsonData, xmlData).flatMap {
                 case true => updateVersion(henkiloOid, lahdeJarjestelma, jsonData, xmlData, lahdeTunniste, lahdeVersio)
                 case false => DBIO.successful(None)
               }
