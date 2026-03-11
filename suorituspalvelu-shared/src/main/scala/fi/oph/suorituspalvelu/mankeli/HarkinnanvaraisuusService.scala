@@ -93,7 +93,8 @@ object HarkinnanvaraisuusPaattely {
     LOG.info(s"Aloitetaan harkinnanvaraisuuspäättely hakemukselle ${hakemus.hakemusOid}, henkilö ${hakemus.personOid}, " +
       s"mukana ${opiskeluoikeudet.size} opiskeluoikeutta, vahvistettu vahvistettuViimeistaan ${vahvistettuViimeistaan}")
 
-    val tuoreinPeruskoulusuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet, salliMontaValmista = true)
+    val tuoreinYsiPeruskouluSuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet, salliMontaValmista = true)
+      .filter(pk => pk.luokkaAste.isEmpty || pk.luokkaAste.contains(9)) //Todo, poistetaan isEmpty kun kaikilta löytyy parseroitu luokkaAste.
 
     val deadlineOhitettu = LocalDate.now().isAfter(vahvistettuViimeistaan)
     val pohjakoulutusHakemukselta =
@@ -121,7 +122,7 @@ object HarkinnanvaraisuusPaattely {
         hakukohde.voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita.exists(_.equals(true))
       val syy = (
         hakukohdeSalliiHarkinnanvaraisuuden,
-        tuoreinPeruskoulusuoritus,
+        tuoreinYsiPeruskouluSuoritus,
         pohjakoulutusHakemukselta,
         hakukohteenHarkinnanvaraisuusHakemukselta
       ) match {
