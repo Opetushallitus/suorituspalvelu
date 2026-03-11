@@ -71,7 +71,7 @@ trait HakemuspalveluClient {
   def getHakemustenHenkilotiedot(params: AtaruHenkiloSearchParams): Future[Seq[AtaruHakemuksenHenkilotiedot]]
   def checkPermission(permissionRequest: AtaruPermissionRequest): Future[AtaruPermissionResponse]
   def getHenkilonHaut(oppijaOids: Seq[String]): Future[Map[String, Seq[String]]]
-  def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty): Future[Seq[AtaruValintalaskentaHakemus]]
+  def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty, salliYksiloimattomat: Boolean): Future[Seq[AtaruValintalaskentaHakemus]]
   def getHenkilonHakemustenTiedot(oppijaOid: String): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
   def getHenkiloidenHakemustenTiedot(oppijaOids: Seq[String]): Future[Map[String, Seq[AtaruHakemusBaseFields]]]
   def getMuuttuneetHakemukset(muuttuneetJalkeen: Instant): Future[Seq[AtaruHakemusBaseFields]]
@@ -159,12 +159,13 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
   }
 
   //Harkinnanvaraisuustiedot ovat tarpeellisia vain toisen asteen hauille
-  override def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty): Future[Seq[AtaruValintalaskentaHakemus]] = {
+  override def getValintalaskentaHakemukset(hakukohdeOid: Option[String], haeHarkinnanvaraisuudet: Boolean, hakemusOids: Set[String] = Set.empty, salliYksiloimattomat: Boolean): Future[Seq[AtaruValintalaskentaHakemus]] = {
     if (hakukohdeOid.isEmpty && hakemusOids.isEmpty) {
       throw new RuntimeException("hakukohdeOid tai hakemusOids on pakollinen parametri")
     }
     val hakukohdeParam = if (hakukohdeOid.isDefined) s"&hakukohdeOid=${hakukohdeOid.get}" else ""
-    val url = environmentBaseUrl + s"/lomake-editori/api/external/valintalaskenta?harkinnanvaraisuustiedotHakutoiveille=$haeHarkinnanvaraisuudet$hakukohdeParam"
+    val salliYksiloimattomatParam = if (salliYksiloimattomat) s"&salliYksiloimattomat=true" else ""
+    val url = environmentBaseUrl + s"/lomake-editori/api/external/valintalaskenta?harkinnanvaraisuustiedotHakutoiveille=$haeHarkinnanvaraisuudet$hakukohdeParam$salliYksiloimattomatParam"
     LOG.info(s"Fetching hakemukset for hakukohde $hakukohdeOid from $url, hakemusOids: $hakemusOids")
     doPost(url, hakemusOids).map(data => mapper.readValue(data, classOf[Array[AtaruValintalaskentaHakemus]])).map(hakemukset => hakemukset.toSeq)
   }
