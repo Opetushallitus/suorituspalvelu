@@ -8,6 +8,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 
+import java.time.temporal.{ChronoUnit, TemporalUnit}
 import java.time.{Instant, LocalDate, ZoneId}
 import java.util.UUID
 
@@ -55,7 +56,7 @@ class HarkinnanvaraisuusPaattelyTest {
   val DEFAULT_OHJAUSPARAMETRIT = Ohjausparametrit(
     PH_HKP = None,
     suoritustenVahvistuspaiva = Some(DateParam(
-      date = Instant.now().minusMillis(1000 * 60 * 60 * 24 * 30).toEpochMilli  // 30 days ago
+      date = Instant.now().minus(30, ChronoUnit.DAYS).toEpochMilli  // 30 days ago
     ))
   )
 
@@ -484,10 +485,88 @@ class HarkinnanvaraisuusPaattelyTest {
     )
   }
 
+  @Test
+  def testSyncHarkinnanvaraisuusNonYsiluokkaPerusopetus(): Unit = {
+    val hakukohteet = Map(
+      HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true),
+      HAKUKOHDE_OID_2 -> createHakukohde(HAKUKOHDE_OID_2, true)
+    )
+
+    val perusopetus1 = createOpiskeluoikeusWithOppimaara(
+      maYksilollistetty = false,
+      aiYksilollistetty = false,
+      SuoritusTila.KESKEN,
+      None,
+      Some(8)
+    )
+
+
+    val opiskeluoikeudet = Seq(perusopetus1)
+    val ohjausparametrit = DEFAULT_OHJAUSPARAMETRIT
+    val hakemus = BASE_HAKEMUS
+    val result = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, hakukohteet
+    )
+
+    result.hakutoiveet.foreach(ht => {
+      Assertions.assertEquals(
+        HarkinnanvaraisuudenSyy.ATARU_EI_PAATTOTODISTUSTA,
+        ht.harkinnanvaraisuudenSyy,
+        "Pitää palauttaa ATARU_EI_PAATTOTODISTUSTA kaikille hakutoiveille, koska Supassa ei huomioitavaa perusopetusta"
+      )
+    })
+  }
+
+  @Test
+  def testSyncHarkinnanvaraisuusYsiluokkaPerusopetusKesken(): Unit = {
+    val hakukohteet = Map(
+      HAKUKOHDE_OID_1 -> createHakukohde(HAKUKOHDE_OID_1, true),
+      HAKUKOHDE_OID_2 -> createHakukohde(HAKUKOHDE_OID_2, true)
+    )
+
+    val perusopetus1 = createOpiskeluoikeusWithOppimaara(
+      maYksilollistetty = false,
+      aiYksilollistetty = false,
+      SuoritusTila.KESKEN,
+      None,
+      Some(9)
+    )
+
+    val opiskeluoikeudet = Seq(perusopetus1)
+    val hakemus = BASE_HAKEMUS
+
+    //Deadline tulevaisuudessa
+    val resultDeadlineInFuture = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudet, LocalDate.now().plusDays(1), hakukohteet
+    )
+
+    resultDeadlineInFuture.hakutoiveet.foreach(ht => {
+      Assertions.assertEquals(
+        HarkinnanvaraisuudenSyy.EI_HARKINNANVARAINEN,
+        ht.harkinnanvaraisuudenSyy,
+        "Pitää palauttaa EI_HARKINNANVARAINEN kaikille hakutoiveille"
+      )
+    })
+
+    //Deadline menneisyydessä
+    val resultDeadlineInThePast = HarkinnanvaraisuusPaattely.syncHarkinnanvaraisuusForHakemus(
+      hakemus, opiskeluoikeudet, LocalDate.now().minusDays(1), hakukohteet
+    )
+
+    resultDeadlineInThePast.hakutoiveet.foreach(ht => {
+      Assertions.assertEquals(
+        HarkinnanvaraisuudenSyy.SURE_EI_PAATTOTODISTUSTA,
+        ht.harkinnanvaraisuudenSyy,
+        "Pitää palauttaa SURE_EI_PAATTOTODISTUSTA kaikille hakutoiveille"
+      )
+    })
+  }
+
   private def createOpiskeluoikeusWithOppimaara(maYksilollistetty: Boolean,
                                                 aiYksilollistetty: Boolean,
                                                 tila: SuoritusTila,
-                                                vahvistusPaivamaara: Option[LocalDate] = Some(LocalDate.now().minusDays(30))
+                                                vahvistusPaivamaara: Option[LocalDate] = Some(LocalDate.now().minusDays(30)),
+                                                luokkaAste: Option[Int] = Some(9)
                                                ): PerusopetuksenOpiskeluoikeus = {
     val matematiikka = PerusopetuksenOppiaine(
       UUID.randomUUID(),
@@ -525,7 +604,7 @@ class HarkinnanvaraisuusPaattelyTest {
       Set.empty,
       false,
       false,
-      None)
+      luokkaAste)
 
     PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),
