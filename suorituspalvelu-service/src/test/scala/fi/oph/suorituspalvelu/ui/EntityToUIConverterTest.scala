@@ -135,9 +135,9 @@ class EntityToUIConverterTest {
             ),
             oa.laajuus.map(l => l.arvo).toJava,
             Optional.of(AmmatillisenTutkinnonOsaAlueArvosana(Optional.of("Hyväksytty"), Optional.empty, Optional.empty)),
-            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+            oa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
           )).toList.asJava,
-          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          osa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       tutkinto.osat
@@ -159,9 +159,9 @@ class EntityToUIConverterTest {
             ),
             oa.laajuus.map(l => l.arvo).toJava,
             Optional.of(AmmatillisenTutkinnonOsaAlueArvosana(Optional.of("1"), Optional.empty, Optional.empty)),
-            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+            oa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
           )).toList.asJava,
-          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          osa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       Optional.of(SuoritusTapaUI.REFORMI)
@@ -237,9 +237,9 @@ class EntityToUIConverterTest {
             ),
             oa.laajuus.map(l => l.arvo).toJava,
             Optional.empty,
-            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+            oa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
           )).toList.asJava,
-          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          osa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       Optional.of(NAYTTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
@@ -323,9 +323,9 @@ class EntityToUIConverterTest {
             ),
             oa.laajuus.map(l => l.arvo).toJava,
             Optional.of(AmmatillisenTutkinnonOsaAlueArvosana(Optional.of("1"), Optional.empty, Optional.empty)),
-            oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+            oa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
           )).toList.asJava,
-          osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
+          osa.korotettu.map(k => KorotusUI.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       Optional.of(OPS)

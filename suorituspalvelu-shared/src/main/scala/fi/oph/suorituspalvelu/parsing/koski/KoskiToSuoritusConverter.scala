@@ -103,54 +103,29 @@ object KoskiToSuoritusConverter {
           asteikot.head match {
             case "arviointiasteikkoyleissivistava" =>
               val numeeriset = arvioinnit.filter(arv => Set("10", "9", "8", "7", "6", "5", "4").contains(arv.arvosana.koodiarvo))
-              val parasArviointi: Option[KoskiArviointi] = {
-                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
-                else {
-                  arvioinnit.find(_.arvosana.koodiarvo.equals("S"))
-                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("O")))
-                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("H")))
-                }
-              }
-              parasArviointi
+              numeeriset.maxByOption(_.arvosana.koodiarvo.toInt)
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("S")))
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("O")))
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("H")))
             case "arviointiasteikkoammatillinen15" =>
               val numeeriset = arvioinnit.filter(arv => Set("1", "2", "3", "4", "5").contains(arv.arvosana.koodiarvo))
-              val parasArviointi: Option[KoskiArviointi] = {
-                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
-                else {
-                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
-                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
-                }
-              }
-              parasArviointi
+              numeeriset.maxByOption(_.arvosana.koodiarvo.toInt)
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty")))
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
             case "arviointiasteikkoammatillinent1k3" =>
               val numeeriset = arvioinnit.filter(arv => Set("0", "1", "2", "3").contains(arv.arvosana.koodiarvo))
-              val parasArviointi: Option[KoskiArviointi] = {
-                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
-                else {
-                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
-                }
-              }
-              parasArviointi
+              numeeriset.maxByOption(_.arvosana.koodiarvo.toInt)
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty")))
             case "arviointiasteikkoammatillinenhyvaksyttyhylatty" =>
-              val parasArviointi: Option[KoskiArviointi] = {
-                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
-                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
-              }
-              parasArviointi
+              arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
             case "arviointiasteikkoeuropeanschoolofhelsinkifinalmark" =>
-              if (arvioinnit.nonEmpty)
-                Some(arvioinnit.maxBy(arviointi => arviointi.arvosana.koodiarvo.toDouble))
-              else None
+              arvioinnit.maxByOption(_.arvosana.koodiarvo.toDouble)
             case "arviointiasteikkodiatutkinto" =>
               //Koodistossa on S, muut numeerisia
               val numeeriset = arvioinnit.filter(arv => !arv.arvosana.koodiarvo.equals("S"))
-              val parasArviointi: Option[KoskiArviointi] = {
-                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
-                else {
-                  arvioinnit.find(_.arvosana.koodiarvo.equals("S"))
-                }
-              }
-              parasArviointi
+              numeeriset.maxByOption(_.arvosana.koodiarvo.toInt)
+                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("S")))
             case _ =>
               ???
           }

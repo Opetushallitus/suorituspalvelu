@@ -19,7 +19,7 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val optionalAmmatillisenTutkinnonOsaArvosana: TSType[Optional[AmmatillisenTutkinnonOsaArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaArvosana], Option[AmmatillisenTutkinnonOsaArvosana]]
   implicit val optionalAmmatillisenTutkinnonOsaAlueArvosana: TSType[Optional[AmmatillisenTutkinnonOsaAlueArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaAlueArvosana], Option[AmmatillisenTutkinnonOsaAlueArvosana]]
   implicit val optionalYksilollistaminen: TSType[Optional[Yksilollistaminen]] = TSType.sameAs[Optional[Yksilollistaminen], Option[Yksilollistaminen]]
-  implicit val optionalKorotus: TSType[Optional[Korotus]] = TSType.sameAs[Optional[Korotus], Option[Korotus]]
+  implicit val optionalKorotus: TSType[Optional[KorotusUI]] = TSType.sameAs[Optional[KorotusUI], Option[KorotusUI]]
   implicit val ammatillisenTutkinnonOsaAlueTSType: TSType[AmmatillisenTutkinnonOsaAlue] = TSType.fromCaseClass
   implicit val ammatillisenTutkinnonOsaTSType: TSType[AmmatillisenTutkinnonOsa] = TSType.fromCaseClass
   implicit val perusopetuksenOppiaineTSType: TSType[PerusopetuksenOppiaineUI] = TSType.fromCaseClass

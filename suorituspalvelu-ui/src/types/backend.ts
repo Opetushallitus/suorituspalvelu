@@ -37,14 +37,14 @@ export interface IAmmatillisenTutkinnonOsa {
   laajuus?: number;
   arvosana?: IAmmatillisenTutkinnonOsaArvosana;
   osaAlueet: IAmmatillisenTutkinnonOsaAlue[];
-  korotettu?: Korotus;
+  korotettu?: KorotusUI;
 }
 
 export interface IAmmatillisenTutkinnonOsaAlue {
   nimi: IAmmatillisenTutkinnonOsaAlueNimi;
   laajuus?: number;
   arvosana?: IAmmatillisenTutkinnonOsaAlueArvosana;
-  korotettu?: Korotus;
+  korotettu?: KorotusUI;
 }
 
 export interface IAmmatillisenTutkinnonOsaAlueArvosana {
@@ -306,14 +306,6 @@ export interface IKKSuoritusUI {
   isTutkintoonJohtava: boolean;
   tutkintotaso?: KKTutkintotasoUI;
   sektori?: KKSektoriUI;
-}
-
-export interface IKOROTETTU {
-  type: 'KOROTETTU';
-}
-
-export interface IKOROTUKSENYRITYS {
-  type: 'KOROTUKSENYRITYS';
 }
 
 export interface IKayttajaFailureResponse {
@@ -887,7 +879,7 @@ export interface IYTO {
   laajuus?: number;
   arvosana?: IAmmatillisenTutkinnonOsaArvosana;
   osaAlueet: IYTOOsaAlue[];
-  korotettu?: Korotus;
+  korotettu?: KorotusUI;
 }
 
 export interface IYTONimi {
@@ -900,7 +892,7 @@ export interface IYTOOsaAlue {
   nimi: IYTOOsaAlueNimi;
   laajuus?: number;
   arvosana?: IAmmatillisenTutkinnonOsaAlueArvosana;
-  korotettu?: Korotus;
+  korotettu?: KorotusUI;
 }
 
 export interface IYTOOsaAlueNimi {
@@ -951,7 +943,7 @@ export type KKSektoriUI = 'AMK' | 'YO';
 
 export type KKTutkintotasoUI = 'ALEMPI' | 'YLEMPI' | 'TOHTORI';
 
-export type Korotus = IKOROTETTU | IKOROTUKSENYRITYS;
+export type KorotusUI = 'KOROTETTU' | 'KOROTUKSENYRITYS';
 
 export type OpiskeluoikeusTilaUI = 'VOIMASSA' | 'PAATTYNYT';
 

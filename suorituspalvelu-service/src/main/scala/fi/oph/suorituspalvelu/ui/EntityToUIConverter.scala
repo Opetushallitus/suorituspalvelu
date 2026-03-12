@@ -533,9 +533,9 @@ object EntityToUIConverter {
                 ),
                 laajuus = oa.laajuus.map(l => l.arvo).toJava,
                 arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
-                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
               )).toList.asJava,
-              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
             )).toList.asJava,
           ammatillisenTutkinnonOsat = t.osat
             .filter(o => !o.yto)
@@ -556,9 +556,9 @@ object EntityToUIConverter {
                 ),
                 laajuus = oa.laajuus.map(l => l.arvo).toJava,
                 arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
-                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
               )).toList.asJava,
-              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
             )).toList.asJava,
           suoritustapa = Optional.of(SuoritusTapaUI.valueOf(t.suoritustapa.arvo.toUpperCase)),
         )
@@ -566,11 +566,9 @@ object EntityToUIConverter {
 
   def getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[OsittainenAmmatillinenTutkintoUI] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
+      .collect{case o: AmmatillinenOpiskeluoikeus => o }
       .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[AmmatillinenTutkintoOsittainen])
-      .map(s => s.asInstanceOf[AmmatillinenTutkintoOsittainen])
+      .collect{ case s: AmmatillinenTutkintoOsittainen => s }
       .filter(t => t.korotettuOpiskeluoikeusOid.isDefined)
       .map(t => {
         OsittainenAmmatillinenTutkintoUI(
@@ -615,9 +613,9 @@ object EntityToUIConverter {
                   ),
                   laajuus = oa.laajuus.map(l => l.arvo).toJava,
                   arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
-                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
                 )).toList.asJava,
-              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
             )).toList.asJava,
           ammatillisenTutkinnonOsat = t.osat
             .filter(o => !o.yto)
@@ -641,9 +639,9 @@ object EntityToUIConverter {
                   ),
                   laajuus = oa.laajuus.map(l => l.arvo).toJava,
                   arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
-                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+                  korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
                 )).toList.asJava,
-              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
+              korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.KorotusUI.valueOf(k.toString)).toJava
             )).toList.asJava,
           suoritustapa = Optional.empty()
         )

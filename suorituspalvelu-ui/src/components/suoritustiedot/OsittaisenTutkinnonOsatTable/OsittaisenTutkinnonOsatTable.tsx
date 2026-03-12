@@ -70,7 +70,7 @@ export function OsittaisenTutkinnonOsatTable({
                 <TableCell key="korotus">
                   {tutkinnonOsa.korotettu
                     ? t(
-                        `oppija.korotus-${String(tutkinnonOsa.korotettu).toLowerCase()}`,
+                        `oppija.korotus-${tutkinnonOsa.korotettu.toLowerCase()}`,
                       )
                     : undefined}
                 </TableCell>,
