@@ -108,6 +108,7 @@ class VirtaParsingTest {
           |              <virta:Myontaja>10108</virta:Myontaja>
           |              <virta:Laji>1</virta:Laji>
           |              <virta:Nimi kieli="fi">Sosiaali- ja terveysalan ammattikorkeakoulututkinto</virta:Nimi>
+          |              <virta:Nimi kieli="sv" />
           |              <virta:Nimi kieli="en">Bachelor of Health Care</virta:Nimi>
           |              <virta:Kieli>fi</virta:Kieli>
           |              <virta:Koulutuskoodi>671103</virta:Koulutuskoodi>

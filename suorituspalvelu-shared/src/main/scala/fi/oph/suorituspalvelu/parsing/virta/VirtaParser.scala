@@ -70,7 +70,7 @@ case class VirtaKoodi(versio: String, koodi: Int)
 case class VirtaSuoritusKoulutusala(Koodi: VirtaKoodi)
 
 @JsonDeserialize(classOf[NimiDeserializer])
-case class VirtaNimi(kieli: Option[String], nimi: String)
+case class VirtaNimi(kieli: Option[String], nimi: Option[String])
 
 case class VirtaSuoritusviite(sisaltyvaOpintosuoritusAvain: String)
 
@@ -127,11 +127,12 @@ class NimiDeserializer extends JsonDeserializer[VirtaNimi] {
     val value = p.readValueAs(classOf[Any])
     value match
       // jos tullaan tähän haaraan, nimiä on vain yksi ja sillä ei ole kieliattribuuttia
-      case nimi: String => VirtaNimi(None, nimi)
+      case nimi: String => VirtaNimi(None, Option(nimi))
       // jos tullaan tähän haaraan kieliä on useita ja niillä pitäisi olla kieliattribuutit, jos ei ole niin räjähdetään
       case nimi: Map[_, _] =>
         val nimiMap = nimi.asInstanceOf[Map[String, String]]
-        VirtaNimi(Some(nimiMap("kieli")), nimiMap(""))
+        // Nimi-elementillä ei välttämättä ole ollenkaan sisältöä, jolloin nimiMap.get("") palauttaa None.
+        VirtaNimi(Some(nimiMap("kieli")), nimiMap.get(""))
 }
 
 class ArvosanaDeserializer extends JsonDeserializer[VirtaArvosana] {
