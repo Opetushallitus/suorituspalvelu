@@ -29,7 +29,15 @@ class LahtokoulutService {
   }
 
   def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
-    kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi, None)
+    val henkilotJaLuokat = kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi, None)
+    if(henkilotJaLuokat.isEmpty)
+      Set.empty
+    else
+      val r = onrIntegration.getAliasesForPersonOids(henkilotJaLuokat.map(_._1))
+        .map(aliakset => {
+          henkilotJaLuokat.flatMap((h, l) => aliakset.allOidsByQueriedOids(h).map(oid => (oid, l)))
+        })
+      Await.result(r, 30.seconds)
   }
 
   def haeLahtokouluAuthorizations(henkiloOid: String): Seq[LahtokouluAuthorization] = {
