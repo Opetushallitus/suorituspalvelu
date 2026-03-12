@@ -52,7 +52,6 @@ object Validator {
   val jobinNimiPattern: Regex = "^[0-9A-Za-z_-]+$".r
 
   def validateHenkiloOid(henkiloOid: Option[String], pakollinen: Boolean): Set[String] = {
-    println(s"validating $henkiloOid")
     if (henkiloOid.isEmpty || henkiloOid.get.isEmpty)
       if(pakollinen)
         Set(VALIDATION_HENKILOOID_TYHJA)

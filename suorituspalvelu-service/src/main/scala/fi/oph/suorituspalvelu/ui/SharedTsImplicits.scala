@@ -32,5 +32,8 @@ trait SharedTsImplicits {
   implicit val optionalUUID: TSType[Optional[UUID]] = TSType.sameAs[Optional[UUID], Option[UUID]]
   implicit val kayttajaSuccessResponseTsType: TSType[KayttajaSuccessResponse] = TSType.fromCaseClass
   implicit val kayttajaFailureResponseTsType: TSType[KayttajaFailureResponse] = TSType.fromCaseClass
+  implicit val suorituskieliTSType: TSType[SuorituskieliUI] = TSType.fromCaseClass
+  implicit val optionalSuorituskieliTSType: TSType[Optional[SuorituskieliUI]] = TSType.sameAs[Optional[SuorituskieliUI], Option[SuorituskieliUI]]
+
 }
 

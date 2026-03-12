@@ -99,10 +99,6 @@ export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
       ...s,
       koulutustyyppi: 'ib',
     }));
-    addSortedSuoritukset(oppijanTiedot.preIB, (s) => ({
-      ...s,
-      koulutustyyppi: 'lukio',
-    }));
     addSortedSuoritukset(oppijanTiedot.ammatillisetPerusTutkinnot, (s) => ({
       ...s,
       koulutustyyppi: 'ammatillinen',

@@ -117,7 +117,8 @@ class KoskiToSuoritusConverterTest {
 
     def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): KoskiOsaSuoritus = {
       KoskiOsaSuoritus(
-        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, null, null)), null,
+        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, null, null, null)), null,
+        predictedArviointi = None,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
         suorituskieli = None, null, null
@@ -307,9 +308,11 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        ryhmä = None
       )),
       arviointi = None,
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
@@ -356,9 +359,11 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        ryhmä = None
       )),
       arviointi = None,
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
@@ -412,9 +417,11 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        ryhmä = None
       )),
       arviointi = None,
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
@@ -439,9 +446,11 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        ryhmä = None
       )),
       arviointi = None,
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
@@ -500,7 +509,8 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        ryhmä = None
       )),
       arviointi = Some(Set(
         KoskiArviointi(
@@ -509,6 +519,7 @@ class KoskiToSuoritusConverterTest {
           päivä = None
         )
       )),
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
@@ -534,7 +545,8 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        ryhmä = None
       )),
       arviointi = Some(Set(
         KoskiArviointi(
@@ -543,6 +555,7 @@ class KoskiToSuoritusConverterTest {
           päivä = None
         )
       )),
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
@@ -602,9 +615,11 @@ class KoskiToSuoritusConverterTest {
         kieli = None,
         pakollinen = None,
         koulutustyyppi = None,
-        osaAlue = None
+        osaAlue = None,
+        `ryhmä` = None
       )),
       arviointi = Some(Set.empty),
+      predictedArviointi = None,
       yksilöllistettyOppimäärä = None,
       rajattuOppimäärä = None,
       suorituskieli = None,
