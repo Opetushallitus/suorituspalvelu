@@ -38,8 +38,14 @@ object KoskiToSuoritusConverter {
   def isYTO(koodiarvo: String): Boolean = {
     koodiarvo match
       case "106727" => true // viestintä- ja vuorovaikutusosaaminen
+      case "101053" => true // viestintä- ja vuorovaikutusosaaminen
+      case "400012" => true // viestintä- ja vuorovaikutusosaaminen
       case "106728" => true // matemaattis-luonnontieteellinen osaaminen
+      case "101054" => true // matemaattis-luonnontieteellinen osaaminen
+      case "400013" => true // matemaattis-luonnontieteellinen osaaminen
       case "106729" => true // yhteiskunta- ja työelämäosaaminen
+      case "101055" => true // yhteiskunta- ja työelämäosaaminen
+      case "400014" => true // yhteiskunta- ja työelämäosaaminen
       case default => false
   }
 
