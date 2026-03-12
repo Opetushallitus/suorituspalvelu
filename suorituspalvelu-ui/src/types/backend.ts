@@ -297,11 +297,11 @@ export interface IKKSuoritusUI {
 }
 
 export interface IKOROTETTU {
-  type: "KOROTETTU";
+  type: 'KOROTETTU';
 }
 
 export interface IKOROTUKSENYRITYS {
-  type: "KOROTUKSENYRITYS";
+  type: 'KOROTUKSENYRITYS';
 }
 
 export interface IKayttajaFailureResponse {
@@ -941,14 +941,14 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type KKSektoriUI = ("AMK" | "YO");
+export type KKSektoriUI = 'AMK' | 'YO';
 
-export type KKTutkintotasoUI = ("ALEMPI" | "YLEMPI" | "TOHTORI");
+export type KKTutkintotasoUI = 'ALEMPI' | 'YLEMPI' | 'TOHTORI';
 
-export type Korotus = (IKOROTETTU | IKOROTUKSENYRITYS);
+export type Korotus = IKOROTETTU | IKOROTUKSENYRITYS;
 
-export type OpiskeluoikeusTilaUI = ("VOIMASSA" | "PAATTYNYT");
+export type OpiskeluoikeusTilaUI = 'VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritusTilaUI = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type SuoritusTilaUI = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
 
-export type SuoritustapaUI = "NAYTTOTUTKINTO";
+export type SuoritustapaUI = 'OPS' | 'REFORMI' | 'NAYTTO';
