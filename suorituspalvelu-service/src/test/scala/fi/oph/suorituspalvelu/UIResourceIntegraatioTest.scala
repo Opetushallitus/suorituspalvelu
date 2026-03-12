@@ -46,6 +46,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA + "_1.2.246.562.10.52320123196"
 
+  final val ROOLI_HAKUKOHDERYHMAN_1_2_246_562_28_36220136912_KATSELIJA = SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA + "_1.2.246.562.28.36220136912"
+  final val ROOLI_HAKUKOHDERYHMAN_1_2_246_562_10_16572136923_HAKENEIDEN_KATSELIJA = SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA + "_1.2.246.562.10.16572136923"
+
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
 
@@ -731,7 +734,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testHaeOppijanTiedotOppijanumerollaAllowed(): Unit =
+  @Test def testHaeOppijanTiedotOppijanumerollaAllowed(): Unit = {
     val oppijaNumero = "1.2.246.562.24.21250967215"
     val tutkintoKoodi = "123456"
     val suoritusKieli = Koodi("fi", "kieli", Some(1))
@@ -768,6 +771,74 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA, ROOLI_HAKUKOHDERYHMAN_1_2_246_562_10_16572136923_HAKENEIDEN_KATSELIJA))
+  @Test def testHaeOppijanTiedotOppijanumerollaHakemuksenKauttaOrganisaatioOikeudetAllowed(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.21250967215"
+    val syntymaAika = Some(LocalDate.of(2000, 1, 1))
+    val oppilaitosOid = "1.2.246.562.10.16572136923"
+    val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
+
+    // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+
+    // mockataan Hakemuspalvelun vastaus, kun kysytään hakukohderyhmäoidilla
+    Mockito.when(hakemuspalveluClient.checkPermission(AtaruPermissionRequest(Set(oppijaNumero), Set(oppilaitosOid), Set.empty)))
+      .thenReturn(Future.successful(AtaruPermissionResponse(accessAllowed = Some(true), None)))
+
+    // mockataan organisaatiopalvelun vastaus
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isOk)
+      .andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
+
+    Assertions.assertEquals(response.syntymaAika.get, syntymaAika.get)
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA,ROOLI_HAKUKOHDERYHMAN_1_2_246_562_28_36220136912_KATSELIJA))
+  @Test def testHaeOppijanTiedotOppijanumerollaHakemuksenKauttaHakukohderyhmaOikeudetAllowed(): Unit = {
+    val oppijaNumero = "1.2.246.562.24.21250967215"
+    val syntymaAika = Some(LocalDate.of(2000, 1, 1))
+
+    // mockataan ONR-vastaus
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+
+    // mockataan Hakemuspalvelun vastaus, kun kysytään hakukohderyhmäoidilla
+    Mockito.when(hakemuspalveluClient.checkPermission(AtaruPermissionRequest(Set(oppijaNumero), Set("1.2.246.562.28.36220136912"), Set.empty)))
+      .thenReturn(Future.successful(AtaruPermissionResponse(accessAllowed = Some(true), None)))
+
+    // suoritetaan kutsu ja parseroidaan vastaus
+    val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
+    val result = mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TIEDOT_PATH)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsBytes(request)))
+      .andExpect(status().isOk)
+      .andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
+
+    Assertions.assertEquals(response.syntymaAika.get, syntymaAika.get)
+
+    //Tarkistetaan että auditloki täsmää
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaeOppijaTiedotUI.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(ApiConstants.UI_OPPIJANUMERO_PARAM_NAME -> oppijaNumero), auditLogEntry.target)
+  }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testHaeOppijanTiedotHenkilotunnuksellaAllowed(): Unit =

@@ -245,7 +245,7 @@ class UIService {
     lazy val aliases = onrIntegration.getAliasesForPersonOids(Set(oppijaOid)).map(aliasResult => aliasResult.allOids)
 
     def hasHakijaKatseluoikeus(): Boolean =
-      val hakijaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
+      val hakijaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA), organisaatioProvider, true).oikeudellisetOrganisaatiot
       hakijaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.flatMap(allOids => {
         hakemuspalveluClient.checkPermission(AtaruPermissionRequest(allOids, hakijaOikeusOrganisaatiot, Set.empty))
           .map(permissionResult => {
