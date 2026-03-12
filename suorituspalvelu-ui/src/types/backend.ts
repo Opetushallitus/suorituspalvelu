@@ -37,12 +37,14 @@ export interface IAmmatillisenTutkinnonOsa {
   laajuus?: number;
   arvosana?: string;
   osaAlueet: IAmmatillisenTutkinnonOsaAlue[];
+  korotettu?: Korotus;
 }
 
 export interface IAmmatillisenTutkinnonOsaAlue {
   nimi: IAmmatillisenTutkinnonOsaAlueNimi;
   laajuus?: number;
   arvosana?: string;
+  korotettu?: Korotus;
 }
 
 export interface IAmmatillisenTutkinnonOsaAlueNimi {
@@ -291,6 +293,14 @@ export interface IKKSuoritusUI {
   sektori?: KKSektoriUI;
 }
 
+export interface IKOROTETTU {
+  type: "KOROTETTU";
+}
+
+export interface IKOROTUKSENYRITYS {
+  type: "KOROTUKSENYRITYS";
+}
+
 export interface IKayttajaFailureResponse {
   virheet: string[];
 }
@@ -447,6 +457,7 @@ export interface IOppijanTiedotSuccessResponse {
   ebTutkinto?: IEBTutkintoUI;
   ibTutkinto?: IIBTutkintoUI;
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
+  osittaisetAmmatillisetTutkinnot: IOsittainenAmmatillinenTutkintoUI[];
   ammattitutkinnot: IAmmattitutkinto[];
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
   telmat: ITelma[];
@@ -493,6 +504,20 @@ export interface IOppilaitosNimi {
 
 export interface IOppilaitosSuccessResponse {
   oppilaitokset: IOppilaitos[];
+}
+
+export interface IOsittainenAmmatillinenTutkintoUI {
+  tunniste: string;
+  nimi: IAmmatillinentutkintoNimi;
+  oppilaitos: IAmmatillinenOppilaitos;
+  tila: SuoritusTilaUI;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  suorituskieli: string;
+  korotettuPainotettuKeskiarvo?: number;
+  ytot: IYTO[];
+  ammatillisenTutkinnonOsat: IAmmatillisenTutkinnonOsa[];
+  suoritustapa?: SuoritustapaUI;
 }
 
 export interface IPKOppilaitos {
@@ -830,6 +855,7 @@ export interface IYTO {
   laajuus?: number;
   arvosana?: IYTOArvosana;
   osaAlueet: IYTOOsaAlue[];
+  korotettu?: Korotus;
 }
 
 export interface IYTOArvosana {
@@ -848,6 +874,7 @@ export interface IYTOOsaAlue {
   nimi: IYTOOsaAlueNimi;
   laajuus?: number;
   arvosana?: string;
+  korotettu?: Korotus;
 }
 
 export interface IYTOOsaAlueNimi {
@@ -897,6 +924,8 @@ export interface IYliajonMuutosUI {
 export type KKSektoriUI = ("AMK" | "YO");
 
 export type KKTutkintotasoUI = ("ALEMPI" | "YLEMPI" | "TOHTORI");
+
+export type Korotus = (IKOROTETTU | IKOROTUKSENYRITYS);
 
 export type OpiskeluoikeusTilaUI = ("VOIMASSA" | "PAATTYNYT");
 
