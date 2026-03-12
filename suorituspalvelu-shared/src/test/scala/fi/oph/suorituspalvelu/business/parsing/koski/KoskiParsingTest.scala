@@ -2230,7 +2230,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("L1", "eboppiaineet", Some(1)), l1.koodi)
     Assertions.assertEquals(Kielistetty(Some("Ensimmäinen kieli (L1)"), Some("Första språket (L1)"), Some("First Language (L1)")), l1.nimi)
     Assertions.assertEquals(Some(EBLaajuus(4.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))), l1.laajuus)
-    Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), l1.suorituskieli)
+    Assertions.assertEquals(Some(Koodi("FI", "kieli", Some(1))), l1.suorituskieli)
 
     // Test L1 osasuoritukset
     Assertions.assertEquals(3, l1.osasuoritukset.size)
@@ -2258,7 +2258,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("L2", "eboppiaineet", Some(1)), l2.koodi)
     Assertions.assertEquals(Kielistetty(Some("Toinen kieli (L2)"), Some("Andra språket (L2)"), Some("Second Language (L2)")), l2.nimi)
     Assertions.assertEquals(Some(EBLaajuus(3.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))), l2.laajuus)
-    Assertions.assertEquals(Koodi("EN", "kieli", Some(1)), l2.suorituskieli)
+    Assertions.assertEquals(Some(Koodi("EN", "kieli", Some(1))), l2.suorituskieli)
 
     // Test L2 osasuoritukset
     Assertions.assertEquals(1, l2.osasuoritukset.size)

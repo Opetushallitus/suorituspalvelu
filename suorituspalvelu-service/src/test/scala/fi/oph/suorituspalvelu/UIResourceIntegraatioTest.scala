@@ -2080,7 +2080,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           ),
           Koodi("L1", "eboppiaineet", Some(1)),
           Some(EBLaajuus(4.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-          Koodi("FI", "kieli", Some(1)),
+          Some(Koodi("FI", "kieli", Some(1))),
           Set(
             EBOppiaineenOsasuoritus(
               Kielistetty(
@@ -2133,7 +2133,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           ),
           Koodi("L2", "eboppiaineet", Some(1)),
           Some(EBLaajuus(3.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-          Koodi("EN", "kieli", Some(1)),
+          Some(Koodi("EN", "kieli", Some(1))),
           Set(
             EBOppiaineenOsasuoritus(
               Kielistetty(

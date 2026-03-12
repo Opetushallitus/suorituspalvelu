@@ -429,7 +429,7 @@ object EntityToUIConverter {
               sv = o.nimi.sv.toJava,
               en = o.nimi.en.toJava
             ),
-            suorituskieli = getKoodiNimi[SuorituskieliUI](Some(o.suorituskieli.arvo.toUpperCase), KOODISTO_SUORITUSKIELET, koodistoProvider),
+            suorituskieli = getKoodiNimi[SuorituskieliUI](o.suorituskieli.map(k => k.arvo.toUpperCase), KOODISTO_SUORITUSKIELET, koodistoProvider),
             laajuus = o.laajuus.map(l => l.arvo).getOrElse(BigDecimal(0)),
             written = o.osasuoritukset.find(os => os.koodi.arvo.equals("Written"))
               .map(osw => EBOppiaineOsasuoritusUI(osw.koodi.arvo, BigDecimal.apply(osw.arvosana.arvosana.arvo))).toJava,
