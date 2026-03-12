@@ -40,9 +40,7 @@ export const OsittaisenOsaAlueetTable = ({
               </TableCell>
               <TableCell>
                 {osaAlue.korotettu
-                  ? t(
-                      `oppija.korotus-${String(osaAlue.korotettu).toLowerCase()}`,
-                    )
+                  ? t(`oppija.korotus-${osaAlue.korotettu.toLowerCase()}`)
                   : undefined}
               </TableCell>
             </TableRow>

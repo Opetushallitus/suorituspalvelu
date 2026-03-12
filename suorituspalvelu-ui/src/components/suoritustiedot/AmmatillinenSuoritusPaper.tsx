@@ -18,12 +18,12 @@ export const AmmatillinenSuoritusPaper = ({
   suoritus: AmmatillinenSuoritus;
 }) => {
   const { t } = useTranslations();
-  const osittainen = isOsittainenSuoritus(suoritus);
+  const isOsittainen = isOsittainenSuoritus(suoritus);
   return (
     <SuoritusInfoPaper
       suoritus={suoritus}
       topColor={ophColors.green2}
-      nameSuffix={osittainen ? t('oppija.osittainen') : undefined}
+      nameSuffix={isOsittainen ? t('oppija.osittainen') : undefined}
     >
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <InfoItemRow slotAmount={4}>
@@ -33,7 +33,7 @@ export const AmmatillinenSuoritusPaper = ({
             value={t(`suoritustapa.${suoritus.suoritustapa}`)}
           />
         )}
-        {!osittainen &&
+        {!isOsittainen &&
           'painotettuKeskiarvo' in suoritus &&
           suoritus.painotettuKeskiarvo && (
             <LabeledInfoItem
@@ -49,7 +49,7 @@ export const AmmatillinenSuoritusPaper = ({
             />
           )}
       </InfoItemRow>
-      {osittainen ? (
+      {isOsittainen ? (
         <>
           <OsittaisenTutkinnonOsatTable
             tutkinnonOsat={suoritus.ytot}

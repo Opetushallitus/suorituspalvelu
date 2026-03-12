@@ -162,7 +162,7 @@ enum KKSektoriUI:
   case AMK
   case YO
 
-enum Korotus:
+enum KorotusUI:
   case KOROTETTU
   case KOROTUKSENYRITYS
 
@@ -642,7 +642,7 @@ case class YTOOsaAlue(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[AmmatillisenTutkinnonOsaAlueArvosana],
   @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty korotettu: Optional[Korotus]
+  @BeanProperty korotettu: Optional[KorotusUI]
 )
 
 case class YTONimi(
@@ -679,7 +679,7 @@ case class YTO(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty osaAlueet: java.util.List[YTOOsaAlue],
   @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty korotettu: Optional[Korotus]
+  @BeanProperty korotettu: Optional[KorotusUI]
 )
 
 case class AmmatillisenTutkinnonOsaAlueNimi(
@@ -709,7 +709,7 @@ case class AmmatillisenTutkinnonOsaAlue(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty arvosana: Optional[AmmatillisenTutkinnonOsaAlueArvosana],
   @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty korotettu: Optional[Korotus]
+  @BeanProperty korotettu: Optional[KorotusUI]
 )
 
 case class AmmatillisenTutkinnonOsaNimi(
@@ -740,7 +740,7 @@ case class AmmatillisenTutkinnonOsa(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty osaAlueet: java.util.List[AmmatillisenTutkinnonOsaAlue],
   @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty korotettu: Optional[Korotus]
+  @BeanProperty korotettu: Optional[KorotusUI]
 )
 
 case class AmmatillinenOppilaitosNimi(
