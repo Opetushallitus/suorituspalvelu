@@ -514,7 +514,21 @@ object EntityToUIConverter {
         )
       }).headOption
 
-  def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Ammatillinentutkinto] =
+  private def getAmmatillinenArvosanaNimi[N <: NimiLike](
+    koodi: Option[Koodi],
+    koodistoProvider: KoodistoProvider)(using constructor: NimiConstructor[N]): Optional[N] =
+    koodi.toJava.flatMap(k => k.koodisto match {
+      case "arviointiasteikkoammatillinenhyvaksyttyhylatty" =>
+        getKoodiNimi[N](Some(k.arvo), k.koodisto, koodistoProvider)
+      case "arviointiasteikkoammatillinen15" =>
+        getKoodiNimi[N](Some(k.arvo), k.koodisto, koodistoProvider)
+      case "arviointiasteikkoammatillinent1k3" if k.arvo == "Hyväksytty" || k.arvo == "0" =>
+        getKoodiNimi[N](Some(k.arvo), k.koodisto, koodistoProvider)
+      case "arviointiasteikkoammatillinent1k3" =>
+        Optional.of(constructor.construct(Optional.of(k.arvo), Optional.empty, Optional.empty))
+    })
+
+  def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[Ammatillinentutkinto] =
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
@@ -552,19 +566,7 @@ object EntityToUIConverter {
                 en = o.nimi.en.toJava
               ),
               laajuus = o.laajuus.map(l => l.arvo).toJava,
-              arvosana = o.arvosana.map(a => if(a.koodi.koodisto=="arviointiasteikkoammatillinenhyvaksyttyhylatty")
-                  YTOArvosana(
-                    a.nimi.fi.toJava,
-                    a.nimi.sv.toJava,
-                    a.nimi.en.toJava
-                  )
-                else
-                  YTOArvosana(
-                    Optional.of(a.koodi.arvo),
-                    Optional.of(a.koodi.arvo),
-                    Optional.of(a.koodi.arvo)
-                  )
-              ).toJava,
+              arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaArvosana](o.arvosana.map(a => a.koodi), koodistoProvider),
               osaAlueet = o.osaAlueet.map(oa => YTOOsaAlue(
                 nimi = YTOOsaAlueNimi(
                   fi = oa.nimi.fi.toJava,
@@ -572,7 +574,7 @@ object EntityToUIConverter {
                   en = oa.nimi.en.toJava
                 ),
                 laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
                 korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
               )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
@@ -587,7 +589,7 @@ object EntityToUIConverter {
                 o.nimi.en.toJava
               ),
               laajuus = o.laajuus.map(l => l.arvo).toJava,
-              arvosana = o.arvosana.map(a => a.koodi.arvo).toJava,
+              arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaArvosana](o.arvosana.map(a => a.koodi), koodistoProvider),
               osaAlueet = o.osaAlueet.map(oa => AmmatillisenTutkinnonOsaAlue(
                 nimi = AmmatillisenTutkinnonOsaAlueNimi(
                   fi = oa.nimi.fi.toJava,
@@ -595,7 +597,7 @@ object EntityToUIConverter {
                   en = oa.nimi.en.toJava
                 ),
                 laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
                 korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
               )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
@@ -604,7 +606,7 @@ object EntityToUIConverter {
         )
       }).toList
 
-  def getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[OsittainenAmmatillinenTutkintoUI] =
+  def getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[OsittainenAmmatillinenTutkintoUI] =
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
@@ -644,11 +646,7 @@ object EntityToUIConverter {
                 en = o.nimi.en.toJava
               ),
               laajuus = o.laajuus.map(l => l.arvo).toJava,
-              arvosana = o.arvosana.map(a => YTOArvosana(
-                a.nimi.fi.toJava,
-                a.nimi.sv.toJava,
-                a.nimi.en.toJava
-              )).toJava,
+              arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaArvosana](o.arvosana.map(a => a.koodi), koodistoProvider),
               osaAlueet = o.osaAlueet
                 .filter(oa => oa.korotettu.isDefined)
                 .map(oa => YTOOsaAlue(
@@ -658,7 +656,7 @@ object EntityToUIConverter {
                     en = oa.nimi.en.toJava
                   ),
                   laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                  arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                  arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
                   korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
                 )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
@@ -674,7 +672,7 @@ object EntityToUIConverter {
                 o.nimi.en.toJava
               ),
               laajuus = o.laajuus.map(l => l.arvo).toJava,
-              arvosana = o.arvosana.map(a => a.koodi.arvo).toJava,
+              arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaArvosana](o.arvosana.map(a => a.koodi), koodistoProvider),
               osaAlueet = o.osaAlueet
                 .filter(oa => oa.korotettu.isDefined)
                 .map(oa => AmmatillisenTutkinnonOsaAlue(
@@ -684,7 +682,7 @@ object EntityToUIConverter {
                     en = oa.nimi.en.toJava
                   ),
                   laajuus = oa.laajuus.map(l => l.arvo).toJava,
-                  arvosana = oa.arvosana.map(a => a.arvo).toJava,
+                  arvosana = getAmmatillinenArvosanaNimi[AmmatillisenTutkinnonOsaAlueArvosana](oa.arvosana, koodistoProvider),
                   korotettu = oa.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
                 )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
@@ -1017,8 +1015,8 @@ object EntityToUIConverter {
         diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
         ebTutkinto =                                getEBTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
         ibTutkinto =                                getIBTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
-        ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet).asJava,
-        osittaisetAmmatillisetTutkinnot =           getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet).asJava,
+        ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
+        osittaisetAmmatillisetTutkinnot =           getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
         ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
         erikoisammattitutkinnot =                   getErikoisAmmattitutkinnot(opiskeluoikeudet).asJava,
         telmat =                                    getTelmat(opiskeluoikeudet).asJava,

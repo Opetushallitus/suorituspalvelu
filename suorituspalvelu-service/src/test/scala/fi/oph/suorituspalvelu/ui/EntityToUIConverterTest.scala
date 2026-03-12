@@ -31,6 +31,25 @@ class EntityToUIConverterTest {
     override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
   }
 
+  val ARVOSANAPROVIDER = new KoodistoProvider {
+    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
+      "Hyväksytty" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+        "Hyväksytty",
+        Koodisto("arviointiasteikkoammatillinen15"),
+        List(
+          KoodiMetadata("FI", "Hyväksytty")
+        )
+      ),
+      "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+        "1",
+        Koodisto("arviointiasteikkoammatillinen15"),
+        List(
+          KoodiMetadata("FI", "1")
+        )
+      )
+    )
+  }
+
   @Test def testConvertAmmatillinenTutkinto(): Unit = {
     val tutkinto = AmmatillinenPerustutkinto(
       UUID.randomUUID(),
@@ -107,13 +126,7 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(a =>
-            YTOArvosana(
-              a.nimi.fi.toJava,
-              a.nimi.sv.toJava,
-              a.nimi.en.toJava
-            )
-          ).toJava,
+          osa.arvosana.map(a => AmmatillisenTutkinnonOsaArvosana(Optional.of("Hyväksytty"), Optional.empty, Optional.empty)).toJava,
           osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.YTOOsaAlue(
             YTOOsaAlueNimi(
               oa.nimi.fi.toJava,
@@ -121,7 +134,7 @@ class EntityToUIConverterTest {
               oa.nimi.en.toJava
             ),
             oa.laajuus.map(l => l.arvo).toJava,
-            oa.arvosana.map(a => a.arvo).toJava,
+            Optional.of(AmmatillisenTutkinnonOsaAlueArvosana(Optional.of("Hyväksytty"), Optional.empty, Optional.empty)),
             oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
           )).toList.asJava,
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
@@ -137,7 +150,7 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.koodi.arvo).toJava,
+          Optional.of(AmmatillisenTutkinnonOsaArvosana(Optional.of("1"), Optional.empty, Optional.empty)),
           osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
             AmmatillisenTutkinnonOsaAlueNimi(
               oa.nimi.fi.toJava,
@@ -145,14 +158,14 @@ class EntityToUIConverterTest {
               oa.nimi.en.toJava
             ),
             oa.laajuus.map(l => l.arvo).toJava,
-            oa.arvosana.map(a => a.arvo).toJava,
+            Optional.of(AmmatillisenTutkinnonOsaAlueArvosana(Optional.of("1"), Optional.empty, Optional.empty)),
             oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
           )).toList.asJava,
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       Optional.of(SuoritusTapaUI.REFORMI)
-    )), EntityToUIConverter.getAmmatillisetPerusTutkinnot(Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty))))
+    )), EntityToUIConverter.getAmmatillisetPerusTutkinnot(Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), ARVOSANAPROVIDER))
   }
 
   @Test def testConvertAmmatillinenTutkintoNaytto(): Unit = {
@@ -215,7 +228,7 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.koodi.arvo).toJava,
+          Optional.empty,
           osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
             AmmatillisenTutkinnonOsaAlueNimi(
               oa.nimi.fi.toJava,
@@ -223,14 +236,14 @@ class EntityToUIConverterTest {
               oa.nimi.en.toJava
             ),
             oa.laajuus.map(l => l.arvo).toJava,
-            oa.arvosana.map(a => a.arvo).toJava,
+            Optional.empty,
             oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
           )).toList.asJava,
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       Optional.of(NAYTTO) // Suorituksen osilla ei arvosanoja => näyttötutkinto
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, ARVOSANAPROVIDER).ammatillisetPerusTutkinnot)
   }
 
   @Test def testConvertAmmatillinenTutkintoEnnenReformia(): Unit = {
@@ -255,13 +268,13 @@ class EntityToUIConverterTest {
           Koodi("106915", "tutkinnonosat", None),
           false,
           Some(LocalDate.parse("2022-01-01")),
-          None,
+          Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinent1k3", None), Kielistetty(None, None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
           Set(AmmatillisenTutkinnonOsaAlue(
             UUID.randomUUID(),
             Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
             Koodi("106915", "ammatillisenoppiaineet", None),
-            Some(Koodi("1", "arviointiasteikkoammatillinen15", None)),
+            Some(Koodi("1", "arviointiasteikkoammatillinent1k3", None)),
             Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
             None
           )),
@@ -301,7 +314,7 @@ class EntityToUIConverterTest {
             osa.nimi.en.toJava
           ),
           osa.laajuus.map(l => l.arvo).toJava,
-          osa.arvosana.map(_.koodi.arvo).toJava,
+          Optional.of(AmmatillisenTutkinnonOsaArvosana(Optional.of("Hyväksytty"), Optional.empty, Optional.empty)),
           osa.osaAlueet.map(oa => fi.oph.suorituspalvelu.resource.ui.AmmatillisenTutkinnonOsaAlue(
             AmmatillisenTutkinnonOsaAlueNimi(
               oa.nimi.fi.toJava,
@@ -309,14 +322,14 @@ class EntityToUIConverterTest {
               oa.nimi.en.toJava
             ),
             oa.laajuus.map(l => l.arvo).toJava,
-            oa.arvosana.map(a => a.arvo).toJava,
+            Optional.of(AmmatillisenTutkinnonOsaAlueArvosana(Optional.of("1"), Optional.empty, Optional.empty)),
             oa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
           )).toList.asJava,
           osa.korotettu.map(k => Korotus.valueOf(k.toString)).toJava
         ))
         .toList.asJava,
       Optional.of(OPS)
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammatillisetPerusTutkinnot)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, ARVOSANAPROVIDER).ammatillisetPerusTutkinnot)
   }
 
   @Test def testConvertAmmattiTutkinto(): Unit = {

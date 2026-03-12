@@ -621,6 +621,15 @@ case class YTOOsaAlueNimi(
   @BeanProperty en: Optional[String]
 )
 
+case class AmmatillisenTutkinnonOsaAlueArvosana(
+  @(Schema @field)(example = "4", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "4", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "4", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
+)
+
 case class YTOOsaAlue(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: YTOOsaAlueNimi,
@@ -630,8 +639,8 @@ case class YTOOsaAlue(
     requiredMode = RequiredMode.REQUIRED
   )
   @BeanProperty laajuus: Optional[BigDecimal],
-  @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String],
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[AmmatillisenTutkinnonOsaAlueArvosana],
   @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty korotettu: Optional[Korotus]
 )
@@ -645,7 +654,7 @@ case class YTONimi(
   @BeanProperty en: Optional[String]
 )
 
-case class YTOArvosana(
+case class AmmatillisenTutkinnonOsaArvosana(
   @(Schema @field)(example = "Hyväksytty", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
   @(Schema @field)(example = "Godkänd", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -666,7 +675,7 @@ case class YTO(
   )
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[YTOArvosana],
+  @BeanProperty arvosana: Optional[AmmatillisenTutkinnonOsaArvosana],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty osaAlueet: java.util.List[YTOOsaAlue],
   @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
@@ -697,9 +706,9 @@ case class AmmatillisenTutkinnonOsaAlue(
     requiredMode = RequiredMode.REQUIRED
   )
   @BeanProperty laajuus: Optional[BigDecimal],
-  @(Schema @field)(example = "5", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String],
-  @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty arvosana: Optional[AmmatillisenTutkinnonOsaAlueArvosana],
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty korotettu: Optional[Korotus]
 )
 
@@ -727,7 +736,7 @@ case class AmmatillisenTutkinnonOsa(
   )
   @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(example = "4", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: Optional[String],
+  @BeanProperty arvosana: Optional[AmmatillisenTutkinnonOsaArvosana],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty osaAlueet: java.util.List[AmmatillisenTutkinnonOsaAlue],
   @(Schema @field)(example = "KOROTETTU", requiredMode = RequiredMode.NOT_REQUIRED)

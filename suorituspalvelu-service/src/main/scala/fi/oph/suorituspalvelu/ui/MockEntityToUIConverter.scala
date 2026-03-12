@@ -352,7 +352,7 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of(
-              YTOArvosana(
+              AmmatillisenTutkinnonOsaArvosana(
                 fi = Optional.of("Hyväksytty"),
                 sv = Optional.of("Godkänd"),
                 en = Optional.of("Pass")
@@ -366,7 +366,7 @@ object MockEntityToUIConverter {
                   en = Optional.of("Communication and interaction in mother tongue")
                 ),
                 laajuus = Optional.of(4),
-                arvosana = Optional.of("1"),
+                arvosana = Optional.empty,
                 korotettu = Optional.empty()
               ),
               YTOOsaAlue(
@@ -376,7 +376,7 @@ object MockEntityToUIConverter {
                   en = Optional.of("Communication and interaction in the second national language")
                 ),
                 laajuus = Optional.of(1),
-                arvosana = Optional.of("1"),
+                arvosana = Optional.empty,
                 korotettu = Optional.empty()
               ),
               YTOOsaAlue(
@@ -386,7 +386,7 @@ object MockEntityToUIConverter {
                   en = Optional.of("Operating in a digital environment")
                 ),
                 laajuus = Optional.of(1),
-                arvosana = Optional.of("1"),
+                arvosana = Optional.empty,
                 korotettu = Optional.empty()
               )
             ),
@@ -401,7 +401,7 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of(
-              YTOArvosana(
+              AmmatillisenTutkinnonOsaArvosana(
                 fi = Optional.of("Hyväksytty"),
                 sv = Optional.of("Godkänd"),
                 en = Optional.of("Pass")
@@ -419,7 +419,7 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of(
-              YTOArvosana(
+              AmmatillisenTutkinnonOsaArvosana(
                 fi = Optional.of("Hyväksytty"),
                 sv = Optional.of("Godkänd"),
                 en = Optional.of("Pass")
@@ -438,7 +438,7 @@ object MockEntityToUIConverter {
               en = Optional.of("Audiovisuaalisen kulttuurin perusteet en")
             ),
             laajuus = Optional.of(11),
-            arvosana = Optional.of("4"),
+            arvosana = Optional.empty,
             osaAlueet = java.util.List.of(
               AmmatillisenTutkinnonOsaAlue(
                 nimi = AmmatillisenTutkinnonOsaAlueNimi(
@@ -447,7 +447,7 @@ object MockEntityToUIConverter {
                   en = Optional.of("Audiovisuaalisen kulttuurin perusteet 1 en")
                 ),
                 laajuus = Optional.of(2),
-                arvosana = Optional.of("1"),
+                arvosana = Optional.empty,
                 korotettu = Optional.empty()
               ),
               AmmatillisenTutkinnonOsaAlue(
@@ -457,7 +457,7 @@ object MockEntityToUIConverter {
                   en = Optional.of("Audiovisuaalisen kulttuurin perusteet 2 en")
                 ),
                 laajuus = Optional.of(3),
-                arvosana = Optional.of("1"),
+                arvosana = Optional.empty,
                 korotettu = Optional.empty()
               )
             ),
@@ -471,7 +471,7 @@ object MockEntityToUIConverter {
               en = Optional.of("Äänimaailman suunnittelu en")
             ),
             laajuus = Optional.of(11),
-            arvosana = Optional.of("4"),
+            arvosana = Optional.empty,
             osaAlueet = java.util.List.of(),
             korotettu = Optional.empty()
           )
