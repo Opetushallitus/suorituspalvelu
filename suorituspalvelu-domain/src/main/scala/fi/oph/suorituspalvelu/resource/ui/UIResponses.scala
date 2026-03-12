@@ -558,8 +558,6 @@ case class IBSuoritusUI(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: IBSuoritusNimiUI,
-  @(Schema @field)(description = "Oppiaineen laajuus (vuosiviikkotuntia)", example = "3", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty laajuus: Optional[BigDecimal],
   @(Schema @field)(description = "Ennustettu arvosana", example = "7")
   @BeanProperty predictedGrade: Optional[String]
 )

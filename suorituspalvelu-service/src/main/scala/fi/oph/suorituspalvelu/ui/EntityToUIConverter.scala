@@ -506,8 +506,7 @@ object EntityToUIConverter {
                   sv = o.nimi.sv.toJava,
                   en = o.nimi.en.toJava
                 ),
-                predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava,
-                laajuus = o.laajuus.map(_.arvo).toJava,
+                predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava
               )).toList.asJava
             )
           }).toList.asJava

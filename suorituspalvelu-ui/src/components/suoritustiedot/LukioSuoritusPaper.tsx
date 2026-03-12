@@ -110,7 +110,6 @@ const IBOppiaineetTable = ({
         <TableHead>
           <TableRow>
             <TableCell>{t('oppija.oppiaine')}</TableCell>
-            <TableCell>{t('oppija.laajuus')}</TableCell>
             <TableCell>{t('oppija.predicted-grade')}</TableCell>
           </TableRow>
         </TableHead>
@@ -126,7 +125,6 @@ const IBOppiaineetTable = ({
                   <IndentedCell>
                     {translateKielistetty(suoritus.nimi)}
                   </IndentedCell>
-                  <TableCell>{suoritus.laajuus}</TableCell>
                   <TableCell>{suoritus.predictedGrade}</TableCell>
                 </TableRow>
               ))}

@@ -225,7 +225,6 @@ export interface IIBSuoritusNimiUI {
 export interface IIBSuoritusUI {
   tunniste: string;
   nimi: IIBSuoritusNimiUI;
-  laajuus?: number;
   predictedGrade?: string;
 }
 

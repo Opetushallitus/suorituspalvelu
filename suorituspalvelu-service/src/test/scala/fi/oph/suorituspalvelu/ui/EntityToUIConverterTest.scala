@@ -1019,7 +1019,6 @@ class EntityToUIConverterTest {
       en = Optional.of("Finnish A")
     ), suoritus1.nimi)
     Assertions.assertEquals(Optional.of("6"), suoritus1.predictedGrade)
-    Assertions.assertEquals(Optional.of(BigDecimal(1.0)), suoritus1.laajuus)
 
     val ryhma2 = ui.oppiaineet.asScala.find(_.nimi.fi.get() == "Matematiikka").get
     Assertions.assertEquals(IBOppiaineNimi(
@@ -1036,7 +1035,5 @@ class EntityToUIConverterTest {
       en = Optional.of("Mathematics: Analysis and Approaches HL")
     ), suoritus2.nimi)
     Assertions.assertEquals(Optional.of("7"), suoritus2.predictedGrade)
-    Assertions.assertEquals(Optional.of(BigDecimal(1.0)), suoritus2.laajuus)
   }
-
 }
