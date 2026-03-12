@@ -107,18 +107,6 @@ object KoskiToSuoritusConverter {
                 .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("S")))
                 .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("O")))
                 .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("H")))
-            case "arviointiasteikkoammatillinen15" =>
-              val numeeriset = arvioinnit.filter(arv => Set("1", "2", "3", "4", "5").contains(arv.arvosana.koodiarvo))
-              numeeriset.maxByOption(_.arvosana.koodiarvo.toInt)
-                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty")))
-                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
-            case "arviointiasteikkoammatillinent1k3" =>
-              val numeeriset = arvioinnit.filter(arv => Set("0", "1", "2", "3").contains(arv.arvosana.koodiarvo))
-              numeeriset.maxByOption(_.arvosana.koodiarvo.toInt)
-                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty")))
-            case "arviointiasteikkoammatillinenhyvaksyttyhylatty" =>
-              arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
-                .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("Hylätty")))
             case "arviointiasteikkoeuropeanschoolofhelsinkifinalmark" =>
               arvioinnit.maxByOption(_.arvosana.koodiarvo.toDouble)
             case "arviointiasteikkodiatutkinto" =>
@@ -140,14 +128,36 @@ object KoskiToSuoritusConverter {
     }
   }
 
-  def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: KoskiOsaSuoritus): AmmatillisenTutkinnonOsaAlue = {
-    val arviointi = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => Set("arviointiasteikkoammatillinen15", "arviointiasteikkoammatillinent1k3", "arviointiasteikkoammatillinenhyvaksyttyhylatty").contains(arviointi.arvosana.koodistoUri)))
-        .getOrElse(Set.empty)
-      valitseParasArviointi(arvioinnit)
+  private def AMMATILLISET_ARVIOINTIASTEIKKO_KOODISTOT = Set(
+    "arviointiasteikkoammatillinen15",
+    "arviointiasteikkoammatillinent1k3",
+    "arviointiasteikkoammatillinenhyvaksyttyhylatty"
+  )
+
+  // Ammatillisilla osasuorituksilla voi olla arviointeja eri asteikoilla. Valitaan ensisijaisesti numeerinen, siten hyväksytty ja hylätty
+  def valitseParasAmmatillinenArviointi(
+    arvioinnit: Option[Set[KoskiArviointi]],
+  ) = {
+    val validitArvioinnit = arvioinnit.getOrElse(Set.empty)
+      .filter(arviointi => AMMATILLISET_ARVIOINTIASTEIKKO_KOODISTOT.contains(arviointi.arvosana.koodistoUri))
+
+    val asteikot: Set[String] = validitArvioinnit.map(_.arvosana.koodistoUri)
+    if (asteikot.isEmpty) {
+      throw new RuntimeException(s"Arvioinneilta puuttuu asteikko: $validitArvioinnit")
     }
+
+    validitArvioinnit.maxByOption(arviointi => {
+      val koodiarvo = arviointi.arvosana.koodiarvo
+      if (koodiarvo.matches("\\d+")) koodiarvo.toDouble
+      // arviointiasteikkoammatillinent1k3 sisältää arvon "0", joka tarkoittaa "hylätty".
+      // Valitaan ennemmin "Hyväksytty" muista koodistoista, jos löytyy
+      else if (koodiarvo.equals("Hyväksytty")) 0.5
+      else -1
+    })
+  }
+
+  def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: KoskiOsaSuoritus): AmmatillisenTutkinnonOsaAlue = {
+    val arviointi = valitseParasAmmatillinenArviointi(osaSuoritus.arviointi)
 
     AmmatillisenTutkinnonOsaAlue(
       UUID.randomUUID(),
@@ -160,13 +170,7 @@ object KoskiToSuoritusConverter {
   }
 
   def toAmmatillisenTutkinnonOsa(osaSuoritus: KoskiOsaSuoritus): AmmatillisenTutkinnonOsa = {
-    val arviointi = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => Set("arviointiasteikkoammatillinen15", "arviointiasteikkoammatillinent1k3", "arviointiasteikkoammatillinenhyvaksyttyhylatty").contains(arviointi.arvosana.koodistoUri)))
-        .getOrElse(Set.empty)
-      valitseParasArviointi(arvioinnit)
-    }
+    val arviointi = valitseParasAmmatillinenArviointi(osaSuoritus.arviointi)
 
     AmmatillisenTutkinnonOsa(
       UUID.randomUUID(),
@@ -401,10 +405,8 @@ object KoskiToSuoritusConverter {
       None
     else
       val parasArviointi = {
-        val arvioinnit = osaSuoritus.arviointi
-          .map(arviointi => arviointi
-            .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoyleissivistava"))
-          .getOrElse(Set.empty)
+        val arvioinnit = osaSuoritus.arviointi.getOrElse(Set.empty)
+          .filter(_.arvosana.koodistoUri == "arviointiasteikkoyleissivistava")
         valitseParasArviointi(arvioinnit)
       }
 
@@ -422,10 +424,8 @@ object KoskiToSuoritusConverter {
 
   def toPerusopetuksenOppiaineenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): PerusopetuksenOppimaaranOppiaineidenSuoritus = {
     val parasArviointi: Option[KoskiArviointi] = {
-      val arvioinnit = suoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoyleissivistava"))
-        .getOrElse(Set.empty)
+      val arvioinnit = suoritus.arviointi.getOrElse(Set.empty)
+        .filter(_.arvosana.koodistoUri == "arviointiasteikkoyleissivistava")
       valitseParasArviointi(arvioinnit)
     }
 
@@ -642,10 +642,8 @@ object KoskiToSuoritusConverter {
   def toEbOppiaineenOsasuoritus(osaSuoritus: KoskiOsaSuoritus): EBOppiaineenOsasuoritus = {
     //Voiko eb-alaosasuorituksella olla useita arviointeja? Jos voi, voiko arvioinneilla olla erilaisia koodistoja? Käytetäänkö aina koodistoa arviointiasteikkoeuropeanschoolofhelsinkifinalmark?
     val parasArviointi: Option[KoskiArviointi] = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoeuropeanschoolofhelsinkifinalmark"))
-        .getOrElse(Set.empty)
+      val arvioinnit = osaSuoritus.arviointi.getOrElse(Set.empty)
+        .filter(_.arvosana.koodistoUri == "arviointiasteikkoeuropeanschoolofhelsinkifinalmark")
       valitseParasArviointi(arvioinnit)
     }
 
@@ -658,14 +656,6 @@ object KoskiToSuoritusConverter {
   }
 
   def toEbOppiaine(osaSuoritus: KoskiOsaSuoritus): EBOppiaine = {
-    val arviointi = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoammatillinen15"))
-        .getOrElse(Set.empty)
-      valitseParasArviointi(arvioinnit)
-    }
-
     EBOppiaine(
       tunniste = UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
@@ -682,10 +672,8 @@ object KoskiToSuoritusConverter {
   def toDIAOppiaineenKoeSuoritus(osaSuoritus: KoskiOsaSuoritus): DIAOppiaineenKoesuoritus = {
     //Voiko dia-alaosasuorituksella olla useita arviointeja? Jos voi, voiko arvioinneilla olla erilaisia koodistoja? Käytetäänkö aina koodistoa arviointiasteikkodiatutkinto?
     val parasArviointi: Option[KoskiArviointi] = {
-      val arvioinnit = osaSuoritus.arviointi
-        .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkodiatutkinto"))
-        .getOrElse(Set.empty)
+      val arvioinnit = osaSuoritus.arviointi.getOrElse(Set.empty)
+        .filter(_.arvosana.koodistoUri == "arviointiasteikkodiatutkinto")
       valitseParasArviointi(arvioinnit)
     }
 
@@ -745,9 +733,7 @@ object KoskiToSuoritusConverter {
 
   def toIbOppiaine(osaSuoritus: KoskiOsaSuoritus): IBOppiaineSuoritus = {
     val parasPredictedArviointi: Option[KoskiArviointi] = valitseParasArviointi(
-      osaSuoritus.predictedArviointi
-        .map(arviointi => arviointi.filter(_.arvosana.koodistoUri == "arviointiasteikkoib"))
-        .getOrElse(Set.empty)
+      osaSuoritus.predictedArviointi.getOrElse(Set.empty).filter(_.arvosana.koodistoUri == "arviointiasteikkoib")
     )
     val koulutusmoduuli = osaSuoritus.koulutusmoduuli
 
