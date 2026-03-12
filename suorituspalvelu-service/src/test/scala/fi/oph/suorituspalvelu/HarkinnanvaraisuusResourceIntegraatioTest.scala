@@ -159,7 +159,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // Set up mocks for dependencies
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid), true))
       .thenReturn(Future.successful(Seq(testHakemus)))
 
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid1))
@@ -213,7 +213,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
 
     // Setup minimal mocks to pass
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any()))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any(), any()))
       .thenReturn(Future.successful(Seq.empty))
 
     // Execute the request
@@ -223,7 +223,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // Verify that service method was called
-    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid))
+    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid), true)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA_CRUD))
@@ -231,7 +231,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
 
     // Setup minimal mocks to pass
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any()))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any(), any()))
       .thenReturn(Future.successful(Seq.empty))
 
     // Execute the request
@@ -241,7 +241,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // Verify that service method was called
-    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid))
+    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid), true)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_SUPA_VALINTAKAYTTAJA_READ_UPDATE))
@@ -249,7 +249,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
 
     // Setup minimal mocks to pass
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any()))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(any(), any(), any(), any()))
       .thenReturn(Future.successful(Seq.empty))
 
     // Execute the request
@@ -259,7 +259,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // Verify that service method was called
-    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid))
+    Mockito.verify(hakemuspalveluClient).getValintalaskentaHakemukset(None, true, Set(hakemusOid), true)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -267,7 +267,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakemusOid = "1.2.246.562.11.01000000000000023251"
 
     // Setup mock to throw an exception
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid), true))
       .thenReturn(Future.failed(new RuntimeException("Test error")))
 
     // Execute the request
@@ -343,7 +343,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // Setup mocks
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid), true))
       .thenReturn(Future.successful(Seq(testHakemus)))
 
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid))
@@ -453,7 +453,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // Setup mocks
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid), true))
       .thenReturn(Future.successful(Seq(testHakemus)))
 
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid1)).thenReturn(hakukohde1)
@@ -543,7 +543,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // Setup mocks
-    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid)))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(None, true, Set(hakemusOid), true))
       .thenReturn(Future.successful(Seq(testHakemus)))
 
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid)).thenReturn(hakukohde)
