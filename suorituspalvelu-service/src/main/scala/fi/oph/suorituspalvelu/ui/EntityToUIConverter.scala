@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpisk
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTOTUTKINTO
+import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTO
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
@@ -522,8 +522,6 @@ object EntityToUIConverter {
       .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
       .map(t => {
-        // Jos koskesta ei tule arvosanoja, kyseessä näyttötutkinto
-        val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
         Ammatillinentutkinto(
           t.tunniste,
           nimi = AmmatillinentutkintoNimi(
@@ -594,7 +592,7 @@ object EntityToUIConverter {
               )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
             )).toList.asJava,
-          suoritustapa = if (nayttoTutkinto) Optional.of(NAYTTOTUTKINTO) else Optional.empty()
+          suoritustapa = Optional.of(SuoritusTapaUI.valueOf(t.suoritustapa.arvo.toUpperCase)),
         )
       }).toList
 
@@ -607,7 +605,6 @@ object EntityToUIConverter {
       .map(s => s.asInstanceOf[AmmatillinenTutkintoOsittainen])
       .filter(t => t.korotettuOpiskeluoikeusOid.isDefined)
       .map(t => {
-        val nayttoTutkinto = !t.osat.exists(osa => osa.arvosana.isDefined)
         OsittainenAmmatillinenTutkintoUI(
           t.tunniste,
           nimi = AmmatillinentutkintoNimi(
@@ -684,7 +681,7 @@ object EntityToUIConverter {
                 )).toList.asJava,
               korotettu = o.korotettu.map(k => fi.oph.suorituspalvelu.resource.ui.Korotus.valueOf(k.toString)).toJava
             )).toList.asJava,
-          suoritustapa = if (nayttoTutkinto) Optional.of(SuoritusTapaUI.NAYTTOTUTKINTO) else Optional.empty()
+          suoritustapa = Optional.empty()
         )
       }).toList
 

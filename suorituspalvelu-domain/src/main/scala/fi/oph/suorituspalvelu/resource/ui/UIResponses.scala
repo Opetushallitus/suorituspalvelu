@@ -149,7 +149,9 @@ enum SuoritusTilaUI:
   case KESKEYTYNYT
 
 enum SuoritusTapaUI:
-  case NAYTTOTUTKINTO
+  case OPS
+  case REFORMI
+  case NAYTTO
 
 enum KKTutkintotasoUI:
   case ALEMPI

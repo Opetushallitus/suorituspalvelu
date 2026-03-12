@@ -33,7 +33,7 @@ export function TutkinnonOsatTable({
   testId,
 }: {
   title: string;
-  maxKokonaislaajuus: number;
+  maxKokonaislaajuus: number | undefined;
   tutkinnonOsat: Array<AmmatillinenTutkinnonOsa>;
   testId?: string;
 }) {

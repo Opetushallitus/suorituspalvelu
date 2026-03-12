@@ -758,7 +758,7 @@
           "osaAlueet": []
         }
       ],
-      "suoritustapa": null
+      "suoritustapa": "REFORMI"
     },
     {
       "tunniste": "b67ce7a9-8908-4b25-9a67-16fb495ff28a",
@@ -782,7 +782,7 @@
       "painotettuKeskiarvo": 4.34,
       "ytot": [],
       "ammatillisenTutkinnonOsat": [],
-      "suoritustapa": "NAYTTOTUTKINTO"
+      "suoritustapa": "NAYTTO"
     }
   ],
   "ammattitutkinnot": [
@@ -850,7 +850,7 @@
       "valmistumispaiva": "2024-12-15",
       "suorituskieli": "FI",
       "korotettuPainotettuKeskiarvo": 3.75,
-      "suoritustapa": "NAYTTOTUTKINTO",
+      "suoritustapa": "NAYTTO",
       "ytot": [
         {
           "tunniste": "yto-ositt-1",
