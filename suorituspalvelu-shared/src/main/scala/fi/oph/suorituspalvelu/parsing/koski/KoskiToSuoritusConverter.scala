@@ -122,6 +122,15 @@ object KoskiToSuoritusConverter {
                 }
               }
               parasArviointi
+            case "arviointiasteikkoammatillinent1k3" =>
+              val numeeriset = arvioinnit.filter(arv => Set("0", "1", "2", "3").contains(arv.arvosana.koodiarvo))
+              val parasArviointi: Option[KoskiArviointi] = {
+                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
+                else {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
+                }
+              }
+              parasArviointi
             case "arviointiasteikkoammatillinenhyvaksyttyhylatty" =>
               val parasArviointi: Option[KoskiArviointi] = {
                   arvioinnit.find(_.arvosana.koodiarvo.equals("Hyväksytty"))
@@ -154,7 +163,7 @@ object KoskiToSuoritusConverter {
     val arviointi = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoammatillinen15"))
+          .filter(arviointi => Set("arviointiasteikkoammatillinen15", "arviointiasteikkoammatillinent1k3", "arviointiasteikkoammatillinenhyvaksyttyhylatty").contains(arviointi.arvosana.koodistoUri)))
         .getOrElse(Set.empty)
       valitseParasArviointi(arvioinnit)
     }
@@ -173,7 +182,7 @@ object KoskiToSuoritusConverter {
     val arviointi = {
       val arvioinnit = osaSuoritus.arviointi
         .map(arviointi => arviointi
-          .filter(arviointi => arviointi.arvosana.koodistoUri == "arviointiasteikkoammatillinen15"))
+          .filter(arviointi => Set("arviointiasteikkoammatillinen15", "arviointiasteikkoammatillinent1k3", "arviointiasteikkoammatillinenhyvaksyttyhylatty").contains(arviointi.arvosana.koodistoUri)))
         .getOrElse(Set.empty)
       valitseParasArviointi(arvioinnit)
     }
