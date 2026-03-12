@@ -526,7 +526,7 @@ object EntityToUIConverter {
                 arvosana = oa.arvosana.map(a => a.arvo).toJava
               )).toList.asJava
             )).toList.asJava,
-          ammatillisenTutkinnonOsat = if(t.suoritustapa.arvo!="ops") java.util.List.of() else t.osat
+          ammatillisenTutkinnonOsat = t.osat
             .filter(o => !o.yto)
             .map(o => AmmatillisenTutkinnonOsa(
               o.tunniste,
