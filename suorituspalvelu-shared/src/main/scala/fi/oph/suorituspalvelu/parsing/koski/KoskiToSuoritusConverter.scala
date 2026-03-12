@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
@@ -133,6 +133,17 @@ object KoskiToSuoritusConverter {
                 if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
                 else {
                   arvioinnit.find(_.arvosana.koodiarvo.equals("S"))
+                }
+              }
+              parasArviointi
+            case "arviointiasteikkoib" =>
+              val numeeriset = arvioinnit.filter(arv => Set("7", "6", "5", "4", "3", "2", "1").contains(arv.arvosana.koodiarvo))
+              val parasArviointi: Option[KoskiArviointi] = {
+                if (numeeriset.nonEmpty) Some(numeeriset.maxBy(arviointi => arviointi.arvosana.koodiarvo.toInt))
+                else {
+                  arvioinnit.find(_.arvosana.koodiarvo.equals("S"))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("O")))
+                    .orElse(arvioinnit.find(_.arvosana.koodiarvo.equals("F")))
                 }
               }
               parasArviointi
@@ -721,6 +732,41 @@ object KoskiToSuoritusConverter {
     )
   }
 
+  def toIbOppiaine(osaSuoritus: KoskiOsaSuoritus): IBOppiaineSuoritus = {
+    val viimeisinArvionti = valitseParasArviointi(osaSuoritus.predictedArviointi.getOrElse(Set.empty))
+    val koulutusmoduuli = osaSuoritus.koulutusmoduuli
+    IBOppiaineSuoritus(
+      tunniste = UUID.randomUUID(),
+      nimi = koulutusmoduuli.flatMap(_.tunniste.map(t => t.nimi)).getOrElse(dummy()),
+      koodi = koulutusmoduuli.flatMap(_.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
+      ryhma = koulutusmoduuli.flatMap(k => k.`ryhmä`.map(r => IBOppiaineRyhma(r.nimi, asKoodiObject(r)))).getOrElse(dummy()),
+      predictedArvosana = viimeisinArvionti.map(pa => IBArvosana(asKoodiObject(pa.arvosana), pa.hyväksytty)),
+      laajuus = koulutusmoduuli.flatMap(_.laajuus.map(l => IBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
+      suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject)
+    )
+  }
+
+  def toIbTutkinto(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): IBTutkinto = {
+    IBTutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(_.nimi)).getOrElse(dummy()),
+      koodi = suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(asKoodiObject(_))).getOrElse(dummy()),
+      oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
+        fi.oph.suorituspalvelu.business.Oppilaitos(
+          Kielistetty(
+            o.nimi.fi,
+            o.nimi.sv,
+            o.nimi.en,
+          ),
+          o.oid)).getOrElse(dummy()),
+      suorituskieli = suoritus.suorituskieli.map(asKoodiObject),
+      koskiTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
+      supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
+      aloitusPaivamaara = parseAloitus(opiskeluoikeus),
+      vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
+      osasuoritukset = suoritus.osasuoritukset.map(_.map(o => toIbOppiaine(o))).getOrElse(Set.empty))
+  }
+
   def toEbTutkinto(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): EBTutkinto = {
     EBTutkinto(
       UUID.randomUUID(),
@@ -807,12 +853,13 @@ object KoskiToSuoritusConverter {
   val SUORITUSTYYPPI_NUORTENPERUSOPETUKSENOPPIAINEENOPPIMAARA   = "nuortenperusopetuksenoppiaineenoppimaara"
   val SUORITUSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIAINEENOPPIMAARA = "perusopetuksenoppiaineenoppimaara"
   val SUORITUSTYYPPI_PERUSOPETUKSEENVALMISTAVAOPETUS            = "perusopetukseenvalmistavaopetus"
-  val SUORITUSTYYPPI_TELMA                                      = "telma"
-  val SUORITUSTYYPPI_TUVAKOULUTUKSENSUORITUS                    = "tuvakoulutuksensuoritus"
-  val SUORITUSTYYPPI_VAPAASIVISTYSTYOSUORITUS                   = "vstoppivelvollisillesuunnattukoulutus"
-  val SUORITUSTYYPPI_EB                                         = "ebtutkinto"
-  val SUORITUSTYYPPI_DIA                                        = "diatutkintovaihe"
-  val SUORITUSTYYPPI_LUKIONOPPIMAARA                            = "lukionoppimaara"
+  val SUORITYSTYYPPI_TELMA                                      = "telma"
+  val SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS                    = "tuvakoulutuksensuoritus"
+  val SUORITYSTYYPPI_VAPAASIVISTYSTYOSUORITUS                   = "vstoppivelvollisillesuunnattukoulutus"
+  val SUORITYSTYYPPI_EB                                         = "ebtutkinto"
+  val SUORITYSTYYPPI_DIA                                        = "diatutkintovaihe"
+  val SUORITUSTYYPPI_IB                                         = "ibtutkinto"
+  val SUORITYSTYYPPI_LUKIONOPPIMAARA                            = "lukionoppimaara"
 
   def toSuoritukset(opiskeluoikeudet: Seq[KoskiOpiskeluoikeus], koodistoProvider: KoodistoProvider, allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] = {
     try
@@ -829,12 +876,13 @@ object KoskiToSuoritusConverter {
             case SUORITUSTYYPPI_AIKUISTENPERUSOPETUKSENOPPIAINEENOPPIMAARA
               if suoritus.arviointi.exists(_.nonEmpty)            => Some(toPerusopetuksenOppiaineenOppimaara(opiskeluoikeus, suoritus))
             case SUORITUSTYYPPI_PERUSOPETUKSEENVALMISTAVAOPETUS   => Some(toPerusopetukseenValmistavaOpetus(opiskeluoikeus, suoritus))
-            case SUORITUSTYYPPI_TELMA                             => Some(toTelma(opiskeluoikeus, suoritus))
-            case SUORITUSTYYPPI_TUVAKOULUTUKSENSUORITUS           => Some(toTuva(opiskeluoikeus, suoritus))
-            case SUORITUSTYYPPI_VAPAASIVISTYSTYOSUORITUS          => Some(toVapaaSivistystyoKoulutus(opiskeluoikeus, suoritus))
-            case SUORITUSTYYPPI_EB                                => Some(toEbTutkinto(opiskeluoikeus, suoritus))
-            case SUORITUSTYYPPI_DIA                               => Some(toDiaTutkinto(opiskeluoikeus, suoritus))
-            case SUORITUSTYYPPI_LUKIONOPPIMAARA                   => Some(toLukionOppimaara(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_TELMA                             => Some(toTelma(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_TUVAKOULUTUKSENSUORITUS           => Some(toTuva(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_VAPAASIVISTYSTYOSUORITUS          => Some(toVapaaSivistystyoKoulutus(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_EB                                => Some(toEbTutkinto(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_DIA                               => Some(toDiaTutkinto(opiskeluoikeus, suoritus))
+            case SUORITUSTYYPPI_IB                                => Some(toIbTutkinto(opiskeluoikeus, suoritus))
+            case SUORITYSTYYPPI_LUKIONOPPIMAARA                   => Some(toLukionOppimaara(opiskeluoikeus, suoritus))
             case default => None)).toSet
     finally
       allowMissingFields.set(false)
