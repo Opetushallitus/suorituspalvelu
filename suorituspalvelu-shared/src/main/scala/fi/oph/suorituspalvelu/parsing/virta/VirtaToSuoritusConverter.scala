@@ -33,10 +33,10 @@ object VirtaToSuoritusConverter {
       throw new RuntimeException("Dummies not allowed")
 
   def getDefaultNimi(nimet: Seq[VirtaNimi]): Option[String] =
-    getNimi(nimet, "fi").orElse(nimet.find(n => n.kieli.isEmpty).map(n => n.nimi))
+    getNimi(nimet, "fi").orElse(nimet.find(_.kieli.isEmpty).flatMap(_.nimi))
 
   def getNimi(nimet: Seq[VirtaNimi], kieli: String): Option[String] =
-    nimet.find(n => n.kieli.exists(k => kieli.equals(k))).map(n => n.nimi)
+    nimet.find(n => n.kieli.exists(k => kieli.equals(k))).flatMap(_.nimi)
 
   private def latestJakso(opiskeluoikeus: VirtaOpiskeluoikeus): Option[VirtaJakso] = {
     opiskeluoikeus.Jakso.maxByOption(_.AlkuPvm)
