@@ -6,15 +6,12 @@ import fi.oph.suorituspalvelu.resource.ui.*
 import java.util.Optional
 
 trait SuorituksetTsImplicits extends SharedTsImplicits {
-  implicit val suorituskieliTSType: TSType[SuorituskieliUI] = TSType.fromCaseClass
-  implicit val optionalSuorituskieliTSType: TSType[Optional[SuorituskieliUI]] = TSType.sameAs[Optional[SuorituskieliUI], Option[SuorituskieliUI]]
   implicit val optionalYoTutkintoTSType: TSType[Optional[YOTutkinto]] = TSType.sameAs[Optional[YOTutkinto], Option[YOTutkinto]]
   implicit val optionalLukionOppimaara: TSType[Optional[LukionOppimaaraUI]] = TSType.sameAs[Optional[LukionOppimaaraUI], Option[LukionOppimaaraUI]]
   implicit val optionalDIATutkinto: TSType[Optional[DIATutkintoUI]] = TSType.sameAs[Optional[DIATutkintoUI], Option[DIATutkintoUI]]
   implicit val optionalEBSuoritus: TSType[Optional[EBOppiaineOsasuoritusUI]] = TSType.sameAs[Optional[EBOppiaineOsasuoritusUI], Option[EBOppiaineOsasuoritusUI]]
   implicit val optionalEBTutkinto: TSType[Optional[EBTutkintoUI]] = TSType.sameAs[Optional[EBTutkintoUI], Option[EBTutkintoUI]]
-  implicit val optionalIBTutkinto: TSType[Optional[IBTutkinto]] = TSType.sameAs[Optional[IBTutkinto], Option[IBTutkinto]]
-  implicit val optionalPreIB: TSType[Optional[PreIB]] = TSType.sameAs[Optional[PreIB], Option[PreIB]]
+  implicit val optionalIBTutkinto: TSType[Optional[IBTutkintoUI]] = TSType.sameAs[Optional[IBTutkintoUI], Option[IBTutkintoUI]]
   implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapaUI]] = TSType.sameAs[Optional[SuoritusTapaUI], Option[SuoritusTapaUI]]
   implicit val optionalAmmatillisenTutkinnonOsaArvosana: TSType[Optional[AmmatillisenTutkinnonOsaArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaArvosana], Option[AmmatillisenTutkinnonOsaArvosana]]
   implicit val optionalAmmatillisenTutkinnonOsaAlueArvosana: TSType[Optional[AmmatillisenTutkinnonOsaAlueArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaAlueArvosana], Option[AmmatillisenTutkinnonOsaAlueArvosana]]

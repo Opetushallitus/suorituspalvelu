@@ -2520,6 +2520,223 @@ class KoskiParsingTest {
 
   }
 
+  @Test def testIBTutkinto(): Unit = {
+    val tutkinto = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.35986177022",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.35986177022",
+        |        "versionumero": 10,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693399",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.73383452576",
+        |          "nimi": {
+        |            "fi": "International School of Helsinki",
+        |            "sv": "International School of Helsinki",
+        |            "en": "International School of Helsinki"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2021-08-18",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "ibtutkinto",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "301102",
+        |                "nimi": {
+        |                  "fi": "IB-tutkinto",
+        |                  "sv": "IB-examen",
+        |                  "en": "IB Diploma Programme"
+        |                },
+        |                "koodistoUri": "koulutus",
+        |                "koodistoVersio": 12
+        |              }
+        |            },
+        |            "suorituskieli": {
+        |              "koodiarvo": "EN",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2024-05-31"
+        |            },
+        |            "osasuoritukset": [
+        |              {
+        |                "tyyppi": {
+        |                  "koodiarvo": "iboppiaine",
+        |                  "koodistoUri": "suorituksentyyppi",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "FIN_A",
+        |                    "nimi": {
+        |                      "fi": "Suomi A",
+        |                      "sv": "Finska A",
+        |                      "en": "Finnish A"
+        |                    },
+        |                    "koodistoUri": "oppiaineetib",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "ryhmä": {
+        |                    "koodiarvo": "1",
+        |                    "nimi": {
+        |                      "fi": "Kielet: Ensimmäinen kieli",
+        |                      "sv": "Språk: Första språket",
+        |                      "en": "Language: First Language"
+        |                    },
+        |                    "koodistoUri": "aineryhmaib",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "laajuus": {
+        |                    "arvo": 1.0,
+        |                    "yksikkö": {
+        |                      "koodiarvo": "4",
+        |                      "nimi": {
+        |                        "fi": "periodia"
+        |                      },
+        |                      "koodistoUri": "opintojenlaajuusyksikko",
+        |                      "koodistoVersio": 1
+        |                    }
+        |                  }
+        |                },
+        |                "suorituskieli": {
+        |                  "koodiarvo": "FI",
+        |                  "koodistoUri": "kieli",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "predictedArviointi": [
+        |                  {
+        |                    "arvosana": {
+        |                      "koodiarvo": "6",
+        |                      "nimi": {
+        |                        "fi": "6"
+        |                      },
+        |                      "koodistoUri": "arviointiasteikkoib",
+        |                      "koodistoVersio": 1
+        |                    },
+        |                    "hyväksytty": true
+        |                  }
+        |                ]
+        |              },
+        |              {
+        |                "tyyppi": {
+        |                  "koodiarvo": "iboppiaine",
+        |                  "koodistoUri": "suorituksentyyppi",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "MAA",
+        |                    "nimi": {
+        |                      "fi": "Matematiikka: pitkä oppimäärä",
+        |                      "sv": "Matematik: lång kurs",
+        |                      "en": "Mathematics: Analysis and Approaches HL"
+        |                    },
+        |                    "koodistoUri": "oppiaineetib",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "ryhmä": {
+        |                    "koodiarvo": "5",
+        |                    "nimi": {
+        |                      "fi": "Matematiikka",
+        |                      "sv": "Matematik",
+        |                      "en": "Mathematics"
+        |                    },
+        |                    "koodistoUri": "aineryhmaib",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "laajuus": {
+        |                    "arvo": 1.0,
+        |                    "yksikkö": {
+        |                      "koodiarvo": "4",
+        |                      "nimi": {
+        |                        "fi": "periodia"
+        |                      },
+        |                      "koodistoUri": "opintojenlaajuusyksikko",
+        |                      "koodistoVersio": 1
+        |                    }
+        |                  }
+        |                },
+        |                "suorituskieli": {
+        |                  "koodiarvo": "EN",
+        |                  "koodistoUri": "kieli",
+        |                  "koodistoVersio": 1
+        |                },
+        |                "predictedArviointi": [
+        |                  {
+        |                    "arvosana": {
+        |                      "koodiarvo": "7",
+        |                      "nimi": {
+        |                        "fi": "7"
+        |                      },
+        |                      "koodistoUri": "arviointiasteikkoib",
+        |                      "koodistoVersio": 1
+        |                    },
+        |                    "hyväksytty": true
+        |                  }
+        |                ]
+        |              }
+        |            ]
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).get.asInstanceOf[IBTutkinto]
+
+    // Test basic tutkinto properties
+    Assertions.assertNotNull(tutkinto.tunniste)
+    Assertions.assertEquals(Koodi("301102", "koulutus", Some(12)), tutkinto.koodi)
+    Assertions.assertEquals(Kielistetty(Some("IB-tutkinto"), Some("IB-examen"), Some("IB Diploma Programme")), tutkinto.nimi)
+    Assertions.assertEquals(Oppilaitos(Kielistetty(Some("International School of Helsinki"), Some("International School of Helsinki"), Some("International School of Helsinki")), "1.2.246.562.10.73383452576"), tutkinto.oppilaitos)
+    Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.koskiTila)
+    Assertions.assertEquals(SuoritusTila.VALMIS, tutkinto.supaTila)
+    Assertions.assertEquals(Some(LocalDate.parse("2021-08-18")), tutkinto.aloitusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2024-05-31")), tutkinto.vahvistusPaivamaara)
+    Assertions.assertEquals(Some(Koodi("EN", "kieli", Some(1))), tutkinto.suorituskieli)
+
+    Assertions.assertEquals(2, tutkinto.osasuoritukset.size)
+
+    // Test Finnish A oppiaine
+    val finA = tutkinto.osasuoritukset.find(_.koodi.arvo == "FIN_A").get
+    Assertions.assertEquals(Koodi("FIN_A", "oppiaineetib", Some(1)), finA.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Suomi A"), Some("Finska A"), Some("Finnish A")), finA.nimi)
+    Assertions.assertEquals(IBOppiaineRyhma(Kielistetty(Some("Kielet: Ensimmäinen kieli"), Some("Språk: Första språket"), Some("Language: First Language")), Koodi("1", "aineryhmaib", Some(1))), finA.ryhma)
+    Assertions.assertEquals(Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))), finA.laajuus)
+    Assertions.assertEquals(Some(Koodi("FI", "kieli", Some(1))), finA.suorituskieli)
+    Assertions.assertEquals(Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)), finA.predictedArvosana)
+
+    // Test Mathematics oppiaine
+    val maa = tutkinto.osasuoritukset.find(_.koodi.arvo == "MAA").get
+    Assertions.assertEquals(Koodi("MAA", "oppiaineetib", Some(1)), maa.koodi)
+    Assertions.assertEquals(Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics: Analysis and Approaches HL")), maa.nimi)
+    Assertions.assertEquals(IBOppiaineRyhma(Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")), Koodi("5", "aineryhmaib", Some(1))), maa.ryhma)
+    Assertions.assertEquals(Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))), maa.laajuus)
+    Assertions.assertEquals(Some(Koodi("EN", "kieli", Some(1))), maa.suorituskieli)
+    Assertions.assertEquals(Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)), maa.predictedArvosana)
+  }
+
   @Test def testLukionOppimaara(): Unit =
     val lukionOppimaara = getFirstSuoritusFromJson(
       """

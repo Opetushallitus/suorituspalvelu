@@ -533,8 +533,7 @@
               "en": "Language A: literature, suomi en"
             },
             "laajuus": 9,
-            "predictedGrade": 7,
-            "arvosana": 7
+            "predictedGrade": 7
           },
           {
             "tunniste": "d875fd30-361d-4525-9f43-2b91f4dc51ba",
@@ -544,8 +543,7 @@
               "en": "Language A: language and literature, englanti en"
             },
             "laajuus": 6,
-            "predictedGrade": 7,
-            "arvosana": 7
+            "predictedGrade": 7
           }
         ]
       },
@@ -565,8 +563,7 @@
               "en": "History en"
             },
             "laajuus": 3,
-            "predictedGrade": 7,
-            "arvosana": 7
+            "predictedGrade": 7
           },
           {
             "tunniste": "0966ec26-47b1-4186-ac17-d1ff99d09b6c",
@@ -576,8 +573,7 @@
               "en": "Psychology en"
             },
             "laajuus": 3,
-            "predictedGrade": 7,
-            "arvosana": 7
+            "predictedGrade": 7
           }
         ]
       },
@@ -597,8 +593,7 @@
               "en": "Biology en"
             },
             "laajuus": 3,
-            "predictedGrade": 7,
-            "arvosana": 7
+            "predictedGrade": 7
           }
         ]
       },
@@ -618,32 +613,11 @@
               "en": "Mathematical studies en"
             },
             "laajuus": 3,
-            "predictedGrade": 7,
-            "arvosana": 7
+            "predictedGrade": 7
           }
         ]
       }
     ]
-  },
-  "preIB": {
-    "tunniste": "f90889f2-c6d1-4677-9461-6d717b05c4c1",
-    "nimi": {
-      "fi": "Pre-IB",
-      "sv": "Pre-IB sv",
-      "en": "Pre-IB en"
-    },
-    "oppilaitos": {
-      "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
-      },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI"
   },
   "ammatillisetPerusTutkinnot": [
     {
