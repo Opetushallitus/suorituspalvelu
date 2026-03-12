@@ -552,11 +552,19 @@ object EntityToUIConverter {
                 en = o.nimi.en.toJava
               ),
               laajuus = o.laajuus.map(l => l.arvo).toJava,
-              arvosana = o.arvosana.map(a => YTOArvosana(
-                a.nimi.fi.toJava,
-                a.nimi.sv.toJava,
-                a.nimi.en.toJava
-              )).toJava,
+              arvosana = o.arvosana.map(a => if(a.koodi.koodisto=="arviointiasteikkoammatillinenhyvaksyttyhylatty")
+                  YTOArvosana(
+                    a.nimi.fi.toJava,
+                    a.nimi.sv.toJava,
+                    a.nimi.en.toJava
+                  )
+                else
+                  YTOArvosana(
+                    Optional.of(a.koodi.arvo),
+                    Optional.of(a.koodi.arvo),
+                    Optional.of(a.koodi.arvo)
+                  )
+              ).toJava,
               osaAlueet = o.osaAlueet.map(oa => YTOOsaAlue(
                 nimi = YTOOsaAlueNimi(
                   fi = oa.nimi.fi.toJava,
