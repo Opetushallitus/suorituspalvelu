@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.resource.ApiConstants.ESIMERKKI_SYNTYMAIKA
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTilaUI.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_ETUNIMET, EXAMPLE_HETU, EXAMPLE_OPPIJA_OID, EXAMPLE_SUKUNIMI}
+import fi.oph.suorituspalvelu.ui.EntityToUIConverter.getOsittaisetAmmatillisetTutkinnot
 
 import java.time.LocalDate
 import java.util.{Optional, UUID}
@@ -365,7 +366,8 @@ object MockEntityToUIConverter {
                   en = Optional.of("Communication and interaction in mother tongue")
                 ),
                 laajuus = Optional.of(4),
-                arvosana = Optional.of("1")
+                arvosana = Optional.of("1"),
+                korotettu = Optional.empty()
               ),
               YTOOsaAlue(
                 nimi = YTOOsaAlueNimi(
@@ -374,7 +376,8 @@ object MockEntityToUIConverter {
                   en = Optional.of("Communication and interaction in the second national language")
                 ),
                 laajuus = Optional.of(1),
-                arvosana = Optional.of("1")
+                arvosana = Optional.of("1"),
+                korotettu = Optional.empty()
               ),
               YTOOsaAlue(
                 nimi = YTOOsaAlueNimi(
@@ -383,9 +386,11 @@ object MockEntityToUIConverter {
                   en = Optional.of("Operating in a digital environment")
                 ),
                 laajuus = Optional.of(1),
-                arvosana = Optional.of("1")
+                arvosana = Optional.of("1"),
+                korotettu = Optional.empty()
               )
-            )
+            ),
+            korotettu = Optional.empty()
           ),
           YTO(
             tunniste = UUID.randomUUID(),
@@ -402,7 +407,8 @@ object MockEntityToUIConverter {
                 en = Optional.of("Pass")
               )
             ),
-            java.util.List.of()
+            java.util.List.of(),
+            korotettu = Optional.empty()
           ),
           YTO(
             tunniste = UUID.randomUUID(),
@@ -419,7 +425,8 @@ object MockEntityToUIConverter {
                 en = Optional.of("Pass")
               )
             ),
-            java.util.List.of()
+            java.util.List.of(),
+            korotettu = Optional.empty()
           )
         ),
         ammatillisenTutkinnonOsat = java.util.List.of(
@@ -440,7 +447,8 @@ object MockEntityToUIConverter {
                   en = Optional.of("Audiovisuaalisen kulttuurin perusteet 1 en")
                 ),
                 laajuus = Optional.of(2),
-                arvosana = Optional.of("1")
+                arvosana = Optional.of("1"),
+                korotettu = Optional.empty()
               ),
               AmmatillisenTutkinnonOsaAlue(
                 nimi = AmmatillisenTutkinnonOsaAlueNimi(
@@ -449,9 +457,11 @@ object MockEntityToUIConverter {
                   en = Optional.of("Audiovisuaalisen kulttuurin perusteet 2 en")
                 ),
                 laajuus = Optional.of(3),
-                arvosana = Optional.of("1")
+                arvosana = Optional.of("1"),
+                korotettu = Optional.empty()
               )
-            )
+            ),
+            korotettu = Optional.empty()
           ),
           AmmatillisenTutkinnonOsa(
             tunniste = UUID.randomUUID(),
@@ -462,7 +472,8 @@ object MockEntityToUIConverter {
             ),
             laajuus = Optional.of(11),
             arvosana = Optional.of("4"),
-            osaAlueet = java.util.List.of()
+            osaAlueet = java.util.List.of(),
+            korotettu = Optional.empty()
           )
         ),
         suoritustapa = Optional.empty()
@@ -1026,6 +1037,7 @@ object MockEntityToUIConverter {
       ebTutkinto = getEBTutkinto().toJava,
       ibTutkinto = getIBTutkinto().toJava,
       ammatillisetPerusTutkinnot = getAmmatillisetPerusTutkinnot().asJava,
+      osittaisetAmmatillisetTutkinnot = List.empty[OsittainenAmmatillinenTutkintoUI].asJava,
       ammattitutkinnot = getAmmattitutkinnot().asJava,
       erikoisammattitutkinnot = getErikoisAmmattitutkinnot().asJava,
       telmat = getTelmat().asJava,
