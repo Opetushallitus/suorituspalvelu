@@ -443,28 +443,6 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getPreIB(): Option[PreIB] =
-    Some(PreIB(
-      tunniste = UUID.randomUUID(),
-      nimi = PreIBNimi(
-        fi = Optional.of("Pre-IB"),
-        sv = Optional.of("Pre-IB sv"),
-        en = Optional.of("Pre-IB en")
-      ),
-      oppilaitos = YOOppilaitos(
-        nimi = YOOppilaitosNimi(
-          fi = Optional.of("Ylioppilastutkintolautakunta"),
-          sv = Optional.of("Ylioppilastutkintolautakunta sv"),
-          en = Optional.of("Ylioppilastutkintolautakunta en")
-        ),
-        oid = "1.2.3.4"
-      ),
-      tila = VALMIS,
-      aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
-      valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
-      suorituskieli = "suomi"
-    ))
-
   def getAmmatillisetPerusTutkinnot(): List[Ammatillinentutkinto] =
     List(
       Ammatillinentutkinto(
@@ -1171,7 +1149,6 @@ object MockEntityToUIConverter {
       diaTutkinto = getDiaTutkinto().toJava,
       ebTutkinto = getEBTutkinto().toJava,
       ibTutkinto = getIBTutkinto().toJava,
-      preIB = getPreIB().toJava,
       ammatillisetPerusTutkinnot = getAmmatillisetPerusTutkinnot().asJava,
       ammattitutkinnot = getAmmattitutkinnot().asJava,
       erikoisammattitutkinnot = getErikoisAmmattitutkinnot().asJava,

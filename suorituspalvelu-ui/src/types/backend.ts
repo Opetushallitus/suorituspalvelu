@@ -449,7 +449,6 @@ export interface IOppijanTiedotSuccessResponse {
   diaTutkinto?: IDIATutkintoUI;
   ebTutkinto?: IEBTutkintoUI;
   ibTutkinto?: IIBTutkinto;
-  preIB?: IPreIB;
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
   ammattitutkinnot: IAmmattitutkinto[];
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
@@ -586,28 +585,6 @@ export interface IPerusopetuksenOppimaaraUI {
 
 export interface IPoistaSuoritusFailureResponse {
   virheAvaimet: string[];
-}
-
-export interface IPreIB {
-  tunniste: string;
-  nimi: IPreIBNimi;
-  oppilaitos: IYOOppilaitos;
-  tila: SuoritusTilaUI;
-  aloituspaiva?: string;
-  valmistumispaiva?: string;
-  suorituskieli: string;
-}
-
-export interface IPreIBNimi {
-  fi?: string;
-  sv?: string;
-  en?: string;
-}
-
-export interface ISuorituskieliUI {
-  fi?: string;
-  sv?: string;
-  en?: string;
 }
 
 export interface ISyotettavaAidinkielenOppimaaraVaihtoehto {

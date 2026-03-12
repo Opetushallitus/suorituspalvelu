@@ -226,15 +226,6 @@ export const IB_SUORITUS: SuoritusSpec = {
   },
 };
 
-export const PRE_IB_SUORITUS: SuoritusSpec = {
-  perustiedot: {
-    title: `Pre-IB (31.12.2023 ${NDASH} 31.12.2024)`,
-    oppilaitos: 'Ylioppilastutkintolautakunta',
-    tila: 'Suoritus valmis',
-    valmistumispaiva: '31.12.2024',
-    suorituskieli: 'suomi',
-  },
-};
 export const PUUTARHA_ALAN_PERUSTUTKINTO_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Puutarha-alan perustutkinto (31.12.2024 ${NDASH} 31.12.2024)`,

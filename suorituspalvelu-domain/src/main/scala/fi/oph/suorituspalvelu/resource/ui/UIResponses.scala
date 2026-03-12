@@ -607,32 +607,6 @@ case class IBTutkinto(
   @BeanProperty oppiaineet: java.util.List[IBOppiaine]
 )
 
-case class PreIBNimi(
-  @(Schema @field)(example = "Pre-IB", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty fi: Optional[String],
-  @(Schema @field)(example = "Pre-IB sv", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty sv: Optional[String],
-  @(Schema @field)(example = "Pre-IB en", requiredMode = RequiredMode.NOT_REQUIRED)
-  @BeanProperty en: Optional[String]
-)
-
-case class PreIB(
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: UUID,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: PreIBNimi,
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty oppilaitos: YOOppilaitos,
-  @(Schema @field)(example = "VALMIS", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tila: SuoritusTilaUI,
-  @(Schema @field)(example = "2024-12-31")
-  @BeanProperty aloituspaiva: Optional[LocalDate],
-  @(Schema @field)(example = "2024-12-31")
-  @BeanProperty valmistumispaiva: Optional[LocalDate],
-  @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty suorituskieli: String
-)
-
 case class YTOOsaAlueNimi(
   @(Schema @field)(example = "Viestintä ja vuorovaikutus äidinkielellä", requiredMode = RequiredMode.NOT_REQUIRED)
   @BeanProperty fi: Optional[String],
@@ -1329,7 +1303,6 @@ case class OppijanTiedotSuccessResponse(
   @BeanProperty diaTutkinto: Optional[DIATutkintoUI],
   @BeanProperty ebTutkinto: Optional[EBTutkintoUI],
   @BeanProperty ibTutkinto: Optional[IBTutkinto],
-  @BeanProperty preIB: Optional[PreIB],
   @BeanProperty ammatillisetPerusTutkinnot: java.util.List[Ammatillinentutkinto],
   @BeanProperty ammattitutkinnot: java.util.List[Ammattitutkinto],
   @BeanProperty erikoisammattitutkinnot: java.util.List[Erikoisammattitutkinto],

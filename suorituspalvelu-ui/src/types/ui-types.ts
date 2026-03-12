@@ -9,7 +9,6 @@ import type {
   IDIATutkintoUI,
   IEBTutkintoUI,
   IIBTutkinto,
-  IPreIB,
   IAmmatillinentutkinto,
   IAmmattitutkinto,
   IErikoisammattitutkinto,
@@ -103,7 +102,6 @@ export type LukioSuoritus =
       | ILukionOppimaaraUI
       | ILukionOppiaineenOppimaara
       | IDIATutkintoUI
-      | IPreIB
     ) & { koulutustyyppi: 'lukio' });
 
 export type AmmatillinenSuoritus = (
