@@ -16,8 +16,11 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val optionalIBTutkinto: TSType[Optional[IBTutkinto]] = TSType.sameAs[Optional[IBTutkinto], Option[IBTutkinto]]
   implicit val optionalPreIB: TSType[Optional[PreIB]] = TSType.sameAs[Optional[PreIB], Option[PreIB]]
   implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapaUI]] = TSType.sameAs[Optional[SuoritusTapaUI], Option[SuoritusTapaUI]]
-  implicit val optionalYTOArvosana: TSType[Optional[YTOArvosana]] = TSType.sameAs[Optional[YTOArvosana], Option[YTOArvosana]]
+  implicit val optionalAmmatillisenTutkinnonOsaArvosana: TSType[Optional[AmmatillisenTutkinnonOsaArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaArvosana], Option[AmmatillisenTutkinnonOsaArvosana]]
+  implicit val optionalAmmatillisenTutkinnonOsaAlueArvosana: TSType[Optional[AmmatillisenTutkinnonOsaAlueArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaAlueArvosana], Option[AmmatillisenTutkinnonOsaAlueArvosana]]
   implicit val optionalYksilollistaminen: TSType[Optional[Yksilollistaminen]] = TSType.sameAs[Optional[Yksilollistaminen], Option[Yksilollistaminen]]
+  implicit val optionalKorotus: TSType[Optional[KorotusUI]] = TSType.sameAs[Optional[KorotusUI], Option[KorotusUI]]
+  implicit val ammatillisenTutkinnonOsaAlueTSType: TSType[AmmatillisenTutkinnonOsaAlue] = TSType.fromCaseClass
   implicit val ammatillisenTutkinnonOsaTSType: TSType[AmmatillisenTutkinnonOsa] = TSType.fromCaseClass
   implicit val perusopetuksenOppiaineTSType: TSType[PerusopetuksenOppiaineUI] = TSType.fromCaseClass
   implicit val optionalPerusopetuksenOppimaara78LuokkalaisetTSType: TSType[Optional[PerusopetuksenOppimaara78Luokkalaiset]] = TSType.sameAs[Optional[PerusopetuksenOppimaara78Luokkalaiset], Option[PerusopetuksenOppimaara78Luokkalaiset]]
@@ -33,6 +36,7 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val erikoisAmmattitutkintoTSType: TSType[Erikoisammattitutkinto] = TSType.fromCaseClass
   implicit val ytoTSType: TSType[YTO] = TSType.fromCaseClass
   implicit val ammatillinenTutkintoTSType: TSType[Ammatillinentutkinto] = TSType.fromCaseClass
+  implicit val osittainenAmmatillinenTutkintoTSType: TSType[OsittainenAmmatillinenTutkintoUI] = TSType.fromCaseClass
   implicit val optionalKkSuoritusNimiTsType: TSType[Optional[KKSuoritusNimiUI]] = TSType.sameAs[Optional[KKSuoritusNimiUI], Option[KKSuoritusNimiUI]]
   implicit val vastaanottoHakukohdeOppilaitosTSType: TSType[VastaanottoHakukohdeOppilaitos] = TSType.fromCaseClass
   implicit val vastaanottoTSType: TSType[VastaanottoUI] = TSType.fromCaseClass

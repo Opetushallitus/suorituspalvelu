@@ -5,8 +5,7 @@ import { isEmpty } from 'remeda';
 import { TableRowAccordion } from '@/components/TableRowAccordion';
 import { DEFAULT_BOX_BORDER, styled } from '@/lib/theme';
 import { isKielistetty } from '@/lib/translation-utils';
-import { KokonaislaajuusRow } from './KokonaislaajuusRow';
-import { OsaAlueetTable } from './OsaAlueetTable';
+import { OsittaisenOsaAlueetTable } from './OsittaisenOsaAlueetTable';
 
 const FIXED_COLUMN_WIDTH_PX = 150;
 
@@ -15,9 +14,9 @@ const StyledOsatTable = styled(Table)({
   '.MuiTableCell-root': {
     border: 'none',
     '&:nth-of-type(1)': {
-      width: `calc(100% - ${FIXED_COLUMN_WIDTH_PX * 2}px)`,
+      width: `calc(100% - ${FIXED_COLUMN_WIDTH_PX * 3}px)`,
     },
-    '&:nth-of-type(2), &:nth-of-type(3)': {
+    '&:nth-of-type(2), &:nth-of-type(3), &:nth-of-type(4)': {
       width: `${FIXED_COLUMN_WIDTH_PX}px`,
     },
   },
@@ -26,14 +25,12 @@ const StyledOsatTable = styled(Table)({
   },
 });
 
-export function TutkinnonOsatTable({
+export function OsittaisenTutkinnonOsatTable({
   tutkinnonOsat,
-  maxKokonaislaajuus,
   title,
   testId,
 }: {
   title: string;
-  maxKokonaislaajuus: number | undefined;
   tutkinnonOsat: Array<AmmatillinenTutkinnonOsa>;
   testId?: string;
 }) {
@@ -50,34 +47,41 @@ export function TutkinnonOsatTable({
                 unit: t('oppija.lyhenne-osaamispiste'),
               })}
             </TableCell>
-            <TableCell>{t('oppija.arvosana')}</TableCell>
+            <TableCell>{t('oppija.korotettu-arvosana')}</TableCell>
+            <TableCell>{t('oppija.korotus')}</TableCell>
           </TableRow>
         </TableHead>
         {tutkinnonOsat.map((tutkinnonOsa) => {
           const arvosana = tutkinnonOsa.arvosana;
+          const arvosanaContent = isKielistetty(arvosana)
+            ? translateKielistetty(arvosana)
+            : arvosana;
           return (
             <TableRowAccordion
               key={tutkinnonOsa.tunniste}
               title={translateKielistetty(tutkinnonOsa.nimi)}
               otherCells={[
-                <TableCell key="laajuus">{tutkinnonOsa.laajuus}</TableCell>,
-                <TableCell key="arvosana">
-                  {isKielistetty(arvosana)
-                    ? translateKielistetty(arvosana)
-                    : arvosana}
+                <TableCell key="laajuus">
+                  {tutkinnonOsa.korotettu ? tutkinnonOsa.laajuus : undefined}
+                </TableCell>,
+                <TableCell key="korotettu-arvosana">
+                  {tutkinnonOsa.korotettu ? arvosanaContent : undefined}
+                </TableCell>,
+                <TableCell key="korotus">
+                  {tutkinnonOsa.korotettu
+                    ? t(
+                        `oppija.korotus-${tutkinnonOsa.korotettu.toLowerCase()}`,
+                      )
+                    : undefined}
                 </TableCell>,
               ]}
             >
               {!isEmpty(tutkinnonOsa.osaAlueet) && (
-                <OsaAlueetTable osaAlueet={tutkinnonOsa.osaAlueet} />
+                <OsittaisenOsaAlueetTable osaAlueet={tutkinnonOsa.osaAlueet} />
               )}
             </TableRowAccordion>
           );
         })}
-        <KokonaislaajuusRow
-          osat={tutkinnonOsat}
-          maxKokonaislaajuus={maxKokonaislaajuus}
-        />
       </StyledOsatTable>
     )
   );

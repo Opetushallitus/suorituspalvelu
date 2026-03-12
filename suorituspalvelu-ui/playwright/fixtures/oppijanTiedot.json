@@ -697,7 +697,9 @@
                 "en": "Communication and interaction in the second national language"
               },
               "laajuus": 1,
-              "arvosana": "1"
+              "arvosana": {
+                "fi": "1"
+              }
             },
             {
               "nimi": {
@@ -750,7 +752,9 @@
             "en": "Audiovisuaalisen kulttuurin perusteet en"
           },
           "laajuus": 11,
-          "arvosana": "4",
+          "arvosana": {
+            "fi": "4"
+          },
           "osaAlueet": [
             {
               "nimi": {
@@ -759,7 +763,9 @@
                 "en": "Audiovisuaalisen kulttuurin perusteet 1 en"
               },
               "laajuus": 2,
-              "arvosana": "1"
+              "arvosana": {
+                "fi": "1"
+              }
             },
             {
               "nimi": {
@@ -768,7 +774,9 @@
                 "en": "Audiovisuaalisen kulttuurin perusteet 2 en"
               },
               "laajuus": 3,
-              "arvosana": "1"
+              "arvosana": {
+                "fi": "1"
+              }
             }
           ]
         },
@@ -780,11 +788,13 @@
             "en": "Äänimaailman suunnittelu en"
           },
           "laajuus": 11,
-          "arvosana": "4",
+          "arvosana": {
+            "fi": "4"
+          },
           "osaAlueet": []
         }
       ],
-      "suoritustapa": null
+      "suoritustapa": "REFORMI"
     },
     {
       "tunniste": "b67ce7a9-8908-4b25-9a67-16fb495ff28a",
@@ -808,7 +818,7 @@
       "painotettuKeskiarvo": 4.34,
       "ytot": [],
       "ammatillisenTutkinnonOsat": [],
-      "suoritustapa": "NAYTTOTUTKINTO"
+      "suoritustapa": "NAYTTO"
     }
   ],
   "ammattitutkinnot": [
@@ -853,6 +863,114 @@
       "aloituspaiva": "2017-06-01",
       "valmistumispaiva": "2017-06-01",
       "suorituskieli": "FI"
+    }
+  ],
+  "osittaisetAmmatillisetTutkinnot": [
+    {
+      "tunniste": "e1a2b3c4-d5e6-7890-abcd-ef1234567890",
+      "nimi": {
+        "fi": "Autoalan perustutkinto",
+        "sv": "Autoalan perustutkinto sv",
+        "en": "Autoalan perustutkinto en"
+      },
+      "oppilaitos": {
+        "nimi": {
+          "fi": "Stadin ammatti- ja aikuisopisto",
+          "sv": "Stadin ammatti- ja aikuisopisto sv",
+          "en": "Stadin ammatti- ja aikuisopisto en"
+        },
+        "oid": "1.2.3.5"
+      },
+      "tila": "VALMIS",
+      "aloituspaiva": "2024-01-15",
+      "valmistumispaiva": "2024-12-15",
+      "suorituskieli": "FI",
+      "korotettuPainotettuKeskiarvo": 3.75,
+      "suoritustapa": "NAYTTO",
+      "ytot": [
+        {
+          "tunniste": "yto-ositt-1",
+          "nimi": {
+            "fi": "Viestintä- ja vuorovaikutusosaaminen",
+            "sv": "Kunnande i kommunikation och interaktion",
+            "en": "Communication and interaction competence"
+          },
+          "laajuus": 8,
+          "arvosana": {
+            "fi": "Hyväksytty",
+            "sv": "Godkänd",
+            "en": "Pass"
+          },
+          "osaAlueet": [
+            {
+              "nimi": {
+                "fi": "Viestintä ja vuorovaikutus äidinkielellä",
+                "sv": "Kommunikation och interaktion på modersmålet",
+                "en": "Communication and interaction in mother tongue"
+              },
+              "laajuus": 4,
+              "arvosana": {
+                "fi": "3"
+              },
+              "korotettu": "KOROTETTU"
+            },
+            {
+              "nimi": {
+                "fi": "Toiminta digitaalisessa ympäristössä",
+                "sv": "Verksamhet i den digitala miljön",
+                "en": "Operating in a digital environment"
+              },
+              "laajuus": 2,
+              "arvosana": {
+                "fi": "2"
+              },
+              "korotettu": "KOROTUKSENYRITYS"
+            }
+          ]
+        }
+      ],
+      "ammatillisenTutkinnonOsat": [
+        {
+          "tunniste": "ato-ositt-1",
+          "nimi": {
+            "fi": "Ajoneuvojen huoltaminen",
+            "sv": "Ajoneuvojen huoltaminen sv",
+            "en": "Ajoneuvojen huoltaminen en"
+          },
+          "laajuus": 30,
+          "arvosana": {
+            "fi": "2"
+          },
+          "osaAlueet": [
+            {
+              "nimi": {
+                "fi": "Moottorin huolto",
+                "sv": "Moottorin huolto sv",
+                "en": "Moottorin huolto en"
+              },
+              "laajuus": 15,
+              "arvosana": {
+                "fi": "4"
+              },
+              "korotettu": "KOROTETTU"
+            }
+          ]
+        },
+        {
+          "tunniste": "ato-ositt-2",
+          "nimi": {
+            "fi": "Ajoneuvojen korjaaminen",
+            "sv": "Ajoneuvojen korjaaminen sv",
+            "en": "Ajoneuvojen korjaaminen en"
+          },
+          "laajuus": 25,
+          "arvosana": {
+            "fi": "3"
+          },
+          "korotettu": "KOROTETTU",
+          "osaAlueet": []
+        }
+      ]
     }
   ],
   "telmat": [

@@ -115,6 +115,14 @@ export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
       ...s,
       koulutustyyppi: 'ammatillinen',
     }));
+    addSortedSuoritukset(
+      oppijanTiedot.osittaisetAmmatillisetTutkinnot,
+      (s) => ({
+        ...s,
+        koulutustyyppi: 'ammatillinen',
+        osittainen: true,
+      }),
+    );
     addSortedSuoritukset(oppijanTiedot.telmat, (s) => ({
       ...s,
       koulutustyyppi: 'ammatillinen',

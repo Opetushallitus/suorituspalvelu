@@ -4,7 +4,7 @@ import type { TutkinnonOsanOsaAlue } from '@/types/ui-types';
 import { TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { isKielistetty } from '@/lib/translation-utils';
 
-export const OsaAlueetTable = ({
+export const OsittaisenOsaAlueetTable = ({
   osaAlueet,
 }: {
   osaAlueet: Array<TutkinnonOsanOsaAlue>;
@@ -20,7 +20,8 @@ export const OsaAlueetTable = ({
               unit: t('oppija.lyhenne-osaamispiste'),
             })}
           </TableCell>
-          <TableCell>{t('oppija.arvosana')}</TableCell>
+          <TableCell>{t('oppija.korotettu-arvosana')}</TableCell>
+          <TableCell>{t('oppija.korotus')}</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -31,9 +32,16 @@ export const OsaAlueetTable = ({
               <TableCell>{nimi}</TableCell>
               <TableCell>{osaAlue.laajuus}</TableCell>
               <TableCell>
-                {isKielistetty(osaAlue.arvosana)
-                  ? translateKielistetty(osaAlue.arvosana)
-                  : osaAlue.arvosana}
+                {osaAlue.korotettu
+                  ? isKielistetty(osaAlue.arvosana)
+                    ? translateKielistetty(osaAlue.arvosana)
+                    : osaAlue.arvosana
+                  : undefined}
+              </TableCell>
+              <TableCell>
+                {osaAlue.korotettu
+                  ? t(`oppija.korotus-${osaAlue.korotettu.toLowerCase()}`)
+                  : undefined}
               </TableCell>
             </TableRow>
           );

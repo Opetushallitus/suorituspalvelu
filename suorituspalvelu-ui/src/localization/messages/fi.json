@@ -184,6 +184,12 @@
     "lyhenne-vuosiviikkotunti": "vvt",
     "lyhenne-osaamispiste": "osp",
     "painotettu-keskiarvo": "Painotettu keskiarvo",
+    "korotettu-painotettu-keskiarvo": "Korotettu painotettu keskiarvo",
+    "korotettu-arvosana": "Arvosana",
+    "osittainen": "osittainen",
+    "korotus": "Korotus",
+    "korotus-korotettu": "kyllä",
+    "korotus-korotuksenyritys": "ei",
     "yhteiset-tutkinnon-osat": "Yhteiset tutkinnon osat",
     "ammatilliset-tutkinnon-osat": "Ammatilliset tutkinnon osat",
     "osa-alue": "Osa-alue",
@@ -239,7 +245,9 @@
     "PAATTYNYT": "päättynyt"
   },
   "suoritustapa": {
-    "NAYTTOTUTKINTO": "Näyttötutkinto"
+    "NAYTTO": "Näyttötutkinto",
+    "OPS": "Ammatillinen perustutkinto",
+    "REFORMI": "Reformin mukainen näyttö"
   },
   "muokkaus": {
     "suoritus": {
