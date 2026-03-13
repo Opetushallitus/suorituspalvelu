@@ -16,23 +16,21 @@ class SupaErrorService(emailService: EmailService) extends ErrorService {
   private val EMAIL_ENABLED_JOBS = Set("refresh-ytr-for-aktiiviset-haut", "refresh-virta-for-aktiiviset-haut", "refresh-ytr-for-haut", "refresh-virta-for-haut")
 
   def reportErrors(jobName: String, errors: Seq[(String, Option[Exception])]): Unit = {
-    if errors.isEmpty then return
-
-    LOG.warn(s"Tausta-ajo $jobName päättyi ${errors.size} virheeseen")
-
-    if !EMAIL_ENABLED_JOBS.contains(jobName) then return
-
-    val errorMessages: Seq[String] = errors.map((message, exception) =>
-      s"$message (${exception.map(e => s"${e.getClass.getSimpleName}: ${e.getMessage}").getOrElse("Ei poikkeusta")})")
-
-    try {
-      emailService.sendErrorSummaryEmail(
-        jobName = jobName,
-        errorMessages = errorMessages
-      )
-    } catch {
-      case e: Exception =>
-        LOG.error(s"Virheraportin sähköpostin lähetys epäonnistui jobille $jobName", e)
+    if (!errors.isEmpty) {
+      LOG.warn(s"Tausta-ajo $jobName päättyi ${errors.size} virheeseen")
+      if (EMAIL_ENABLED_JOBS.contains(jobName)) {
+        try {
+          val errorMessages: Seq[String] = errors.map((message, exception) =>
+            s"$message (${exception.map(e => s"${e.getClass.getSimpleName}: ${e.getMessage}").getOrElse("Ei poikkeusta")})")
+          emailService.sendErrorSummaryEmail(
+            jobName = jobName,
+            errorMessages = errorMessages
+          )
+        } catch {
+          case e: Exception =>
+            LOG.error(s"Virheraportin sähköpostin lähetys epäonnistui jobille $jobName", e)
+        }
+      }
     }
   }
 }
