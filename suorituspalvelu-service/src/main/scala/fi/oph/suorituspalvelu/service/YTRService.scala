@@ -2,10 +2,10 @@ package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, ParserVersions, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{SyncResultForHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
-import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrFetchMode, YtrIntegration}
+import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrFetchMode, YtrIntegration, YtrPollFailed}
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.slf4j.LoggerFactory
@@ -69,6 +69,10 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
         fetchAndPersistStudents(personOids, YtrFetchMode.BatchApi, ctx)
         ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
       catch
+        case e: YtrPollFailed =>
+          val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui, massaoperaation tilaa ei saatu selville. Lopetetaan koko YTR-ajo koska seuraavan haun muodostuksen aloittaminen ei toimisi koska edellisen muodostus on yhä kesken."
+          LOG.error(message, e)
+          throw e
         case e: Exception =>
           val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui"
           LOG.error(message,  e)
