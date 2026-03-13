@@ -23,6 +23,7 @@ import type {
   IEBOppiaineUI,
   IIBOppiaineUI,
   IAmmatillisenTutkinnonOsa,
+  IOsittainenAmmatillinenTutkintoUI,
   IYTO,
   ILuoSuoritusDropdownDataSuccessResponse,
   IYksilollistaminen,
@@ -31,6 +32,8 @@ import type {
   IAvainArvoContainerUI,
   IYliajo,
   IOppijanValintaDataSuccessResponse,
+  IAmmatillisenTutkinnonOsaAlue,
+  IYTOOsaAlue,
   IDIAOppiaineUI,
 } from './backend';
 
@@ -108,7 +111,8 @@ export type AmmatillinenSuoritus = (
   | IAmmatillinentutkinto
   | IAmmattitutkinto
   | IErikoisammattitutkinto
-) & { koulutustyyppi: 'ammatillinen' };
+  | IOsittainenAmmatillinenTutkintoUI
+) & { koulutustyyppi: 'ammatillinen'; osittainen?: boolean };
 
 export type TUVASuoritus = ITuvaUI & {
   koulutustyyppi: 'tuva';
@@ -160,11 +164,7 @@ export type Language = 'fi' | 'sv' | 'en';
 
 export type AmmatillinenTutkinnonOsa = IAmmatillisenTutkinnonOsa | IYTO;
 
-export type TutkinnonOsanOsaAlue = {
-  nimi: Kielistetty;
-  laajuus?: number;
-  arvosana?: string;
-};
+export type TutkinnonOsanOsaAlue = IAmmatillisenTutkinnonOsaAlue | IYTOOsaAlue;
 
 export type Suoritusvaihtoehdot = ILuoSuoritusDropdownDataSuccessResponse;
 
@@ -214,6 +214,15 @@ export const isPerusopetusOppimaaraBackendErrorResponse = (
     'yleisetVirheAvaimet' in body &&
     Array.isArray(body.yleisetVirheAvaimet)
   );
+};
+
+export const isOsittainenSuoritus = (
+  suoritus: AmmatillinenSuoritus,
+): suoritus is IOsittainenAmmatillinenTutkintoUI & {
+  koulutustyyppi: 'ammatillinen';
+  osittainen: true;
+} => {
+  return suoritus.osittainen === true;
 };
 
 export type SelectOption = {

@@ -19,11 +19,13 @@ export const SuoritusInfoPaper = ({
   suoritus,
   headingLevel = 'h3',
   topColor,
+  nameSuffix,
   children,
 }: {
   suoritus: SuorituksenPerustiedot;
   headingLevel?: 'h2' | 'h3' | 'h4' | 'h5';
   topColor: string;
+  nameSuffix?: string;
   children: React.ReactNode;
 }) => {
   const { translateKielistetty } = useTranslations();
@@ -34,7 +36,7 @@ export const SuoritusInfoPaper = ({
         component={headingLevel}
         sx={{ marginBottom: 2 }}
       >
-        {`${translateKielistetty(suoritus.nimi)} `}
+        {`${translateKielistetty(suoritus.nimi)}${nameSuffix ? `, ${nameSuffix}` : ''} `}
         <Vuodet suoritus={suoritus} />
       </OphTypography>
       <Stack spacing={4}>{children}</Stack>

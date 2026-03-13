@@ -18,6 +18,8 @@ trait SharedTsImplicits {
     TSType.alias("KKTutkintotasoUI", TSUnion(KKTutkintotasoUI.values.map(v => TypescriptType.TSLiteralString(v.toString))))
   implicit val sektoriTSType: TSType[KKSektoriUI] =
     TSType.alias("KKSektoriUI", TSUnion(KKSektoriUI.values.map(v => TypescriptType.TSLiteralString(v.toString))))
+  implicit val korotusTSType: TSType[KorotusUI] =
+    TSType.alias("KorotusUI", TSUnion(KorotusUI.values.map(v => TypescriptType.TSLiteralString(v.toString))))
 
   implicit val optionalTutkintotasoTSType: TSType[Optional[KKTutkintotasoUI]] = TSType.sameAs[Optional[KKTutkintotasoUI], Option[KKTutkintotasoUI]]
   implicit val optionalSektoriTSType: TSType[Optional[KKSektoriUI]] = TSType.sameAs[Optional[KKSektoriUI], Option[KKSektoriUI]]

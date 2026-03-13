@@ -39,6 +39,10 @@ enum SuoritusTila:
   case KESKEN
   case KESKEYTYNYT
 
+enum Korotus:
+  case KOROTETTU
+  case KOROTUKSENYRITYS
+
 case class Container(
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
   opiskeluoikeudet: Set[Opiskeluoikeus]
@@ -220,12 +224,29 @@ case class AmmatillinenPerustutkinto(
   osat: Set[AmmatillisenTutkinnonOsa]
 ) extends Suoritus, Tyypitetty
 
+case class AmmatillinenTutkintoOsittainen(
+  tunniste: UUID,
+  nimi: Kielistetty,
+  koodi: Koodi,
+  oppilaitos: Oppilaitos,
+  koskiTila: Koodi,
+  supaTila: SuoritusTila,
+  aloitusPaivamaara: Option[LocalDate],
+  vahvistusPaivamaara: Option[LocalDate],
+  korotettuKeskiarvo: Option[BigDecimal],
+  korotettuOpiskeluoikeusOid: Option[String],
+  suoritustapa: Koodi,
+  suoritusKieli: Koodi,
+  osat: Set[AmmatillisenTutkinnonOsa]
+) extends Suoritus, Tyypitetty
+
 case class AmmatillisenTutkinnonOsaAlue(
   tunniste: UUID,
   nimi: Kielistetty,
   koodi: Koodi,
   arvosana: Option[Koodi],
-  laajuus: Option[Laajuus]
+  laajuus: Option[Laajuus],
+  korotettu: Option[Korotus]
 ) extends Tyypitetty
 
 case class AmmatillisenTutkinnonOsa(
@@ -236,7 +257,8 @@ case class AmmatillisenTutkinnonOsa(
   arviointiPaiva: Option[LocalDate],
   arvosana: Option[Arvosana],
   laajuus: Option[Laajuus],
-  osaAlueet: Set[AmmatillisenTutkinnonOsaAlue]
+  osaAlueet: Set[AmmatillisenTutkinnonOsaAlue],
+  korotettu: Option[Korotus]
 ) extends Tyypitetty
 
 case class TelmaOsasuoritus(
