@@ -128,9 +128,12 @@ object KoskiToSuoritusConverter {
     }
   }
 
+  private def AMMATILLINEN_ARVIOINTIASTEIKKO_15 = "arviointiasteikkoammatillinen15"
+  private def AMMATILLINEN_ARVIOINTIASTEIKKO_13 = "arviointiasteikkoammatillinent1k3"
+
   private def AMMATILLISET_ARVIOINTIASTEIKKO_KOODISTOT = Set(
-    "arviointiasteikkoammatillinen15",
-    "arviointiasteikkoammatillinent1k3",
+    AMMATILLINEN_ARVIOINTIASTEIKKO_13,
+    AMMATILLINEN_ARVIOINTIASTEIKKO_15,
     "arviointiasteikkoammatillinenhyvaksyttyhylatty"
   )
 
@@ -138,16 +141,22 @@ object KoskiToSuoritusConverter {
   def valitseParasAmmatillinenArviointi(
     arvioinnit: Option[Set[KoskiArviointi]],
   ): Option[KoskiArviointi] = {
-    arvioinnit.getOrElse(Set.empty)
+    val validitArvioinnit = arvioinnit.getOrElse(Set.empty)
       .filter(arviointi => AMMATILLISET_ARVIOINTIASTEIKKO_KOODISTOT.contains(arviointi.arvosana.koodistoUri))
-      .maxByOption(arviointi => {
-        val koodiarvo = arviointi.arvosana.koodiarvo
-        if (koodiarvo.matches("\\d+")) koodiarvo.toDouble
-        // arviointiasteikkoammatillinent1k3 sisältää arvon "0", joka tarkoittaa "hylätty".
-        // Valitaan ennemmin "Hyväksytty" muista koodistoista, jos löytyy
-        else if (koodiarvo.equals("Hyväksytty")) 0.5
-        else -1
-      })
+    val asteikot = validitArvioinnit.map(_.arvosana.koodistoUri)
+
+    if (asteikot.contains(AMMATILLINEN_ARVIOINTIASTEIKKO_13) && asteikot.contains(AMMATILLINEN_ARVIOINTIASTEIKKO_15)) {
+      throw RuntimeException(s"Ammatillisella osasuorituksella on arviointeja useilla numeerisilla asteikoilla: ${asteikot.mkString(", ")}.")
+    }
+
+    validitArvioinnit.maxByOption(arviointi => {
+      val koodiarvo = arviointi.arvosana.koodiarvo
+      if (koodiarvo.matches("\\d+")) koodiarvo.toDouble
+      // arviointiasteikkoammatillinent1k3 sisältää arvon "0", joka tarkoittaa "hylätty".
+      // Valitaan ennemmin "Hyväksytty" muista koodistoista, jos löytyy
+      else if (koodiarvo.equals("Hyväksytty")) 0.5
+      else -1
+    })
   }
 
   def toAmmattillisenTutkinnonOsaAlue(osaSuoritus: KoskiOsaSuoritus): AmmatillisenTutkinnonOsaAlue = {

@@ -2246,6 +2246,18 @@ class KoskiParsingTest {
     )
   }
 
+  @Test def testParasArviointiAmmatillinenMontaNumeeristaAsteikkoa(): Unit = {
+    val arvioinnit = Some(Set(
+      KoskiArviointi(KoskiKoodi("1", "arviointiasteikkoammatillinent1k3", None, Kielistetty(None, None, None), None), None, true),
+      KoskiArviointi(KoskiKoodi("1", "arviointiasteikkoammatillinen15", None, Kielistetty(None, None, None), None), None, true)
+    ))
+
+    val exception = Assertions.assertThrows(classOf[RuntimeException],
+      () => KoskiToSuoritusConverter.valitseParasAmmatillinenArviointi(arvioinnit)
+    )
+    Assertions.assertTrue(exception.getMessage.contains("Ammatillisella osasuorituksella on arviointeja useilla numeerisilla asteikoilla: arviointiasteikkoammatillinent1k3, arviointiasteikkoammatillinen15"))
+  }
+
   @Test def testParasArviointiPerusopetus(): Unit = {
     val arvioinnit = Set(
       KoskiArviointi(KoskiKoodi("8", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true),
