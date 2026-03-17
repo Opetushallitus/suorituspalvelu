@@ -108,12 +108,12 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(1, opiskeluoikeudet.size)
     val leikkuri = LocalDate.now
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", opiskeluoikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
-    val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
+    val pakollisetTavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
       "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
       "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
     val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE")
 
-    tavoiteArvosanat.foreach { case (aine, arvosana) =>
+    pakollisetTavoiteArvosanat.foreach { case (aine, arvosana) =>
       val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
       Assertions.assertEquals(Some(arvosana), converterResult.getAvainArvoMap().get(prefix + aine))
     }
@@ -125,6 +125,9 @@ class AvainArvoConverterTest {
 
       Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(kieliAvain))
     }
+
+    //Pitäisi löytyä yksi tarpeeksi laaja valinnainen arvosana
+    Assertions.assertEquals(Some("10"), converterResult.getAvainArvoMap().get("PK_LI_VAL1"))
   }
 
   @Test def testKorkeimmatArvosanat(): Unit = {
@@ -147,7 +150,7 @@ class AvainArvoConverterTest {
     val oppiaineenOppimaara2 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-08")), Some(LocalDate.parse("2025-06-08")), Set(korotus2Liikunta), false)
 
     val oppiaineet = oppimaara.aineet ++ oppiaineenOppimaara1.aineet ++ oppiaineenOppimaara2.aineet
-    val avainArvot = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(oppiaineet)
+    val avainArvot = AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(oppiaineet)
     val ka: Set[AvainArvoContainer] = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(avainArvot)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
 
@@ -788,7 +791,7 @@ class AvainArvoConverterTest {
     val korotus1Kemia = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kemia"), None, None), Koodi("KE", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None)
 
     val arvosanatHakemukselta = HakemusConverter.convertArvosanatHakemukselta(hakemus)
-    val arvosanatSupasta = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(Set(korotus1Kemia))
+    val arvosanatSupasta = AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(Set(korotus1Kemia))
 
     val korkeimmat = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(arvosanatHakemukselta ++ arvosanatSupasta)
 
