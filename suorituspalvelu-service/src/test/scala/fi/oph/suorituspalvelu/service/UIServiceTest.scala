@@ -97,7 +97,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisVuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+        List(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false,
         None
@@ -142,7 +142,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
         None,
         Some(LocalDate.parse(s"$valmistumisVuosi-06-01")),
         Set.empty,
-        Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosJossaSuoritusOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+        List(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), oppilaitosJossaSuoritusOid, Some(LocalDate.now.getYear), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
         false,
         false,
         None

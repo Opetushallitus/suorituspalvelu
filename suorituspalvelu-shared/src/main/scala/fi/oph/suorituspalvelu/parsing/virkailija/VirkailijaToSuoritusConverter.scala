@@ -74,7 +74,7 @@ object VirkailijaToSuoritusConverter {
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           aineet = aineet,
-          lahtokoulut = Set(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka.get, Some(supaTila), Some(yhteisenAineenArvosanaPuuttuu(aineet)), VUOSILUOKKA_9)),
+          lahtokoulut = List(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka.get, Some(supaTila), Some(yhteisenAineenArvosanaPuuttuu(aineet)), VUOSILUOKKA_9)),
           syotetty = true,
           vuosiluokkiinSitoutumatonOpetus = false, //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
           luokkaAste = Some(9)
