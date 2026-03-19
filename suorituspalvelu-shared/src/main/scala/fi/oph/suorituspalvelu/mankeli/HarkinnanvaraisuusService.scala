@@ -169,7 +169,7 @@ class HarkinnanvaraisuusService {
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
-  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null;
+  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
 

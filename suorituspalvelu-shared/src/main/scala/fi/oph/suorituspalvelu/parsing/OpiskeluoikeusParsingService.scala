@@ -1,9 +1,7 @@
 package fi.oph.suorituspalvelu.parsing
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{
-  KantaOperaatiot, Lahdejarjestelma, Opiskeluoikeus, ParserVersions, VersioEntiteetti
-}
+import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
@@ -32,6 +30,36 @@ class OpiskeluoikeusParsingService(
 ) {
 
   private val LOG = LoggerFactory.getLogger(classOf[OpiskeluoikeusParsingService])
+
+  private val SUORITUS_MAPPER: ObjectMapper = {
+    val mapper = KantaOperaatiot.MAPPER.copy()
+    mapper.registerSubtypes(
+      classOf[PerusopetuksenOpiskeluoikeus],
+      classOf[PerusopetuksenOppimaara],
+      classOf[PerusopetukseenValmistavaOpetus],
+      classOf[AmmatillinenOpiskeluoikeus],
+      classOf[PoistettuOpiskeluoikeus],
+      classOf[KKOpiskeluoikeus],
+      classOf[KKSynteettinenOpiskeluoikeus],
+      classOf[AmmatillinenPerustutkinto],
+      classOf[AmmatillinenTutkintoOsittainen],
+      classOf[AmmattiTutkinto],
+      classOf[GeneerinenOpiskeluoikeus],
+      classOf[YOOpiskeluoikeus],
+      classOf[Telma],
+      classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
+      classOf[Tuva],
+      classOf[KKTutkinto],
+      classOf[KKSynteettinenSuoritus],
+      classOf[KKOpintosuoritus],
+      classOf[VapaaSivistystyo],
+      classOf[EBTutkinto],
+      classOf[IBTutkinto],
+      classOf[ErikoisAmmattiTutkinto],
+      classOf[LukionOppimaara],
+      classOf[DIATutkinto])
+    mapper
+  }
 
   /**
    * Hakee version raakadatan kannasta lähdejärjestelmän perusteella.
@@ -63,7 +91,7 @@ class OpiskeluoikeusParsingService(
   /**
    * Parseroi version raakadatan opiskeluoikeuksiksi ilman tallennusta.
    *
-   * @param versio versio jonka raakadata parsesoidaan
+   * @param versio versio jonka raakadata parseroidaan
    * @return parseroidut opiskeluoikeudet
    */
   def parseOnly(versio: VersioEntiteetti): Set[Opiskeluoikeus] = {
@@ -118,7 +146,7 @@ class OpiskeluoikeusParsingService(
         case _ =>
           // Versiot täsmäävät, käytetään tallennettuja opiskeluoikeuksia
           // Parseroidaan aiemmin tallennetut opiskeluoikeudet vasta tässä, jotta ei kaaduta vanhaan epäyhteensopivaan dataan
-          val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainerRaw)
+          val opiskeluoikeudet = SUORITUS_MAPPER.readValue(opiskeluoikeusContainerRaw, classOf[Container]).opiskeluoikeudet
           (versio, opiskeluoikeudet)
       }
     }

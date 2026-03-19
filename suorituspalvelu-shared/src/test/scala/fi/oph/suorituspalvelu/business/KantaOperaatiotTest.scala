@@ -16,12 +16,12 @@ import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
-import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
@@ -33,7 +33,7 @@ class KantaOperaatiotTest {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(64))
 
-  val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiotTest])
+  private val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiotTest])
 
   var postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
     postgres.withDatabaseName(DATABASE_NAME)
@@ -58,12 +58,14 @@ class KantaOperaatiotTest {
 
   val rand = Random
   var kantaOperaatiot: KantaOperaatiot = null
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
   var database: Database = null
 
   @BeforeAll def setup(): Unit =
     postgres.start()
     database = Database.forDataSource(getHikariDatasource(), None)
     kantaOperaatiot = KantaOperaatiot(database)
+    opiskeluoikeusParsingService = OpiskeluoikeusParsingService(kantaOperaatiot, null, null, null)
 
   @AfterAll def teardown(): Unit =
     postgres.stop()
@@ -98,16 +100,15 @@ class KantaOperaatiotTest {
           """), 5.seconds)
 
   /**
-   * Apumetodit deserialisoitujen opiskeluoikeuksien hakemiseen kannasta.
+   * Apumetodit deserialisoitujen opiskeluoikeuksien hakemiseen kannasta. Suoritusten lukeminen case classien parsinnan
+   * kanssa on mahdollista vain OpiskeluoikeusParsingServicen kautta, joten käytetään sitä suoritusten hakemiseen.
    */
 
   private def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
-    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map((versio, raw) =>
-      (versio, kantaOperaatiot.parseOpiskeluoikeudetFromRawContainer(raw))
-    )
+    opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, timestamp)
 
   private def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
-    haeSuorituksetAjanhetkella(henkiloOid, Instant.now())
+    opiskeluoikeusParsingService.haeSuoritukset(henkiloOid)
 
   /**
    * Testataan että versio tallentuu ja luetaan oikein.
@@ -476,7 +477,7 @@ class KantaOperaatiotTest {
   }
 
   /**
-   * Testataan että kun versiota ei ole vielä parsittu (parserVersio puuttuu), haeSuoritukset palauttaa
+   * Testataan että kun versiota ei ole vielä parsittu (parserVersio puuttuu), haeSuorituksetAjanhetkellaUnparsed palauttaa
    * version tyhjällä opiskeluoikeusjoukolla. On-demand-parserointi tapahtuu OpiskeluoikeusParsingService-tasolla.
    */
   @Test def testPalautetaanVersioTyhjillaOpiskeluoikeuksillaKunEiParsittu(): Unit =
@@ -489,8 +490,8 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(None, versio.parserVersio)
 
     // haetaan suoritukset - palautuu versio tyhjällä opiskeluoikeusjoukolla
-    val haetutSuoritusEntiteetit = haeSuoritukset(HENKILONUMERO)
-    Assertions.assertEquals(Map(versio -> Set.empty), haetutSuoritusEntiteetit)
+    val haetutSuoritusEntiteetit = kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(HENKILONUMERO, Instant.now)
+    Assertions.assertEquals(Map(versio -> "{\"opiskeluoikeudet\": []}"), haetutSuoritusEntiteetit)
 
   /**
    * Testataan (hyvin karkealla tavalla) suoritusten tallennuksen ja haun suorituskykyä.

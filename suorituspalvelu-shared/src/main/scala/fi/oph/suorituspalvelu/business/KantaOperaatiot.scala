@@ -34,6 +34,7 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
 )
 
 object KantaOperaatiot {
+
   val MAPPER: ObjectMapper = {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
@@ -41,31 +42,6 @@ object KantaOperaatiot {
     mapper.registerModule(new Jdk8Module()) // tämä on java.util.Optional -kenttiä varten
     mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, true)
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
-    mapper.registerSubtypes(
-      classOf[PerusopetuksenOpiskeluoikeus],
-      classOf[PerusopetuksenOppimaara],
-      classOf[PerusopetukseenValmistavaOpetus],
-      classOf[AmmatillinenOpiskeluoikeus],
-      classOf[PoistettuOpiskeluoikeus],
-      classOf[KKOpiskeluoikeus],
-      classOf[KKSynteettinenOpiskeluoikeus],
-      classOf[AmmatillinenPerustutkinto],
-      classOf[AmmatillinenTutkintoOsittainen],
-      classOf[AmmattiTutkinto],
-      classOf[GeneerinenOpiskeluoikeus],
-      classOf[YOOpiskeluoikeus],
-      classOf[Telma],
-      classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
-      classOf[Tuva],
-      classOf[KKTutkinto],
-      classOf[KKSynteettinenSuoritus],
-      classOf[KKOpintosuoritus],
-      classOf[VapaaSivistystyo],
-      classOf[EBTutkinto],
-      classOf[IBTutkinto],
-      classOf[ErikoisAmmattiTutkinto],
-      classOf[LukionOppimaara],
-      classOf[DIATutkinto])
     mapper
   }
 
@@ -433,8 +409,6 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, String] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
 
-  def parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainerJSON: String): Set[Opiskeluoikeus] =
-    MAPPER.readValue(opiskeluoikeusContainerJSON, classOf[Container]).opiskeluoikeudet
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
     Await.result(db.run(
