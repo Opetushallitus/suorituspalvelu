@@ -100,7 +100,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         syncKoskiForHenkilot(personOids, ctx)
       catch
         case e: Exception =>
-          LOG.error(s"(job id ${ctx.getJobId}) Henkilöiden tietojen päivittäminen Koskesta haulle $hakuOid epäonnistui", e)
+          LOG.error(s"(job id ${ctx.getJobId}) KOSKI-tietojen päivittäminen haun $hakuOid hakijoille epäonnistui", e)
           Seq.empty
     })
 

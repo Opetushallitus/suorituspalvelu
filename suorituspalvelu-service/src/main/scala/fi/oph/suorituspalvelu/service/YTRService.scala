@@ -66,6 +66,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan YTR-tiedot haun $hakuOid hakijoille (${personOids.size} henkilöä)")
         fetchAndPersistStudents(personOids, YtrFetchMode.BatchApi, ctx)
         ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
       catch
@@ -75,7 +76,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
           throw e
         case e: Exception =>
           val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui"
-          LOG.error(message,  e)
+          LOG.error(s"(job id ${ctx.getJobId}) YTR-tietojen päivittäminen haun $hakuOid henkilöille epäonnistui", e)
           ctx.reportError(message, Some(e))
     })
   }
@@ -90,7 +91,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     refreshYTRForHaut(ctx, hakuOids)
   }, Seq.empty)
 
-  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))  
+  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))
 
   private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", (ctx, data) => refreshYTRForAktiivisetHaut(ctx), Seq.empty)
 

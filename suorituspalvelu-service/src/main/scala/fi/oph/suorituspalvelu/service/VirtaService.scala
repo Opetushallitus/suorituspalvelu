@@ -131,6 +131,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan VIRTA-tiedot haun $hakuOid hakijoille (${henkiloNumerot.size} henkilöä)")
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
         case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
@@ -145,9 +146,10 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     paivitettavatHaut.zipWithIndex.foreach((hakuOid, index) => {
       try
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan VIRTA-tiedot haun $hakuOid hakijoille (${henkiloNumerot.size} henkilöä)")
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
-        case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
+        case e: Exception => LOG.error(s"(job id ${ctx.getJobId}) VIRTA-tietojen päivittäminen haun $hakuOid hakijoille epäonnistui", e)
       ctx.updateProgress((index+1).toDouble/paivitettavatHaut.size.toDouble)
     })
 
