@@ -396,7 +396,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
   }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[String]] = {
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
     Await.result(db.run(
         (sql"""
           WITH w_versiotunnisteet(tunniste) AS ("""
@@ -420,19 +420,18 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) => {
         (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), opiskeluoikeusContainer)
       })
-      .groupBy((versio, _) => versio)
-      .map((versio, tuples) => versio -> tuples.map(_._2).toSet)
+      .map((versio, opiskeluoikeusContainer) => (versio -> opiskeluoikeusContainer)).toMap
   }
 
-  def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[String]] =
+  def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, String] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
 
-  def parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainerJSONs: Set[String]): Set[Opiskeluoikeus] =
-    opiskeluoikeusContainerJSONs.flatMap(MAPPER.readValue(_, classOf[Container]).opiskeluoikeudet)
+  def parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainerJSON: String): Set[Opiskeluoikeus] =
+    MAPPER.readValue(opiskeluoikeusContainerJSON, classOf[Container]).opiskeluoikeudet
 
   def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
     haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map((versio, opiskeluoikeusContainers) =>
-      (versio, parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainers))
+      (versio, parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainers))
     )
   }
 

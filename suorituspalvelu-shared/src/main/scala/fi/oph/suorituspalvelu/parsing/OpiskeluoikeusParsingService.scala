@@ -94,7 +94,7 @@ class OpiskeluoikeusParsingService(
    * @return suoritukset versioittain
    */
   def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map { case (versio, opiskeluoikeusContainersRaw) =>
+    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map { case (versio, opiskeluoikeusContainerRaw) =>
       val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
       versio.parserVersio match {
         case None =>
@@ -118,7 +118,7 @@ class OpiskeluoikeusParsingService(
         case _ =>
           // Versiot täsmäävät, käytetään tallennettuja opiskeluoikeuksia
           // Parseroidaan aiemmin tallennetut opiskeluoikeudet vasta tässä, jotta ei kaaduta vanhaan epäyhteensopivaan dataan
-          val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainersRaw)
+          val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainerRaw)
           (versio, opiskeluoikeudet)
       }
     }
