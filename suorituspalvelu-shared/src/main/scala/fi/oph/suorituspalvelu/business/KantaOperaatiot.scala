@@ -423,21 +423,18 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       .map((versio, opiskeluoikeusContainer) => (versio -> opiskeluoikeusContainer)).toMap
   }
 
+  /**
+   * Hakee henkilön suoritukset tietyllä ajanhetkellä
+   *
+   * HUOM: Älä kutsu tätä metodia suoraan, ellei tarkoituksena ole nimenomaan käsitellä raakamuotoista dataa.
+   * Käytä sen sijaan [[fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService#haeSuorituksetAjanhetkella]],
+   * joka huolehtii myös on-demand-parseroinnista ja parserVersion hallinnasta.
+   */
   def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, String] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
 
   def parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainerJSON: String): Set[Opiskeluoikeus] =
     MAPPER.readValue(opiskeluoikeusContainerJSON, classOf[Container]).opiskeluoikeudet
-
-  def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map((versio, opiskeluoikeusContainers) =>
-      (versio, parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainers))
-    )
-  }
-
-  def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    haeSuorituksetAjanhetkella(henkiloOid, Instant.now())
-  }
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
     Await.result(db.run(
