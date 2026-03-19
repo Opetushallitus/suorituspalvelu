@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, SuoritusTila, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -57,13 +58,13 @@ object AutomaattinenHakukelpoisuus {
 class HakukelpoisuusService {
   private val LOG = LoggerFactory.getLogger(classOf[HakukelpoisuusService])
 
-  @Autowired val kantaOperaatiot: KantaOperaatiot = null
+  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   @Autowired val onrIntegration: OnrIntegration = null
 
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
-    allOidsForPerson.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
+    allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid).values.flatten).toSeq
   }
 
   def paatteleAutomaattinenHakukelpoisuus(personOid: String): Boolean = {

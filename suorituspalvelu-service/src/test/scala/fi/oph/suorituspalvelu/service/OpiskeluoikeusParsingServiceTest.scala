@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
-import fi.oph.suorituspalvelu.business.{ParserVersions, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{Lahdejarjestelma, ParserVersions, VersioEntiteetti}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.junit.jupiter.api.{Assertions, Test}
 import org.springframework.beans.factory.annotation.Autowired
 import slick.jdbc.PostgresProfile.api.*

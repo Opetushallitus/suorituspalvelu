@@ -1,11 +1,9 @@
 package fi.oph.suorituspalvelu.mankeli
 
-import fi.oph.suorituspalvelu.business.{
-  KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara,
-  PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila
-}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHakukohde}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -171,6 +169,8 @@ class HarkinnanvaraisuusService {
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
+  @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null;
+
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
 
   @Autowired val onrIntegration: OnrIntegration = null
@@ -213,7 +213,7 @@ class HarkinnanvaraisuusService {
 
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
-    allOidsForPerson.flatMap(oid => kantaOperaatiot.haeSuoritukset(oid).values.flatten).toSeq
+    allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid).values.flatten).toSeq
   }
 
   def getHakemuksenHarkinnanvaraisuudet(

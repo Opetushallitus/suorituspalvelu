@@ -1,12 +1,16 @@
-package fi.oph.suorituspalvelu.service
+package fi.oph.suorituspalvelu.parsing
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti, Container}
+import fi.oph.suorituspalvelu.business.{
+  KantaOperaatiot, Lahdejarjestelma, Opiskeluoikeus, ParserVersions, VersioEntiteetti
+}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{
+  SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus
+}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -113,6 +117,7 @@ class OpiskeluoikeusParsingService(
 
         case _ =>
           // Versiot täsmäävät, käytetään tallennettuja opiskeluoikeuksia
+          // Parseroidaan aiemmin tallennetut opiskeluoikeudet vasta tässä, jotta ei kaaduta vanhaan epäyhteensopivaan dataan
           val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainersRaw)
           (versio, opiskeluoikeudet)
       }
@@ -147,7 +152,7 @@ class OpiskeluoikeusParsingService(
         (converted, ParserVersions.SYOTETYT_OPPIAINEET)
 
       case _ =>
-        LOG.warn(s"Tuntematon lähdejärjestelmä: ${versio.lahdeJarjestelma}")
+        LOG.error(s"Tuntematon lähdejärjestelmä: ${versio.lahdeJarjestelma.nimi}")
         (Set.empty, 0)
     }
   }
