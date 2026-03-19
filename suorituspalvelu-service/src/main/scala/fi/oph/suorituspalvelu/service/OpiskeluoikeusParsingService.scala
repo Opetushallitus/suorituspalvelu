@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti, Container}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
@@ -30,6 +30,18 @@ class OpiskeluoikeusParsingService(
   private val LOG = LoggerFactory.getLogger(classOf[OpiskeluoikeusParsingService])
 
   /**
+   * Hakee version raakadatan kannasta lähdejärjestelmän perusteella.
+   * @return Tuple, jossa ensimmäisenä JSON-data, toisena XML-data. Toinen näistä on aina tyhjä, riippuen lähdejärjestelmästä.
+   */
+  private def haeData(versio: VersioEntiteetti): (Seq[String], Seq[String]) = {
+    if (versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA) {
+      (Seq.empty[String], kantaOperaatiot.haeXmlData(versio))
+    } else {
+      (kantaOperaatiot.haeJsonData(versio), Seq.empty[String])
+    }
+  }
+
+  /**
    * Parseroi version raakadatan opiskeluoikeuksiksi ja tallentaa tuloksen kantaan.
    *
    * @param versio versio jonka raakadata parseroidaan
@@ -37,7 +49,8 @@ class OpiskeluoikeusParsingService(
    */
   def parseAndStore(versio: VersioEntiteetti): Set[Opiskeluoikeus] = {
     LOG.info(s"On-demand-parserointi versiolle ${versio.tunniste} (${versio.lahdeJarjestelma})")
-    val (_, jsonData, xmlData) = kantaOperaatiot.haeData(versio)
+
+    val (jsonData, xmlData) = haeData(versio)
     val (opiskeluoikeudet, parserVersio) = parse(versio, jsonData, xmlData)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), parserVersio)
     opiskeluoikeudet
@@ -50,7 +63,7 @@ class OpiskeluoikeusParsingService(
    * @return parseroidut opiskeluoikeudet
    */
   def parseOnly(versio: VersioEntiteetti): Set[Opiskeluoikeus] = {
-    val (_, jsonData, xmlData) = kantaOperaatiot.haeData(versio)
+    val (jsonData, xmlData) = haeData(versio)
     parse(versio, jsonData, xmlData)._1
   }
 
@@ -77,8 +90,7 @@ class OpiskeluoikeusParsingService(
    * @return suoritukset versioittain
    */
   def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    val result = kantaOperaatiot.haeSuorituksetAjanhetkella(henkiloOid, timestamp)
-    result.map { case (versio, opiskeluoikeudet) =>
+    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map { case (versio, opiskeluoikeusContainersRaw) =>
       val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
       versio.parserVersio match {
         case None =>
@@ -101,6 +113,7 @@ class OpiskeluoikeusParsingService(
 
         case _ =>
           // Versiot täsmäävät, käytetään tallennettuja opiskeluoikeuksia
+          val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainersRaw)
           (versio, opiskeluoikeudet)
       }
     }

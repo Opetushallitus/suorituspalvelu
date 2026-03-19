@@ -60,6 +60,35 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Some(ParserVersions.KOSKI), versioAfterParse.get.parserVersio)
 
   /**
+   * Kun tallennettu parserVersio on vanhempi kuin nykyinen JA tallennetut opiskeluoikeudet ovat
+   * formaatissa jota ei voida deserialisoida nykyisellä toteutuksella, palvelu parsii uudelleen raakadatasta
+   * ja tallentaa tuloksen.
+   */
+  @Test def testReparseWhenOlderVersionStoredWithIncompatibleData(): Unit =
+    // Tallennetaan versio raakadatalla (jotta parseAndStore voi parseroida uudelleen)
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(OPPIJA_OID, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
+    val oldParserVersion = ParserVersions.KOSKI - 1
+
+    // Kirjoitetaan kantaan opiskeluoikeudet-data jota nykyinen koodi ei osaa lukea.
+    // Simuloi tilannetta jossa edellinen parserversio tallensi tyypin joka on sittemmin poistettu tai muuttunut.
+    val incompatibleData = """{"opiskeluoikeudet":[{"type":"VanhaOpiskeluoikeusTyyppi","tunniste":"00000000-0000-0000-0000-000000000001","jokinKentta":"arvo"}]}"""
+    Await.result(database.run(
+      sqlu"""UPDATE versiot SET opiskeluoikeudet = ${incompatibleData}::jsonb, parser_versio = $oldParserVersion WHERE tunniste = ${versio.tunniste.toString}::uuid"""
+    ), 5.seconds)
+
+    // Varmistetaan että vanha versio ja epäyhteensopiva data on tallennettu
+    val versioBeforeParse = kantaOperaatiot.haeVersio(versio.tunniste)
+    Assertions.assertEquals(Some(oldParserVersion), versioBeforeParse.get.parserVersio)
+
+    // Kutsutaan palvelua - pitäisi parseroida uudelleen raakadatasta vaikka
+    // tallennetut opiskeluoikeudet eivät ole luettavissa nykyisellä formaatilla
+    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID)
+
+    // Varmistetaan että parserVersio on päivitetty uuteen
+    val versioAfterParse = kantaOperaatiot.haeVersio(versio.tunniste)
+    Assertions.assertEquals(Some(ParserVersions.KOSKI), versioAfterParse.get.parserVersio)
+
+  /**
    * Kun tallennettu parserVersio on uudempi kuin nykyinen (deployment-tilanne),
    * palvelu parsii mutta EI tallenna tulosta.
    */
