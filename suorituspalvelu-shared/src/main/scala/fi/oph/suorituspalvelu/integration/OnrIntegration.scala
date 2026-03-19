@@ -7,7 +7,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
-import java.util.concurrent.Executors
 
 //Avaimina oidit joille kysyttiin, arvona setti jossa mukana kaikki aliakset sis. oid jolla kysyttiin
 case class PersonOidsWithAliases(allOidsByQueriedOids: Map[String, Set[String]]) {
@@ -63,7 +62,7 @@ class OnrIntegrationImpl extends OnrIntegration {
 
   val LOG = LoggerFactory.getLogger(classOf[OnrIntegrationImpl])
 
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
+  import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
   @Autowired val onrClient: OnrClientImpl = null
 

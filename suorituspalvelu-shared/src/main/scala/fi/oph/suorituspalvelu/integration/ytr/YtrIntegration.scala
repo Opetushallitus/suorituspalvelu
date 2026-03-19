@@ -8,15 +8,13 @@ import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import slick.jdbc.JdbcBackend
 
-import java.util.concurrent.Executors
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
-import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
+import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 import fi.oph.suorituspalvelu.util.ZipUtil
 
 import java.io.ByteArrayInputStream
-import java.time.Instant
-import scala.collection.immutable
 
 case class Section(sectionId: String, sectionPoints: Option[String])
 
@@ -31,7 +29,6 @@ enum YtrFetchMode:
 class YtrIntegration {
 
   private val LOG: Logger = LoggerFactory.getLogger(classOf[YtrIntegration])
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   @Autowired val ytrClient: YtrClient = null
 
