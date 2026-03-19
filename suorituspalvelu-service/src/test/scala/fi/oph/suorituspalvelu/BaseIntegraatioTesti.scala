@@ -93,6 +93,9 @@ class BaseIntegraatioTesti {
     System.setProperty("web.url.cas-login", "DUMMY_CAS_LOGIN")
     System.setProperty("host.virkailija", "DUMMY")
 
+    System.setProperty("ytr.retry.delayMillis", "10")
+    System.setProperty("ytr.poll.waitMillis", "10")
+
     datasource = getDatasource()
     database = Database.forDataSource(datasource, None)
     kantaOperaatiot = KantaOperaatiot(database)
