@@ -8,7 +8,6 @@ import org.asynchttpclient.Dsl.asyncHttpClient
 import org.asynchttpclient.{AsyncHttpClient, DefaultAsyncHttpClientConfig, Dsl, Request, Response}
 
 import java.time.{Duration, Instant, LocalDate, ZoneId}
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 
@@ -32,7 +31,7 @@ class OhjausparametritClient(environmentBaseUrl: String) {
   mapper.registerModule(DefaultScalaModule)
   mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
+  import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
   def haeOhjausparametrit(hakuOid: String): Future[Ohjausparametrit] = {
     val url = environmentBaseUrl + "/ohjausparametrit-service/api/v1/rest/parametri/" + hakuOid
@@ -82,7 +81,7 @@ class OhjausparametritClient(environmentBaseUrl: String) {
         case Failure(exception) =>
           promise.failure(exception)
       }
-    }, ec.execute(_))
+    }, executor.execute(_))
 
     promise.future
   }

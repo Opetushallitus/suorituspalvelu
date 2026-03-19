@@ -37,7 +37,7 @@ class YtrClient(username: String, password: String, baseUrl: String) {
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
+  import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
   val LOG = LoggerFactory.getLogger(classOf[YtrClient])
 
@@ -124,7 +124,7 @@ class YtrClient(username: String, password: String, baseUrl: String) {
         case Failure(exception) =>
           promise.failure(exception)
       }
-    }, ec.execute(_))
+    }, executor.execute(_))
     promise.future
   }
 }

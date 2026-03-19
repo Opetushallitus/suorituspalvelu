@@ -10,6 +10,11 @@ object Util {
 
   private val LOG: Logger = LoggerFactory.getLogger(Util.getClass)
 
+  /**
+   * Virtuaalisäikeellä toteutettu blokkaamaton sleep.
+   * @param durationMillis Viive millisekunteina
+   * @return Future joka täyttyy, kun viive on kulunut loppuun.
+   */
   def sleepAsync(durationMillis: Long): Future[Unit] = {
     val promise = Promise[Unit]()
     Thread.startVirtualThread(() => {

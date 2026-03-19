@@ -10,7 +10,7 @@ import slick.jdbc.{GetResult, JdbcBackend, SQLActionBuilder, SetParameter}
 import slick.jdbc.PostgresProfile.api.*
 import com.github.tminglei.slickpg.utils.PlainSQLUtils.mkArraySetParameter
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import org.slf4j.LoggerFactory

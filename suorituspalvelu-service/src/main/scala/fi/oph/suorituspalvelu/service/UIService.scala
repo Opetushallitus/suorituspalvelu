@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 
 import java.time.{Instant, LocalDate}
 import java.util.Optional
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.jdk.OptionConverters.*

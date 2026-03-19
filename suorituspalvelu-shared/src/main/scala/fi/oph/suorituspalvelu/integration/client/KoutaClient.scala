@@ -11,7 +11,7 @@ import java.time.{LocalDateTime, ZoneId}
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 //aikaleimat muodossa "2022-02-22T08:00:00"
 case class KoutaHakuaika(alkaa: String, paattyy: Option[String])

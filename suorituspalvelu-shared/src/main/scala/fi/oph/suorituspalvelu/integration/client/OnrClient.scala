@@ -12,7 +12,7 @@ import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 
 //Todo, oma ec?
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 case class Henkiloviite(henkiloOid: String, masterOid: String) {
   def bothOids: Set[String] = Set(henkiloOid, masterOid)
