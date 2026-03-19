@@ -345,23 +345,6 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               FROM versiot
               WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
 
-  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, Seq[String], Seq[String]) =
-    Await.result(db.run(
-      sql"""SELECT jsonb_build_object('tunniste', tunniste,
-              'henkiloOid', henkilo_oid,
-              'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
-              'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-              'lahdeJarjestelma', lahdejarjestelma,
-              'lahdeTunniste', lahdetunniste,
-              'lahdeVersio', lahdeversio,
-              'parserVersio', parser_versio
-            )::text AS versio,
-            data_json::text[],
-            data_xml::text[]
-            FROM versiot
-            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String], Seq[String])]), DB_TIMEOUT)
-      .map((json, jsonData, xmlData) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), jsonData, xmlData)).head
-
   def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] =
     Await.result(db.run(
         sql"""SELECT jsonb_build_object('tunniste', tunniste,

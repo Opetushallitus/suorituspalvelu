@@ -108,7 +108,7 @@ class KantaOperaatiotTest {
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, Lahdejarjestelma.YTR, Seq(data), Seq.empty, Instant.now(), "YTR", None).get
 
     // data palautuu
-    Assertions.assertEquals(Seq(data), this.kantaOperaatiot.haeData(versio)._2)
+    Assertions.assertEquals(Seq(data), this.kantaOperaatiot.haeJsonData(versio))
 
   /**
    * Testataan että json-datan muuttuessa henkilölle tallennetaan uusi versio.
@@ -192,8 +192,8 @@ class KantaOperaatiotTest {
 
     val versiot = Await.result(Future.sequence(tallennusOperaatiot.map(op => Future {op ()})), 20.seconds)
       .filter(o => o.isDefined) // versiota ei välttämättä tallenneta jos uudempi jos tallennettu
-      .map(o => Some(this.kantaOperaatiot.haeData(o.get)._1))
-      .sortBy(v => v.get.alku)
+      .map(o => this.kantaOperaatiot.haeVersio(o.get.tunniste))
+      .sortBy(_.get.alku)
 
     // ainakin 1/5 yrityksistä pitäisi onnistua (eli uusin versio), muuten jotain pahasti pielessä
     Assertions.assertTrue(versiot.size>=100)
@@ -271,7 +271,7 @@ class KantaOperaatiotTest {
 
     Assertions.assertEquals(alkuperainenVersio, uusiVersio, "Päivityksessä palautuu sama versio kuin aiemmin samalla lähdeversiolla tallennettaessa")
 
-    val (_, jsonData, _) = this.kantaOperaatiot.haeData(alkuperainenVersio)
+    val jsonData = this.kantaOperaatiot.haeJsonData(alkuperainenVersio)
     Assertions.assertEquals(Seq("{\"attr\": \"paivitetty\"}"), jsonData, "Alkuperäinen data päivitettiin")
 
   @Test def testVersionumeroituVersioEiPaivitetaKunDataEiMuutuJaAikaleimaMuuttuu(): Unit =
@@ -293,7 +293,7 @@ class KantaOperaatiotTest {
 
     Assertions.assertTrue(uusiVersio.isEmpty)
 
-    val (_, jsonData, _) = this.kantaOperaatiot.haeData(alkuperainenVersio)
+    val jsonData = this.kantaOperaatiot.haeJsonData(alkuperainenVersio)
     Assertions.assertEquals(Seq("{\"attr\": \"alkuperainen\"}"), jsonData, "Data säilyy samana")
 
   /**
@@ -312,7 +312,7 @@ class KantaOperaatiotTest {
     })
 
     val versiot = Await.result(Future.sequence(tallennusOperaatiot.map(op => Future {op ()})), 20.seconds)
-      .map(o => Some(this.kantaOperaatiot.haeData(o.get)._1))
+      .map(o => this.kantaOperaatiot.haeVersio(o.get.tunniste))
       .sortBy(v => v.get.alku)
 
     // testataan että versioista muodostuu katkeamaton jatkumo ja viimeisin versio voimassa
