@@ -38,7 +38,7 @@ class OpiskeluoikeusParsingService(
    * @return Tuple, jossa ensimmäisenä JSON-data, toisena XML-data. Toinen näistä on aina tyhjä, riippuen lähdejärjestelmästä.
    */
   private def haeData(versio: VersioEntiteetti): (Seq[String], Seq[String]) = {
-    if (versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA) {
+    if (versio.lahdeJarjestelma.hasXmlData) {
       (Seq.empty[String], kantaOperaatiot.haeXmlData(versio))
     } else {
       (kantaOperaatiot.haeJsonData(versio), Seq.empty[String])
@@ -118,7 +118,7 @@ class OpiskeluoikeusParsingService(
         case _ =>
           // Versiot täsmäävät, käytetään tallennettuja opiskeluoikeuksia
           // Parseroidaan aiemmin tallennetut opiskeluoikeudet vasta tässä, jotta ei kaaduta vanhaan epäyhteensopivaan dataan
-          val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainers(opiskeluoikeusContainerRaw)
+          val opiskeluoikeudet = kantaOperaatiot.parseOpiskeluoikeudetFromRawContainer(opiskeluoikeusContainerRaw)
           (versio, opiskeluoikeudet)
       }
     }
