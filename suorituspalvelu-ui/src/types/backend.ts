@@ -35,17 +35,31 @@ export interface IAmmatillisenTutkinnonOsa {
   tunniste: string;
   nimi: IAmmatillisenTutkinnonOsaNimi;
   laajuus?: number;
-  arvosana?: string;
+  arvosana?: IAmmatillisenTutkinnonOsaArvosana;
   osaAlueet: IAmmatillisenTutkinnonOsaAlue[];
+  korotettu?: KorotusUI;
 }
 
 export interface IAmmatillisenTutkinnonOsaAlue {
   nimi: IAmmatillisenTutkinnonOsaAlueNimi;
   laajuus?: number;
-  arvosana?: string;
+  arvosana?: IAmmatillisenTutkinnonOsaAlueArvosana;
+  korotettu?: KorotusUI;
+}
+
+export interface IAmmatillisenTutkinnonOsaAlueArvosana {
+  fi?: string;
+  sv?: string;
+  en?: string;
 }
 
 export interface IAmmatillisenTutkinnonOsaAlueNimi {
+  fi?: string;
+  sv?: string;
+  en?: string;
+}
+
+export interface IAmmatillisenTutkinnonOsaArvosana {
   fi?: string;
   sv?: string;
   en?: string;
@@ -447,6 +461,7 @@ export interface IOppijanTiedotSuccessResponse {
   ebTutkinto?: IEBTutkintoUI;
   ibTutkinto?: IIBTutkintoUI;
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
+  osittaisetAmmatillisetTutkinnot: IOsittainenAmmatillinenTutkintoUI[];
   ammattitutkinnot: IAmmattitutkinto[];
   erikoisammattitutkinnot: IErikoisammattitutkinto[];
   telmat: ITelma[];
@@ -493,6 +508,20 @@ export interface IOppilaitosNimi {
 
 export interface IOppilaitosSuccessResponse {
   oppilaitokset: IOppilaitos[];
+}
+
+export interface IOsittainenAmmatillinenTutkintoUI {
+  tunniste: string;
+  nimi: IAmmatillinentutkintoNimi;
+  oppilaitos: IAmmatillinenOppilaitos;
+  tila: SuoritusTilaUI;
+  aloituspaiva?: string;
+  valmistumispaiva?: string;
+  suorituskieli: string;
+  korotettuPainotettuKeskiarvo?: number;
+  ytot: IYTO[];
+  ammatillisenTutkinnonOsat: IAmmatillisenTutkinnonOsa[];
+  suoritustapa?: SuoritustapaUI;
 }
 
 export interface IPKOppilaitos {
@@ -828,14 +857,9 @@ export interface IYTO {
   tunniste: string;
   nimi: IYTONimi;
   laajuus?: number;
-  arvosana?: IYTOArvosana;
+  arvosana?: IAmmatillisenTutkinnonOsaArvosana;
   osaAlueet: IYTOOsaAlue[];
-}
-
-export interface IYTOArvosana {
-  fi?: string;
-  sv?: string;
-  en?: string;
+  korotettu?: KorotusUI;
 }
 
 export interface IYTONimi {
@@ -847,7 +871,8 @@ export interface IYTONimi {
 export interface IYTOOsaAlue {
   nimi: IYTOOsaAlueNimi;
   laajuus?: number;
-  arvosana?: string;
+  arvosana?: IAmmatillisenTutkinnonOsaAlueArvosana;
+  korotettu?: KorotusUI;
 }
 
 export interface IYTOOsaAlueNimi {
@@ -894,12 +919,14 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type KKSektoriUI = ("AMK" | "YO");
+export type KKSektoriUI = 'AMK' | 'YO';
 
-export type KKTutkintotasoUI = ("ALEMPI" | "YLEMPI" | "TOHTORI");
+export type KKTutkintotasoUI = 'ALEMPI' | 'YLEMPI' | 'TOHTORI';
 
-export type OpiskeluoikeusTilaUI = ("VOIMASSA" | "PAATTYNYT");
+export type KorotusUI = 'KOROTETTU' | 'KOROTUKSENYRITYS';
 
-export type SuoritusTilaUI = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
+export type OpiskeluoikeusTilaUI = 'VOIMASSA' | 'PAATTYNYT';
 
-export type SuoritustapaUI = "NAYTTOTUTKINTO";
+export type SuoritusTilaUI = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+
+export type SuoritustapaUI = 'OPS' | 'REFORMI' | 'NAYTTO';

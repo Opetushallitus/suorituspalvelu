@@ -10,9 +10,11 @@ const SemiBold = styled('span')({
 export const KokonaislaajuusRow = ({
   osat,
   maxKokonaislaajuus,
+  colSpan = 2,
 }: {
   osat: Array<{ laajuus?: number }>;
-  maxKokonaislaajuus: number;
+  maxKokonaislaajuus: number | undefined;
+  colSpan?: number;
 }) => {
   const { t } = useTranslations();
   const totalLaajuus = sumBy(osat, (osa) => osa.laajuus ?? 0);
@@ -20,10 +22,10 @@ export const KokonaislaajuusRow = ({
     <TableBody style={{ borderBottom: 'none' }}>
       <TableRow>
         <TableCell />
-        <TableCell colSpan={2}>
+        <TableCell colSpan={colSpan}>
           {t('oppija.lyhenne-yhteensa')}{' '}
           <SemiBold>
-            {totalLaajuus} / {maxKokonaislaajuus}{' '}
+            {totalLaajuus} {maxKokonaislaajuus ? '/ ' + maxKokonaislaajuus : ''}{' '}
             {t('oppija.lyhenne-osaamispiste')}
           </SemiBold>
         </TableCell>
