@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.{Koe, Opiskeluoikeus, YOOpiskeluoikeus, Y
 
 import java.time.LocalDate
 
-case class AvainMetatiedotDTO(avain: String, metatiedot: List[Map[String, String]])
+case class AvainMetatiedotDTO(avain: String, metatiedot: Seq[Map[String, String]])
 
 object YoMetadataConverter {
 
@@ -144,12 +144,12 @@ object YoMetadataConverter {
     }
   }
 
-  def convert(opiskeluoikeudet: Seq[Opiskeluoikeus]): List[AvainMetatiedotDTO] = {
+  def convert(opiskeluoikeudet: Seq[Opiskeluoikeus]): Seq[AvainMetatiedotDTO] = {
     val yoOpiskeluoikeudet = opiskeluoikeudet.collect { case yo: YOOpiskeluoikeus => yo }
 
     val yoTutkinto: Option[YOTutkinto] = yoOpiskeluoikeudet.flatMap(_.yoTutkinto).headOption
 
-    val tutkinnonArvot: Map[String, List[Map[String, String]]] = yoTutkinto.map { tutkinto =>
+    val tutkinnonArvot: Map[String, Seq[Map[String, String]]] = yoTutkinto.map { tutkinto =>
       val yksittaisetKokeet = getYksittaisetKokeet(tutkinto)
       val aidinkieliRyhma = parseRyhma(tutkinto, aidinkieliAineet, "AIDINKIELI")
       val aineReaaliRyhma = parseRyhma(tutkinto, ainereaaliAineet, "AINEREAALI")
@@ -163,7 +163,7 @@ object YoMetadataConverter {
 
     val DTOs = tutkinnonArvot.map(a => {
       AvainMetatiedotDTO(a._1, a._2)
-    }).toList
+    }).toSeq
 
     DTOs
   }
