@@ -78,6 +78,8 @@ class YoMetadataConverterTest {
             Koe(UUID.randomUUID(), Koodi("BB", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("B", "koskiyoarvosanat", Some(1)), Some(102)),
             Koe(UUID.randomUUID(), Koodi("EA", "yokokeet", Some(1)), LocalDate.parse("2022-12-21"), Koodi("L", "koskiyoarvosanat", Some(1)), Some(140)),
             Koe(UUID.randomUUID(), Koodi("YH", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("C", "koskiyoarvosanat", Some(1)), Some(140)),
+            Koe(UUID.randomUUID(), Koodi("FB", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("E", "koskiyoarvosanat", Some(1)), Some(122)),
+            Koe(UUID.randomUUID(), Koodi("SC", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("B", "koskiyoarvosanat", Some(1)), Some(99)),
           )
         ))
       )
@@ -135,6 +137,20 @@ class YoMetadataConverterTest {
     Assertions.assertEquals("2022", ruotsi("SUORITUSVUOSI"))
     Assertions.assertEquals("1", ruotsi("SUORITUSLUKUKAUSI"))
 
+    //FB Ranska keskipitkä oppimäärä, yksi koesuoritus
+    val ranska = convertedArvot.find(_.avain.equals("FB")).get.metatiedot.head
+    Assertions.assertEquals("E", ranska("ARVO"))
+    Assertions.assertEquals("122", ranska("PISTEET"))
+    Assertions.assertEquals("2022", ranska("SUORITUSVUOSI"))
+    Assertions.assertEquals("1", ranska("SUORITUSLUKUKAUSI"))
+
+    //SC saksa lyhyt oppimäärä, yksi koesuoritus
+    val saksa = convertedArvot.find(_.avain.equals("SC")).get.metatiedot.head
+    Assertions.assertEquals("B", saksa("ARVO"))
+    Assertions.assertEquals("99", saksa("PISTEET"))
+    Assertions.assertEquals("2022", saksa("SUORITUSVUOSI"))
+    Assertions.assertEquals("1", saksa("SUORITUSLUKUKAUSI"))
+
     //AIDINKIELI-ryhma, yksi koesuoritus, sama kuin "A" mutta kielen kertovalla lisätiedolla
     val aidinkieliRyhma = convertedArvot.find(_.avain.equals("AIDINKIELI")).get.metatiedot.head
     Assertions.assertEquals("E", aidinkieliRyhma("ARVO"))
@@ -143,6 +159,42 @@ class YoMetadataConverterTest {
     Assertions.assertEquals("1", aidinkieliRyhma("SUORITUSLUKUKAUSI"))
     Assertions.assertEquals("FI", aidinkieliRyhma("LISATIETO"))
 
+    //PITKA_KIELI-ryhma, kaksi koesuoritusta, samat kuin "EA" mutta kielen kertovalla lisätiedolla
+    val pitkaKieliRyhma = convertedArvot.find(_.avain.equals("PITKA_KIELI")).get.metatiedot
+
+    val pitkaKieliKoesuoritus1 = pitkaKieliRyhma.find(_("ARVO").equals("M")).get
+    Assertions.assertEquals("M", pitkaKieliKoesuoritus1("ARVO"))
+    Assertions.assertEquals("95", pitkaKieliKoesuoritus1("PISTEET"))
+    Assertions.assertEquals("2022", pitkaKieliKoesuoritus1("SUORITUSVUOSI"))
+    Assertions.assertEquals("1", pitkaKieliKoesuoritus1("SUORITUSLUKUKAUSI"))
+    Assertions.assertEquals("EN", pitkaKieliKoesuoritus1("LISATIETO"))
+
+    val pitkaKieliKoesuoritus2 = pitkaKieliRyhma.find(_("ARVO").equals("L")).get
+    Assertions.assertEquals("L", pitkaKieliKoesuoritus2("ARVO"))
+    Assertions.assertEquals("140", pitkaKieliKoesuoritus2("PISTEET"))
+    Assertions.assertEquals("2022", pitkaKieliKoesuoritus2("SUORITUSVUOSI"))
+    Assertions.assertEquals("2", pitkaKieliKoesuoritus2("SUORITUSLUKUKAUSI"))
+    Assertions.assertEquals("EN", pitkaKieliKoesuoritus2("LISATIETO"))
+
+    //KESKIPITKA_KIELI-ryhma, yksi koesuoritus, samat kuin "FB" mutta kielen kertovalla lisätiedolla
+    val keskipitkaKieliRyhma = convertedArvot.find(_.avain.equals("KESKIPITKA_KIELI")).get.metatiedot
+
+    val keskipitkaKieliKoesuoritus1 = keskipitkaKieliRyhma.head
+    Assertions.assertEquals("E", keskipitkaKieliKoesuoritus1("ARVO"))
+    Assertions.assertEquals("122", keskipitkaKieliKoesuoritus1("PISTEET"))
+    Assertions.assertEquals("2022", keskipitkaKieliKoesuoritus1("SUORITUSVUOSI"))
+    Assertions.assertEquals("1", keskipitkaKieliKoesuoritus1("SUORITUSLUKUKAUSI"))
+    Assertions.assertEquals("RA", keskipitkaKieliKoesuoritus1("LISATIETO"))
+
+    //LYHYT_KIELI-ryhma, yksi koesuoritus, samat kuin "SC" mutta kielen kertovalla lisätiedolla
+    val lyhytKieliRyhma = convertedArvot.find(_.avain.equals("LYHYT_KIELI")).get.metatiedot
+
+    val lyhytKieliKoesuoritus1 = lyhytKieliRyhma.head
+    Assertions.assertEquals("B", lyhytKieliKoesuoritus1("ARVO"))
+    Assertions.assertEquals("99", lyhytKieliKoesuoritus1("PISTEET"))
+    Assertions.assertEquals("2022", lyhytKieliKoesuoritus1("SUORITUSVUOSI"))
+    Assertions.assertEquals("1", lyhytKieliKoesuoritus1("SUORITUSLUKUKAUSI"))
+    Assertions.assertEquals("SA", lyhytKieliKoesuoritus1("LISATIETO"))
   }
 
 }

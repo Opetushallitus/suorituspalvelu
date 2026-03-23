@@ -7,14 +7,87 @@ import java.time.LocalDate
 case class AvainMetatiedotDTO(avain: String, metatiedot: List[Map[String, String]])
 
 object YoMetadataConverter {
-/*  val KOOSTETUT = Array(
-    "AINEREAALI" -> "Ainereaali (UE, UO, ET, FF, PS, HI, FY, KE, BI, GE, TE, YH)",
-    "REAALI" -> "Reaali (RR, RO, RY)",
-    "PITKA_KIELI" -> "Kieli, pitkä oppimäärä (EA, FA, GA, HA, PA, SA, TA, VA, S9)",
-    "KESKIPITKA_KIELI" -> "Kieli, keskipitkä oppimäärä (EB, FB, GB, HB, PB, SB, TB, VB)",
-    "LYHYT_KIELI" -> "Kieli, lyhyt oppimäärä (EC, FC, GC, L1, PC, SC, TC, VC, KC, L7)",
-    "AIDINKIELI" -> "Äidinkieli (O, A, I, W, Z, O5, A5)"
-  )*/
+
+  val aineToLisatietoMap = Map(
+    "SA" -> "SA",
+    "EA" -> "EN",
+    "EB" -> "EN",
+    "HA" -> "UN",
+    "FB" -> "RA",
+    "E2" -> "EN",
+    "M" -> "MA",
+    "SC" -> "SA",
+    "VA" -> "VE",
+    "F2" -> "RA",
+    "GB" -> "PG",
+    "PS" -> "PS",
+    "I" -> "IS",
+    "HI" -> "HI",
+    "V2" -> "VE",
+    "RY" -> "ET",
+    "TA" -> "IT",
+    "CB" -> "FI",
+    "CC" -> "FI",
+    "S9" -> "SA",
+    "G2" -> "PG",
+    "V1" -> "VE",
+    "HB" -> "UN",
+    "TB" -> "IT",
+    "O" -> "RU",
+    "A" -> "FI",
+    "P1" -> "ES",
+    "GC" -> "PG",
+    "S2" -> "SA",
+    "PC" -> "ES",
+    "FY" -> "FY",
+    "EC" -> "EN",
+    "L1" -> "LA",
+    "H1" -> "UN",
+    "O5" -> "RU",
+    "FA" -> "RA",
+    "CA" -> "FI",
+    "F1" -> "RA",
+    "J" -> "EN",
+    "A5" -> "FI",
+    "Z" -> "ZA",
+    "IC" -> "IS",
+    "KE" -> "KE",
+    "T1" -> "IT",
+    "RO" -> "UO",
+    "YH" -> "YH",
+    "BA" -> "RU",
+    "H2" -> "UN",
+    "BI" -> "BI",
+    "VC" -> "VE",
+    "FF" -> "FF",
+    "BB" -> "RU",
+    "E1" -> "EN",
+    "T2" -> "IT",
+    "DC" -> "ZA",
+    "GE" -> "GE",
+    "P2" -> "ES",
+    "TC" -> "IT",
+    "G1" -> "PG",
+    "UO" -> "UO",
+    "RR" -> "UE",
+    "VB" -> "VE",
+    "KC" -> "KR",
+    "ET" -> "ET",
+    "PB" -> "ES",
+    "SB" -> "SA",
+    "S1" -> "SA",
+    "QC" -> "QC",
+    "N" -> "MA",
+    "L7" -> "LA",
+    "PA" -> "ES",
+    "FC" -> "RA",
+    "TE" -> "TE",
+    "GA" -> "PG",
+    "UE" -> "UE",
+    "W" -> "QS"
+  )
+
+
 
   val aidinkieliAineet = Set("A", "O", "I", "W", "Z", "O5", "A5")
   val ainereaaliAineet = Set("UE", "UO", "ET", "PS", "HI", "FY", "KE", "BI", "GE", "TE", "YH", "FF")
@@ -24,15 +97,20 @@ object YoMetadataConverter {
   val keskipitkaKieliAineet = Set("EB", "FB", "GB", "HB", "PB", "SB", "TB", "VB")
   val lyhytKieliAineet = Set("EC", "FC", "GC", "L1", "PC", "SC", "TC", "VC", "KC", "L7")
 
-  val aidinkieliLisatietoMap = Map(
-    "A" -> "FI",
-    "I" -> "IS",
-    "W" -> "QS",
-    "Z" -> "ZA",
-    "O" -> "RU",
-    "O5" -> "O5", //Fixme?
-    "A5" -> "A5" //Fixme?
-  )
+  private def parseRyhma(yoTutkinto: YOTutkinto, ryhmaanKuuluvatAineet: Set[String], ryhmaAvain: String) = {
+    val aineet =
+      yoTutkinto.aineet
+        .filter(a => ryhmaanKuuluvatAineet.contains(a.koodi.arvo))
+        .filter(_.pisteet.isDefined)
+
+    val resultMaps = aineet.map(aine => {
+      val lisatieto = aineToLisatietoMap.get(aine.koodi.arvo)
+      koeToMap(aine, lisatieto)
+    })
+    Map(
+      ryhmaAvain -> resultMaps.toList
+    )
+  }
 
   private def getTutkintokerta(suorituspaiva: LocalDate) = {
     suorituspaiva.getMonthValue match {
@@ -55,49 +133,6 @@ object YoMetadataConverter {
     }
   }
 
-  private def getReaaliRyhma(yo: YOTutkinto): Map[String, List[Map[String, String]]] = {
-    val aineet: Set[Koe] =
-      yo.aineet
-        .filter(a => reaaliAIneet.contains(a.koodi.arvo))
-        .filter(_.pisteet.isDefined)
-
-    val resultMaps = aineet.map(aine => {
-      koeToMap(aine, Some(aine.koodi.arvo))
-    })
-    Map(
-      "REAALI" -> resultMaps.toList
-    )
-  }
-
-  private def getAinereaaliRyhma(yo: YOTutkinto): Map[String, List[Map[String, String]]] = {
-    val aineet: Set[Koe] =
-      yo.aineet
-        .filter(a => ainereaaliAineet.contains(a.koodi.arvo))
-        .filter(_.pisteet.isDefined)
-
-    val resultMaps = aineet.map(aine => {
-      koeToMap(aine, Some(aine.koodi.arvo))
-    })
-    Map(
-      "AINEREAALI" -> resultMaps.toList
-    )
-  }
-
-  private def getAidinkieliRyhma(yo: YOTutkinto): Map[String, List[Map[String, String]]] = {
-    val aineet: Set[Koe] =
-      yo.aineet
-        .filter(a => aidinkieliAineet.contains(a.koodi.arvo))
-        .filter(_.pisteet.isDefined)
-
-    val resultMaps = aineet.map(aine => {
-      val aidinkieliLisatieto = aidinkieliLisatietoMap.get(aine.koodi.arvo)
-      koeToMap(aine, aidinkieliLisatieto)
-    })
-    Map(
-      "AIDINKIELI" -> resultMaps.toList
-    )
-  }
-
   private def getYksittaisetKokeet(yo: YOTutkinto): Map[String, List[Map[String, String]]] = {
     val byKokeenTyyppi: Map[String, Set[Koe]] = yo.aineet.groupBy(_.koodi.arvo)
     byKokeenTyyppi.map { case (arvo, kokeet) =>
@@ -109,7 +144,6 @@ object YoMetadataConverter {
     }
   }
 
-
   def convert(opiskeluoikeudet: Seq[Opiskeluoikeus]): List[AvainMetatiedotDTO] = {
     val yoOpiskeluoikeudet = opiskeluoikeudet.collect { case yo: YOOpiskeluoikeus => yo }
 
@@ -117,8 +151,14 @@ object YoMetadataConverter {
 
     val tutkinnonArvot: Map[String, List[Map[String, String]]] = yoTutkinto.map { tutkinto =>
       val yksittaisetKokeet = getYksittaisetKokeet(tutkinto)
-      val aidinkieliRyhma = getAidinkieliRyhma(tutkinto)
-      yksittaisetKokeet ++ aidinkieliRyhma
+      val aidinkieliRyhma = parseRyhma(tutkinto, aidinkieliAineet, "AIDINKIELI")
+      val aineReaaliRyhma = parseRyhma(tutkinto, ainereaaliAineet, "AINEREAALI")
+      val reaaliRyhma = parseRyhma(tutkinto, reaaliAIneet, "REAALI")
+      val pitkaKieliRyhma = parseRyhma(tutkinto, pitkaKieliAineet, "PITKA_KIELI")
+      val keskipitkaKieliRyhma = parseRyhma(tutkinto, keskipitkaKieliAineet, "KESKIPITKA_KIELI")
+      val lyhytKieliRyhma = parseRyhma(tutkinto, lyhytKieliAineet, "LYHYT_KIELI")
+      val combined = yksittaisetKokeet ++ aidinkieliRyhma ++ aineReaaliRyhma ++ reaaliRyhma ++ pitkaKieliRyhma ++ keskipitkaKieliRyhma ++ lyhytKieliRyhma
+      combined.filter(_._2.nonEmpty) // poistetaan tyhjät ryhmät
     }.getOrElse(Map.empty)
 
     val DTOs = tutkinnonArvot.map(a => {
