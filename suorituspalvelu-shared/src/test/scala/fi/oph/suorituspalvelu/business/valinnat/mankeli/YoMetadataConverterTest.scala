@@ -197,4 +197,42 @@ class YoMetadataConverterTest {
     Assertions.assertEquals("SA", lyhytKieliKoesuoritus1("LISATIETO"))
   }
 
+  @Test
+  def testImprobaturValues(): Unit = {
+    val yoOpiskeluoikeus =
+      YOOpiskeluoikeus(
+        UUID.randomUUID(),
+        Some(YOTutkinto(
+          UUID.randomUUID(),
+          Koodi("FI", "kieli", Some(1)),
+          SuoritusTila.VALMIS,
+          Some(LocalDate.parse("2022-06-01")),
+          Set(
+            Koe(UUID.randomUUID(), Koodi("EA", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("I+", "koskiyoarvosanat", Some(1)), Some(95)),
+            Koe(UUID.randomUUID(), Koodi("PS", "yokokeet", Some(1)), LocalDate.parse("2022-12-21"), Koodi("I-", "koskiyoarvosanat", Some(1)), Some(103)),
+            Koe(UUID.randomUUID(), Koodi("A", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("I=", "koskiyoarvosanat", Some(1)), Some(40)),
+            Koe(UUID.randomUUID(), Koodi("N", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("I", "koskiyoarvosanat", Some(1)), Some(66)),
+          )
+        ))
+      )
+
+    val convertedArvot = YoMetadataConverter.convert(Seq(yoOpiskeluoikeus))
+
+    //N Lyhyt matematiikka, yksi koesuoritus (I)
+    val lyhytMatematiikka: Map[String, String] = convertedArvot.find(_.avain.equals("N")).get.metatiedot.head
+    Assertions.assertEquals("I", lyhytMatematiikka("ARVO"))
+
+    //EA Englanti, pitkä, yksi koesuoritus (I+)
+    val englanti = convertedArvot.find(_.avain.equals("EA")).get.metatiedot.head
+    Assertions.assertEquals("I", englanti("ARVO"))
+
+    //PS Psykologia, yksi koesuoritus (I-)
+    val psykologia = convertedArvot.find(_.avain.equals("PS")).get.metatiedot.head
+    Assertions.assertEquals("I", psykologia("ARVO"))
+
+    //A Äidinkieli (suomi), yksi koesuoritus (I=)
+    val aidinkieli = convertedArvot.find(_.avain.equals("A")).get.metatiedot.head
+    Assertions.assertEquals("I", aidinkieli("ARVO"))
+
+  }
 }

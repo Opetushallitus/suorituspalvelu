@@ -87,7 +87,7 @@ object YoMetadataConverter {
     "W" -> "QS"
   )
 
-
+  val improbaturArvot = Set("I", "I+", "I-", "I=")
 
   val aidinkieliAineet = Set("A", "O", "I", "W", "Z", "O5", "A5")
   val ainereaaliAineet = Set("UE", "UO", "ET", "PS", "HI", "FY", "KE", "BI", "GE", "TE", "YH", "FF")
@@ -120,8 +120,12 @@ object YoMetadataConverter {
   }
 
   def koeToMap(koe: Koe, lisatieto: Option[String] = None): Map[String, String] = {
+    val arvosana = koe.arvosana.arvo match {
+      case a if improbaturArvot.contains(a) => "I"
+      case a => a
+    }
     val baseMap = Map(
-      "ARVO" -> koe.arvosana.arvo,
+      "ARVO" -> arvosana,
       "PISTEET" -> koe.pisteet.get.toString,
       "SUORITUSVUOSI" -> koe.tutkintoKerta.getYear.toString,
       "SUORITUSLUKUKAUSI" -> getTutkintokerta(koe.tutkintoKerta)
