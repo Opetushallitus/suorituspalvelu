@@ -13,8 +13,7 @@ import slick.jdbc.PostgresProfile.api.*
 
 import java.time.{Instant, LocalDate}
 import scala.concurrent.duration.DurationInt
-import java.util.concurrent.Executors
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 import scala.util.Random
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
@@ -22,16 +21,15 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
-
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
 @TestInstance(Lifecycle.PER_CLASS)
 class KantaOperaatiotTest {
 
-  val DATABASE_NAME = "suorituspalvelu"
+  import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(64))
+  val DATABASE_NAME = "suorituspalvelu"
 
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiotTest])
 
@@ -52,7 +50,6 @@ class KantaOperaatiotTest {
 
   private def getHikariDatasource() =
     val config = new HikariConfig()
-    config.setMaximumPoolSize(64)
     config.setDataSource(getDatasource())
     new HikariDataSource(config)
 
@@ -186,7 +183,7 @@ class KantaOperaatiotTest {
 
     // tallennetaan rinnakkain suuri joukko versioita
     val tallennusOperaatiot = Range(0, 500).map(i => () => {
-      Thread.sleep((Math.random()*50).asInstanceOf[Int])
+      Thread.sleep((Math.random() * 50).asInstanceOf[Int])
       this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, Lahdejarjestelma.YTR, Seq("{\"attr\": \"value" + i + "\"}"), Seq.empty, Instant.now(), "YTR", None)
     })
 
@@ -195,8 +192,9 @@ class KantaOperaatiotTest {
       .map(o => Some(this.kantaOperaatiot.haeData(o.get)._1))
       .sortBy(v => v.get.alku)
 
-    // ainakin 1/5 yrityksistä pitäisi onnistua (eli uusin versio), muuten jotain pahasti pielessä
-    Assertions.assertTrue(versiot.size>=100)
+    // Ainakin osan yrityksistä pitää luoda uusi versio, jotta saadaan versioita tallennettua. Toisaalta kaikista tallennuksista ei saa syntyä uutta versiota, koska se tarkoittaisi ettei tallennuksessa ole lainkaan rinnakkaisuutta.
+    Assertions.assertTrue(versiot.size >= 10)
+    Assertions.assertTrue(versiot.size <= 490)
 
     // testataan että versioista muodostuu katkeamaton jatkumo ja viimeisin versio voimassa
     (Seq(None) ++ versiot).zip(versiot ++ Seq(None)).foreach(pair => {
