@@ -137,7 +137,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
         "address" -> "Testitie 123",
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017",
         "harkinnanvaraisuus-reason_" + hakukohdeOid2 -> "0"  // 0 = ATARU_OPPIMISVAIKEUDET
-      )
+      ),
+      korkeakoulututkintoVuosi = None
     )
 
     val hakukohde1 = KoutaHakukohde(
@@ -327,7 +328,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       keyValues = Map(
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017",
         "harkinnanvaraisuus-reason_" + hakukohdeOid -> "1"  // 1 = ATARU_OPPIMISVAIKEUDET (eri kuin yliajossa)
-      )
+      ),
+      korkeakoulututkintoVuosi = None
     )
 
     val hakukohde = KoutaHakukohde(
@@ -440,7 +442,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017",
         "harkinnanvaraisuus-reason_" + hakukohdeOid2 -> "0",  // ATARU_OPPIMISVAIKEUDET
         "harkinnanvaraisuus-reason_" + hakukohdeOid3 -> "1"   // ATARU_SOSIAALISET_SYYT
-      )
+      ),
+      korkeakoulututkintoVuosi = None
     )
 
     val hakukohde1 = KoutaHakukohde(oid = hakukohdeOid1, organisaatioOid = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true))
@@ -527,7 +530,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       maksuvelvollisuus = Map.empty,
       keyValues = Map(
         AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017"
-      )
+      ),
+      korkeakoulututkintoVuosi = None
     )
 
     val hakukohde = KoutaHakukohde(

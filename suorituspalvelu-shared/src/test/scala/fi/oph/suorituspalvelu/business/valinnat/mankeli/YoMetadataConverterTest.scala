@@ -50,7 +50,8 @@ class YoMetadataConverterTest {
       )
     ),
     maksuvelvollisuus = Map.empty,
-    keyValues = Map.empty
+    keyValues = Map.empty,
+    korkeakoulututkintoVuosi = None
   )
 
   val DEFAULT_OHJAUSPARAMETRIT = Ohjausparametrit(
