@@ -30,7 +30,7 @@ object Util {
    * @param operation suoritettava operaatio joka palauttaa Future[T]
    * @param retries montako uudelleenyritystä on jäljellä
    * @param retryDelayMillis viive ennen ensimmäistä uudelleenyritystä (millisekuntia, tuplataan joka kerralla)
-   * @param initialDelayMillis Viive ennen ensimmäistä yritystä (millisekuntia)
+   * @param startDelayMillis Viive ennen ensimmäistä yritystä (millisekuntia)
    * @param failMessage Virheviesti, joka näytetään kun operaatio epäonnistuu.
    * @return Future[T]
    */
@@ -38,14 +38,14 @@ object Util {
     operation: => Future[T],
     retries: Int = 5,
     retryDelayMillis: Long = 3000,
-    initialDelayMillis: Long = 0,
+    startDelayMillis: Long = 0,
     failMessage: String = "Operaatio epäonnistui"
   ): Future[T] = {
     val promise = Promise[T]()
 
     Thread.startVirtualThread(() => {
       try {
-        if (initialDelayMillis > 0) Thread.sleep(initialDelayMillis)
+        if (startDelayMillis > 0) Thread.sleep(startDelayMillis)
 
         @tailrec
         def attempt(remainingRetries: Int, currentDelay: Long): T =
