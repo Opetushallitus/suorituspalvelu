@@ -62,7 +62,7 @@ case class VirtaOrganisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDeci
 case class VirtaMuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
 
 @JsonDeserialize(classOf[ArvosanaDeserializer])
-case class VirtaArvosana(arvosana: String, asteikko: String)
+case class VirtaArvosana(arvosana: String, asteikko: Option[String])
 
 @JsonDeserialize(classOf[KoodiDeserializer])
 case class VirtaKoodi(versio: String, koodi: Int)
@@ -145,7 +145,7 @@ class ArvosanaDeserializer extends JsonDeserializer[VirtaArvosana] {
         val contentMap = arvosanaContent.asInstanceOf[Map[String, Any]]
         val asteikkoMap = contentMap("Asteikko").asInstanceOf[Map[String, Any]]
         val koodi = contentMap("Koodi").asInstanceOf[String]
-        val asteikkoNimi = asteikkoMap("Nimi").asInstanceOf[String]
+        val asteikkoNimi = asteikkoMap.get("Nimi").asInstanceOf[Option[String]]
 
         val asteikkoArvosanat = asteikkoMap("AsteikkoArvosana") match {
           case list: java.util.ArrayList[_] =>
@@ -159,7 +159,7 @@ class ArvosanaDeserializer extends JsonDeserializer[VirtaArvosana] {
           case Some(arvosanaNimi) => VirtaArvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
           case None => null
         }
-      case _ => VirtaArvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = arvosanaTagName)
+      case _ => VirtaArvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = Some(arvosanaTagName))
     }
 }
 
