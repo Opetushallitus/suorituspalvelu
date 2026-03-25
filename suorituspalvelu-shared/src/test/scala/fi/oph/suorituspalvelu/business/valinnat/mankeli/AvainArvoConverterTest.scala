@@ -136,12 +136,12 @@ class AvainArvoConverterTest {
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kotitalous, osallistuminen"), None, None), Koodi("BI", "koodisto", None), Koodi("O", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta"), None, None), Koodi("LI", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta, toinen"), None, None), Koodi("LI", "koodisto", None), Koodi("7", "koodisto", None), None, true, None, None))
-    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-05-30")), Some(LocalDate.parse("2025-05-30")), aineet, Set.empty, false, false, None)
+    val oppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-05-30")), Some(LocalDate.parse("2025-05-30")), aineet, List.empty, false, false, None)
 
     val korotus1Biologia = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("biologia"), None, None), Koodi("BI", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None)
     val korotus2Liikunta = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("liikunta"), None, None), Koodi("LI", "koodisto", None), Koodi("10", "koodisto", None), None, true, None, None)
 
-    PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, Set.empty, false, false, None)
+    PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-06-06")), Some(LocalDate.parse("2025-06-06")), aineet, List.empty, false, false, None)
 
     val oppiaineenOppimaara1 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-07")), Some(LocalDate.parse("2025-06-07")), Set(korotus1Biologia), false)
     val oppiaineenOppimaara2 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-08")), Some(LocalDate.parse("2025-06-08")), Set(korotus2Liikunta), false)
@@ -262,7 +262,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA))
     )
 
     val telmaOikeus = AmmatillinenOpiskeluoikeus(
@@ -311,7 +311,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA))
     )
 
     val telmaOikeus = AmmatillinenOpiskeluoikeus(
@@ -354,7 +354,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA))
     )
 
     val haku = KoutaHaku(
@@ -401,7 +401,7 @@ class AvainArvoConverterTest {
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Some(Laajuus(38, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA))
     )
 
     val tuvaOikeus = GeneerinenOpiskeluoikeus(
@@ -449,8 +449,8 @@ class AvainArvoConverterTest {
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
-      None,//Some(Laajuus(16, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)), // Assuming 16 viikkoa is insufficient
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA)
+      None,
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA))
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
@@ -488,7 +488,7 @@ class AvainArvoConverterTest {
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Some(Laajuus(22, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA))
     )
 
     val haku = KoutaHaku(
@@ -537,7 +537,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Some(Laajuus(28, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       Koodi("FI", "kieli", Some(1)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO))
     )
 
     val opistovuosiOikeus = GeneerinenOpiskeluoikeus(
@@ -587,7 +587,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Some(Laajuus(22, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       Koodi("FI", "kieli", Some(1)),
-      Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO)
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO))
     )
 
     val opistovuosiOikeus = GeneerinenOpiskeluoikeus(
@@ -639,7 +639,7 @@ class AvainArvoConverterTest {
       None,
       vahvistusPaivamaara = Some(LocalDate.parse("2025-05-30")),
       oppiaineet,
-      Set.empty,
+      List.empty,
       false,
       vuosiluokkiinSitoutumatonOpetus = false,
       luokkaAste = Some(9))
@@ -692,7 +692,7 @@ class AvainArvoConverterTest {
       None,
       None,
       oppiaineetArvosanoissaNelosia,
-      Set.empty,
+      List.empty,
       false,
       vuosiluokkiinSitoutumatonOpetus = false,
       luokkaAste = None)
@@ -858,7 +858,7 @@ class AvainArvoConverterTest {
       None,
       vahvistusPaivamaara = Some(LocalDate.parse("2025-05-30")),
       oppiaineet,
-      Set.empty,
+      List.empty,
       false,
       vuosiluokkiinSitoutumatonOpetus = false,
       luokkaAste = None)
@@ -954,7 +954,7 @@ class AvainArvoConverterTest {
       None,
       vahvistusPaivamaara = Some(LocalDate.parse("2025-05-30")),
       oppiaineet,
-      Set.empty,
+      List.empty,
       false,
       vuosiluokkiinSitoutumatonOpetus = false,
       luokkaAste = None)
@@ -1011,7 +1011,7 @@ class AvainArvoConverterTest {
       None,
       vahvistusPaivamaara = Some(vahvistusPaiva),
       oppiaineet,
-      Set.empty,
+      List.empty,
       false,
       vuosiluokkiinSitoutumatonOpetus = false,
       luokkaAste = None)
