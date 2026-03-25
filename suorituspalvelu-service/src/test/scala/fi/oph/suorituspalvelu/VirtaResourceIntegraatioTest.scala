@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKSynteettinenSuoritus
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -11,6 +12,7 @@ import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -61,6 +63,9 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
   @MockitoBean
   var onrIntegration: OnrIntegration = null
 
+  @Autowired
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
+
   @WithAnonymousUser
   @Test def testRefreshVirtaAnonymous(): Unit =
     // tuntematon käyttäjä ohjataan tunnistautumiseen
@@ -109,7 +114,7 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     // odotellaan että tiedot asynkronisesti synkkaava VIRTA_REFRESH_TASK ehtii pyörähtää
     waitUntilReady(response.jobId)
 
-    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero)
     assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta)
 
     // tarkistetaan että auditloki täsmää
@@ -136,8 +141,8 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobId)
 
     //Tarkistetaan että version yhteyteen tallennetusta lähdedatasta ei löydy alkuperäistä hetua mutta korvaava hetu löytyy
-    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
-    val (_, _, data) = kantaOperaatiot.haeData(suorituksetKannasta.head._1)
+    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero)
+    val data = kantaOperaatiot.haeXmlData(suorituksetKannasta.head._1)
     Assertions.assertTrue(data.exists(_.contains(VirtaUtil.replacementHetu)))
     Assertions.assertFalse(data.exists(_.contains("010296-1230")))
   }
@@ -212,13 +217,13 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     haunHakijatOids.foreach(oppijaNumero => {
       //Virheeseen päätyneen hakijan tietoja ei löydy kannasta.
       if (oppijaNumero != failingHakijaOid) {
-         val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+         val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero)
          assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta)
       }
     })
 
     //Tarkistetaan myös aliaksen suoritukset
-    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(aliasForHakijaOid2)
+    val suorituksetKannasta: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = opiskeluoikeusParsingService.haeSuoritukset(aliasForHakijaOid2)
     assertOpiskeluoikeudetSuoritusHierarkia(suorituksetKannasta)
 
     //Tarkistetaan että auditloki täsmää

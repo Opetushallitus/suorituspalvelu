@@ -7,6 +7,7 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruP
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.resource.ui.{HaeHarkinnanvaraisuusYliajotFailureResponse, HaeHarkinnanvaraisuusYliajotSuccessResponse, HarkinnanvaraisuusYliajoDTO, HarkinnanvaraisuusYliajoTallennusContainer, KayttajaFailureResponse, KayttajaSuccessResponse, LuoPerusopetuksenOppiaineenOppimaaraFailureResponse, LuoPerusopetuksenOppimaaraFailureResponse, LuoSuoritusOppilaitoksetSuccessResponse, LuokatSuccessResponse, Oppija, OppijanHakuFailureResponse, OppijanHakuSuccessResponse, OppijanHautFailureResponse, OppijanHautSuccessResponse, OppijanTiedotFailureResponse, OppijanTiedotRequest, OppijanTiedotSuccessResponse, OppijanValintaDataSuccessResponse, OppijanVastaanototFailureResponse, OppijanVastaanototRequest, OppijanVastaanototSuccessResponse, Oppilaitos, OppilaitosNimi, OppilaitosSuccessResponse, PerusopetuksenOppiaineenOppimaaratUI, PoistaHarkinnanvaraisuusYliajoFailureResponse, PoistaHarkinnanvaraisuusYliajoSuccessResponse, PoistaSuoritusFailureResponse, PoistaYliajoFailureResponse, SuorituskieliUI, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus, TallennaHarkinnanvaraisuusYliajotFailureResponse, TallennaHarkinnanvaraisuusYliajotSuccessResponse, TallennaYliajotOppijalleFailureResponse, UIVirheet, VuodetSuccessResponse, Yliajo, YliajoTallennusContainer, YliajonMuutosHistoriaFailureResponse, YliajonMuutosHistoriaSuccessResponse, YliajonMuutosUI}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants.{UI_SELITE_PARAM_NAME, UI_VALINTADATA_AVAIN_PARAM_NAME, UI_VALINTADATA_HAKU_PARAM_NAME, UI_VALINTADATA_OPPIJANUMERO_PARAM_NAME, UI_YLIAJOT_HISTORIA_AVAIN_PARAM_NAME, UI_YLIAJOT_HISTORIA_HAKU_PARAM_NAME, UI_YLIAJOT_HISTORIA_OPPIJANUMERO_PARAM_NAME}
@@ -16,6 +17,7 @@ import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, Organisaati
 import fi.oph.suorituspalvelu.validation.UIValidator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
@@ -43,6 +45,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  @Autowired
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA + "_1.2.246.562.10.52320123196"
 
@@ -1472,7 +1477,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(List(objectMapper.readValue(suoritusPayload, classOf[Map[Any, Any]])), auditLogEntry.changes)
 
     // ja suoritus tallentuu kantaan
-    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(1, suoritukset.size)
 
   /*
@@ -1587,7 +1592,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(List(objectMapper.readValue(suoritusPayload, classOf[Map[Any, Any]])), auditLogEntry.changes)
 
     // ja suoritus tallentuu kantaan
-    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(1, suoritukset.size)
 
   /*
@@ -1679,7 +1684,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ), auditLogEntry.target)
 
     // ja suoritus tallentuu kantaan
-    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(0, suoritukset.size)
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -1703,7 +1708,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ), auditLogEntry.target)
 
     // ja suoritus tallentuu kantaan
-    val suoritukset = kantaOperaatiot.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(0, suoritukset.size)
 
   /*

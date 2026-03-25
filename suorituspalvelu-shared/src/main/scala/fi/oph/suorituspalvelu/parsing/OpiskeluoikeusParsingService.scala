@@ -1,12 +1,14 @@
-package fi.oph.suorituspalvelu.service
+package fi.oph.suorituspalvelu.parsing
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
-import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
+import fi.oph.suorituspalvelu.resource.ui.{
+  SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus
+}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -29,6 +31,48 @@ class OpiskeluoikeusParsingService(
 
   private val LOG = LoggerFactory.getLogger(classOf[OpiskeluoikeusParsingService])
 
+  private val SUORITUS_MAPPER: ObjectMapper = {
+    val mapper = KantaOperaatiot.MAPPER.copy()
+    mapper.registerSubtypes(
+      classOf[PerusopetuksenOpiskeluoikeus],
+      classOf[PerusopetuksenOppimaara],
+      classOf[PerusopetukseenValmistavaOpetus],
+      classOf[AmmatillinenOpiskeluoikeus],
+      classOf[PoistettuOpiskeluoikeus],
+      classOf[KKOpiskeluoikeus],
+      classOf[KKSynteettinenOpiskeluoikeus],
+      classOf[AmmatillinenPerustutkinto],
+      classOf[AmmatillinenTutkintoOsittainen],
+      classOf[AmmattiTutkinto],
+      classOf[GeneerinenOpiskeluoikeus],
+      classOf[YOOpiskeluoikeus],
+      classOf[Telma],
+      classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
+      classOf[Tuva],
+      classOf[KKTutkinto],
+      classOf[KKSynteettinenSuoritus],
+      classOf[KKOpintosuoritus],
+      classOf[VapaaSivistystyo],
+      classOf[EBTutkinto],
+      classOf[IBTutkinto],
+      classOf[ErikoisAmmattiTutkinto],
+      classOf[LukionOppimaara],
+      classOf[DIATutkinto])
+    mapper
+  }
+
+  /**
+   * Hakee version raakadatan kannasta lähdejärjestelmän perusteella.
+   * @return Tuple, jossa ensimmäisenä JSON-data, toisena XML-data. Toinen näistä on aina tyhjä, riippuen lähdejärjestelmästä.
+   */
+  private def haeData(versio: VersioEntiteetti): (Seq[String], Seq[String]) = {
+    if (versio.lahdeJarjestelma.hasXmlData) {
+      (Seq.empty[String], kantaOperaatiot.haeXmlData(versio))
+    } else {
+      (kantaOperaatiot.haeJsonData(versio), Seq.empty[String])
+    }
+  }
+
   /**
    * Parseroi version raakadatan opiskeluoikeuksiksi ja tallentaa tuloksen kantaan.
    *
@@ -37,7 +81,8 @@ class OpiskeluoikeusParsingService(
    */
   def parseAndStore(versio: VersioEntiteetti): Set[Opiskeluoikeus] = {
     LOG.info(s"On-demand-parserointi versiolle ${versio.tunniste} (${versio.lahdeJarjestelma})")
-    val (_, jsonData, xmlData) = kantaOperaatiot.haeData(versio)
+
+    val (jsonData, xmlData) = haeData(versio)
     val (opiskeluoikeudet, parserVersio) = parse(versio, jsonData, xmlData)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), parserVersio)
     opiskeluoikeudet
@@ -46,11 +91,11 @@ class OpiskeluoikeusParsingService(
   /**
    * Parseroi version raakadatan opiskeluoikeuksiksi ilman tallennusta.
    *
-   * @param versio versio jonka raakadata parsesoidaan
+   * @param versio versio jonka raakadata parseroidaan
    * @return parseroidut opiskeluoikeudet
    */
   def parseOnly(versio: VersioEntiteetti): Set[Opiskeluoikeus] = {
-    val (_, jsonData, xmlData) = kantaOperaatiot.haeData(versio)
+    val (jsonData, xmlData) = haeData(versio)
     parse(versio, jsonData, xmlData)._1
   }
 
@@ -77,8 +122,7 @@ class OpiskeluoikeusParsingService(
    * @return suoritukset versioittain
    */
   def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    val result = kantaOperaatiot.haeSuorituksetAjanhetkella(henkiloOid, timestamp)
-    result.map { case (versio, opiskeluoikeudet) =>
+    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map { case (versio, opiskeluoikeusContainerRaw) =>
       val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
       versio.parserVersio match {
         case None =>
@@ -101,6 +145,8 @@ class OpiskeluoikeusParsingService(
 
         case _ =>
           // Versiot täsmäävät, käytetään tallennettuja opiskeluoikeuksia
+          // Parseroidaan aiemmin tallennetut opiskeluoikeudet vasta tässä, jotta ei kaaduta vanhaan epäyhteensopivaan dataan
+          val opiskeluoikeudet = SUORITUS_MAPPER.readValue(opiskeluoikeusContainerRaw, classOf[Container]).opiskeluoikeudet
           (versio, opiskeluoikeudet)
       }
     }
@@ -134,7 +180,7 @@ class OpiskeluoikeusParsingService(
         (converted, ParserVersions.SYOTETYT_OPPIAINEET)
 
       case _ =>
-        LOG.warn(s"Tuntematon lähdejärjestelmä: ${versio.lahdeJarjestelma}")
+        LOG.error(s"Tuntematon lähdejärjestelmä: ${versio.lahdeJarjestelma.nimi}")
         (Set.empty, 0)
     }
   }
