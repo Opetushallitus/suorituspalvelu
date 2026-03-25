@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 case class VanhaTarjontaHakukohde(
   oid: String,

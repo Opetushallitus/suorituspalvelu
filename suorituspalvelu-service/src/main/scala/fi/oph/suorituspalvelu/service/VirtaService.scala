@@ -22,11 +22,11 @@ import java.time.{Duration, Instant}
 import java.util.UUID
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 import fi.oph.suorituspalvelu.service.VirtaService.LOG
 import org.springframework.beans.factory.InitializingBean
 import slick.jdbc.JdbcBackend
 
-import java.util.concurrent.Executors
 import scala.collection.immutable
 import scala.jdk.CollectionConverters.*
 
@@ -53,7 +53,6 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
                    onrIntegration: OnrIntegration, virtaClient: VirtaClient, hakemuspalveluClient: HakemuspalveluClientImpl,
                    @Value("${integrations.virta.cron}") cron: String) {
 
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
 
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
@@ -126,37 +125,45 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
   def startRefreshForHenkilot(henkiloNumerot: Set[String]): UUID = refreshOppijaJob.run(mapper.writeValueAsString(henkiloNumerot))
 
-  private val refreshHautJob = scheduler.registerJob("refresh-virta-for-haut", (ctx, data) => {
-    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
+  private def refreshVirtaForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan VIRTA-tiedot haun $hakuOid hakijoille (${henkiloNumerot.size} henkilöä)")
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
       catch
-        case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
-      ctx.updateProgress((index+1)/hakuOids.size)
+        case e: Exception =>
+          val message = s"VIRTA-tietojen päivitys haulle $hakuOid epäonnistui"
+          LOG.error(s"(job id ${ctx.getJobId}) $message", e)
+          ctx.reportError(message, Some(e))
+      ctx.updateProgress((index + 1).toDouble / hakuOids.size.toDouble)
     })
-  }, Seq.empty)
+  }
 
-  def syncVirtaForHaut(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))
+  private def refreshVirtaForHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan VIRTA-tietojen päivitys valituille hauille (${hakuOids.size} kpl)")
+    refreshVirtaForHaut(ctx, hakuOids)
+    LOG.info(s"(job id ${ctx.getJobId}) VIRTA-tietojen päivitys valituille hauille (${hakuOids.size} kpl) on valmis")
+  }
 
-  private def refreshVirtaForAktiivisetHaut(ctx: SupaJobContext): Unit =
-    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut().map(_.oid)
-    paivitettavatHaut.zipWithIndex.foreach((hakuOid, index) => {
-      try
-        val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
-        refreshVirtaForPersonOids(ctx, henkiloNumerot)
-      catch
-        case e: Exception => LOG.error(s"Haun $hakuOid tietojen päivittäminen VIRTA-järjestelmästä epäonnistui", e)
-      ctx.updateProgress((index+1).toDouble/paivitettavatHaut.size.toDouble)
-    })
+  private val refreshHautJobHandle = scheduler.registerJob("refresh-virta-for-haut", refreshVirtaForHautJob, Seq.empty)
 
-  private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-virta-for-aktiiviset-haut", (ctx, data) => refreshVirtaForAktiivisetHaut(ctx), Seq.empty)
+  def syncVirtaForHaut(hakuOids: Seq[String]): UUID = refreshHautJobHandle.run(mapper.writeValueAsString(hakuOids))
 
-  def syncVirtaForAktiivisetHaut(): UUID = refreshAktiivisetHautJob.run("")
+  private def refreshVirtaForAktiivisetHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan VIRTA-tietojen päivitys aktiivisille hauille (${paivitettavatHaut.size} kpl)")
+    refreshVirtaForHaut(ctx, paivitettavatHaut.map(_.oid))
+    LOG.info(s"(job id ${ctx.getJobId}) VIRTA-tietojen päivitys aktiivisille hauille on valmis (${paivitettavatHaut.size} kpl)")
+  }
+
+  private val refreshAktiivisetHautJobHandle = scheduler.registerJob("refresh-virta-for-aktiiviset-haut", refreshVirtaForAktiivisetHautJob, Seq.empty)
+
+  def syncVirtaForAktiivisetHaut(): UUID = refreshAktiivisetHautJobHandle.run("")
 
   scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
-    refreshVirtaForAktiivisetHaut(ctx)
+    refreshVirtaForAktiivisetHautJob(ctx, data)
     null
   }, cron)
 

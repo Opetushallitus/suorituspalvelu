@@ -10,7 +10,7 @@ import slick.jdbc.{GetResult, JdbcBackend, SQLActionBuilder, SetParameter}
 import slick.jdbc.PostgresProfile.api.*
 import com.github.tminglei.slickpg.utils.PlainSQLUtils.mkArraySetParameter
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import org.slf4j.LoggerFactory
@@ -120,12 +120,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       result.headOption match {
         case Some(alku, existingJsonData, existingXmlData) =>
           if (fetchedAt.toEpochMilli <= Instant.parse(alku).toEpochMilli)
-            LOG.info(s"Ei tarvetta tallentaa uutta versiota, koska aikaisemmin tallennettu versio on uudempi (henkiloOdid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
+            LOG.info(s"Ei tarvetta tallentaa uutta versiota, koska aikaisemmin tallennettu versio on uudempi (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             false
           else {
             val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
             if (!hasChanged) {
-              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOdid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
+              LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             }
             hasChanged
           }

@@ -15,12 +15,18 @@ server:
     context-path: /suorituspalvelu
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   profiles:
     active: dev
   datasource:
     url: jdbc:postgresql://localhost:55432/test
     username: app
     password: app
+    hikari:
+      maximum-pool-size: 25
+      connection-timeout: 20000
   flyway:
     baseline-on-migrate: true
 

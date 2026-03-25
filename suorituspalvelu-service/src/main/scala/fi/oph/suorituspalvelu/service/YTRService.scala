@@ -62,10 +62,11 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
   def startRefreshForHenkilot(personOids: Set[String]): UUID =
     refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
 
-  def refreshYTRForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
+  private def refreshYTRForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan YTR-tiedot haun $hakuOid hakijoille (${personOids.size} henkilöä)")
         fetchAndPersistStudents(personOids, YtrFetchMode.BatchApi, ctx)
         ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
       catch
@@ -75,29 +76,35 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
           throw e
         case e: Exception =>
           val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui"
-          LOG.error(message,  e)
+          LOG.error(s"(job id ${ctx.getJobId}) $message", e)
           ctx.reportError(message, Some(e))
     })
   }
 
-  def refreshYTRForAktiivisetHaut(ctx: SupaJobContext): Unit = {
-    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
-    refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
+  private def refreshYTRForHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan YTR-tietojen päivitys valituille hauille (${hakuOids.size} kpl)")
+    refreshYTRForHaut(ctx, hakuOids)
+    LOG.info(s"(job id ${ctx.getJobId}) YTR-tietojen päivitys valituille hauille (${hakuOids.size} kpl) on valmis")
   }
 
-  private val refreshHautJob = scheduler.registerJob("refresh-ytr-for-haut", (ctx, data) => {
-    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
-    refreshYTRForHaut(ctx, hakuOids)
-  }, Seq.empty)
+  private val refreshHautJobHandle = scheduler.registerJob("refresh-ytr-for-haut", refreshYTRForHautJob, Seq.empty)
 
-  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))  
+  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJobHandle.run(mapper.writeValueAsString(hakuOids))
 
-  private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", (ctx, data) => refreshYTRForAktiivisetHaut(ctx), Seq.empty)
+  private def refreshYTRForAktiivisetHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan YTR-tietojen päivitys aktiivisille hauille (${paivitettavatHaut.size} kpl)")
+    refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
+    LOG.info(s"(job id ${ctx.getJobId}) YTR-tietojen päivitys aktiivisille hauille on valmis (${paivitettavatHaut.size} kpl)")
+  }
 
-  def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJob.run(null)
+  private val refreshAktiivisetHautJobHandle = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", refreshYTRForAktiivisetHautJob, Seq.empty)
+
+  def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJobHandle.run(null)
 
   scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
-    refreshYTRForAktiivisetHaut(ctx)
+    refreshYTRForAktiivisetHautJob(ctx, data)
     null
   }, cron)
 }

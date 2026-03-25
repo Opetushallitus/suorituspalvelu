@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{Await, ExecutionContext, Future}
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business
@@ -17,7 +18,6 @@ import slick.jdbc.JdbcBackend
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.time.{Instant, LocalDateTime, ZoneId}
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 case class SplitattavaKoskiData(oppijaOid: String, opiskeluoikeudet: Seq[Map[String, Any]])
@@ -85,7 +85,6 @@ object KoskiIntegration {
 class KoskiIntegration {
 
   private val LOG: Logger = LoggerFactory.getLogger(classOf[KoskiIntegration])
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   @Autowired val koskiClient: KoskiClient = null
 
@@ -143,8 +142,7 @@ class KoskiIntegration {
           Future.failed(new RuntimeException("Koski failure!"))
         case response =>
           LOG.info(s"KOSKI-massaluovutushaun tulokset eivät vielä valmiit, odotellaan hetki ja pollataan uudestaan ${pollResult.getTruncatedLoggable()}")
-          Thread.sleep(2500) //Todo, fiksumpi odottelumekanismi
-          pollUntilReady(pollUrl)
+          Util.sleepAsync(2500).flatMap(_ => pollUntilReady(pollUrl))
       }
     })
   }

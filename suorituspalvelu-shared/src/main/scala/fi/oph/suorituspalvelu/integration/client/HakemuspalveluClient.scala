@@ -14,7 +14,7 @@ import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 
 //Todo, oma ec?
-import scala.concurrent.ExecutionContext.Implicits.global
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 case class AtaruHenkiloSearchParams(hakukohdeOids: Option[List[String]], hakuOid: Option[String], offset: Option[String] = None)
 

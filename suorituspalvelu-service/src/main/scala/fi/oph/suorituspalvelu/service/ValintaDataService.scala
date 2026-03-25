@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import java.time.{Instant, LocalDate, ZoneId}
-import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 case class AvainArvoMetadata(selitteet: Seq[String],
                              arvoEnnenYliajoa: Option[String],
@@ -55,7 +55,6 @@ class ValintaDataService {
 
   val LOG = LoggerFactory.getLogger(classOf[ValintaDataService])
 
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(6))
 
   def fetchOverridesForOppijaAliases(allOidsForSinglePerson: Set[String], hakuOid: String): Set[AvainArvoYliajo] = {
     allOidsForSinglePerson.flatMap(personOid => kantaOperaatiot.haeHenkilonYliajot(personOid, hakuOid))
