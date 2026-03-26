@@ -10,9 +10,8 @@ import slick.util.AsyncExecutor
 @Configuration
 class DBConfiguration {
 
-  private val numThreads = 20
+  private val numThreads = 30
   private val queueSize = 1000
-  private val maxConnections = Some(25)
 
   private val slickAsyncExecutor: AsyncExecutor = AsyncExecutor("slick-executor", numThreads, queueSize)
 
