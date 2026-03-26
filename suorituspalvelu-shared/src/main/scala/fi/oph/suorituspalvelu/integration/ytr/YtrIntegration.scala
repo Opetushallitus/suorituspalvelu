@@ -38,11 +38,11 @@ class YtrIntegration {
 
   // Sallitaan viiveiden muuttaminen konfiguraatiolla, jotta integraatiotesteissä ei tarvitse odotella
 
-  // Kuinka kauan odotellaan ennen ensimmäistä pollausta ?
-  @Value("${ytr.poll.waitMillis:2000}")
-  private val pollWaitMillis: Long = 2000
+  // Kuinka kauan odotellaan ennen ensimmäistä pollausta?
+  @Value("${ytr.poll.startDelayMillis:2000}")
+  private val pollStartDelayMillis: Long = 2000
 
-  // Kuinka kauan odotellaan ennen ensimmäistä uudelleenyritystä, jos operaatio epäonnistuu?
+  // Ensimmäisen uudelleenyrityksen (eksponentiaalinen) viive tai pollausten välinen viive
   @Value("${ytr.retry.delayMillis:5000}")
   private val defaultRetryDelayMillis: Long = 5000
 
@@ -101,7 +101,7 @@ class YtrIntegration {
       operation = pollYtrMassOperation(uuid, retryDelayMillis),
       retries = retries,
       retryDelayMillis = retryDelayMillis,
-      startDelayMillis = pollWaitMillis,
+      startDelayMillis = pollStartDelayMillis,
       failMessage = s"YTR-massaoperaatio $uuid epäonnistui"
     ).recoverWith {
       case e: RuntimeException =>
