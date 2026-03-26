@@ -33,21 +33,22 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
 
   def safePersistSingle(ytrResult: YtrDataForHenkilo, fetchedAt: Instant, ctx: SupaJobContext): SyncResultForHenkilo = {
     if(ytrResult.resultJson.isEmpty)
-      LOG.info(s"Ytr-dataa ei löytynyt henkilölle ${ytrResult.personOid}")
+      LOG.info(s"(job id: ${ctx.getJobId}) YTR-tietoja ei löytynyt henkilölle ${ytrResult.personOid}")
       SyncResultForHenkilo(ytrResult.personOid, None, None)
     else
-      LOG.info(s"Persistoidaan Ytr-data henkilölle ${ytrResult.personOid}")
+      LOG.info(s"(job id: ${ctx.getJobId}) Tallennetaan YTR-tiedot henkilölle ${ytrResult.personOid}")
       try {
         val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(ytrResult.personOid, Lahdejarjestelma.YTR, Seq(ytrResult.resultJson.getOrElse("{}")), Seq.empty, fetchedAt, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.YTR), None)
         versio.foreach(v => {
-          LOG.info(s"Versio $versio tallennettu, todo: tallennetaan parsitut YTR-suoritukset")
+          LOG.info(s"(job id: ${ctx.getJobId}) Tallennettiin versio: $v")
           val oikeus = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(ytrResult.resultJson.get))
           kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, Set(oikeus), Seq.empty, ParserVersions.YTR)
+          LOG.info(s"(job id: ${ctx.getJobId}) Tallennettiin YTR-tiedot henkilölle ${ytrResult.personOid}")
         })
         SyncResultForHenkilo(ytrResult.personOid, versio, None)
       } catch {
         case e: Exception =>
-          LOG.error(s"Henkilon ${ytrResult.personOid} YTR-tietojen tallentaminen epäonnistui", e)
+          LOG.error(s"(job id: ${ctx.getJobId}) Henkilon ${ytrResult.personOid} YTR-tietojen tallentaminen epäonnistui", e)
           SyncResultForHenkilo(ytrResult.personOid, None, Some(e))
       }
   }
@@ -62,42 +63,50 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
   def startRefreshForHenkilot(personOids: Set[String]): UUID =
     refreshHenkilotJob.run(mapper.writeValueAsString(personOids))
 
-  def refreshYTRForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
+  private def refreshYTRForHaut(ctx: SupaJobContext, hakuOids: Seq[String]): Unit = {
     hakuOids.zipWithIndex.foreach((hakuOid, index) => {
       try
         val personOids = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), TIMEOUT).flatMap(_.personOid).toSet
+        LOG.info(s"(job id ${ctx.getJobId}) Haetaan YTR-tiedot haun $hakuOid hakijoille (${personOids.size} henkilöä)")
         fetchAndPersistStudents(personOids, YtrFetchMode.BatchApi, ctx)
+        LOG.info(s"(job id ${ctx.getJobId}) YTR-tietojen hakeminen haun $hakuOid hakijoille onnistui.")
         ctx.updateProgress((index+1).toDouble/hakuOids.size.toDouble)
       catch
         case e: YtrPollFailed =>
-          val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui, massaoperaation tilaa ei saatu selville. Lopetetaan koko YTR-ajo koska seuraavan haun muodostuksen aloittaminen ei toimisi koska edellisen muodostus on yhä kesken."
+          val message = s"(job id ${ctx.getJobId}) YTR-tietojen päivitys haulle $hakuOid epäonnistui, massaoperaation tilaa ei saatu selville. Lopetetaan koko YTR-ajo koska seuraavan haun muodostuksen aloittaminen ei toimisi koska edellisen muodostus on yhä kesken."
           LOG.error(message, e)
           throw e
         case e: Exception =>
           val message = s"YTR-tietojen päivitys haulle $hakuOid epäonnistui"
-          LOG.error(message,  e)
+          LOG.error(s"(job id ${ctx.getJobId}) $message", e)
           ctx.reportError(message, Some(e))
     })
   }
 
-  def refreshYTRForAktiivisetHaut(ctx: SupaJobContext): Unit = {
-    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
-    refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
+  private def refreshYTRForHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan YTR-tietojen päivitys valituille hauille (${hakuOids.size} kpl)")
+    refreshYTRForHaut(ctx, hakuOids)
+    LOG.info(s"(job id ${ctx.getJobId}) YTR-tietojen päivitys valituille hauille (${hakuOids.size} kpl) on valmis")
   }
 
-  private val refreshHautJob = scheduler.registerJob("refresh-ytr-for-haut", (ctx, data) => {
-    val hakuOids: Seq[String] = mapper.readValue(data, classOf[Seq[String]])
-    refreshYTRForHaut(ctx, hakuOids)
-  }, Seq.empty)
+  private val refreshHautJobHandle = scheduler.registerJob("refresh-ytr-for-haut", refreshYTRForHautJob, Seq.empty)
 
-  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJob.run(mapper.writeValueAsString(hakuOids))  
+  def startRefreshYTRForHautJob(hakuOids: Seq[String]): UUID = refreshHautJobHandle.run(mapper.writeValueAsString(hakuOids))
 
-  private val refreshAktiivisetHautJob = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", (ctx, data) => refreshYTRForAktiivisetHaut(ctx), Seq.empty)
+  private def refreshYTRForAktiivisetHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan YTR-tietojen päivitys aktiivisille hauille (${paivitettavatHaut.size} kpl)")
+    refreshYTRForHaut(ctx, paivitettavatHaut.map(_.oid))
+    LOG.info(s"(job id ${ctx.getJobId}) YTR-tietojen päivitys aktiivisille hauille (${paivitettavatHaut.size} kpl) on valmis")
+  }
 
-  def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJob.run(null)
+  private val refreshAktiivisetHautJobHandle = scheduler.registerJob("refresh-ytr-for-aktiiviset-haut", refreshYTRForAktiivisetHautJob, Seq.empty)
+
+  def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJobHandle.run(null)
 
   scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
-    refreshYTRForAktiivisetHaut(ctx)
+    refreshYTRForAktiivisetHautJob(ctx, data)
     null
   }, cron)
 }

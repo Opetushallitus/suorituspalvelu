@@ -13,7 +13,6 @@ import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
-import org.mockito
 import org.mockito.Mockito
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.security.SecurityConstants
@@ -21,7 +20,6 @@ import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{SyncSuccessJobResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import fi.oph.suorituspalvelu.parsing.ytr.Student
-import fi.oph.suorituspalvelu.parsing.ytr.YtrParser.MAPPER
 import fi.oph.suorituspalvelu.validation.Validator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
@@ -293,7 +291,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
     val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
 
-    waitUntilReady(ytrSyncResponse.jobId, 30, 5000)
+    waitUntilReady(ytrSyncResponse.jobId)
 
     // Tarkistetaan että pollMassOperation-kutsuja tuli 2 (1 failure + 1 success)
     Mockito.verify(ytrClient, Mockito.times(2)).pollMassOperation(opUuid)
@@ -305,6 +303,124 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
 
       val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(versiot.head.henkiloOid)
+      Assertions.assertFalse(suoritukset.isEmpty)
+    })
+  }
+
+  // Testataan että massahaku onnistuu uudelleenyrityksellä kun massaoperaation luonti epäonnistuu ensin
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshYtrForHakuRetryOnCreateMassOperationFailure(): Unit = {
+    val hetuToPersonOid = Map(
+      "150875-935M" -> "1.2.246.562.24.91423259222",
+      "080578-945T" -> "1.2.246.562.24.91423259333",
+      "040577-967N" -> "1.2.246.562.24.91423259444",
+      "080562-9273" -> "1.2.246.562.24.91423259555",
+      "060864-933X" -> "1.2.246.562.24.91423259666"
+    )
+
+    val ataruTiedot = hetuToPersonOid.values.map(personOid => AtaruHakemuksenHenkilotiedot("hakemusOid", Some(personOid), None)).toSeq
+
+    val opUuid = UUID.randomUUID().toString
+    val massOperation = YtrMassOperation(opUuid)
+    val pollResponse = YtrMassOperationQueryResponse("2025-08-15T14:20:57.073511+03:00", "oph-transfer-generation",
+      Some("2025-08-15T14:20:57.288401+03:00"), None, None)
+
+    val onrData = hetuToPersonOid.values.map(personOid => {
+      personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None, None)
+    }).toMap
+
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    val sourceFile = "/ytr_mass.json"
+    val zippedBytes = doZip(this.getClass.getResourceAsStream(sourceFile)).readAllBytes()
+
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
+      .thenReturn(Future.successful(ataruTiedot))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+      .thenReturn(Future.successful(onrData))
+    Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
+      .thenReturn(Future.failed(new RuntimeException("Temporary create failure")))
+      .thenReturn(Future.successful(massOperation))
+    Mockito.when(ytrClient.pollMassOperation(opUuid))
+      .thenReturn(Future.successful(pollResponse))
+    Mockito.when(ytrClient.fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString()))
+      .thenReturn(Future.successful(Some(zippedBytes)))
+
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAUT_PATH, YTRPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
+      .andExpect(status().isOk).andReturn()
+    val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(ytrSyncResponse.jobId)
+
+    // Tarkistetaan että createYtrMassOperation-kutsuja tuli 2 (1 failure + 1 success)
+    Mockito.verify(ytrClient, Mockito.times(2)).createYtrMassOperation(org.mockito.ArgumentMatchers.any())
+
+    // Tarkistetaan että tiedot tallennettiin onnistuneesti retryn jälkeen
+    hetuToPersonOid.values.foreach(personOid => {
+      val versiot = kantaOperaatiot.haeHenkilonVersiot(personOid)
+      Assertions.assertTrue(versiot.size == 1)
+      Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
+
+      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
+      Assertions.assertFalse(suoritukset.isEmpty)
+    })
+  }
+
+  // Testataan että massahaku onnistuu uudelleenyrityksellä kun tulosten haku epäonnistuu ensin
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshYtrForHakuRetryOnFetchMassResultFailure(): Unit = {
+    val hetuToPersonOid = Map(
+      "150875-935M" -> "1.2.246.562.24.91423259222",
+      "080578-945T" -> "1.2.246.562.24.91423259333",
+      "040577-967N" -> "1.2.246.562.24.91423259444",
+      "080562-9273" -> "1.2.246.562.24.91423259555",
+      "060864-933X" -> "1.2.246.562.24.91423259666"
+    )
+
+    val ataruTiedot = hetuToPersonOid.values.map(personOid => AtaruHakemuksenHenkilotiedot("hakemusOid", Some(personOid), None)).toSeq
+
+    val opUuid = UUID.randomUUID().toString
+    val massOperation = YtrMassOperation(opUuid)
+    val pollResponse = YtrMassOperationQueryResponse("2025-08-15T14:20:57.073511+03:00", "oph-transfer-generation",
+      Some("2025-08-15T14:20:57.288401+03:00"), None, None)
+
+    val onrData = hetuToPersonOid.values.map(personOid => {
+      personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None, None)
+    }).toMap
+
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+
+    val sourceFile = "/ytr_mass.json"
+    val zippedBytes = doZip(this.getClass.getResourceAsStream(sourceFile)).readAllBytes()
+
+    Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
+      .thenReturn(Future.successful(ataruTiedot))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+      .thenReturn(Future.successful(onrData))
+    Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
+      .thenReturn(Future.successful(massOperation))
+    Mockito.when(ytrClient.pollMassOperation(opUuid))
+      .thenReturn(Future.successful(pollResponse))
+    Mockito.when(ytrClient.fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString()))
+      .thenReturn(Future.failed(new RuntimeException("Temporary fetch failure")))
+      .thenReturn(Future.successful(Some(zippedBytes)))
+
+    val result = mvc.perform(jsonPost(ApiConstants.YTR_DATASYNC_HAUT_PATH, YTRPaivitaTiedotHaullePayload(Optional.of(java.util.List.of(hakuOid)))))
+      .andExpect(status().isOk).andReturn()
+    val ytrSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(StandardCharset.UTF_8), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(ytrSyncResponse.jobId)
+
+    // Tarkistetaan että fetchYtlMassResult-kutsuja tuli 2 (1 failure + 1 success)
+    Mockito.verify(ytrClient, Mockito.times(2)).fetchYtlMassResult(org.mockito.ArgumentMatchers.anyString())
+
+    // Tarkistetaan että tiedot tallennettiin onnistuneesti retryn jälkeen
+    hetuToPersonOid.values.foreach(personOid => {
+      val versiot = kantaOperaatiot.haeHenkilonVersiot(personOid)
+      Assertions.assertTrue(versiot.size == 1)
+      Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
+
+      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
   }

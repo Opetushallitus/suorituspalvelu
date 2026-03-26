@@ -52,7 +52,6 @@ class KantaOperaatiotTest {
 
   private def getHikariDatasource() =
     val config = new HikariConfig()
-    config.setMaximumPoolSize(64)
     config.setDataSource(getDatasource())
     new HikariDataSource(config)
 
