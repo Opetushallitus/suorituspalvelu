@@ -16,7 +16,6 @@ import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
-import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
@@ -52,7 +51,6 @@ class KantaOperaatiotTest {
 
   private def getHikariDatasource() =
     val config = new HikariConfig()
-    config.setMaximumPoolSize(64)
     config.setDataSource(getDatasource())
     new HikariDataSource(config)
 
