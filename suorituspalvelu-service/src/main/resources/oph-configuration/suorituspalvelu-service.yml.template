@@ -28,7 +28,7 @@ spring:
     password: {{host_postgresql_suorituspalvelu_app_password}}
     hikari:
       maximum-pool-size: 25
-      minimum-idle: 5
+      minimum-idle: 25
       connection-timeout: 20000
       idle-timeout: 600000
       max-lifetime: 1800000

@@ -18,7 +18,7 @@ class DBConfiguration {
 
   @Bean
   def getDatabase(dataSource: DataSource): JdbcBackend.JdbcDatabaseDef =
-    JdbcBackend.Database.forDataSource(dataSource, maxConnections, slickAsyncExecutor)
+    JdbcBackend.Database.forDataSource(dataSource, None, slickAsyncExecutor)
 
   @Bean
   def getKantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef): KantaOperaatiot =
