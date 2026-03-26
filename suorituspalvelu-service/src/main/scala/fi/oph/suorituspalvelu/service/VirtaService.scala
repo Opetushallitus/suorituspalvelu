@@ -64,26 +64,26 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
   final val VIRTA_CONCURRENCY = 3
 
-  def persist(oppijaNumero: String, virtaXmls: Seq[String], fetchedAt: Instant): Option[VersioEntiteetti] = {
+  def persist(oppijaNumero: String, virtaXmls: Seq[String], fetchedAt: Instant, ctx: SupaJobContext): Option[VersioEntiteetti] = {
     val hetulessXmls = virtaXmls.map(xml => VirtaUtil.replaceHetusWithPlaceholder(xml))
-    LOG.info(s"Persistoidaan Virta-data henkilölle $oppijaNumero")
+    LOG.info(s"(job id: ${ctx.getJobId}) Tallennetaan VIRTA-tiedot henkilölle $oppijaNumero")
 
     val kantaOperaatiot = KantaOperaatiot(database)
     val versio: Option[VersioEntiteetti] = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.VIRTA, Seq.empty, hetulessXmls, fetchedAt, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.VIRTA), None)
 
     versio.foreach(v => {
-      LOG.info(s"Versio tallennettu $versio, tallennetaan VIRTA-suoritukset")
+      LOG.info(s"(job id: ${ctx.getJobId}) Tallennettiin versio: $v")
       val virtaOpiskelijat = hetulessXmls.flatMap(VirtaParser.parseVirtaOpiskelijat)
       val konvertoidut = VirtaToSuoritusConverter.toOpiskeluoikeudet(virtaOpiskelijat)
       kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(v, konvertoidut.toSet, Seq.empty, ParserVersions.VIRTA)
-      LOG.info(s"Päivitettiin Virta-tiedot oppijanumerolle $oppijaNumero, yhteensä ${konvertoidut.size} suoritusta.")
+      LOG.info(s"(job id: ${ctx.getJobId}) Tallennettiin VIRTA-tiedot oppijanumerolle $oppijaNumero, yhteensä ${konvertoidut.size} suoritusta.")
     })
 
     versio
   }
 
   def refreshVirtaForPersonOids(ctx: SupaJobContext, personOids: Set[String]): Seq[SyncResultForHenkilo] = {
-    LOG.info(s"(job id ${ctx.getJobId}) Starting VIRTA refresh for personOids: $personOids")
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan VIRTA-tietojen päivitys henkilöille: ${personOids.mkString(", ")}")
     val masterHenkilot = Await.result(onrIntegration.getMasterHenkilosForPersonOids(personOids), ONR_TIMEOUT).values.toSet
     val masterOids = masterHenkilot.map(_.oidHenkilo)
     val duplikaatit = Await.result(onrIntegration.getAliasesForPersonOids(masterHenkilot.map(_.oidHenkilo)), ONR_TIMEOUT).allOids
@@ -97,7 +97,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
           Seq(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)),
           hetut.map(hetu => virtaClient.haeTiedotHetulle(hetu))
         ).flatten)
-        .map(xmls => SyncResultForHenkilo(oppijaNumero, persist(oppijaNumero, xmls, Instant.now()), None))
+        .map(xmls => SyncResultForHenkilo(oppijaNumero, persist(oppijaNumero, xmls, Instant.now(), ctx), None))
         .recover {
           case e: Exception =>
             val message = s"(job id ${ctx.getJobId}) Henkilon $oppijaNumero VIRTA-tietojen päivittäminen epäonnistui"
@@ -110,9 +110,8 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
     val succeeded = tulokset.filter(_.exception.isEmpty)
     val failed = tulokset.filter(_.exception.isDefined)
-    LOG.info(s"(job id ${ctx.getJobId}) Synkattiin onnistuneesti ${succeeded.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa. ${failed.size} henkilön tietojen haussa oli ongelmia.")
-    if(failed.nonEmpty) LOG.error(s"(job id ${ctx.getJobId}) Failed to sync ${failed.size} henkiloita VIRTA-tietojen synkronoinnissa")
-    failed.foreach(r => LOG.error(s"(job id ${ctx.getJobId}) Failed to sync ${r.henkiloOid} with exception ${r.exception.get.getMessage}"))
+    LOG.info(s"(job id ${ctx.getJobId}) Päivitettiin onnistuneesti ${succeeded.size} personOidia (sisältäen aliakset) VIRTA-tietojen synkronoinnissa. ${failed.size} henkilön tietojen haussa oli ongelmia.")
+    failed.foreach(r => LOG.error(s"(job id ${ctx.getJobId}) Henkilön ${r.henkiloOid} VIRTA-tietojen päivitys epäonnistui: ${r.exception.get.getMessage}"))
 
     tulokset
   }
@@ -132,6 +131,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
         val henkiloNumerot = Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HAKEMUSPALVELU_TIMEOUT).flatMap(_.personOid).toSet
         LOG.info(s"(job id ${ctx.getJobId}) Haetaan VIRTA-tiedot haun $hakuOid hakijoille (${henkiloNumerot.size} henkilöä)")
         refreshVirtaForPersonOids(ctx, henkiloNumerot)
+        LOG.info(s"(job id ${ctx.getJobId}) VIRTA-tietojen hakeminen haun $hakuOid hakijoille onnistui")
       catch
         case e: Exception =>
           val message = s"VIRTA-tietojen päivitys haulle $hakuOid epäonnistui"
@@ -156,7 +156,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     val paivitettavatHaut = tarjontaIntegration.aktiivisetHaut()
     LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan VIRTA-tietojen päivitys aktiivisille hauille (${paivitettavatHaut.size} kpl)")
     refreshVirtaForHaut(ctx, paivitettavatHaut.map(_.oid))
-    LOG.info(s"(job id ${ctx.getJobId}) VIRTA-tietojen päivitys aktiivisille hauille on valmis (${paivitettavatHaut.size} kpl)")
+    LOG.info(s"(job id ${ctx.getJobId}) VIRTA-tietojen päivitys aktiivisille hauille (${paivitettavatHaut.size} kpl) on valmis")
   }
 
   private val refreshAktiivisetHautJobHandle = scheduler.registerJob("refresh-virta-for-aktiiviset-haut", refreshVirtaForAktiivisetHautJob, Seq.empty)
