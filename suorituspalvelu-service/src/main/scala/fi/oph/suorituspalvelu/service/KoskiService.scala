@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component
 
 import java.time.{Duration, Instant, LocalDate}
 import java.util.UUID
-import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 @Component
 class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
@@ -33,7 +33,6 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
   private val HENKILO_TIMEOUT = 5.minutes
   private val HAKEMUKSET_TIMEOUT = 1.minutes
 
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   scheduler.scheduleJob("koski-poll-muuttuneet", (ctx, data) => {
     val start = Instant.now()

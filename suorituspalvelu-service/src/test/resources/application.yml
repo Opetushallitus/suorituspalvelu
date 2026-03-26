@@ -15,6 +15,9 @@ server:
     context-path: /suorituspalvelu
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   profiles:
     active: dev
   datasource:

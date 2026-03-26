@@ -5,10 +5,10 @@ import org.asynchttpclient.Dsl.asyncHttpClient
 import org.slf4j.LoggerFactory
 
 import java.time.Duration
-import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 
 case class OppijanumeroTaiHetu(oppijanumero: Option[String], hetu: Option[String])
 
@@ -24,7 +24,6 @@ class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, enviro
 
   val LOG = LoggerFactory.getLogger(classOf[VirtaClientImpl]);
 
-  implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   def getSoapOperationEnvelope(oppijanumeroTaiHetu: Either[String, String]): String =
     "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
@@ -85,7 +84,7 @@ class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, enviro
         case Failure(exception) =>
           promise.failure(exception)
       }
-    }, ec.execute(_))
+    }, executor.execute(_))
 
     promise.future
   }

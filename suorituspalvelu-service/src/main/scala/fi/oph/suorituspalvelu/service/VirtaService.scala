@@ -22,11 +22,11 @@ import java.time.{Duration, Instant}
 import java.util.UUID
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
+import fi.oph.suorituspalvelu.VirtualThreadExecutionContext.executor
 import fi.oph.suorituspalvelu.service.VirtaService.LOG
 import org.springframework.beans.factory.InitializingBean
 import slick.jdbc.JdbcBackend
 
-import java.util.concurrent.Executors
 import scala.collection.immutable
 import scala.jdk.CollectionConverters.*
 
@@ -53,7 +53,6 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
                    onrIntegration: OnrIntegration, virtaClient: VirtaClient, hakemuspalveluClient: HakemuspalveluClientImpl,
                    @Value("${integrations.virta.cron}") cron: String) {
 
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
 
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)

@@ -22,6 +22,9 @@ server:
   forward-headers-strategy: framework
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   datasource:
     url: jdbc:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu
     username: {{postgres_app_user}}
