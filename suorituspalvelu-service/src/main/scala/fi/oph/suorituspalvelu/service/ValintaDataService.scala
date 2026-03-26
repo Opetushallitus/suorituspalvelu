@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiske
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, ConvertedAtaruHakemus, HarkinnanvaraisuusService, ValintalaskentaHakutoive}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import fi.oph.suorituspalvelu.resource.ui.YliajonMuutosUI
 import org.slf4j.LoggerFactory

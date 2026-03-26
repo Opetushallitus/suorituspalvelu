@@ -6,6 +6,7 @@ import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.Lahdejarjestelma
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, KoutaHaku, YtrClient, YtrHetuPostData, YtrMassOperation, YtrMassOperationQueryResponse}
 import fi.oph.suorituspalvelu.integration.ytr.YtrDataForHenkilo
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 import fi.oph.suorituspalvelu.util.ZipUtil
 import org.apache.commons.io.IOUtils
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import fi.oph.suorituspalvelu.parsing.ytr.Student
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser.MAPPER
 import fi.oph.suorituspalvelu.validation.Validator
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 
 import java.util.{Optional, UUID}
@@ -46,6 +48,9 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   def toInputStreams(z: ZipInputStream): Iterator[InputStream] = {
     Iterator
@@ -159,8 +164,8 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(versiot.size, 1)
     Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
 
-    val data = kantaOperaatiot.haeData(versiot.head)
-    val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
+    val data = kantaOperaatiot.haeJsonData(versiot.head)
+    val parsed: Seq[Student] = data.map(data => objectMapper.readValue(data, classOf[Student]))
     parsed.foreach(p => Assertions.assertTrue(p.ssn.isEmpty))
   }
 
@@ -234,11 +239,11 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       val versiot = kantaOperaatiot.haeHenkilonVersiot(personOid)
       Assertions.assertTrue(versiot.size == 1)
       Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
-      val data = kantaOperaatiot.haeData(versiot.head)
-      val parsed: Seq[Student] = data._2.map(data => objectMapper.readValue(data, classOf[Student]))
+      val data = kantaOperaatiot.haeJsonData(versiot.head)
+      val parsed: Seq[Student] = data.map(data => objectMapper.readValue(data, classOf[Student]))
       parsed.foreach(p => Assertions.assertTrue(p.ssn.isEmpty))
 
-      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
+      val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(versiot.head.henkiloOid)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
   }
@@ -299,7 +304,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       Assertions.assertTrue(versiot.size == 1)
       Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
 
-      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
+      val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(versiot.head.henkiloOid)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
   }
@@ -364,7 +369,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(1, versiot1.size, s"Henkilölle $personOid1 pitäisi löytyä yksi versio vanhalla hetulla haettuna")
     Assertions.assertEquals(Lahdejarjestelma.YTR, versiot1.head.lahdeJarjestelma)
 
-    val suoritukset1 = kantaOperaatiot.haeSuoritukset(personOid1)
+    val suoritukset1 = opiskeluoikeusParsingService.haeSuoritukset(personOid1)
     Assertions.assertFalse(suoritukset1.isEmpty, s"Henkilöllä $personOid1 pitäisi olla suorituksia")
 
     // Tarkistetaan myös muut henkilöt

@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.{Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruHenkiloSearchParams, HakemuspalveluClientImpl, KoskiClient, KoskiMassaluovutusQueryParams, KoskiMassaluovutusQueryResponse, KoutaHaku}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, SyncSuccessJobResponse}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.*
 import org.mockito
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -42,6 +44,9 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  @Autowired
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   // -- Koski sync for oppijat --
 
@@ -90,7 +95,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
       objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse]))
 
     // tarkistetaan että kantaan on tallentunut kolme opiskeluoikeutta
-    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    val haetut = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).flatMap(_._2)
     Assertions.assertEquals(3, haetut.size)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
@@ -153,7 +158,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobId)
 
     // tarkistetaan että kantaan on tallentunut kolme opiskeluoikeutta
-    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    val haetut = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).flatMap(_._2)
     Assertions.assertEquals(3, haetut.size)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
@@ -216,7 +221,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobId)
 
     // tarkistetaan että kantaan on tallennettu opiskeluoikeus
-    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero)
 
     Assertions.assertEquals(haetut.head._2.size, 1)
 
@@ -282,7 +287,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val koskiSyncResponse = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncSuccessResponse])
 
     // tarkistetaan että kantaan on tallennettu opiskeluoikeus
-    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = kantaOperaatiot.haeSuoritukset(oppijaNumero)
+    val haetut: Map[VersioEntiteetti, Set[Opiskeluoikeus]] = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero)
     Assertions.assertEquals(haetut.head._2.size, 1)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin
@@ -325,7 +330,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobId)
 
     // tarkistetaan että kantaan on tallentunut opiskeluoikeudet
-    val haetut = kantaOperaatiot.haeSuoritukset(oppijaNumero).flatMap(_._2)
+    val haetut = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).flatMap(_._2)
     Assertions.assertEquals(3, haetut.size)
 
     // katsotaan että kutsun tiedot tallentuvat auditlokiin

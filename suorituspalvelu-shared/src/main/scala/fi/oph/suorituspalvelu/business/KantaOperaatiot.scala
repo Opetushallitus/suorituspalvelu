@@ -34,6 +34,7 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
 )
 
 object KantaOperaatiot {
+
   val MAPPER: ObjectMapper = {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
@@ -41,31 +42,6 @@ object KantaOperaatiot {
     mapper.registerModule(new Jdk8Module()) // tämä on java.util.Optional -kenttiä varten
     mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, true)
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
-    mapper.registerSubtypes(
-      classOf[PerusopetuksenOpiskeluoikeus],
-      classOf[PerusopetuksenOppimaara],
-      classOf[PerusopetukseenValmistavaOpetus],
-      classOf[AmmatillinenOpiskeluoikeus],
-      classOf[PoistettuOpiskeluoikeus],
-      classOf[KKOpiskeluoikeus],
-      classOf[KKSynteettinenOpiskeluoikeus],
-      classOf[AmmatillinenPerustutkinto],
-      classOf[AmmatillinenTutkintoOsittainen],
-      classOf[AmmattiTutkinto],
-      classOf[GeneerinenOpiskeluoikeus],
-      classOf[YOOpiskeluoikeus],
-      classOf[Telma],
-      classOf[PerusopetuksenOppimaaranOppiaineidenSuoritus],
-      classOf[Tuva],
-      classOf[KKTutkinto],
-      classOf[KKSynteettinenSuoritus],
-      classOf[KKOpintosuoritus],
-      classOf[VapaaSivistystyo],
-      classOf[EBTutkinto],
-      classOf[IBTutkinto],
-      classOf[ErikoisAmmattiTutkinto],
-      classOf[LukionOppimaara],
-      classOf[DIATutkinto])
     mapper
   }
 
@@ -316,7 +292,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     )
     Await.result(db.run(upsertAction.transactionally), DB_TIMEOUT)
 
-  def haeHenkilonVersiot(henkiloOid: String) = {
+  def haeHenkilonVersiot(henkiloOid: String): Vector[VersioEntiteetti] = {
     Await.result(db.run(
         sql"""
         SELECT jsonb_build_object(
@@ -333,22 +309,17 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
   }
 
-  def haeData(versio: VersioEntiteetti): (VersioEntiteetti, Seq[String], Seq[String]) =
+  def haeJsonData(versio: VersioEntiteetti): Seq[String] =
     Await.result(db.run(
-      sql"""SELECT jsonb_build_object('tunniste', tunniste,
-              'henkiloOid', henkilo_oid,
-              'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
-              'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
-              'lahdeJarjestelma', lahdejarjestelma,
-              'lahdeTunniste', lahdetunniste,
-              'lahdeVersio', lahdeversio,
-              'parserVersio', parser_versio
-            )::text AS versio,
-            data_json::text[],
-            data_xml::text[]
+      sql"""SELECT data_json::text[]
             FROM versiot
-            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[(String, Seq[String], Seq[String])]), DB_TIMEOUT)
-      .map((json, jsonData, xmlData) => (MAPPER.readValue(json, classOf[VersioEntiteetti]), jsonData, xmlData)).head
+            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
+
+  def haeXmlData(versio: VersioEntiteetti): Seq[String] =
+    Await.result(db.run(
+      sql"""SELECT data_xml::text[]
+              FROM versiot
+              WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
 
   def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] =
     Await.result(db.run(
@@ -366,7 +337,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int) = {
-    LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size}) kpl")
+    LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl)")
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${versio.henkiloOid} FOR UPDATE""" // ei tarvita inserttiä henkilöt-tauluun, jos on versio niin on myös henkilö
     val updateVersionAction = lockHenkiloAction.as[Int].flatMap(_ =>
       sql"""
@@ -401,7 +372,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
   }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
     Await.result(db.run(
         (sql"""
           WITH w_versiotunnisteet(tunniste) AS ("""
@@ -422,20 +393,22 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
-        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeudetJson) => {
-        (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), MAPPER.readValue(opiskeluoikeudetJson, classOf[Container]).opiskeluoikeudet)
+        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) => {
+        (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), opiskeluoikeusContainer)
       })
-      .groupBy((versio, _) => versio)
-      .map((versio, tuples) => versio -> tuples.flatMap(_._2).toSet)
+      .map((versio, opiskeluoikeusContainer) => (versio -> opiskeluoikeusContainer)).toMap
   }
 
-  def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+  /**
+   * Hakee henkilön suoritukset tietyllä ajanhetkellä
+   *
+   * HUOM: Älä kutsu tätä metodia suoraan, ellei tarkoituksena ole nimenomaan käsitellä raakamuotoista dataa.
+   * Käytä sen sijaan [[fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService#haeSuorituksetAjanhetkella]],
+   * joka huolehtii myös on-demand-parseroinnista ja parserVersion hallinnasta.
+   */
+  def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, String] =
     haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
-  }
 
-  def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    haeSuorituksetAjanhetkella(henkiloOid, Instant.now())
-  }
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
     Await.result(db.run(
