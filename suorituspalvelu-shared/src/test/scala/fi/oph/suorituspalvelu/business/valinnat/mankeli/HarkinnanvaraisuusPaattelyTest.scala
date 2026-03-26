@@ -601,7 +601,7 @@ class HarkinnanvaraisuusPaattelyTest {
       vahvistusPaivamaara.map(_.minusDays(365)),
       vahvistusPaivamaara,
       Set(matematiikka, aidinkieli),
-      Set.empty,
+      List.empty,
       false,
       false,
       luokkaAste)

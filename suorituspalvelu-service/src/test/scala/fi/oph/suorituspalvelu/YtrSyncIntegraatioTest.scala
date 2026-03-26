@@ -361,7 +361,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       Assertions.assertTrue(versiot.size == 1)
       Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
 
-      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
+      val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(versiot.head.henkiloOid)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
   }
@@ -420,7 +420,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       Assertions.assertTrue(versiot.size == 1)
       Assertions.assertEquals(versiot.head.lahdeJarjestelma, Lahdejarjestelma.YTR)
 
-      val suoritukset = kantaOperaatiot.haeSuoritukset(versiot.head.henkiloOid)
+      val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(versiot.head.henkiloOid)
       Assertions.assertFalse(suoritukset.isEmpty)
     })
   }

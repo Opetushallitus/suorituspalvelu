@@ -33,13 +33,13 @@ object KoskiUtil {
         case s: PerusopetuksenOppimaara => s.lahtokoulut
       }.flatten
       case oo: AmmatillinenOpiskeluoikeus => oo.suoritukset.collect {
-        case s: Telma => s.lahtokoulu
-      }
+        case s: Telma => s.lahtokoulut
+      }.flatten
       case oo: GeneerinenOpiskeluoikeus => oo.suoritukset.collect {
-        case s: Tuva => s.lahtokoulu
-        case s: VapaaSivistystyo => s.lahtokoulu
-        case s: PerusopetukseenValmistavaOpetus => s.lahtokoulu
-      }
+        case s: Tuva => s.lahtokoulut
+        case s: VapaaSivistystyo => s.lahtokoulut
+        case s: PerusopetukseenValmistavaOpetus => s.lahtokoulut
+      }.flatten
     }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku)
 
   /**

@@ -106,7 +106,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
           Set.empty,
-          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+          List(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), OPPILAITOS_OID, Some(valmistumisvuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false,
           None
@@ -200,7 +200,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           Set.empty,
-          Set(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+          List(Lahtokoulu(LocalDate.parse(s"${valmistumisVuosi-1}-08-18"), Some(LocalDate.parse(s"$valmistumisVuosi-06-01")), OPPILAITOS_OID, Some(valmistumisVuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false,
           None
@@ -294,7 +294,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
           None,
           Some(LocalDate.parse(s"$valmistumisVuosi-08-18")),
           Set.empty,
-          Set(Lahtokoulu(aloitusPaiva, Some(valmistumisPaiva), OPPILAITOS_OID, Some(valmistumisVuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
+          List(Lahtokoulu(aloitusPaiva, Some(valmistumisPaiva), OPPILAITOS_OID, Some(valmistumisVuosi), "9A", Some(VALMIS), None, VUOSILUOKKA_9)),
           false,
           false,
           None
