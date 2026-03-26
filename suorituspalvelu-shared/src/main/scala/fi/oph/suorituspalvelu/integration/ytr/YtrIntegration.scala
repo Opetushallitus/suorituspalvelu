@@ -58,7 +58,7 @@ class YtrIntegration {
       retryDelayMillis = defaultRetryDelayMillis,
       failMessage = s"YTR-massaoperaation käynnistäminen epäonnistui",
     ).flatMap(massOp => {
-      LOG.info(s"Luotiin massaoperaatio: $massOp, pollataan")
+      LOG.info(s"Luotiin YTR-massaoperaatio: ${massOp.uuid}, pollataan")
       pollUntilReady(massOp.uuid).flatMap(finishedQuery => {
         LOG.info(s"Massaoperaatio ${massOp.uuid} valmis, haetaan ja käsitellään tulos-zip.")
         Util.retryWithBackoff(
@@ -170,7 +170,7 @@ class YtrIntegration {
     Util.toIterator(
       batches.zipWithIndex.iterator.map((batch, index) => {
         LOG.info(
-          s"Synkataan ${batch.size} henkilön tiedot Ylioppilastutkintorekisteristä, erä ${index + 1}/${batches.size}"
+          s"Synkataan ${batch.size} henkilön tiedot YTR:stä, erä ${index + 1}/${batches.size}"
         )
         massFetchForStudents(batch.map(_._2).toSeq).map(fetchResult =>
           fetchResult.map(r =>
