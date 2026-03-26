@@ -4,7 +4,6 @@ import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, D
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
-import fi.oph.suorituspalvelu.resource.ui.{OppijanValintaDataSuccessResponse, UIVirheet}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*

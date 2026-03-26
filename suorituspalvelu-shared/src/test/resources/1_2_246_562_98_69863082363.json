@@ -1886,7 +1886,7 @@
                   },
                   "pakollinen": false,
                   "laajuus": {
-                    "arvo": 0.5,
+                    "arvo": 2.5,
                     "yksikkö": {
                       "koodiarvo": "3",
                       "nimi": {
@@ -1910,11 +1910,11 @@
                 "arviointi": [
                   {
                     "arvosana": {
-                      "koodiarvo": "S",
+                      "koodiarvo": "10",
                       "nimi": {
-                        "fi": "hyväksytty",
-                        "sv": "godkänd",
-                        "en": "pass"
+                        "fi": "kiitettävä",
+                        "sv": "berömlig",
+                        "en": "excellent"
                       },
                       "lyhytNimi": {
                         "fi": "S"
