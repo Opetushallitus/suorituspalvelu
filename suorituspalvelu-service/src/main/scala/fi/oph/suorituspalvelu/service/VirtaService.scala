@@ -91,7 +91,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
     // konstruoidaan lista (henkiloOid, Set[hetu]) tupleja joille sitten suoritetaan Virtahaku, muiden kuin masterhenkilöiden
     // hetut ovat tyhjä joukko
-    val virtaHaut = masterHenkilot.map(h => (h.oidHenkilo, h.combinedHetut)) ++ duplikaatit.map(a => (a, Set.empty.asInstanceOf[Set[String]]))
+    val virtaHaut = masterHenkilot.map(h => (h.oidHenkilo, h.combinedHetut)) ++ duplikaatit.map(a => (a, Set.empty[String]))
     val tulokset = Util.toIterator(virtaHaut.iterator.map((oppijaNumero, hetut) => {
       Future.sequence(Seq(
           Seq(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)),

@@ -10,6 +10,9 @@ import java.util.UUID
 case class Lahdejarjestelma(nimi: String) {
   @JsonValue
   def toJson: String = nimi
+
+  // Onko lähdejärjestelmän data XML-muodossa? Jos false, data on JSON-muodossa.
+  def hasXmlData: Boolean = this == Lahdejarjestelma.VIRTA
 }
 
 object Lahdejarjestelma {

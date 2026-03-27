@@ -4,6 +4,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmattiTutkinto, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Lahdejarjestelma, Opiskeluoikeus, Oppilaitos, ParserVersions, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{AutomaattinenHakukelpoisuusFailureResponse, AutomaattinenHakukelpoisuusSuccessResponse}
@@ -213,7 +214,7 @@ class AutomaattinenHakukelpoisuusResourceIntegraatioTest extends BaseIntegraatio
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(personOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", Some(1)).get
-    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet.toSet, Seq.empty, ParserVersions.SYOTETYT_OPPIAINEET)
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet.toSet, Seq.empty, ParserVersions.KOSKI)
   }
 
   private def createOppilaitos(oid: String = OPPILAITOS_OID): Oppilaitos = {

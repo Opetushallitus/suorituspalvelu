@@ -8,9 +8,12 @@ import com.github.dockerjava.api.model.{ExposedPort, HostConfig, PortBinding, Po
 import com.github.kagkarlsson.scheduler.Scheduler
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti.postgresPort
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
+import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Koodi}
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.{MockHttpServletRequestBuilder, MockMvcRequestBuilders}
 import org.springframework.test.web.servlet.setup.{DefaultMockMvcBuilder, MockMvcBuilders, MockMvcConfigurer}
 import org.springframework.boot.test.system.{CapturedOutput, OutputCaptureExtension}
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import org.testcontainers.postgresql.PostgreSQLContainer
@@ -53,7 +57,10 @@ object BaseIntegraatioTesti {
 @TestInstance(Lifecycle.PER_CLASS)
 class BaseIntegraatioTesti {
 
-  val LOG = LoggerFactory.getLogger(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
+  @MockitoBean
+  var koodistoProvider: KoodistoProvider = null
 
   val POSTGRES_DATABASENAME = "suorituspalvelu"
   val POSTGRES_USERNAME     = "app"
@@ -110,6 +117,23 @@ class BaseIntegraatioTesti {
 
   @AfterAll def teardown(): Unit = {
     postgres.stop()
+  }
+
+  @BeforeEach def setupKoodistoMock(): Unit = {
+    // Mockataan koodistoProvider palauttamaan oppiaineet ja kielet offline-tilassa (ilman oikeaa koodistopalvelua).
+    // Tämä on @BeforeEach koska @MockitoBean resetoi mockit jokaisen testin jälkeen.
+    val oppiaineKoodisto = Seq("AI", "A1", "A2", "B1", "B2", "B3", "MA", "BI", "GE", "FY", "KE", "HI", "YH",
+      "LI", "TE", "MU", "KU", "KS", "KO", "KT", "ET", "AOM", "FI", "OP")
+      .map(arvo => arvo -> Koodi(arvo, Koodisto("koskioppiaineetyleissivistava"), List(
+        KoodiMetadata("FI", arvo), KoodiMetadata("SV", arvo), KoodiMetadata("EN", arvo)))).toMap
+    Mockito.when(koodistoProvider.haeKoodisto("koskioppiaineetyleissivistava")).thenReturn(oppiaineKoodisto)
+
+    val kieliKoodisto = Map(
+      "FI" -> Koodi("FI", Koodisto("kieli"), List(KoodiMetadata("FI", "suomi"), KoodiMetadata("SV", "finska"), KoodiMetadata("EN", "Finnish"))),
+      "SV" -> Koodi("SV", Koodisto("kieli"), List(KoodiMetadata("FI", "ruotsi"), KoodiMetadata("SV", "svenska"), KoodiMetadata("EN", "Swedish"))),
+      "EN" -> Koodi("EN", Koodisto("kieli"), List(KoodiMetadata("FI", "englanti"), KoodiMetadata("SV", "engelska"), KoodiMetadata("EN", "English")))
+    )
+    Mockito.when(koodistoProvider.haeKoodisto("kieli")).thenReturn(kieliKoodisto)
   }
 
   @AfterEach def teardownTest(): Unit =
