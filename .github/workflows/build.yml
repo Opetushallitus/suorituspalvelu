@@ -38,6 +38,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn clean package
 
+      - name: Check TypeScript types
+        run: cd suorituspalvelu-ui && pnpm run typecheck
+
       - uses: actions/cache@v4
         id: restore-build
         with:
