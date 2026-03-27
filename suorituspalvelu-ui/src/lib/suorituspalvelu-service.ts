@@ -24,6 +24,8 @@ export type BackendOppijatSearchParams = {
   oppilaitos?: string | null;
   vuosi?: string | null;
   luokka?: string | null;
+  keskentaikeskeytynyt?: string | null;
+  yhteistenarvosanapuuttuu?: string | null;
 };
 
 const isNotFoundError = (error: unknown) => {

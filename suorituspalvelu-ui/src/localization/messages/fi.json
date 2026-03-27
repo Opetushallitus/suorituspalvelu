@@ -390,6 +390,8 @@
     "tarkastus-ei-oikeuksia": "Sinulla ei ole oikeuksia tarkastusnäkymään.",
     "henkilohaku-ei-oikeuksia": "Sinulla ei ole oikeuksia henkilöhakuun.",
     "virheellinen-oppijanumero": "Tunniste {oppijaNumero} ei ole oppijanumero.",
-    "henkilotunnukseen-linkitys-kielletty": "Suora linkitys henkilötunnukseen on kielletty!"
+    "henkilotunnukseen-linkitys-kielletty": "Suora linkitys henkilötunnukseen on kielletty!",
+    "kesken-tai-keskeytynyt": "Suoritus kesken tai keskeytynyt",
+    "yhteisten-arvosana-puuttuu": "Oppilaalta puuttuu yhteisen aineen arvosana"
   }
 }
