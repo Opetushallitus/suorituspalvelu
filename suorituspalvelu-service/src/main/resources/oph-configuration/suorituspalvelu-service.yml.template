@@ -33,6 +33,7 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
       leak-detection-threshold: 1800000
+      register-mbeans: true
 
   flyway:
     baseline-on-migrate: true
