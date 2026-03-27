@@ -78,24 +78,27 @@ class YtrIntegration {
     })
   }
 
+  def pollYtrMassOperation(uuid: String): Future[YtrMassOperationQueryResponse] = {
+    ytrClient.pollMassOperation(uuid).flatMap {
+      response =>
+        if (response.finished.isDefined) {
+          Future.successful(response)
+        } else if (response.failure.isDefined) {
+          Future.failed(new RuntimeException(response.toString))
+        } else {
+          LOG.info(s"YTR-Massaoperaatio $uuid ei vielä valmis, odotellaan ja pollataan uudestaan")
+          Util.sleepAsync(5000).flatMap(_ => pollYtrMassOperation(uuid))
+        }
+    }
+  }
+
   def pollUntilReady(
     uuid: String,
     retries: Int = 5,
     retryDelayMillis: Long = defaultRetryDelayMillis
   ): Future[YtrMassOperationQueryResponse] = {
     Util.retryWithBackoff(
-      operation = ytrClient.pollMassOperation(uuid).flatMap {
-        response =>
-          if (response.finished.isDefined) {
-            Future.successful(response)
-          } else if (response.failure.isDefined) {
-            Future.failed(new RuntimeException(response.toString))
-          } else {
-            Future.failed(
-              new RuntimeException(s"YTR-Massaoperaatio $uuid ei vielä valmis, odotellaan ja pollataan uudestaan")
-            )
-          }
-      },
+      operation = pollYtrMassOperation(uuid),
       retries = retries,
       retryDelayMillis = retryDelayMillis,
       initialDelayMillis = pollWaitMillis,

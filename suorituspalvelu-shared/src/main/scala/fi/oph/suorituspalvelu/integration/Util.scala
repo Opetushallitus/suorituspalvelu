@@ -10,6 +10,15 @@ object Util {
 
   private val LOG: Logger = LoggerFactory.getLogger(Util.getClass)
 
+  def sleepAsync(durationMillis: Long): Future[Unit] = {
+    val promise = Promise[Unit]()
+    Thread.startVirtualThread(() => {
+      Thread.sleep(durationMillis)
+      promise.success(())
+    })
+    promise.future
+  }
+
   /**
    * Geneerinen uudelleenyritysmekanismi eksponentiaalisella viiveellä. Uudelleenyritys tehdään vain, jos operation
    * palauttaa Future.failed. Viive tuplataan joka kerralla, ja uudelleenyrityksiä tehdään enintään retries-määrä.
@@ -28,13 +37,13 @@ object Util {
   def retryWithBackoff[T](
     operation: => Future[T],
     retries: Int = 5,
-    retryDelayMillis: Long = 5000,
+    retryDelayMillis: Long = 3000,
     initialDelayMillis: Long = 0,
     failMessage: String = "Operaatio epäonnistui"
   ): Future[T] = {
     val promise = Promise[T]()
 
-    Thread.ofVirtual().start(() => {
+    Thread.startVirtualThread(() => {
       try {
         if (initialDelayMillis > 0) Thread.sleep(initialDelayMillis)
 
@@ -68,7 +77,7 @@ object Util {
    * -iteraattorin tuottamia futuureja on yhtä aikaa haettuna. Tämän käyttämisessä on järkeä vain kun
    * futuuri-iteraattori tuottaa futuureita laiskasti.
    *
-   * @param futuresIterator iteraattori joka tuottaa Future[A] -tyyppisia futuureita
+   * @param iterator iteraattori joka tuottaa Future[A] -tyyppisia futuureita
    * @param concurrency     kuinka monta futuuria yhtä aikaa suorituksessa
    * @param timeout         futuurien timeout
    *
