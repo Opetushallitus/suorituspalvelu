@@ -113,7 +113,7 @@ class UtilTest {
   @Test def testRetryWithBackoff_initialDelayIsApplied(): Unit = {
     val start = System.currentTimeMillis()
     val result = Await.result(
-      Util.retryWithBackoff(Future.successful("ok"), retries = 0, retryDelayMillis = 10, initialDelayMillis = 200),
+      Util.retryWithBackoff(Future.successful("ok"), retries = 0, retryDelayMillis = 10, startDelayMillis = 200),
       5.seconds
     )
     val elapsed = System.currentTimeMillis() - start
