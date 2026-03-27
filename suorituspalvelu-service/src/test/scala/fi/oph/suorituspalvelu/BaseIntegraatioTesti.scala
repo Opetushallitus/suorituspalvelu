@@ -101,7 +101,7 @@ class BaseIntegraatioTesti {
     System.setProperty("host.virkailija", "DUMMY")
 
     System.setProperty("ytr.retry.delayMillis", "10")
-    System.setProperty("ytr.poll.waitMillis", "10")
+    System.setProperty("ytr.poll.startDelayMillis", "10")
 
     datasource = getDatasource()
     database = Database.forDataSource(datasource, None)
