@@ -26,6 +26,8 @@ export function useOppilaitoksenOppijatSearchParamsState() {
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
+  const keskentaikeskeytynyt = searchParams.get('keskentaikeskeytynyt');
+  const yhteistenarvosanapuuttuu = searchParams.get('yhteistenarvosanapuuttuu');
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,7 +65,14 @@ export function useOppilaitoksenOppijatSearchParamsState() {
         );
       },
       searchParams: pickBy(
-        { suodatus: tarkastusSearchTerm, oppilaitos, luokka, vuosi },
+        {
+          suodatus: tarkastusSearchTerm,
+          oppilaitos,
+          luokka,
+          vuosi,
+          keskentaikeskeytynyt,
+          yhteistenarvosanapuuttuu,
+        },
         isNonNullish,
       ),
       hasValidSearchParams: oppilaitos !== null && vuosi !== null,
@@ -78,19 +87,30 @@ export function useOppilaitoksenOppijatSearchParamsState() {
       oppilaitos,
       luokka,
       vuosi,
+      keskentaikeskeytynyt,
+      yhteistenarvosanapuuttuu,
     ],
   );
 }
 
 export const useOppilaitoksenOppijatSearchResult = () => {
   const { searchParams } = useOppilaitoksenOppijatSearchParamsState();
-  const { oppilaitos, vuosi, luokka, suodatus } = searchParams;
+  const {
+    oppilaitos,
+    vuosi,
+    luokka,
+    suodatus,
+    keskentaikeskeytynyt,
+    yhteistenarvosanapuuttuu,
+  } = searchParams;
 
   const result = useApiSuspenseQuery(
     queryOptionsSearchOppilaitoksenOppijat({
       oppilaitos,
       vuosi,
       luokka,
+      keskentaikeskeytynyt,
+      yhteistenarvosanapuuttuu,
     }),
   );
 
