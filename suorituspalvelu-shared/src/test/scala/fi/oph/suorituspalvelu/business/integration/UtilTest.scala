@@ -1,19 +1,10 @@
 package fi.oph.suorituspalvelu.business.integration
 
-import fi.oph.suorituspalvelu.business.*
-import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.Util
-import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter}
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiParser, KoskiToSuoritusConverter}
-import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
-import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
-import java.time.LocalDate
 import java.util
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.DurationInt
@@ -154,6 +145,46 @@ class UtilTest {
     Assertions.assertTrue(delays(0) >= 80, s"First delay ${delays(0)}ms should be >= 80ms")
     Assertions.assertTrue(delays(1) >= 160, s"Second delay ${delays(1)}ms should be >= 160ms")
     Assertions.assertTrue(delays(2) >= 320, s"Third delay ${delays(2)}ms should be >= 320ms")
+  }
+
+  /**
+   * Verifies that retryWithBackoff uses exactly one virtual thread per execution.
+   * Records the thread identity during each operation attempt and checks that:
+   * 1) All attempts run on the same thread
+   * 2) That thread is a virtual thread
+   */
+  @Test def testRetryWithBackoff_usesExactlyOneVirtualThread(): Unit = {
+    val threadIds = new java.util.concurrent.ConcurrentLinkedQueue[Long]()
+    val threadIsVirtual = new java.util.concurrent.ConcurrentLinkedQueue[Boolean]()
+    val attempts = new AtomicInteger(0)
+
+    def operation = {
+      // Record the thread that's executing the Await.result (the virtual thread)
+      // We need to capture this outside the Future, at the point where the by-name param is evaluated
+      threadIds.add(Thread.currentThread().threadId())
+      threadIsVirtual.add(Thread.currentThread().isVirtual)
+      Future {
+        val attempt = attempts.incrementAndGet()
+        if (attempt <= 3) throw new RuntimeException(s"Fail attempt $attempt")
+        "done"
+      }
+    }
+
+    val result = Await.result(
+      Util.retryWithBackoff(operation, retries = 3, retryDelayMillis = 10),
+      5.seconds
+    )
+
+    Assertions.assertEquals("done", result)
+    Assertions.assertEquals(4, attempts.get())
+
+    val ids = threadIds.asScala.toList
+    val virtuals = threadIsVirtual.asScala.toList
+
+    // All attempts should have been evaluated on the same single virtual thread
+    Assertions.assertEquals(4, ids.size, s"Expected 4 thread recordings, got ${ids.size}")
+    Assertions.assertTrue(ids.distinct.size == 1, s"Expected all attempts on the same thread, got distinct thread IDs: $ids")
+    Assertions.assertTrue(virtuals.forall(_ == true), "Expected all attempts to run on a virtual thread")
   }
 
   // --- toIterator tests ---
