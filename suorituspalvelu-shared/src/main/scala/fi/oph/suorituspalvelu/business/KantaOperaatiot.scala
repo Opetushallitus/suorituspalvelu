@@ -66,6 +66,8 @@ object KantaOperaatiot {
 class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   final val DB_TIMEOUT = 30.seconds
+  final val DB_LOCK_TIMEOUT_MS = 5000
+  final val DB_STATEMENT_TIMEOUT_MS = 25000
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiot])
 
   private def elapsedMs(startNanos: Long): Long =
@@ -344,9 +346,14 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val totalStartedAt = System.nanoTime()
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl), lähtökoulut (${lahtokoulut.size} kpl), parserVersio=$parserVersio")
 
+    val configureTransactionTimeoutsAction = DBIO.seq(
+      sqlu"""SET LOCAL lock_timeout = ${s"${DB_LOCK_TIMEOUT_MS}ms"}""",
+      sqlu"""SET LOCAL statement_timeout = ${s"${DB_STATEMENT_TIMEOUT_MS}ms"}"""
+    ).map(_ => LOG.info(s"Version ${versio.tunniste} entiteettitallennus: asetettu lock_timeout=${DB_LOCK_TIMEOUT_MS}ms ja statement_timeout=${DB_STATEMENT_TIMEOUT_MS}ms"))
+
     val lockStartedAt = System.nanoTime()
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${versio.henkiloOid} FOR UPDATE""" // ei tarvita inserttiä henkilöt-tauluun, jos on versio niin on myös henkilö
-    val updateVersionAction = lockHenkiloAction.as[Int].map { _ =>
+    val updateVersionAction = configureTransactionTimeoutsAction.flatMap(_ => lockHenkiloAction.as[Int]).map { _ =>
       LOG.info(s"Version ${versio.tunniste} entiteettitallennus: henkilölukko saatu ${elapsedMs(lockStartedAt)} ms jälkeen (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste})")
     }.flatMap(_ => {
       val updateStartedAt = System.nanoTime()
@@ -395,11 +402,16 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     })
 
     try
+      LOG.info(s"Version ${versio.tunniste} entiteettitallennus: db.run käynnistyy threadillä ${Thread.currentThread().getName}")
       Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
+      LOG.info(s"Version ${versio.tunniste} entiteettitallennus: db.run palautui ${elapsedMs(totalStartedAt)} ms:ssa")
       LOG.info(s"Version ${versio.tunniste} entiteettitallennus valmis ${elapsedMs(totalStartedAt)} ms:ssa (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste})")
     catch
       case e: TimeoutException =>
         LOG.error(s"Version ${versio.tunniste} entiteettitallennus aikakatkaistiin ${elapsedMs(totalStartedAt)} ms jälkeen (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste}, opiskeluoikeuksia=${opiskeluoikeudet.size}, lähtökouluja=${lahtokoulut.size}, parserVersio=$parserVersio)", e)
+        throw e
+      case e: Exception =>
+        LOG.error(s"Version ${versio.tunniste} entiteettitallennus epäonnistui ${elapsedMs(totalStartedAt)} ms jälkeen virheellä ${e.getClass.getName}: ${Option(e.getMessage).getOrElse("")} (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste}, opiskeluoikeuksia=${opiskeluoikeudet.size}, lähtökouluja=${lahtokoulut.size}, parserVersio=$parserVersio)", e)
         throw e
   }
 
