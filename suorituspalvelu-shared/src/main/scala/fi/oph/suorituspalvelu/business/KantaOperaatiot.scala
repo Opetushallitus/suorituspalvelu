@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
+import java.util.concurrent.TimeoutException
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 
@@ -66,6 +67,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   final val DB_TIMEOUT = 30.seconds
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiot])
+
+  private def elapsedMs(startNanos: Long): Long =
+    (System.nanoTime() - startNanos) / 1000000L
 
   def getUUID(): UUID =
     UUID.randomUUID()
@@ -337,39 +341,66 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int) = {
-    LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl)")
+    val totalStartedAt = System.nanoTime()
+    LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl), lähtökoulut (${lahtokoulut.size} kpl), parserVersio=$parserVersio")
+
+    val lockStartedAt = System.nanoTime()
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${versio.henkiloOid} FOR UPDATE""" // ei tarvita inserttiä henkilöt-tauluun, jos on versio niin on myös henkilö
-    val updateVersionAction = lockHenkiloAction.as[Int].flatMap(_ =>
+    val updateVersionAction = lockHenkiloAction.as[Int].map { _ =>
+      LOG.info(s"Version ${versio.tunniste} entiteettitallennus: henkilölukko saatu ${elapsedMs(lockStartedAt)} ms jälkeen (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste})")
+    }.flatMap(_ => {
+      val updateStartedAt = System.nanoTime()
       sql"""
            UPDATE versiot
            SET opiskeluoikeudet=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb, parser_versio=${parserVersio}
-           WHERE tunniste=${versio.tunniste.toString}::uuid RETURNING upper(voimassaolo)='infinity'::timestamptz""".as[Boolean])
+           WHERE tunniste=${versio.tunniste.toString}::uuid RETURNING upper(voimassaolo)='infinity'::timestamptz""".as[Boolean].map(result => {
+             val newestVersion = result.head
+             LOG.info(s"Version ${versio.tunniste} entiteettitallennus: versiot-rivin päivitys valmis ${elapsedMs(updateStartedAt)} ms:ssa, uusinVersio=$newestVersion")
+             newestVersion
+           })
+    })
     val updateLahtokoulutAction = updateVersionAction.flatMap(isNewestVersion => {
       // lähtökoulut tallennetaan vain viimeisimmälle versiolle, ts. ne pitää päivittää ainoastaan kun tallennetaan uusin versio (voimassaolon loppu == infinity)
-      if(!isNewestVersion.head)
-        DBIO.successful(Seq.empty[DBIO[Int]])
-      else {
-        DBIO.sequence(
-          sqlu"""DELETE FROM lahtokoulut WHERE henkilo_oid=${versio.henkiloOid} AND lahdejarjestelma=${versio.lahdeJarjestelma.nimi} AND lahdetunniste=${versio.lahdeTunniste}""" +: lahtokoulut.map(lahtokoulu =>
-          sqlu"""
-              INSERT INTO lahtokoulut (versio_tunniste, henkilo_oid, lahdejarjestelma, lahdetunniste, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
-              VALUES(
-                ${versio.tunniste.toString}::uuid,
-                ${versio.henkiloOid},
-                ${versio.lahdeJarjestelma.nimi},
-                ${versio.lahdeTunniste},
-                ${lahtokoulu.suorituksenAlku.toString}::date,
-                ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).getOrElse(null)}::date,
-                ${lahtokoulu.oppilaitosOid},
-                ${lahtokoulu.valmistumisvuosi},
-                ${lahtokoulu.luokka},
-                ${lahtokoulu.tila.map(t => t.toString).orNull},
-                ${lahtokoulu.arvosanaPuuttuu},
-                ${lahtokoulu.suoritusTyyppi.toString})
-              """))
+      if(!isNewestVersion) {
+        LOG.info(s"Version ${versio.tunniste} entiteettitallennus: lähtökouluja ei päivitetä, koska versio ei ole uusin")
+        DBIO.successful(())
+      } else {
+        val deleteStartedAt = System.nanoTime()
+        sqlu"""DELETE FROM lahtokoulut WHERE henkilo_oid=${versio.henkiloOid} AND lahdejarjestelma=${versio.lahdeJarjestelma.nimi} AND lahdetunniste=${versio.lahdeTunniste}"""
+          .map { deletedRows =>
+            LOG.info(s"Version ${versio.tunniste} entiteettitallennus: poistettiin $deletedRows lähtökouluriviä ${elapsedMs(deleteStartedAt)} ms:ssa")
+          }
+          .flatMap(_ => {
+            val insertStartedAt = System.nanoTime()
+            DBIO.sequence(lahtokoulut.map(lahtokoulu =>
+              sqlu"""
+                  INSERT INTO lahtokoulut (versio_tunniste, henkilo_oid, lahdejarjestelma, lahdetunniste, suorituksen_alku, suorituksen_loppu, oppilaitos_oid, valmistumisvuosi, luokka, tila, arvosanapuuttuu, suoritustyyppi)
+                  VALUES(
+                    ${versio.tunniste.toString}::uuid,
+                    ${versio.henkiloOid},
+                    ${versio.lahdeJarjestelma.nimi},
+                    ${versio.lahdeTunniste},
+                    ${lahtokoulu.suorituksenAlku.toString}::date,
+                    ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).getOrElse(null)}::date,
+                    ${lahtokoulu.oppilaitosOid},
+                    ${lahtokoulu.valmistumisvuosi},
+                    ${lahtokoulu.luokka},
+                    ${lahtokoulu.tila.map(t => t.toString).orNull},
+                    ${lahtokoulu.arvosanaPuuttuu},
+                    ${lahtokoulu.suoritusTyyppi.toString})
+                  """))
+              .map(_ => LOG.info(s"Version ${versio.tunniste} entiteettitallennus: lisättiin ${lahtokoulut.size} lähtökouluriviä ${elapsedMs(insertStartedAt)} ms:ssa"))
+          })
       }
     })
-    Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
+
+    try
+      Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
+      LOG.info(s"Version ${versio.tunniste} entiteettitallennus valmis ${elapsedMs(totalStartedAt)} ms:ssa (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste})")
+    catch
+      case e: TimeoutException =>
+        LOG.error(s"Version ${versio.tunniste} entiteettitallennus aikakatkaistiin ${elapsedMs(totalStartedAt)} ms jälkeen (henkiloOid=${versio.henkiloOid}, lähde=${versio.lahdeJarjestelma.nimi}, lahdetunniste=${versio.lahdeTunniste}, opiskeluoikeuksia=${opiskeluoikeudet.size}, lähtökouluja=${lahtokoulut.size}, parserVersio=$parserVersio)", e)
+        throw e
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
