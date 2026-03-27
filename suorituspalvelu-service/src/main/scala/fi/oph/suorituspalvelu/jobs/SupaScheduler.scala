@@ -40,6 +40,7 @@ val DUMMY_JOB_CTX = new SupaJobContext {
   override def getJobId: String = "DUMMY JOB"  
 }
 
+@FunctionalInterface
 trait SupaJob {
   def run(ctx: SupaJobContext, data: String): Unit
 }
