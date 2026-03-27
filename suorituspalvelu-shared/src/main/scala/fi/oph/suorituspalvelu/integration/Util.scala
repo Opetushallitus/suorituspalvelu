@@ -1,9 +1,46 @@
 package fi.oph.suorituspalvelu.integration
 
+import org.slf4j.{Logger, LoggerFactory}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.FiniteDuration
 
 object Util {
+
+  private val LOG: Logger = LoggerFactory.getLogger(Util.getClass)
+
+  /**
+   * Geneerinen uudelleenyritysmekanismi eksponentiaalisella viiveellä. Uudelleenyritys tehdään vain, jos operation
+   * palauttaa Future.failed. Viive tuplataan joka kerralla, ja uudelleenyrityksiä tehdään enintään retries-määrä.
+   * Alkuviiveen voi määritellä initialDelayMillis-parametrillä.
+   *
+   * @param operation suoritettava operaatio joka tuottaa Future[T]
+   * @param retries montako uudelleenyritystä on jäljellä
+   * @param retryDelayMillis viive ennen uudelleenyritystä (tuplataan joka kerralla)
+   * @param initialDelayMillis Viive ennen ensimmäistä yritystä
+   * @param failMessage Virheviesti, joka näytetään kun operaatio epäonnistuu.
+   * @return Future[T]
+   */
+  def retryWithBackoff[T](
+    operation: => Future[T],
+    retries: Int = 5,
+    retryDelayMillis: Long = 5000,
+    initialDelayMillis: Long = 0,
+    failMessage: String = "Operaatio epäonnistui"
+  )(using ec: ExecutionContext): Future[T] = {
+    if (initialDelayMillis > 0) Thread.sleep(initialDelayMillis)
+    operation.recoverWith {
+      case e: Throwable =>
+        if (retries > 0) {
+          LOG.warn(s"$failMessage: ${e.getMessage}. Yritetään uudelleen ${retryDelayMillis}ms kuluttua ($retries yritystä jäljellä).")
+          Thread.sleep(retryDelayMillis)
+          retryWithBackoff(operation, retries - 1, retryDelayMillis * 2, 0, failMessage)
+        } else {
+          LOG.error(s"$failMessage: ${e.getMessage}. Ei uudelleenyrityksiä jäljellä.")
+          Future.failed(e)
+        }
+    }
+  }
 
   /**
    * Future.sequence-tyyppinen apumetodi, joka koostaa Iterator[Future[A]] tyyppisen futuuri-iteraattorin
@@ -14,7 +51,7 @@ object Util {
    * @param futuresIterator iteraattori joka tuottaa Future[A] -tyyppisia futuureita
    * @param concurrency     kuinka monta futuuria yhtä aikaa suorituksessa
    * @param timeout         futuurien timeout
-   *                        
+   *
    * @return iteraattoria tyyppiä A
    */
   def toIterator[A](iterator: Iterator[Future[A]], concurrency: Int, timeout: FiniteDuration) : Iterator[A] =
