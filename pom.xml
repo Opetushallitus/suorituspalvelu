@@ -24,6 +24,7 @@
         <spring.boot.version>3.3.5</spring.boot.version>
         <jackson.version>2.18.1</jackson.version>
         <java.cas.version>1.2.4-SNAPSHOT</java.cas.version>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <dependencyManagement>

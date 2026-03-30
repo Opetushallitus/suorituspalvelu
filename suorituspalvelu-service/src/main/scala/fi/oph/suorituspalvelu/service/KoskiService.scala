@@ -81,11 +81,10 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
     LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan refresh-koski-for-henkilot henkiloOideille: $personOids")
     //Kerätään tulokset palautuvasta SaferIteratorista jotta sisältö sivuvaikutuksineen tulee käsitellyksi.
     val (changed, exceptions) = syncKoskiForHenkilot(mapper.readValue(personOids, classOf[Set[String]]), ctx)
-      .foldLeft((0, 0))((counts, result) => (counts._1 + {
-        result.versio.map(_ => 1).getOrElse(0)
-      }, counts._2 + {
-        result.exception.map(_ => 1).getOrElse(0)
-      }))
+      .foldLeft((0, 0))((counts, result) => (
+        counts._1 + { result.versio.map(_ => 1).getOrElse(0) },
+        counts._2 + { result.exception.map(_ => 1).getOrElse(0) }
+      ))
     LOG.info(s"(job id ${ctx.getJobId}) : refresh-koski-for-henkilot henkiloOideille $personOids valmistui. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
   }, Seq(Duration.ofSeconds(30), Duration.ofSeconds(60)))
 
@@ -98,24 +97,44 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
           Await.result(hakemuspalveluClient.getHaunHakijat(hakuOid), HENKILO_TIMEOUT)
             .flatMap(_.personOid).toSet
         LOG.info(s"(job id ${ctx.getJobId}) Haetaan KOSKI-tiedot haun $hakuOid hakijoille (${personOids.size} henkilöä)")
-        syncKoskiForHenkilot(personOids, ctx)
+        val result = syncKoskiForHenkilot(personOids, ctx)
+        LOG.info(s"(job id ${ctx.getJobId}) KOSKI-tietojen hakeminen haun $hakuOid hakijoille onnistui")
+        result
       catch
         case e: Exception =>
-          LOG.error(s"(job id ${ctx.getJobId}) Henkilöiden tietojen päivittäminen Koskesta haulle $hakuOid epäonnistui", e)
+          LOG.error(s"(job id ${ctx.getJobId}) KOSKI-tietojen päivitys haun $hakuOid hakijoille epäonnistui", e)
           Seq.empty
     })
 
-  private val refreshHakuJob = scheduler.registerJob("refresh-koski-for-haku", (ctx, hakuOids) => {
-    val (changed, exceptions) = refreshKoskiForHaut(mapper.readValue(hakuOids, classOf[Set[String]]), ctx)
-      .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
-  }, Seq.empty)
+  private def refreshKoskiForHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val hakuOids: Set[String] = mapper.readValue(data, classOf[Set[String]])
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan KOSKI-tietojen päivitys valituille hauille (${hakuOids.size} kpl)")
+    val (changed, exceptions) = refreshKoskiForHaut(hakuOids, ctx)
+      .foldLeft((0, 0))((counts, result) => (
+        counts._1 + { result.versio.map(_ => 1).getOrElse(0) },
+        counts._2 + { result.exception.map(_ => 1).getOrElse(0)}
+      ))
+    LOG.info(s"(job id ${ctx.getJobId}): KOSKI-tietojen päivitys valituille hauille (${hakuOids.size} kpl) valmistui. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
+  }
 
-  def startRefreshKoskiForHaut(hakuOids: Set[String]): UUID = refreshHakuJob.run(mapper.writeValueAsString(hakuOids))
+  private val refreshHautJobHandle = scheduler.registerJob("refresh-koski-for-haut", refreshKoskiForHautJob, Seq.empty)
 
-  def startRefreshKoskiForAktiivisetHaut(): UUID =
-    val aktiivisetHaut = tarjontaIntegration.aktiivisetHaut().map(_.oid)
-    LOG.info(s"Löytyi ${aktiivisetHaut.size} aktiivista hakua. Päivitetään KOSKI-tiedot näille hauille.")
-    refreshHakuJob.run(mapper.writeValueAsString(aktiivisetHaut))
+  def startRefreshKoskiForHaut(hakuOids: Set[String]): UUID = refreshHautJobHandle.run(mapper.writeValueAsString(hakuOids))
+
+  private def refreshKoskiForAktiivisetHautJob(ctx: SupaJobContext, data: String): Unit = {
+    val aktiivisetHaut = tarjontaIntegration.aktiivisetHaut().map(_.oid).toSet
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan KOSKI-tietojen päivitys aktiivisille hauille (${aktiivisetHaut.size} kpl)")
+    val (changed, exceptions) = refreshKoskiForHaut(aktiivisetHaut, ctx)
+      .foldLeft((0, 0))((counts, result) => (
+        counts._1 + { result.versio.map(_ => 1).getOrElse(0) },
+        counts._2 + { result.exception.map(_ => 1).getOrElse(0) }
+      ))
+    LOG.info(s"(job id ${ctx.getJobId}) : KOSKI-tietojen päivitys aktiivisille hauille (${aktiivisetHaut.size} kpl) valmistui. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
+  }
+
+  private val refreshAktiivisetHautJobHandle = scheduler.registerJob("refresh-koski-for-aktiiviset-haut", refreshKoskiForAktiivisetHautJob, Seq.empty)
+
+  def startRefreshKoskiForAktiivisetHaut(): UUID = refreshAktiivisetHautJobHandle.run(null)
 
   def retryKoskiResultFiles(fileUrls: Seq[String]): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
@@ -176,7 +195,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
             SyncResultForHenkilo(oppija.oppijaOid, versio, None)
           } catch {
             case e: Exception =>
-              val message = s"(job id ${ctx.getJobId}) Henkilon ${oppija.oppijaOid} Koski-tietojen tallentaminen epäonnistui"
+              val message = s"(job id ${ctx.getJobId}) Henkilon ${oppija.oppijaOid} KOSKI-tietojen pävittäminen epäonnistui"
               LOG.error(message, e)
               ctx.reportError(message, Some(e))
               SyncResultForHenkilo(oppija.oppijaOid, None, Some(e))
