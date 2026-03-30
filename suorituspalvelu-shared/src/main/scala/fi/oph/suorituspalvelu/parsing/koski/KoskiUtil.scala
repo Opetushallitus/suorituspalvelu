@@ -57,7 +57,7 @@ object KoskiUtil {
     if(lahtokoulut.isEmpty)
       Seq.empty
     else {
-      val aikajarjestetyt = lahtokoulut.sortBy(_.suorituksenAlku)
+      val aikajarjestetyt = lahtokoulut.sortBy(l => (l.suorituksenAlku, l.suorituksenLoppu.getOrElse(LocalDate.MAX)))
       aikajarjestetyt.zip(aikajarjestetyt.tail.map(e => Some(e)) :+ None).map((curr, next) => {
         val loppuPaivamaara =
           (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
