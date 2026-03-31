@@ -166,6 +166,25 @@ object AvainArvoConstants {
   // on avaimen "PK_B1" alla, tulee kieli avaimen "PK_B1_OPPIAINE" alle
   final val peruskouluAineenKieliPostfix = "_OPPIAINE"
 
+  val aidinkieliKoodiMapping: Map[String, String] = Map(
+    "AI1"  -> "FI",
+    "AI2"  -> "SV",
+    "AI3"  -> "SE",
+    "AI4"  -> "RI",
+    "AI5"  -> "VK",
+    "AI6"  -> "XX",
+    "AI7"  -> "FI_2",
+    "AI8"  -> "SV_2",
+    "AI9"  -> "FI_SE",
+    "AI10" -> "XX",
+    "AI11" -> "FI_VK",
+    "AI12" -> "SV_VK",
+    "AIAI" -> "XX"
+  )
+
+  def convertAidinkieliKielikoodi(kieliKoodi: String): String =
+    aidinkieliKoodiMapping.getOrElse(kieliKoodi, kieliKoodi)
+
   //Lisäpistekoulutusten minimilaajuudet
   final val telmaMinimiLaajuus: BigDecimal = 25
   final val tuvaMinimiLaajuus: BigDecimal = 19
@@ -667,7 +686,8 @@ object AvainArvoConverter {
 
       val kieliArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
         val kieliAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliPostfix
-        AvainArvoContainer(kieliAvain, aineenKieliKoodi.arvo, Seq("Kielitieto löytyi Koskesta."))
+        val kieliArvo = if (aine.koodi.arvo == "AI") AvainArvoConstants.convertAidinkieliKielikoodi(aineenKieliKoodi.arvo) else aineenKieliKoodi.arvo
+        AvainArvoContainer(kieliAvain, kieliArvo, Seq("Kielitieto löytyi Koskesta."))
       })
 
       Set(arvosanaArvot) ++ kieliArvot
