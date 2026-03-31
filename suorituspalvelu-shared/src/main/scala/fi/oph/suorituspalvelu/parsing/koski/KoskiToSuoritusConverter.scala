@@ -55,7 +55,7 @@ object KoskiToSuoritusConverter {
       case "valmistunut"                => SuoritusTila.VALMIS
       case "loma"                       => SuoritusTila.KESKEN
       case "lasna"                      => SuoritusTila.KESKEN
-      case "valiaikaisestikeskeytynyt"  => SuoritusTila.KESKEN
+      case "valiaikaisestikeskeytynyt"  => SuoritusTila.KESKEYTYNYT
       case "eronnut"                    => SuoritusTila.KESKEYTYNYT
       case "katsotaaneronneeksi"        => SuoritusTila.KESKEYTYNYT
       case "keskeytynyt"                => SuoritusTila.KESKEYTYNYT
