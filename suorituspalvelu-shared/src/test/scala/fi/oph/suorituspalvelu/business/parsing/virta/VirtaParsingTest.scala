@@ -209,9 +209,9 @@ class VirtaParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2014-09-17")), suoritus.hyvaksilukuPvm)
     Assertions.assertEquals(false, suoritus.opinnaytetyo)
 
-  @Test def testVirtasuoritusMuuArvosana(): Unit =
-    val suoritukset = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaOpiskelijat(
-      """
+  private def generateMuuArvosanaData(asteikkoNimi: Option[String]) =
+    VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaOpiskelijat(
+      s"""
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
         |  <SOAP-ENV:Body>
         |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
@@ -241,7 +241,7 @@ class VirtaParsingTest {
         |              <virta:Arvosana>
         |                <virta:Muu>
         |                  <virta:Asteikko avain="11">
-        |                    <virta:Nimi>Fail-Pass</virta:Nimi>
+        |                    ${asteikkoNimi.map(nimi => s"<virta:Nimi>$nimi</virta:Nimi>").getOrElse("")}
         |                    <virta:AsteikkoArvosana avain="10979859">
         |                      <virta:Koodi>HYV</virta:Koodi>
         |                      <virta:Nimi>Hyväksytty</virta:Nimi>
@@ -280,10 +280,21 @@ class VirtaParsingTest {
         |</SOAP-ENV:Envelope>""".stripMargin
     )).asInstanceOf[Seq[KKOpiskeluoikeus]].head.suoritukset
 
+  @Test def testVirtasuoritusMuuArvosanaWithAsteikkoNimi(): Unit = {
+    val suoritukset = generateMuuArvosanaData(Some("Fail-Pass"))
     Assertions.assertEquals(1, suoritukset.size)
     val suoritus = suoritukset.head.asInstanceOf[KKOpintosuoritus]
     Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
     Assertions.assertEquals(Some("Fail-Pass"), suoritus.arvosanaAsteikko)
+  }
+
+  @Test def testVirtasuoritusMuuArvosanaNoAsteikkoNimi(): Unit = {
+    val suoritukset = generateMuuArvosanaData(None)
+    Assertions.assertEquals(1, suoritukset.size)
+    val suoritus = suoritukset.head.asInstanceOf[KKOpintosuoritus]
+    Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
+    Assertions.assertEquals(None, suoritus.arvosanaAsteikko)
+  }
 
   @Test def testSuorituksetHierarkia(): Unit = {
     // Varmistetaan että Virta-datasta muodostuu vastaavanlainen monitasoinen suoritushierarkia kuin Virrasta
