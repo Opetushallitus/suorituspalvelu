@@ -505,6 +505,11 @@ object KoskiToSuoritusConverter {
       .exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists(Set("7", "8", "9").contains))
   }
 
+  private def hasVahvistettuYsiluokka(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean =
+    opiskeluoikeus.suoritukset.get
+      .filter(s => s.tyyppi.koodiarvo == SUORITUSTYYPPI_PERUSOPETUKSENVUOSILUOKKA)
+      .filter(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists("9".equals))
+      .exists(s => s.vahvistus.isDefined)
 
   def toPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppimaara] = {
     if (isKotiopetus(opiskeluoikeus)) {
@@ -519,7 +524,10 @@ object KoskiToSuoritusConverter {
           o.nimi,
           o.oid)).getOrElse(dummy())
 
-      val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
+      val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).map {
+        case SuoritusTila.VALMIS if !hasVahvistettuYsiluokka(opiskeluoikeus) => SuoritusTila.KESKEN
+        case tila => tila
+      }
       val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
 
       val lahtokoulut = opiskeluoikeus.suoritukset.get
@@ -551,7 +559,7 @@ object KoskiToSuoritusConverter {
         oppilaitos = oppilaitos,
         luokka = lahtokoulut.maxByOption(_.suorituksenAlku).map(_.luokka),
         koskiTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
-        supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
+        supaTila = supatila.getOrElse(dummy()),
         suoritusKieli = suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
         koulusivistyskieli = suoritus.koulusivistyskieli.map(kielet => kielet.map(kieli => asKoodiObject(kieli))).getOrElse(Set.empty),
         yksilollistaminen = getYksilollistaminen(opiskeluoikeus, suoritus),
