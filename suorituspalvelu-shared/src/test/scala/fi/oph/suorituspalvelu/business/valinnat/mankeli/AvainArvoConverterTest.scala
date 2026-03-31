@@ -120,7 +120,7 @@ class AvainArvoConverterTest {
     }
 
     tavoiteKielet.foreach { case (aine, kieli) =>
-      val postfix = AvainArvoConstants.peruskouluAineenKieliPostfix
+      val postfix = AvainArvoConstants.peruskouluAineenKieliOppiainePostfix
       val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
       val kieliAvain = prefix + aine + postfix
 
@@ -129,10 +129,20 @@ class AvainArvoConverterTest {
 
     //Pitäisi löytyä yksi tarpeeksi laaja valinnainen arvosana
     Assertions.assertEquals(Some("10"), converterResult.getAvainArvoMap().get("PK_LI_VAL1"))
+
+    // KIELITIETO should contain raw kieli codes (untransformed)
+    val tavoiteKieliTiedot = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE", "AI" -> "AI1")
+    tavoiteKieliTiedot.foreach { case (aine, kieliTieto) =>
+      val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
+      val postfix = AvainArvoConstants.peruskouluAineenKieliTietoPostfix
+      val kieliTietoAvain = prefix + aine + postfix
+
+      Assertions.assertEquals(Some(kieliTieto), converterResult.getAvainArvoMap().get(kieliTietoAvain), s"KIELITIETO for $aine should be $kieliTieto")
+    }
   }
 
   @Test def testAidinkieliKielikoodiMuunnos(): Unit = {
-    val aineet = Set(
+    val aineet = List(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Suomen kieli ja kirjallisuus"), None, None), Koodi("AI", "koodisto", None), Koodi("9", "koodisto", None), Some(Koodi("AI1", "oppiaineaidinkielijakirjallisuus", None)), true, None, None),
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Ruotsin kieli ja kirjallisuus"), None, None), Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("AI2", "oppiaineaidinkielijakirjallisuus", None)), true, None, None),
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Suomi toisena kielenä"), None, None), Koodi("AI", "koodisto", None), Koodi("7", "koodisto", None), Some(Koodi("AI7", "oppiaineaidinkielijakirjallisuus", None)), true, None, None),
@@ -140,14 +150,23 @@ class AvainArvoConverterTest {
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("A1", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None)
     )
 
-    val avainArvot = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(aineet)
+    val avainArvot = aineet.flatMap(aine => AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(Set(aine)).toList)
     val resultMap = avainArvot.map(aa => (aa.avain, aa.arvo)).toMap
 
-    // AI kieli codes should be transformed
+    // AI kieli codes should be transformed in OPPIAINE
     Assertions.assertTrue(resultMap.values.toSet.intersect(Set("FI", "SV", "FI_2", "XX")).nonEmpty, "AI kieli codes should be mapped to standardized codes")
 
     // Non-AI kieli should pass through unchanged
     Assertions.assertEquals("EN", resultMap("PK_A1_OPPIAINE"), "A1 language should remain EN")
+
+    // KIELITIETO should contain the raw kieli codes
+    val kieliTietoArvot = avainArvot.filter(_.avain.endsWith("_KIELITIETO")).map(aa => (aa.avain, aa.arvo))
+    val kieliTietoMap = kieliTietoArvot.groupBy(_._1).map { case (k, v) => (k, v.map(_._2)) }
+    Assertions.assertTrue(kieliTietoMap("PK_AI_KIELITIETO").contains("AI1"), "PK_AI_KIELITIETO should contain raw AI1")
+    Assertions.assertTrue(kieliTietoMap("PK_AI_KIELITIETO").contains("AI2"), "PK_AI_KIELITIETO should contain raw AI2")
+    Assertions.assertTrue(kieliTietoMap("PK_AI_KIELITIETO").contains("AI7"), "PK_AI_KIELITIETO should contain raw AI7")
+    Assertions.assertTrue(kieliTietoMap("PK_AI_KIELITIETO").contains("AIAI"), "PK_AI_KIELITIETO should contain raw AIAI")
+    Assertions.assertEquals(List("EN"), kieliTietoMap("PK_A1_KIELITIETO"), "PK_A1_KIELITIETO should contain raw EN")
   }
 
   @Test def testAidinkieliKielikoodiMuunnosKaikkiArvot(): Unit = {
@@ -168,11 +187,11 @@ class AvainArvoConverterTest {
     )
 
     expectedMappings.foreach { case (input, expected) =>
-      Assertions.assertEquals(expected, AvainArvoConstants.convertAidinkieliKielikoodi(input), s"$input should map to $expected")
+      Assertions.assertEquals(expected, AvainArvoConverter.convertAidinkieliKielikoodi(input), s"$input should map to $expected")
     }
 
     // Unknown code should pass through
-    Assertions.assertEquals("UNKNOWN", AvainArvoConstants.convertAidinkieliKielikoodi("UNKNOWN"), "Unknown code should pass through as-is")
+    Assertions.assertEquals("UNKNOWN", AvainArvoConverter.convertAidinkieliKielikoodi("UNKNOWN"), "Unknown code should pass through as-is")
   }
 
   @Test def testKorkeimmatArvosanat(): Unit = {
