@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, RistiriitainenOppiaineKoodiException}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -22,7 +22,7 @@ class AvainArvoConverterTest {
   val DEFAULT_OPPIAINEKOODI = fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty)
   val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map(
     "HI" -> DEFAULT_OPPIAINEKOODI, "KO" -> DEFAULT_OPPIAINEKOODI, "BI" -> DEFAULT_OPPIAINEKOODI,
-    "B1" -> DEFAULT_OPPIAINEKOODI, "AOM" -> DEFAULT_OPPIAINEKOODI, "LI" -> DEFAULT_OPPIAINEKOODI,
+    "B1" -> DEFAULT_OPPIAINEKOODI, "LI" -> DEFAULT_OPPIAINEKOODI,
     "YH" -> DEFAULT_OPPIAINEKOODI, "KU" -> DEFAULT_OPPIAINEKOODI, "GE" -> DEFAULT_OPPIAINEKOODI,
     "TH" -> DEFAULT_OPPIAINEKOODI, "MA" -> DEFAULT_OPPIAINEKOODI, "B2" -> DEFAULT_OPPIAINEKOODI,
     "TE" -> DEFAULT_OPPIAINEKOODI, "KT" -> DEFAULT_OPPIAINEKOODI, "FY" -> DEFAULT_OPPIAINEKOODI,
@@ -109,7 +109,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(1, opiskeluoikeudet.size)
     val leikkuri = LocalDate.now
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", opiskeluoikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
-    val pakollisetTavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
+    val pakollisetTavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "LI" -> "9",
       "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
       "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
     val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE", "AI" -> "FI")
@@ -192,6 +192,62 @@ class AvainArvoConverterTest {
 
     // Unknown code should pass through
     Assertions.assertEquals("UNKNOWN", AvainArvoConverter.convertAidinkieliKielikoodi("UNKNOWN"), "Unknown code should pass through as-is")
+  }
+
+  @Test def testAOMRemappedToA1(): Unit = {
+    val aineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Äidinkielenomainen kieli A-oppimäärä"), None, None),
+        Koodi("AOM", "koodisto", None), Koodi("9", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None)
+    )
+    val avainArvot = AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(aineet)
+    val resultMap = avainArvot.map(aa => (aa.avain, aa.arvo)).toMap
+
+    Assertions.assertEquals("9", resultMap("PK_A1"))
+    Assertions.assertEquals("FI", resultMap("PK_A1_OPPIAINE"))
+    Assertions.assertEquals("FI", resultMap("PK_A1_KIELITIETO"))
+    Assertions.assertFalse(resultMap.contains("PK_AOM"), "PK_AOM should not exist")
+    Assertions.assertFalse(resultMap.contains("PK_AOM_OPPIAINE"), "PK_AOM_OPPIAINE should not exist")
+    Assertions.assertFalse(resultMap.contains("PK_AOM_KIELITIETO"), "PK_AOM_KIELITIETO should not exist")
+  }
+
+  @Test def testETRemappedToKT(): Unit = {
+    val aineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Elämänkatsomustieto"), None, None),
+        Koodi("ET", "koodisto", None), Koodi("8", "koodisto", None),
+        None, true, None, None)
+    )
+    val avainArvot = AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(aineet)
+    val resultMap = avainArvot.map(aa => (aa.avain, aa.arvo)).toMap
+
+    Assertions.assertEquals("8", resultMap("PK_KT"))
+    Assertions.assertFalse(resultMap.contains("PK_ET"), "PK_ET should not exist")
+  }
+
+  @Test def testAOMAndA1ConflictThrowsException(): Unit = {
+    val aineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("AOM"), None, None),
+        Koodi("AOM", "koodisto", None), Koodi("9", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None),
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("A1"), None, None),
+        Koodi("A1", "koodisto", None), Koodi("8", "koodisto", None),
+        Some(Koodi("EN", "kielivalikoima", None)), true, None, None)
+    )
+    Assertions.assertThrows(classOf[RistiriitainenOppiaineKoodiException], () => {
+      AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(aineet)
+    })
+  }
+
+  @Test def testETAndKTConflictThrowsException(): Unit = {
+    val aineet = Set(
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("ET"), None, None),
+        Koodi("ET", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None),
+      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("KT"), None, None),
+        Koodi("KT", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None)
+    )
+    Assertions.assertThrows(classOf[RistiriitainenOppiaineKoodiException], () => {
+      AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(aineet)
+    })
   }
 
   @Test def testKorkeimmatArvosanat(): Unit = {
