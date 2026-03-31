@@ -22,6 +22,14 @@ object EntityToUIConverter {
   val VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
   val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
 
+  private val oppiaineOrder: Map[String, Int] = UIService.NAYTETTAVAT_OPPIAINEET.zipWithIndex.toMap
+
+  private def filterAndSortOppiaineet(oppiaineet: Iterable[PerusopetuksenOppiaineUI]): List[PerusopetuksenOppiaineUI] =
+    oppiaineet
+      .filter(a => oppiaineOrder.contains(a.koodi))
+      .toList
+      .sortBy(a => (oppiaineOrder(a.koodi), a.valinnainen, a.kieli.orElse("")))
+
   // Structural type that defines the required shape (three Optional[String] fields)
   type NimiLike = {
     def fi: Optional[String]
@@ -881,19 +889,21 @@ object EntityToUIConverter {
             PerusopetuksenYksilollistaminen.toIntValue(y),
             getKoodiNimi[YksilollistamisNimi](Some(PerusopetuksenYksilollistaminen.toIntValue(y).toString), KOODISTO_POHJAKOULUTUS, koodistoProvider).get
           )).toJava,
-          // halutaan näyttää vain valmistuneen suorituksen oppiaineet
-          oppiaineet = (if (om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS) om.aineet else Set.empty).map(a => PerusopetuksenOppiaineUI(
-            tunniste = a.tunniste,
-            koodi = a.koodi.arvo,
-            nimi = PerusopetuksenOppiaineNimi(
-              fi = a.nimi.fi.map(n => n + getVieraanKielenNimi(a.kieli, "fi").map(k => ", " + k).getOrElse("")).toJava,
-              sv = a.nimi.sv.map(n => n + getVieraanKielenNimi(a.kieli, "sv").map(k => ", " + k).getOrElse("")).toJava,
-              en = a.nimi.en.map(n => n + getVieraanKielenNimi(a.kieli, "en").map(k => ", " + k).getOrElse("")).toJava,
-            ),
-            kieli = a.kieli.map(k => k.arvo).toJava,
-            arvosana = a.arvosana.arvo,
-            valinnainen = !a.pakollinen,
-          )).toList.asJava,
+          // halutaan näyttää vain valmistuneen suorituksen oppiaineet, järjestyksessä ja suodatettuna
+          oppiaineet = filterAndSortOppiaineet(
+            (if (om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS) om.aineet else Set.empty).map(a => PerusopetuksenOppiaineUI(
+              tunniste = a.tunniste,
+              koodi = a.koodi.arvo,
+              nimi = PerusopetuksenOppiaineNimi(
+                fi = a.nimi.fi.map(n => n + getVieraanKielenNimi(a.kieli, "fi").map(k => ", " + k).getOrElse("")).toJava,
+                sv = a.nimi.sv.map(n => n + getVieraanKielenNimi(a.kieli, "sv").map(k => ", " + k).getOrElse("")).toJava,
+                en = a.nimi.en.map(n => n + getVieraanKielenNimi(a.kieli, "en").map(k => ", " + k).getOrElse("")).toJava,
+              ),
+              kieli = a.kieli.map(k => k.arvo).toJava,
+              arvosana = a.arvosana.arvo,
+              valinnainen = !a.pakollinen,
+            ))
+          ).asJava,
           syotetty = om.syotetty
         )
       }).toList
@@ -942,7 +952,7 @@ object EntityToUIConverter {
           aloituspaiva = java.util.Optional.ofNullable(oppiaineidenSuoritus.aloitusPaivamaara.orNull),
           valmistumispaiva = java.util.Optional.ofNullable(oppiaineidenSuoritus.vahvistusPaivamaara.orNull),
           suorituskieli = oppiaineidenSuoritus.suoritusKieli.arvo,
-          oppiaineet = oppiaineet.toList.asJava,
+          oppiaineet = filterAndSortOppiaineet(oppiaineet).asJava,
           syotetty = oppiaineidenSuoritus.syotetty
         )
       }).toList
