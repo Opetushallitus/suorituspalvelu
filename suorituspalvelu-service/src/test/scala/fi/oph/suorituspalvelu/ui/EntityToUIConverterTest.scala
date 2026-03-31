@@ -554,20 +554,20 @@ class EntityToUIConverterTest {
       aineet = Set(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
-          nimi = Kielistetty(Some("Historia"), None, None),
-          koodi = Koodi("HI", "koskioppiaineetyleissivistava", Some(1)),
+          nimi = Kielistetty(Some("A1-kieli"), None, None),
+          koodi = Koodi("A1", "koskioppiaineetyleissivistava", Some(1)),
           arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
-          kieli = None,
+          kieli = Some(Koodi("DE", "kielivalikoima", Some(1))),
           pakollinen = true,
           yksilollistetty = Some(false),
           rajattu = Some(false)
         ),
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
-          nimi = Kielistetty(Some("A1-kieli"), None, None),
-          koodi = Koodi("A1", "koskioppiaineetyleissivistava", Some(1)),
+          nimi = Kielistetty(Some("Historia"), None, None),
+          koodi = Koodi("HI", "koskioppiaineetyleissivistava", Some(1)),
           arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
-          kieli = Some(Koodi("DE", "kielivalikoima", Some(1))),
+          kieli = None,
           pakollinen = true,
           yksilollistetty = Some(false),
           rajattu = Some(false)
