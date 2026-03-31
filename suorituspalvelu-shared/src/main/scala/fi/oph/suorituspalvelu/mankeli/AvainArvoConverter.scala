@@ -728,7 +728,9 @@ object AvainArvoConverter {
         //Todo, halutaanko tässä tapauksessa asettaa myös avain-arvo peruskouluSuoritettuKey -> true? Onko tällä merkitystä?
         korkeimmatArvosanatHakemukseltaJaSupasta ++ suoritusKieliHakemukselta
 
-      case _ => Set.empty
+      case _ =>
+        val suoritusArvo: AvainArvoContainer = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "false", Seq("Supasta tai hakemukselta ei löytynyt tietoa suoritetusta peruskoulusta."))
+        Set(suoritusArvo)
     }
 
     arvot
