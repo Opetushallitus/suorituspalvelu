@@ -164,7 +164,8 @@ object AvainArvoConstants {
 
   //Nämä tulevat aineen arvosanojen perään, eli esimerkiksi jos varsinainen arvosana
   // on avaimen "PK_B1" alla, tulee kieli avaimen "PK_B1_OPPIAINE" alle
-  final val peruskouluAineenKieliPostfix = "_OPPIAINE"
+  final val peruskouluAineenKieliOppiainePostfix = "_OPPIAINE"
+  final val peruskouluAineenKieliTietoPostfix = "_KIELITIETO"
 
   val aidinkieliKoodiMapping: Map[String, String] = Map(
     "AI1"  -> "FI",
@@ -181,9 +182,6 @@ object AvainArvoConstants {
     "AI12" -> "SV_VK",
     "AIAI" -> "XX"
   )
-
-  def convertAidinkieliKielikoodi(kieliKoodi: String): String =
-    aidinkieliKoodiMapping.getOrElse(kieliKoodi, kieliKoodi)
 
   //Lisäpistekoulutusten minimilaajuudet
   final val telmaMinimiLaajuus: BigDecimal = 25
@@ -679,18 +677,26 @@ object AvainArvoConverter {
     }).flatten.toSet
   }
 
+  def convertAidinkieliKielikoodi(kieliKoodi: String): String =
+    AvainArvoConstants.aidinkieliKoodiMapping.getOrElse(kieliKoodi, kieliKoodi)
+
   def perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(aineet: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
     aineet.flatMap((aine: PerusopetuksenOppiaine) => {
       val arvosanaAvain = AvainArvoConstants.peruskouluAineenArvosanaPrefix + aine.koodi.arvo
       val arvosanaArvot: AvainArvoContainer = AvainArvoContainer(arvosanaAvain, aine.arvosana.arvo, Seq(AvainArvoConstants.arvosananLahdeSeliteSupa))
 
-      val kieliArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
-        val kieliAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliPostfix
-        val kieliArvo = if (aine.koodi.arvo == "AI") AvainArvoConstants.convertAidinkieliKielikoodi(aineenKieliKoodi.arvo) else aineenKieliKoodi.arvo
+      val kieliOppiaineArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
+        val kieliAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix
+        val kieliArvo = if (aine.koodi.arvo == "AI") convertAidinkieliKielikoodi(aineenKieliKoodi.arvo) else aineenKieliKoodi.arvo
         AvainArvoContainer(kieliAvain, kieliArvo, Seq("Kielitieto löytyi Koskesta."))
       })
 
-      Set(arvosanaArvot) ++ kieliArvot
+      val kieliTietoArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
+        val kieliTietoAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliTietoPostfix
+        AvainArvoContainer(kieliTietoAvain, aineenKieliKoodi.arvo, Seq("Kielitieto löytyi Koskesta."))
+      })
+
+      Set(arvosanaArvot) ++ kieliOppiaineArvot ++ kieliTietoArvot
     })
   }
 
