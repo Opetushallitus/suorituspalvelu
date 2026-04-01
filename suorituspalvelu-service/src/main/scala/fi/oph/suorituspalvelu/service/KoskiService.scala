@@ -152,7 +152,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
           case Left(e) => None
         }.flatten
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeudet.toSet) ||
-        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid).values.flatten.toSet)
+        KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid, useKoskiSkipTable =  false).values.flatten.toSet)
 
       chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r))
     })

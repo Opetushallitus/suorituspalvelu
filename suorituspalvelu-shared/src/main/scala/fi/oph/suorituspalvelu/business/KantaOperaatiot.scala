@@ -429,8 +429,14 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       .map((versio, tuples) => versio -> tuples.flatMap(_._2).toSet)
   }
 
-  def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
+  def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant, useKoskiSkipTable: Boolean = false): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+    val versioTunnisteetQuery = if (useKoskiSkipTable)
+      sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo
+           AND NOT EXISTS (SELECT 1 FROM koski_opiskeluoikeus_skip WHERE lahdejarjestelma = 'KOSKI' AND koski_opiskeluoikeus_skip.henkilo_oid = versiot.henkilo_oid AND koski_opiskeluoikeus_skip.opiskeluoikeus_oid = versiot.lahdetunniste)"""
+    else
+      sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo"""
+
+    haeSuorituksetInternal(versioTunnisteetQuery)
   }
 
   def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {

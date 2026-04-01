@@ -99,7 +99,7 @@ class ValintaDataService {
   }
 
   def haeOppijanJaAliastenOpiskeluoikeudet(allOids: Set[String], timestamp: Instant): Seq[Opiskeluoikeus] = {
-    allOids.flatMap(oid => opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, timestamp).values.flatten).toSeq
+    allOids.flatMap(oid => opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, timestamp, useKoskiSkipTable = true).values.flatten).toSeq
   }
 
   def doAvainArvoConversions(personOid: Option[String], haku: KoutaHaku, hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
