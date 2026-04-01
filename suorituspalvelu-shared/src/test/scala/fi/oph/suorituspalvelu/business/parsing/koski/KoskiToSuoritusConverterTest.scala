@@ -109,6 +109,29 @@ class KoskiToSuoritusConverterTest {
 
   @Test
   def testGetYksilollistaminen(): Unit = {
+
+    val YHTEISET_AINEET = Set(
+      "AI",
+      "A1",
+      "A2",
+      "B1",
+      "MA",
+      "BI",
+      "GE",
+      "FY",
+      "KE",
+      "HI",
+      "YH",
+      "LI",
+      "TE",
+      "MU",
+      "KU",
+      "KS",
+      "KO",
+      "ET",
+      "KT"
+    )
+
     val baseSuoritus = KoskiSuoritus(
       null, null, null, null, null, null,
       osasuoritukset = Some(Set.empty), null, null, null, null, null, null, null
@@ -120,7 +143,7 @@ class KoskiToSuoritusConverterTest {
 
     def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): KoskiOsaSuoritus = {
       KoskiOsaSuoritus(
-        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, null, null, null)), null,
+        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, Some(YHTEISET_AINEET.contains(aine)), null, null)), null,
         predictedArviointi = None,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
@@ -153,7 +176,7 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU), KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusPuoletRajattu))
 
     // Case 7: Yli puolet rajattuja
-    val suoritusYliPuoletRajattu = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("LI", false, true), createOsaSuoritus("B2", false, true), createOsaSuoritus("A1", false, false))))
+    val suoritusYliPuoletRajattu = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("KE", false, true), createOsaSuoritus("B1", false, true), createOsaSuoritus("A1", false, false))))
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU),    KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusYliPuoletRajattu))
 
     // Case 8: Sekä yksilöllistettyjä että rajattuja, mutta yksilöllistettyjä on enemmän
