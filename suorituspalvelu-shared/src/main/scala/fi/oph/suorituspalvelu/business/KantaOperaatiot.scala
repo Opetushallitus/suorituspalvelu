@@ -409,11 +409,16 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant, useKoskiSkipTable: Boolean = false): Map[VersioEntiteetti, String] = {
     val versioTunnisteetQuery = if (useKoskiSkipTable)
       sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo
-               AND NOT EXISTS (SELECT 1 FROM koski_opiskeluoikeus_skip WHERE lahdejarjestelma = 'KOSKI' AND koski_opiskeluoikeus_skip.henkilo_oid = versiot.henkilo_oid AND koski_opiskeluoikeus_skip.opiskeluoikeus_oid = versiot.lahdetunniste)"""
+           AND NOT EXISTS (SELECT 1 FROM koski_opiskeluoikeus_skip WHERE koski_opiskeluoikeus_skip.henkilo_oid = versiot.henkilo_oid AND koski_opiskeluoikeus_skip.opiskeluoikeus_oid = versiot.lahdetunniste)"""
     else
       sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo"""
 
     haeSuorituksetInternal(versioTunnisteetQuery)
+  }
+
+  def lisaaKoskiSkip(henkiloOid: String, opiskeluoikeusOid: String, selite: String) = {
+    val upsertAction = sqlu"""INSERT INTO koski_opiskeluoikeus_skip (henkilo_oid, opiskeluoikeus_oid, selite, aikaleima) VALUES (${henkiloOid}, ${opiskeluoikeusOid}, ${selite}, now()) ON CONFLICT (henkilo_oid, opiskeluoikeus_oid) DO NOTHING"""
+    Await.result(db.run(upsertAction.transactionally), DB_TIMEOUT)
   }
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
