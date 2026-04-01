@@ -43,7 +43,7 @@ class KoskiUtilTest {
           aloitusPaivamaara = None,
           vahvistusPaivamaara = Some(LocalDate.now()),
           aineet = Set.empty,
-          lahtokoulut = Set(Lahtokoulu(LocalDate.now().minusDays(1), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), "9A", Some(SuoritusTila.KESKEN), None, VUOSILUOKKA_9)),
+          lahtokoulut = List(Lahtokoulu(LocalDate.now().minusDays(1), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), "9A", Some(SuoritusTila.KESKEN), None, VUOSILUOKKA_9)),
           syotetty = false,
           vuosiluokkiinSitoutumatonOpetus = false
         )
@@ -75,7 +75,7 @@ class KoskiUtilTest {
           aloitusPaivamaara = Some(LocalDate.now()),
           vahvistusPaivamaara = Some(LocalDate.now()),
           aineet = Set.empty,
-          lahtokoulut = Set(Lahtokoulu(LocalDate.now(), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), "9A", Some(SuoritusTila.VALMIS), None, VUOSILUOKKA_9)),
+          lahtokoulut = List(Lahtokoulu(LocalDate.now(), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), "9A", Some(SuoritusTila.VALMIS), None, VUOSILUOKKA_9)),
           syotetty = false,
           vuosiluokkiinSitoutumatonOpetus = false
         ),

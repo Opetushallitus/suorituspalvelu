@@ -288,7 +288,7 @@ case class Telma(
   suoritusVuosi: Int,
   suoritusKieli: Koodi,
   hyvaksyttyLaajuus: Option[Laajuus],
-  lahtokoulu: Lahtokoulu
+  lahtokoulut: List[Lahtokoulu]
 ) extends Suoritus, Tyypitetty
 
 case class Tuva(
@@ -302,7 +302,7 @@ case class Tuva(
   vahvistusPaivamaara: Option[LocalDate],
   suoritusVuosi: Int,
   hyvaksyttyLaajuus: Option[Laajuus],
-  lahtokoulu: Lahtokoulu
+  lahtokoulut: List[Lahtokoulu]
 ) extends Suoritus, Tyypitetty
 
 //Opistovuosi
@@ -318,7 +318,7 @@ case class VapaaSivistystyo(
   suoritusVuosi: Int,
   hyvaksyttyLaajuus: Option[Laajuus],
   suoritusKieli: Koodi,
-  lahtokoulu: Lahtokoulu
+  lahtokoulut: List[Lahtokoulu]
 ) extends Suoritus, Tyypitetty
 
 //Tähän entiteettiin mallinnetaan sekä NuortenPerusopetuksenOppiaineenOppimaarat että AikuistenPerusopetuksenOppiaineenOppimäärät.
@@ -405,14 +405,14 @@ case class PerusopetuksenOppimaara(
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
   aineet: Set[PerusopetuksenOppiaine],
-  lahtokoulut: Set[Lahtokoulu],
+  lahtokoulut: List[Lahtokoulu],
   syotetty: Boolean, // Käsin tallennetulle tiedolle true, muutoin false.
   vuosiluokkiinSitoutumatonOpetus: Boolean,
   luokkaAste: Option[Int]
 ) extends Suoritus, Tyypitetty
 
 case class PerusopetukseenValmistavaOpetus(
-  lahtokoulu: Lahtokoulu,
+  lahtokoulut: List[Lahtokoulu],
 ) extends Suoritus, Tyypitetty
 
 case class LukionOppimaara(
