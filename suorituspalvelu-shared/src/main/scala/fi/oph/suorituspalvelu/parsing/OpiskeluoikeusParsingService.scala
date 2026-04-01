@@ -105,8 +105,8 @@ class OpiskeluoikeusParsingService(
    * @param henkiloOid henkilön oid
    * @return suoritukset versioittain
    */
-  def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    haeSuorituksetAjanhetkella(henkiloOid, Instant.now())
+  def haeSuoritukset(henkiloOid: String, useKoskiSkipTable: Boolean = false): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+    haeSuorituksetAjanhetkella(henkiloOid, Instant.now(), useKoskiSkipTable = useKoskiSkipTable)
   }
 
   /**
@@ -121,8 +121,8 @@ class OpiskeluoikeusParsingService(
    * @param timestamp  ajanhetki
    * @return suoritukset versioittain
    */
-  def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
-    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp).map { case (versio, opiskeluoikeusContainerRaw) =>
+  def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant, useKoskiSkipTable: Boolean): Map[VersioEntiteetti, Set[Opiskeluoikeus]] = {
+    kantaOperaatiot.haeSuorituksetAjanhetkellaUnparsed(henkiloOid, timestamp, useKoskiSkipTable).map { case (versio, opiskeluoikeusContainerRaw) =>
       val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
       versio.parserVersio match {
         case None =>

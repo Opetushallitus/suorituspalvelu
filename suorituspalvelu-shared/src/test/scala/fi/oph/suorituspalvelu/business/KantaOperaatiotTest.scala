@@ -97,6 +97,7 @@ class KantaOperaatiotTest {
             DROP TABLE henkilot;
             DROP TABLE yliajot;
             DROP TABLE harkinnanvaraisuus_yliajot;
+            DROP TABLE koski_opiskeluoikeus_skip;
           """), 5.seconds)
 
   /**
@@ -104,8 +105,8 @@ class KantaOperaatiotTest {
    * kanssa on mahdollista vain OpiskeluoikeusParsingServicen kautta, joten käytetään sitä suoritusten hakemiseen.
    */
 
-  private def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
-    opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, timestamp)
+  private def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant, useKoskiSkipTable: Boolean = false): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
+    opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, timestamp, useKoskiSkipTable)
 
   private def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
     opiskeluoikeusParsingService.haeSuoritukset(henkiloOid)

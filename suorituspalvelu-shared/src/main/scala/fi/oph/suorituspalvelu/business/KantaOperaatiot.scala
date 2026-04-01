@@ -406,9 +406,15 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
    * Käytä sen sijaan [[fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService#haeSuorituksetAjanhetkella]],
    * joka huolehtii myös on-demand-parseroinnista ja parserVersion hallinnasta.
    */
-  def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, String] =
-    haeSuorituksetInternal(sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo""")
+  def haeSuorituksetAjanhetkellaUnparsed(henkiloOid: String, timestamp: Instant, useKoskiSkipTable: Boolean = false): Map[VersioEntiteetti, String] = {
+    val versioTunnisteetQuery = if (useKoskiSkipTable)
+      sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo
+               AND NOT EXISTS (SELECT 1 FROM koski_opiskeluoikeus_skip WHERE lahdejarjestelma = 'KOSKI' AND koski_opiskeluoikeus_skip.henkilo_oid = versiot.henkilo_oid AND koski_opiskeluoikeus_skip.opiskeluoikeus_oid = versiot.lahdetunniste)"""
+    else
+      sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo"""
 
+    haeSuorituksetInternal(versioTunnisteetQuery)
+  }
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
     Await.result(db.run(
