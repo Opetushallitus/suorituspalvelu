@@ -95,6 +95,7 @@ class KantaOperaatiotTest {
             DROP TABLE henkilot;
             DROP TABLE yliajot;
             DROP TABLE harkinnanvaraisuus_yliajot;
+            DROP TABLE koski_opiskeluoikeus_skip;
           """), 5.seconds)
 
   /**
