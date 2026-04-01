@@ -172,7 +172,7 @@ class ValintaDataService {
       })
       valintalaskentaHakemukset
     }
-    Await.result(valintaDatat, 5.minutes)
+    Await.result(valintaDatat, 15.minutes)
   }
 
   def getValintaData(hakemusOid: String):  Either[String, ValintaData] = {
