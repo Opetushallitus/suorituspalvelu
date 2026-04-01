@@ -24,7 +24,7 @@ services:
       NO_DB: true
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://pgdatabase:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pgdatabase:5432/${POSTGRES_DB}?options=-c%20transaction_timeout=30000
       MAVEN_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     ports:
       - "8443:8443"
