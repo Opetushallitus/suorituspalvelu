@@ -103,9 +103,10 @@ class ValintaDataService {
     allOids.flatMap(oid => opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, timestamp, useKoskiSkipTable = true).values.flatten).toSeq
   }
 
-  def doAvainArvoConversions(personOid: Option[String], haku: KoutaHaku, hakemus: Option[AtaruValintalaskentaHakemus]): ValintaData = {
+  def doAvainArvoConversions(personOid: Option[String], haku: KoutaHaku, hakemus: Option[AtaruValintalaskentaHakemus], allOidsForPerson: Set[String]): ValintaData = {
     val usePersonOid = personOid.getOrElse(hakemus.map(_.personOid).get) //personOid tarvitaan tai kaadutaan
-    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(usePersonOid)), 10.seconds).allOids
+    if (allOidsForPerson.isEmpty) throw new RuntimeException(s"Ei saatu yhtään oidia hakemuksen ${hakemus.map(_.hakemusOid)} hakijalle ${hakemus.map(_.personOid)}")
+    LOG.info(s"Tehdään avain-arvokonversiot hakemuksen ${hakemus.map(_.hakemusOid)} hakijalle $usePersonOid. Kaikki aliakset: ${allOidsForPerson.mkString(",")}")
 
     val ohjausparametrit = tarjontaIntegration.getOhjausparametrit(haku.oid)
     val suoritustenAjanhetki = ohjausparametrit.valintalaskentapaiva.map(vlp => Instant.ofEpochMilli(vlp.date)).getOrElse(Instant.now())
@@ -136,9 +137,10 @@ class ValintaDataService {
 
     val valintaDatat = for {
       hakemukset <- fetchValintalaskentaHakemukset(hakukohdeOid, hakemusOids, haku.isToisenAsteenHaku())
+      hakemustenHenkiloidenAliakset <- onrIntegration.getAliasesForPersonOids(hakemukset.map(_.personOid).toSet)
     } yield {
       val convertedHakemukset: Seq[ValintaData] = hakemukset.map(hakemus => {
-          doAvainArvoConversions(None, haku, Some(hakemus))
+          doAvainArvoConversions(None, haku, Some(hakemus), hakemustenHenkiloidenAliakset.allOidsByQueriedOids.getOrElse(hakemus.personOid, Set.empty))
         })
       val valintalaskentaHakemukset = convertedHakemukset.map(vd => {
         val hakutoiveet: List[ValintalaskentaHakutoive] = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty)
@@ -172,7 +174,7 @@ class ValintaDataService {
       })
       valintalaskentaHakemukset
     }
-    Await.result(valintaDatat, 5.minutes)
+    Await.result(valintaDatat, 15.minutes)
   }
 
   def getValintaData(hakemusOid: String):  Either[String, ValintaData] = {
@@ -186,7 +188,10 @@ class ValintaDataService {
         case None => None
       })
       (hakemus, haku) match {
-        case (Some(hakemus), Some(haku)) => Right(doAvainArvoConversions(None, haku, Some(hakemus)))
+        case (Some(hakemus), Some(haku)) => {
+          val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(hakemus.personOid)), 10.seconds).allOids
+          Right(doAvainArvoConversions(None, haku, Some(hakemus), allOidsForPerson))
+        }
         case (None, _) => Left(s"Hakemusta ei löytynyt tunnisteella $hakemusOid")
         case (Some(hakemus), None) => Left(s"Hakua ei löytynyt tunnisteella ${hakemus.hakuOid}")
       }
@@ -204,8 +209,9 @@ class ValintaDataService {
     val resultF = for {
       hakemusOid: Option[String] <- selvitaHakijanHakemusOidHaussa(hakuOid, personOid)
       hakemus: Seq[AtaruValintalaskentaHakemus] <- fetchValintalaskentaHakemukset(None, Set.empty ++ hakemusOid, isToisenAsteenHaku)
+      allOidsForPerson: Set[String] <- onrIntegration.getAliasesForPersonOids(Set(personOid)).map(_.allOids)
     } yield {
-      doAvainArvoConversions(Some(personOid), haku, hakemus.headOption)
+      doAvainArvoConversions(Some(personOid), haku, hakemus.headOption, allOidsForPerson)
     }
     Await.result(resultF, 1.minute)
   }
