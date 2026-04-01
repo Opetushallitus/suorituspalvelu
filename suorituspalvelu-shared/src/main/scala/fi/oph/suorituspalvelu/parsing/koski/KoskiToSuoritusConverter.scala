@@ -462,9 +462,11 @@ object KoskiToSuoritusConverter {
 
   //Tämän tuottamat numeeriset arvot ovat käytännössä koodiston 2asteenpohjakoulutus2021 arvoja.
   def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[PerusopetuksenYksilollistaminen] = {
-    val yksilollistettyja = suoritus.osasuoritukset.getOrElse(Set.empty).count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
-    val rajattuja = suoritus.osasuoritukset.getOrElse(Set.empty).count(_.`rajattuOppimäärä`.exists(_.equals(true)))
-    val yhteensa = suoritus.osasuoritukset.getOrElse(Set.empty).size
+    val yhteisetAineet = suoritus.osasuoritukset.getOrElse(Set.empty)
+      .filter(os => os.koulutusmoduuli.flatMap(_.tunniste).map(_.koodiarvo).exists(YHTEISET_AINEET_JA_A2_B2.contains))
+    val yksilollistettyja = yhteisetAineet.count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
+    val rajattuja = yhteisetAineet.count(_.`rajattuOppimäärä`.exists(_.equals(true)))
+    val yhteensa = yhteisetAineet.size
     val opiskeleeToimintaAlueittain =
       opiskeluoikeus
         .lisätiedot
@@ -566,7 +568,7 @@ object KoskiToSuoritusConverter {
     }
   }
 
-  val YHTEISET_AINEET = List(
+  val YHTEISET_EI_KATSOMUSAINEET = Set(
     "AI",
     "A1",
     "A2",
@@ -586,15 +588,17 @@ object KoskiToSuoritusConverter {
     "KO"
   )
 
-  val KATSOMUSAINEET = List(
+  val YHTEISET_KATSOMUSAINEET = Set(
     "ET",
     "KT"
   )
 
+  val YHTEISET_AINEET_JA_A2_B2 = YHTEISET_EI_KATSOMUSAINEET ++ YHTEISET_KATSOMUSAINEET ++ Set("A2", "B2")
+
   // Muista kuin katsomuaineista pitää olla kaikki, ja katsomusaineista jompi kumpi
   def yhteisenAineenArvosanaPuuttuu(aineet: Set[PerusopetuksenOppiaine]): Boolean =
-    !YHTEISET_AINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
-      !KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
+    !YHTEISET_EI_KATSOMUSAINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
+      !YHTEISET_KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara = {
     val oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
