@@ -4,4 +4,4 @@ CREATE TABLE IF NOT EXISTS koski_opiskeluoikeus_skip (
     selite varchar(255),
     aikaleima timestamptz,
     primary key (henkilo_oid, opiskeluoikeus_oid)
-)
+);
