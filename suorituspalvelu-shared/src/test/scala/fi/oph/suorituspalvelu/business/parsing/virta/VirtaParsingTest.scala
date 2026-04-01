@@ -209,7 +209,21 @@ class VirtaParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2014-09-17")), suoritus.hyvaksilukuPvm)
     Assertions.assertEquals(false, suoritus.opinnaytetyo)
 
-  private def generateMuuArvosanaData(asteikkoNimi: Option[String]) =
+  private val ASTEIKKO_ARVOSANAT =
+    """
+      |                    <virta:AsteikkoArvosana avain="10979859">
+      |                      <virta:Koodi>HYV</virta:Koodi>
+      |                      <virta:Nimi>Hyväksytty</virta:Nimi>
+      |                      <virta:LaskennallinenArvo>2.0</virta:LaskennallinenArvo>
+      |                    </virta:AsteikkoArvosana>
+      |                    <virta:AsteikkoArvosana avain="10979858">
+      |                      <virta:Koodi>HYL</virta:Koodi>
+      |                      <virta:Nimi>Hylätty</virta:Nimi>
+      |                      <virta:LaskennallinenArvo>1.0</virta:LaskennallinenArvo>
+      |                    </virta:AsteikkoArvosana>
+      |""".stripMargin
+
+  private def generateMuuArvosanaData(asteikkoNimi: Option[String], useAsteikkoArvosanat: Boolean) =
     VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaOpiskelijat(
       s"""
         |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -242,16 +256,7 @@ class VirtaParsingTest {
         |                <virta:Muu>
         |                  <virta:Asteikko avain="11">
         |                    ${asteikkoNimi.map(nimi => s"<virta:Nimi>$nimi</virta:Nimi>").getOrElse("")}
-        |                    <virta:AsteikkoArvosana avain="10979859">
-        |                      <virta:Koodi>HYV</virta:Koodi>
-        |                      <virta:Nimi>Hyväksytty</virta:Nimi>
-        |                      <virta:LaskennallinenArvo>2.0</virta:LaskennallinenArvo>
-        |                    </virta:AsteikkoArvosana>
-        |                    <virta:AsteikkoArvosana avain="10979858">
-        |                      <virta:Koodi>HYL</virta:Koodi>
-        |                      <virta:Nimi>Hylätty</virta:Nimi>
-        |                      <virta:LaskennallinenArvo>1.0</virta:LaskennallinenArvo>
-        |                    </virta:AsteikkoArvosana>
+        |                    ${if(useAsteikkoArvosanat) ASTEIKKO_ARVOSANAT else ""}}
         |                  </virta:Asteikko>
         |                  <virta:Koodi>10979859</virta:Koodi>
         |                </virta:Muu>
@@ -281,7 +286,7 @@ class VirtaParsingTest {
     )).asInstanceOf[Seq[KKOpiskeluoikeus]].head.suoritukset
 
   @Test def testVirtasuoritusMuuArvosanaWithAsteikkoNimi(): Unit = {
-    val suoritukset = generateMuuArvosanaData(Some("Fail-Pass"))
+    val suoritukset = generateMuuArvosanaData(asteikkoNimi = Some("Fail-Pass"), useAsteikkoArvosanat = true)
     Assertions.assertEquals(1, suoritukset.size)
     val suoritus = suoritukset.head.asInstanceOf[KKOpintosuoritus]
     Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
@@ -289,10 +294,18 @@ class VirtaParsingTest {
   }
 
   @Test def testVirtasuoritusMuuArvosanaNoAsteikkoNimi(): Unit = {
-    val suoritukset = generateMuuArvosanaData(None)
+    val suoritukset = generateMuuArvosanaData(asteikkoNimi = None, useAsteikkoArvosanat = true)
     Assertions.assertEquals(1, suoritukset.size)
     val suoritus = suoritukset.head.asInstanceOf[KKOpintosuoritus]
     Assertions.assertEquals(Some("Hyväksytty"), suoritus.arvosana)
+    Assertions.assertEquals(None, suoritus.arvosanaAsteikko)
+  }
+
+  @Test def testVirtasuoritusMuuArvosanaMissingAsteikkoArvosanat(): Unit = {
+    val suoritukset = generateMuuArvosanaData(None, useAsteikkoArvosanat = false)
+    Assertions.assertEquals(1, suoritukset.size)
+    val suoritus = suoritukset.head.asInstanceOf[KKOpintosuoritus]
+    Assertions.assertEquals(Some("10979859"), suoritus.arvosana)
     Assertions.assertEquals(None, suoritus.arvosanaAsteikko)
   }
 
