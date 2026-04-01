@@ -29,7 +29,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
     Assertions.assertTrue(versioBeforeParse.get.parserVersio.isEmpty, "parserVersio pitäisi olla None ennen parserausta")
 
     // Kutsutaan palvelua joka parsii on-demand
-    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID)
+    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID, useKoskiSkipTable = false)
 
     // Varmistetaan että parserVersio on nyt tallennettu
     val versioAfterParse = kantaOperaatiot.haeVersio(versio.tunniste)
@@ -54,7 +54,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Some(oldParserVersion), versioBeforeParse.get.parserVersio)
 
     // Kutsutaan palvelua joka parsii uudelleen
-    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID)
+    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID, useKoskiSkipTable = false)
 
     // Varmistetaan että parserVersio on päivitetty uuteen
     val versioAfterParse = kantaOperaatiot.haeVersio(versio.tunniste)
@@ -108,7 +108,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Some(newerParserVersion), versioBeforeParse.get.parserVersio)
 
     // Kutsutaan palvelua
-    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID)
+    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID, useKoskiSkipTable = false)
 
     // Varmistetaan että parserVersio EI muuttunut (uudempaa ei ylikirjoiteta)
     val versioAfterParse = kantaOperaatiot.haeVersio(versio.tunniste)
@@ -128,7 +128,7 @@ class OpiskeluoikeusParsingServiceTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(Some(ParserVersions.KOSKI), versioBeforeFetch.get.parserVersio)
 
     // Kutsutaan palvelua
-    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID).flatMap(_._2)
+    val result = opiskeluoikeusParsingService.haeSuoritukset(OPPIJA_OID, useKoskiSkipTable = false).flatMap(_._2)
 
     // Varmistetaan että versio ei muuttunut
     val versioAfterFetch = kantaOperaatiot.haeVersio(versio.tunniste)

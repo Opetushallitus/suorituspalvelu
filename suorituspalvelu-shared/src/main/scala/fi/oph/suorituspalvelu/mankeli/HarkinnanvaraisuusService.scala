@@ -93,7 +93,7 @@ object HarkinnanvaraisuusPaattely {
 
     val tuoreinYsiPeruskouluSuoritus = AvainArvoConverter.etsiViimeisinPeruskoulu(hakemus.personOid, opiskeluoikeudet, salliMontaValmista = true)
       .filter(pk => pk.luokkaAste.isEmpty || pk.luokkaAste.contains(9)) //Todo, poistetaan isEmpty kun kaikilta löytyy parseroitu luokkaAste.
-      
+
     val deadlineOhitettu = LocalDate.now().isAfter(vahvistettuViimeistaan)
     val pohjakoulutusHakemukselta =
       hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey).flatMap(v => Option.apply(v))
@@ -213,7 +213,7 @@ class HarkinnanvaraisuusService {
 
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
-    allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid).values.flatten).toSeq
+    allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid, useKoskiSkipTable = true).values.flatten).toSeq
   }
 
   def getHakemuksenHarkinnanvaraisuudet(

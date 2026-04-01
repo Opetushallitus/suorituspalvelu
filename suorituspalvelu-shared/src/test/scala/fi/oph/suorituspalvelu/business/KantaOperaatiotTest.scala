@@ -97,6 +97,7 @@ class KantaOperaatiotTest {
             DROP TABLE henkilot;
             DROP TABLE yliajot;
             DROP TABLE harkinnanvaraisuus_yliajot;
+            DROP TABLE koski_opiskeluoikeus_skip;
           """), 5.seconds)
 
   /**
@@ -104,8 +105,8 @@ class KantaOperaatiotTest {
    * kanssa on mahdollista vain OpiskeluoikeusParsingServicen kautta, joten käytetään sitä suoritusten hakemiseen.
    */
 
-  private def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
-    opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, timestamp)
+  private def haeSuorituksetAjanhetkella(henkiloOid: String, timestamp: Instant, useKoskiSkipTable: Boolean = false): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
+    opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, timestamp, useKoskiSkipTable)
 
   private def haeSuoritukset(henkiloOid: String): Map[VersioEntiteetti, Set[Opiskeluoikeus]] =
     opiskeluoikeusParsingService.haeSuoritukset(henkiloOid)
@@ -1385,6 +1386,66 @@ class KantaOperaatiotTest {
         .collect { case s: PerusopetuksenOppimaara => s }
         .flatMap(_.aineet)
         .size)
+  }
+
+  @Test def testKoskiSkip(): Unit = {
+    val henkiloOid = "1.2.246.562.24.99988844422"
+    val opiskeluoikeusOid1 = "1.2.246.562.15.12345678901"
+    val opiskeluoikeusOid2 = "1.2.246.562.15.09876543210"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val oppilaitosOid2 = "1.2.246.562.10.95136881253"
+
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloOid, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"value111\"}"), Seq.empty, Instant.now(), opiskeluoikeusOid1, Some(1)).get
+    val suoritus1 = PerusopetuksenOppimaara(
+      UUID.randomUUID(), None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
+      None, Koodi("arvo", "koodisto", Some(1)),
+      SuoritusTila.VALMIS,
+      Koodi("arvo", "koodisto", Some(1)),
+      Set.empty, None, None, None,
+      Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
+        Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None)),
+      List.empty,
+      false,
+      false,
+      None
+    )
+
+    val lisatiedot1 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
+    val opiskeluoikeus1 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("opiskeluoikeusOid"), oppilaitosOid, Set(suoritus1), Some(lisatiedot1), VALMIS, List.empty)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1, Set(opiskeluoikeus1), Seq.empty, ParserVersions.KOSKI)
+
+
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloOid, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"value444\"}"), Seq.empty, Instant.now(), opiskeluoikeusOid2, Some(2)).get
+    val suoritus2 = PerusopetuksenOppimaara(
+      UUID.randomUUID(), None,
+      Oppilaitos(Kielistetty(None, None, None), oppilaitosOid2),
+      None, Koodi("arvo", "koodisto", Some(1)),
+      SuoritusTila.VALMIS, Koodi("arvo", "koodisto", Some(1)),
+      Set.empty, None, None, None,
+      Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
+        Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
+        Some(Koodi("FI", "kielivalikoima", None)), true, None, None),
+        PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("matematiikka"), None, None),
+          Koodi("MA", "koodisto", None), Koodi("7", "koodisto", None),
+          None, true, None, None)),
+      List.empty,
+      false,
+      false,
+      None
+    )
+    val lisatiedot2 = KoskiLisatiedot(Some(List(KoskiErityisenTuenPaatos(opiskeleeToimintaAlueittain = Some(true)))), None, None)
+    val opiskeluoikeus2 = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("opiskeluoikeusOid"), oppilaitosOid, Set(suoritus2), Some(lisatiedot2), VALMIS, List.empty)
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2, Set(opiskeluoikeus2), Seq.empty, ParserVersions.KOSKI)
+
+    this.kantaOperaatiot.lisaaKoskiSkip(henkiloOid, opiskeluoikeusOid1, "Testataan vain!")
+
+    val oppijanSuoritukset = haeSuorituksetAjanhetkella(henkiloOid, Instant.now(), useKoskiSkipTable = false)
+    val oppijanSuorituksetWithSkips = haeSuorituksetAjanhetkella(henkiloOid, Instant.now(), useKoskiSkipTable = true)
+
+    Assertions.assertEquals(2, oppijanSuoritukset.size)
+    Assertions.assertEquals(1, oppijanSuorituksetWithSkips.size)
   }
 
   private val NOW = LocalDate.now
