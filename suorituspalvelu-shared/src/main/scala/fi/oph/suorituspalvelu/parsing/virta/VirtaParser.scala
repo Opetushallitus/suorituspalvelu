@@ -147,17 +147,18 @@ class ArvosanaDeserializer extends JsonDeserializer[VirtaArvosana] {
         val koodi = contentMap("Koodi").asInstanceOf[String]
         val asteikkoNimi = asteikkoMap.get("Nimi").asInstanceOf[Option[String]]
 
-        val asteikkoArvosanat = asteikkoMap("AsteikkoArvosana") match {
-          case list: java.util.ArrayList[_] =>
+        val asteikkoArvosanat = asteikkoMap.get("AsteikkoArvosana") match {
+          case Some(list: java.util.ArrayList[_]) =>
             list.toArray.map(mapper.convertValue(_, classOf[VirtaMuuAsteikkoArvosana])).toSeq
-          case single: Map[_, _] =>
+          case Some(single: Map[_, _]) =>
             Seq(mapper.convertValue(single, classOf[VirtaMuuAsteikkoArvosana]))
+          case _ => Seq.empty
         }
 
         val matchingArvosana = asteikkoArvosanat.find(_.avain == koodi).map(_.Nimi)
         matchingArvosana match {
           case Some(arvosanaNimi) => VirtaArvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
-          case None => null
+          case None => VirtaArvosana(arvosana = koodi, asteikko = asteikkoNimi)
         }
       case _ => VirtaArvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = Some(arvosanaTagName))
     }
