@@ -143,6 +143,7 @@ class ValintaDataService {
       val convertedHakemukset: Seq[ValintaData] = hakemukset.map(hakemus => {
           doAvainArvoConversions(None, haku, Some(hakemus), hakemustenHenkiloidenAliakset.allOidsByQueriedOids.getOrElse(hakemus.personOid, Set.empty))
         })
+      LOG.info(s"(Haku $hakuOid, hakukohde $hakukohdeOid, hakemusOids $hakemusOids) Avain-arvot muodostettu, muodostetaan vastaus")
       val valintalaskentaHakemukset = convertedHakemukset.map(vd => {
         val hakutoiveet: List[ValintalaskentaHakutoive] = vd.hakemus.map(_.hakutoiveet).getOrElse(List.empty)
         val parsedHakutoiveet = hakutoiveet.map(ht => {
@@ -173,6 +174,7 @@ class ValintaDataService {
           avainMetatiedotDTO = metatiedot
         )
       })
+      LOG.info(s"(Haku $hakuOid, hakukohde $hakukohdeOid, hakemusOids $hakemusOids) Vastaus muodostettu, ollaan valmiita!")
       valintalaskentaHakemukset
     }
     Await.result(valintaDatat, 15.minutes)
