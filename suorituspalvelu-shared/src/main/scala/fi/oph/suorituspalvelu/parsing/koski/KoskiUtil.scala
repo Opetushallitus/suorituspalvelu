@@ -33,13 +33,13 @@ object KoskiUtil {
         case s: PerusopetuksenOppimaara => s.lahtokoulut
       }.flatten
       case oo: AmmatillinenOpiskeluoikeus => oo.suoritukset.collect {
-        case s: Telma => s.lahtokoulu
-      }
+        case s: Telma => s.lahtokoulut
+      }.flatten
       case oo: GeneerinenOpiskeluoikeus => oo.suoritukset.collect {
-        case s: Tuva => s.lahtokoulu
-        case s: VapaaSivistystyo => s.lahtokoulu
-        case s: PerusopetukseenValmistavaOpetus => s.lahtokoulu
-      }
+        case s: Tuva => s.lahtokoulut
+        case s: VapaaSivistystyo => s.lahtokoulut
+        case s: PerusopetukseenValmistavaOpetus => s.lahtokoulut
+      }.flatten
     }.flatten.toSeq.sortBy(ov => ov.suorituksenAlku)
 
   /**
@@ -57,7 +57,7 @@ object KoskiUtil {
     if(lahtokoulut.isEmpty)
       Seq.empty
     else {
-      val aikajarjestetyt = lahtokoulut.sortBy(_.suorituksenAlku)
+      val aikajarjestetyt = lahtokoulut.sortBy(l => (l.suorituksenAlku, l.suorituksenLoppu.getOrElse(LocalDate.MAX)))
       aikajarjestetyt.zip(aikajarjestetyt.tail.map(e => Some(e)) :+ None).map((curr, next) => {
         val loppuPaivamaara =
           (curr.suorituksenLoppu, next.map(n => n.suorituksenAlku)) match
