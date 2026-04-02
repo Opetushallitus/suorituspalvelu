@@ -133,11 +133,12 @@ class ValintaDataService {
       case Some(haku) => haku
       case None => throw new RuntimeException(s"Hakua oidilla $hakuOid ei löytynyt!")
     }
-
+    LOG.info(s"(Haku $hakuOid, hakukohde $hakukohdeOid, hakemusOids $hakemusOids) Haetaan hakemukset ja hakijoiden aliakset.")
     val valintaDatat = for {
       hakemukset <- fetchValintalaskentaHakemukset(hakukohdeOid, hakemusOids, haku.isToisenAsteenHaku())
       hakemustenHenkiloidenAliakset <- onrIntegration.getAliasesForPersonOids(hakemukset.map(_.personOid).toSet)
     } yield {
+      LOG.info(s"(Haku $hakuOid, hakukohde $hakukohdeOid, hakemusOids $hakemusOids) hakemukset (${hakemukset.size} kpl) ja aliakset haettu, muodostetaan avain-arvot.")
       val convertedHakemukset: Seq[ValintaData] = hakemukset.map(hakemus => {
           doAvainArvoConversions(None, haku, Some(hakemus), hakemustenHenkiloidenAliakset.allOidsByQueriedOids.getOrElse(hakemus.personOid, Set.empty))
         })
