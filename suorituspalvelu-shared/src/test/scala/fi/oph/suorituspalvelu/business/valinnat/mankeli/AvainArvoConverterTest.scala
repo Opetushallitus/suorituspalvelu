@@ -91,6 +91,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
     Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
     Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
+    Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pkSuorituslukukausiKey))
   }
 
   @Test def testAvainArvoConverterForPeruskouluArvosanatJaKielet(): Unit = {
@@ -108,12 +109,12 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(1, opiskeluoikeudet.size)
     val leikkuri = LocalDate.now
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet("1.2.246.562.98.69863082363", opiskeluoikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
-    val tavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
+    val pakollisetTavoiteArvosanat = Map("HI" -> "8", "BI" -> "9", "B1" -> "8", "AOM" -> "8", "LI" -> "9",
       "YH" -> "10", "KU" -> "8", "GE" -> "9", "MA" -> "9", "B2" -> "9", "TE" -> "8",
       "KT" -> "10", "FY" -> "9", "AI" -> "9", "MU" -> "7", "A1" -> "8", "KE" -> "7")
     val tavoiteKielet = Map("B1" -> "SV", "A1" -> "EN", "B2" -> "DE")
 
-    tavoiteArvosanat.foreach { case (aine, arvosana) =>
+    pakollisetTavoiteArvosanat.foreach { case (aine, arvosana) =>
       val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
       Assertions.assertEquals(Some(arvosana), converterResult.getAvainArvoMap().get(prefix + aine))
     }
@@ -125,6 +126,9 @@ class AvainArvoConverterTest {
 
       Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(kieliAvain))
     }
+
+    //Pitäisi löytyä yksi tarpeeksi laaja valinnainen arvosana
+    Assertions.assertEquals(Some("10"), converterResult.getAvainArvoMap().get("PK_LI_VAL1"))
   }
 
   @Test def testKorkeimmatArvosanat(): Unit = {
@@ -147,7 +151,7 @@ class AvainArvoConverterTest {
     val oppiaineenOppimaara2 = PerusopetuksenOppimaaranOppiaineidenSuoritus(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Some(LocalDate.parse("2025-06-08")), Some(LocalDate.parse("2025-06-08")), Set(korotus2Liikunta), false)
 
     val oppiaineet = oppimaara.aineet ++ oppiaineenOppimaara1.aineet ++ oppiaineenOppimaara2.aineet
-    val avainArvot = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(oppiaineet)
+    val avainArvot = AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(oppiaineet)
     val ka: Set[AvainArvoContainer] = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(avainArvot)
     val korkeimmatArvosanat = ka.map(aa => (aa.avain, aa.arvo)).toMap
 
@@ -186,6 +190,9 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
 
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritettuKey))
+    Assertions.assertEquals(Some("2021"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritusvuosiKey))
+    Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuorituslukukausiKey))
+    Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoTutkintoKieliKey))
   }
 
   @Test def testYoArvoLeikkuripaivanJalkeen(): Unit = {
@@ -216,6 +223,9 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuoritusvuosiKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.yoSuorituslukukausiKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.yoTutkintoKieliKey))
 
   }
 
@@ -230,6 +240,9 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None)
 
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ammTutkintoKieliKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritusvuosiKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuorituslukukausiKey))
   }
 
   @Test def testAmmArvoAjoissaValmistunut(): Unit = {
@@ -237,12 +250,14 @@ class AvainArvoConverterTest {
 
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val ajoissaValmistunut = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
-      Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
+      Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("FI", "suorituskieli", Some(1)), Set.empty)
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None)
-
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
+    Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammTutkintoKieliKey))
+    Assertions.assertEquals(Some("2023"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritusvuosiKey))
+    Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuorituslukukausiKey))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
@@ -788,7 +803,7 @@ class AvainArvoConverterTest {
     val korotus1Kemia = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("kemia"), None, None), Koodi("KE", "koodisto", None), Koodi("9", "koodisto", None), None, true, None, None)
 
     val arvosanatHakemukselta = HakemusConverter.convertArvosanatHakemukselta(hakemus)
-    val arvosanatSupasta = AvainArvoConverter.perusopetuksenOppiaineetToAvainArvot(Set(korotus1Kemia))
+    val arvosanatSupasta = AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(Set(korotus1Kemia))
 
     val korkeimmat = AvainArvoConverter.valitseKorkeimmatPerusopetuksenArvosanatAineittain(arvosanatHakemukselta ++ arvosanatSupasta)
 

@@ -117,7 +117,7 @@ class UIService {
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
   @Autowired val koodistoProvider: KoodistoProvider = null
-  
+
   @Autowired val hakuProvider: HakuProvider = null
 
   @Autowired val hakukohdeProvider: HakukohdeProvider = null
@@ -211,7 +211,7 @@ class UIService {
       }
 
       val aliakset = haeAliakset(henkiloOid)
-      val suoritukset = aliakset.flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima).values.flatten)
+      val suoritukset = aliakset.flatMap(oid => this.opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(oid, aikaleima, useKoskiSkipTable = false).values.flatten)
       EntityToUIConverter.getOppijanTiedot(masterHenkilo.etunimet, masterHenkilo.sukunimi,
         masterHenkilo.hetu, masterHenkilo.oidHenkilo, henkiloOid, masterHenkilo.syntymaaika, suoritukset, organisaatioProvider, koodistoProvider)
       })
@@ -259,7 +259,7 @@ class UIService {
     def hasOrganisaatioKatseluoikeus(): Boolean =
       val lahettajaOikeusOrganisaatiot = securityOperaatiot.getAuthorization(Set(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA), organisaatioProvider).oikeudellisetOrganisaatiot
       lahettajaOikeusOrganisaatiot.nonEmpty && Await.result(aliases.map(allOids => {
-        val opiskeluoikeudet = allOids.flatMap(oppijaNumero => this.opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.toSet.flatten)
+        val opiskeluoikeudet = allOids.flatMap(oppijaNumero => this.opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero, useKoskiSkipTable = false).values.toSet.flatten)
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, Some(lahettajaOikeusOrganisaatiot), None, opiskeluoikeudet)
       }), 30.seconds)
 
@@ -296,12 +296,12 @@ class UIService {
   }
 
   /**
-   * Hakee yksittäisen avain-arvoparin yliajon muutoshistorian 
-   * 
+   * Hakee yksittäisen avain-arvoparin yliajon muutoshistorian
+   *
    * @param personOid henkilö jonka yliajon muutoshistoriaa tarkastellaan
    * @param hakuOid   haku jonka yliajon muutoshistoriaa tarkastellaan
    * @param avain     yksittäisen yliajon avain jonka muutoshistoriaa tarkastellaan
-   *                  
+   *
    * @return          yliajon muutoshistoriaa vastaava lista YliajonMuutosUI-objekteja
    */
   def haeYliajonMuutosHistoria(personOid: String, hakuOid: String, avain: String): Seq[YliajonMuutosUI] = {

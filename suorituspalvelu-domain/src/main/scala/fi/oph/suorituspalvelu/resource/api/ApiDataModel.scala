@@ -253,7 +253,7 @@ case class ValintalaskentaApiAvainArvo(
   @BeanProperty arvo: String
 )
 
-case class ValintalaskentaApiAvainMetatiedotDTO()
+case class ValintalaskentaApiAvainMetatiedotDTO(avain: String, metatiedot: java.util.List[java.util.Map[String, String]])
 
 case class ValintalaskentaApiHakutoive(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)

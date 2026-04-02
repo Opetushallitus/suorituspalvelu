@@ -213,7 +213,7 @@ class HarkinnanvaraisuusService {
 
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
     val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
-    allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid).values.flatten).toSeq
+    allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid, useKoskiSkipTable = true).values.flatten).toSeq
   }
 
   def getHakemuksenHarkinnanvaraisuudet(
