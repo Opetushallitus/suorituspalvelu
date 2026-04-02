@@ -113,7 +113,6 @@ class ValintalaskentaResource {
             LOG.info(s"Haetaan valintalaskennan tarvitsemat tiedot parametreille $payload")
             val result: Seq[ValintalaskentaApiHakemus] = valintaDataService.getValintalaskentaHakemukset(payload.hakuOid.get, payload.hakukohdeOid.toScala, hakemusOids)
             val parsedResult = result.map(objectMapper.writeValueAsString(_)).toList.asJava
-            LOG.info(s"Palautetaan rajapintavastaus, $parsedResult")
             ResponseEntity.status(HttpStatus.OK).body(ValintalaskentaDataSuccessResponse(result.toList.asJava))
 
 
