@@ -348,7 +348,7 @@ object VirtaToSuoritusConverter {
           jarjestavaKoodi = suoritus.Organisaatio.map(_.Koodi),
           jarjestavaOsuus = suoritus.Organisaatio.flatMap(_.Osuus),
           arvosana = suoritus.Arvosana.map(_.arvosana),
-          arvosanaAsteikko = suoritus.Arvosana.map(_.asteikko),
+          arvosanaAsteikko = suoritus.Arvosana.flatMap(_.asteikko),
           kieli = suoritus.Kieli,
           koulutusala = suoritus.Koulutusala.map(_.Koodi.koodi),
           koulutusalaKoodisto = suoritus.Koulutusala.map(_.Koodi.versio),

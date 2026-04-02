@@ -62,7 +62,7 @@ case class VirtaOrganisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDeci
 case class VirtaMuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
 
 @JsonDeserialize(classOf[ArvosanaDeserializer])
-case class VirtaArvosana(arvosana: String, asteikko: String)
+case class VirtaArvosana(arvosana: String, asteikko: Option[String])
 
 @JsonDeserialize(classOf[KoodiDeserializer])
 case class VirtaKoodi(versio: String, koodi: Int)
@@ -145,21 +145,22 @@ class ArvosanaDeserializer extends JsonDeserializer[VirtaArvosana] {
         val contentMap = arvosanaContent.asInstanceOf[Map[String, Any]]
         val asteikkoMap = contentMap("Asteikko").asInstanceOf[Map[String, Any]]
         val koodi = contentMap("Koodi").asInstanceOf[String]
-        val asteikkoNimi = asteikkoMap("Nimi").asInstanceOf[String]
+        val asteikkoNimi = asteikkoMap.get("Nimi").asInstanceOf[Option[String]]
 
-        val asteikkoArvosanat = asteikkoMap("AsteikkoArvosana") match {
-          case list: java.util.ArrayList[_] =>
+        val asteikkoArvosanat = asteikkoMap.get("AsteikkoArvosana") match {
+          case Some(list: java.util.ArrayList[_]) =>
             list.toArray.map(mapper.convertValue(_, classOf[VirtaMuuAsteikkoArvosana])).toSeq
-          case single: Map[_, _] =>
+          case Some(single: Map[_, _]) =>
             Seq(mapper.convertValue(single, classOf[VirtaMuuAsteikkoArvosana]))
+          case _ => Seq.empty
         }
 
         val matchingArvosana = asteikkoArvosanat.find(_.avain == koodi).map(_.Nimi)
         matchingArvosana match {
           case Some(arvosanaNimi) => VirtaArvosana(arvosana = arvosanaNimi, asteikko = asteikkoNimi)
-          case None => null
+          case None => VirtaArvosana(arvosana = koodi, asteikko = asteikkoNimi)
         }
-      case _ => VirtaArvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = arvosanaTagName)
+      case _ => VirtaArvosana(arvosana = arvosanaContent.asInstanceOf[String], asteikko = Some(arvosanaTagName))
     }
 }
 
