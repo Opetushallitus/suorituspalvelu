@@ -178,9 +178,9 @@ object AvainArvoConstants {
     "conditionally-eligible" -> "CONDITIONALLY_ELIGIBLE"
   )
 
-  val ataruPohjakoulutusKey = "base-education-2nd"
-  val ataruPohjakoulutusVuosiKey = "pohjakoulutus_vuosi"
-  val ataruPohjakoulutusKieliKey = "pohjakoulutus_kieli"
+  final val ataruPohjakoulutusKey = "base-education-2nd"
+  final val ataruPohjakoulutusVuosiKey = "pohjakoulutus_vuosi"
+  final val ataruPohjakoulutusKieliKey = "pohjakoulutus_kieli"
 
   val POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS = "0"
   val POHJAKOULUTUS_PERUSKOULU = "1"
@@ -198,7 +198,7 @@ object AvainArvoConstants {
   val arvosananLahdeSeliteSupa = "Tieto löytyi Suorituspalvelusta."
   val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
 
-  val yksMatAiKey = "yks_mat_ai"
+  final val yksMatAiKey = "yks_mat_ai"
 }
 
 object PerusopetuksenArvosanaOrdering {
