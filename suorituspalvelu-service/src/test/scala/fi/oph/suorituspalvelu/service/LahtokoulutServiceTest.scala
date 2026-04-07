@@ -42,8 +42,8 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   val VIIMEVUOSI: Int = LocalDate.now().getYear - 1
   val TOISSAVUOSI: Int = LocalDate.now().getYear - 2
 
-  private def getLahtokoulut(oppilaitosOid: String, aloitusVuosi: Int, tila: SuoritusTila): Set[Lahtokoulu] =
-    Set(Lahtokoulu(
+  private def getLahtokoulut(oppilaitosOid: String, aloitusVuosi: Int, tila: SuoritusTila): List[Lahtokoulu] =
+    List(Lahtokoulu(
       LocalDate.parse(s"$aloitusVuosi-08-01"),
       if (tila == VALMIS) Some(LocalDate.parse(s"${aloitusVuosi + 1}-06-01")) else None,
       oppilaitosOid,
@@ -54,7 +54,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
       VUOSILUOKKA_9
     ))
 
-  private def getOppimaara(vuosi: Option[Int], lahtokoulut: Set[Lahtokoulu]): Suoritus =
+  private def getOppimaara(vuosi: Option[Int], lahtokoulut: List[Lahtokoulu]): Suoritus =
     PerusopetuksenOppimaara(
       UUID.randomUUID(),
       None,
