@@ -68,7 +68,8 @@ class AvainArvoConverterTest {
       )
     ),
     maksuvelvollisuus = Map.empty,
-    keyValues = Map.empty
+    keyValues = Map.empty,
+    korkeakoulututkintoVuosi = None
   )
 
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {

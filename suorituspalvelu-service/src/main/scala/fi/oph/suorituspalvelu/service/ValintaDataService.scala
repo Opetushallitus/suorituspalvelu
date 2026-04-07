@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiske
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, AvainMetatiedotDTO, ConvertedAtaruHakemus, HarkinnanvaraisuusService, ValintalaskentaHakutoive, YoMetadataConverter}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, AvainMetatiedotDTO, ConvertedAtaruHakemus, EnsikertalaisuusService, HarkinnanvaraisuusService, ValintalaskentaHakutoive, YoMetadataConverter}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiAvainMetatiedotDTO, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import fi.oph.suorituspalvelu.resource.ui.YliajonMuutosUI
 import org.slf4j.LoggerFactory
@@ -51,6 +51,8 @@ class ValintaDataService {
   @Autowired val tarjontaIntegration: TarjontaIntegration = null
 
   @Autowired val harkinnanvaraisuusService: HarkinnanvaraisuusService = null
+
+  @Autowired val ensikertalaisuusService: EnsikertalaisuusService = null
 
   val LOG = LoggerFactory.getLogger(classOf[ValintaDataService])
 
@@ -121,10 +123,21 @@ class ValintaDataService {
 
     val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, haku, harkinnanvaraisuudet)
 
+    val ensikertalaisuusArvo: Option[AvainArvoContainer] =
+      if (haku.isKKHaku())
+        Some(ensikertalaisuusService.haeEnsikertalaisuusAvainArvo(usePersonOid, haku, allOidsForPerson, kaikkiOpiskeluoikeudet, hakemus))
+      else
+        None
+
+    val rawResultsWithEnsikertalaisuus = ensikertalaisuusArvo match {
+      case Some(ek) => rawResults.copy(paatellytArvot = rawResults.paatellytArvot + ek)
+      case None => rawResults
+    }
+
     val yoMetadata = YoMetadataConverter.convert(kaikkiOpiskeluoikeudet)
 
     val yliajot = fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)
-    val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResults, yliajot)
+    val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResultsWithEnsikertalaisuus, yliajot)
     ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, suoritustenAjanhetki)
   }
 
