@@ -119,7 +119,7 @@ class ValintalaskentaResource {
           } catch {
             case e: Exception =>
               LOG.error(s"ValintaDatan hakeminen haun ${payload.hakuOid.get()} hakukohteen ${payload.hakukohdeOid.toScala.getOrElse("")} hakemuksille ${payload.hakemusOids.asScala} epäonnistui", e)
-              ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ValintalaskentaDataFailureResponse(Seq(VALINTALASKENTA_500_VIRHE).asJava))
+              ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ValintalaskentaDataFailureResponse(Seq(VALINTALASKENTA_500_VIRHE + e.getMessage).asJava))
           }
         })
         .fold(e => e, r => r).asInstanceOf[ResponseEntity[ValintalaskentaDataResponse]])
