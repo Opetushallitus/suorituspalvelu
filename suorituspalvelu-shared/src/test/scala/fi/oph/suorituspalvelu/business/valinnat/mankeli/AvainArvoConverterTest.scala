@@ -91,7 +91,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
     Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
     Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
-    Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pkSuorituslukukausiKey))
+    Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pkSuorituslukukausiKey))
   }
 
   @Test def testAvainArvoConverterForPeruskouluArvosanatJaKielet(): Unit = {
@@ -169,7 +169,7 @@ class AvainArvoConverterTest {
         |{
         |  "ssn": "000000-000A",
         |  "graduationPeriod": "2013K",
-        |  "graduationDate": "2021-06-01",
+        |  "graduationDate": "2021-12-01",
         |  "exams": [
         |    {
         |      "period": "2012K",
@@ -185,7 +185,7 @@ class AvainArvoConverterTest {
     val parsed = YtrToSuoritusConverter.toSuoritus(YtrParser.parseYtrData(tutkinto))
     val oikeudet = Seq(parsed)
 
-    val leikkuri = LocalDate.parse("2023-05-15")
+    val leikkuri = LocalDate.parse("2023-05-29")
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, oikeudet, leikkuri, DEFAULT_KOUTA_HAKU, None)
 
@@ -257,7 +257,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritettuKey))
     Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammTutkintoKieliKey))
     Assertions.assertEquals(Some("2023"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuoritusvuosiKey))
-    Assertions.assertEquals(Some("1"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuorituslukukausiKey))
+    Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuorituslukukausiKey))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
