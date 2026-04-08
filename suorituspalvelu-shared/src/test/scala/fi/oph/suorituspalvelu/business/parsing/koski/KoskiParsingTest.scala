@@ -1140,7 +1140,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(true, oppiaine.pakollinen)
     Assertions.assertEquals(Some(true), oppiaine.yksilollistetty)
     Assertions.assertEquals(Some(true), oppiaine.rajattu)
-    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY), oppimaara.yksilollistaminen)
+    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU), oppimaara.yksilollistaminen)
   }
 
   @Test def testPerusopetuksenOppimaaranLahtokoulutJaLuokka(): Unit =
