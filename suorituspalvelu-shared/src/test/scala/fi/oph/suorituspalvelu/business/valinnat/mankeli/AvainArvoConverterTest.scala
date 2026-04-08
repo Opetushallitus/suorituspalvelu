@@ -90,6 +90,7 @@ class AvainArvoConverterTest {
 
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritettuKey))
     Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
+    Assertions.assertEquals(Some("2025"), converterResult.getAvainArvoMap().get(AvainArvoConstants.peruskouluPaattotodistusvuosiKey))
     Assertions.assertEquals(Some("FI"), converterResult.getAvainArvoMap().get(AvainArvoConstants.perusopetuksenKieliKey))
     Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.pkSuorituslukukausiKey))
   }
@@ -788,14 +789,14 @@ class AvainArvoConverterTest {
       "arvosana-YH_group0" -> "arvosana-YH-8",
       "arvosana-LI_group0" -> "arvosana-LI-8",
       "arvosana-A_group0" -> "arvosana-A-8",
-      "pohjakoulutus_vuosi" -> "2016",
       "oppimaara-kieli-B1_group0" -> "SV",
       "arvosana-KO_group1" -> "arvosana-KO-hyvaksytty",
       "arvosana-BI_group0" -> "arvosana-BI-7",
       "arvosana-B1_group0" -> "arvosana-B1-6",
       "arvosana-MA_group0" -> "arvosana-MA-7",
       "arvosana-KA_group1" -> "arvosana-KA-hyvaksytty",
-      "oppimaara-kieli-valinnainen-kieli_group1" -> ""
+      "oppimaara-kieli-valinnainen-kieli_group1" -> "",
+      "pohjakoulutus_vuosi" -> "2016" //Tällä vuodella on merkitystä jotta hakemuksen arvosanat huomioidaan.
     )
     val hakemus = BASE_HAKEMUS.copy(keyValues = keyValues)
 
@@ -846,6 +847,17 @@ class AvainArvoConverterTest {
       )
     }
 
+  }
+
+  @Test def peruskouluPaattotodistusVuosiHakemukselta(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
+      AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2016"
+    ))
+    val leikkuri = LocalDate.now
+    val converterResultWithRekisteriPeruskoulu = AvainArvoConverter.convertOpiskeluoikeudet(personOid, Some(hakemus), Seq.empty, leikkuri, DEFAULT_KOUTA_HAKU, None)
+
+    Assertions.assertEquals(Some("2016"), converterResultWithRekisteriPeruskoulu.getAvainArvoMap().get(AvainArvoConstants.peruskouluPaattotodistusvuosiKey))
   }
 
   @Test def testAvainArvoConverterHakemuksenArvosanojaEiHuomioidaJosRekisteristaLoytyyPerusopetus(): Unit = {

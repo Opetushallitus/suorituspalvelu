@@ -705,10 +705,11 @@ object AvainArvoConverter {
         val arvosanaArvot = convertPeruskoulunArvosanaArvot(aineetPaasuoritukselta, aineetOppimaarilta)
         val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "true", Seq(vahvistettuAjoissaSelite))
         val suoritusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
+        val paattotodistusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluPaattotodistusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
         val suoritusLukukausiArvo = AvainArvoContainer(AvainArvoConstants.pkSuorituslukukausiKey, AvainArvoConverterUtil.getLukukausi(po.vahvistusPaivamaara.get), Seq(vahvistettuAjoissaSelite))
         val suoritusKieliArvo = AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, po.suoritusKieli.arvo)
 
-        arvosanaArvot ++ Some(suoritusVuosiArvo) ++ Some(suoritusArvo) ++ Some(suoritusLukukausiArvo) ++ Some(suoritusKieliArvo)
+        arvosanaArvot ++ Some(suoritusVuosiArvo) ++ Some(suoritusArvo) ++ Some(suoritusLukukausiArvo) ++ Some(paattotodistusVuosiArvo) ++ Some(suoritusKieliArvo)
 
       case (Some(po), _) if po.vahvistusPaivamaara.isDefined =>
         val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).getOrElse("-")}"
@@ -724,9 +725,10 @@ object AvainArvoConverter {
         val suoritusKieliHakemukselta =
           hakemus.keyValues.get(AvainArvoConstants.perusopetuksenKieliKey).flatMap(v => Option.apply(v))
             .map(k => AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, k))
-
+        val paattotodistusVuosiHakemukselta = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v))
+          .map(k => AvainArvoContainer(AvainArvoConstants.peruskouluPaattotodistusvuosiKey, k, Seq(s"Päättötodistusvuosi $k poimittu hakemukselta.")))
         //Todo, halutaanko tässä tapauksessa asettaa myös avain-arvo peruskouluSuoritettuKey -> true? Onko tällä merkitystä?
-        korkeimmatArvosanatHakemukseltaJaSupasta ++ suoritusKieliHakemukselta
+        korkeimmatArvosanatHakemukseltaJaSupasta ++ suoritusKieliHakemukselta ++ paattotodistusVuosiHakemukselta
 
       case _ =>
         val suoritusArvo: AvainArvoContainer = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "false", Seq("Supasta tai hakemukselta ei löytynyt tietoa suoritetusta peruskoulusta."))
