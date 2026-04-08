@@ -466,26 +466,25 @@ object KoskiToSuoritusConverter {
       .filter(os => os.koulutusmoduuli.flatMap(_.tunniste).map(_.koodiarvo).exists(YHTEISET_AINEET_JA_A2_B2.contains))
     val yksilollistettyja = yhteisetAineet.count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
     val rajattuja = yhteisetAineet.count(_.`rajattuOppimäärä`.exists(_.equals(true)))
-    val yhteensa = yhteisetAineet.size
+    val erityisiaAineita = yksilollistettyja + rajattuja
     val opiskeleeToimintaAlueittain =
       opiskeluoikeus
         .lisätiedot
         .flatMap(_.erityisenTuenPäätökset).getOrElse(List.empty)
         .exists(_.opiskeleeToimintaAlueittain.exists(_.equals(true)))
 
-    (yksilollistettyja, rajattuja, yhteensa, opiskeleeToimintaAlueittain) match {
-      case (yks, raj, yhteensa, _) if yks >= 1 && yks >= raj =>
-        if (yks > yhteensa / 2)
-          Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
-        else
-          Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
-      case (yks, raj, yhteensa, _) if raj >= 1 =>
-        if (raj > yhteensa / 2)
-          Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU)
-        else
-          Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU)
-      case (_, _, _, true) => Some(PerusopetuksenYksilollistaminen.TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY)
-      case _ => None
+    (erityisiaAineita, opiskeleeToimintaAlueittain) match {
+      case (0, true) => Some(PerusopetuksenYksilollistaminen.TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY)
+      case (0, _) => None
+      case _ =>
+        val isRajattu = rajattuja >= yksilollistettyja // saman verran → rajattu
+        if (erityisiaAineita > yhteisetAineet.size / 2) {
+          if (isRajattu) Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU)
+          else Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
+        } else {
+          if (isRajattu) Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU)
+          else Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
+        }
     }
   }
 
