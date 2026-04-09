@@ -618,7 +618,6 @@ object KoskiToSuoritusConverter {
   val YHTEISET_AINEET = List(
     "AI",
     "A1",
-    "A2",
     "B1",
     "MA",
     "BI",

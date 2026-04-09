@@ -292,7 +292,7 @@ class UIResource {
   def haeOppilaitoksenOhjattavat(@RequestParam(name = UI_OPPILAITOS_HAKU_OPPILAITOS_PARAM_NAME, required = true) @Parameter(description = "oppilaitoksen tunniste", example = ESIMERKKI_OPPILAITOS_OID) oppilaitos: Optional[String],
                                  @RequestParam(name = UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME, required = true) @Parameter(description = "vuosi", example = ESIMERKKI_VUOSI) vuosi: Optional[String],
                                  @RequestParam(name = UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME, required = false) @Parameter(description = "luokka", example = ESIMERKKI_LUOKKA) luokka: Optional[String],
-                                 @RequestParam(name = UI_OPPILAITOS_HAKU_KESKEN_TAI_KESKEYTYNYT_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritus on Supa-tilassa KESKEN tai KESKEYTYNYT", example = "false") keskenTaiKeskeytynyt: Boolean,
+                                 @RequestParam(name = UI_OPPILAITOS_HAKU_KESKEN_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritus on Supa-tilassa KESKEN", example = "false") kesken: Boolean,
                                  @RequestParam(name = UI_OPPILAITOS_HAKU_EI_YHTEISTEN_ARVOSANAA_PARAM_NAME, required = false) @Parameter(description = "Perusopetuksen oppimäärän suoritukselta puuttuu yhteisen aineen arvosana", example = "false") yhteistenArvosanaPuuttuu: Boolean,
                                  request: HttpServletRequest): ResponseEntity[OppijanHakuResponse] =
     try
@@ -328,7 +328,7 @@ class UIResource {
               UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
               UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME -> luokka.orElse(null),
             ), AuditOperation.HaeOppilaitoksenOppijatUI, None)
-            val oppijat = uiService.haeOhjattavat(if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now), oppilaitos.get, vuosi.get.toInt, luokka.toScala, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu)
+            val oppijat = uiService.haeOhjattavat(if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now), oppilaitos.get, vuosi.get.toInt, luokka.toScala, kesken, yhteistenArvosanaPuuttuu)
             Right(ResponseEntity.status(HttpStatus.OK).body(OppijanHakuSuccessResponse(oppijat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanHakuResponse]])
