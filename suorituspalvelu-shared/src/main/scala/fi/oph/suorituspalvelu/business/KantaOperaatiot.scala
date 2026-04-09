@@ -437,7 +437,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
-  private def haeLahtokoulunOppilaatStatement(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Option[Int], luokka: Option[String], keskenTaiKeskeytynyt: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): slick.jdbc.SQLActionBuilder = {
+  private def haeLahtokoulunOppilaatStatement(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Option[Int], luokka: Option[String], kesken: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): slick.jdbc.SQLActionBuilder = {
     sql"""
         WITH
         -- Generoidaan lista ohjausvastuista joilla oikea näkyvyys, ts. päättymispäivää seuraavan vuoden tammikuun loppuun
@@ -461,8 +461,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           FROM lahtokoulut
           WHERE oppilaitos_oid=$oppilaitosOid
           AND (${luokka.isEmpty} OR luokka=${luokka.getOrElse("")})
-          AND (${!keskenTaiKeskeytynyt} OR tila=${SuoritusTila.KESKEN.toString} OR tila=${SuoritusTila.KESKEYTYNYT.toString})
-          AND (${!arvosanaPuuttuu} OR arvosanapuuttuu)
+          AND (${!kesken} OR (tila=${SuoritusTila.KESKEN.toString} AND suoritustyyppi=${LahtokouluTyyppi.VUOSILUOKKA_9.toString})) -- kesken-vipu tehty opoja varten => näytetään vain ysejä
+          AND (${!arvosanaPuuttuu} OR (arvosanapuuttuu AND suoritustyyppi=${LahtokouluTyyppi.VUOSILUOKKA_9.toString})) -- arvosanaPuuttuu-vipu tehty opoja varten => näytetään vain ysejä
           AND (${lahtokouluTyypit.isEmpty} OR suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(_.map(p => s"'$p'").mkString(",")).getOrElse("")}]::varchar[]))
         )
         -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
@@ -487,8 +487,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
    * @param oppilaitosOid         oppilaitoksen tunniste jonka ohjattavia haetaan
    * @param valmistumisVuosi      henkilöiden valmistumisvuosi (tämä on tyyppillisesti perusopetuksen vuosiluokan tai lisäpistekoulutuksen aloitusvuosi + 1)
    * @param luokka                luokka (ei luokka-aste)
-   * @param keskenTaiKeskeytynyt  jos tämä true haetaan vain henkilöitä joiden ohjausvelvollisuuden perusteena oleva suoritus on kesken tai keskeytynyt, muutoin haetaan kaikkia
-   * @param arvosanaPuuttuu       jos tämä true haetaan vain henkilöitä joiden ohjausvelvollisuuden perusteena on perusopetuksen suorittaminen ja henkilöllä ei ole perusopetuksen oppimäärän suoritusta jolta löytyvät kaikki yhteisten aineiden arvosanat (ei siis tarvitse olla sama suoritus jos henkilö esim. vaihtanut koulua)
+   * @param kesken                jos tämä true haetaan vain ysiluokkalaisia joiden ohjausvelvollisuuden perusteena oleva suoritus on kesken, muutoin haetaan kaikkia
+   * @param arvosanaPuuttuu       jos tämä true haetaan vain ysiluokkalaisia joiden ohjausvelvollisuuden perusteena on perusopetuksen suorittaminen ja henkilöllä ei ole perusopetuksen oppimäärän suoritusta jolta löytyvät kaikki yhteisten aineiden arvosanat (ei siis tarvitse olla sama suoritus jos henkilö esim. vaihtanut koulua)
    *                              jos false niin haetaan kaikkia
    */
   def haeLahtokoulunOppilaat(
@@ -496,11 +496,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     oppilaitosOid: String,
     valmistumisVuosi: Option[Int],
     luokka: Option[String],
-    keskenTaiKeskeytynyt: Boolean,
+    kesken: Boolean,
     arvosanaPuuttuu: Boolean,
     lahtokouluTyypit: Set[LahtokouluTyyppi]
   ): Set[(String, Option[String])] = {
-    val s = haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, valmistumisVuosi, luokka, keskenTaiKeskeytynyt, arvosanaPuuttuu, Some(lahtokouluTyypit))
+    val s = haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, valmistumisVuosi, luokka, kesken, arvosanaPuuttuu, Some(lahtokouluTyypit))
     Await.result(db.run(s.as[(String, Option[String])]), DB_TIMEOUT).toSet
   }
 

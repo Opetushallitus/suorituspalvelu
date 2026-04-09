@@ -26,7 +26,7 @@ export function useOppilaitoksenOppijatSearchParamsState() {
   const oppilaitos = searchParams.get('oppilaitos');
   const vuosi = searchParams.get('vuosi');
   const luokka = searchParams.get('luokka');
-  const keskentaikeskeytynyt = searchParams.get('keskentaikeskeytynyt');
+  const kesken = searchParams.get('kesken');
   const yhteistenarvosanapuuttuu = searchParams.get('yhteistenarvosanapuuttuu');
 
   const location = useLocation();
@@ -70,7 +70,7 @@ export function useOppilaitoksenOppijatSearchParamsState() {
           oppilaitos,
           luokka,
           vuosi,
-          keskentaikeskeytynyt,
+          kesken,
           yhteistenarvosanapuuttuu,
         },
         isNonNullish,
@@ -87,7 +87,7 @@ export function useOppilaitoksenOppijatSearchParamsState() {
       oppilaitos,
       luokka,
       vuosi,
-      keskentaikeskeytynyt,
+      kesken,
       yhteistenarvosanapuuttuu,
     ],
   );
@@ -100,7 +100,7 @@ export const useOppilaitoksenOppijatSearchResult = () => {
     vuosi,
     luokka,
     suodatus,
-    keskentaikeskeytynyt,
+    kesken,
     yhteistenarvosanapuuttuu,
   } = searchParams;
 
@@ -109,7 +109,7 @@ export const useOppilaitoksenOppijatSearchResult = () => {
       oppilaitos,
       vuosi,
       luokka,
-      keskentaikeskeytynyt,
+      kesken,
       yhteistenarvosanapuuttuu,
     }),
   );

@@ -391,7 +391,7 @@
     "henkilohaku-ei-oikeuksia": "Sinulla ei ole oikeuksia henkilöhakuun.",
     "virheellinen-oppijanumero": "Tunniste {oppijaNumero} ei ole oppijanumero.",
     "henkilotunnukseen-linkitys-kielletty": "Suora linkitys henkilötunnukseen on kielletty!",
-    "kesken-tai-keskeytynyt": "Suoritus kesken tai keskeytynyt",
+    "kesken": "Suoritus kesken",
     "yhteisten-arvosana-puuttuu": "Oppilaalta puuttuu yhteisen aineen arvosana"
   }
 }
