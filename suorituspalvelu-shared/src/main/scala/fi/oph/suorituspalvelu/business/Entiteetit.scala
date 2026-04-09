@@ -520,6 +520,7 @@ case class KKOpiskeluoikeus(
 case class KKSynteettinenOpiskeluoikeus(
   tunniste: UUID,
   myontaja: String,
+  containsKKTutkinto: Boolean,
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
   suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus]
 ) extends KKOpiskeluoikeusBase(synteettinen = true)
