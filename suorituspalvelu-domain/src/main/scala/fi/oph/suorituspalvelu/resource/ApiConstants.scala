@@ -100,7 +100,7 @@ object ApiConstants {
   final val VALINTALASKENTA_PUUTTUVA_PARAMETRI              = "Joko hakukohdeOid tai 1-5000 hakemusOidia on annettava"
   final val VALINTALASKENTA_HAKUOID_PAKOLLINEN              = "HakuOid on pakollinen parametri"
   final val VALINTALASKENTA_LIIKAA_PARAMETREJA              = "Anna parametrina vain joko hakukohdeOid tai lista hakemusOideja"
-  final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui"
+  final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui: "
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA            = VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR.toInt
 
   final val HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA_STR     = "5000"
