@@ -13,6 +13,7 @@ import java.time.LocalDate
 import scala.collection.immutable
 
 class UseitaVahvistettujaOppimaariaException(val message: String) extends RuntimeException(message)
+class RistiriitainenOppiaineKoodiException(val message: String) extends RuntimeException(message)
 
 //Opiskeluoikeudet sisältävät kaiken lähdedatan, käyttö nykyisellään vain debug-tarkoituksiin.
 case class AvainArvoConverterResults(personOid: String,
@@ -164,7 +165,29 @@ object AvainArvoConstants {
 
   //Nämä tulevat aineen arvosanojen perään, eli esimerkiksi jos varsinainen arvosana
   // on avaimen "PK_B1" alla, tulee kieli avaimen "PK_B1_OPPIAINE" alle
-  final val peruskouluAineenKieliPostfix = "_OPPIAINE"
+  final val peruskouluAineenKieliOppiainePostfix = "_OPPIAINE"
+  final val peruskouluAineenKieliTietoPostfix = "_KIELITIETO"
+
+  val aidinkieliKoodiMapping: Map[String, String] = Map(
+    "AI1"  -> "FI",
+    "AI2"  -> "SV",
+    "AI3"  -> "SE",
+    "AI4"  -> "RI",
+    "AI5"  -> "VK",
+    "AI6"  -> "XX",
+    "AI7"  -> "FI_2",
+    "AI8"  -> "SV_2",
+    "AI9"  -> "FI_SE",
+    "AI10" -> "XX",
+    "AI11" -> "FI_VK",
+    "AI12" -> "SV_VK",
+    "AIAI" -> "XX"
+  )
+
+  val oppiaineKoodiMapping: Map[String, String] = Map(
+    "AOM" -> "A1",
+    "ET"  -> "KT"
+  )
 
   //Lisäpistekoulutusten minimilaajuudet
   final val telmaMinimiLaajuus: BigDecimal = 25
@@ -660,17 +683,42 @@ object AvainArvoConverter {
     }).flatten.toSet
   }
 
+  def convertAidinkieliKielikoodi(kieliKoodi: String): String =
+    AvainArvoConstants.aidinkieliKoodiMapping.getOrElse(kieliKoodi, kieliKoodi)
+
   def perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(aineet: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
-    aineet.flatMap((aine: PerusopetuksenOppiaine) => {
+    val koodiArvot = aineet.map(_.koodi.arvo)
+    AvainArvoConstants.oppiaineKoodiMapping.foreach { case (sourceKoodi, targetKoodi) =>
+      if (koodiArvot.contains(sourceKoodi) && koodiArvot.contains(targetKoodi)) {
+        throw new RistiriitainenOppiaineKoodiException(
+          s"Oppiaineet sisältävät sekä koodin $sourceKoodi että $targetKoodi, jotka ovat ristiriidassa."
+        )
+      }
+    }
+
+    val remappedAineet = aineet.map { aine =>
+      AvainArvoConstants.oppiaineKoodiMapping.get(aine.koodi.arvo) match {
+        case Some(newKoodi) => aine.copy(koodi = aine.koodi.copy(arvo = newKoodi))
+        case None => aine
+      }
+    }
+
+    remappedAineet.flatMap(aine => {
       val arvosanaAvain = AvainArvoConstants.peruskouluAineenArvosanaPrefix + aine.koodi.arvo
       val arvosanaArvot: AvainArvoContainer = AvainArvoContainer(arvosanaAvain, aine.arvosana.arvo, Seq(AvainArvoConstants.arvosananLahdeSeliteSupa))
 
-      val kieliArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
-        val kieliAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliPostfix
-        AvainArvoContainer(kieliAvain, aineenKieliKoodi.arvo, Seq("Kielitieto löytyi Koskesta."))
+      val kieliOppiaineArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
+        val kieliAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix
+        val kieliArvo = if (aine.koodi.arvo == "AI") convertAidinkieliKielikoodi(aineenKieliKoodi.arvo) else aineenKieliKoodi.arvo
+        AvainArvoContainer(kieliAvain, kieliArvo, Seq("Kielitieto löytyi Koskesta."))
       })
 
-      Set(arvosanaArvot) ++ kieliArvot
+      val kieliTietoArvot: Option[AvainArvoContainer] = aine.kieli.map(aineenKieliKoodi => {
+        val kieliTietoAvain = arvosanaAvain + AvainArvoConstants.peruskouluAineenKieliTietoPostfix
+        AvainArvoContainer(kieliTietoAvain, aineenKieliKoodi.arvo, Seq("Kielitieto löytyi Koskesta."))
+      })
+
+      Set(arvosanaArvot) ++ kieliOppiaineArvot ++ kieliTietoArvot
     })
   }
 
