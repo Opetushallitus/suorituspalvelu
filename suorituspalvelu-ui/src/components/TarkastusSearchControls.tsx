@@ -154,13 +154,8 @@ const LuokkaSelectField = ({
 export const TarkastusSearchControls = () => {
   const { setSearchParams, searchParams } =
     useOppilaitoksenOppijatSearchParamsState();
-  const {
-    oppilaitos,
-    vuosi,
-    luokka,
-    keskentaikeskeytynyt,
-    yhteistenarvosanapuuttuu,
-  } = searchParams;
+  const { oppilaitos, vuosi, luokka, kesken, yhteistenarvosanapuuttuu } =
+    searchParams;
   const { t } = useTranslations();
 
   return (
@@ -215,11 +210,11 @@ export const TarkastusSearchControls = () => {
           }}
         />
         <OphCheckbox
-          label={t('search.kesken-tai-keskeytynyt')}
-          checked={keskentaikeskeytynyt === 'true'}
+          label={t('search.kesken')}
+          checked={kesken === 'true'}
           onChange={(_e, checked) => {
             setSearchParams(
-              { keskentaikeskeytynyt: checked ? 'true' : null },
+              { kesken: checked ? 'true' : null },
               { resetHenkilo: true },
             );
           }}

@@ -63,17 +63,14 @@ test.describe('Tarkastusnäkymä', () => {
       const url = new URL(route.request().url());
       const oppilaitos = url.searchParams.get('oppilaitos');
       const vuosi = url.searchParams.get('vuosi');
-      const keskentaikeskeytynyt = url.searchParams.get('keskentaikeskeytynyt');
+      const kesken = url.searchParams.get('kesken');
       const yhteistenarvosanapuuttuu = url.searchParams.get(
         'yhteistenarvosanapuuttuu',
       );
 
       if (oppilaitos && vuosi) {
         // Simulate filtered results when checkbox filters are active
-        if (
-          keskentaikeskeytynyt === 'true' ||
-          yhteistenarvosanapuuttuu === 'true'
-        ) {
+        if (kesken === 'true' || yhteistenarvosanapuuttuu === 'true') {
           await route.fulfill({
             json: FILTERED_OPPIJAT,
           });
@@ -542,7 +539,7 @@ test.describe('Tarkastusnäkymä', () => {
   }) => {
     await page.goto('tarkastus');
 
-    const keskenCheckbox = page.getByLabel('Suoritus kesken tai keskeytynyt');
+    const keskenCheckbox = page.getByLabel('Suoritus kesken');
     const puuttuuCheckbox = page.getByLabel(
       'Oppilaalta puuttuu yhteisen aineen arvosana',
     );
@@ -553,7 +550,7 @@ test.describe('Tarkastusnäkymä', () => {
     await expect(puuttuuCheckbox).not.toBeChecked();
   });
 
-  test('kesken tai keskeytynyt -valintaruudun klikkaus päivittää URL-parametrin ja suodattaa oppijat', async ({
+  test('kesken-valintaruudun klikkaus päivittää URL-parametrin ja suodattaa oppijat', async ({
     page,
   }) => {
     await page.goto('tarkastus');
@@ -561,11 +558,11 @@ test.describe('Tarkastusnäkymä', () => {
     await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
     await expect(page.getByText('4 henkilöä')).toBeVisible();
 
-    const keskenCheckbox = page.getByLabel('Suoritus kesken tai keskeytynyt');
+    const keskenCheckbox = page.getByLabel('Suoritus kesken');
     await keskenCheckbox.click();
 
     await expect(page).toHaveURL(
-      (url) => url.searchParams.get('keskentaikeskeytynyt') === 'true',
+      (url) => url.searchParams.get('kesken') === 'true',
     );
     await expect(keskenCheckbox).toBeChecked();
     await expect(page.getByText('2 henkilöä')).toBeVisible();
@@ -574,7 +571,7 @@ test.describe('Tarkastusnäkymä', () => {
     await keskenCheckbox.click();
 
     await expect(page).toHaveURL(
-      (url) => url.searchParams.get('keskentaikeskeytynyt') === null,
+      (url) => url.searchParams.get('kesken') === null,
     );
     await expect(keskenCheckbox).not.toBeChecked();
     await expect(page.getByText('4 henkilöä')).toBeVisible();
@@ -632,7 +629,7 @@ test.describe('Tarkastusnäkymä', () => {
     ).toBeVisible();
 
     // Klikataan valintaruutua
-    await page.getByLabel('Suoritus kesken tai keskeytynyt').click();
+    await page.getByLabel('Suoritus kesken').click();
 
     // Henkilö pitäisi olla tyhjennetty
     await expect(page).toHaveURL((url) => !url.pathname.includes(OPPIJANUMERO));

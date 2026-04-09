@@ -24,7 +24,7 @@ export type BackendOppijatSearchParams = {
   oppilaitos?: string | null;
   vuosi?: string | null;
   luokka?: string | null;
-  keskentaikeskeytynyt?: string | null;
+  kesken?: string | null;
   yhteistenarvosanapuuttuu?: string | null;
 };
 
