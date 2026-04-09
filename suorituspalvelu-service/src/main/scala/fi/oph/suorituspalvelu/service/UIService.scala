@@ -167,8 +167,8 @@ class UIService {
     kantaOperaatiot.haeLuokat(paivamaara, oppilaitosOid, valmistumisVuosi, Some(SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT))
   }
 
-  def haeOhjattavat(ajanhetki: Option[LocalDate], oppilaitos: String, valmistumisVuosi: Int, luokka: Option[String], keskenTaiKeskeytynyt: Boolean, yhteistenArvosanaPuuttuu: Boolean): Seq[Oppija] = {
-    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(ajanhetki, oppilaitos, Some(valmistumisVuosi), luokka, keskenTaiKeskeytynyt, yhteistenArvosanaPuuttuu, SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT)
+  def haeOhjattavat(ajanhetki: Option[LocalDate], oppilaitos: String, valmistumisVuosi: Int, luokka: Option[String], kesken: Boolean, yhteistenArvosanaPuuttuu: Boolean): Seq[Oppija] = {
+    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(ajanhetki, oppilaitos, Some(valmistumisVuosi), luokka, kesken, yhteistenArvosanaPuuttuu, SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT)
     val oppijaOids = oppijaLuokat.map(_._1)
     val luokatMap = oppijaLuokat.toMap
 
