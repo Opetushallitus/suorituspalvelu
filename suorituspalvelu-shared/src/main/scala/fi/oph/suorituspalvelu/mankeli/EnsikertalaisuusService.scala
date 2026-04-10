@@ -18,6 +18,7 @@ object EnsikertalaisuusConstants {
   val seliteOpiskeluoikeusAlkanut = "Henkilöllä on VIRTA-järjestelmässä ennen leikkuripäivämäärää alkanut korkeakoulutuksen opiskeluoikeus"
   val seliteKkVastaanotto = "Henkilöllä on ennen leikkuripäivämäärää vastaanotettu korkeakoulun opiskelupaikka"
   val seliteSuoritettuKkTutkintoHakemukselta = "Hakemuksella on suoritettu korkeakoulututkinto"
+  val seliteSuoritettuKkTutkintoSynteettisesta = "Henkilöllä on VIRTA-järjestelmässä synteettisessä opiskeluoikeudessa ennen leikkuripäivämäärää suoritettu korkeakoulututkinto"
 }
 
 @Component
@@ -56,8 +57,12 @@ class EnsikertalaisuusService {
 
     val kkOpiskeluoikeudet = opiskeluoikeudet.collect {
       case o: KKOpiskeluoikeus => o
-        // synteettisten opiskeluoikeuksien alla ei ole tutkintoja, eikä niiden tutkintoonjohtavuudesta voida sanoa
-        // mitään joten niitä ei oteta tarkasteluun mukaan
+    }
+
+    // Synteettisten opiskeluoikeuksien tutkintoonjohtavuudesta voidaan sanoa mitään vain siinä tapauksessa että se
+    // sisältää valmiin tutkinnon
+    val synteettisetJossaTutkinto = opiskeluoikeudet.collect {
+      case s: KKSynteettinenOpiskeluoikeus if s.containsKKTutkinto => s
     }
 
     val vtsEnsikertalaisuudet = Await.result(vtsClient.fetchEnsikertalaisuudet(allOidsForPerson.toSeq), 30.seconds)
@@ -65,7 +70,7 @@ class EnsikertalaisuusService {
 
     val hakemusHasKkTutkintoVuosi = hakemus.exists(h => h.korkeakoulututkintoVuosi.isDefined)
 
-    paatteleEnsikertalaisuusAvainArvo(henkiloOid, leikkuriLocalDate, kkOpiskeluoikeudet, henkilonVtsData, hakemusHasKkTutkintoVuosi)
+    paatteleEnsikertalaisuusAvainArvo(henkiloOid, leikkuriLocalDate, kkOpiskeluoikeudet, synteettisetJossaTutkinto, henkilonVtsData, hakemusHasKkTutkintoVuosi)
   }
 
   /**
@@ -76,6 +81,7 @@ class EnsikertalaisuusService {
     henkiloOid: String,
     leikkuriLocalDate: LocalDate,
     kkOpiskeluoikeudet: Seq[KKOpiskeluoikeus],
+    synteettisetOpiskeluoikeudet: Seq[KKSynteettinenOpiskeluoikeus],
     vtsEnsikertalaisuudet: Seq[Ensikertalaisuus],
     hakemusHasKkTutkintoVuosi: Boolean
   ): AvainArvoContainer = {
@@ -86,19 +92,25 @@ class EnsikertalaisuusService {
       return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteSuoritettuKkTutkinto))
     }
 
-    // Tarkistus 2: OpiskeluoikeusAlkanut
+    // Tarkistus 2: Synteettisessä opiskeluoikeudessa suoritettu KK-tutkinto
+    val synteettinenTutkinto = tarkistaSuoritettuKkTutkintoSynteettisista(synteettisetOpiskeluoikeudet, leikkuriLocalDate)
+    if (synteettinenTutkinto.isDefined) {
+      return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoSynteettisesta))
+    }
+
+    // Tarkistus 3: OpiskeluoikeusAlkanut
     val opiskeluoikeusAlkanut = tarkistaOpiskeluoikeusAlkanut(kkOpiskeluoikeudet, leikkuriLocalDate)
     if (opiskeluoikeusAlkanut.isDefined) {
       return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteOpiskeluoikeusAlkanut))
     }
 
-    // Tarkistus 3: KkVastaanotto (VTS)
+    // Tarkistus 4: KkVastaanotto (VTS)
     val kkVastaanotto = tarkistaKkVastaanotto(vtsEnsikertalaisuudet, leikkuriLocalDate)
     if (kkVastaanotto.isDefined) {
       return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteKkVastaanotto))
     }
 
-    // Tarkistus 4: SuoritettuKkTutkintoHakemukselta
+    // Tarkistus 5: SuoritettuKkTutkintoHakemukselta
     if (hakemusHasKkTutkintoVuosi) {
       return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoHakemukselta))
     }
@@ -132,7 +144,24 @@ class EnsikertalaisuusService {
   }
 
   /**
-   * Tarkistus 2: Onko henkilöllä tutkintoon johtava KK-opiskeluoikeus joka on alkanut 1.8.2014 jälkeen
+   * Tarkistus 2: Onko henkilöllä synteettisessä opiskeluoikeudessa suoritettu KK-tutkinto ennen leikkuripäivämäärää?
+   */
+  private def tarkistaSuoritettuKkTutkintoSynteettisista(
+    synteettisetOpiskeluoikeudet: Seq[KKSynteettinenOpiskeluoikeus],
+    leikkuriLocalDate: LocalDate
+  ): Option[LocalDate] = {
+    val suoritusPvmt = synteettisetOpiskeluoikeudet.flatMap {
+      _.suoritukset.collect {
+        case t: KKTutkinto if t.supaTila == SuoritusTila.VALMIS => t.suoritusPvm
+      }.flatten
+    }
+
+    val aikaisinPvm = suoritusPvmt.sorted.headOption
+    aikaisinPvm.filter(pvm => pvm.isBefore(leikkuriLocalDate))
+  }
+
+  /**
+   * Tarkistus 3: Onko henkilöllä tutkintoon johtava KK-opiskeluoikeus joka on alkanut 1.8.2014 jälkeen
    * ja ennen leikkuripäivämäärää? Se missä tilassa opiskeluoikeus on tällä hetkellä ei ole merkityksellistä.
    */
   private def tarkistaOpiskeluoikeusAlkanut(kkOpiskeluoikeudet: Seq[Opiskeluoikeus], leikkuriLocalDate: LocalDate): Option[LocalDate] = {
@@ -146,7 +175,7 @@ class EnsikertalaisuusService {
   }
 
   /**
-   * Tarkistus 3: Onko henkilöllä ensikertalaisuus päättynyt VTS:n mukaan ennen leikkuripäivämäärää?
+   * Tarkistus 4: Onko henkilöllä ensikertalaisuus päättynyt VTS:n mukaan ennen leikkuripäivämäärää?
    */
   private def tarkistaKkVastaanotto(henkilonVtsData: Seq[Ensikertalaisuus], leikkuriLocalDate: LocalDate): Option[LocalDate] = {
     val paattymisPvmt = henkilonVtsData.flatMap(_.paattyi).map(Instant.parse(_).atZone(ZoneId.of("Europe/Helsinki")).toLocalDate)

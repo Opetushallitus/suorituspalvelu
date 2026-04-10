@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koodi, Lahdejarjestelma, Opiskeluoikeus, ParserVersions, Suoritus, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koodi, Lahdejarjestelma, Opiskeluoikeus, ParserVersions, Suoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemusBaseFields, AtaruValintalaskentaHakemus, Ensikertalaisuus, HakemuspalveluClientImpl, KoutaHaku, KoutaHakuaika, VTSClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, EnsikertalaisuusConstants, EnsikertalaisuusService}
@@ -93,6 +93,14 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
       suoritukset = suoritukset
     )
 
+  private def luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto: Boolean, suoritukset: Set[Suoritus] = Set.empty): KKSynteettinenOpiskeluoikeus =
+    KKSynteettinenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      myontaja = "1.2.246.562.10.00000000001",
+      containsKKTutkinto = containsKKTutkinto,
+      suoritukset = suoritukset
+    )
+
   private def assertEnsikertalainen(result: AvainArvoContainer): Unit = {
     Assertions.assertEquals(AvainArvoConstants.ensikertalainenKey, result.avain)
     Assertions.assertEquals("true", result.arvo)
@@ -110,7 +118,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testEnsikertalainen(): Unit = {
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq.empty, Seq.empty, false)
     assertEnsikertalainen(result)
   }
 
@@ -122,7 +130,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 15), true, Set(tutkinto))
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteSuoritettuKkTutkinto)
   }
 
@@ -134,7 +142,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2025, 9, 1), LocalDate.of(2026, 3, 15), true, Set(tutkinto))
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEnsikertalainen(result)
   }
 
@@ -146,7 +154,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 15), true, Set(tutkinto))
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteOpiskeluoikeusAlkanut)
   }
 
@@ -157,7 +165,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2024, 9, 1), LocalDate.of(2027, 6, 30), true)
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteOpiskeluoikeusAlkanut)
   }
 
@@ -168,7 +176,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2013, 9, 1), LocalDate.of(2016, 6, 30), true)
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEnsikertalainen(result)
   }
 
@@ -179,7 +187,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2024, 9, 1), LocalDate.of(2025, 6, 30), false)
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEnsikertalainen(result)
   }
 
@@ -190,7 +198,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val vtsData = Seq(Ensikertalaisuus(HENKILO_OID, Some("2024-07-15T09:47:20Z")))
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq.empty, vtsData, false)
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq.empty, vtsData, false)
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteKkVastaanotto)
   }
 
@@ -201,7 +209,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val vtsData = Seq(Ensikertalaisuus(HENKILO_OID, Some("2025-07-15T09:47:20Z")))
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq.empty, vtsData, false)
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq.empty, vtsData, false)
     assertEnsikertalainen(result)
   }
 
@@ -210,7 +218,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
    */
   @Test def testSuoritettuKkTutkintoHakemukselta(): Unit = {
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq.empty, true)
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq.empty, Seq.empty, true)
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoHakemukselta)
   }
 
@@ -223,7 +231,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val oo = luoKKOpiskeluoikeus(LocalDate.of(2020, 9, 1), LocalDate.of(2023, 6, 15), true, Set(tutkinto))
 
     val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
-      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, false)
+      HENKILO_OID, leikkuriLocalDate, Seq(oo), Seq.empty, Seq.empty, false)
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteSuoritettuKkTutkinto)
   }
 
@@ -271,5 +279,52 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val result = ensikertalaisuusService.haeEnsikertalaisuusAvainArvo(
       HENKILO_OID, testHaku, Set(HENKILO_OID), Seq.empty, Some(hakemus))
     assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoHakemukselta)
+  }
+
+  /**
+   * 15. Synteettisessä opiskeluoikeudessa VALMIS KK-tutkinto ennen leikkuria → SuoritettuKkTutkintoSynteettisesta
+   */
+  @Test def testSynteettinenOpiskeluoikeusSuoritettuTutkinto(): Unit = {
+    val tutkinto = luoKKTutkinto(SuoritusTila.VALMIS, Some(LocalDate.of(2024, 6, 15)))
+    val syntOo = luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto = true, suoritukset = Set(tutkinto))
+
+    val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq(syntOo), Seq.empty, false)
+    assertEiEnsikertalainen(result, EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoSynteettisesta)
+  }
+
+  /**
+   * 16. Synteettisessä opiskeluoikeudessa VALMIS KK-tutkinto leikkurin JÄLKEEN → ensikertalainen
+   */
+  @Test def testSynteettinenOpiskeluoikeusTutkintoAfterCutoff(): Unit = {
+    val tutkinto = luoKKTutkinto(SuoritusTila.VALMIS, Some(LocalDate.of(2026, 3, 15)))
+    val syntOo = luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto = true, suoritukset = Set(tutkinto))
+
+    val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq(syntOo), Seq.empty, false)
+    assertEnsikertalainen(result)
+  }
+
+  /**
+   * 17. Synteettinen opiskeluoikeus ilman tutkintoa (containsKKTutkinto=false) → ensikertalainen
+   */
+  @Test def testSynteettinenOpiskeluoikeusIlmanTutkintoa(): Unit = {
+    val syntOo = luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto = false)
+
+    val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq(syntOo), Seq.empty, false)
+    assertEnsikertalainen(result)
+  }
+
+  /**
+   * 18. Synteettisessä opiskeluoikeudessa KESKEN-tilainen tutkinto → ensikertalainen (tällaista tilannetta ei nykyisellään voi olla, mutta ollaan defensiivisiä)
+   */
+  @Test def testSynteettinenOpiskeluoikeusKeskenTutkinto(): Unit = {
+    val tutkinto = luoKKTutkinto(SuoritusTila.KESKEN, Some(LocalDate.of(2024, 6, 15)))
+    val syntOo = luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto = true, suoritukset = Set(tutkinto))
+
+    val result = ensikertalaisuusService.paatteleEnsikertalaisuusAvainArvo(
+      HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq(syntOo), Seq.empty, false)
+    assertEnsikertalainen(result)
   }
 }

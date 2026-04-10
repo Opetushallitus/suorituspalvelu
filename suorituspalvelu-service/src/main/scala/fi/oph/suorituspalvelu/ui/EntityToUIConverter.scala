@@ -170,40 +170,58 @@ object EntityToUIConverter {
     organisaatioProvider: OrganisaatioProvider,
     koodistoProvider: KoodistoProvider
   ): Seq[KKSuoritusUI] = {
-    oo.suoritukset.toSeq match {
-      case Seq(suoritus: KKOpintosuoritus) => Seq(KKSuoritusUI(
-        tunniste = suoritus.tunniste,
-        nimi = getKKSuoritusNimi(Some(suoritus)),
-        virtaNimi = suoritus.nimi.map(kielistettyToKKSuoritusNimi).toJava,
-        oppilaitos = getKKOppilaitos(suoritus.myontaja, organisaatioProvider),
-        tila = SuoritusTilaUI.VALMIS,
-        aloituspaiva = Optional.empty(),
-        valmistumispaiva = Optional.empty(),
-        suorituskieli = getSuorituskieliFromKoodi(suoritus.kieli, koodistoProvider),
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
-        isTutkintoonJohtava = false,
-        tutkintotaso = Optional.empty,
-        sektori = getSektori(suoritus.myontaja, organisaatioProvider)
-      ))
-      case suoritukset => Seq(KKSuoritusUI(
-        tunniste = oo.tunniste,
-        nimi = Optional.of(KKSuoritusNimiUI(
-          fi = Optional.of(s"${suoritukset.size} opintojaksoa"),
-          sv = Optional.of(s"${suoritukset.size} studieavsnitt"),
-          en = Optional.of(s"${suoritukset.size} study modules"),
-        )),
-        virtaNimi = Optional.empty,
-        oppilaitos = getKKOppilaitos(oo.myontaja, organisaatioProvider),
-        tila = SuoritusTilaUI.VALMIS,
-        aloituspaiva = Optional.empty,
-        valmistumispaiva = Optional.empty,
-        suorituskieli = Optional.empty,
-        opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset),
-        isTutkintoonJohtava = false,
-        tutkintotaso = Optional.empty,
-        sektori = getSektori(oo.myontaja, organisaatioProvider)
-      ))
-    }
+    if(oo.containsKKTutkinto) then
+      oo.suoritukset.collect({
+        case suoritus: KKTutkinto => KKSuoritusUI(
+          tunniste = suoritus.tunniste,
+          nimi = getKKSuoritusNimi(Some(suoritus), koodistoProviderOption = Some(koodistoProvider)),
+          virtaNimi = suoritus.nimi.map(kielistettyToKKSuoritusNimi).toJava,
+          oppilaitos = getKKOppilaitos(suoritus.myontaja, organisaatioProvider),
+          tila = SuoritusTilaUI.VALMIS,
+          aloituspaiva = suoritus.aloitusPvm.toJava,
+          valmistumispaiva = suoritus.suoritusPvm.toJava,
+          suorituskieli = getSuorituskieliFromKoodi(suoritus.kieli, koodistoProvider),
+          opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
+          isTutkintoonJohtava = true,
+          tutkintotaso = Optional.empty,
+          sektori = getSektori(suoritus.myontaja, organisaatioProvider)
+        )
+      }).toSeq
+    else
+      oo.suoritukset.toSeq match {
+        case Seq(suoritus: KKOpintosuoritus) => Seq(KKSuoritusUI(
+          tunniste = suoritus.tunniste,
+          nimi = getKKSuoritusNimi(Some(suoritus)),
+          virtaNimi = suoritus.nimi.map(kielistettyToKKSuoritusNimi).toJava,
+          oppilaitos = getKKOppilaitos(suoritus.myontaja, organisaatioProvider),
+          tila = SuoritusTilaUI.VALMIS,
+          aloituspaiva = Optional.empty(),
+          valmistumispaiva = Optional.empty(),
+          suorituskieli = getSuorituskieliFromKoodi(suoritus.kieli, koodistoProvider),
+          opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
+          isTutkintoonJohtava = false,
+          tutkintotaso = Optional.empty,
+          sektori = getSektori(suoritus.myontaja, organisaatioProvider)
+        ))
+        case suoritukset => Seq(KKSuoritusUI(
+          tunniste = oo.tunniste,
+          nimi = Optional.of(KKSuoritusNimiUI(
+            fi = Optional.of(s"${suoritukset.size} opintojaksoa"),
+            sv = Optional.of(s"${suoritukset.size} studieavsnitt"),
+            en = Optional.of(s"${suoritukset.size} study modules"),
+          )),
+          virtaNimi = Optional.empty,
+          oppilaitos = getKKOppilaitos(oo.myontaja, organisaatioProvider),
+          tila = SuoritusTilaUI.VALMIS,
+          aloituspaiva = Optional.empty,
+          valmistumispaiva = Optional.empty,
+          suorituskieli = Optional.empty,
+          opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset),
+          isTutkintoonJohtava = false,
+          tutkintotaso = Optional.empty,
+          sektori = getSektori(oo.myontaja, organisaatioProvider)
+        ))
+      }
   }
 
   private def convertNormalKkOpiskeluoikeusSuoritukset(
