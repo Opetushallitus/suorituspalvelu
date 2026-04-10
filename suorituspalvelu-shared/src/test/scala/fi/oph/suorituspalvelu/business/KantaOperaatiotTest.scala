@@ -119,10 +119,17 @@ class KantaOperaatiotTest {
 
     // tallennetaan versio
     val data = "{\"attr\": \"value\"}"
+    val ennenTallennusta = Instant.now()
     val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO, Lahdejarjestelma.YTR, Seq(data), Seq.empty, Instant.now(), "YTR", None).get
+    val jalkeen = Instant.now()
 
     // data palautuu
     Assertions.assertEquals(Seq(data), this.kantaOperaatiot.haeJsonData(versio))
+
+    // luontihetki on asetettu
+    Assertions.assertTrue(versio.luontiHetki.isDefined, "luontiHetki pitäisi olla asetettu")
+    Assertions.assertFalse(versio.luontiHetki.get.isBefore(ennenTallennusta.minusSeconds(1)), "luontiHetki ei saa olla ennen tallennusta")
+    Assertions.assertFalse(versio.luontiHetki.get.isAfter(jalkeen.plusSeconds(1)), "luontiHetki ei saa olla tallennuksen jälkeen")
 
   /**
    * Testataan että json-datan muuttuessa henkilölle tallennetaan uusi versio.
