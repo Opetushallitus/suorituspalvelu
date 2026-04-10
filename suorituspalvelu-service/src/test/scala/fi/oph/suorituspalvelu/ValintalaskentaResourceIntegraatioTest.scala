@@ -111,7 +111,8 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
       keyValues = Map(
         "address" -> "Testitie 71794920276",
         "30ca1709-db90-46ac-94a0-b3e446932d4c" -> "12"
-      )
+      ),
+      korkeakoulututkintoVuosi = None
     )
 
     val haku = KoutaHaku(
