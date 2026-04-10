@@ -1,0 +1,1 @@
+ALTER TABLE versiot ADD COLUMN luontihetki TIMESTAMPTZ;
