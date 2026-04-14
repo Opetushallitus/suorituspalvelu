@@ -678,9 +678,13 @@ object AvainArvoConverter {
     hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
   }
 
-  private def convertPeruskoulunArvosanaArvot(aineetPaasuoritukselta: Set[PerusopetuksenOppiaine], aineetOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
-    val pakollisetJaKielet = aineetPaasuoritukselta.filter(a => a.pakollinen || a.kieli.isDefined) ++ aineetOppimaarilta.filter(a => a.pakollinen || a.kieli.isDefined)
-    val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ aineetOppimaarilta.filter(a => !a.pakollinen && a.kieli.isEmpty)
+  private def convertPeruskoulunArvosanaArvot(aineetPaasuoritukselta: Set[PerusopetuksenOppiaine], aineetOppiaineenOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
+    //Otetaan mukaan vain sellaiset oppiaineen oppimäärät, joiden aine löytyy varsinaisen oppimäärän aineista.
+    val paasuorituksenAineet = aineetPaasuoritukselta.map(_.koodi.arvo)
+    val huomioitavatOppiaineenOppimaarat = aineetOppiaineenOppimaarilta.filter(a => paasuorituksenAineet.contains(a.koodi.arvo))
+
+    val pakollisetJaKielet = aineetPaasuoritukselta.filter(a => a.pakollinen || a.kieli.isDefined) ++ huomioitavatOppiaineenOppimaarat.filter(a => a.pakollinen || a.kieli.isDefined)
+    val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ huomioitavatOppiaineenOppimaarat.filter(a => !a.pakollinen && a.kieli.isEmpty)
 
     val pakollisetSupasta = perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(pakollisetJaKielet)
     val korkeimmatPakollisetArvosanat: Set[AvainArvoContainer] = valitseKorkeimmatPerusopetuksenArvosanatAineittain(pakollisetSupasta)
@@ -719,9 +723,15 @@ object AvainArvoConverter {
       //Jos Supasta ei löydy perusopetuksen suoritusta, käytetään hakemuksen tietoja jos sieltä löytyy hakijan ilmoittama perusopetus vuodelta 2017 tai aiemmin.
       case (None, Some(hakemus)) if hakemuksellaIlmoitettuPeruskoulu2017TaiAiempi(hakemus) =>
         val arvosanatHakemukselta = HakemusConverter.convertArvosanatHakemukselta(hakemus)
+
         //Suorituspalvelusta voi löytyä korotuksia hakemuksella ilmoitetuille arvosanoille (esim. perusopetus suoritettu 2017, korotuksia vuodelta 2018). Otetaan ne huomioon.
+        //Huomioidaan kuitenkin vain sellaiset korotukset, joille löytyi arvosana hakemukselta.
         val korotuksetSuorituspalvelusta = perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(oppiaineenOppimaarat.flatMap(_.aineet).toSet)
-        val korkeimmatArvosanatHakemukseltaJaSupasta = valitseKorkeimmatPerusopetuksenArvosanatAineittain(korotuksetSuorituspalvelusta ++ arvosanatHakemukselta)
+        val hakemuksenArvosanojenAvaimet = arvosanatHakemukselta.map(_.avain)
+        val huomioitavatKorotukset = korotuksetSuorituspalvelusta.filter(k => hakemuksenArvosanojenAvaimet.contains(k.avain))
+
+        val korkeimmatArvosanatHakemukseltaJaSupasta = valitseKorkeimmatPerusopetuksenArvosanatAineittain(huomioitavatKorotukset ++ arvosanatHakemukselta)
+
         val suoritusKieliHakemukselta =
           hakemus.keyValues.get(AvainArvoConstants.perusopetuksenKieliKey).flatMap(v => Option.apply(v))
             .map(k => AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, k))
