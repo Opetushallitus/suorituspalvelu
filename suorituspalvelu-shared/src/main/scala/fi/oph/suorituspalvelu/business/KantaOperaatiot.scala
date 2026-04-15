@@ -462,7 +462,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           WHERE oppilaitos_oid=$oppilaitosOid
           AND (${luokka.isEmpty} OR luokka=${luokka.getOrElse("")})
           AND (${!kesken} OR (tila=${SuoritusTila.KESKEN.toString} AND suoritustyyppi=${LahtokouluTyyppi.VUOSILUOKKA_9.toString})) -- kesken-vipu tehty opoja varten => näytetään vain ysejä
-          AND (${!arvosanaPuuttuu} OR (arvosanapuuttuu AND suoritustyyppi=${LahtokouluTyyppi.VUOSILUOKKA_9.toString})) -- arvosanaPuuttuu-vipu tehty opoja varten => näytetään vain ysejä
+          AND (${!arvosanaPuuttuu} OR (arvosanapuuttuu AND tila=${SuoritusTila.VALMIS.toString} AND suoritustyyppi=${LahtokouluTyyppi.VUOSILUOKKA_9.toString})) -- arvosanaPuuttuu-vipu tehty opoja varten => näytetään vain ysejä
           AND (${lahtokouluTyypit.isEmpty} OR suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(_.map(p => s"'$p'").mkString(",")).getOrElse("")}]::varchar[]))
         )
         -- haetaan listasta oppilaitoksen ja vuoden halutun tyyppiset ohjausvastuut
