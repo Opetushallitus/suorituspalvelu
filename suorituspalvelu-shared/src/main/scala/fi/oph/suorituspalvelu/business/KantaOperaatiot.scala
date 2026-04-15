@@ -198,7 +198,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         ORDER BY lahdeversio ASC
         LIMIT 1
       )
-      INSERT INTO versiot(tunniste, henkilo_oid, voimassaolo, lahdejarjestelma, lahdetunniste, lahdeversio, data_json, data_xml, luontihetki)
+      INSERT INTO versiot(tunniste, henkilo_oid, voimassaolo, lahdejarjestelma, lahdetunniste, lahdeversio, data_json, data_xml, luontihetki, paivityshetki)
       VALUES(
         ${tunniste.toString}::uuid,
         ${henkiloOid},
@@ -208,6 +208,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         ${lahdeVersio},
         ${jsonData}::jsonb[],
         ${xmlData}::xml[],
+        now(),
         now()
       )
       RETURNING jsonb_build_object(
@@ -219,7 +220,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         'lahdeTunniste', lahdetunniste,
         'lahdeVersio', lahdeversio,
         'parserVersio', parser_versio,
-        'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}'
+        'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
+        'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
 
@@ -235,7 +237,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       sql"""
       UPDATE versiot
       SET data_json=${jsonData}::jsonb[],
-          data_xml=${xmlData}::xml[]
+          data_xml=${xmlData}::xml[],
+          paivityshetki = now()
       WHERE henkilo_oid=${henkiloOid}
         AND lahdejarjestelma=${lahdeJarjestelma.nimi}
         AND lahdetunniste=${lahdeTunniste}
@@ -249,7 +252,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         'lahdeTunniste', lahdetunniste,
         'lahdeVersio', lahdeversio,
         'parserVersio', parser_versio,
-        'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}'
+        'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
+        'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
   }
@@ -307,7 +311,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           'lahdeTunniste', versiot.lahdetunniste,
           'lahdeVersio', versiot.lahdeversio,
           'parserVersio', versiot.parser_versio,
-          'luontiHetki', to_json(versiot.luontihetki::timestamptz)#>>'{}'
+          'luontiHetki', to_json(versiot.luontihetki::timestamptz)#>>'{}',
+          'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}'
         )::text AS versio
         FROM versiot where henkilo_oid = $henkiloOid""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
@@ -335,7 +340,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'lahdeTunniste', lahdetunniste,
               'lahdeVersio', lahdeversio,
               'parserVersio', parser_versio,
-              'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}'
+              'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
+              'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
             )::text AS versio
             FROM versiot
             WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
@@ -395,7 +401,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'lahdeTunniste', versiot.lahdetunniste,
               'lahdeVersio', versiot.lahdeversio,
               'parserVersio', versiot.parser_versio,
-              'luontiHetki', to_json(versiot.luontihetki::timestamptz)#>>'{}'
+              'luontiHetki', to_json(versiot.luontihetki::timestamptz)#>>'{}',
+              'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}'
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
@@ -438,7 +445,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 'lahdeTunniste', lahdetunniste,
                 'lahdeVersio', lahdeversio,
                 'parserVersio', parser_versio,
-                'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}'
+                'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
+                'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
               )::text AS versio
               FROM versiot
               WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
