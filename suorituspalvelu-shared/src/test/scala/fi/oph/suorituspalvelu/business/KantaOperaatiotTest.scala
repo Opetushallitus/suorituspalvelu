@@ -131,6 +131,11 @@ class KantaOperaatiotTest {
     Assertions.assertFalse(versio.luontiHetki.get.isBefore(ennenTallennusta.minusSeconds(1)), "luontiHetki ei saa olla ennen tallennusta")
     Assertions.assertFalse(versio.luontiHetki.get.isAfter(jalkeen.plusSeconds(1)), "luontiHetki ei saa olla tallennuksen jälkeen")
 
+    // paivityshetki on asetettu
+    Assertions.assertTrue(versio.paivitysHetki.isDefined, "paivitysHetki pitäisi olla asetettu")
+    Assertions.assertFalse(versio.paivitysHetki.get.isBefore(ennenTallennusta.minusSeconds(1)), "paivitysHetki ei saa olla ennen tallennusta")
+    Assertions.assertFalse(versio.paivitysHetki.get.isAfter(jalkeen.plusSeconds(1)), "paivitysHetki ei saa olla tallennuksen jälkeen")
+
   /**
    * Testataan että json-datan muuttuessa henkilölle tallennetaan uusi versio.
    */
@@ -290,7 +295,9 @@ class KantaOperaatiotTest {
       baseTime, OO_NUMERO, Some(1)
     ).get
 
-    Assertions.assertEquals(alkuperainenVersio, uusiVersio, "Päivityksessä palautuu sama versio kuin aiemmin samalla lähdeversiolla tallennettaessa")
+    Assertions.assertEquals(alkuperainenVersio.copy(paivitysHetki = uusiVersio.paivitysHetki), uusiVersio, "Päivityksessä palautuu sama versio kuin aiemmin samalla lähdeversiolla tallennettaessa")
+    Assertions.assertEquals(alkuperainenVersio.luontiHetki, uusiVersio.luontiHetki, "luontiHetki ei muutu päivityksessä")
+    Assertions.assertTrue(uusiVersio.paivitysHetki.get.isAfter(alkuperainenVersio.paivitysHetki.get) || uusiVersio.paivitysHetki.get.equals(alkuperainenVersio.paivitysHetki.get), "paivitysHetki päivittyy")
 
     val jsonData = this.kantaOperaatiot.haeJsonData(alkuperainenVersio)
     Assertions.assertEquals(Seq("{\"attr\": \"paivitetty\"}"), jsonData, "Alkuperäinen data päivitettiin")

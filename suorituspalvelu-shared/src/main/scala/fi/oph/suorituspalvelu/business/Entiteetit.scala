@@ -491,7 +491,8 @@ case class VersioEntiteetti(
   lahdeTunniste: String,
   lahdeVersio: Option[Int],
   parserVersio: Option[Int],
-  luontiHetki: Option[Instant]
+  luontiHetki: Option[Instant],
+  paivitysHetki: Option[Instant]
 )
 
 enum KKOpiskeluoikeusTila:
