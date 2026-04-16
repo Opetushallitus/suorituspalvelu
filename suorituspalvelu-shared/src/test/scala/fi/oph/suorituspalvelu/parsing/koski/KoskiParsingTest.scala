@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.koski
+package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_8, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS

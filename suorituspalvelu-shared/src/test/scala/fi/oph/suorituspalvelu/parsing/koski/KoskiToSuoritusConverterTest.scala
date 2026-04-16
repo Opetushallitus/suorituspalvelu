@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.koski
+package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
