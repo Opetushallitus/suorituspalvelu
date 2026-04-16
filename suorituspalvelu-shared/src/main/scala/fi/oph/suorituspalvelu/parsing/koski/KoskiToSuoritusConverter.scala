@@ -462,28 +462,29 @@ object KoskiToSuoritusConverter {
 
   //Tämän tuottamat numeeriset arvot ovat käytännössä koodiston 2asteenpohjakoulutus2021 arvoja.
   def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[PerusopetuksenYksilollistaminen] = {
-    val yksilollistettyja = suoritus.osasuoritukset.getOrElse(Set.empty).count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
-    val rajattuja = suoritus.osasuoritukset.getOrElse(Set.empty).count(_.`rajattuOppimäärä`.exists(_.equals(true)))
-    val yhteensa = suoritus.osasuoritukset.getOrElse(Set.empty).size
+    val yhteisetAineet = suoritus.osasuoritukset.getOrElse(Set.empty)
+      .filter(os => os.koulutusmoduuli.flatMap(_.tunniste).map(_.koodiarvo).exists(YHTEISET_AINEET_JA_A2_B2.contains))
+    val yksilollistettyja = yhteisetAineet.count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
+    val rajattuja = yhteisetAineet.count(_.`rajattuOppimäärä`.exists(_.equals(true)))
+    val erityisiaAineita = yksilollistettyja + rajattuja
     val opiskeleeToimintaAlueittain =
       opiskeluoikeus
         .lisätiedot
         .flatMap(_.erityisenTuenPäätökset).getOrElse(List.empty)
         .exists(_.opiskeleeToimintaAlueittain.exists(_.equals(true)))
 
-    (yksilollistettyja, rajattuja, yhteensa, opiskeleeToimintaAlueittain) match {
-      case (yks, raj, yhteensa, _) if yks >= 1 && yks >= raj =>
-        if (yks > yhteensa / 2)
-          Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
-        else
-          Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
-      case (yks, raj, yhteensa, _) if raj >= 1 =>
-        if (raj > yhteensa / 2)
-          Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU)
-        else
-          Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU)
-      case (_, _, _, true) => Some(PerusopetuksenYksilollistaminen.TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY)
-      case _ => None
+    (erityisiaAineita, opiskeleeToimintaAlueittain) match {
+      case (0, true) => Some(PerusopetuksenYksilollistaminen.TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY)
+      case (0, _) => None
+      case _ =>
+        val isRajattu = rajattuja >= yksilollistettyja // saman verran → rajattu
+        if (erityisiaAineita > yhteisetAineet.size / 2) {
+          if (isRajattu) Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU)
+          else Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
+        } else {
+          if (isRajattu) Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU)
+          else Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
+        }
     }
   }
 
@@ -566,7 +567,7 @@ object KoskiToSuoritusConverter {
     }
   }
 
-  val YHTEISET_AINEET = List(
+  val YHTEISET_EI_KATSOMUSAINEET = Set(
     "AI",
     "A1",
     "A2",
@@ -586,15 +587,17 @@ object KoskiToSuoritusConverter {
     "KO"
   )
 
-  val KATSOMUSAINEET = List(
+  val YHTEISET_KATSOMUSAINEET = Set(
     "ET",
     "KT"
   )
 
+  val YHTEISET_AINEET_JA_A2_B2 = YHTEISET_EI_KATSOMUSAINEET ++ YHTEISET_KATSOMUSAINEET ++ Set("A2", "B2")
+
   // Muista kuin katsomuaineista pitää olla kaikki, ja katsomusaineista jompi kumpi
   def yhteisenAineenArvosanaPuuttuu(aineet: Set[PerusopetuksenOppiaine]): Boolean =
-    !YHTEISET_AINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
-      !KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
+    !YHTEISET_EI_KATSOMUSAINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
+      !YHTEISET_KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
 
   def toAikuistenPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): PerusopetuksenOppimaara = {
     val oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
