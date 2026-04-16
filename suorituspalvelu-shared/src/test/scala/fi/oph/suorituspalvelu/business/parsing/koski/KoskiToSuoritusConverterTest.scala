@@ -718,7 +718,7 @@ class KoskiToSuoritusConverterTest {
       Set(suoritus),
       mkJakso("2024-01-01", "lasna")
     )
-    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", None, DUMMY_KOODISTOPROVIDER)
+    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", false, None, DUMMY_KOODISTOPROVIDER)
     Assertions.assertEquals(List.empty, result)
   }
 
@@ -728,7 +728,7 @@ class KoskiToSuoritusConverterTest {
       Set(suoritus),
       mkJakso("2024-01-01", "lasna")
     )
-    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", None, DUMMY_KOODISTOPROVIDER)
+    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", false, None, DUMMY_KOODISTOPROVIDER)
     Assertions.assertEquals(List.empty, result)
   }
 
@@ -741,7 +741,7 @@ class KoskiToSuoritusConverterTest {
     )
     Assertions.assertEquals(
       List(Lahtokoulu(LocalDate.parse("2024-08-01"), Some(LocalDate.parse("2025-06-01")), oo.oppilaitos.get.oid, Some(2025), "9B", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
-      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", None, DUMMY_KOODISTOPROVIDER))
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", true, None, DUMMY_KOODISTOPROVIDER))
   }
 
   @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaKesken(): Unit = {
@@ -756,7 +756,7 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(List(
       Lahtokoulu(LocalDate.parse("2024-05-01"), None, oo.oppilaitos.get.oid, Some(2025), "9A", Some(KESKEN), Some(true), VUOSILUOKKA_9),
       Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2025), "9A", Some(KESKEN), Some(true), VUOSILUOKKA_9)),
-      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", None, DUMMY_KOODISTOPROVIDER))
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", true, None, DUMMY_KOODISTOPROVIDER))
   }
 
   @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaValmistunut(): Unit = {
@@ -772,6 +772,6 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(List(
       Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-08-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9),
       Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
-      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", None, DUMMY_KOODISTOPROVIDER))
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", true, None, DUMMY_KOODISTOPROVIDER))
   }
 }
