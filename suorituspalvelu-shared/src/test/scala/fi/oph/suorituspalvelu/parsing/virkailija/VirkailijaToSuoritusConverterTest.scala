@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.virkailija
+package fi.oph.suorituspalvelu.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9

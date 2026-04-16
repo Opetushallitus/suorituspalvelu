@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.valinnat.mankeli
+package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
