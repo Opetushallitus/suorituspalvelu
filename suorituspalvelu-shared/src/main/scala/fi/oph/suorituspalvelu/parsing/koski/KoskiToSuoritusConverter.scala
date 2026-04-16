@@ -531,7 +531,7 @@ object KoskiToSuoritusConverter {
       .exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists(Set("7", "8", "9").contains))
   }
 
-  def getPerusopetuksenLahtokoulut(opiskeluoikeus: KoskiOpiskeluoikeus, haluttuLuokkaAste: String, seuraavanAsteenAlkamispaiva: Option[LocalDate], koodistoProvider: KoodistoProvider): List[Lahtokoulu] =
+  def getPerusopetuksenLahtokoulut(opiskeluoikeus: KoskiOpiskeluoikeus, haluttuLuokkaAste: String, yhteisenAineenArvosanaPuuttuu: Boolean, seuraavanAsteenAlkamispaiva: Option[LocalDate], koodistoProvider: KoodistoProvider): List[Lahtokoulu] =
     val oppilaitos = opiskeluoikeus.oppilaitos.map(o =>
       fi.oph.suorituspalvelu.business.Oppilaitos(
         o.nimi,
@@ -546,7 +546,6 @@ object KoskiToSuoritusConverter {
           case Some(pvm) if luokkaAste==haluttuLuokkaAste =>
             val luokka = s.luokka.getOrElse(dummy())
             val supatila = parseTila(opiskeluoikeus, Some(s)).map(tila => convertKoskiTila(tila.koodiarvo))
-            val aineet = s.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
             val alkamispaiva = LocalDate.parse(pvm)
             val loppuPaivamaara = (s.vahvistus.map(v => LocalDate.parse(v.`päivä`)), seuraavanAsteenAlkamispaiva) match
               case (None, None) => None
@@ -555,7 +554,7 @@ object KoskiToSuoritusConverter {
               case (Some(vahvistusPaivamaara), Some(seuraavanAsteenAlkamispaiva)) => Some(vahvistusPaivamaara.min(seuraavanAsteenAlkamispaiva))
             val valmistumisVuosi = if loppuPaivamaara.isDefined then loppuPaivamaara.map(_.getYear) else Some(alkamispaiva.getYear + 1)
             Some(parseLasnaolot(opiskeluoikeus, Some(alkamispaiva), loppuPaivamaara).map(l => {
-              Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, luokka, supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste"))
+              Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, luokka, supatila, Some(yhteisenAineenArvosanaPuuttuu), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste"))
             }))
           case default => None
       })
@@ -579,10 +578,11 @@ object KoskiToSuoritusConverter {
 
       val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
       val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+      val arvosanaPuuttuu = yhteisenAineenArvosanaPuuttuu(aineet)
 
-      val lahtokoulut9 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "9", None, koodistoProvider)
-      val lahtokoulut8 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "8", lahtokoulut9.map(_.suorituksenAlku).minOption, koodistoProvider)
-      val lahtokoulut7 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "7", (lahtokoulut9 ++ lahtokoulut8).map(_.suorituksenAlku).minOption, koodistoProvider)
+      val lahtokoulut9 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "9", arvosanaPuuttuu, None, koodistoProvider)
+      val lahtokoulut8 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "8", arvosanaPuuttuu, lahtokoulut9.map(_.suorituksenAlku).minOption, koodistoProvider)
+      val lahtokoulut7 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "7", arvosanaPuuttuu, (lahtokoulut9 ++ lahtokoulut8).map(_.suorituksenAlku).minOption, koodistoProvider)
       val lahtokoulut = lahtokoulut9 ++ lahtokoulut8 ++ lahtokoulut7
 
       val maxLuokkaAste = lahtokoulut
