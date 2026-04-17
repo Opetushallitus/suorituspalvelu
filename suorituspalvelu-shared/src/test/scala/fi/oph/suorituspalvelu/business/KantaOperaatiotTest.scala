@@ -136,6 +136,9 @@ class KantaOperaatiotTest {
     Assertions.assertFalse(versio.paivitysHetki.get.isBefore(ennenTallennusta.minusSeconds(1)), "paivitysHetki ei saa olla ennen tallennusta")
     Assertions.assertFalse(versio.paivitysHetki.get.isAfter(jalkeen.plusSeconds(1)), "paivitysHetki ei saa olla tallennuksen jälkeen")
 
+    // parserointihetki on None kunnes entiteetit tallennetaan
+    Assertions.assertEquals(None, versio.parserointiHetki, "parserointiHetki on None kunnes tallennaVersioonLiittyvatEntiteetit on kutsuttu")
+
   /**
    * Testataan että json-datan muuttuessa henkilölle tallennetaan uusi versio.
    */
@@ -374,12 +377,22 @@ class KantaOperaatiotTest {
     val haettuVersioEnnen = this.kantaOperaatiot.haeHenkilonVersiot(HENKILONUMERO).head
     Assertions.assertEquals(None, haettuVersioEnnen.parserVersio)
 
+    // parserointiHetki on None ennen entiteettien tallentamista
+    Assertions.assertEquals(None, haettuVersioEnnen.parserointiHetki)
+
     // tallennetaan opiskeluoikeudet parserVersiolla
+    val ennenEntiteettienTallennusta = Instant.now()
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set.empty, Seq.empty, PARSER_VERSIO)
+    val entiteettienTallennuksenJalkeen = Instant.now()
 
     // haetaan versio ja tarkistetaan että parserVersio on nyt asetettu
     val haettuVersioJalkeen = this.kantaOperaatiot.haeHenkilonVersiot(HENKILONUMERO).head
     Assertions.assertEquals(Some(PARSER_VERSIO), haettuVersioJalkeen.parserVersio)
+
+    // parserointiHetki on asetettu entiteettien tallennuksen aikaväliin
+    Assertions.assertTrue(haettuVersioJalkeen.parserointiHetki.isDefined, "parserointiHetki pitäisi olla asetettu")
+    Assertions.assertFalse(haettuVersioJalkeen.parserointiHetki.get.isBefore(ennenEntiteettienTallennusta.minusSeconds(1)), "parserointiHetki ei saa olla ennen tallennusta")
+    Assertions.assertFalse(haettuVersioJalkeen.parserointiHetki.get.isAfter(entiteettienTallennuksenJalkeen.plusSeconds(1)), "parserointiHetki ei saa olla tallennuksen jälkeen")
 
     // tarkistetaan myös haeVersiot-metodin kautta
     val haetutVersiot = this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI).filter(_.henkiloOid == HENKILONUMERO)
@@ -400,7 +413,7 @@ class KantaOperaatiotTest {
 
     // suoritus palautuu kun haetaan henkilönumerolla
     val haetutSuoritusEntiteetit = haeSuoritukset(HENKILONUMERO)
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus)), haetutSuoritusEntiteetit)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutSuoritusEntiteetit.keys.head.parserointiHetki) -> Set(opiskeluoikeus)), haetutSuoritusEntiteetit)
 
   /**
    * Testataan että vanhat suoritukset poistetaan kun uudet suoritukset tallennetaan, ts. ei synny suoritusten
@@ -431,11 +444,11 @@ class KantaOperaatiotTest {
 
     // henkilön 2 uudet suoritukset palautuvat kun haetaan henkilönumerolla
     val haetutSuoritusEntiteetit2 = haeSuoritukset(HENKILONUMERO2)
-    Assertions.assertEquals(Map(versio2.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus2)), haetutSuoritusEntiteetit2)
+    Assertions.assertEquals(Map(versio2.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutSuoritusEntiteetit2.keys.head.parserointiHetki) -> Set(opiskeluoikeus2)), haetutSuoritusEntiteetit2)
 
     // henkilön 1 suoritukset ennallaan
     val haetutSuoritusEntiteetit1 = haeSuoritukset(HENKILONUMERO1)
-    Assertions.assertEquals(Map(versio1.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus1)), haetutSuoritusEntiteetit1)
+    Assertions.assertEquals(Map(versio1.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutSuoritusEntiteetit1.keys.head.parserointiHetki) -> Set(opiskeluoikeus1)), haetutSuoritusEntiteetit1)
 
 
   /**
@@ -561,7 +574,7 @@ class KantaOperaatiotTest {
 
     // henkilön 1 suoritukset ennallaan
     val haetutSuoritusEntiteetit1 = haeSuoritukset(HENKILONUMERO1)
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus1, opiskeluoikeus2)), haetutSuoritusEntiteetit1)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutSuoritusEntiteetit1.keys.head.parserointiHetki) -> Set(opiskeluoikeus1, opiskeluoikeus2)), haetutSuoritusEntiteetit1)
 
   @Test def testAmmatillinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
@@ -573,7 +586,7 @@ class KantaOperaatiotTest {
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.KOSKI)
 
     val haetutSuoritukset = haeSuoritukset(HENKILONUMERO1)
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus)), haetutSuoritukset)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutSuoritukset.keys.head.parserointiHetki) -> Set(opiskeluoikeus)), haetutSuoritukset)
 
   @Test def testGeneerinenOpiskeluoikeusEqualityAfterPersisting(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
@@ -585,7 +598,7 @@ class KantaOperaatiotTest {
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.KOSKI)
 
     val haetutSuoritukset = haeSuoritukset(HENKILONUMERO1)
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set(opiskeluoikeus)), haetutSuoritukset)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutSuoritukset.keys.head.parserointiHetki) -> Set(opiskeluoikeus)), haetutSuoritukset)
 
   @Test def testYTRRoundTrip(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.99988877766"
@@ -594,7 +607,7 @@ class KantaOperaatiotTest {
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set(opiskeluoikeus), Seq.empty, ParserVersions.YTR)
 
     val haetutSuoritukset = haeSuoritukset(HENKILONUMERO1)
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.YTR)) -> Set(opiskeluoikeus)), haetutSuoritukset)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.YTR), parserointiHetki = haetutSuoritukset.keys.head.parserointiHetki) -> Set(opiskeluoikeus)), haetutSuoritukset)
 
   @Test def testHaeHenkilonVersiot(): Unit =
     val HENKILONUMERO1 = "1.2.246.562.24.00000000123"

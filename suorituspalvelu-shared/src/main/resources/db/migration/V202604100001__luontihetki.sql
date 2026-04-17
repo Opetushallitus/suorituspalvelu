@@ -1,2 +1,3 @@
 ALTER TABLE versiot ADD COLUMN luontihetki TIMESTAMPTZ;
 ALTER TABLE versiot ADD COLUMN paivityshetki TIMESTAMPTZ;
+ALTER TABLE versiot ADD COLUMN parserointihetki TIMESTAMPTZ;
