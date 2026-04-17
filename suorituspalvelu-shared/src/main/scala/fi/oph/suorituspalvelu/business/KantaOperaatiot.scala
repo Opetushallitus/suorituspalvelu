@@ -221,7 +221,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         'lahdeVersio', lahdeversio,
         'parserVersio', parser_versio,
         'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
-        'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
+        'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}',
+        'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
 
@@ -253,7 +254,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         'lahdeVersio', lahdeversio,
         'parserVersio', parser_versio,
         'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
-        'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
+        'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}',
+        'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
       )::text
     """.as[String].head.map(json => Some(MAPPER.readValue(json, classOf[VersioEntiteetti])))
   }
@@ -312,7 +314,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           'lahdeVersio', versiot.lahdeversio,
           'parserVersio', versiot.parser_versio,
           'luontiHetki', to_json(versiot.luontihetki::timestamptz)#>>'{}',
-          'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}'
+          'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}',
+          'parserointiHetki', to_json(versiot.parserointihetki::timestamptz)#>>'{}'
         )::text AS versio
         FROM versiot where henkilo_oid = $henkiloOid""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
@@ -341,7 +344,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'lahdeVersio', lahdeversio,
               'parserVersio', parser_versio,
               'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
-              'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
+              'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}',
+              'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
             )::text AS versio
             FROM versiot
             WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
@@ -353,7 +357,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val updateVersionAction = lockHenkiloAction.as[Int].flatMap(_ =>
       sql"""
            UPDATE versiot
-           SET opiskeluoikeudet=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb, parser_versio=${parserVersio}
+           SET opiskeluoikeudet=${MAPPER.writeValueAsString(Container(opiskeluoikeudet))}::jsonb, parser_versio=${parserVersio}, parserointihetki=now()
            WHERE tunniste=${versio.tunniste.toString}::uuid RETURNING upper(voimassaolo)='infinity'::timestamptz""".as[Boolean])
     val updateLahtokoulutAction = updateVersionAction.flatMap(isNewestVersion => {
       // lähtökoulut tallennetaan vain viimeisimmälle versiolle, ts. ne pitää päivittää ainoastaan kun tallennetaan uusin versio (voimassaolon loppu == infinity)
@@ -402,7 +406,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'lahdeVersio', versiot.lahdeversio,
               'parserVersio', versiot.parser_versio,
               'luontiHetki', to_json(versiot.luontihetki::timestamptz)#>>'{}',
-              'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}'
+              'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}',
+              'parserointiHetki', to_json(versiot.parserointihetki::timestamptz)#>>'{}'
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
@@ -446,7 +451,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 'lahdeVersio', lahdeversio,
                 'parserVersio', parser_versio,
                 'luontiHetki', to_json(luontihetki::timestamptz)#>>'{}',
-                'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}'
+                'paivitysHetki', to_json(paivityshetki::timestamptz)#>>'{}',
+                'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
               )::text AS versio
               FROM versiot
               WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
