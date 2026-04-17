@@ -17,7 +17,7 @@ export const getConfiguration = async () => {
         casLoginUrl: `${DOMAIN}/cas/login`,
         lokalisointiUrl: `${DOMAIN}/lokalisointi/tolgee`,
         organisaatioLinkUrl: `${DOMAIN}/organisaatio-service/lomake`,
-        oppijaNumeroLinkUrl: `${DOMAIN}/henkilo-ui/oppija2/`,
+        oppijaNumeroLinkUrl: `${DOMAIN}/henkilo-ui/oppija/`,
         koskiOppijaLinkUrl: `${DOMAIN}/koski/oppija/`,
       },
       suorituspalvelu: {
