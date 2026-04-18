@@ -3,8 +3,9 @@ package fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmatillinenTutkintoOsittainen, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, Koodi, Korotus, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillinenTutkintoOsittainen, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, Koodi, Korotus, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil.isPakollinenJaArviointiPuuttuu
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
 
@@ -505,7 +506,6 @@ object KoskiToSuoritusConverter {
       .exists(s => s.koulutusmoduuli.flatMap(m => m.tunniste.map(t => t.koodiarvo)).exists(Set("7", "8", "9").contains))
   }
 
-
   def toPerusopetuksenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppimaara] = {
     if (isKotiopetus(opiskeluoikeus)) {
       LOG.info(s"Ei muodosteta oppimäärää Koski-opiskeluoikeudelle ${opiskeluoikeus.oid}, koska kyse on kotiopetuslaisesta.")
@@ -521,6 +521,7 @@ object KoskiToSuoritusConverter {
 
       val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
       val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+      val yhteisenAineenArvosanaPuuttuu = suoritus.osasuoritukset.exists(os => os.exists(os => isPakollinenJaArviointiPuuttuu(os)))
 
       val lahtokoulut = opiskeluoikeus.suoritukset.get
         .filter(s => s.tyyppi.koodiarvo == SUORITUSTYYPPI_PERUSOPETUKSENVUOSILUOKKA).flatMap(s => {
@@ -532,7 +533,7 @@ object KoskiToSuoritusConverter {
             case Some(pvm) if Set("7", "8", "9").contains(luokkaAste) =>
               val alkamispaiva = LocalDate.parse(pvm)
               val vahvistuspaiva = s.vahvistus.map(v => LocalDate.parse(v.`päivä`))
-              Some(Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), luokka, supatila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste")))
+              Some(Lahtokoulu(alkamispaiva, vahvistuspaiva.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, Some(alkamispaiva.getYear + 1), luokka, supatila, if(luokkaAste=="9") Some(yhteisenAineenArvosanaPuuttuu) else None, LahtokouluTyyppi.valueOf(s"VUOSILUOKKA_$luokkaAste")))
             case default => None
         })
 
@@ -569,7 +570,6 @@ object KoskiToSuoritusConverter {
   val YHTEISET_AINEET = List(
     "AI",
     "A1",
-    "A2",
     "B1",
     "MA",
     "BI",
@@ -606,6 +606,7 @@ object KoskiToSuoritusConverter {
     val vahvistus = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     val supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
     val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+    val yhteisenAineenArvosanaPuuttuu = suoritus.osasuoritukset.exists(os => os.exists(os => isPakollinenJaArviointiPuuttuu(os)))
 
     PerusopetuksenOppimaara(
      tunniste = UUID.randomUUID(),
@@ -620,7 +621,7 @@ object KoskiToSuoritusConverter {
       aloitusPaivamaara = aloitus,
       vahvistusPaivamaara = vahvistus,
       aineet = aineet,
-      lahtokoulut = Set(Lahtokoulu(aloitus.get, vahvistus.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, aloitus.map(_.getYear + 1), AIKUISTEN_PERUSOPETUS.defaultLuokka.get, supaTila, Some(yhteisenAineenArvosanaPuuttuu(aineet)), AIKUISTEN_PERUSOPETUS)),
+      lahtokoulut = Set(Lahtokoulu(aloitus.get, vahvistus.orElse(parseKeskeytyminen(opiskeluoikeus)), oppilaitos.oid, aloitus.map(_.getYear + 1), AIKUISTEN_PERUSOPETUS.defaultLuokka.get, supaTila, Some(yhteisenAineenArvosanaPuuttuu), AIKUISTEN_PERUSOPETUS)),
       syotetty = false,
       vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true))),
       luokkaAste = None

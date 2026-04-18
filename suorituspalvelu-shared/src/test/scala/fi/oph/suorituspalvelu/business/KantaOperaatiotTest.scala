@@ -754,6 +754,84 @@ class KantaOperaatiotTest {
     Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
+  @Test def testKeskenVipuPalauttaaVainYseja(): Unit = {
+    val henkiloNumero1 = "1.2.246.562.24.99988877766"
+    val henkiloNumero2 = "1.2.246.562.24.99988877767"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val valmistumisVuosi = NOW.getYear
+    val lastYearStart = NOW.minusYears(1).withMonth(8).withDayOfMonth(18)
+
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero1, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, None, oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    ), ParserVersions.KOSKI)
+
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero2, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.4", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, None, oppilaitosOid, Some(valmistumisVuosi), "TUVA", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.TUVA)
+    ), ParserVersions.KOSKI)
+
+    // Vipu päällä: vain ysi-kesken palautetaan
+    Assertions.assertEquals(Set((henkiloNumero1, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, true, false, Set(VUOSILUOKKA_9, TUVA)))
+  }
+
+  @Test def testKeskenVipuEiPalautaValmiitaYseja(): Unit = {
+    val henkiloNumero = "1.2.246.562.24.99988877766"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val valmistumisVuosi = NOW.getYear
+    val lastYearStart = NOW.minusYears(1).withMonth(8).withDayOfMonth(18)
+
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, Some(NOW.withMonth(5).withDayOfMonth(31)), oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.VALMIS), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    ), ParserVersions.KOSKI)
+
+    // Vipu päällä: valmista ysiä ei palauteta
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, true, false, Set(VUOSILUOKKA_9)))
+  }
+
+  @Test def testArvosanaPuuttuuVipuPalauttaaVainValmiitaYseja(): Unit = {
+    val henkiloNumero1 = "1.2.246.562.24.99988877766"
+    val henkiloNumero2 = "1.2.246.562.24.99988877767"
+    val henkiloNumero3 = "1.2.246.562.24.99988877768"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val valmistumisVuosi = NOW.getYear
+    val lastYearStart = NOW.minusYears(1).withMonth(8).withDayOfMonth(18)
+
+    val versio1 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero1, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio1.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, None, oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.VALMIS), Some(true), LahtokouluTyyppi.VUOSILUOKKA_9)
+    ), ParserVersions.KOSKI)
+
+    val versio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero2, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio2.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, None, oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEN), Some(true), LahtokouluTyyppi.VUOSILUOKKA_9)
+    ), ParserVersions.KOSKI)
+
+    val versio3 = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero3, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.4", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio3.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, None, oppilaitosOid, Some(valmistumisVuosi), "TUVA", Some(SuoritusTila.KESKEN), Some(true), LahtokouluTyyppi.TUVA)
+    ), ParserVersions.KOSKI)
+
+    // Vipu päällä: vain valmis ysi jolta arvosana puuttuu palautetaan
+    Assertions.assertEquals(Set((henkiloNumero1, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, false, true, Set(VUOSILUOKKA_9, TUVA)))
+  }
+
+  @Test def testArvosanaPuuttuuVipuEiPalautaKunArvosanaEiPuutu(): Unit = {
+    val henkiloNumero = "1.2.246.562.24.99988877766"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val valmistumisVuosi = NOW.getYear
+    val lastYearStart = NOW.minusYears(1).withMonth(8).withDayOfMonth(18)
+
+    val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkiloNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
+    this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, Set.empty, Seq(
+      Lahtokoulu(lastYearStart, None, oppilaitosOid, Some(valmistumisVuosi), "9A", Some(SuoritusTila.KESKEN), None, LahtokouluTyyppi.VUOSILUOKKA_9)
+    ), ParserVersions.KOSKI)
+
+    // Vipu päällä: arvosana ei puutu, joten ei palauteta
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, false, true, Set(VUOSILUOKKA_9)))
+  }
+
   @Test def haeLahtokoulutRoundTrip(): Unit = {
     val henkiloNumero = "1.2.246.562.24.99988877766"
     val oppilaitosOid = "1.2.246.562.10.95136889433"
