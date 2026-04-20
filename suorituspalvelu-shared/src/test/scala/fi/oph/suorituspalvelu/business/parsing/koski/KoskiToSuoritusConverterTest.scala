@@ -1,13 +1,16 @@
 package fi.oph.suorituspalvelu.business.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
+import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOppilaitos, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.time.LocalDate
+import TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkVuosiluokkaSuoritus}
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -674,4 +677,101 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(0, resultTrue.get.arvo.intValue)
   }
 
+  // --- parseLasnaolot tests ---
+
+  @Test def testParseLasnaolotMultipleLasnaWithGap(): Unit = {
+    val oo = mkOpiskeluoikeusWithTila(
+      mkJakso("2020-01-01", "lasna"),
+      mkJakso("2020-03-01", "eronnut"),
+      // ------------------------------ ennen tätä leikkautuu pois (ennen aloituspäivämäärää)
+      mkJakso("2024-01-01", "lasna"), // osa leikautuu pois (ennen aloituspäivämäärää)
+      mkJakso("2024-03-01", "eronnut"),
+      mkJakso("2024-05-01", "lasna"),
+      mkJakso("2024-08-01", "eronnut"), // osa leikkautuu pois (vahvistuspäivämäärän jälkeen)
+      // ------------------------------ tämän jälkeen leikkautuu pois (vahvistuspäivämäärän jälkeen)
+      mkJakso("2025-05-01", "lasna"),
+      mkJakso("2025-08-01", "valmistunut")
+    )
+    val result = KoskiToSuoritusConverter.parseLasnaolot(oo, Some(LocalDate.parse("2024-02-01")), Some(LocalDate.parse("2024-07-01")))
+    Assertions.assertEquals(List(
+      (LocalDate.parse("2024-02-01"), Some(LocalDate.parse("2024-03-01"))),
+      (LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-07-01")))
+    ), result)
+  }
+
+  // --- getPerusopetuksenLahtokoulut tests ---
+
+  private def mkOpiskeluoikeusForLahtokoulut(suoritukset: Set[KoskiSuoritus], jaksot: KoskiOpiskeluoikeusJakso*): KoskiOpiskeluoikeus =
+    KoskiOpiskeluoikeus(
+      "1.2.246.562.15.123",
+      Some(KoskiOppilaitos(Kielistetty(Some("Testikoulu"), None, None), "1.2.246.562.10.999")),
+      None,
+      Some(KoskiOpiskeluoikeusTila(jaksot.toList)),
+      Some(suoritukset),
+      None,
+      None
+    )
+
+  @Test def testGetPerusopetuksenLahtokoulutNoMatchingLuokkaAste(): Unit = {
+    val suoritus = mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2024-01-01"))
+    val oo = mkOpiskeluoikeusForLahtokoulut(
+      Set(suoritus),
+      mkJakso("2024-01-01", "lasna")
+    )
+    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", false, None, DUMMY_KOODISTOPROVIDER)
+    Assertions.assertEquals(List.empty, result)
+  }
+
+  @Test def testGetPerusopetuksenLahtokoulutMissingAlkamispaiva(): Unit = {
+    val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = None)
+    val oo = mkOpiskeluoikeusForLahtokoulut(
+      Set(suoritus),
+      mkJakso("2024-01-01", "lasna")
+    )
+    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", false, None, DUMMY_KOODISTOPROVIDER)
+    Assertions.assertEquals(List.empty, result)
+  }
+
+  @Test def testGetPerusopetuksenLahtokoulutSingleMatchSinglePeriod(): Unit = {
+    val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), vahvistuspaiva = Some("2025-06-01"), luokka = Some("9B"))
+    val oo = mkOpiskeluoikeusForLahtokoulut(
+      Set(suoritus),
+      mkJakso("2024-01-01", "lasna"),
+      mkJakso("2025-06-01", "valmistunut")
+    )
+    Assertions.assertEquals(
+      List(Lahtokoulu(LocalDate.parse("2024-08-01"), Some(LocalDate.parse("2025-06-01")), oo.oppilaitos.get.oid, Some(2025), "9B", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", true, None, DUMMY_KOODISTOPROVIDER))
+  }
+
+  @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaKesken(): Unit = {
+    val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-01-01"), luokka = Some("9A"))
+    val oo = mkOpiskeluoikeusForLahtokoulut(
+      Set(suoritus),
+      mkJakso("2024-01-01", "lasna"),
+      mkJakso("2024-03-01", "eronnut"),
+      mkJakso("2024-05-01", "lasna")
+    )
+
+    Assertions.assertEquals(List(
+      Lahtokoulu(LocalDate.parse("2024-05-01"), None, oo.oppilaitos.get.oid, Some(2025), "9A", Some(KESKEN), Some(true), VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2025), "9A", Some(KESKEN), Some(true), VUOSILUOKKA_9)),
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", true, None, DUMMY_KOODISTOPROVIDER))
+  }
+
+  @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaValmistunut(): Unit = {
+    val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-01-01"), vahvistuspaiva = Some("2024-08-01"), luokka = Some("9A"))
+    val oo = mkOpiskeluoikeusForLahtokoulut(
+      Set(suoritus),
+      mkJakso("2024-01-01", "lasna"),
+      mkJakso("2024-03-01", "eronnut"),
+      mkJakso("2024-05-01", "lasna"),
+      mkJakso("2024-08-01", "valmistunut")
+    )
+
+    Assertions.assertEquals(List(
+      Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-08-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", true, None, DUMMY_KOODISTOPROVIDER))
+  }
 }
