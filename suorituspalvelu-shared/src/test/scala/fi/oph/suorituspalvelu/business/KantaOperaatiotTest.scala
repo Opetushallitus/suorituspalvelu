@@ -1406,7 +1406,7 @@ class KantaOperaatiotTest {
       Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("äidinkieli"), None, None),
         Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
         Some(Koodi("FI", "kielivalikoima", None)), true, None, None)),
-      Set.empty,
+      List.empty,
       false,
       false,
       None
@@ -1430,7 +1430,7 @@ class KantaOperaatiotTest {
         PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("matematiikka"), None, None),
           Koodi("MA", "koodisto", None), Koodi("7", "koodisto", None),
           None, true, None, None)),
-      Set.empty,
+      List.empty,
       false,
       false,
       None
