@@ -13,6 +13,12 @@ object KoskiUtil {
 
   val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
 
+  def isPakollinenJaArviointiPuuttuu(osaSuoritus: KoskiOsaSuoritus): Boolean = {
+    val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
+    val arviointi = osaSuoritus.arviointi.isDefined
+    !arviointi && pakollinen
+  }
+
   def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
 

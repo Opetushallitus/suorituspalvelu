@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.parsing.virkailija
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, OpiskeluoikeusJakso, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila, PerusopetuksenYksilollistaminen}
-import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.{allowMissingFields, yhteisenAineenArvosanaPuuttuu}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.allowMissingFields
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiOpiskeluoikeusJakso}
 import fi.oph.suorituspalvelu.resource.ui.{SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
@@ -74,7 +74,7 @@ object VirkailijaToSuoritusConverter {
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
           aineet = aineet,
-          lahtokoulut = List(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka.get, Some(supaTila), Some(yhteisenAineenArvosanaPuuttuu(aineet)), VUOSILUOKKA_9)),
+          lahtokoulut = List(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka.get, Some(supaTila), None, VUOSILUOKKA_9)),
           syotetty = true,
           vuosiluokkiinSitoutumatonOpetus = false, //Todo, onko tämä tieto tarpeen syöttää joskus käsin? Tällä hetkellä tulee vain Koskesta.
           luokkaAste = Some(9)
