@@ -23,7 +23,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu
+    url: jdbc:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu?options=-c%20transaction_timeout=30000
     username: {{postgres_app_user}}
     password: {{host_postgresql_suorituspalvelu_app_password}}
     hikari:
