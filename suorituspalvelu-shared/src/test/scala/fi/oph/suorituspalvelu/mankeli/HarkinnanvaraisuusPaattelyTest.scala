@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.valinnat.mankeli
+package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN
 import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
