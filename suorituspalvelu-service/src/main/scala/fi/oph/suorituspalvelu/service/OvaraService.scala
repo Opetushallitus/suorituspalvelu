@@ -72,6 +72,7 @@ class OvaraService {
     hakuOid: String,
     valintaDataTiedostoNumero: Int,
     harkinnanvaraisuusTiedostoNumero: Int,
+    onnistuneet: Int,
     epaonnistuneet: Seq[(String, Exception)]
   )
 
@@ -105,7 +106,7 @@ class OvaraService {
     }
     if (valintaDataBatch.nonEmpty) {
       LOG.info(
-        s"(${params.executionId}) Tallennetaan Avain-arvotiedosto ${tila.valintaDataTiedostoNumero}, ${valintaDataBatch.size} henkilöä"
+        s"(${params.executionId}) Tallennetaan haun ${haku.oid} avain-arvotiedosto ${tila.valintaDataTiedostoNumero}, ${valintaDataBatch.size} henkilöä"
       )
       siirtotiedostoClient.tallennaSiirtotiedosto(
         "valintadata",
@@ -130,7 +131,7 @@ class OvaraService {
       }
       if (harkinnanvaraisuusBatch.nonEmpty) {
         LOG.info(
-          s"(${params.executionId}) Tallennetaan harkinnanvaraisuus-tiedosto ${tila.harkinnanvaraisuusTiedostoNumero}, ${harkinnanvaraisuusBatch.size} henkilöä"
+          s"(${params.executionId}) Tallennetaan haun ${haku.oid} harkinnanvaraisuus-tiedosto ${tila.harkinnanvaraisuusTiedostoNumero}, ${harkinnanvaraisuusBatch.size} henkilöä"
         )
         siirtotiedostoClient.tallennaSiirtotiedosto(
           "harkinnanvaraisuudet",
@@ -146,15 +147,14 @@ class OvaraService {
       valintaDataTiedostoNumero =
         if (valintaDataBatch.nonEmpty) tila.valintaDataTiedostoNumero + 1 else tila.valintaDataTiedostoNumero,
       harkinnanvaraisuusTiedostoNumero = nextHarkinnanvaraisuusTiedostoNumero,
+      onnistuneet = tila.onnistuneet + valintaDatat.size,
       epaonnistuneet = tila.epaonnistuneet ++ valintaDataFailures
     )
 
     nextTila
   }
 
-  def kasitteleHaku(haku: KoutaHaku, params: OvaraParams): HaunKasittelyTila = {
-    LOG.info(s"(${params.executionId}) Aloitetaan haun ${haku.oid} käsittely")
-
+  def kasitteleHaku(haku: KoutaHaku, params: OvaraParams): Future[HaunKasittelyTila] = {
     val resultForHaku = for {
       hakijat <- hakemuspalveluClient.getHaunHakijat(haku.oid)
       kaikkiAliaksetMap <- onrIntegration.getAliasesForPersonOids(hakijat.flatMap(_.personOid).toSet)
@@ -162,12 +162,12 @@ class OvaraService {
       batches = hakemusOids.toSeq.grouped(HAKEMUS_BATCH_SIZE).toSeq
       batchCount = batches.size
       finalTila: HaunKasittelyTila <- batches.zipWithIndex
-        .foldLeft(Future.successful(HaunKasittelyTila(haku.oid, 1, 1, Seq.empty))) { (tilaF, batchWithIndex) =>
+        .foldLeft(Future.successful(HaunKasittelyTila(haku.oid, 1, 1, 0, Seq.empty))) { (tilaF, batchWithIndex) =>
           val (hakemusOidBatch, batchIndex) = batchWithIndex
           tilaF.flatMap(tila => {
             val start = System.currentTimeMillis()
             LOG.info(
-              s"(${params.executionId}) Käsitellään erä ${batchIndex + 1}/$batchCount, ${hakemusOidBatch.size} hakemusta"
+              s"(${params.executionId}) Käsitellään haun ${haku.oid} erä ${batchIndex + 1}/$batchCount, ${hakemusOidBatch.size} hakemusta"
             )
             for {
               hakemukset: Seq[AtaruValintalaskentaHakemus] <- valintaDataService.fetchValintalaskentaHakemukset(
@@ -177,7 +177,7 @@ class OvaraService {
               )
             } yield {
               LOG.info(
-                s"(${params.executionId}) Erän ${batchIndex + 1}/$batchCount ${hakemusOidBatch.size} hakemusta haettu " +
+                s"(${params.executionId}) Haun ${haku.oid} erän ${batchIndex + 1}/$batchCount ${hakemusOidBatch.size} hakemusta haettu " +
                   s"(kesto ${(System.currentTimeMillis() - start) / 1000}s). Tehdään muunnokset."
               )
 
@@ -185,42 +185,59 @@ class OvaraService {
                 hakemuksetToSiirtotiedosto(haku, hakemukset, kaikkiAliaksetMap.allOidsByQueriedOids, params, tila)
 
               val durationSeconds = (System.currentTimeMillis() - start) / 1000
-              LOG.info(s"(${params.executionId}) Erä ${batchIndex + 1}/$batchCount valmis, kesto ${durationSeconds}s.")
+              LOG.info(s"(${params.executionId}) Haun ${haku.oid} erä ${batchIndex + 1}/$batchCount valmis, kesto ${durationSeconds}s.")
               nextTila
             }
           })
         }
     } yield finalTila
 
-    val finalTilaForHaku = Await.result(resultForHaku, 60.minutes)
-
-    if (finalTilaForHaku.epaonnistuneet.nonEmpty) {
-      LOG.error(
-        s"(${params.executionId}) Epäonnistuneet henkilöt (${finalTilaForHaku.epaonnistuneet.size} kpl): ${finalTilaForHaku.epaonnistuneet.map(_._1).mkString(", ")}"
-      )
-      finalTilaForHaku.epaonnistuneet.foreach { case (personOid, e) =>
-        LOG.error(s"(${params.executionId}) Virhe henkilölle $personOid", e)
-      }
-    }
-    LOG.info(s"(${params.executionId}) Haun ${haku.oid} käsittely valmis")
-    finalTilaForHaku
+    resultForHaku
   }
 
   def muodostaPaivittaisetHauille(params: OvaraParams): Unit = {
+    val rinnakkaisuus = 4
+    val semaphore = new java.util.concurrent.Semaphore(rinnakkaisuus)
+
     val muodostettavatHaut =
       if (params.vainAktiiviset) tarjontaIntegration.aktiivisetHaut() else tarjontaIntegration.kaikkiHaut()
-    val toisenAsteenHaut = muodostettavatHaut.filter(_.isToisenAsteenHaku())
     // kk-haut (EnsikertalaisuusService): todo
 
-    LOG.info(s"(${params.executionId}) Käsitellään ${toisenAsteenHaut.size} toisen asteen hakua")
+    val hakuCount = muodostettavatHaut.size
+    LOG.info(s"(${params.executionId}) Käsitellään $hakuCount hakua")
 
-    toisenAsteenHaut.foreach { haku =>
-      try {
-        kasitteleHaku(haku, params)
-      } catch {
-        case e: Exception =>
-          LOG.error(s"(${params.executionId}) Haun ${haku.oid} käsittely epäonnistui", e)
-      }
+    val allFutures = muodostettavatHaut.zipWithIndex.map { (haku, hakuIndex) =>
+      semaphore.acquire()
+      val hakuStart = System.currentTimeMillis()
+      LOG.info(s"(${params.executionId}) Aloitetaan haku ${hakuIndex + 1}/$hakuCount: ${haku.oid}")
+      val f = Future { kasitteleHaku(haku, params) }.flatten
+        .map { finalTilaForHaku =>
+          if (finalTilaForHaku.epaonnistuneet.nonEmpty) {
+            LOG.error(
+              s"(${params.executionId}) Epäonnistuneet henkilöt (${finalTilaForHaku.epaonnistuneet.size} kpl): ${finalTilaForHaku.epaonnistuneet.map(_._1).mkString(", ")}"
+            )
+            finalTilaForHaku.epaonnistuneet.foreach { case (personOid, e) =>
+              LOG.error(s"(${params.executionId}) Virhe muodostettaessa haun ${finalTilaForHaku.hakuOid} siirtotiedostoa henkilölle $personOid", e)
+            }
+          }
+          val durationSeconds = (System.currentTimeMillis() - hakuStart) / 1000
+          LOG.info(s"(${params.executionId}) Haku ${hakuIndex + 1}/$hakuCount valmis, kesto ${durationSeconds}s, " +
+            s"onnistuneita hakemuksia ${finalTilaForHaku.onnistuneet}, epäonnistuneita: ${finalTilaForHaku.epaonnistuneet.size}: ${haku.oid}")
+          None
+        }
+        .recover { case e: Exception =>
+          val durationSeconds = (System.currentTimeMillis() - hakuStart) / 1000
+          LOG.error(s"(${params.executionId}) Haku ${hakuIndex + 1}/$hakuCount epäonnistui, kesto ${durationSeconds}s: ${haku.oid}", e)
+          Some(haku.oid)
+        }
+      f.onComplete(_ => semaphore.release())
+      f
+    }
+
+    val epaonnistuneetHaut = Await.result(Future.sequence(allFutures), 120.minutes).flatten
+
+    if (epaonnistuneetHaut.nonEmpty) {
+      LOG.error(s"(${params.executionId}) Epäonnistuneet haut (${epaonnistuneetHaut.size}/$hakuCount): ${epaonnistuneetHaut.mkString(", ")}")
     }
     LOG.info(s"(${params.executionId}) Valmista!")
   }
