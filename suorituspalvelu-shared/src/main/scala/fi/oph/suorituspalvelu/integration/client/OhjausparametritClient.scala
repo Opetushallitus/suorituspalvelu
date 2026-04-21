@@ -41,7 +41,7 @@ class OhjausparametritClient(environmentBaseUrl: String) {
       .build()
     executeRequest(request).map(resultStr => {
       val parsedResult: Ohjausparametrit = mapper.readValue(resultStr, classOf[Ohjausparametrit])
-      LOG.info(s"Parsitut ohjausparametrit: $parsedResult")
+      LOG.debug(s"Parsitut ohjausparametrit: $parsedResult")
       parsedResult
     })
   }
@@ -54,7 +54,7 @@ class OhjausparametritClient(environmentBaseUrl: String) {
     executeRequest(request).map(resultStr => {
       val typeRef = new TypeReference[Map[String, Ohjausparametrit]] {}
       val parsedResult: Map[String, Ohjausparametrit] = mapper.readValue(resultStr, typeRef)
-      LOG.info(s"Parsitut ohjausparametrit: $parsedResult")
+      LOG.debug(s"Parsitut ohjausparametrit: $parsedResult")
       parsedResult
     })
   }

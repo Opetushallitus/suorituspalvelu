@@ -89,7 +89,7 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
 
   private def doGet(url: String): Future[Option[String]] = {
 
-    LOG.info(s"haetaan, $url")
+    LOG.debug(s"haetaan, $url")
     val req = new RequestBuilder()
       .setMethod("GET")
       .setUrl(url)
