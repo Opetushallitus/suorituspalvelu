@@ -205,7 +205,7 @@ public class AtaruArvosanaParser {
                             entry);
                 }
             } else if (key.startsWith("oppimaara") && !key.contains("valinnainen-kieli")) {
-                LOG.info("handling oppiaine: {}", entry);
+                LOG.debug("handling oppiaine: {}", entry);
                 // oppimaara-kieli-B1_group0
                 try {
                     String kieliKey = StringUtils.substringBetween(key, "oppimaara-kieli-", "_group");

@@ -61,6 +61,11 @@ class TarjontaIntegration {
     ohjausparametritCache.get(hakuOid)
   }
 
+  def kaikkiHaut(): Seq[KoutaHaku] = {
+    val kaikkiHaut: Map[String, KoutaHaku] = allHautCache.get("haut")
+    kaikkiHaut.values.toSeq
+  }
+
   def aktiivisetHaut(): Seq[KoutaHaku] = {
     val haut = allHautCache.get("haut")
     val ohjausparametrit = Await.result(ohjausparametritClient.haeKaikkiOhjausparametrit(), OHJAUSPARAMETRIT_TIMEOUT)
