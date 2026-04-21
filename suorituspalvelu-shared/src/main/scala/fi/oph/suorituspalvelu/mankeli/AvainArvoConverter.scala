@@ -123,9 +123,9 @@ object AvainArvoConstants {
   final val peruskouluArvosana_Akieli = "PK_A"
   final val peruskouluArvosana_A1kieli = "PK_A1"
   final val peruskouluArvosana_A2kieli = "PK_A2"
-  final val peruskouluArvosana_A3kieli = "PK_B1"
-  final val peruskouluArvosana_B1kieli = "PK_B2"
-  final val peruskouluArvosana_B2kieli = "PK_B3"
+  final val peruskouluArvosana_A3kieli = "PK_A3"
+  final val peruskouluArvosana_B1kieli = "PK_B1"
+  final val peruskouluArvosana_B2kieli = "PK_B2"
   final val peruskouluArvosana_biologia = "PK_BI"
   final val peruskouluArvosana_eitiedossa = "PK_XX"
   final val peruskouluArvosana_filosofia = "PK_FI"
@@ -680,9 +680,13 @@ object AvainArvoConverter {
     hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
   }
 
-  private def convertPeruskoulunArvosanaArvot(aineetPaasuoritukselta: Set[PerusopetuksenOppiaine], aineetOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
-    val pakollisetJaKielet = aineetPaasuoritukselta.filter(a => a.pakollinen || a.kieli.isDefined) ++ aineetOppimaarilta.filter(a => a.pakollinen || a.kieli.isDefined)
-    val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ aineetOppimaarilta.filter(a => !a.pakollinen && a.kieli.isEmpty)
+  private def convertPeruskoulunArvosanaArvot(aineetPaasuoritukselta: Set[PerusopetuksenOppiaine], aineetOppiaineenOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
+    //Otetaan mukaan vain sellaiset oppiaineen oppimäärät, joiden aine löytyy varsinaisen oppimäärän aineista.
+    val paasuorituksenAineet = aineetPaasuoritukselta.map(_.koodi.arvo)
+    val huomioitavatOppiaineenOppimaarat = aineetOppiaineenOppimaarilta.filter(a => paasuorituksenAineet.contains(a.koodi.arvo))
+
+    val pakollisetJaKielet = aineetPaasuoritukselta.filter(a => a.pakollinen || a.kieli.isDefined) ++ huomioitavatOppiaineenOppimaarat.filter(a => a.pakollinen || a.kieli.isDefined)
+    val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ huomioitavatOppiaineenOppimaarat.filter(a => !a.pakollinen && a.kieli.isEmpty)
 
     val pakollisetSupasta = perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(pakollisetJaKielet)
     val korkeimmatPakollisetArvosanat: Set[AvainArvoContainer] = valitseKorkeimmatPerusopetuksenArvosanatAineittain(pakollisetSupasta)
@@ -707,10 +711,11 @@ object AvainArvoConverter {
         val arvosanaArvot = convertPeruskoulunArvosanaArvot(aineetPaasuoritukselta, aineetOppimaarilta)
         val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "true", Seq(vahvistettuAjoissaSelite))
         val suoritusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
+        val paattotodistusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluPaattotodistusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
         val suoritusLukukausiArvo = AvainArvoContainer(AvainArvoConstants.pkSuorituslukukausiKey, AvainArvoConverterUtil.getLukukausi(po.vahvistusPaivamaara.get), Seq(vahvistettuAjoissaSelite))
         val suoritusKieliArvo = AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, po.suoritusKieli.arvo)
 
-        arvosanaArvot ++ Some(suoritusVuosiArvo) ++ Some(suoritusArvo) ++ Some(suoritusLukukausiArvo) ++ Some(suoritusKieliArvo)
+        arvosanaArvot ++ Some(suoritusVuosiArvo) ++ Some(suoritusArvo) ++ Some(suoritusLukukausiArvo) ++ Some(paattotodistusVuosiArvo) ++ Some(suoritusKieliArvo)
 
       case (Some(po), _) if po.vahvistusPaivamaara.isDefined =>
         val vahvistettuMyohassaSelite = s"Löytyi perusopetuksen oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${perusopetuksenOppimaara.flatMap(_.vahvistusPaivamaara).getOrElse("-")}"
@@ -720,15 +725,22 @@ object AvainArvoConverter {
       //Jos Supasta ei löydy perusopetuksen suoritusta, käytetään hakemuksen tietoja jos sieltä löytyy hakijan ilmoittama perusopetus vuodelta 2017 tai aiemmin.
       case (None, Some(hakemus)) if hakemuksellaIlmoitettuPeruskoulu2017TaiAiempi(hakemus) =>
         val arvosanatHakemukselta = HakemusConverter.convertArvosanatHakemukselta(hakemus)
+
         //Suorituspalvelusta voi löytyä korotuksia hakemuksella ilmoitetuille arvosanoille (esim. perusopetus suoritettu 2017, korotuksia vuodelta 2018). Otetaan ne huomioon.
+        //Huomioidaan kuitenkin vain sellaiset korotukset, joille löytyi arvosana hakemukselta.
         val korotuksetSuorituspalvelusta = perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(oppiaineenOppimaarat.flatMap(_.aineet).toSet)
-        val korkeimmatArvosanatHakemukseltaJaSupasta = valitseKorkeimmatPerusopetuksenArvosanatAineittain(korotuksetSuorituspalvelusta ++ arvosanatHakemukselta)
+        val hakemuksenArvosanojenAvaimet = arvosanatHakemukselta.map(_.avain)
+        val huomioitavatKorotukset = korotuksetSuorituspalvelusta.filter(k => hakemuksenArvosanojenAvaimet.contains(k.avain))
+
+        val korkeimmatArvosanatHakemukseltaJaSupasta = valitseKorkeimmatPerusopetuksenArvosanatAineittain(huomioitavatKorotukset ++ arvosanatHakemukselta)
+
         val suoritusKieliHakemukselta =
           hakemus.keyValues.get(AvainArvoConstants.perusopetuksenKieliKey).flatMap(v => Option.apply(v))
             .map(k => AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, k))
-
+        val paattotodistusVuosiHakemukselta = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v))
+          .map(k => AvainArvoContainer(AvainArvoConstants.peruskouluPaattotodistusvuosiKey, k, Seq(s"Päättötodistusvuosi $k poimittu hakemukselta.")))
         //Todo, halutaanko tässä tapauksessa asettaa myös avain-arvo peruskouluSuoritettuKey -> true? Onko tällä merkitystä?
-        korkeimmatArvosanatHakemukseltaJaSupasta ++ suoritusKieliHakemukselta
+        korkeimmatArvosanatHakemukseltaJaSupasta ++ suoritusKieliHakemukselta ++ paattotodistusVuosiHakemukselta
 
       case _ =>
         val suoritusArvo: AvainArvoContainer = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "false", Seq("Supasta tai hakemukselta ei löytynyt tietoa suoritetusta peruskoulusta."))
