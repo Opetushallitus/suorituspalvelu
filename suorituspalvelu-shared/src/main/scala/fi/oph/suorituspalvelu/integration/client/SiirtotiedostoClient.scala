@@ -15,7 +15,7 @@ case class SiirtotiedostoClientConfig(region: String, bucket: String, roleArn: S
 class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
   private val LOG = LoggerFactory.getLogger(classOf[SiirtotiedostoClient])
 
-  LOG.info(s"Creating SiirtotiedostoClient with config $config")
+  LOG.info(s"Luodaan SiirtotiedostoClient konfiguraatiolla $config")
   lazy val siirtotiedostoPalvelu =
     new SiirtotiedostoPalvelu(config.region, config.bucket, config.roleArn)
   val saveRetryCount = 2
@@ -25,7 +25,7 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
     .registerModule(new Jdk8Module())
     .registerModule(DefaultScalaModule)
 
-  def saveSiirtotiedosto[T](
+  def tallennaSiirtotiedosto[T](
     contentType: String,
     content: Seq[T],
     executionId: String,
@@ -35,11 +35,8 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
     try {
       if (content.nonEmpty) {
         val output = mapper.writeValueAsString(Seq(content.head))
-        LOG.info(
-          s"($executionId) Saving siirtotiedosto... total ${content.length}, first: ${content.head}"
-        )
-        LOG.info(s"($executionId) Mock-saving siirtotiedosto... first of output: $output")
-        siirtotiedostoPalvelu
+        LOG.info(s"($executionId) Tallennetaan (leikisti) siirtotiedosto... ensimmäinen entiteetti: $output")
+        /*siirtotiedostoPalvelu
           .saveSiirtotiedosto(
             "sure",
             contentType,
@@ -48,7 +45,8 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
             fileNumber,
             new ByteArrayInputStream(mapper.writeValueAsString(content).getBytes()),
             saveRetryCount
-          ).key
+          ).key*/
+        "mock-key"
       } else {
         LOG.info(s"($executionId) Ei tallennettavaa!")
       }
