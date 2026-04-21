@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration.KOUTA_OID_LENGTH
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl, TarjontaIntegration, VanhaTarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, VTSClient, VanhaTarjontaClient, YtrClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, SiirtotiedostoClient, SiirtotiedostoClientConfig, VTSClient, VanhaTarjontaClient, YtrClient}
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
@@ -153,6 +153,12 @@ class IntegrationConfiguration {
 
     new VTSClient(casClient, envBaseUrl)
   }
+
+  @Bean
+  def getSiirtotiedostoClient(@Value("${integrations.ytr.username}") user: String,
+                              @Value("${integrations.ytr.password}") password: String,
+                              @Value("${integrations.ytr.base-url}") envBaseUrl: String): SiirtotiedostoClient =
+    new SiirtotiedostoClient(SiirtotiedostoClientConfig("region", "bucket", "rolearn"))
 
   private val ORGANISAATIO_TIMEOUT = 30.seconds
 
