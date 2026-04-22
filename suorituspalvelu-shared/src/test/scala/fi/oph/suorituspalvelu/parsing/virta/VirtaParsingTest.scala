@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.virta
+package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.{
   KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi
