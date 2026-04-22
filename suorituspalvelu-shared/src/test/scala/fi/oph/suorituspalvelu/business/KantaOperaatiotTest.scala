@@ -1,7 +1,8 @@
 package fi.oph.suorituspalvelu.business
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiParser, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiParser, KoskiToSuoritusConverter, TestDataUtil}
+import fi.oph.suorituspalvelu.DevDbConfig
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.{AfterAll, AfterEach, Assertions, BeforeAll, BeforeEach, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -18,7 +19,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
@@ -29,16 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger
 @TestInstance(Lifecycle.PER_CLASS)
 class KantaOperaatiotTest {
 
-  val DATABASE_NAME = "suorituspalvelu"
+  val DATABASE_NAME = DevDbConfig.databaseName
+  val CONNECTION_POOL_SIZE = 20
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(64))
 
   private val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiotTest])
 
-  var postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
+  var postgres: PostgreSQLContainer = new PostgreSQLContainer(DevDbConfig.postgresImage)
     postgres.withDatabaseName(DATABASE_NAME)
-    postgres.withUsername("app")
-    postgres.withPassword("app")
+    postgres.withUsername(DevDbConfig.username)
+    postgres.withPassword(DevDbConfig.password)
     postgres.withLogConsumer(frame => LOG.info(frame.getUtf8StringWithoutLineEnding))
 
   private def getDatasource() =
@@ -46,13 +47,14 @@ class KantaOperaatiotTest {
     ds.setServerNames(Array("localhost"))
     ds.setDatabaseName(DATABASE_NAME)
     ds.setPortNumbers(Array(postgres.getMappedPort(5432)))
-    ds.setUser("app")
-    ds.setPassword("app")
+    ds.setUser(DevDbConfig.username)
+    ds.setPassword(DevDbConfig.password)
     ds
 
   private def getHikariDatasource() =
     val config = new HikariConfig()
-    config.setMaximumPoolSize(64)
+    config.setMaximumPoolSize(CONNECTION_POOL_SIZE)
+    config.setMinimumIdle(CONNECTION_POOL_SIZE)
     config.setDataSource(getDatasource())
     new HikariDataSource(config)
 
