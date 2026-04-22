@@ -91,7 +91,7 @@ class BaseIntegraatioTesti {
   // kontteja ei voi käynnistää vasta @BeforeAll-metodissa koska spring-konteksti rakennetaan ennen sitä
   val setupDone = {
     postgres.start()
-    System.setProperty("spring.datasource.url", "jdbc:postgresql://localhost:" + postgresPort + "/" + POSTGRES_DATABASENAME)
+    System.setProperty("spring.datasource.url", "jdbc:postgresql://localhost:" + postgresPort + "/" + POSTGRES_DATABASENAME + "?options=-c%20transaction_timeout=30000")
 
     System.setProperty("cas-service.service", "DUMMY")
     System.setProperty("cas-service.sendRenew", "false")
