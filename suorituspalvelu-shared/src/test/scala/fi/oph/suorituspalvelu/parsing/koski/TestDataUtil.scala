@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.koski
+package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, Koodi, Oppilaitos}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiKoodi, KoskiKoulutusModuuli, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter, KoskiVahvistus}
