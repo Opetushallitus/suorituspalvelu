@@ -6,11 +6,12 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 
 object DevApp {
 
-  private val postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
+  private val postgres: PostgreSQLContainer = new PostgreSQLContainer(DevDbConfig.postgresImage)
 
   private def startContainers(): Unit =
-    postgres.withUsername("app")
-    postgres.withPassword("app")
+    postgres.withDatabaseName(DevDbConfig.databaseName)
+    postgres.withUsername(DevDbConfig.username)
+    postgres.withPassword(DevDbConfig.password)
     postgres.setPortBindings(List("55432:5432").asJava)
     postgres.start()
 
