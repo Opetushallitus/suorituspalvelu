@@ -82,8 +82,8 @@ class KoskiToSuoritusConverterTest {
     // Tarkistetaan että löytyy yksi perusopetuksen opiskeluoikeusopiskeluoikeus, joka sisältää neljä suoritusta
     // (perusopetuksen oppimäärän ja kolme vuosiluokkaa). Tästä seuraa yksi parseroitu suoritus koska vuosiluokista
     // tarvittavat tiedot (lähtökoulu) yhdistetään oppimäärän parseroituun suoritukseen
-    Assertions.assertEquals(oikeudet.size, 1)
-    Assertions.assertEquals(oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size, 1)
+    Assertions.assertEquals(1, oikeudet.size)
+    Assertions.assertEquals(1, oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size)
   }
 
   @Test def testKoskiParsingForAmmatillistenOpiskeluoikeuksienSuoritukset(): Unit = {

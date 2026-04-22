@@ -1549,6 +1549,274 @@ class KoskiParsingTest {
     Assertions.assertTrue(result.isEmpty, "Kotiopetuslaiselle ei pitäisi syntyä PerusopetuksenOppimaara-suoritusta")
   }
 
+  @Test def testPerusopetuksenOppimaaraKotiopetusValmisErityinenTutkinto(): Unit = {
+    val oppimaara = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2023-06-02",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "suoritustapa": {
+        |              "koodiarvo": "erityinentutkinto",
+        |              "koodistoUri": "perusopetuksensuoritustapa",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": {
+        |              "päivä": "2023-06-01"
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ],
+        |        "lisätiedot": {
+        |          "kotiopetusjaksot": [
+        |            {
+        |              "alku": "2021-08-24"
+        |            }
+        |          ]
+        |        }
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).map(_.asInstanceOf[PerusopetuksenOppimaara])
+
+    Assertions.assertTrue(oppimaara.isDefined, "Kotiopetuslaiselle erityisen tutkinnon suorittaneelle pitäisi syntyä PerusopetuksenOppimaara-suoritus")
+    Assertions.assertEquals(SuoritusTila.VALMIS, oppimaara.get.supaTila)
+  }
+
+  @Test def testPerusopetuksenOppimaaraKotiopetusKeskenErityinenTutkintoHylataan(): Unit = {
+    val result = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2022-08-02",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "suoritustapa": {
+        |              "koodiarvo": "erityinentutkinto",
+        |              "koodistoUri": "perusopetuksensuoritustapa",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ],
+        |        "lisätiedot": {
+        |          "kotiopetusjaksot": [
+        |            {
+        |              "alku": "2021-08-24"
+        |            }
+        |          ]
+        |        }
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin)
+    Assertions.assertTrue(result.isEmpty, "Kesken olevaa erityistä tutkintoa kotiopetuslaiselle ei pitäisi tuoda SUPAan")
+  }
+
+  @Test def testPerusopetuksenOppimaaraYsiluokkaIlmanVahvistusta(): Unit = {
+    val oppimaara = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2023-06-02",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "9",
+        |                "nimi": {
+        |                  "fi": "9. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "9A",
+        |            "alkamispäivä": "2022-08-02",
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).map(_.asInstanceOf[PerusopetuksenOppimaara])
+
+    Assertions.assertTrue(oppimaara.isDefined)
+    Assertions.assertEquals(SuoritusTila.KESKEN, oppimaara.get.supaTila, "Ilman yhdeksännen luokan vahvistusta supaTila pitää olla KESKEN vaikka oppimäärän opiskeluoikeus olisi valmistunut")
+  }
+
+  @Test def testPerusopetuksenOppimaaraYsiluokkaVahvistettu(): Unit = {
+    val oppimaara = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": {
+        |            "fi": "Hatsalan klassillinen koulu"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2023-06-02",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "9",
+        |                "nimi": {
+        |                  "fi": "9. vuosiluokka"
+        |                },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "9A",
+        |            "alkamispäivä": "2022-08-02",
+        |            "vahvistus": {
+        |              "päivä": "2023-06-01"
+        |            },
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).map(_.asInstanceOf[PerusopetuksenOppimaara])
+
+    Assertions.assertTrue(oppimaara.isDefined)
+    Assertions.assertEquals(SuoritusTila.VALMIS, oppimaara.get.supaTila)
+  }
+
   @Test def testPerusopetuksenOppimaaraEiKotiopetustaSeiskaluokka(): Unit = {
     val oppimaara = getFirstSuoritusFromJson(
       """
