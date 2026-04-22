@@ -29,7 +29,7 @@ Tätä samaa konfiguraatiota käyttävät:
 
 Testikoodissa käytettävä `DevDbConfig` sijaitsee vain `suorituspalvelu-shared`-moduulin testikoodissa ja välitetään `suorituspalvelu-service`-moduulin testeille Mavenin `test-jar`-riippuvuutena. Näin konfiguraatio on yhdessä paikassa, mutta ei vuoda tuotantokoodiin.
 
-Jos haluat muuttaa muutat PostgreSQL:n lokaaleja asetuksia, päivitä arvot [`.env`](./.env)-tiedostoon. Näin myös lokaalin PostgreSQL:n version päivityksen voi tehdä vain vaihtamalla imagea .env-tiedostossa.
+Jos haluat muuttaa PostgreSQL:n lokaaleja asetuksia, päivitä arvot [`.env`](./.env)-tiedostoon. Näin myös lokaalin PostgreSQL:n version päivityksen voi tehdä vain vaihtamalla imagea .env-tiedostossa.
 
 #### Palvelimen ja käyttölittymän ajaminen yhdessä
 
