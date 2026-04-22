@@ -153,4 +153,4 @@ object TestDataUtil {
                                         tila: Option[KoskiOpiskeluoikeusTila] = None,
                                         jaksot: List[OpiskeluoikeusJakso] = List.empty): AmmatillinenOpiskeluoikeus =
     AmmatillinenOpiskeluoikeus(UUID.randomUUID(), nextOid(), oppilaitos, suoritukset, tila, jaksot)
-  }
+}
