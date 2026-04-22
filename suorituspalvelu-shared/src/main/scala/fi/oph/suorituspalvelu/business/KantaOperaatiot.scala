@@ -6,13 +6,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.KantaOperaatiot.{MAPPER, XMLMAPPER}
 import org.skyscreamer.jsonassert.{JSONCompare, JSONCompareMode}
-import slick.jdbc.{GetResult, JdbcBackend, SQLActionBuilder, SetParameter}
+import slick.jdbc.{GetResult, JdbcBackend, SetParameter}
 import slick.jdbc.PostgresProfile.api.*
 import com.github.tminglei.slickpg.utils.PlainSQLUtils.mkArraySetParameter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{FiniteDuration, Duration, DurationInt}
+
 import org.slf4j.LoggerFactory
 
 import java.time.{Instant, LocalDate}
@@ -299,7 +300,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           }
       }
     )
-    Await.result(db.run(upsertAction.transactionally), DB_TIMEOUT)
+    Await.result(db.run(upsertAction.transactionally), Duration.Inf)
 
   def haeHenkilonVersiot(henkiloOid: String): Vector[VersioEntiteetti] = {
     Await.result(db.run(
@@ -351,7 +352,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
-  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int) = {
+  def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int): Unit = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl)")
     val lockHenkiloAction = sql"""SELECT 1 FROM henkilot WHERE oid=${versio.henkiloOid} FOR UPDATE""" // ei tarvita inserttiä henkilöt-tauluun, jos on versio niin on myös henkilö
     val updateVersionAction = lockHenkiloAction.as[Int].flatMap(_ =>
@@ -374,7 +375,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${versio.lahdeJarjestelma.nimi},
                 ${versio.lahdeTunniste},
                 ${lahtokoulu.suorituksenAlku.toString}::date,
-                ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).getOrElse(null)}::date,
+                ${lahtokoulu.suorituksenLoppu.map(ov => ov.toString).orNull}::date,
                 ${lahtokoulu.oppilaitosOid},
                 ${lahtokoulu.valmistumisvuosi},
                 ${lahtokoulu.luokka},
@@ -384,7 +385,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               """))
       }
     })
-    Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
+    Await.result(db.run(updateLahtokoulutAction.transactionally), Duration.Inf)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
@@ -649,7 +650,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     // Suoritetaan operaatiot samassa transaktiossa
     Await.result(db.run(
       DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
-    ), DB_TIMEOUT)
+    ), Duration.Inf)
   }
 
   // Lisätään yliajo jolla ei arvoa
@@ -805,10 +806,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       }
     )
 
-    // Suoritetaan operaatiot samassa transaktiossa
     Await.result(db.run(
       DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
-    ), DB_TIMEOUT)
+    ), Duration.Inf)
   }
 
   def poistaHarkinnanvaraisuusYliajo(
