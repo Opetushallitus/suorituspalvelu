@@ -321,7 +321,7 @@ object AvainArvoConverter {
     val harkinnanvaraisuusArvot: Option[AvainArvoContainer] = harkinnanvaraisuudet.map(getHarkinnanvaraisuusArvot)
 
     val toisenAsteenPk: Option[AvainArvoContainer] = if (haku.isToisenAsteenHaku())
-      hakemus.map(h => toisenAsteenPohjakoulutus(h, opiskeluoikeudet, vahvistettuViimeistaan)) else None
+      hakemus.map(h => toisenAsteenPohjakoulutus(personOid, h, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, vahvistettuViimeistaan)) else None
     val peruskouluArvot = convertPeruskouluArvot(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
@@ -346,7 +346,7 @@ object AvainArvoConverter {
     AvainArvoContainer(AvainArvoConstants.yksMatAiKey, isYksMatAI.toString)
   }
 
-  def toisenAsteenPohjakoulutus(hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], deadline: LocalDate): AvainArvoContainer = {
+  def toisenAsteenPohjakoulutus(personOid: String, hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus], deadline: LocalDate): AvainArvoContainer = {
     val perusopetuksenOppimaarat = opiskeluoikeudet
       .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
       .flatMap(_.suoritukset)
@@ -363,12 +363,25 @@ object AvainArvoConverter {
       vahvistetutOppimaarat.headOption
         .orElse(keskenOppimaarat.maxByOption(_.aloitusPaivamaara))
         .orElse(keskeytyneetOppimaarat.maxByOption(_.aloitusPaivamaara))
+
+    //Ehdot-override: hakijalla oli ehdot leikkurihetkellä, 2 viikon ikkuna auki, eikä nykyinen oppimäärä
+    //ole vahvistettu ajoissa (= viimeistään deadlinena). Vertailu tehdään deadlineen, ei wall-clock nyt-hetkeen.
+    val ehdotIkkunaAuki = !LocalDate.now().isBefore(deadline.minusWeeks(2))
+    val ehdotOverrideAktiivinen = ehdotIkkunaAuki && oliEhdotLeikkurihetkella(personOid, opiskeluoikeudetVahvistettuHetkella)
+    val nykyinenEiVahvistettuAjoissa = viimeisinOppimaara.exists(po =>
+      po.vahvistusPaivamaara.isEmpty || po.vahvistusPaivamaara.exists(_.isAfter(deadline))
+    )
+    val ehdotOppimaara: Option[PerusopetuksenOppimaara] =
+      if (ehdotOverrideAktiivinen && nykyinenEiVahvistettuAjoissa)
+        etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true)
+      else None
+
     val kelpaavaOppimaara = viimeisinOppimaara.filter(onKelpaavaOppimaara(_, deadline))
 
     val hakemusPohjakoulutus = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey).flatMap(v => Option.apply(v))
     val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt)
 
-    val (pkResult, pkSelite) = getPohjakoulutusResult(kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi)
+    val (pkResult, pkSelite) = getPohjakoulutusResult(ehdotOppimaara, kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi)
 
     AvainArvoContainer(AvainArvoConstants.pohjakoulutusToinenAste, pkResult, pkSelite)
   }
@@ -376,30 +389,34 @@ object AvainArvoConverter {
   private def onKelpaavaOppimaara(oppimaara: PerusopetuksenOppimaara, deadline: LocalDate): Boolean = {
     val deadlineOhitettu = LocalDate.now().isAfter(deadline)
     val ysiluokkalainen = oppimaara.luokkaAste.contains(9)
-    val arvosanoissaNelosia = oppimaara.aineet.exists(a => a.pakollinen && a.arvosana.arvo.equals("4"))
     val suoritusValmis = oppimaara.vahvistusPaivamaara.isDefined
     val suoritusKesken = oppimaara.supaTila.equals(SuoritusTila.KESKEN)
     val vahvistettuAjoissa = oppimaara.vahvistusPaivamaara.exists(vp => vp.isBefore(deadline) || vp.equals(deadline))
 
     if (deadlineOhitettu) {
-      (suoritusValmis && vahvistettuAjoissa) || (suoritusKesken && arvosanoissaNelosia && !oppimaara.vuosiluokkiinSitoutumatonOpetus)
+      suoritusValmis && vahvistettuAjoissa
     } else {
       (oppimaara.luokkaAste.isEmpty || ysiluokkalainen) && (suoritusValmis || suoritusKesken)
     }
   }
 
-  private def getPohjakoulutusResult(kelpaavaOppimaara: Option[PerusopetuksenOppimaara],
+  private def getPohjakoulutusResult(ehdotOppimaara: Option[PerusopetuksenOppimaara],
+                                     kelpaavaOppimaara: Option[PerusopetuksenOppimaara],
                                      hakemusPohjakoulutus: Option[String],
                                      hakemusPohjakoulutusVuosi: Option[Int]): (String, Seq[String]) = {
-    (kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi) match {
-      case (Some(oppimaara), _, _) =>
+    (ehdotOppimaara, kelpaavaOppimaara, hakemusPohjakoulutus, hakemusPohjakoulutusVuosi) match {
+      case (Some(ehdotOppimaara), _, _, _) =>
+        val yksilollistaminenIntValue = ehdotOppimaara.yksilollistaminen.map(toIntValue).getOrElse(1).toString
+        (yksilollistaminenIntValue, Seq("Hakijalla oli ehdot (pakollisessa aineessa nelonen, oppimäärä vahvistamatta), joten pohjakoulutus päätellään leikkurihetken perusopetuksen oppimäärältä."))
+
+      case (_, Some(oppimaara), _, _) =>
         val yksilollistaminenIntValue = oppimaara.yksilollistaminen.map(toIntValue).getOrElse(1).toString
         (yksilollistaminenIntValue, Seq(s"Supasta löytyi suoritettu perusopetuksen oppimäärä. Vahvistuspäivä ${oppimaara.vahvistusPaivamaara.map(_.toString).getOrElse("")}."))
 
-      case (_, Some(pohjakolutus), _) if pohjakolutus == AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS =>
+      case (_, _, Some(pohjakolutus), _) if pohjakolutus == AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS =>
         (AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS, Seq("Hakemuksella on ilmoitettu ulkomainen tutkinto."))
 
-      case (_, Some(pohjakoulutus), Some(vuosi)) if vuosi <= 2017 && AvainArvoConstants.hakemuksenPohjakoulutuksetUskotaanHakemusta.contains(pohjakoulutus) =>
+      case (_, _, Some(pohjakoulutus), Some(vuosi)) if vuosi <= 2017 && AvainArvoConstants.hakemuksenPohjakoulutuksetUskotaanHakemusta.contains(pohjakoulutus) =>
         (pohjakoulutus, Seq(s"Hakemuksen pohjakoulutusvuosi on 2017 tai aiemmin, joten käytettiin hakemuksella ilmoitettua pohjakoulutusta $pohjakoulutus."))
 
       case _ =>
