@@ -83,7 +83,8 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
     
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI)) -> Set.empty), opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val haetutKoski = opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.KOSKI), parserointiHetki = haetutKoski.keys.head.parserointiHetki) -> Set.empty), haetutKoski)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -123,7 +124,8 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.VIRTA)) -> Set.empty), opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val haetutVirta = opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.VIRTA), parserointiHetki = haetutVirta.keys.head.parserointiHetki) -> Set.empty), haetutVirta)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -150,7 +152,8 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.YTR)) -> Set.empty), opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val haetutYtr = opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.YTR), parserointiHetki = haetutYtr.keys.head.parserointiHetki) -> Set.empty), haetutYtr)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -185,7 +188,8 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.SYOTETTY_PERUSOPETUS)) -> Set.empty), opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val haetutPerusopetus = opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.SYOTETTY_PERUSOPETUS), parserointiHetki = haetutPerusopetus.keys.head.parserointiHetki) -> Set.empty), haetutPerusopetus)
   }
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
@@ -220,6 +224,7 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
     waitUntilReady(response.jobids.asScala.head)
 
     // uudelleenparserointi poistanut opiskeluoikeuden
-    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.SYOTETYT_OPPIAINEET)) -> Set.empty), opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO))
+    val haetutOppiaineet = opiskeluoikeusParsingService.haeSuoritukset(ApiConstants.ESIMERKKI_OPPIJANUMERO)
+    Assertions.assertEquals(Map(versio.copy(parserVersio = Some(ParserVersions.SYOTETYT_OPPIAINEET), parserointiHetki = haetutOppiaineet.keys.head.parserointiHetki) -> Set.empty), haetutOppiaineet)
   }
 }
