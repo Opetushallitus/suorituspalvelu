@@ -1006,7 +1006,8 @@ class AvainArvoConverterTest {
   private def buildEhdotTestOpiskeluoikeus(
                                             vahvistusPaivamaara: Option[LocalDate],
                                             arvosanat: Seq[(String, String, Boolean)],
-                                            vuosiluokkiinSitoutumatonOpetus: Boolean = false
+                                            vuosiluokkiinSitoutumatonOpetus: Boolean = false,
+                                            yksilollistaminen: Option[PerusopetuksenYksilollistaminen] = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY)
                                           ): PerusopetuksenOpiskeluoikeus = {
     val opiskeluoikeusOid = "1.2.246.562.15.09876543211"
     val oppilaitosOid = "1.2.246.562.10.00000000235"
@@ -1025,7 +1026,7 @@ class AvainArvoConverterTest {
       if (vahvistusPaivamaara.isDefined) SuoritusTila.VALMIS else SuoritusTila.KESKEN,
       Koodi("FI", "kielikoodisto", Some(1)),
       Set.empty,
-      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY),
+      yksilollistaminen = yksilollistaminen,
       None,
       vahvistusPaivamaara = vahvistusPaivamaara,
       aineet,
@@ -1170,8 +1171,9 @@ class AvainArvoConverterTest {
     val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
 
     Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
-    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
-      s"Pohjakoulutuksen selite ei sisällä 'ehdot': ${pohjakoulutus.map(_.selitteet)}")
+    Assertions.assertEquals(
+      Some(Seq("Hakijalla oli ehdot (pakollisessa aineessa nelonen, oppimäärä vahvistamatta), joten pohjakoulutus päätellään leikkurihetken perusopetuksen oppimäärältä.")),
+      pohjakoulutus.map(_.selitteet))
   }
 
   //Ehdot leikkurihetkellä mutta ikkuna kiinni → override ei laukea, normaali haara.
@@ -1282,6 +1284,252 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
     Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
       s"Pohjakoulutuksen selite ei sisällä 'ehdot' vaikka nykyinen vahvistettu vasta leikkurin jälkeen: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Ehdot-haarassa yksilöllistäminen välittyy leikkurihetken oppimäärältä pohjakoulutuskoodiin (osittain → "2").
+  @Test def testEhdotOverrideForPohjakoulutusYksilollistettyOsittain(): Unit = {
+    val personOid = "1.2.246.562.24.00000000221"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY)
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite ei sisällä 'ehdot': ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Ehdot-haarassa yksilöllistäminen välittyy leikkurihetken oppimäärältä pohjakoulutuskoodiin (pääosin/kokonaan → "6").
+  @Test def testEhdotOverrideForPohjakoulutusYksilollistettyKokonaan(): Unit = {
+    val personOid = "1.2.246.562.24.00000000222"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      yksilollistaminen = Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY)
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite ei sisällä 'ehdot': ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Ehdot-override voittaa hakemuksella ilmoitetun ulkomaisen pohjakoulutuksen match-järjestyksessä.
+  @Test def testEhdotOverrideVoittaaUlkomaisenHakemuksenPohjakoulutuksen(): Unit = {
+    val personOid = "1.2.246.562.24.00000000231"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
+      AvainArvoConstants.ataruPohjakoulutusKey -> AvainArvoConstants.POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS,
+      AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2020"
+    ))
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite ei sisällä 'ehdot': ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Ehdot-override voittaa hakemuksella ilmoitetun 2017-pohjakoulutuksen match-järjestyksessä.
+  @Test def testEhdotOverrideVoittaa2017HakemuksenPohjakoulutuksen(): Unit = {
+    val personOid = "1.2.246.562.24.00000000232"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map(
+      AvainArvoConstants.ataruPohjakoulutusKey -> AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU,
+      AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2017"
+    ))
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite ei sisällä 'ehdot': ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Leikkurihetkellä ei yhtään opiskeluoikeutta → override ei laukea vaikka muut ehdot täyttyisivät.
+  @Test def testEhdotOverrideForPohjakoulutusNoOverrideWhenLeikkurihetkiEmpty(): Unit = {
+    val personOid = "1.2.246.562.24.00000000241"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq.empty[Opiskeluoikeus]
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.forall(!_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite sisältää 'ehdot' vaikka leikkurihetki on tyhjä: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Leikkurihetkellä vain muu kuin PerusopetuksenOpiskeluoikeus → override ei laukea.
+  @Test def testEhdotOverrideForPohjakoulutusNoOverrideWhenLeikkurihetkiHasNoPeruskoulu(): Unit = {
+    val personOid = "1.2.246.562.24.00000000242"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val muuOpiskeluoikeus = GeneerinenOpiskeluoikeus(
+      UUID.randomUUID(), "1.2.246.562.15.00000000999",
+      Koodi("lukiokoulutus", "koodisto", Some(1)),
+      "1.2.246.562.10.00000000235",
+      Set.empty, None, List.empty
+    )
+    val leikkurihetkella: Seq[Opiskeluoikeus] = Seq(muuOpiskeluoikeus)
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.forall(!_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite sisältää 'ehdot' vaikka leikkurihetkellä ei ole peruskoulua: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Leikkurihetkellä nelonen vain valinnaisessa aineessa (pakolliset OK) → override ei laukea.
+  @Test def testEhdotOverrideForPohjakoulutusNoOverrideWhenOnlyValinnainenHasFour(): Unit = {
+    val personOid = "1.2.246.562.24.00000000243"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "7", true), ("AI", "8", true), ("LI", "4", false))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "7", true), ("AI", "8", true), ("LI", "4", false))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.forall(!_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite sisältää 'ehdot' vaikka vain valinnaisessa on nelonen: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Nykyinen vahvistettu päivälleen deadlinena (boundary: vahvistusPäivä == deadline → ajoissa) → override ei laukea.
+  @Test def testEhdotOverrideForPohjakoulutusBypassedWhenCurrentConfirmedExactlyOnDeadline(): Unit = {
+    val personOid = "1.2.246.562.24.00000000251"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = Some(leikkuri),
+      arvosanat = Seq(("MA", "9", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.forall(!_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite sisältää 'ehdot' vaikka nykyinen vahvistettu tasan deadlinena: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Ikkunan boundary: today == deadline - 14 vrk → ikkuna juuri-juuri auki, override laukeaa.
+  @Test def testEhdotOverrideForPohjakoulutusFiresOnWindowBoundary(): Unit = {
+    val personOid = "1.2.246.562.24.00000000261"
+    val leikkuri = LocalDate.now().plusWeeks(2)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite ei sisällä 'ehdot' vaikka today == deadline - 14 vrk: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Deadline menneisyydessä → ikkuna pysyy auki (now on aina deadline - 14 vrk jälkeen), override laukeaa.
+  @Test def testEhdotOverrideForPohjakoulutusFiresWhenDeadlineInPast(): Unit = {
+    val personOid = "1.2.246.562.24.00000000262"
+    val leikkuri = LocalDate.now().minusDays(5)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
+    Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
+      s"Pohjakoulutuksen selite ei sisällä 'ehdot' vaikka deadline on menneisyydessä: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Kesken + pakollinen nelonen + ei-VSOP + deadline ohitettu ilman ehdot-overridea → EI_PAATTOTODISTUSTA.
+  //Lukitsee commitin 14be04b5 käyttäytymismuutoksen: onKelpaavaOppimaara ei enää hyväksy kesken-suoritusta
+  //pelkän pakollisen nelosen perusteella deadline-ohitettu-haarassa.
+  @Test def testOnKelpaavaOppimaaraEiEnaaHyvaksyKeskenNelonenIlmanEhtoOverridea(): Unit = {
+    val personOid = "1.2.246.562.24.00000000271"
+    val leikkuri = LocalDate.now().minusDays(1)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+    val leikkurihetkella = Seq.empty[Opiskeluoikeus]
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val pohjakoulutus = result.paatellytArvot.find(_.avain == AvainArvoConstants.pohjakoulutusToinenAste)
+
+    Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_EI_PAATTOTODISTUSTA), pohjakoulutus.map(_.arvo))
   }
 
   private def getToisenAsteenPeruskoulutusOpiskeluoikeus(vahvistusPaiva: LocalDate = LocalDate.parse("2025-05-30")) = {
