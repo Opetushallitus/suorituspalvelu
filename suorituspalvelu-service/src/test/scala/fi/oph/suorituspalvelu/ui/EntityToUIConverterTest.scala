@@ -554,6 +554,16 @@ class EntityToUIConverterTest {
       aineet = Set(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
+          nimi = Kielistetty(Some("A1-kieli"), None, None),
+          koodi = Koodi("A1", "koskioppiaineetyleissivistava", Some(1)),
+          arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+          kieli = Some(Koodi("DE", "kielivalikoima", Some(1))),
+          pakollinen = true,
+          yksilollistetty = Some(false),
+          rajattu = Some(false)
+        ),
+        PerusopetuksenOppiaine(
+          tunniste = UUID.randomUUID(),
           nimi = Kielistetty(Some("Historia"), None, None),
           koodi = Koodi("HI", "koskioppiaineetyleissivistava", Some(1)),
           arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
@@ -564,10 +574,10 @@ class EntityToUIConverterTest {
         ),
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
-          nimi = Kielistetty(Some("A1-kieli"), None, None),
-          koodi = Koodi("A1", "koskioppiaineetyleissivistava", Some(1)),
+          nimi = Kielistetty(Some("Äidinkieli"), None, None),
+          koodi = Koodi("AI", "koskioppiaineetyleissivistava", Some(1)),
           arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
-          kieli = Some(Koodi("DE", "kielivalikoima", Some(1))),
+          kieli = Some(Koodi("AI1", "oppiaineaidinkielijakirjallisuus", Some(1))),
           pakollinen = true,
           yksilollistetty = Some(false),
           rajattu = Some(false)
@@ -592,6 +602,13 @@ class EntityToUIConverterTest {
           Koodisto("kielivalikoima"),
           List(
             KoodiMetadata("FI", "saksa")
+          )
+        ),
+        "AI1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+          "AI1",
+          Koodisto("oppiaineaidinkielijakirjallisuus"),
+          List(
+            KoodiMetadata("FI", "Suomen kieli ja kirjallisuus")
           )
         ),
       )
@@ -626,18 +643,20 @@ class EntityToUIConverterTest {
           Optional.empty
         )
       )),
-      oppiaineet = oppimaara.aineet.map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaineUI(
+      oppiaineet = List("AI", "A1", "HI").map(koodi => oppimaara.aineet.find(_.koodi.arvo == koodi).get).map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaineUI(
         tunniste = aine.tunniste,
         koodi = aine.koodi.arvo,
         nimi = PerusopetuksenOppiaineNimi(
-          if(aine.koodi.arvo=="A1") Optional.of("A1-kieli, saksa") else aine.nimi.fi.toJava,
+          if(aine.koodi.arvo=="A1") Optional.of("A1-kieli, saksa")
+          else if(aine.koodi.arvo=="AI") Optional.of("Äidinkieli, Suomen kieli ja kirjallisuus")
+          else aine.nimi.fi.toJava,
           aine.nimi.sv.toJava,
           aine.nimi.en.toJava
         ),
         kieli = aine.kieli.map(_.arvo).toJava,
         arvosana = aine.arvosana.arvo,
         valinnainen = !aine.pakollinen
-      )).toList.asJava,
+      )).asJava,
       syotetty = oppimaara.syotetty
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, List.empty)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
   }
