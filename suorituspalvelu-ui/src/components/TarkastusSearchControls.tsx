@@ -4,8 +4,11 @@ import {
   queryOptionsGetOppilaitosVuosiLuokatOptions,
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
-import { InputAdornment } from '@mui/material';
-import { OphSelectFormField } from '@opetushallitus/oph-design-system';
+import { InputAdornment, Stack } from '@mui/material';
+import {
+  OphCheckbox,
+  OphSelectFormField,
+} from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
 import { SpinnerIcon } from './SpinnerIcon';
@@ -151,46 +154,72 @@ const LuokkaSelectField = ({
 export const TarkastusSearchControls = () => {
   const { setSearchParams, searchParams } =
     useOppilaitoksenOppijatSearchParamsState();
-  const { oppilaitos, vuosi, luokka } = searchParams;
+  const { oppilaitos, vuosi, luokka, kesken, yhteistenarvosanapuuttuu } =
+    searchParams;
+  const { t } = useTranslations();
 
   return (
     <StyledSearchControls>
-      <OppilaitosSelectField
-        value={oppilaitos}
-        onChange={(e) => {
-          const newOppilaitos = e.target.value;
-          if (newOppilaitos !== oppilaitos) {
+      <Stack direction="row" spacing={2}>
+        <OppilaitosSelectField
+          value={oppilaitos}
+          onChange={(e) => {
+            const newOppilaitos = e.target.value;
+            if (newOppilaitos !== oppilaitos) {
+              setSearchParams(
+                { oppilaitos: newOppilaitos, luokka: '', suodatus: '' },
+                { resetHenkilo: true },
+              );
+            }
+          }}
+        />
+        <VuosiSelectField
+          oppilaitosOid={oppilaitos}
+          value={vuosi}
+          onChange={(e) => {
+            const newVuosi = e.target.value;
+            if (newVuosi !== vuosi) {
+              setSearchParams(
+                { vuosi: newVuosi, luokka: '', suodatus: '' },
+                { resetHenkilo: true },
+              );
+            }
+          }}
+        />
+        <LuokkaSelectField
+          value={luokka}
+          vuosi={vuosi}
+          oppilaitosOid={oppilaitos}
+          onChange={(e) => {
             setSearchParams(
-              { oppilaitos: newOppilaitos, luokka: '', suodatus: '' },
+              { luokka: e.target.value, suodatus: '' },
               { resetHenkilo: true },
             );
-          }
-        }}
-      />
-      <VuosiSelectField
-        oppilaitosOid={oppilaitos}
-        value={vuosi}
-        onChange={(e) => {
-          const newVuosi = e.target.value;
-          if (newVuosi !== vuosi) {
+          }}
+        />
+      </Stack>
+      <Stack direction="row" spacing={2}>
+        <OphCheckbox
+          label={t('search.yhteisten-arvosana-puuttuu')}
+          checked={yhteistenarvosanapuuttuu === 'true'}
+          onChange={(_e, checked) => {
             setSearchParams(
-              { vuosi: newVuosi, luokka: '', suodatus: '' },
+              { yhteistenarvosanapuuttuu: checked ? 'true' : null },
               { resetHenkilo: true },
             );
-          }
-        }}
-      />
-      <LuokkaSelectField
-        value={luokka}
-        vuosi={vuosi}
-        oppilaitosOid={oppilaitos}
-        onChange={(e) => {
-          setSearchParams(
-            { luokka: e.target.value, suodatus: '' },
-            { resetHenkilo: true },
-          );
-        }}
-      />
+          }}
+        />
+        <OphCheckbox
+          label={t('search.kesken')}
+          checked={kesken === 'true'}
+          onChange={(_e, checked) => {
+            setSearchParams(
+              { kesken: checked ? 'true' : null },
+              { resetHenkilo: true },
+            );
+          }}
+        />
+      </Stack>
     </StyledSearchControls>
   );
 };
