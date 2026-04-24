@@ -148,7 +148,7 @@ class ValintaDataService {
     val yoMetadata = YoMetadataConverter.convert(kaikkiOpiskeluoikeudet)
 
     val ensikertalaisuusTulos: Option[EnsikertalaisuusTulos] =
-      if (haku.isKKHaku())
+      if (haku.isKorkeakouluHaku)
         Some(ensikertalaisuusService.haeEnsikertalaisuusTulos(usePersonOid, haku, allOidsForPerson, kaikkiOpiskeluoikeudet, hakemus))
       else
         None
