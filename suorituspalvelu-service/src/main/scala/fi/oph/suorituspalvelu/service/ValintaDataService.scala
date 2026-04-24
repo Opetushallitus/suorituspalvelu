@@ -126,7 +126,7 @@ class ValintaDataService {
     val yoMetadata = YoMetadataConverter.convert(kaikkiOpiskeluoikeudet)
 
     val ensikertalaisuusArvo: Option[AvainArvoContainer] =
-      if (haku.isKKHaku())
+      if (haku.isKorkeakouluHaku())
         Some(ensikertalaisuusService.haeEnsikertalaisuusAvainArvo(usePersonOid, haku, allOidsForPerson, kaikkiOpiskeluoikeudet, hakemus))
       else
         None
