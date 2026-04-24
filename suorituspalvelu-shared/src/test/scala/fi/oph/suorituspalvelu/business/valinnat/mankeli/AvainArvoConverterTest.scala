@@ -1007,7 +1007,8 @@ class AvainArvoConverterTest {
                                             vahvistusPaivamaara: Option[LocalDate],
                                             arvosanat: Seq[(String, String, Boolean)],
                                             vuosiluokkiinSitoutumatonOpetus: Boolean = false,
-                                            yksilollistaminen: Option[PerusopetuksenYksilollistaminen] = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY)
+                                            yksilollistaminen: Option[PerusopetuksenYksilollistaminen] = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY),
+                                            suoritusKieli: String = "FI"
                                           ): PerusopetuksenOpiskeluoikeus = {
     val opiskeluoikeusOid = "1.2.246.562.15.09876543211"
     val oppilaitosOid = "1.2.246.562.10.00000000235"
@@ -1024,7 +1025,7 @@ class AvainArvoConverterTest {
       None,
       Koodi("toinenarvo", "koodisto", Some(1)),
       if (vahvistusPaivamaara.isDefined) SuoritusTila.VALMIS else SuoritusTila.KESKEN,
-      Koodi("FI", "kielikoodisto", Some(1)),
+      Koodi(suoritusKieli, "kielikoodisto", Some(1)),
       Set.empty,
       yksilollistaminen = yksilollistaminen,
       None,
@@ -1511,6 +1512,56 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some(AvainArvoConstants.POHJAKOULUTUS_PERUSKOULU), pohjakoulutus.map(_.arvo))
     Assertions.assertTrue(pohjakoulutus.exists(_.selitteet.exists(_.contains("ehdot"))),
       s"Pohjakoulutuksen selite ei sisällä 'ehdot' vaikka deadline on menneisyydessä: ${pohjakoulutus.map(_.selitteet)}")
+  }
+
+  //Nykyinen oppimäärä vahvistettu VASTA leikkurin jälkeen + ehdot leikkurihetkellä + ikkuna auki →
+  //peruskoulu-avaimet (PK_TILA, arvosanat) käyttävät leikkurihetken tietoja. Symmetriatesti toisenAsteenPohjakoulutus-haaran
+  //testille testEhdotOverrideForPohjakoulutusFiresWhenCurrentConfirmedAfterDeadline: molemmat haarat laukaisevat override
+  //kun nykyinen on vahvistettu myöhässä, ei vain silloin kun vahvistusPäivämäärä on tyhjä.
+  @Test def testEhdotOverrideForPeruskouluFiresWhenCurrentConfirmedAfterDeadline(): Unit = {
+    val personOid = "1.2.246.562.24.00000000281"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = Some(leikkuri.plusDays(3)),
+      arvosanat = Seq(("MA", "9", true), ("AI", "9", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val map = result.getAvainArvoMap()
+
+    Assertions.assertEquals(Some("true"), map.get(AvainArvoConstants.peruskouluSuoritettuKey))
+    Assertions.assertEquals(Some(leikkuri.getYear.toString), map.get(AvainArvoConstants.peruskouluSuoritusvuosiKey))
+    //Arvosanat tulevat leikkurihetkeltä, eivät nykyiseltä (myöhässä vahvistetulta) oppimäärältä.
+    Assertions.assertEquals(Some("4"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "MA"))
+    Assertions.assertEquals(Some("8"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI"))
+  }
+
+  //Ehdot-haarassa perusopetuksen_kieli luetaan leikkurihetken oppimäärältä, ei nykyiseltä.
+  //Tämä pitää haarat keskenään johdonmukaisina: kaikki arvot (kieli mukaan lukien) tulevat samasta lähteestä.
+  @Test def testEhdotOverrideForPeruskouluSuoritusKieliFromLeikkurihetki(): Unit = {
+    val personOid = "1.2.246.562.24.00000000282"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val hakemus = BASE_HAKEMUS.copy(keyValues = Map.empty)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      suoritusKieli = "SV"
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      suoritusKieli = "FI"
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, Some(hakemus), nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val map = result.getAvainArvoMap()
+
+    Assertions.assertEquals(Some("FI"), map.get(AvainArvoConstants.perusopetuksenKieliKey))
   }
 
   //Kesken + pakollinen nelonen + ei-VSOP + deadline ohitettu ilman ehdot-overridea → EI_PAATTOTODISTUSTA.

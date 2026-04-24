@@ -114,8 +114,14 @@ class ValintaDataService {
     val kaikkiOpiskeluoikeudet = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, suoritustenAjanhetki)
 
     val vahvistettuViimeistaan = ohjausparametrit.getVahvistuspaivaLocalDate
-    val vahvistettuViimeistaanInstant = vahvistettuViimeistaan.atTime(LocalTime.MAX).atZone(ZoneId.of("Europe/Helsinki")).toInstant
-    val opiskeluoikeudetVahvistettuHetkella = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, vahvistettuViimeistaanInstant)
+    //Leikkurihetken opiskeluoikeudet haetaan vain kun ehdot-ikkuna voi olla auki: toisen asteen haku ja today >= deadline - 2 vko.
+    //Muissa tilanteissa ehdot-override ei koskaan laukea, joten ylimääräinen DB-kutsu hakijaa kohden on turha.
+    val ehdotIkkunaAukiMahdollisesti = haku.isToisenAsteenHaku() && !LocalDate.now().isBefore(vahvistettuViimeistaan.minusWeeks(2))
+    val opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus] =
+      if (ehdotIkkunaAukiMahdollisesti) {
+        val vahvistettuViimeistaanInstant = vahvistettuViimeistaan.atTime(LocalTime.MAX).atZone(ZoneId.of("Europe/Helsinki")).toInstant
+        haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, vahvistettuViimeistaanInstant)
+      } else Seq.empty
 
     val harkinnanvaraisuudet =
       if (hakemus.isDefined && haku.isToisenAsteenHaku())

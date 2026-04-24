@@ -320,9 +320,15 @@ object AvainArvoConverter {
 
     val harkinnanvaraisuusArvot: Option[AvainArvoContainer] = harkinnanvaraisuudet.map(getHarkinnanvaraisuusArvot)
 
+    // Lasketaan "tämä hetki" kerran, jotta kaikki tämän pyynnön sisäiset tarkistukset (ehdot-ikkuna, deadlineOhitettu)
+    // näkevät yhtenevän arvon
+    val today: LocalDate = LocalDate.now()
+    val ehdotIkkunaAuki = !today.isBefore(vahvistettuViimeistaan.minusWeeks(2))
+    val ehdotOverrideAktiivinen = ehdotIkkunaAuki && oliEhdotLeikkurihetkella(personOid, opiskeluoikeudetVahvistettuHetkella)
+
     val toisenAsteenPk: Option[AvainArvoContainer] = if (haku.isToisenAsteenHaku())
-      hakemus.map(h => toisenAsteenPohjakoulutus(personOid, h, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, vahvistettuViimeistaan)) else None
-    val peruskouluArvot = convertPeruskouluArvot(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella)
+      hakemus.map(h => toisenAsteenPohjakoulutus(personOid, h, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, vahvistettuViimeistaan, today, ehdotOverrideAktiivinen)) else None
+    val peruskouluArvot = convertPeruskouluArvot(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, ehdotOverrideAktiivinen)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
@@ -346,7 +352,7 @@ object AvainArvoConverter {
     AvainArvoContainer(AvainArvoConstants.yksMatAiKey, isYksMatAI.toString)
   }
 
-  def toisenAsteenPohjakoulutus(personOid: String, hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus], deadline: LocalDate): AvainArvoContainer = {
+  def toisenAsteenPohjakoulutus(personOid: String, hakemus: AtaruValintalaskentaHakemus, opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus], deadline: LocalDate, today: LocalDate, ehdotOverrideAktiivinen: Boolean): AvainArvoContainer = {
     val perusopetuksenOppimaarat = opiskeluoikeudet
       .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
       .flatMap(_.suoritukset)
@@ -364,19 +370,15 @@ object AvainArvoConverter {
         .orElse(keskenOppimaarat.maxByOption(_.aloitusPaivamaara))
         .orElse(keskeytyneetOppimaarat.maxByOption(_.aloitusPaivamaara))
 
-    //Ehdot-override: hakijalla oli ehdot leikkurihetkellä, 2 viikon ikkuna auki, eikä nykyinen oppimäärä
-    //ole vahvistettu ajoissa (= viimeistään deadlinena). Vertailu tehdään deadlineen, ei wall-clock nyt-hetkeen.
-    val ehdotIkkunaAuki = !LocalDate.now().isBefore(deadline.minusWeeks(2))
-    val ehdotOverrideAktiivinen = ehdotIkkunaAuki && oliEhdotLeikkurihetkella(personOid, opiskeluoikeudetVahvistettuHetkella)
-    val nykyinenEiVahvistettuAjoissa = viimeisinOppimaara.exists(po =>
-      po.vahvistusPaivamaara.isEmpty || po.vahvistusPaivamaara.exists(_.isAfter(deadline))
-    )
+    // Ehdot-override: ehdotOverrideAktiivinen (= ikkuna auki ja ehdot leikkurihetkellä) on laskettu ylempänä
+    // convertOpiskeluoikeudet-tasolla. Vertailu deadlineen, ei wall-clock nykyhetkeen.
+    val nykyinenEiVahvistettuAjoissa = viimeisinOppimaara.exists(po => !oppimaaraVahvistettuAjoissa(po, deadline))
     val ehdotOppimaara: Option[PerusopetuksenOppimaara] =
       if (ehdotOverrideAktiivinen && nykyinenEiVahvistettuAjoissa)
         etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true)
       else None
 
-    val kelpaavaOppimaara = viimeisinOppimaara.filter(onKelpaavaOppimaara(_, deadline))
+    val kelpaavaOppimaara = viimeisinOppimaara.filter(onKelpaavaOppimaara(_, deadline, today))
 
     val hakemusPohjakoulutus = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusKey).flatMap(v => Option.apply(v))
     val hakemusPohjakoulutusVuosi = hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt)
@@ -386,8 +388,8 @@ object AvainArvoConverter {
     AvainArvoContainer(AvainArvoConstants.pohjakoulutusToinenAste, pkResult, pkSelite)
   }
 
-  private def onKelpaavaOppimaara(oppimaara: PerusopetuksenOppimaara, deadline: LocalDate): Boolean = {
-    val deadlineOhitettu = LocalDate.now().isAfter(deadline)
+  private def onKelpaavaOppimaara(oppimaara: PerusopetuksenOppimaara, deadline: LocalDate, today: LocalDate): Boolean = {
+    val deadlineOhitettu = today.isAfter(deadline)
     val ysiluokkalainen = oppimaara.luokkaAste.contains(9)
     val suoritusValmis = oppimaara.vahvistusPaivamaara.isDefined
     val suoritusKesken = oppimaara.supaTila.equals(SuoritusTila.KESKEN)
@@ -658,15 +660,19 @@ object AvainArvoConverter {
     useOppimaara
   }
 
+  //Oppimäärä katsotaan vahvistetuksi ajoissa, kun vahvistusPäivämäärä on olemassa ja viimeistään deadlinena.
+  //Negaatio kattaa sekä vahvistamattomat että leikkurin jälkeen vahvistetut oppimäärät.
+  private def oppimaaraVahvistettuAjoissa(o: PerusopetuksenOppimaara, deadline: LocalDate): Boolean =
+    o.vahvistusPaivamaara.exists(!_.isAfter(deadline))
+
   //Tarkistaa oliko hakijalla "ehdot" annettujen opiskeluoikeuksien tilassa: pakollisessa aineessa nelonen, oppimäärää ei oltu vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
   private def oliEhdotLeikkurihetkella(personOid: String, opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus]): Boolean = {
-    if (opiskeluoikeudetVahvistettuHetkella.isEmpty) return false
-    val oppimaara = etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true)
-    oppimaara.exists(o =>
-      o.vahvistusPaivamaara.isEmpty
-        && !o.vuosiluokkiinSitoutumatonOpetus
-        && o.aineet.exists(a => a.pakollinen && a.arvosana.arvo == "4")
-    )
+    opiskeluoikeudetVahvistettuHetkella.nonEmpty &&
+      etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true).exists(o =>
+        o.vahvistusPaivamaara.isEmpty
+          && !o.vuosiluokkiinSitoutumatonOpetus
+          && o.aineet.exists(a => a.pakollinen && a.arvosana.arvo == "4")
+      )
   }
 
   //AvainArvoja voi tulla hakemukselta (2017 tai aiempi pohjakoulutus), perusopetuksen oppimääriltä (Koski) sekä perusopetuksen oppiaineen oppimääriltä (Koski)
@@ -722,21 +728,16 @@ object AvainArvoConverter {
     korkeimmatPakollisetArvosanat ++ valinnaisetSupasta
   }
 
-  def convertPeruskouluArvot(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus] = Seq.empty): Set[AvainArvoContainer] = {
-    def oppimaaraVahvistettuAjoissa(o: PerusopetuksenOppimaara): Boolean = o.vahvistusPaivamaara.exists(pvm => pvm.isBefore(vahvistettuViimeistaan) || pvm.equals(vahvistettuViimeistaan))
-
+  def convertPeruskouluArvot(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus] = Seq.empty, ehdotOverrideAktiivinen: Boolean = false): Set[AvainArvoContainer] = {
     val perusopetuksenOppimaara: Option[PerusopetuksenOppimaara] = etsiViimeisinPeruskoulu(personOid, opiskeluoikeudet, false)
     val oppiaineenOppimaarat: Seq[PerusopetuksenOppimaaranOppiaineidenSuoritus] = etsiVahvistetutOppiaineenOppimaarat(opiskeluoikeudet)
 
-    //Ehdot-override: hakijalla oli leikkurihetkellä ehdot (pakollisessa nelonen, oppimäärä vahvistamatta), ja 2 viikon ikkuna on auki.
-    //Ehdot-hakijan nykyinen oppimäärä on myös vahvistamatta (vahvistusPaivamaara = None). Meta-avaimet johdetaan leikkuripäivästä,
-    //arvosanat leikkurihetken opiskeluoikeuksista.
-    val ehdotIkkunaAuki = !LocalDate.now().isBefore(vahvistettuViimeistaan.minusWeeks(2))
-    val ehdotOverrideAktiivinen = ehdotIkkunaAuki && oliEhdotLeikkurihetkella(personOid, opiskeluoikeudetVahvistettuHetkella)
-
     val arvot = (perusopetuksenOppimaara, hakemus) match {
-      case (Some(po), _) if po.vahvistusPaivamaara.isEmpty && ehdotOverrideAktiivinen =>
-        val ehdotSelite = s"Hakijalla oli ehdot leikkuripäivänä $vahvistettuViimeistaan (pakollisessa aineessa nelonen eikä oppimäärää ollut vahvistettu), joten arvosanoina käytetään leikkuripäivän tietoja."
+      //Ehdot-override: hakijalla oli leikkurihetkellä ehdot (pakollisessa nelonen, oppimäärä vahvistamatta), 2 viikon ikkuna auki,
+      //eikä nykyistä oppimäärää ollut vahvistettu ajoissa (ei joko lainkaan tai vasta leikkurin jälkeen). Meta-avaimet johdetaan
+      //leikkuripäivästä ja arvosanat leikkurihetken opiskeluoikeuksista.
+      case (Some(po), _) if ehdotOverrideAktiivinen && !oppimaaraVahvistettuAjoissa(po, vahvistettuViimeistaan) =>
+        val ehdotSelite = s"Hakijalla oli ehdot leikkuripäivänä $vahvistettuViimeistaan (pakollisessa aineessa nelonen eikä oppimäärää ollut vahvistettu ajoissa), joten arvosanoina käytetään leikkuripäivän tietoja."
         val poLeikkurihetkella = etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true)
         val aineetPaasuoritukselta = poLeikkurihetkella.map(_.aineet).getOrElse(Set.empty)
         val aineetOppimaarilta = etsiVahvistetutOppiaineenOppimaarat(opiskeluoikeudetVahvistettuHetkella).flatMap(_.aineet).toSet
@@ -746,11 +747,14 @@ object AvainArvoConverter {
         val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "true", Seq(ehdotSelite))
         val suoritusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, vahvistettuViimeistaan.getYear.toString, Seq(ehdotSelite))
         val suoritusLukukausiArvo = AvainArvoContainer(AvainArvoConstants.pkSuorituslukukausiKey, AvainArvoConverterUtil.getLukukausi(vahvistettuViimeistaan), Seq(ehdotSelite))
-        val suoritusKieliArvo = AvainArvoContainer(AvainArvoConstants.perusopetuksenKieliKey, po.suoritusKieli.arvo)
+        val suoritusKieliArvo = AvainArvoContainer(
+          AvainArvoConstants.perusopetuksenKieliKey,
+          poLeikkurihetkella.map(_.suoritusKieli.arvo).getOrElse(po.suoritusKieli.arvo)
+        )
 
         arvosanaArvot ++ Some(suoritusVuosiArvo) ++ Some(suoritusArvo) ++ Some(suoritusLukukausiArvo) ++ Some(suoritusKieliArvo)
 
-      case (Some(po), _) if oppimaaraVahvistettuAjoissa(po) =>
+      case (Some(po), _) if oppimaaraVahvistettuAjoissa(po, vahvistettuViimeistaan) =>
         val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${po.vahvistusPaivamaara.getOrElse("-")}"
         val aineetPaasuoritukselta = perusopetuksenOppimaara.map(_.aineet).getOrElse(Set.empty)
         val aineetOppimaarilta = oppiaineenOppimaarat.flatMap(_.aineet).toSet
