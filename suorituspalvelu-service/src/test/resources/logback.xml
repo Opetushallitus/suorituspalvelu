@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>time</fieldName>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel/>
+                <pattern>
+                    <pattern>
+                        { "logger": "%logger{35}" }
+                    </pattern>
+                </pattern>
+                <mdc/>
+                <arguments/>
+                <message/>
+                <stackTrace>
+                    <fieldName>stack_trace</fieldName>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>-1</maxDepthPerThrowable>
+                        <maxLength>-1</maxLength>
+                        <shortenedClassNameLength>-1</shortenedClassNameLength>
+                        <omitCommonFrames>false</omitCommonFrames>
+                    </throwableConverter>
+                </stackTrace>
+            </providers>
+        </encoder>
+    </appender>
+    <!-- Auditlokit kirjoitetaan tuotannon tapaan erilleen vakiomuotoisina (ei json), jotta
+         testien audit-lokien jäsennys toimii. Vrt. oph-configuration/logback.xml.template. -->
+    <appender name="AUDIT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %-5level %logger{39} : %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="all">
+        <appender-ref ref="JSON" />
+    </root>
+
+    <logger name="org.springframework" level="ERROR"/>
+    <logger name="fi.oph.suorituspalvelu.security.AuditLog" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT" />
+    </logger>
+</configuration>
