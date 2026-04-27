@@ -1,7 +1,9 @@
 package fi.oph.suorituspalvelu.yos
 
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Lahdejarjestelma, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -9,7 +11,7 @@ import org.springframework.stereotype.Service
 import java.lang
 
 @Service
-class YosService(@Autowired tarjontaIntegration: TarjontaIntegration) {
+class YosService @Autowired (tarjontaIntegration: TarjontaIntegration, opiskeluOikeusService: OpiskeluoikeusParsingService) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
@@ -30,6 +32,14 @@ class YosService(@Autowired tarjontaIntegration: TarjontaIntegration) {
     }
     LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
     kuuluukoYOSsinPiiriin
+  }
+  
+  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoive: YosHakutoive): Set[KKOpiskeluoikeus] = {
+    val oikeudet: Set[Opiskeluoikeus] = opiskeluOikeusService.haeSuoritukset(oppilasNro)
+      .filter(( versio, _) => versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA)
+      .values.flatten
+      .toSet
+    oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus)).map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
   }
 
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
