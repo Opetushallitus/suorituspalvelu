@@ -28,7 +28,8 @@ case class VirtaJakso(
   AlkuPvm: LocalDate,
   Koulutuskoodi: Option[String],
   koulutusmoduulitunniste: String,
-  Koulutuskunta: Option[String]
+  Koulutuskunta: Option[String],
+  Luokittelu: Option[String]
 )
 
 case class VirtaOpiskeluoikeus(
