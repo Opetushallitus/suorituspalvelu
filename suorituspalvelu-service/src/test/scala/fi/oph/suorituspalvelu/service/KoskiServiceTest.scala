@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.integration.{KoskiDataForOppija, KoskiIntegration, SaferIterator, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.TestInstance
@@ -30,6 +31,9 @@ class KoskiServiceTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   var hakemuspalveluClient: HakemuspalveluClientImpl = null
+
+  @MockitoBean
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   @Autowired
   var koskiService: KoskiService = null
@@ -107,4 +111,37 @@ class KoskiServiceTest extends BaseIntegraatioTesti {
 
     val results = koskiService.retryKoskiResultFiles(Seq(s"$FILE_URL/d"))
     Assertions.assertFalse(results.hasNext, "Ei-Kouta-muotoisen haun OID:n pitäisi filtteröidä pois")
+
+  /**
+   * e) Jos testi räjähtää yhden henkilön kohdalla, muut henkilöt päästetään silti läpi
+   *    eikä KOSKI-pollaus kaadu.
+   */
+  @Test def testKoskiPollausEiKaaduVaikkaFiltteriKaatuu(): Unit =
+    val rikkinainenOppijaOid = "1.2.246.562.24.00000000105"
+    val toimivaOppijaOid     = "1.2.246.562.24.00000000106"
+    val hakuOid              = "1.2.246.562.29.00000000000000000105"
+
+    val rikkinainen = KoskiDataForOppija(rikkinainenOppijaOid, Seq(Left(new Exception("test data"))))
+    val toimiva     = KoskiDataForOppija(toimivaOppijaOid,     Seq(Left(new Exception("test data"))))
+
+    Mockito.when(koskiIntegration.retryKoskiResultFile(s"$FILE_URL/e"))
+      .thenReturn(SaferIterator(Iterator(rikkinainen, toimiva)))
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(rikkinainenOppijaOid, toimivaOppijaOid)))
+      .thenReturn(Future.successful(Map(
+        rikkinainenOppijaOid -> Seq.empty,
+        toimivaOppijaOid     -> Seq(hakuOid)
+      )))
+    Mockito.when(tarjontaIntegration.tarkistaHaunAktiivisuus(hakuOid))
+      .thenReturn(true)
+
+    // Pakotetaan isYsiluokkalainenTaiLisapiste räjähtämään rikkinäisen henkilön kohdalla.
+    Mockito.when(opiskeluoikeusParsingService.haeSuoritukset(rikkinainenOppijaOid))
+      .thenThrow(new RuntimeException("simuloitu virhe"))
+
+    val results = koskiService.retryKoskiResultFiles(Seq(s"$FILE_URL/e"))
+
+    Assertions.assertTrue(results.hasNext, "Toimivan henkilön pitäisi päästä filterin läpi vaikka toinen räjähtää")
+    val first = results.next()
+    Assertions.assertEquals(toimivaOppijaOid, first.henkiloOid)
+    Assertions.assertFalse(results.hasNext, "Rikkinäinen henkilö pitäisi suodattua pois")
 }
