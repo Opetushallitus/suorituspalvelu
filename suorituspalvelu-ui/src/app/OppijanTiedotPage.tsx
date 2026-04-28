@@ -9,6 +9,7 @@ import { Stack } from '@mui/material';
 import { OphTypography } from '@opetushallitus/oph-design-system';
 import { LabeledInfoItem } from '../components/LabeledInfoItem';
 import { ExternalLink } from '../components/ExternalLink';
+import { OppijanumeroLink } from '../components/OppijanumeroLink';
 import { useConfig } from '@/lib/configuration';
 import { TiedotTabNavi } from '../components/TiedotTabNavi';
 import { Outlet, type OppijaContext } from 'react-router';
@@ -25,17 +26,6 @@ import { queryClient } from '@/lib/queryClient';
 import { useOppijaNumeroParamState } from '@/hooks/useOppijanumeroParamState';
 import { Box } from '@mui/system';
 import { useSelectedTiedotTab } from '@/hooks/useSelectedTiedotTab';
-
-const OppijanumeroLink = ({ oppijaNumero }: { oppijaNumero: string }) => {
-  const config = useConfig();
-  return (
-    <ExternalLink
-      href={config.routes.yleiset.oppijaNumeroLinkUrl + oppijaNumero}
-    >
-      {oppijaNumero}
-    </ExternalLink>
-  );
-};
 
 export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
   const { t } = useTranslations();
@@ -65,7 +55,12 @@ export const OppijanTiedotContent = ({ tiedot }: { tiedot: OppijanTiedot }) => {
           />
           <LabeledInfoItem
             label={t('oppija.oppijanumero')}
-            value={<OppijanumeroLink oppijaNumero={tiedot.oppijaNumero} />}
+            value={
+              <OppijanumeroLink
+                oppijaNumero={tiedot.oppijaNumero}
+                kayttaja={kayttaja}
+              />
+            }
           />
           <LabeledInfoItem
             label={t('oppija.henkiloOid')}

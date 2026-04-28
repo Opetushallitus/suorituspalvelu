@@ -50,6 +50,10 @@ test.describe('Oppijan tiedot', () => {
 
     const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
     await expect(oppijaNumeroLink).toHaveText(OPPIJANUMERO);
+    await expect(oppijaNumeroLink).toHaveAttribute(
+      'href',
+      new RegExp(`/henkilo-ui/oppija/${OPPIJANUMERO}$`),
+    );
     await expect(page.getByLabel('Henkilö-OID')).toHaveText(OPPIJANUMERO);
     await expect(
       page.getByRole('link', { name: 'Avaa tiedot Koski-järjestelmässä' }),
@@ -115,5 +119,59 @@ test.describe('Oppijan tiedot', () => {
     await expect(
       page.getByRole('link', { name: 'Avaa tiedot Koski-järjestelmässä' }),
     ).toBeVisible();
+  });
+
+  test('Oppijanumero-linkkiin lisätään permissionCheckService=ATARU jos käyttäjä on vain hakeneiden katselija', async ({
+    page,
+  }) => {
+    await stubKayttajaResponse(page, {
+      isRekisterinpitaja: false,
+      isOrganisaationKatselija: false,
+      isHakeneidenKatselija: true,
+    });
+
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
+
+    const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
+    await expect(oppijaNumeroLink).toHaveAttribute(
+      'href',
+      new RegExp(
+        `/henkilo-ui/oppija/${OPPIJANUMERO}\\?permissionCheckService=ATARU$`,
+      ),
+    );
+  });
+
+  test('Oppijanumero-linkki ei sisällä query-parametria jos käyttäjällä on molemmat roolit', async ({
+    page,
+  }) => {
+    await stubKayttajaResponse(page, {
+      isRekisterinpitaja: true,
+      isOrganisaationKatselija: false,
+      isHakeneidenKatselija: true,
+    });
+
+    await page.goto(`henkilo/${OPPIJANUMERO}`);
+
+    const oppijaNumeroLink = page.getByLabel('Oppijanumero').getByRole('link');
+    await expect(oppijaNumeroLink).toHaveAttribute(
+      'href',
+      new RegExp(`/henkilo-ui/oppija/${OPPIJANUMERO}$`),
+    );
+  });
+
+  test('Oppijanumero näytetään tekstinä ilman linkkiä jos käyttäjällä ei ole rekisterinpitäjä- eikä hakeneiden katselija -roolia', async ({
+    page,
+  }) => {
+    await stubKayttajaResponse(page, {
+      isRekisterinpitaja: false,
+      isOrganisaationKatselija: true,
+      isHakeneidenKatselija: false,
+    });
+
+    await page.goto(`tarkastus/${OPPIJANUMERO}/suoritustiedot`);
+
+    const oppijaNumero = page.getByLabel('Oppijanumero');
+    await expect(oppijaNumero).toHaveText(OPPIJANUMERO);
+    await expect(oppijaNumero.getByRole('link')).toBeHidden();
   });
 });
