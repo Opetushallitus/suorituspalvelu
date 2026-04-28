@@ -267,6 +267,8 @@ object VirtaToSuoritusConverter {
               virtaTunniste = oo.avain,
               tyyppiKoodi = oo.Tyyppi,
               koulutusKoodi = jakso.flatMap(_.Koulutuskoodi),
+              rahoitusLahde = jakso.flatMap(_.Rahoituslahde),
+              luokittelu = jakso.flatMap(_.Luokittelu),
               alkuPvm = oo.AlkuPvm,
               loppuPvm = oo.LoppuPvm,
               virtaTila = fi.oph.suorituspalvelu.business.Koodi(
