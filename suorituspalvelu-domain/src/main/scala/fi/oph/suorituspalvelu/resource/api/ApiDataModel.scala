@@ -123,9 +123,12 @@ case class KoskiPaivitaTiedotHenkiloillePayload(
 case class KoskiHaeMuuttuneetJalkeenPayload(
   @(Schema @field)(description = "Haetaan tiedot jotka ovat muuttuneet tämän ajankohdan jälkeen",
     example = ESIMERKKI_AIKALEIMA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty aikaleima: Optional[String]) {
+  @BeanProperty muuttuneetJalkeen: Optional[String],
+  @(Schema @field)(description = "Jos asetettu, haetaan vain tätä ajankohtaa ennen muuttuneet tiedot",
+    example = ESIMERKKI_AIKALEIMA, requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty muuttuneetEnnen: Optional[String]) {
 
-  def this() = this(Optional.empty())
+  def this() = this(Optional.empty(), Optional.empty())
 }
 
 case class KoskiRetryPayload(

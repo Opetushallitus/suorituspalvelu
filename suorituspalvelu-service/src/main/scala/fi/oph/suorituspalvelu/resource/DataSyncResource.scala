@@ -7,7 +7,7 @@ import fi.oph.suorituspalvelu.integration.ytr.{YtrFetchMode, YtrIntegration}
 
 import java.util.{Optional, UUID}
 import fi.oph.suorituspalvelu.integration.SyncResultForHenkilo
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROI_PATH, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_AKTIIVISET_PATH, KOSKI_DATASYNC_HAUT_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAUT_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAUT_PATH, YTR_DATASYNC_HENKILOT_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_JOBIN_LUONTI_EPAONNISTUI, DATASYNC_JOBIT_NIMI_PARAM_NAME, DATASYNC_JOBIT_PATH, DATASYNC_JOBIT_TUNNISTE_PARAM_NAME, DATASYNC_JSON_VIRHE, DATASYNC_RESPONSE_400_DESCRIPTION, DATASYNC_RESPONSE_403_DESCRIPTION, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROI_PATH, ESIMERKKI_JOB_NIMI, ESIMERKKI_JOB_TUNNISTE, KOSKI_DATASYNC_500_VIRHE, KOSKI_DATASYNC_AKTIIVISET_PATH, KOSKI_DATASYNC_HAUT_PATH, KOSKI_DATASYNC_HENKILOT_LIIKAA, KOSKI_DATASYNC_HENKILOT_MAX_MAARA, KOSKI_DATASYNC_HENKILOT_PATH, KOSKI_DATASYNC_MUUTTUNEET_AIKALEIMAT_VAARIN_PAIN, KOSKI_DATASYNC_MUUTTUNEET_PATH, KOSKI_DATASYNC_RETRY_PATH, VIRTA_DATASYNC_AKTIIVISET_PATH, VIRTA_DATASYNC_HAUT_PATH, VIRTA_DATASYNC_HENKILO_PATH, VIRTA_DATASYNC_PARAM_NAME, YTR_DATASYNC_500_VIRHE, YTR_DATASYNC_AKTIIVISET_PATH, YTR_DATASYNC_HAUT_PATH, YTR_DATASYNC_HENKILOT_PATH}
 import fi.oph.suorituspalvelu.resource.api.{KoskiHaeMuuttuneetJalkeenPayload, KoskiPaivitaTiedotHaullePayload, KoskiPaivitaTiedotHenkiloillePayload, KoskiRetryPayload, KoskiSyncFailureResponse, KoskiSyncSuccessResponse, ReparseFailureResponse, ReparsePayload, ReparseSuccessResponse, SyncJob, SyncJobFailureResponse, SyncJobStatusResponse, SyncResponse, SyncSuccessJobResponse, VirtaPaivitaTiedotHaullePayload, VirtaPaivitaTiedotHenkilollePayload, VirtaSyncFailureResponse, YTRPaivitaTiedotHaullePayload, YTRPaivitaTiedotHenkilollePayload, YtrSyncFailureResponse, YtrSyncSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{KoskiService, ReparseService, VirtaService, YTRService}
@@ -187,7 +187,7 @@ class DataSyncResource {
     produces = Array(MediaType.APPLICATION_JSON_VALUE)
   )
   @Operation(
-    summary = "Päivittää määritellyn aikaleiman jälkeen muuttuneet tiedot Koskesta",
+    summary = "Päivittää määriteltyjen aikaleimojen välillä muuttuneet tiedot Koskesta",
     description = "Hakee KOSKI-järjestelmästä määritellyn ajankohdan jälkeen muuttuneet tiedot ja päivittää ne SUPAan " +
       "niiden henkilöiden osalta jotka ovat lähettävien koulujen seurannassa tai aktiivisessa haussa. SUPA seuraa KOSKI-" +
       "tietoihin tapahtuvia muutoksia, ja tietojen päivitys SUPAan tapahtuu normaalisti näiden muutosten seurauksena. " +
@@ -215,25 +215,36 @@ class DataSyncResource {
           .flatMap(_ =>
             // deserialisoidaan
             try
-              Right(objectMapper.readValue(bytes, classOf[KoskiHaeMuuttuneetJalkeenPayload]).aikaleima)
+              val payload = objectMapper.readValue(bytes, classOf[KoskiHaeMuuttuneetJalkeenPayload])
+              Right((payload.muuttuneetJalkeen, payload.muuttuneetEnnen))
             catch
               case e: Exception =>
                 LOG.error("payloadin deserialisointi muuttuneiden KOSKI-tietojen päivittämisessä epäonnistui", e)
                 Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(java.util.List.of(DATASYNC_JSON_VIRHE)))))
-          .flatMap(aikaleima =>
-            // validoidaan parametri
-            val virheet = Validator.validateMuokattujalkeen(aikaleima.toScala, true)
+          .flatMap { case (muuttuneetJalkeen, muuttuneetEnnen) =>
+            // validoidaan parametrit
+            val perusVirheet = Validator.validateMuokattujalkeen(muuttuneetJalkeen.toScala, true) ++
+              Validator.validateMuokattuennen(muuttuneetEnnen.toScala, false)
+            // tarkistetaan järjestys vain jos molemmat ovat parsittavissa
+            val jarjestysVirhe =
+              if (perusVirheet.isEmpty && muuttuneetEnnen.isPresent &&
+                  !Instant.parse(muuttuneetJalkeen.get).isBefore(Instant.parse(muuttuneetEnnen.get)))
+                Set(KOSKI_DATASYNC_MUUTTUNEET_AIKALEIMAT_VAARIN_PAIN)
+              else Set.empty
+            val virheet = perusVirheet ++ jarjestysVirhe
             if(virheet.isEmpty)
-              Right(Instant.parse(aikaleima.get))
+              Right((Instant.parse(muuttuneetJalkeen.get), muuttuneetEnnen.toScala.map(Instant.parse)))
             else
-              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava)))))
-          .map(timestamp => {
+              Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(KoskiSyncFailureResponse(new java.util.ArrayList(virheet.asJava))))
+          }
+          .map { case (muuttuneetJalkeen, muuttuneetEnnen) =>
             val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map("timestamp" -> timestamp.toString), AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
-            LOG.info(s"Haetaan ${timestamp} jälkeen muuttuneet Koski-tiedot")
-            val jobId = koskiService.startRefreshForKoskiChangesSince(timestamp)
+            val auditTarget = Map("muuttuneetJalkeen" -> muuttuneetJalkeen.toString) ++ muuttuneetEnnen.map(e => Map("muuttuneetEnnen" -> e.toString)).getOrElse(Map.empty)
+            AuditLog.log(user, auditTarget, AuditOperation.PaivitaMuuttuneetKoskiTiedot, None)
+            LOG.info(s"Haetaan ${muuttuneetJalkeen} jälkeen ja ${muuttuneetEnnen.map(_.toString).getOrElse("nykyhetkeen")} mennessä muuttuneet Koski-tiedot")
+            val jobId = koskiService.startRefreshForKoskiChangesSince(muuttuneetJalkeen, muuttuneetEnnen)
             ResponseEntity.status(HttpStatus.OK).body(SyncSuccessJobResponse(jobId))
-          })
+          }
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
     catch
       case e: Exception =>
