@@ -174,7 +174,14 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeudet.toSet) ||
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid, useKoskiSkipTable =  false).values.flatten.toSet)
 
-      chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r))
+      chunk.filter(r => {
+        try
+          hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r)
+        catch
+          case e: Exception =>
+            LOG.error(s"Henkilön ${r.oppijaOid} osalta ei pystytty tunnistumaan onko aktiivista hakemusta tai ysiluokkalainen", e)
+            false
+      })
     })
 
   private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =
