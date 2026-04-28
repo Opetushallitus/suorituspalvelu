@@ -20,6 +20,8 @@ import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
 
+case class RefreshChangesSinceJobData(muuttuneetJalkeen: String, muuttuneetEnnen: Option[String])
+
 @Component
 class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
                    tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider,
@@ -57,20 +59,23 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
     } else start.toString
   }, cron)
 
-  def refreshKoskiChangesSince(ctx: SupaJobContext, since: Instant): SaferIterator[SyncResultForHenkilo] =
+  def refreshKoskiChangesSince(ctx: SupaJobContext, muuttuneetJalkeen: Instant, muuttuneetEnnen: Option[Instant] = None): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
-    val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(since)
+    val tiedot = koskiIntegration.fetchMuuttuneetKoskiTiedotSince(muuttuneetJalkeen, muuttuneetEnnen)
     val filtteroity = onlyYsiluokkalainenLisapisteTaiAktiivinenHaku(tiedot)
     processKoskiDataForOppijat(ctx, filtteroity, fetchedAt)
 
-  private val refreshKoskiChangesSinceJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, alkaen) => {
-    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan refresh-koski-changes-since alkaen: $alkaen")
-    val (changed, exceptions) = refreshKoskiChangesSince(ctx, Instant.parse(alkaen))
+  private val refreshKoskiChangesSinceJob = scheduler.registerJob("refresh-koski-changes-since", (ctx, data) => {
+    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan refresh-koski-changes-since: $data")
+    val parsed = mapper.readValue(data, classOf[RefreshChangesSinceJobData])
+    val muuttuneetEnnen = parsed.muuttuneetEnnen.map(Instant.parse)
+    val (changed, exceptions) = refreshKoskiChangesSince(ctx, Instant.parse(parsed.muuttuneetJalkeen), muuttuneetEnnen)
       .foldLeft((0, 0))((counts, result) => (counts._1 + { result.versio.map(_ => 1).getOrElse(0) }, counts._2 + { result.exception.map(_ => 1).getOrElse(0)}))
-    LOG.info(s"(job id ${ctx.getJobId}) : refresh-koski-changes-since alkaen $alkaen valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
+    LOG.info(s"(job id ${ctx.getJobId}) : refresh-koski-changes-since muuttuneetJalkeen ${parsed.muuttuneetJalkeen} muuttuneetEnnen ${parsed.muuttuneetEnnen} valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
   }, Seq.empty)
 
-  def startRefreshForKoskiChangesSince(alkaen: Instant): UUID = refreshKoskiChangesSinceJob.run(alkaen.toString)
+  def startRefreshForKoskiChangesSince(muuttuneetJalkeen: Instant, muuttuneetEnnen: Option[Instant] = None): UUID =
+    refreshKoskiChangesSinceJob.run(mapper.writeValueAsString(RefreshChangesSinceJobData(muuttuneetJalkeen.toString, muuttuneetEnnen.map(_.toString))))
 
   def syncKoskiForHenkilot(personOids: Set[String], ctx: SupaJobContext = DUMMY_JOB_CTX): SaferIterator[SyncResultForHenkilo] = {
     val fetchedAt = Instant.now()
@@ -174,7 +179,14 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeudet.toSet) ||
         KoskiUtil.onkoJokinLahtokoulu(LocalDate.now, None, Some(KOSKESTA_TUOTAVAT), opiskeluoikeusParsingService.haeSuoritukset(koskiData.oppijaOid, useKoskiSkipTable =  false).values.flatten.toSet)
 
-      chunk.filter(r => hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r))
+      chunk.filter(r => {
+        try
+          hasAktiivinenHaku(r.oppijaOid) || isYsiluokkalainenTaiLisapiste(r)
+        catch
+          case e: Exception =>
+            LOG.error(s"Henkilön ${r.oppijaOid} osalta ei pystytty tunnistamaan onko aktiivista hakemusta tai ysiluokkalainen", e)
+            false
+      })
     })
 
   private def processKoskiDataForOppijat(ctx: SupaJobContext, data: SaferIterator[KoskiDataForOppija], fetchedAt: Instant): SaferIterator[SyncResultForHenkilo] =

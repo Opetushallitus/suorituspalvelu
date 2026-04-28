@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.integration.client
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.asynchttpclient.Dsl.asyncHttpClient
@@ -14,21 +15,22 @@ import java.time.{Duration, Instant}
 
 object KoskiMassaluovutusQueryParams {
 
-  val TIMESTAMPSINCE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(java.time.ZoneId.of("Europe/Helsinki"))
+  val KOSKI_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").withZone(java.time.ZoneId.of("Europe/Helsinki"))
 
   def forOids(oids: Set[String]): KoskiMassaluovutusQueryParams = {
-    KoskiMassaluovutusQueryParams("supa-oppijat", "application/json", Some(oids), None)
+    KoskiMassaluovutusQueryParams("supa-oppijat", "application/json", Some(oids), None, None)
   }
 
-  def forTimestamp(timestamp: Instant): KoskiMassaluovutusQueryParams = {
-    KoskiMassaluovutusQueryParams("supa-muuttuneet", "application/json", None, Some(TIMESTAMPSINCE_FORMATTER.format(timestamp)))
+  def forTimestamp(muuttuneetJalkeen: Instant, muuttuneetEnnen: Option[Instant] = None): KoskiMassaluovutusQueryParams = {
+    KoskiMassaluovutusQueryParams("supa-muuttuneet", "application/json", None, Some(KOSKI_TIMESTAMP_FORMATTER.format(muuttuneetJalkeen)), muuttuneetEnnen.map(KOSKI_TIMESTAMP_FORMATTER.format))
   }
 }
 
 case class KoskiMassaluovutusQueryParams(`type`: String,
                                          format: String,
                                          oppijaOids: Option[Set[String]], //Käytännössä joko oppijaOids tai muuttuneetJälkeen on määritelty
-                                         muuttuneetJälkeen: Option[String])
+                                         muuttuneetJälkeen: Option[String],
+                                         muuttuneetEnnen: Option[String])
 
 case class KoskiMassaluovutusQueryResponse(queryId: String,
                                            requestedBy: String,
@@ -64,6 +66,7 @@ class KoskiClient(username: String, password: String, environmentBaseUrl: String
 
   val mapper: ObjectMapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
+  mapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
