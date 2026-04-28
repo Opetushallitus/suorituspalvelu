@@ -660,7 +660,8 @@ class HarkinnanvaraisuusPaattelyTest {
       oid = oid,
       organisaatioOid = "1.2.3",
       nimi = Map.empty,
-      voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(harkinnanvaraisetSallittu)
+      voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(harkinnanvaraisetSallittu),
+      johtaaTutkintoon = Some(true)
     )
   }
 }
