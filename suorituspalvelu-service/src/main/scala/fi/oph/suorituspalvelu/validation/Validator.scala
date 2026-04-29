@@ -30,8 +30,10 @@ object Validator {
   final val VALIDATION_LUOKKA_TYHJA               = "luokka: Kenttä on pakollinen"
   final val VALIDATION_LUOKKA_EI_VALIDI           = "luokka ei ole validi: "
   final val VALIDATION_EI_VALIDIT_OIDIT           = "Seuraavat oppijanumerot eivät ole valideja: "
-  final val VALIDATION_MUOKATTUJALKEEN_TYHJA      = "muokattuJalkeen: Kenttä on pakollinen"
-  final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muokattuJalkeen: muokattuJalkeen ei oli validi aikaleima"
+  final val VALIDATION_MUOKATTUJALKEEN_TYHJA      = "muuttuneetJalkeen: Kenttä on pakollinen"
+  final val VALIDATION_MUOKATTUJALKEEN_EI_VALIDI  = "muuttuneetJalkeen: muuttuneetJalkeen ei ole validi aikaleima"
+  final val VALIDATION_MUOKATTUENNEN_TYHJA        = "muuttuneetEnnen: Kenttä on pakollinen"
+  final val VALIDATION_MUOKATTUENNEN_EI_VALIDI    = "muuttuneetEnnen: muuttuneetEnnen ei ole validi aikaleima"
   final val VALIDATION_URL_EI_VALIDI              = "tiedostot: Url ei ole validi: "
   final val VALIDATION_TUNNISTE_TYHJA             = "tunniste: Tunniste on pakollinen"
   final val VALIDATION_TUNNISTE_EI_VALIDI         = "tunniste: Tunniste ei ole validi UUID: "
@@ -75,6 +77,19 @@ object Validator {
         Set.empty
       catch
         case default => Set(VALIDATION_MUOKATTUJALKEEN_EI_VALIDI)
+
+  def validateMuokattuennen(aikaleima: Option[String], pakollinen: Boolean): Set[String] =
+    if (aikaleima.isEmpty || aikaleima.get.isEmpty)
+      if(pakollinen)
+        Set(VALIDATION_MUOKATTUENNEN_TYHJA)
+      else
+        Set.empty
+    else
+      try
+        Instant.parse(aikaleima.get)
+        Set.empty
+      catch
+        case default => Set(VALIDATION_MUOKATTUENNEN_EI_VALIDI)
 
   def validatePersonOids(personOids: Set[String]): Set[String] = {
     if (personOids.isEmpty)

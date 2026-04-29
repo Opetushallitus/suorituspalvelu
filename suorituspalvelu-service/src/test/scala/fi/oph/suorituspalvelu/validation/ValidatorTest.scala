@@ -35,6 +35,23 @@ class ValidatorTest {
     Assertions.assertEquals(Set.empty, Validator.validateMuokattujalkeen(Some(Instant.now.toString), true))
   }
 
+  // muokattuEnnen
+  @Test def testValidateMuokattuEnnenOptionalMissingAllowed(): Unit = {
+    Assertions.assertEquals(Set.empty, Validator.validateMuokattuennen(None, false))
+  }
+
+  @Test def testValidateMuokattuEnnenRequiredMissing(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_MUOKATTUENNEN_TYHJA), Validator.validateMuokattuennen(None, true))
+  }
+
+  @Test def testValidateMuokattuEnnenInvalid(): Unit = {
+    Assertions.assertEquals(Set(Validator.VALIDATION_MUOKATTUENNEN_EI_VALIDI), Validator.validateMuokattuennen(Some("tämä ei ole validi aikaleima"), false))
+  }
+
+  @Test def testValidateMuokattuEnnenValid(): Unit = {
+    Assertions.assertEquals(Set.empty, Validator.validateMuokattuennen(Some(Instant.now.toString), false))
+  }
+
   // hakuoid
   @Test def testValidateHakuOidRequiredMissing(): Unit = {
     Assertions.assertEquals(Set(Validator.VALIDATION_HAKUOID_TYHJA), Validator.validateHakuOid(None, true))
