@@ -771,7 +771,7 @@ object KoskiToSuoritusConverter {
       tunniste = UUID.randomUUID(),
       nimi = koulutusmoduuli.flatMap(_.tunniste.map(t => t.nimi)).getOrElse(dummy()),
       koodi = koulutusmoduuli.flatMap(_.tunniste.map(t => asKoodiObject(t))).getOrElse(dummy()),
-      ryhma = koulutusmoduuli.flatMap(k => k.`ryhmä`.map(r => IBOppiaineRyhma(r.nimi, asKoodiObject(r)))).getOrElse(dummy()),
+      ryhma = koulutusmoduuli.flatMap(k => k.`ryhmä`.map(r => IBOppiaineRyhma(r.nimi, asKoodiObject(r)))),
       predictedArvosana = parasPredictedArviointi.map(pa => IBArvosana(asKoodiObject(pa.arvosana), pa.hyväksytty)),
       laajuus = koulutusmoduuli.flatMap(_.laajuus.map(l => IBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
       suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject)

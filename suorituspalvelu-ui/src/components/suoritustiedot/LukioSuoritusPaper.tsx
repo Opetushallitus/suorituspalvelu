@@ -114,7 +114,9 @@ const IBOppiaineetTable = ({
           </TableRow>
         </TableHead>
         {oppiaineet.map((oppiaine) => {
-          const oppiaineNimi = translateKielistetty(oppiaine.nimi);
+          const oppiaineNimi = oppiaine.nimi
+            ? translateKielistetty(oppiaine.nimi)
+            : t('oppija.ib-muut-oppiaineryhma');
           return (
             <TableBody key={oppiaineNimi}>
               <TableRow>
