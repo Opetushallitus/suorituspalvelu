@@ -91,8 +91,8 @@ class KoskiIntegration {
 
   private val KOSKI_BATCH_SIZE = 1000
 
-  def fetchMuuttuneetKoskiTiedotSince(timestamp: Instant): SaferIterator[KoskiDataForOppija] = {
-    new SaferIterator(fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(timestamp)))
+  def fetchMuuttuneetKoskiTiedotSince(muuttuneetJalkeen: Instant, muuttuneetEnnen: Option[Instant] = None): SaferIterator[KoskiDataForOppija] = {
+    new SaferIterator(fetchKoskiBatch(KoskiMassaluovutusQueryParams.forTimestamp(muuttuneetJalkeen, muuttuneetEnnen)))
   }
 
   def fetchKoskiTiedotForOppijat(personOids: Set[String]): SaferIterator[KoskiDataForOppija] = {

@@ -578,8 +578,8 @@ case class IBOppiaineNimi(
 )
 
 case class IBOppiaineUI(
-  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty nimi: IBOppiaineNimi,
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty nimi: Optional[IBOppiaineNimi],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suoritukset: java.util.List[IBSuoritusUI]
 )

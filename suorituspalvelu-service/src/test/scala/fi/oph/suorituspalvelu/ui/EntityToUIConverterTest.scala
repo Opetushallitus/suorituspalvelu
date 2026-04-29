@@ -1038,10 +1038,10 @@ class EntityToUIConverterTest {
           tunniste = oppiaineTunniste1,
           nimi = Kielistetty(Some("Suomi A"), Some("Finska A"), Some("Finnish A")),
           koodi = Koodi("FIN_A", "oppiaineetib", Some(1)),
-          ryhma = IBOppiaineRyhma(
+          ryhma = Some(IBOppiaineRyhma(
             nimi = Kielistetty(Some("Kielet: Ensimmäinen kieli"), Some("Språk: Första språket"), Some("Language: First Language")),
             koodi = Koodi("1", "aineryhmaib", Some(1))
-          ),
+          )),
           predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("FI", "kieli", Some(1)))
@@ -1050,10 +1050,10 @@ class EntityToUIConverterTest {
           tunniste = oppiaineTunniste2,
           nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics: Analysis and Approaches HL")),
           koodi = Koodi("MAA", "oppiaineetib", Some(1)),
-          ryhma = IBOppiaineRyhma(
+          ryhma = Some(IBOppiaineRyhma(
             nimi = Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")),
             koodi = Koodi("5", "aineryhmaib", Some(1))
-          ),
+          )),
           predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("EN", "kieli", Some(1)))
@@ -1092,12 +1092,12 @@ class EntityToUIConverterTest {
 
     Assertions.assertEquals(2, ui.oppiaineet.size())
 
-    val ryhma1 = ui.oppiaineet.asScala.find(_.nimi.fi.get() == "Kielet: Ensimmäinen kieli").get
-    Assertions.assertEquals(IBOppiaineNimi(
+    val ryhma1 = ui.oppiaineet.asScala.find(_.nimi.toScala.exists(_.fi.toScala.contains("Kielet: Ensimmäinen kieli"))).get
+    Assertions.assertEquals(Optional.of(IBOppiaineNimi(
       fi = Optional.of("Kielet: Ensimmäinen kieli"),
       sv = Optional.of("Språk: Första språket"),
       en = Optional.of("Language: First Language")
-    ), ryhma1.nimi)
+    )), ryhma1.nimi)
     Assertions.assertEquals(1, ryhma1.suoritukset.size())
     val suoritus1 = ryhma1.suoritukset.get(0)
     Assertions.assertEquals(oppiaineTunniste1, suoritus1.tunniste)
@@ -1108,12 +1108,12 @@ class EntityToUIConverterTest {
     ), suoritus1.nimi)
     Assertions.assertEquals(Optional.of("6"), suoritus1.predictedGrade)
 
-    val ryhma2 = ui.oppiaineet.asScala.find(_.nimi.fi.get() == "Matematiikka").get
-    Assertions.assertEquals(IBOppiaineNimi(
+    val ryhma2 = ui.oppiaineet.asScala.find(_.nimi.toScala.exists(_.fi.toScala.contains("Matematiikka"))).get
+    Assertions.assertEquals(Optional.of(IBOppiaineNimi(
       fi = Optional.of("Matematiikka"),
       sv = Optional.of("Matematik"),
       en = Optional.of("Mathematics")
-    ), ryhma2.nimi)
+    )), ryhma2.nimi)
     Assertions.assertEquals(1, ryhma2.suoritukset.size())
     val suoritus2 = ryhma2.suoritukset.get(0)
     Assertions.assertEquals(oppiaineTunniste2, suoritus2.tunniste)
@@ -1123,5 +1123,70 @@ class EntityToUIConverterTest {
       en = Optional.of("Mathematics: Analysis and Approaches HL")
     ), suoritus2.nimi)
     Assertions.assertEquals(Optional.of("7"), suoritus2.predictedGrade)
+  }
+
+  @Test def testConvertIBTutkintoIlmanRyhmaa(): Unit = {
+    val tunniste = UUID.randomUUID()
+    val grouped = UUID.randomUUID()
+    val ungrouped = UUID.randomUUID()
+
+    val ibTutkinto = IBTutkinto(
+      tunniste = tunniste,
+      nimi = Kielistetty(Some("IB-tutkinto"), Some("IB-examen"), Some("IB Diploma Programme")),
+      koodi = Koodi("301102", "koulutus", Some(12)),
+      oppilaitos = Oppilaitos(Kielistetty(Some("ISH"), Some("ISH"), Some("ISH")), "1.2.246.562.10.73383452576"),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
+      vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
+      suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
+      osasuoritukset = Set(
+        IBOppiaineSuoritus(
+          tunniste = grouped,
+          nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics: Analysis and Approaches HL")),
+          koodi = Koodi("MAA", "oppiaineetib", Some(1)),
+          ryhma = Some(IBOppiaineRyhma(
+            nimi = Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")),
+            koodi = Koodi("5", "aineryhmaib", Some(1))
+          )),
+          predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
+          laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          suorituskieli = Some(Koodi("EN", "kieli", Some(1)))
+        ),
+        IBOppiaineSuoritus(
+          tunniste = ungrouped,
+          nimi = Kielistetty(Some("Suomi A"), Some("Finska A"), Some("Finnish A")),
+          koodi = Koodi("FIN_A", "oppiaineetib", Some(1)),
+          ryhma = None,
+          predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
+          laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          suorituskieli = Some(Koodi("FI", "kieli", Some(1)))
+        )
+      )
+    )
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ibtutkinto", "opiskeluoikeudentyyppi", None), "", Set(ibTutkinto), None, List.empty)),
+      DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
+    ).ibTutkinto
+
+    Assertions.assertTrue(result.isPresent)
+    val ui = result.get()
+
+    Assertions.assertEquals(2, ui.oppiaineet.size())
+
+    // Named group comes first, fallback group last
+    Assertions.assertEquals(Optional.of(IBOppiaineNimi(
+      fi = Optional.of("Matematiikka"),
+      sv = Optional.of("Matematik"),
+      en = Optional.of("Mathematics")
+    )), ui.oppiaineet.get(0).nimi)
+    Assertions.assertEquals(grouped, ui.oppiaineet.get(0).suoritukset.get(0).tunniste)
+
+    val fallback = ui.oppiaineet.get(1)
+    Assertions.assertEquals(Optional.empty(), fallback.nimi)
+    Assertions.assertEquals(1, fallback.suoritukset.size())
+    Assertions.assertEquals(ungrouped, fallback.suoritukset.get(0).tunniste)
   }
 }

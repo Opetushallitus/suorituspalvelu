@@ -195,7 +195,7 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testRefreshKoskiMuuttuneetMalformedTimestamp(): Unit =
     // ei validi aikaleima ei sallittu
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of("tämä ei ole validi aikaleima"))))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of("tämä ei ole validi aikaleima"), Optional.empty())))
       .andExpect(status().isBadRequest).andReturn()
 
     Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_MUOKATTUJALKEEN_EI_VALIDI)),
@@ -210,11 +210,11 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     // mockataan hakemuspalvelun (haun hakijoiden haku) ja Kosken vastaukset
     val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
     Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq(hakuOid))))
-    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima))).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(aikaleima), None)).thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
     Mockito.when(tarjontaIntegration.tarkistaHaunAktiivisuus(hakuOid)).thenReturn(true)
 
     // suoritetaan kutsu ja varmistetaan että vastaus täsmää
-    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima))))
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH, KoskiHaeMuuttuneetJalkeenPayload(Optional.of(aikaleima), Optional.empty())))
       .andExpect(status().isOk).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
 
@@ -229,7 +229,61 @@ class KoskiResourceIntegraatioTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.PaivitaMuuttuneetKoskiTiedot.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      "timestamp" -> aikaleima,
+      "muuttuneetJalkeen" -> aikaleima,
+    ), auditLogEntry.target)
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetMalformedMuuttuneetEnnen(): Unit =
+    // ei validi muuttuneetEnnen ei sallittu
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH,
+        KoskiHaeMuuttuneetJalkeenPayload(Optional.of("2025-09-28T10:15:30Z"), Optional.of("tämä ei ole validi aikaleima"))))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(KoskiSyncFailureResponse(java.util.List.of(Validator.VALIDATION_MUOKATTUENNEN_EI_VALIDI)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetAikaleimatVaarinPain(): Unit =
+    // muuttuneetEnnen ei saa olla muuttuneetJalkeen ja sama tai ennen sitä
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH,
+        KoskiHaeMuuttuneetJalkeenPayload(Optional.of("2025-09-29T10:15:30Z"), Optional.of("2025-09-28T10:15:30Z"))))
+      .andExpect(status().isBadRequest).andReturn()
+
+    Assertions.assertEquals(
+      KoskiSyncFailureResponse(java.util.List.of(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_AIKALEIMAT_VAARIN_PAIN)),
+      objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[KoskiSyncFailureResponse]))
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testRefreshKoskiMuuttuneetWithMuuttuneetEnnenAllowed(): Unit = {
+    val muuttuneetJalkeen = "2025-09-28T10:15:30Z"
+    val muuttuneetEnnen = "2025-09-29T10:15:30Z"
+    val oppijaNumero = "1.2.246.562.98.69863082363"
+    val hakuOid = "1.2.246.562.29.00000000000000044639"
+
+    // mockataan hakemuspalvelun ja Kosken vastaukset, varmistetaan että aikaväliä rajaava muuttuneetEnnen-parametri välittyy integraatiokerrokselle
+    val resultData: InputStream = new ByteArrayInputStream(scala.io.Source.fromResource("1_2_246_562_98_69863082363.json").mkString.getBytes())
+    Mockito.when(hakemuspalveluClient.getHenkilonHaut(Seq(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> Seq(hakuOid))))
+    Mockito.when(koskiIntegration.fetchMuuttuneetKoskiTiedotSince(Instant.parse(muuttuneetJalkeen), Some(Instant.parse(muuttuneetEnnen))))
+      .thenReturn(SaferIterator(Iterator(KoskiDataForOppija(oppijaNumero, KoskiIntegration.splitKoskiDataByHenkilo(resultData).next()._2))))
+    Mockito.when(tarjontaIntegration.tarkistaHaunAktiivisuus(hakuOid)).thenReturn(true)
+
+    val result = mvc.perform(jsonPost(ApiConstants.KOSKI_DATASYNC_MUUTTUNEET_PATH,
+        KoskiHaeMuuttuneetJalkeenPayload(Optional.of(muuttuneetJalkeen), Optional.of(muuttuneetEnnen))))
+      .andExpect(status().isOk).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[SyncSuccessJobResponse])
+
+    waitUntilReady(response.jobId)
+
+    // varmistetaan että integraatiokerrokselle välitettiin alku- ja loppuaikaleima
+    Mockito.verify(koskiIntegration).fetchMuuttuneetKoskiTiedotSince(Instant.parse(muuttuneetJalkeen), Some(Instant.parse(muuttuneetEnnen)))
+
+    // katsotaan että muuttuneetEnnen tallentuu auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.PaivitaMuuttuneetKoskiTiedot.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "muuttuneetJalkeen" -> muuttuneetJalkeen,
+      "muuttuneetEnnen" -> muuttuneetEnnen,
     ), auditLogEntry.target)
   }
 
