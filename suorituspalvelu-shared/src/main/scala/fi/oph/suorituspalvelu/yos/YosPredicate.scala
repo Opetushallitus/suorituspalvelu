@@ -26,7 +26,7 @@ object YosPredicate {
         && (oikeus.rahoitusLahde.isDefined && oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
         && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
         && (oikeus.luokittelu.isDefined && !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
-        // TODO OPHYOS-173: tutkinnontasovertailu 
+        // TODO OPHYOS-173: tutkinnonastevertailu
         // TODO OPHYOS-171: maanpuolustuskorkeakoulu, poliisiammattikorkeakoulu tai Högskolan på Åland
       case _ =>
         false

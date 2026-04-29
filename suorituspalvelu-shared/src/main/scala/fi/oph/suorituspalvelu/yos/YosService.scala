@@ -15,13 +15,12 @@ import java.lang
 @Service
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              opiskeluOikeusService: OpiskeluoikeusParsingService,
-                             organisaatioProvider: OrganisaatioProvider,
-                             koodistoProvider: KoodistoProvider) {
+                             organisaatioProvider: OrganisaatioProvider) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
   def kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid: String, hakukohdeOid: String): Boolean = {
-    LOGGER.info(s"Tehdään päättely kuuluuko hakutoive $hakukohdeOid haussa $hakuOid YOS")
+    LOGGER.info(s"Tehdään päättely kuuluuko hakutoive $hakukohdeOid haussa $hakuOid YOS piiriin")
     val haku: Option[KoutaHaku] = tarjontaIntegration.getHaku(hakuOid)
     val hakutoive: KoutaHakukohde = tarjontaIntegration.getHakukohde(hakukohdeOid)
     val kuuluukoYOSsinPiiriin: Boolean = (haku, hakutoive) match {
@@ -39,14 +38,18 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     kuuluukoYOSsinPiiriin
   }
 
-  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoive: YosHakutoive): Set[YosPaatettavaOpiskeluOikeus] = {
+  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String): Set[YosPaatettavaOpiskeluOikeus] = {
+    LOGGER.info(s"Haetaan hakijan $oppilasNro päätettävät opiskeluoikeudet")
     val oikeudet: Set[Opiskeluoikeus] = opiskeluOikeusService.haeSuoritukset(oppilasNro)
       .filter(( versio, _) => versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA)
       .values.flatten
       .toSet
-    oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus))
+    LOGGER.info(s"Löytyi ${oikeudet.size} käsiteltävää oikeutta hakijalle $oppilasNro, suodatetaan niistä YOS piiriin kuuluvat")
+    val paatettavatOikeudet = oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus))
       .map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
       .map(muodostaYosPaatettavaOpiskeluOikeus)
+    LOGGER.info(s"Oikeuksista löytyi ${paatettavatOikeudet.size} kappaletta päätettävää oikeutta hakijalle $oppilasNro")
+    paatettavatOikeudet
   }
 
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
