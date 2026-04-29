@@ -23,10 +23,11 @@ object YosPredicate {
       case oikeus: KKOpiskeluoikeus =>
         YOS_PIIRIIN_KUULUVAT_VIRTAOPISKELUOIKEUDEN_TILAT.contains(oikeus.virtaTila.arvo)
         && oikeus.isTutkintoonJohtava
-        && (oikeus.rahoitusLahde.isEmpty || oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
+        && (oikeus.rahoitusLahde.isDefined && oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
         && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
         && (oikeus.luokittelu.isDefined && !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
-        // TODO maanpuolustuskorkeakoulu, poliisiammattikorkeakoulu tai Högskolan på Åland
+        // TODO OPHYOS-173: tutkinnontasovertailu 
+        // TODO OPHYOS-171: maanpuolustuskorkeakoulu, poliisiammattikorkeakoulu tai Högskolan på Åland
       case _ =>
         false
   }
