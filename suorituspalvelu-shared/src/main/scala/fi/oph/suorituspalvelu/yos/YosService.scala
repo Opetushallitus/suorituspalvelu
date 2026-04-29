@@ -4,6 +4,8 @@ import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Lahdejarjestelma, Opis
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -11,7 +13,10 @@ import org.springframework.stereotype.Service
 import java.lang
 
 @Service
-class YosService @Autowired (tarjontaIntegration: TarjontaIntegration, opiskeluOikeusService: OpiskeluoikeusParsingService) {
+class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
+                             opiskeluOikeusService: OpiskeluoikeusParsingService,
+                             organisaatioProvider: OrganisaatioProvider,
+                             koodistoProvider: KoodistoProvider) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
@@ -33,16 +38,36 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration, opiskeluO
     LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
     kuuluukoYOSsinPiiriin
   }
-  
-  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoive: YosHakutoive): Set[KKOpiskeluoikeus] = {
+
+  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoive: YosHakutoive): Set[YosPaatettavaOpiskeluOikeus] = {
     val oikeudet: Set[Opiskeluoikeus] = opiskeluOikeusService.haeSuoritukset(oppilasNro)
       .filter(( versio, _) => versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA)
       .values.flatten
       .toSet
-    oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus)).map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
+    oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus))
+      .map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
+      .map(muodostaYosPaatettavaOpiskeluOikeus)
   }
 
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto, haku.isErasmusMundusTaiKaksoistutkinto, "", "")
+  }
+
+  private def muodostaYosPaatettavaOpiskeluOikeus(oikeus: KKOpiskeluoikeus): YosPaatettavaOpiskeluOikeus = {
+    val oppilaitosTiedot = organisaatioProvider.haeOrganisaationTiedot(oikeus.myontaja)
+    val organisaatio = YosOrganisaatio(
+      oppilaitosTiedot.map(org => org.oid),
+      oppilaitosTiedot.map(org => 
+        Kielistetty(
+          Some(org.nimi.fi),
+          Some(org.nimi.sv),
+          Some(org.nimi.en)))
+        .getOrElse(
+          Kielistetty(
+            Some(oikeus.myontaja),
+            Some(oikeus.myontaja),
+            Some(oikeus.myontaja)))
+    )
+    YosPaatettavaOpiskeluOikeus(oikeus.tunniste, organisaatio, oikeus.nimi, oikeus.koulutusKoodi)
   }
 }
