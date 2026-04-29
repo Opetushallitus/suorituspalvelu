@@ -52,7 +52,8 @@ case class AtaruValintalaskentaHakemus(
                         asiointikieli: String,
                         hakutoiveet: List[Hakutoive],
                         maksuvelvollisuus: Map[String, String], // Tehdäänkö näille jotain?
-                        keyValues: Map[String, String]
+                        keyValues: Map[String, String],
+                        korkeakoulututkintoVuosi: Option[Int]
                       )
 
 case class Hakutoive(

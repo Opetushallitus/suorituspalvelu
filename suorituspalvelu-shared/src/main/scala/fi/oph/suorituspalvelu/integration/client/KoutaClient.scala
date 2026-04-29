@@ -39,6 +39,8 @@ case class KoutaHaku(oid: String,
     "haunkohdejoukko_24"
   )
 
+  val kkHakuUri = "haunkohdejoukko_12"
+
   val toisenAsteenYhteishakuUri = "haunkohdejoukko_11"
 
   def isToisenAsteenHaku() = {
@@ -50,8 +52,12 @@ case class KoutaHaku(oid: String,
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(toisenAsteenYhteishakuUri)
   }
-}
 
+  def isKKHaku() = {
+    val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
+    kohdejoukkoPrefix.equals(kkHakuUri)
+  }
+}
 
 class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
 

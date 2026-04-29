@@ -287,11 +287,13 @@ object VirtaToSuoritusConverter {
       orphanSuoritukset.groupBy(_.Myontaja).foreach { case (myontaja, suoritukset) =>
         val existingSuoritukset =
           synteettisetOpiskeluoikeudetByMyontaja.get(myontaja).map(_.suoritukset).getOrElse(Set.empty)
+        val allSuoritukset = existingSuoritukset ++ toSuoritukset(None, suoritukset, suorituksetByAvain)
         synteettisetOpiskeluoikeudetByMyontaja +=
           (myontaja -> KKSynteettinenOpiskeluoikeus(
             tunniste = UUID.randomUUID(),
             myontaja = myontaja,
-            suoritukset = existingSuoritukset ++ toSuoritukset(None, suoritukset, suorituksetByAvain)
+            containsKKTutkinto = allSuoritukset.exists(_.isInstanceOf[KKTutkinto]),
+            suoritukset = allSuoritukset
           ))
       }
       opiskeluoikeudet

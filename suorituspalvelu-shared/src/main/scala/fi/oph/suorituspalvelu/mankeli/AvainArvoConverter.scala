@@ -89,7 +89,8 @@ object AvainArvoConstants {
     peruskouluOppiaineenKieli_B2 -> "Peruskoulun B2-kielen oppiaine",
     peruskouluOppiaineenKieli_AI -> "Peruskoulun äidinkielen oppiaine",
     pohjakoulutusToinenAste -> "Toisen asteen pohjakoulutus",
-    yksMatAiKey -> "Onko joku hakemuksen hakutoiveista harkinnanvarainen siksi, että matematiikka ja äidinkieli yksilöllistettyjä"
+    yksMatAiKey -> "Onko joku hakemuksen hakutoiveista harkinnanvarainen siksi, että matematiikka ja äidinkieli yksilöllistettyjä",
+    ensikertalainenKey -> "Korkeakoulun ensikertalainen"
   )
 
   final val perusopetuksenKieliKey = "perusopetuksen_kieli"
@@ -199,6 +200,7 @@ object AvainArvoConstants {
   val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
 
   final val yksMatAiKey = "yks_mat_ai"
+  val ensikertalainenKey = "ensikertalainen"
 }
 
 object PerusopetuksenArvosanaOrdering {
