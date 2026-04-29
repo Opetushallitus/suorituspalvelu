@@ -12,6 +12,10 @@ const HETU = OPPIJAN_TIEDOT.henkiloTunnus;
 const OPPILAITOS_OID = OPPILAITOKSET.oppilaitokset[0]?.oid ?? '';
 const OPPILAITOS_NIMI = OPPILAITOKSET.oppilaitokset[0]?.nimi.fi ?? '';
 
+const FILTERED_OPPIJAT = {
+  oppijat: [OPPIJAT.oppijat[0], OPPIJAT.oppijat[1]],
+};
+
 const getOppilaitosSelect = (page: Page) => page.getByLabel('Oppilaitos');
 
 const getVuosiSelect = (page: Page) => page.getByLabel('Valmistumisvuosi');
@@ -59,11 +63,22 @@ test.describe('Tarkastusnäkymä', () => {
       const url = new URL(route.request().url());
       const oppilaitos = url.searchParams.get('oppilaitos');
       const vuosi = url.searchParams.get('vuosi');
+      const kesken = url.searchParams.get('kesken');
+      const yhteistenarvosanapuuttuu = url.searchParams.get(
+        'yhteistenarvosanapuuttuu',
+      );
 
       if (oppilaitos && vuosi) {
-        await route.fulfill({
-          json: OPPIJAT,
-        });
+        // Simulate filtered results when checkbox filters are active
+        if (kesken === 'true' || yhteistenarvosanapuuttuu === 'true') {
+          await route.fulfill({
+            json: FILTERED_OPPIJAT,
+          });
+        } else {
+          await route.fulfill({
+            json: OPPIJAT,
+          });
+        }
       } else {
         await route.fulfill({
           json: { oppijat: [] },
@@ -510,6 +525,111 @@ test.describe('Tarkastusnäkymä', () => {
 
     // Vaihdetaan vuosi
     await selectOption({ page, name: 'Valmistumisvuosi', option: '2024' });
+
+    // Henkilö pitäisi olla tyhjennetty
+    await expect(page).toHaveURL((url) => !url.pathname.includes(OPPIJANUMERO));
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeHidden();
+    await expect(page.getByText('Hae ja valitse henkilö')).toBeVisible();
+  });
+
+  test('suodatusvalintaruudut näytetään ja ne ovat oletuksena pois päältä', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus');
+
+    const keskenCheckbox = page.getByLabel('Suoritus kesken');
+    const puuttuuCheckbox = page.getByLabel(
+      'Oppilaalta puuttuu yhteisen aineen arvosana',
+    );
+
+    await expect(keskenCheckbox).toBeVisible();
+    await expect(puuttuuCheckbox).toBeVisible();
+    await expect(keskenCheckbox).not.toBeChecked();
+    await expect(puuttuuCheckbox).not.toBeChecked();
+  });
+
+  test('kesken-valintaruudun klikkaus päivittää URL-parametrin ja suodattaa oppijat', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+    await expect(page.getByText('4 henkilöä')).toBeVisible();
+
+    const keskenCheckbox = page.getByLabel('Suoritus kesken');
+    await keskenCheckbox.click();
+
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get('kesken') === 'true',
+    );
+    await expect(keskenCheckbox).toBeChecked();
+    await expect(page.getByText('2 henkilöä')).toBeVisible();
+
+    // Uncheck returns to full list
+    await keskenCheckbox.click();
+
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get('kesken') === null,
+    );
+    await expect(keskenCheckbox).not.toBeChecked();
+    await expect(page.getByText('4 henkilöä')).toBeVisible();
+  });
+
+  test('yhteisten arvosana puuttuu -valintaruudun klikkaus päivittää URL-parametrin ja suodattaa oppijat', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+    await expect(page.getByText('4 henkilöä')).toBeVisible();
+
+    const puuttuuCheckbox = page.getByLabel(
+      'Oppilaalta puuttuu yhteisen aineen arvosana',
+    );
+    await puuttuuCheckbox.click();
+
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get('yhteistenarvosanapuuttuu') === 'true',
+    );
+    await expect(puuttuuCheckbox).toBeChecked();
+    await expect(page.getByText('2 henkilöä')).toBeVisible();
+
+    // Uncheck returns to full list
+    await puuttuuCheckbox.click();
+
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get('yhteistenarvosanapuuttuu') === null,
+    );
+    await expect(puuttuuCheckbox).not.toBeChecked();
+    await expect(page.getByText('4 henkilöä')).toBeVisible();
+  });
+
+  test('valintaruudun klikkaus tyhjentää valitun henkilön', async ({
+    page,
+  }) => {
+    await page.goto('tarkastus');
+
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+
+    const sidebar = getHenkilotSidebar(page);
+    await expect(sidebar.getByText('4 henkilöä')).toBeVisible();
+
+    // Valitaan henkilö
+    await page
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
+      .click();
+
+    await expect(page).toHaveURL((url) =>
+      url.pathname.includes(`tarkastus/${OPPIJANUMERO}`),
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Olli Oppija (010296-1230)' }),
+    ).toBeVisible();
+
+    // Klikataan valintaruutua
+    await page.getByLabel('Suoritus kesken').click();
 
     // Henkilö pitäisi olla tyhjennetty
     await expect(page).toHaveURL((url) => !url.pathname.includes(OPPIJANUMERO));

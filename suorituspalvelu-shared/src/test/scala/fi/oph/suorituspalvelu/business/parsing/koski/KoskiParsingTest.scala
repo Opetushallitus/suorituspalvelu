@@ -1140,7 +1140,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(true, oppiaine.pakollinen)
     Assertions.assertEquals(Some(true), oppiaine.yksilollistetty)
     Assertions.assertEquals(Some(true), oppiaine.rajattu)
-    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY), oppimaara.yksilollistaminen)
+    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU), oppimaara.yksilollistaminen)
   }
 
   @Test def testPerusopetuksenOppimaaranLahtokoulutJaLuokka(): Unit =
@@ -1187,7 +1187,27 @@ class KoskiParsingTest {
         |              "koodistoUri": "suorituksentyyppi",
         |              "koodistoVersio": 1
         |            },
-        |            "osasuoritukset": []
+        |            "osasuoritukset": [
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {
+        |                    "koodiarvo": "AI",
+        |                    "nimi": {
+        |                      "fi": "Äidinkieli ja kirjallisuus"
+        |                    },
+        |                    "lyhytNimi": {
+        |                      "fi": "Äidinkieli ja kirjallisuus",
+        |                      "sv": "Modersmålet och litteratur"
+        |                    },
+        |                    "koodistoUri": "koskioppiaineetyleissivistava",
+        |                    "koodistoVersio": 1
+        |                  },
+        |                  "pakollinen": true
+        |                },
+        |                "yksilöllistettyOppimäärä": true,
+        |                "rajattuOppimäärä": true
+        |              }
+        |            ]
         |          },
         |          {
         |            "koulutusmoduuli": {
@@ -1246,7 +1266,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(
       List(
         Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), "9G", Some(VALMIS), Some(true), VUOSILUOKKA_9),
-        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", Some(VALMIS), Some(true), VUOSILUOKKA_8)
+        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", Some(VALMIS), None, VUOSILUOKKA_8)
       ), oppimaara.lahtokoulut
     )
 
