@@ -222,6 +222,8 @@ export const IB_SUORITUS: SuoritusSpec = {
       ['Biology fi', '7'],
       ['Mathematics fi'],
       ['Mathematical studies fi', '7'],
+      ['Muut'],
+      ['Theory of knowledge fi', '7'],
     ]);
   },
 };

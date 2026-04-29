@@ -166,7 +166,7 @@ case class IBOppiaineSuoritus(
   tunniste: UUID,
   nimi: Kielistetty,
   koodi: Koodi,
-  ryhma: IBOppiaineRyhma,
+  ryhma: Option[IBOppiaineRyhma],
   predictedArvosana: Option[IBArvosana],
   laajuus: Option[IBLaajuus],
   suorituskieli: Option[Koodi]

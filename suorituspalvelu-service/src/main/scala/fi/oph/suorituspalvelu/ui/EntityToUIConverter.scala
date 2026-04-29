@@ -493,24 +493,27 @@ object EntityToUIConverter {
           aloituspaiva = ibTutkinto.aloitusPaivamaara.toJava,
           valmistumispaiva = ibTutkinto.vahvistusPaivamaara.toJava,
           suorituskieli = ibTutkinto.suorituskieli.flatMap(k => getKoodiNimi[SuorituskieliUI](Some(k.arvo), k.koodisto, koodistoProvider).toScala).toJava,
-          oppiaineet = oppiaineetByRyhma.map((ryhma, oppiaineet) => {
-            IBOppiaineUI(
-              nimi = IBOppiaineNimi(
-                fi = ryhma.nimi.fi.toJava,
-                sv = ryhma.nimi.sv.toJava,
-                en = ryhma.nimi.en.toJava
-              ),
-              suoritukset = oppiaineet.map(o => IBSuoritusUI(
-                tunniste = o.tunniste,
-                nimi = IBSuoritusNimiUI(
-                  fi = o.nimi.fi.toJava,
-                  sv = o.nimi.sv.toJava,
-                  en = o.nimi.en.toJava
-                ),
-                predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava
-              )).toList.asJava
-            )
-          }).toList.asJava
+          oppiaineet = oppiaineetByRyhma.toList
+            .sortBy { case (ryhmaOpt, _) => ryhmaOpt.isEmpty }
+            .map { case (ryhmaOpt, oppiaineet) =>
+              val ryhmaNimi = ryhmaOpt.map(r => IBOppiaineNimi(
+                fi = r.nimi.fi.toJava,
+                sv = r.nimi.sv.toJava,
+                en = r.nimi.en.toJava
+              )).toJava
+              IBOppiaineUI(
+                nimi = ryhmaNimi,
+                suoritukset = oppiaineet.map(o => IBSuoritusUI(
+                  tunniste = o.tunniste,
+                  nimi = IBSuoritusNimiUI(
+                    fi = o.nimi.fi.toJava,
+                    sv = o.nimi.sv.toJava,
+                    en = o.nimi.en.toJava
+                  ),
+                  predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava
+                )).toList.asJava
+              )
+            }.asJava
         )
       }).headOption
 

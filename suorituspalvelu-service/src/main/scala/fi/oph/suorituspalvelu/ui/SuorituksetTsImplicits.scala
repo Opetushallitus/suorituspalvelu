@@ -11,6 +11,7 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val optionalDIATutkinto: TSType[Optional[DIATutkintoUI]] = TSType.sameAs[Optional[DIATutkintoUI], Option[DIATutkintoUI]]
   implicit val optionalEBSuoritus: TSType[Optional[EBOppiaineOsasuoritusUI]] = TSType.sameAs[Optional[EBOppiaineOsasuoritusUI], Option[EBOppiaineOsasuoritusUI]]
   implicit val optionalEBTutkinto: TSType[Optional[EBTutkintoUI]] = TSType.sameAs[Optional[EBTutkintoUI], Option[EBTutkintoUI]]
+  implicit val optionalIBOppiaineNimi: TSType[Optional[IBOppiaineNimi]] = TSType.sameAs[Optional[IBOppiaineNimi], Option[IBOppiaineNimi]]
   implicit val optionalIBTutkinto: TSType[Optional[IBTutkintoUI]] = TSType.sameAs[Optional[IBTutkintoUI], Option[IBTutkintoUI]]
   implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapaUI]] = TSType.sameAs[Optional[SuoritusTapaUI], Option[SuoritusTapaUI]]
   implicit val optionalAmmatillisenTutkinnonOsaArvosana: TSType[Optional[AmmatillisenTutkinnonOsaArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaArvosana], Option[AmmatillisenTutkinnonOsaArvosana]]
