@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
-import java.time.{Instant, LocalDate, ZoneId}
+import java.time.{Instant, LocalDate, LocalTime, ZoneId}
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
@@ -113,19 +113,29 @@ class ValintaDataService {
 
     val kaikkiOpiskeluoikeudet = haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, suoritustenAjanhetki)
 
+    val vahvistettuViimeistaan = ohjausparametrit.getVahvistuspaivaLocalDate
+    //Leikkurihetken opiskeluoikeudet haetaan vain kun ehdot-ikkuna voi olla auki: toisen asteen haku ja today >= deadline - 2 vko.
+    //Muissa tilanteissa ehdot-override ei koskaan laukea, joten ylimääräinen DB-kutsu hakijaa kohden on turha.
+    val ehdotIkkunaAukiMahdollisesti = haku.isToisenAsteenHaku() && !LocalDate.now().isBefore(vahvistettuViimeistaan.minusWeeks(2))
+    val opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus] =
+      if (ehdotIkkunaAukiMahdollisesti) {
+        val vahvistettuViimeistaanInstant = vahvistettuViimeistaan.atTime(LocalTime.MAX).atZone(ZoneId.of("Europe/Helsinki")).toInstant
+        haeOppijanJaAliastenOpiskeluoikeudet(allOidsForPerson, vahvistettuViimeistaanInstant)
+      } else Seq.empty
+
     val harkinnanvaraisuudet =
       if (hakemus.isDefined && haku.isToisenAsteenHaku())
-        Some(harkinnanvaraisuusService.getHakemuksenHarkinnanvaraisuudet(hakemus.get, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate))
+        Some(harkinnanvaraisuusService.getHakemuksenHarkinnanvaraisuudet(hakemus.get, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan))
       else
         None
 
-    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, haku, harkinnanvaraisuudet)
+    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, vahvistettuViimeistaan, hakemus, kaikkiOpiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, haku, harkinnanvaraisuudet)
 
     val yoMetadata = YoMetadataConverter.convert(kaikkiOpiskeluoikeudet)
 
     val yliajot = fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResults, yliajot)
-    ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, suoritustenAjanhetki)
+    ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan, suoritustenAjanhetki)
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
