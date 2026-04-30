@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource.api
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_JOB_NIMI, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_ESIMERKKI_JOB_ID, DATASYNC_JOBIEN_TIETOJEN_HAKU_EPAONNISTUI, DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI, ESIMERKKI_AIKALEIMA, ESIMERKKI_HAKEMUS_OID, ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_JOB_NIMI, ESIMERKKI_LUOKKA, ESIMERKKI_OPPIJANUMERO, ESIMERKKI_OPPILAITOS_OID, ESIMERKKI_TULOSTIEDOSTO, KOSKI_DATASYNC_ESIMERKKI_VIRHE, LAHETTAVAT_ESIMERKKI_VIRHE, VIRTA_DATASYNC_ESIMERKKI_VIRHE, YOS_EI_OIKEUKSIA}
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode
 
@@ -334,3 +334,38 @@ case class ValintaApiHakemuksenHarkinnanvaraisuus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty hakutoiveet: java.util.List[ValintaApiHakukohteenHarkinnanvaraisuus],
 )
+
+enum YosVirhe:
+  case VIRHE_HAKUTOIVEEN_PAATTELYSSA
+  case VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA
+  case PUUTTUVAT_OIKEUDET
+
+trait YosResponse
+
+
+case class YosNimi(fi: String, sv: String, en: String)
+
+case class YosOpiskeluOikeus(
+                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+                                        @BeanProperty tunniste: String,
+                                        @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID)
+                                        @BeanProperty organisaatioOid: String,
+                                        @(Schema @field)
+                                        @BeanProperty organisaatioNimi: YosNimi,
+                                        @(Schema @field)
+                                        @BeanProperty nimi: YosNimi,
+                                        @(Schema @field)
+                                        @BeanProperty koulutusKoodi: String
+                                      )
+
+case class YosSuccessResponse(
+ @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+ @BeanProperty paatettavatOpiskeluOikeudet: java.util.List[YosOpiskeluOikeus]
+) extends YosResponse
+
+case class YosErrorResponse (
+   @(Schema @field)(example = "PUUTTUVAT_OIKEUDET")
+   @BeanProperty virhe: YosVirhe,
+   @(Schema @field)(example = YOS_EI_OIKEUKSIA)
+   @BeanProperty viesti: String
+ ) extends YosResponse
