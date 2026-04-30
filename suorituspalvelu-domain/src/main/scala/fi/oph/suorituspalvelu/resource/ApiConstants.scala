@@ -103,6 +103,10 @@ object ApiConstants {
   final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui"
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA            = VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR.toInt
 
+  final val YOS_PATH                                        = VERSIONED_API_PREFIX + "/yos"
+  final val YOS_RESPONSE_403_DESCRIPTION                    = "Käyttäjällä ei ole rekisterinpitäjä- tai palvelukäyttäjäoikeutta"
+  final val YOS_EI_OIKEUKSIA                                = "Käyttäjällä ei ole oikeuksia YOS-rajapinnan käyttöön"
+
   final val HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA_STR     = "5000"
   final val HARKINNANVARAISUUS_EI_OIKEUKSIA                 = "Käyttäjällä ei ole oikeuksia hakea harkinnanvaraisuustietoja"
   final val HARKINNANVARAISUUS_HAKEMUKSET_LIIKAA            = "Tiedot voi hakea korkeintaan 5000 hakemukselle kerrallaan"

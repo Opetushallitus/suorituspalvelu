@@ -265,8 +265,11 @@ object VirtaToSuoritusConverter {
             val kkOpiskeluoikeus = KKOpiskeluoikeus(
               tunniste = UUID.randomUUID(),
               virtaTunniste = oo.avain,
+              nimi = jakso.flatMap(j => virtaNimiToKielistetty(j.Nimi)),
               tyyppiKoodi = oo.Tyyppi,
               koulutusKoodi = jakso.flatMap(_.Koulutuskoodi),
+              rahoitusLahde = jakso.flatMap(_.Rahoituslahde),
+              luokittelu = jakso.flatMap(_.Luokittelu),
               alkuPvm = oo.AlkuPvm,
               loppuPvm = oo.LoppuPvm,
               virtaTila = fi.oph.suorituspalvelu.business.Koodi(
