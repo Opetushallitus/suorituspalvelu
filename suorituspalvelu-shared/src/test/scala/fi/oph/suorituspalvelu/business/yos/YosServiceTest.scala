@@ -58,7 +58,7 @@ class YosServiceTest {
     tyypit = Seq.empty,
     oppilaitosTyyppi = None
   ))
-  
+
   private val YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS = KKOpiskeluoikeus(
     virtaTila = Koodi(arvo = "1", koodisto = "virtakoodisto", versio = Some(1)),
     isTutkintoonJohtava = true,
@@ -85,28 +85,24 @@ class YosServiceTest {
   }
 
   @Test
-  def throwsExceptionWhenHakuIsNotFound(): Unit = {
-    Assertions.assertThrows(classOf[RuntimeException], () => {
-      Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(None)
-      Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-      service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID)
-    })
+  def returnsExceptionWhenHakuIsNotFound(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(None)
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
   }
 
   @Test
-  def throwsExceptionWhenHakukohdeIsNotFound(): Unit = {
-    Assertions.assertThrows(classOf[RuntimeException], () => {
-      Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
-      Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(null)
-      service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID)
-    })
+  def returnsExceptionWhenHakukohdeIsNotFound(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(null)
+    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
   }
 
   @Test
   def hakutoiveKuuluuYOSPiiriin(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID))
+    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
   }
 
   @Test
@@ -114,7 +110,7 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
       Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"))))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
   }
 
   @Test
@@ -122,21 +118,21 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
       Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukonTarkenneKoodiUri = Some("haunkohdejoukontarkenne_010"))))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
   }
 
   @Test
-  def jatkotutkintoEiKuulyYosPiiriin(): Unit = {
+  def jatkotutkintoEiKuuluYosPiiriin(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
       Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukonTarkenneKoodiUri = Some("haunkohdejoukontarkenne_3"))))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
   }
 
   @Test
   def hakijalleEiLoydyPaatettaviaOpiskeluOikeuksia(): Unit = {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map.empty)
-    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).isEmpty)
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
 
@@ -146,7 +142,7 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
     ))
-    val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID)
+    val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty)
     assertEquals(1, oikeudet.size)
     val oikeus = oikeudet.head
     assertEquals("Sosionomikoulutus", oikeus.nimi.get.fi.get)
@@ -155,14 +151,14 @@ class YosServiceTest {
     assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
     assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
   }
-  
+
   @Test
   def vaarassaTilassaOlevaOpiskeluOikeusEiKuuluYos(): Unit = {
     Mockito.when(organisaatioMock.haeOrganisaationTiedot("02629")).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(virtaTila = Koodi("3", "virtatila", Some(1))))
     ))
-    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).isEmpty)
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
 
@@ -172,7 +168,7 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(isTutkintoonJohtava = false))
     ))
-    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).isEmpty)
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
 
@@ -182,7 +178,7 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(rahoitusLahde = Some("6")))
     ))
-    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).isEmpty)
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
 
@@ -192,7 +188,7 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(tyyppiKoodi = "5"))
     ))
-    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).isEmpty)
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
 
@@ -202,7 +198,7 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(luokittelu = Some("6")))
     ))
-    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).isEmpty)
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
 }
