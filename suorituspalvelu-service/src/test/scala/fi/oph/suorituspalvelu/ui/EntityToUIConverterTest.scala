@@ -718,7 +718,10 @@ class EntityToUIConverterTest {
       myontaja = ORGANISAATION_OID,
       isTutkintoonJohtava = true,
       kieli = Some("fi"),
-      suoritukset = Set.empty
+      suoritukset = Set.empty,
+      rahoitusLahde = None,
+      nimi = Some(Kielistetty(Some("Sosekoulutus"), None, None)),
+      luokittelu = Some("6")
     )
 
     val virtaEiTutkintoonJohtavaOpiskeluoikeus = virtaOpiskeluoikeus.copy(
@@ -881,7 +884,10 @@ class EntityToUIConverterTest {
       myontaja = virtaTutkinto.myontaja,
       isTutkintoonJohtava = false,
       kieli = Some("fi"),
-      suoritukset = Set(virtaTutkinto)
+      suoritukset = Set(virtaTutkinto),
+      rahoitusLahde = None,
+      nimi = Some(Kielistetty(Some("Sosekoulutus"), None, None)),
+      luokittelu = Some("6")
     )
 
     Assertions.assertEquals(java.util.List.of(KKSuoritusUI(
