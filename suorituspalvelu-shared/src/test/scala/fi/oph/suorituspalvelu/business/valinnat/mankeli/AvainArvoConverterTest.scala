@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -28,6 +28,8 @@ class AvainArvoConverterTest {
     "TE" -> DEFAULT_OPPIAINEKOODI, "KT" -> DEFAULT_OPPIAINEKOODI, "FY" -> DEFAULT_OPPIAINEKOODI,
     "AI" -> DEFAULT_OPPIAINEKOODI, "MU" -> DEFAULT_OPPIAINEKOODI, "A1" -> DEFAULT_OPPIAINEKOODI,
     "KE" -> DEFAULT_OPPIAINEKOODI)
+
+  val DEFAULT_LEIKKURIPVM = LocalDate.parse("2050-06-01")
 
   val DEFAULT_KOUTA_HAKU = KoutaHaku(
     oid = "1.2.246.562.29.01000000000000012345",
@@ -1074,5 +1076,102 @@ class AvainArvoConverterTest {
 
     val lisatiedot = KoskiLisatiedot(None, Some(true), None)
     PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid, Set(perusopetuksenOppimaaraValmis), Some(lisatiedot), SuoritusTila.VALMIS, List.empty)
+  }
+
+  @Test def testTuvaYhteislaajuusEiRiita(): Unit = {
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(8), suoritusVuosi = 2021))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(5), suoritusVuosi = 2022))),
+    )
+
+    // Yhteislaajuus 5 + 8 = 13 < 19
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
+  }
+
+  @Test def testTuvaYhteislaajuusTuoreinLiianVanha(): Unit = {
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(10), suoritusVuosi = 2020))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(15), suoritusVuosi = 2022))),
+    )
+
+    // Yhteislaajuus 15 + 10 = 25 >= 19, mutta tuorein vuosi 2022 < vuosiVahintaan 2023
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2024)), None)
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
+  }
+
+  @Test def testTuvaKynnyksenYlittamisvuosi(): Unit = {
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(12), suoritusVuosi = 2019))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(8), suoritusVuosi = 2021))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestTuva(laajuusArvo = Some(5), suoritusVuosi = 2022))),
+    )
+
+    // Yhteislaajuus 12 + 8 + 5 = 25 >= 19. Kynnys ylittyy vuonna 2021 (12 + 8 = 20 >= 19).
+    // Tuorein vuosi 2022 >= 2021 (vuosiVahintaan). Suoritusvuosi = 2021 (kynnyksen ylittämisvuosi, ei tuorein).
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+    Assertions.assertEquals(Some("2021"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
+  }
+
+  @Test def testTelmaYhteislaajuusRiittava(): Unit = {
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestAmmatillinenOpiskeluoikeus(Set(TestDataUtil.getTestTelma(laajuusArvo = Some(13), suoritusVuosi = 2022))),
+      TestDataUtil.getTestAmmatillinenOpiskeluoikeus(Set(TestDataUtil.getTestTelma(laajuusArvo = Some(14), suoritusVuosi = 2021))),
+    )
+
+    // Yhteislaajuus 13 + 14 = 27 >= 25
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
+    Assertions.assertEquals(Some("2022"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
+  }
+
+  @Test def testVSTYhteislaajuusEiRiita(): Unit = {
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(10), suoritusVuosi = 2021))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(8), suoritusVuosi = 2022))),
+    )
+
+    // Yhteislaajuus 8 + 10 = 18 < 26.5
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
+  }
+
+  @Test def testVSTYhteislaajuusTuoreinLiianVanha(): Unit = {
+    // Perusopetus ja kolme perättäistä VST:tä
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(14), suoritusVuosi = 2019))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(14), suoritusVuosi = 2021)))
+    )
+
+    // Yhteislaajuus 14 + 14 = 28 >= 26.5, mutta kynnyksenYlittamisvuosi 2021 < vuosiVahintaan 2022
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2023)), None)
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
+  }
+
+  @Test def testVSTKynnyksenYlittamisvuosi(): Unit = {
+    // Perusopetus ja kolme perättäistä VST:tä
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(14), suoritusVuosi = 2019))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(14), suoritusVuosi = 2021))),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(TestDataUtil.getTestVapaaSivistystyo(laajuusArvo = Some(5), suoritusVuosi = 2022))),
+    )
+
+    // Yhteislaajuus 14 + 14 + 5 = 33 >= 26.5. Kynnys ylittyy vuonna 2021 (14 + 14 = 28 >= 26.5).
+    // Suoritusvuosi = 2021 (kynnyksen ylittämisvuosi, ei tuorein).
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
+    Assertions.assertEquals(Some("2021"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
   }
 }

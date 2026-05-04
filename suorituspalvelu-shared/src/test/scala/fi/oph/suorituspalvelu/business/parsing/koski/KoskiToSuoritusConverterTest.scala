@@ -10,7 +10,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.time.LocalDate
-import TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkVuosiluokkaSuoritus}
+import fi.oph.suorituspalvelu.business.TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkVuosiluokkaSuoritus}
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
