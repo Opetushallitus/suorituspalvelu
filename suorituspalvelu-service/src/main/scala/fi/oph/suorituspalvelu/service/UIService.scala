@@ -65,6 +65,28 @@ object UIService {
     "KO"
   )
 
+  val NAYTETTAVAT_OPPIAINEET = List(
+    "AI",
+    "A1",
+    "A2",
+    "B1",
+    "MA",
+    "BI",
+    "GE",
+    "FY",
+    "KE",
+    "TE",
+    "ET",
+    "KT",
+    "HI",
+    "YH",
+    "MU",
+    "KU",
+    "KS",
+    "LI",
+    "KO"
+  )
+
   val SYOTETYN_OPPIMAARAN_KIELIAINEKOODIT = List(
     "A",
     "A1",
