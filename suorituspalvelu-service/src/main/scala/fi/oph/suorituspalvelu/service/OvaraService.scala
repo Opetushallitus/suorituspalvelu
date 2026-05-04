@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.integration.client.{
   AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, SiirtotiedostoClient
 }
 import fi.oph.suorituspalvelu.mankeli.{
-  HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuusService
+  AvainArvoConstants, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuusService
 }
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
@@ -19,10 +19,6 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-//Avain-arvot (toinen aste)
-//Ensikertalaisuudet (kk-haut)
-//Harkinnanvaraisuudet (toisen asteen yhteishaku)
-
 case class OvaraValintaData(
   personOid: String,
   hakemusOid: String,
@@ -30,11 +26,19 @@ case class OvaraValintaData(
   avainArvot: Map[String, String]
 )
 
-case class OvaraHarkinnanvaraisuusData(
+case class OvaraHarkinnanvaraisuus(
   henkiloOid: String,
   hakemusOid: String,
   hakuOid: String,
   harkinnanvaraisuudet: List[HakutoiveenHarkinnanvaraisuus]
+)
+
+case class OvaraEnsikertalaisuus(
+  henkiloOid: String,
+  hakemusOid: String,
+  hakuOid: String,
+  isEnsikertalainen: Boolean,
+  menettamisenPeruste: Option[String]
 )
 
 case class OvaraParams(
@@ -42,7 +46,7 @@ case class OvaraParams(
   vainAktiiviset: Boolean = true,
   avainArvot: Boolean = true,
   harkinnanvaraisuudet: Boolean = true,
-  ensikertalaisuudet: Boolean = false
+  ensikertalaisuudet: Boolean = true
 )
 
 @Component
@@ -72,6 +76,7 @@ class OvaraService {
     hakuOid: String,
     valintaDataTiedostoNumero: Int,
     harkinnanvaraisuusTiedostoNumero: Int,
+    ensikertalaisuusTiedostoNumero: Int,
     onnistuneet: Int,
     epaonnistuneet: Seq[(String, Exception)]
   )
@@ -120,7 +125,7 @@ class OvaraService {
       val harkinnanvaraisuusBatch = valintaDatat.flatMap { vd =>
         vd.harkinnanvaraisuudet.flatMap(hv =>
           vd.hakemus.map(h =>
-            OvaraHarkinnanvaraisuusData(
+            OvaraHarkinnanvaraisuus(
               henkiloOid = vd.personOid,
               hakemusOid = h.hakemusOid,
               hakuOid = haku.oid,
@@ -143,10 +148,38 @@ class OvaraService {
       } else tila.harkinnanvaraisuusTiedostoNumero
     } else tila.harkinnanvaraisuusTiedostoNumero
 
+    val nextEnsikertalaisuusTiedostoNumero = if (params.ensikertalaisuudet && haku.isKKHaku()) {
+      LOG.info(s"Käsitellään ensikertalaisuudet!")
+      val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
+        vd.ensikertalaisuus.map(ek => {
+          OvaraEnsikertalaisuus(
+            henkiloOid = vd.personOid,
+            hakemusOid = vd.hakemus.map(_.hakemusOid).getOrElse(""),
+            hakuOid = haku.oid,
+            isEnsikertalainen = ek.arvo.toBoolean,
+            menettamisenPeruste = ek.selitteet.headOption
+          )
+        })
+      }
+      if (ensikertalaisuusBatch.nonEmpty) {
+        LOG.info(
+          s"(${params.executionId}) Tallennetaan haun ${haku.oid} ensikertalaisuus-tiedosto ${tila.ensikertalaisuusTiedostoNumero}, ${ensikertalaisuusBatch.size} henkilöä"
+        )
+        siirtotiedostoClient.tallennaSiirtotiedosto(
+          "ensikertalaisuudet",
+          ensikertalaisuusBatch,
+          params.executionId,
+          tila.ensikertalaisuusTiedostoNumero
+        )
+        tila.ensikertalaisuusTiedostoNumero + 1
+      } else tila.ensikertalaisuusTiedostoNumero
+    } else tila.ensikertalaisuusTiedostoNumero
+
     val nextTila = tila.copy(
       valintaDataTiedostoNumero =
         if (valintaDataBatch.nonEmpty) tila.valintaDataTiedostoNumero + 1 else tila.valintaDataTiedostoNumero,
       harkinnanvaraisuusTiedostoNumero = nextHarkinnanvaraisuusTiedostoNumero,
+      ensikertalaisuusTiedostoNumero = nextEnsikertalaisuusTiedostoNumero,
       onnistuneet = tila.onnistuneet + valintaDatat.size,
       epaonnistuneet = tila.epaonnistuneet ++ valintaDataFailures
     )
@@ -162,7 +195,7 @@ class OvaraService {
       batches = hakemusOids.toSeq.grouped(HAKEMUS_BATCH_SIZE).toSeq
       batchCount = batches.size
       finalTila: HaunKasittelyTila <- batches.zipWithIndex
-        .foldLeft(Future.successful(HaunKasittelyTila(haku.oid, 1, 1, 0, Seq.empty))) { (tilaF, batchWithIndex) =>
+        .foldLeft(Future.successful(HaunKasittelyTila(haku.oid, 1, 1, 1, 0, Seq.empty))) { (tilaF, batchWithIndex) =>
           val (hakemusOidBatch, batchIndex) = batchWithIndex
           tilaF.flatMap(tila => {
             val start = System.currentTimeMillis()
@@ -201,7 +234,6 @@ class OvaraService {
 
     val muodostettavatHaut =
       if (params.vainAktiiviset) tarjontaIntegration.aktiivisetHaut() else tarjontaIntegration.kaikkiHaut()
-    // kk-haut (EnsikertalaisuusService): todo
 
     val hakuCount = muodostettavatHaut.size
     LOG.info(s"(${params.executionId}) Käsitellään $hakuCount hakua")
