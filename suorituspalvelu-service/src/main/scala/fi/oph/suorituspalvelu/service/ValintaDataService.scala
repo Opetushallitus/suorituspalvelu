@@ -31,7 +31,8 @@ case class ValintaData(personOid: String,
                        opiskeluoikeudet: Seq[Opiskeluoikeus],
                        vahvistettuViimeistaan: LocalDate,
                        laskennanAlkaminen: Instant,
-                       harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus] = None) {
+                       harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus] = None,
+                       ensikertalaisuus: Option[AvainArvoContainer] = None) {
   def getAvainArvoMap: Map[String, String] = paatellytAvainArvot.map(a => (a.avain, a.arvo)).toMap
 
   private def hakemuksenAvainArvot = hakemus.map(_.avainArvot).getOrElse(Seq.empty).map(aa => CombinedAvainArvoContainer(aa.avain, aa.arvo, AvainArvoMetadata(aa.selitteet, None, None, arvoOnHakemukselta = true)))
@@ -159,7 +160,7 @@ class ValintaDataService {
 
     val yliajot = fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResultsWithEnsikertalaisuus, yliajot)
-    ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan, suoritustenAjanhetki, harkinnanvaraisuudet)
+    ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, vahvistettuViimeistaan, suoritustenAjanhetki, harkinnanvaraisuudet, ensikertalaisuusArvo)
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
