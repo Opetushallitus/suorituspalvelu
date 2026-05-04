@@ -5,7 +5,10 @@ import {
   useOppilaitoksetOptions,
 } from '@/lib/suorituspalvelu-queries';
 import { InputAdornment, Stack } from '@mui/material';
-import { OphSelectFormField } from '@opetushallitus/oph-design-system';
+import {
+  OphCheckbox,
+  OphSelectFormField,
+} from '@opetushallitus/oph-design-system';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useApiQuery } from '@/lib/http-client';
 import { SpinnerIcon } from './SpinnerIcon';
@@ -151,7 +154,9 @@ const LuokkaSelectField = ({
 export const TarkastusSearchControls = () => {
   const { setSearchParams, searchParams } =
     useOppilaitoksenOppijatSearchParamsState();
-  const { oppilaitos, vuosi, luokka } = searchParams;
+  const { oppilaitos, vuosi, luokka, kesken, yhteistenarvosanapuuttuu } =
+    searchParams;
+  const { t } = useTranslations();
 
   return (
     <StyledSearchControls>
@@ -188,6 +193,28 @@ export const TarkastusSearchControls = () => {
           onChange={(e) => {
             setSearchParams(
               { luokka: e.target.value, suodatus: '' },
+              { resetHenkilo: true },
+            );
+          }}
+        />
+      </Stack>
+      <Stack direction="row" spacing={2}>
+        <OphCheckbox
+          label={t('search.yhteisten-arvosana-puuttuu')}
+          checked={yhteistenarvosanapuuttuu === 'true'}
+          onChange={(_e, checked) => {
+            setSearchParams(
+              { yhteistenarvosanapuuttuu: checked ? 'true' : null },
+              { resetHenkilo: true },
+            );
+          }}
+        />
+        <OphCheckbox
+          label={t('search.kesken')}
+          checked={kesken === 'true'}
+          onChange={(_e, checked) => {
+            setSearchParams(
+              { kesken: checked ? 'true' : null },
               { resetHenkilo: true },
             );
           }}
