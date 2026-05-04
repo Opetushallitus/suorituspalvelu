@@ -35,7 +35,7 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
     try {
       if (content.nonEmpty) {
         val output = mapper.writeValueAsString(Seq(content.head))
-        LOG.info(s"($executionId) Tallennetaan (leikisti) siirtotiedosto... ensimmäinen entiteetti: $output")
+        LOG.info(s"($executionId) Tallennetaan (leikisti) $contentType siirtotiedosto $fileNumber... ensimmäinen entiteetti: $output")
         /*siirtotiedostoPalvelu
           .saveSiirtotiedosto(
             "sure",
