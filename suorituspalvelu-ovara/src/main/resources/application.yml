@@ -1,0 +1,28 @@
+logging:
+  level:
+    root: INFO
+    fi.oph.suorituspalvelu.mankeli.AvainArvoConverter: ERROR
+    fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuusPaattely: ERROR
+    fi.oph.suorituspalvelu.mankeli.ataru.AtaruArvosanaParser: FATAL
+    fi.oph.suorituspalvelu.service.ValintaDataService: ERROR
+
+spring:
+  main:
+    web-application-type: none
+  datasource:
+    url: jdbc:postgresql://localhost:55432/test
+    username: app
+    password: app
+  flyway:
+    enabled: false
+
+integrations:
+  koski:
+    username: username
+    password: password
+    base-url: https://virkailija.testiopintopolku.fi
+
+ovara:
+  region: mock-region
+  bucket: mock-bucket
+  rolearn: mock-rolearn
