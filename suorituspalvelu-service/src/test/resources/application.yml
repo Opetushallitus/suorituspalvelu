@@ -24,6 +24,11 @@ spring:
   flyway:
     baseline-on-migrate: true
 
+ovara:
+  region: mock-region
+  bucket: mock-bucket
+  rolearn: mock-rolearn
+
 integrations:
   koski:
     username: username
