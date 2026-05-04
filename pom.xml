@@ -15,6 +15,7 @@
         <module>suorituspalvelu-service</module>
         <module>suorituspalvelu-shared</module>
         <module>suorituspalvelu-domain</module>
+        <module>suorituspalvelu-ovara</module>
     </modules>
 
     <properties>
