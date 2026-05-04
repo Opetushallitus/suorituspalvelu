@@ -1,0 +1,38 @@
+
+host:
+  virkailija: {{host_virkailija}}
+  cas: {{host_cas}}
+
+web:
+  url:
+    cas: https://${host.cas}/cas
+    cas-login: https://${host.cas}/cas/login
+
+cas-service:
+  service: https://{{host_virkailija}}/suorituspalvelu
+  sendRenew: false
+  key: suorituspalvelu
+
+logging:
+  level:
+    root: INFO
+
+server:
+  servlet:
+    context-path: /suorituspalvelu
+  forward-headers-strategy: framework
+
+spring:
+  datasource:
+    url: jdbc:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu
+    username: {{postgres_app_user}}
+    password: {{host_postgresql_suorituspalvelu_app_password}}
+  flyway:
+    enabled: false
+
+integrations:
+  koski:
+    username: {{suorituspalvelu_app_username}}
+    password: {{suorituspalvelu_app_password}}
+    base-url: {{suorituspalvelu_koski_base_url}}
+    cron: {{suorituspalvelu_koski_polling_cron}}
