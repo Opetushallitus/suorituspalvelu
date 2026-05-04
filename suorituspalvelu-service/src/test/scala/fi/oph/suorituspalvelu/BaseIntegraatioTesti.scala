@@ -62,11 +62,11 @@ class BaseIntegraatioTesti {
   @MockitoBean
   var koodistoProvider: KoodistoProvider = null
 
-  val POSTGRES_DATABASENAME = "suorituspalvelu"
-  val POSTGRES_USERNAME     = "app"
-  val POSTGRES_PASSWORD     = "app"
+  val POSTGRES_DATABASENAME = DevDbConfig.databaseName
+  val POSTGRES_USERNAME     = DevDbConfig.username
+  val POSTGRES_PASSWORD     = DevDbConfig.password
 
-  val postgres: PostgreSQLContainer = new PostgreSQLContainer("postgres:15")
+  val postgres: PostgreSQLContainer = new PostgreSQLContainer(DevDbConfig.postgresImage)
     .withDatabaseName(POSTGRES_DATABASENAME)
     .withUsername(POSTGRES_USERNAME)
     .withPassword(POSTGRES_PASSWORD)
@@ -91,7 +91,7 @@ class BaseIntegraatioTesti {
   // kontteja ei voi käynnistää vasta @BeforeAll-metodissa koska spring-konteksti rakennetaan ennen sitä
   val setupDone = {
     postgres.start()
-    System.setProperty("spring.datasource.url", "jdbc:postgresql://localhost:" + postgresPort + "/" + POSTGRES_DATABASENAME)
+    System.setProperty("spring.datasource.url", "jdbc:postgresql://localhost:" + postgresPort + "/" + POSTGRES_DATABASENAME + "?options=-c%20transaction_timeout=30000")
 
     System.setProperty("cas-service.service", "DUMMY")
     System.setProperty("cas-service.sendRenew", "false")

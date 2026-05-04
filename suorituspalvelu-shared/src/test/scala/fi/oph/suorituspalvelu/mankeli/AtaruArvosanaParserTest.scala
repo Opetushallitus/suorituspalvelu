@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.valinnat.mankeli;
+package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoDTO}
 import org.junit.jupiter.api.TestInstance.Lifecycle
