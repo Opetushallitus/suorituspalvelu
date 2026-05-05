@@ -26,9 +26,9 @@ object KoskiUtil {
     val isKoulukohtainen = !koodistoProvider.haeKoodisto(KOODISTO_OPPIAINEET).contains(oppiaineKoodi)
     val aineTiedossa = !"XX".equals(oppiaineKoodi)
     val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
-    val laajuusYli2vvk = osaSuoritus.koulutusmoduuli.get.laajuus.exists(l => l.arvo > 2)
+    val laajuusVahintaan2vvk = osaSuoritus.koulutusmoduuli.get.laajuus.exists(l => l.arvo >= 2)
 
-    hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusYli2vvk)
+    hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusVahintaan2vvk)
   }
 
   def getLahtokouluMetadata(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[Lahtokoulu] =
