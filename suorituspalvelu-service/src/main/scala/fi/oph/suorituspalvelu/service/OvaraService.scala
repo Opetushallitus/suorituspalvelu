@@ -228,8 +228,10 @@ class OvaraService {
     resultForHaku
   }
 
-  def muodostaPaivittaisetHauille(params: OvaraParams): Unit = {
-    val rinnakkaisuus = 4
+  case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
+
+  def muodostaPaivittaisetHauille(params: OvaraParams): MuodostamisTulos = {
+    val rinnakkaisuus = 8
     val semaphore = new java.util.concurrent.Semaphore(rinnakkaisuus)
 
     val muodostettavatHaut =
@@ -238,6 +240,7 @@ class OvaraService {
     val hakuCount = muodostettavatHaut.size
     LOG.info(s"(${params.executionId}) Käsitellään $hakuCount hakua")
 
+    // Each future returns (failedHakuOid, onnistuneetCount)
     val allFutures = muodostettavatHaut.zipWithIndex.map { (haku, hakuIndex) =>
       semaphore.acquire()
       val hakuStart = System.currentTimeMillis()
@@ -255,22 +258,26 @@ class OvaraService {
           val durationSeconds = (System.currentTimeMillis() - hakuStart) / 1000
           LOG.info(s"(${params.executionId}) Haku ${hakuIndex + 1}/$hakuCount valmis, kesto ${durationSeconds}s, " +
             s"onnistuneita hakemuksia ${finalTilaForHaku.onnistuneet}, epäonnistuneita: ${finalTilaForHaku.epaonnistuneet.size}: ${haku.oid}")
-          None
+          (None, finalTilaForHaku.onnistuneet)
         }
         .recover { case e: Exception =>
           val durationSeconds = (System.currentTimeMillis() - hakuStart) / 1000
           LOG.error(s"(${params.executionId}) Haku ${hakuIndex + 1}/$hakuCount epäonnistui, kesto ${durationSeconds}s: ${haku.oid}", e)
-          Some(haku.oid)
+          (Some((haku.oid, e.getMessage)), 0)
         }
       f.onComplete(_ => semaphore.release())
       f
     }
 
-    val epaonnistuneetHaut = Await.result(Future.sequence(allFutures), 120.minutes).flatten
+    val results            = Await.result(Future.sequence(allFutures), 4.hours)
+    val epaonnistuneetHaut = results.collect { case (Some((oid, msg)), _) => oid -> msg }.toMap
+    val totalOnnistuneet   = results.map(_._2).sum
 
     if (epaonnistuneetHaut.nonEmpty) {
-      LOG.error(s"(${params.executionId}) Epäonnistuneet haut (${epaonnistuneetHaut.size}/$hakuCount): ${epaonnistuneetHaut.mkString(", ")}")
+      LOG.error(s"(${params.executionId}) Epäonnistuneet haut (${epaonnistuneetHaut.size}/$hakuCount): ${epaonnistuneetHaut.keys.mkString(", ")}")
     }
     LOG.info(s"(${params.executionId}) Valmista!")
+
+    MuodostamisTulos(totalOnnistuneet, epaonnistuneetHaut)
   }
 }

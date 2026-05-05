@@ -33,6 +33,18 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
       .map(_.toString())
 )
 
+case class SiirtotiedostoOperaatio(
+  id: Int,
+  uuid: String,
+  windowStart: Option[Instant],
+  windowEnd: Instant,
+  runStart: Instant,
+  runEnd: Option[Instant],
+  entityTotals: Map[String, Int],
+  success: Option[Boolean],
+  errorMessage: Option[String]
+)
+
 object KantaOperaatiot {
 
   val MAPPER: ObjectMapper = {
@@ -808,6 +820,61 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     // Suoritetaan operaatiot samassa transaktiossa
     Await.result(db.run(
       DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
+    ), DB_TIMEOUT)
+  }
+
+  private def haeSiirtotiedostoOperaatio(id: Int): SiirtotiedostoOperaatio = {
+    val rows = Await.result(db.run(
+      sql"""
+        SELECT json_build_object(
+          'id',          id,
+          'uuid',        uuid,
+          'windowStart', to_char(window_start AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'windowEnd',   to_char(window_end   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'runStart',    to_char(run_start    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'runEnd',      to_char(run_end      AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'entityTotals', COALESCE(info->'entityTotals', '{}'::jsonb),
+          'success',     success,
+          'errorMessage', error_message
+        )::text
+        FROM siirtotiedostot
+        WHERE id = $id
+      """.as[String]
+    ), DB_TIMEOUT)
+    MAPPER.readValue(rows.head, classOf[SiirtotiedostoOperaatio])
+  }
+
+  def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
+    val idResult = Await.result(db.run(
+      sql"""
+        INSERT INTO siirtotiedostot(id, uuid, window_start, window_end, run_start)
+        SELECT nextval('siirtotiedosto_id_seq'),
+               $uuid,
+               (SELECT window_end FROM siirtotiedostot WHERE success = true ORDER BY id DESC LIMIT 1),
+               now(),
+               now()
+        RETURNING id
+      """.as[Int]
+    ), DB_TIMEOUT)
+    haeSiirtotiedostoOperaatio(idResult.head)
+  }
+
+  def paataSiirtotiedostoOperaatio(
+    id: Int,
+    success: Boolean,
+    errorMessage: Option[String],
+    entityTotals: Map[String, Int]
+  ): Unit = {
+    val infoJson = MAPPER.writeValueAsString(Map("entityTotals" -> entityTotals))
+    Await.result(db.run(
+      sqlu"""
+        UPDATE siirtotiedostot
+        SET run_end       = now(),
+            success       = $success,
+            error_message = ${errorMessage.orNull},
+            info          = $infoJson::jsonb
+        WHERE id = $id
+      """
     ), DB_TIMEOUT)
   }
 
