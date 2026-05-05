@@ -1,0 +1,143 @@
+package fi.oph.suorituspalvelu
+
+import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.VOIMASSA
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Koodi, Lahdejarjestelma, Opiskeluoikeus, ParserVersions}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
+import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.resource.ApiConstants
+import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse, YosVirhe}
+import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import org.junit.jupiter.api.*
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+
+import java.nio.charset.Charset
+import java.time.{Instant, LocalDate}
+import java.util.UUID
+import scala.concurrent.Future
+
+class YosResourceIntegrationTest extends BaseIntegraatioTesti {
+
+  @MockitoBean
+  val onrIntegration: OnrIntegration = null
+
+  @MockitoBean
+  val organisaatioProvider: OrganisaatioProvider = null
+
+  @MockitoBean
+  val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired
+  var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
+
+  val HAKIJA_OID = "1.2.246.562.24.21250967215"
+  val HAKU_OID = "123"
+  val HAKUKOHDE_OID = "123"
+  val ORGANISAATIO_TUNNISTE = "Nuketehdas"
+
+  @BeforeEach
+  def init(): Unit = {
+    Mockito.reset(onrIntegration)
+    Mockito.reset(tarjontaIntegration)
+    Mockito.reset(organisaatioProvider)
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(HAKIJA_OID))).thenReturn(Future.successful(Map(HAKIJA_OID -> OnrMasterHenkilo(HAKIJA_OID, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(HAKIJA_OID))).thenReturn(Future.successful(PersonOidsWithAliases(Map(HAKIJA_OID -> Set.empty))))
+    Mockito.when(tarjontaIntegration.getHaku(HAKU_OID)).thenReturn(Some(
+      KoutaHaku(
+        oid = HAKU_OID,
+        tila = "JULKAISTU",
+        nimi = Map.empty,
+        hakutapaKoodiUri = "???",
+        kohdejoukkoKoodiUri = Some("haunkohdejoukko_12"),
+        hakuajat = List.empty,
+        kohdejoukonTarkenneKoodiUri = None,
+        hakuvuosi = Some(2026))))
+
+    Mockito.when(tarjontaIntegration.getHakukohde(HAKUKOHDE_OID)).thenReturn(
+      KoutaHakukohde(
+        oid = HAKUKOHDE_OID,
+        organisaatioOid = "NukeTehdas",
+        nimi = Map.empty,
+        voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),
+        johtaaTutkintoon = Some(true)))
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenReturn(None)
+  }
+
+  @WithAnonymousUser
+  @Test def testRedirectsToIdentificationAnonymousUser(): Unit =
+    mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().is3xxRedirection())
+
+  @WithMockUser(value = "Hui Haamu", authorities = Array())
+  @Test def testUsingYosNotAllowed(): Unit =
+    mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().isForbidden)
+
+
+  @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testReturnsEmptyListForHakijaWithNoOpiskeluOikeuksia(): Unit = {
+    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().isOk).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
+    Assertions.assertTrue(response.paatettavatOpiskeluOikeudet.isEmpty)
+  }
+
+  @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testReturnsPaatettavatOpiskeluOikeudet(): Unit = {
+    insertOpiskeluOikeus()
+
+    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().isOk).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
+    Assertions.assertEquals(1, response.paatettavatOpiskeluOikeudet.size())
+  }
+
+  @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testReturnsErrorVirheHakutoiveenPaattelyssa(): Unit = {
+    Mockito.when(tarjontaIntegration.getHaku(HAKU_OID)).thenReturn(None)
+    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().is5xxServerError()).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosErrorResponse])
+    Assertions.assertEquals(YosVirhe.VIRHE_HAKUTOIVEEN_PAATTELYSSA, response.virhe)
+  }
+
+  @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testReturnsErrorVirhePaattyvienOpiskeluOikeuksienHaussa(): Unit = {
+    insertOpiskeluOikeus()
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenThrow(new RuntimeException("FAIL"))
+    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().is5xxServerError()).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosErrorResponse])
+    Assertions.assertEquals(YosVirhe.VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, response.virhe)
+  }
+
+  private def insertOpiskeluOikeus(): Unit = {
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(HAKIJA_OID, Lahdejarjestelma.VIRTA, Seq.empty, Seq.empty, Instant.now(), "VIRTA", None).get
+    val opiskeluoikeudet: Set[Opiskeluoikeus] = Set(KKOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      virtaTunniste = "",
+      tyyppiKoodi = "1",
+      koulutusKoodi = None,
+      alkuPvm = LocalDate.now(),
+      loppuPvm = LocalDate.now(),
+      virtaTila = Koodi("1", "koodisto", None),
+      supaTila = VOIMASSA,
+      myontaja = ORGANISAATIO_TUNNISTE,
+      isTutkintoonJohtava = true,
+      kieli = Some("fi"),
+      suoritukset = Set.empty,
+      rahoitusLahde = Some("5"),
+      nimi = Some(Kielistetty(Some("Laivan rakennusala"), None, None)),
+      luokittelu = Some("3")
+    ))
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.VIRTA)
+  }
+}
+
