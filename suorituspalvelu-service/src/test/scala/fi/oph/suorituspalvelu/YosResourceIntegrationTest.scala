@@ -76,10 +76,12 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
       .andExpect(status().is3xxRedirection())
 
   @WithMockUser(value = "Hui Haamu", authorities = Array())
-  @Test def testUsingYosNotAllowed(): Unit =
-    mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
-      .andExpect(status().isForbidden)
-
+  @Test def testUsingYosNotAllowed(): Unit = {
+    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().isForbidden).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosErrorResponse])
+    Assertions.assertEquals(YosVirhe.PUUTTUVAT_OIKEUDET, response.virhe)
+  }
 
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testReturnsEmptyListForHakijaWithNoOpiskeluOikeuksia(): Unit = {
