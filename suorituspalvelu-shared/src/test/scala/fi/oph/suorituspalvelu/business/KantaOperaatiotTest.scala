@@ -81,7 +81,7 @@ class KantaOperaatiotTest {
       case e: Throwable =>
         LOG.error(e.getMessage)
 
-  @AfterEach def teardownTest(): Unit =
+  @AfterEach def teardownTest(): Unit = {
     Await.result(database.run(
       sqlu"""
             --DROP FUNCTION get_tyyppi(text, text);
@@ -97,7 +97,10 @@ class KantaOperaatiotTest {
             DROP TABLE yliajot;
             DROP TABLE harkinnanvaraisuus_yliajot;
             DROP TABLE koski_opiskeluoikeus_skip;
+            DROP TABLE siirtotiedostot;
+            DROP SEQUENCE siirtotiedosto_id_seq;
           """), 5.seconds)
+  }
 
   /**
    * Apumetodit deserialisoitujen opiskeluoikeuksien hakemiseen kannasta. Suoritusten lukeminen case classien parsinnan
