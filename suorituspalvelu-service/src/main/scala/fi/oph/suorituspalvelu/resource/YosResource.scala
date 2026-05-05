@@ -1,11 +1,10 @@
 package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_OPPIJANUMERO, YOS_EI_OIKEUKSIA, YOS_PATH, YOS_RESPONSE_403_DESCRIPTION}
-import fi.oph.suorituspalvelu.resource.api.YosVirhe.VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA
-import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataResponse, YosErrorResponse, YosNimi, YosOpiskeluOikeus, YosResponse, YosSuccessResponse, YosVirhe}
+import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosNimi, YosOpiskeluOikeus, YosResponse, YosSuccessResponse, YosVirhe}
 import fi.oph.suorituspalvelu.security.SecurityOperaatiot
 import fi.oph.suorituspalvelu.util.LogContext
-import fi.oph.suorituspalvelu.yos.{YosPaatettavaOpiskeluOikeus, YosService}
+import fi.oph.suorituspalvelu.yos.YosService
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -50,42 +49,26 @@ class YosResource @Autowired (yosService: YosService) {
           else
             Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YosErrorResponse(YosVirhe.PUUTTUVAT_OIKEUDET, YOS_EI_OIKEUKSIA))))
         .flatMap(_ => {
-          LOG.info(s"Tarkistetaan kuuluuko vastaanotettava opiskelupaikka YOS piiriin. Parametrit = (hakija: $hakijaOid, haku: ${hakuOid}, hakukohde: ${hakukohdeOid}")
-          yosService.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid, hakukohdeOid).fold(
+          yosService.haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid, hakuOid, hakukohdeOid).fold(
             e => {
-              LOG.error("Virhe vastaanotettavan hakutoiveen päättelyssä", e)
-              Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(YosErrorResponse(YosVirhe.VIRHE_HAKUTOIVEEN_PAATTELYSSA, e.getMessage)))
+              LOG.error(s"Virhe hakiessa hakijan päätettäviä opiskeluoikeuksia. ${e.virhe}: ${e.viesti}")
+              Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e))
             },
-            r => Right(r)
-          )
-        }).flatMap(kuuluuYosPiiriin => {
-          if (kuuluuYosPiiriin) {
-            LOG.info(s"Vastaanotettava opiskelupaikka kuului YOS piiriin. Haetaan päätettävät opiskeluoikeudet. Parametrit = (hakija: $hakijaOid, haku: ${hakuOid}, hakukohde: ${hakukohdeOid}")
-            yosService.hakijanPaatettavatOpiskeluOikeudet(hakijaOid).fold(
-              e =>
-                LOG.error("Virhe lopetettavien opiskeluoikeuksien haussa", e)
-                Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(YosErrorResponse(VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, e.getMessage))),
-              r =>
-                Right(YosSuccessResponse(r.map(oikeus => YosOpiskeluOikeus(
-                    tunniste = oikeus.tunniste.toString,
-                    organisaatioOid = oikeus.organisaatio.oid.getOrElse(""),
-                    organisaatioNimi = YosNimi(
-                      oikeus.organisaatio.nimi.fi.getOrElse(""),
-                      oikeus.organisaatio.nimi.sv.getOrElse(""),
-                      oikeus.organisaatio.nimi.en.getOrElse("")),
-                    nimi = oikeus.nimi.map(
-                      nimi => YosNimi(
-                        nimi.fi.getOrElse(""),
-                        nimi.sv.getOrElse(""),
-                        nimi.en.getOrElse(""))).getOrElse(YosNimi("", "", "")),
-                    koulutusKoodi = oikeus.koulutusKoodi.getOrElse("")
-                  ))
-                  .toList.asJava))
-            )
-          } else {
-            LOG.info(s"Vastaanotettava opiskelupaikka ei kuulunut YOS piiriin. Palautetaan tyhjä lista. Parametrit = (hakija: $hakijaOid, haku: ${hakuOid}, hakukohde: ${hakukohdeOid}")
-            Right(YosSuccessResponse(new java.util.ArrayList()))
-          }
+            r => Right(YosSuccessResponse(r.map(oikeus => YosOpiskeluOikeus(
+                  tunniste = oikeus.tunniste.toString,
+                  organisaatioOid = oikeus.organisaatio.oid.getOrElse(""),
+                  organisaatioNimi = YosNimi(
+                    oikeus.organisaatio.nimi.fi.getOrElse(""),
+                    oikeus.organisaatio.nimi.sv.getOrElse(""),
+                    oikeus.organisaatio.nimi.en.getOrElse("")),
+                  nimi = oikeus.nimi.map(
+                    nimi => YosNimi(
+                      nimi.fi.getOrElse(""),
+                      nimi.sv.getOrElse(""),
+                      nimi.en.getOrElse(""))).getOrElse(YosNimi("", "", "")),
+                  koulutusKoodi = oikeus.koulutusKoodi.getOrElse("")
+                ))
+                .toList.asJava)))
         })
         .fold(e => e, r => ResponseEntity.ok(r)).asInstanceOf[ResponseEntity[YosResponse]])
   }
