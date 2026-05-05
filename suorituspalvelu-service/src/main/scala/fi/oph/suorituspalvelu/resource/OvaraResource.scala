@@ -52,7 +52,7 @@ class OvaraResource {
     @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Käsitellään vain aktiiviset haut") vainAktiiviset: Boolean,
     @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Muodostetaan avain-arvotiedostot") avainArvot: Boolean,
     @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Muodostetaan harkinnanvaraisuustiedostot") harkinnanvaraisuudet: Boolean,
-    @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Muodostetaan ensikertalaisuustiedostot") ensikertalaisuudet: Boolean,
+    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Muodostetaan ensikertalaisuustiedostot") ensikertalaisuudet: Boolean,
     request: HttpServletRequest
   ): ResponseEntity[SyncResponse] = {
     try
