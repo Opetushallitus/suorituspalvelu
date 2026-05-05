@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
+import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
