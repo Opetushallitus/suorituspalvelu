@@ -5,6 +5,8 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
+import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,23 +21,47 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
+  def haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid: String, hakuOid: String, hakukohdeOid: String): Either[YosErrorResponse, Set[YosPaatettavaOpiskeluOikeus]] = {
+    LOGGER.info(s"Tarkistetaan kuuluuko vastaanotettava opiskelupaikka YOS piiriin. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
+    kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid, hakukohdeOid).fold(
+      e => Left(YosErrorResponse(VIRHE_HAKUTOIVEEN_PAATTELYSSA, e.getMessage)),
+      r => Right(r)
+    ).flatMap(kuuluuYosPiiriin => {
+      if (kuuluuYosPiiriin) {
+        LOGGER.info(s"Vastaanotettava opiskelupaikka kuului YOS piiriin. Haetaan päätettävät opiskeluoikeudet. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
+        hakijanPaatettavatOpiskeluOikeudet(hakijaOid).fold(
+          e => Left(YosErrorResponse(VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, e.getMessage)),
+          r => Right(r))
+      } else {
+        LOGGER.info(s"Vastaanotettava opiskelupaikka ei kuulunut YOS piiriin. Palautetaan tyhjä lista. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
+        Right(Set.empty)
+      }
+    })
+  }
+
   def kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid: String, hakukohdeOid: String): Either[Throwable, Boolean] = {
     LOGGER.info(s"Tehdään päättely kuuluuko hakutoive $hakukohdeOid haussa $hakuOid YOS piiriin")
-    val haku: Option[KoutaHaku] = tarjontaIntegration.getHaku(hakuOid)
-    val hakutoive: KoutaHakukohde = tarjontaIntegration.getHakukohde(hakukohdeOid)
-    (haku, hakutoive) match {
-      case (None, _) =>
-        LOGGER.error(s"Hakua ei löydy oidilla: $hakuOid")
-        Left(new RuntimeException(s"Hakua ei löydy oidilla: $hakuOid"))
-      case (Some(_), null) =>
-        LOGGER.error(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid")
-        Left(new RuntimeException(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid"))
-      case (Some(h), hk) =>
-        val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
-        val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
-        LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
-        Right(kuuluukoYOSsinPiiriin)
-    }
+    try {
+      val haku: Option[KoutaHaku] = tarjontaIntegration.getHaku(hakuOid)
+      val hakutoive: KoutaHakukohde = tarjontaIntegration.getHakukohde(hakukohdeOid)
+      (haku, hakutoive) match {
+        case (None, _) =>
+          LOGGER.error(s"Hakua ei löydy oidilla: $hakuOid")
+          Left(new RuntimeException(s"Hakua ei löydy oidilla: $hakuOid"))
+        case (Some(_), null) =>
+          LOGGER.error(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid")
+          Left(new RuntimeException(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid"))
+        case (Some(h), hk) =>
+          val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
+          val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
+          LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
+          Right(kuuluukoYOSsinPiiriin)
+      }
+    } catch {
+      case e: Throwable =>
+        LOGGER.error(s"Virhe vastaanotettavan hakutoiveen päättelyssä haulle $hakuOid ja hakukohteelle $hakukohdeOid", e)
+        Left(RuntimeException(s"Virhe vastaanotettavan hakutoiveen päättelyssä haulle $hakuOid ja hakukohteelle $hakukohdeOid", e))
+      }
   }
 
   def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String): Either[Throwable, Set[YosPaatettavaOpiskeluOikeus]] = {

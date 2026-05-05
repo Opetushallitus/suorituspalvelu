@@ -12,6 +12,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeEach, Test, TestInstance}
 import org.mockito.Mockito
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -201,4 +202,39 @@ class YosServiceTest {
     assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
   }
+
+  @Test
+  def palauttaaHakijanPaatettavatOpiskeluoikeudet(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot("02629")).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
+    ))
+    val oikeudet = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    val oikeus = oikeudet.head
+    assertEquals("Sosionomikoulutus", oikeus.nimi.get.fi.get)
+    assertNotNull(oikeus.tunniste)
+    assertEquals("koulutuskoodi_1", oikeus.koulutusKoodi.get)
+    assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
+    assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
+  }
+
+  @Test
+  def palauttaaVirheHakuToiveenPaattellyssa(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenThrow(RuntimeException("FAIL"))
+    val virhe = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).left
+    assertEquals(VIRHE_HAKUTOIVEEN_PAATTELYSSA, virhe.get.virhe)
+  }
+
+  @Test
+  def palauttaaVirhePaattyvienOpiskeluOikeuksienHaussa(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenThrow(RuntimeException("FAIL"))
+    val virhe = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).left
+    assertEquals(VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, virhe.get.virhe)
+  }
+
 }
