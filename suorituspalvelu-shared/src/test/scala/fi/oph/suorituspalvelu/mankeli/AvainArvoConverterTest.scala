@@ -127,7 +127,6 @@ class AvainArvoConverterTest {
       val postfix = AvainArvoConstants.peruskouluAineenKieliOppiainePostfix
       val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
       val kieliAvain = prefix + aine + postfix
-
       Assertions.assertEquals(Some(kieli), converterResult.getAvainArvoMap().get(kieliAvain))
     }
 
@@ -277,7 +276,10 @@ class AvainArvoConverterTest {
     val avainArvoMap = converterResult.getAvainArvoMap()
     println(s"korkeimmatArvosanat: $avainArvoMap")
 
-    val tavoiteArvosanat = Map("A1" -> "10", "BI" -> "9", "KO" -> "S", "LI" -> "10")
+    //Erityisesti paras kotitalouden arvosana "S" ei saa olla mukana, koska ei ole numeerinen.
+    Assertions.assertFalse(avainArvoMap.contains(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "KO"))
+
+    val tavoiteArvosanat = Map("A1" -> "10", "BI" -> "9", "LI" -> "10")
     tavoiteArvosanat.foreach { case (aine, arvosana) =>
       val prefix = AvainArvoConstants.peruskouluAineenArvosanaPrefix
       Assertions.assertEquals(Some(arvosana), avainArvoMap.get(prefix + aine))
