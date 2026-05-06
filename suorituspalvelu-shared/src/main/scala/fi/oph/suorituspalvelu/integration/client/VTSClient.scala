@@ -56,7 +56,7 @@ class VTSClient(casClient: CasClient, environmentBaseUrl: String) {
         case r if r.getStatusCode == 200 =>
           r.getResponseBody()
         case r =>
-          val errorStr = s"Haku valinta-tulos-servicestä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+          val errorStr = s"Haku valinta-tulos-servicestä ($environmentBaseUrl) epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
           LOG.error(
             errorStr
           )
