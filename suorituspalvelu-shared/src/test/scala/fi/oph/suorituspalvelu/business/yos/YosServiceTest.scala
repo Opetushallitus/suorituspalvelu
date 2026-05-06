@@ -177,7 +177,7 @@ class YosServiceTest {
   def tilausKoulutusOpiskeluOikeusEiKuuluYos(): Unit = {
     Mockito.when(organisaatioMock.haeOrganisaationTiedot("02629")).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
-      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(rahoitusLahde = Some("6")))
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(rahoitusLahde = Some("4")))
     ))
     assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
