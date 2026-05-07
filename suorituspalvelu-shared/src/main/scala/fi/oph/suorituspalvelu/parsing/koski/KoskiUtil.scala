@@ -13,22 +13,26 @@ object KoskiUtil {
 
   val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
 
+  val sisallytettavatEiPakollisetKielet = Set("A2", "B2")
+
   def isPakollinenJaArviointiPuuttuu(osaSuoritus: KoskiOsaSuoritus): Boolean = {
     val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
     val arviointi = osaSuoritus.arviointi.isDefined
     !arviointi && pakollinen
   }
 
-  def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
+  def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, pakollistenKoodit: Set[String], koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
 
     val hasArviointi = osaSuoritus.arviointi.isDefined
     val isKoulukohtainen = !koodistoProvider.haeKoodisto(KOODISTO_OPPIAINEET).contains(oppiaineKoodi)
     val aineTiedossa = !"XX".equals(oppiaineKoodi)
-    val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
-    val laajuusVahintaan2vvk = osaSuoritus.koulutusmoduuli.get.laajuus.exists(l => l.arvo >= 2)
+    val pakollinen = osaSuoritus.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p))
+    val sisallytettavaEiPakollinenKieli = sisallytettavatEiPakollisetKielet.contains(oppiaineKoodi)
+    val laajuusVahintaan2vvk = osaSuoritus.koulutusmoduuli.exists(km => km.laajuus.exists(l => l.arvo >= 2))
+    val onValinnainenJollaPakollinenVastine = !pakollinen && pakollistenKoodit.contains(oppiaineKoodi)
 
-    hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || laajuusVahintaan2vvk)
+    hasArviointi && !isKoulukohtainen && aineTiedossa && (pakollinen || sisallytettavaEiPakollinenKieli || (laajuusVahintaan2vvk && onValinnainenJollaPakollinenVastine))
   }
 
   def getLahtokouluMetadata(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[Lahtokoulu] =
