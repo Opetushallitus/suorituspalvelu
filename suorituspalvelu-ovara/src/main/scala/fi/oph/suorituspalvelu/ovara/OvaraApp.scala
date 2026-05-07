@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ovara
 
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, SiirtotiedostoOperaatio}
 import fi.oph.suorituspalvelu.configuration.{DBConfiguration, IntegrationConfiguration}
-import fi.oph.suorituspalvelu.service.{OvaraParams, OvaraService, ValintaDataService}
+import fi.oph.suorituspalvelu.service.{MuodostamisTulos, OvaraParams, OvaraService, ValintaDataService}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.{CommandLineRunner, SpringApplication}
@@ -50,12 +50,16 @@ class OvaraRunner extends CommandLineRunner {
       ensikertalaisuudet = true
     )
     val operaatio: SiirtotiedostoOperaatio = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(params.executionId)
-    LOG.info(s"(${params.executionId}) Siirtotiedostonmuodostusoperaatio aloitettu (#${operaatio.id}), ikkuna: ${operaatio.windowStart} – ${operaatio.windowEnd}")
+    LOG.info(s"(${params.executionId}) Siirtotiedostonmuodostusoperaatio aloitettu (#${operaatio.id}), ikkuna: ${operaatio.windowStart} – ${operaatio.windowEnd}. $operaatio")
     try {
-      val tulos = ovaraService.muodostaPaivittaisetHauille(params)
-      val success      = tulos.epaonnistuneetHaut.isEmpty
-      val errorMessage = if (success) None else Some(s"Epäonnistuneet haut: ${tulos.epaonnistuneetHaut.map((oid, msg) => s"$oid: $msg").mkString(", ")}")
-      kantaOperaatiot.paataSiirtotiedostoOperaatio(operaatio.id, success, errorMessage, Map("valintadata" -> tulos.onnistuneet))
+      val paivittaisetTulos = if (operaatio.paivittaiset) {
+        LOG.info(s"(${params.executionId}) Muodostetaan paivittaiset siirtotiedostot (valintadata, harkinnanvaraiset, ensikertalaisuudet)")
+        ovaraService.muodostaPaivittaisetHauille(params)
+      } else MuodostamisTulos(0, Map.empty)
+      val opiskeluoikeudetTulos = MuodostamisTulos(0, Map.empty) //Todo, poimitaan aikaikkunassa muuttuneet tiedot siirtotiedostoihin
+      val errorMessage = Some(s"Epäonnistuneet haut: ${paivittaisetTulos.epaonnistuneetHaut.map((oid, msg) => s"$oid: $msg").mkString(", ")}")
+      //Tulkitaan onnistuneeksi operaatioksi sellainenkin muodostus, jossa joillekin hauille tapahtui virheitä.
+      kantaOperaatiot.paataSiirtotiedostoOperaatio(operaatio.id, true, errorMessage, Map("valintadata" -> paivittaisetTulos.onnistuneet))
     } catch {
       case e: Exception =>
         LOG.error(s"(${params.executionId}) Operaatio epäonnistui odottamattomasti", e)
