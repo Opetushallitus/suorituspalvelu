@@ -345,21 +345,20 @@ enum YosVirhe:
 
 trait YosResponse
 
-
 case class YosNimi(fi: String, sv: String, en: String)
 
 case class YosOpiskeluOikeus(
-                                        @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-                                        @BeanProperty tunniste: String,
-                                        @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID)
-                                        @BeanProperty organisaatioOid: String,
-                                        @(Schema @field)
-                                        @BeanProperty organisaatioNimi: YosNimi,
-                                        @(Schema @field)
-                                        @BeanProperty nimi: YosNimi,
-                                        @(Schema @field)
-                                        @BeanProperty koulutusKoodi: String
-                                      )
+  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
+  @BeanProperty tunniste: String,
+  @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID)
+  @BeanProperty organisaatioOid: String,
+  @(Schema @field)
+  @BeanProperty organisaatioNimi: YosNimi,
+  @(Schema @field)
+  @BeanProperty nimi: YosNimi,
+  @(Schema @field)
+  @BeanProperty koulutusKoodi: String
+)
 
 case class YosSuccessResponse(
  @(Schema @field)(requiredMode = RequiredMode.REQUIRED)

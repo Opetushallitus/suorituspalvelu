@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse, YosVirhe}
-import fi.oph.suorituspalvelu.security.SecurityConstants
+import fi.oph.suorituspalvelu.security.{SecurityConstants, AuditOperation}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -99,6 +99,16 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
     Assertions.assertEquals(1, response.paatettavatOpiskeluOikeudet.size())
+    Assertions.assertEquals("Laivan rakennusala", response.paatettavatOpiskeluOikeudet.get(0).nimi.fi)
+
+    // tarkistetaan että kutsun tiedot tallentuvat auditlokiin
+    val auditLogEntry = getLatestAuditLogEntry()
+    Assertions.assertEquals(AuditOperation.HaePaattyvatOpiskeluOikeudet.name, auditLogEntry.operation)
+    Assertions.assertEquals(Map(
+      "hakijaOid" -> HAKIJA_OID,
+      "hakuOid" -> HAKU_OID,
+      "hakukohdeOid" -> HAKUKOHDE_OID,
+    ), auditLogEntry.target)
   }
 
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
