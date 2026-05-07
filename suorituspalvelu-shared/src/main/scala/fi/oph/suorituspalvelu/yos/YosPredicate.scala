@@ -4,10 +4,29 @@ import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Opiskeluoikeus}
 
 object YosPredicate {
 
+  /**
+   * YOS piiriin kuuluvat Virta opiskeluoikeuden tilat
+   * 1 = aktiivinen
+   * 2 = optio
+   * 4 = passivoitu
+   */
   private val YOS_PIIRIIN_KUULUVAT_VIRTAOPISKELUOIKEUDEN_TILAT = Seq("1", "2", "4")
   private val RAHOITUSLAHDE_TILAUSKOULUTUS = "4"
-  
+
+  /**
+   * Virta opiskeluoikeuden luokittelut jotka eivät kuulu YOS piiriin
+   * 6 = Kansainvälinen yhteistutkinto
+   * 7 = Kansainvälinen kaksoistutkinto
+   */
   private val VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN = Seq("6", "7")
+
+  /**
+   * YOS piiriin kuuluvat Virta opiskeluoikeuden tyypit
+   * 1 = Ammattikorkeakoulututkinto
+   * 2 = Alempi korkeakoulututkinto
+   * 3 = Ylempi ammattikorkeakoulututkinto
+   * 4 = Ylempi korkeakoulututkinto
+   */
   private val YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT = Seq("1", "2", "3", "4")
 
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
@@ -24,9 +43,9 @@ object YosPredicate {
       case oikeus: KKOpiskeluoikeus =>
         YOS_PIIRIIN_KUULUVAT_VIRTAOPISKELUOIKEUDEN_TILAT.contains(oikeus.virtaTila.arvo)
         && oikeus.isTutkintoonJohtava
-        && (oikeus.rahoitusLahde.isDefined && oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
+        && (oikeus.rahoitusLahde.exists(p => !p.isBlank) && oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
         && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
-        && (oikeus.luokittelu.isDefined && !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
+        && (oikeus.luokittelu.exists(p => !p.isBlank) && !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
         // TODO OPHYOS-173: tutkinnonastevertailu
         // TODO OPHYOS-171: maanpuolustuskorkeakoulu, poliisiammattikorkeakoulu tai Högskolan på Åland
       case _ =>

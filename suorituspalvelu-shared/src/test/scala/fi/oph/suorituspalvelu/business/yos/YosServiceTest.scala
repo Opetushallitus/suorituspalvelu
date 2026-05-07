@@ -12,7 +12,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, BeforeEach, Test, TestInstance}
 import org.mockito.Mockito
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
+import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -234,7 +234,7 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenThrow(RuntimeException("FAIL"))
     val virhe = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).left
-    assertEquals(VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, virhe.get.virhe)
+    assertEquals(VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, virhe.get.virhe)
   }
 
 }
