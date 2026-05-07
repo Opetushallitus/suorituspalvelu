@@ -1357,7 +1357,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(
       List(
         Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), "9G", Some(VALMIS), Some(true), VUOSILUOKKA_9),
-        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", Some(VALMIS), None, VUOSILUOKKA_8)
+        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", None, None, VUOSILUOKKA_8)
       ), oppimaara.lahtokoulut
     )
 
