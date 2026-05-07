@@ -2,15 +2,11 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{
-  AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, SiirtotiedostoClient
-}
-import fi.oph.suorituspalvelu.mankeli.{
-  AvainArvoConstants, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuusService
-}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, SiirtotiedostoClient}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuusService}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
 
 import java.time.LocalDate
@@ -49,12 +45,12 @@ case class OvaraParams(
   ensikertalaisuudet: Boolean = true
 )
 
+case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
+
 @Component
-class OvaraService {
+class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) {
 
   private val LOG = LoggerFactory.getLogger(classOf[OvaraService])
-
-  private val HAKEMUS_BATCH_SIZE = 500
 
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
@@ -192,7 +188,7 @@ class OvaraService {
       hakijat <- hakemuspalveluClient.getHaunHakijat(haku.oid)
       kaikkiAliaksetMap <- onrIntegration.getAliasesForPersonOids(hakijat.flatMap(_.personOid).toSet)
       hakemusOids = hakijat.map(_.oid).toSet
-      batches = hakemusOids.toSeq.grouped(HAKEMUS_BATCH_SIZE).toSeq
+      batches = hakemusOids.toSeq.grouped(hakemusBatchSize).toSeq
       batchCount = batches.size
       finalTila: HaunKasittelyTila <- batches.zipWithIndex
         .foldLeft(Future.successful(HaunKasittelyTila(haku.oid, 1, 1, 1, 0, Seq.empty))) { (tilaF, batchWithIndex) =>
@@ -228,7 +224,6 @@ class OvaraService {
     resultForHaku
   }
 
-  case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
 
   def muodostaPaivittaisetHauille(params: OvaraParams): MuodostamisTulos = {
     val rinnakkaisuus = 8
@@ -240,7 +235,7 @@ class OvaraService {
     val hakuCount = muodostettavatHaut.size
     LOG.info(s"(${params.executionId}) Käsitellään $hakuCount hakua")
 
-    // Each future returns (failedHakuOid, onnistuneetCount)
+    // Each future returns failedHakuOid+reason or onnistuneetCount
     val allFutures = muodostettavatHaut.zipWithIndex.map { (haku, hakuIndex) =>
       semaphore.acquire()
       val hakuStart = System.currentTimeMillis()

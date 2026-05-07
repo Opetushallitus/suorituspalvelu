@@ -35,4 +35,9 @@ integrations:
     username: {{suorituspalvelu_app_username}}
     password: {{suorituspalvelu_app_password}}
     base-url: {{suorituspalvelu_koski_base_url}}
-    cron: {{suorituspalvelu_koski_polling_cron}}
+
+ovara:
+  region: {{aws_region}}
+  bucket: {{ovara_siirtotiedosto_s3_bucket}}
+  rolearn: {{ovara_siirtotiedosto_s3_target_role_arn}}
+  hakemus-batch-size: {{suorituspalvelu_ovara_hakemus_batch_size | default('500')}}
