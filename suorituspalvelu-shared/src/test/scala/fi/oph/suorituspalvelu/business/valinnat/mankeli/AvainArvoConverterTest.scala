@@ -1051,7 +1051,8 @@ class AvainArvoConverterTest {
                                             arvosanat: Seq[(String, String, Boolean)],
                                             vuosiluokkiinSitoutumatonOpetus: Boolean = false,
                                             yksilollistaminen: Option[PerusopetuksenYksilollistaminen] = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY),
-                                            suoritusKieli: String = "FI"
+                                            suoritusKieli: String = "FI",
+                                            jaaLuokalle: Option[Boolean] = None
                                           ): PerusopetuksenOpiskeluoikeus = {
     val opiskeluoikeusOid = "1.2.246.562.15.09876543211"
     val oppilaitosOid = "1.2.246.562.10.00000000235"
@@ -1077,7 +1078,8 @@ class AvainArvoConverterTest {
       List.empty,
       false,
       vuosiluokkiinSitoutumatonOpetus = vuosiluokkiinSitoutumatonOpetus,
-      luokkaAste = None)
+      luokkaAste = None,
+      jaaLuokalle = jaaLuokalle)
     val lisatiedot = KoskiLisatiedot(None, Some(true), None)
     PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some(opiskeluoikeusOid), oppilaitosOid,
       Set(oppimaara), Some(lisatiedot),
@@ -1190,6 +1192,52 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("false"), map.get(AvainArvoConstants.peruskouluSuoritettuKey))
     Assertions.assertEquals(None, map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "MA"))
     Assertions.assertEquals(None, map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI"))
+  }
+
+  //Leikkurihetkellä jaaLuokalle = true (luokalle jäänyt) → override ei laukea, vaikka muut ehdot täyttyisivät.
+  @Test def testEhdotNoOverrideWhenJaaLuokalleAtLeikkurihetki(): Unit = {
+    val personOid = "1.2.246.562.24.00000000120"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      jaaLuokalle = Some(true)
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      jaaLuokalle = Some(true)
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, None, nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val map = result.getAvainArvoMap()
+
+    Assertions.assertEquals(Some("false"), map.get(AvainArvoConstants.peruskouluSuoritettuKey))
+    Assertions.assertEquals(None, map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "MA"))
+    Assertions.assertEquals(None, map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI"))
+  }
+
+  //jaaLuokalle = Some(false) ei estä override-laukeamista (käyttäytyy kuten None).
+  @Test def testEhdotOverrideWhenJaaLuokalleFalse(): Unit = {
+    val personOid = "1.2.246.562.24.00000000121"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      jaaLuokalle = Some(false)
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true)),
+      jaaLuokalle = Some(false)
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, None, nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val map = result.getAvainArvoMap()
+
+    Assertions.assertEquals(Some("true"), map.get(AvainArvoConstants.peruskouluSuoritettuKey))
+    Assertions.assertEquals(Some("4"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "MA"))
+    Assertions.assertEquals(Some("8"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI"))
   }
 
   //Nykyinen oppimäärä vahvistettu ajoissa (ei ehtoja ajantasaisesti) → normaali haara, ei ehdot-overridea.
