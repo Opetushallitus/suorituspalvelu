@@ -48,7 +48,10 @@ class YosServiceTest {
     loppu = None,
     lahdeTunniste = "lahdeTunniste",
     lahdeVersio = Some(1),
-    parserVersio = Some(1)
+    parserVersio = Some(1),
+    luontiHetki = Some(Instant.now), 
+    paivitysHetki = None, 
+    parserointiHetki = Some(Instant.now)
   )
 
   private val ORGANISAATIO = Some(Organisaatio(
