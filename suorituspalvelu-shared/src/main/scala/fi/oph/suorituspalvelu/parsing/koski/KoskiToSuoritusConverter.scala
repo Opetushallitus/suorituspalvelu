@@ -493,7 +493,7 @@ object KoskiToSuoritusConverter {
   //Tämän tuottamat numeeriset arvot ovat käytännössä koodiston 2asteenpohjakoulutus2021 arvoja.
   def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[PerusopetuksenYksilollistaminen] = {
     val yhteisetAineetJaKielet = suoritus.osasuoritukset.getOrElse(Set.empty)
-      .filter(os => os.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p) || km.tunniste.map(_.koodiarvo).exists(yksilollistaminenValinnaisetKielet.contains)))
+      .filter(os => os.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p) || km.tunniste.map(_.koodiarvo).exists(KoskiUtil.sisallytettavatEiPakollisetKielet.contains)))
     val yksilollistettyja = yhteisetAineetJaKielet.count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
     val rajattuja = yhteisetAineetJaKielet.count(_.`rajattuOppimäärä`.exists(_.equals(true)))
     val erityisiaAineita = yksilollistettyja + rajattuja
