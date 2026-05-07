@@ -13,6 +13,8 @@ object KoskiUtil {
 
   val KOODISTO_OPPIAINEET = "koskioppiaineetyleissivistava"
 
+  val sisallytettavatEiPakollisetKielet = Set("A2", "B2")
+
   def isPakollinenJaArviointiPuuttuu(osaSuoritus: KoskiOsaSuoritus): Boolean = {
     val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
     val arviointi = osaSuoritus.arviointi.isDefined

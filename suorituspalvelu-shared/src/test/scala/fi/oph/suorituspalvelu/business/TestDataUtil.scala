@@ -37,7 +37,7 @@ object TestDataUtil {
   def mkOpiskeluoikeusWithTila(jaksot: KoskiOpiskeluoikeusJakso*): KoskiOpiskeluoikeus =
     KoskiOpiskeluoikeus("1.2.3", None, None, Some(KoskiOpiskeluoikeusTila(jaksot.toList)), None, None, None)
 
-  def mkVuosiluokkaSuoritus(luokkaAste: String, alkamispaiva: Option[String] = None, vahvistuspaiva: Option[String] = None, luokka: Option[String] = Some("9A")): KoskiSuoritus =
+  def mkVuosiluokkaSuoritus(luokkaAste: String, alkamispaiva: Option[String] = None, vahvistuspaiva: Option[String] = None, luokka: Option[String] = Some("9A"), jaaLuokalle: Option[Boolean] = None): KoskiSuoritus =
     KoskiSuoritus(
       tyyppi = KoskiSuoritusTyyppi("perusopetuksenvuosiluokka", "suorituksentyyppi", Kielistetty(None, None, None)),
       koulutusmoduuli = Some(KoskiKoulutusModuuli(
@@ -54,7 +54,7 @@ object TestDataUtil {
       korotettuOpiskeluoikeusOid = None,
       suoritustapa = None,
       luokka = luokka,
-      jääLuokalle = None
+      jääLuokalle = jaaLuokalle
     )
 
   def getTestTuva(laajuusArvo: Option[BigDecimal] = Some(BigDecimal(10)),
@@ -135,4 +135,22 @@ object TestDataUtil {
                                         tila: Option[KoskiOpiskeluoikeusTila] = None,
                                         jaksot: List[OpiskeluoikeusJakso] = List.empty): AmmatillinenOpiskeluoikeus =
     AmmatillinenOpiskeluoikeus(UUID.randomUUID(), nextOid(), oppilaitos, suoritukset, tila, jaksot)
-  }
+
+  def mkPerusopetuksenOppimaaraSuoritus(): KoskiSuoritus =
+    KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("perusopetuksenoppimaara", "suorituksentyyppi", Kielistetty(None, None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set.empty),
+      arviointi = None,
+      keskiarvo = None,
+      korotettuKeskiarvo = None,
+      korotettuOpiskeluoikeusOid = None,
+      suoritustapa = None,
+      luokka = None,
+      jääLuokalle = None
+    )
+}

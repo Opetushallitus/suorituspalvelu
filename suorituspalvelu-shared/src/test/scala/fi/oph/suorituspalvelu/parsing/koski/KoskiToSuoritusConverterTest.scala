@@ -10,7 +10,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.time.LocalDate
-import fi.oph.suorituspalvelu.business.TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkVuosiluokkaSuoritus}
+import fi.oph.suorituspalvelu.business.TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkVuosiluokkaSuoritus, mkPerusopetuksenOppimaaraSuoritus}
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -141,9 +141,9 @@ class KoskiToSuoritusConverterTest {
       null, null, null, null, null, lisätiedot = None, None
     )
 
-    def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): KoskiOsaSuoritus = {
+    def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean, pakollinen: Option[Boolean] = None): KoskiOsaSuoritus = {
       KoskiOsaSuoritus(
-        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, Some(YHTEISET_AINEET.contains(aine)), null, null)), null,
+        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, Some(pakollinen.getOrElse(YHTEISET_AINEET.contains(aine))), null, null)), null,
         predictedArviointi = None,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
@@ -219,6 +219,12 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
       KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
         createOsaSuoritus("HI", true, false), createOsaSuoritus("MA", true, false), createOsaSuoritus("LI", false, false), createOsaSuoritus("GE", false, false))))))
+
+    // Valinnainen kieli A2 (ei pakollinen) lasketaan mukaan suodatuksessa: rajattu A2 + 2 pakollista normaalia (1 <= 3/2) => osittain rajattu.
+    // Jos A2 ei kuuluisi yksilollistaminenValinnaisetKielet-joukkoon, se suodattuisi pois ja erityisiä olisi 0 => None.
+    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU),
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+        createOsaSuoritus("A2", false, true, pakollinen = Some(false)), createOsaSuoritus("MA", false, false), createOsaSuoritus("HI", false, false))))))
   }
 
   @Test def testParseKeskeytyminen(): Unit = {
@@ -822,5 +828,50 @@ class KoskiToSuoritusConverterTest {
       Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-08-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9),
       Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
       KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(true), None, DUMMY_KOODISTOPROVIDER))
+  }
+
+  // --- toPerusopetuksenOppimaara: jaaLuokalle extraction tests ---
+
+  private def perusopetuksenOppimaaraFromSuoritukset(suoritukset: Set[KoskiSuoritus]): fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara = {
+    val oo = mkOpiskeluoikeusForLahtokoulut(suoritukset, mkJakso("2024-08-01", "lasna"))
+    KoskiToSuoritusConverter.toSuoritukset(Seq(oo), DUMMY_KOODISTOPROVIDER, allowMissingFieldsForTests = true)
+      .collect { case po: fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara => po }
+      .head
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromHighestGradeNine(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("7", alkamispaiva = Some("2022-08-01"), jaaLuokalle = Some(false)),
+      mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(false)),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = Some(true))
+    ))
+    Assertions.assertEquals(Some(true), result.jaaLuokalle)
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleNoneWhenSourceMissing(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = None)
+    ))
+    Assertions.assertEquals(None, result.jaaLuokalle)
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromMostRecentAtSameGrade(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(true)),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = Some(false))
+    ))
+    Assertions.assertEquals(Some(false), result.jaaLuokalle)
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromHighestWhenOnlyLowerGrades(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("7", alkamispaiva = Some("2022-08-01"), jaaLuokalle = Some(true)),
+      mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(false))
+    ))
+    Assertions.assertEquals(Some(false), result.jaaLuokalle)
   }
 }
