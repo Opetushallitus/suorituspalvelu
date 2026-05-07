@@ -135,7 +135,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().is5xxServerError()).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosErrorResponse])
-    Assertions.assertEquals(YosVirhe.VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, response.virhe)
+    Assertions.assertEquals(YosVirhe.VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, response.virhe)
   }
 
   private def insertOpiskeluOikeus(): Unit = {

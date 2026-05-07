@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
+import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.slf4j.LoggerFactory
@@ -30,7 +30,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       if (kuuluuYosPiiriin) {
         LOGGER.info(s"Vastaanotettava opiskelupaikka kuului YOS piiriin. Haetaan päätettävät opiskeluoikeudet. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
         hakijanPaatettavatOpiskeluOikeudet(hakijaOid).fold(
-          e => Left(YosErrorResponse(VIRHE_PAATTYVIEN_OPISKELUOIKEUKSIEN_HAUSSA, e.getMessage)),
+          e => Left(YosErrorResponse(VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, e.getMessage)),
           r => Right(r))
       } else {
         LOGGER.info(s"Vastaanotettava opiskelupaikka ei kuulunut YOS piiriin. Palautetaan tyhjä lista. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
@@ -58,7 +58,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
           Right(kuuluukoYOSsinPiiriin)
       }
     } catch {
-      case e: Throwable =>
+      case e: Exception =>
         LOGGER.error(s"Virhe vastaanotettavan hakutoiveen päättelyssä haulle $hakuOid ja hakukohteelle $hakukohdeOid", e)
         Left(RuntimeException(s"Virhe vastaanotettavan hakutoiveen päättelyssä haulle $hakuOid ja hakukohteelle $hakukohdeOid", e))
       }
@@ -78,7 +78,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       LOGGER.info(s"Oikeuksista löytyi ${paatettavatOikeudet.size} kappaletta päätettävää oikeutta hakijalle $oppilasNro")
       Right(paatettavatOikeudet)
     } catch {
-      case e: Throwable =>
+      case e: Exception =>
         LOGGER.error(s"Virhe hakiessa päätettäviä opiskeluoikeuksia hakijalle $oppilasNro", e)
         Left(new RuntimeException(s"Virhe hakiessa päätettäviä opiskeluoikeuksia hakijalle $oppilasNro", e))
     }
