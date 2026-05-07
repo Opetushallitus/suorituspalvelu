@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValu
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoConverterUtil, AvainArvoDTO}
+import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import org.slf4j.LoggerFactory
 
 import java.util.List as JavaList
@@ -667,13 +668,14 @@ object AvainArvoConverter {
   private def oppimaaraVahvistettuAjoissa(o: PerusopetuksenOppimaara, deadline: LocalDate): Boolean =
     o.vahvistusPaivamaara.exists(!_.isAfter(deadline))
 
-  //Tarkistaa oliko hakijalla "ehdot" annettujen opiskeluoikeuksien tilassa: pakollisessa aineessa nelonen, oppimäärää ei oltu vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
+  //Tarkistaa oliko hakijalla "ehdot" annettujen opiskeluoikeuksien tilassa: pakollisessa aineessa tai valinnaisessa kielessä nelonen,
+  //oppimäärää ei ollut vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
   private def oliEhdotLeikkurihetkella(personOid: String, opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus]): Boolean = {
     opiskeluoikeudetVahvistettuHetkella.nonEmpty &&
       etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true).exists(o =>
         o.vahvistusPaivamaara.isEmpty
           && !o.vuosiluokkiinSitoutumatonOpetus
-          && o.aineet.exists(a => a.pakollinen && a.arvosana.arvo == "4")
+          && o.aineet.exists(a => (a.pakollinen || KoskiUtil.sisallytettavatEiPakollisetKielet.contains(a.koodi.arvo)) && a.arvosana.arvo == "4")
       )
   }
 
