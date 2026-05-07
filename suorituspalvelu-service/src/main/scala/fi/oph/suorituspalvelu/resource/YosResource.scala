@@ -2,13 +2,14 @@ package fi.oph.suorituspalvelu.resource
 
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_OPPIJANUMERO, YOS_EI_OIKEUKSIA, YOS_PATH, YOS_RESPONSE_403_DESCRIPTION}
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosNimi, YosOpiskeluOikeus, YosResponse, YosSuccessResponse, YosVirhe}
-import fi.oph.suorituspalvelu.security.SecurityOperaatiot
+import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
 import fi.oph.suorituspalvelu.yos.YosService
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
@@ -39,7 +40,8 @@ class YosResource @Autowired (yosService: YosService) {
     ))
   def haeHakijanPaatettavatOpiskeluOikeudet(@PathVariable(required = true) @Parameter(description = "Hakijan tunniste", example = ESIMERKKI_OPPIJANUMERO) hakijaOid: String,
                                             @PathVariable(required = true) @Parameter(description = "Haun tunniste", example = ESIMERKKI_HAKU_OID) hakuOid: String,
-                                            @PathVariable(required = true) @Parameter(description = "Hakukohteen tunniste", example = ESIMERKKI_HAKUKOHDE_OID) hakukohdeOid: String): ResponseEntity[YosResponse] = {
+                                            @PathVariable(required = true) @Parameter(description = "Hakukohteen tunniste", example = ESIMERKKI_HAKUKOHDE_OID) hakukohdeOid: String,
+                                            request: HttpServletRequest): ResponseEntity[YosResponse] = {
     val securityOperaatiot = new SecurityOperaatiot
     LogContext(path = YOS_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
       Right(None)
@@ -70,7 +72,19 @@ class YosResource @Autowired (yosService: YosService) {
                 ))
                 .toList.asJava)))
         })
-        .fold(e => e, r => ResponseEntity.ok(r)).asInstanceOf[ResponseEntity[YosResponse]])
+        .fold(e => e, r => {
+          val user = AuditLog.getUser(request)
+          AuditLog.log(
+            user,
+            Map(
+              "hakijaOid" -> hakijaOid,
+              "hakuOid" -> hakuOid,
+              "hakukohdeOid" -> hakukohdeOid),
+            AuditOperation.HaePaattyvatOpiskeluOikeudet,
+            None
+          )
+          ResponseEntity.ok(r)
+        }).asInstanceOf[ResponseEntity[YosResponse]])
   }
 
 }
