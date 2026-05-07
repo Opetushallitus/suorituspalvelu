@@ -718,7 +718,7 @@ object AvainArvoConverter {
     o.vahvistusPaivamaara.exists(!_.isAfter(deadline))
 
   //Tarkistaa oliko hakijalla "ehdot" annettujen opiskeluoikeuksien tilassa: pakollisessa aineessa tai valinnaisessa kielessä nelonen,
-  // oppimäärää ei ollut vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
+  //oppimäärää ei ollut vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
   private def oliEhdotLeikkurihetkella(personOid: String, opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus]): Boolean = {
     opiskeluoikeudetVahvistettuHetkella.nonEmpty &&
       etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true).exists(o =>

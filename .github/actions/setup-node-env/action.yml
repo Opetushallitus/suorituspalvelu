@@ -14,6 +14,11 @@ runs:
     - name: Enable corepack
       shell: bash
       run: corepack enable
+    - name: Prepare correct pnpm version
+      shell: bash
+      run: |
+        PNPM_VERSION=$(node -e "const pm = require('./${{ inputs.project_path }}/package.json').packageManager; console.log(pm.split('+')[0])")
+        corepack prepare $PNPM_VERSION --activate
     - name: Configure pnpm dependencies cache
       uses: actions/setup-node@v6
       with:
