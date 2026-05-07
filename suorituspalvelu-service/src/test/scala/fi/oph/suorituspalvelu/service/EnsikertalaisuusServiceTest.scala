@@ -90,7 +90,10 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
       myontaja = "1.2.246.562.10.00000000001",
       isTutkintoonJohtava = isTutkintoonJohtava,
       kieli = Some("fi"),
-      suoritukset = suoritukset
+      suoritukset = suoritukset,
+      luokittelu = None,
+      rahoitusLahde = None,
+      nimi = None
     )
 
   private def luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto: Boolean, suoritukset: Set[Suoritus] = Set.empty): KKSynteettinenOpiskeluoikeus =
