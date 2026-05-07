@@ -40,6 +40,7 @@ case class SiirtotiedostoOperaatio(
   windowEnd: Instant,
   runStart: Instant,
   runEnd: Option[Instant],
+  paivittaiset: Boolean,
   entityTotals: Map[String, Int],
   success: Option[Boolean],
   errorMessage: Option[String]
@@ -835,6 +836,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           'windowEnd',   to_char(window_end   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
           'runStart',    to_char(run_start    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
           'runEnd',      to_char(run_end      AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'paivittaiset', paivittaiset,
           'entityTotals', COALESCE(info->'entityTotals', '{}'::jsonb),
           'success',     success,
           'errorMessage', error_message
@@ -849,12 +851,13 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
     val idResult = Await.result(db.run(
       sql"""
-        INSERT INTO siirtotiedostot(id, uuid, window_start, window_end, run_start)
+        INSERT INTO siirtotiedostot(id, uuid, window_start, window_end, run_start, paivittaiset)
         SELECT nextval('siirtotiedosto_id_seq'),
                $uuid,
                (SELECT window_end FROM siirtotiedostot WHERE success = true ORDER BY id DESC LIMIT 1),
                now(),
-               now()
+               now(),
+               not exists(select 1 from siirtotiedostot where run_start >= now()::date and paivittaiset)
         RETURNING id
       """.as[Int]
     ), DB_TIMEOUT)
