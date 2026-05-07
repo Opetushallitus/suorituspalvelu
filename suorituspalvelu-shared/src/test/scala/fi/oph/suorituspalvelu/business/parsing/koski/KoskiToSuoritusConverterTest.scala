@@ -141,9 +141,9 @@ class KoskiToSuoritusConverterTest {
       null, null, null, null, null, lisätiedot = None, None
     )
 
-    def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean): KoskiOsaSuoritus = {
+    def createOsaSuoritus(aine: String, yksilollistetty: Boolean, rajattu: Boolean, pakollinen: Option[Boolean] = None): KoskiOsaSuoritus = {
       KoskiOsaSuoritus(
-        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, Some(YHTEISET_AINEET.contains(aine)), null, null)), null,
+        null, koulutusmoduuli = Some(KoskiKoulutusModuuli(tunniste = Some(KoskiKoodi(aine, "oppiaineet", null, null, null)), null, null, null, Some(pakollinen.getOrElse(YHTEISET_AINEET.contains(aine))), null, null)), null,
         predictedArviointi = None,
         `yksilöllistettyOppimäärä` = if (yksilollistetty) Some(true) else None,
         `rajattuOppimäärä` = if (rajattu) Some(true) else None,
@@ -219,6 +219,12 @@ class KoskiToSuoritusConverterTest {
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
       KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
         createOsaSuoritus("HI", true, false), createOsaSuoritus("MA", true, false), createOsaSuoritus("LI", false, false), createOsaSuoritus("GE", false, false))))))
+
+    // Valinnainen kieli A2 (ei pakollinen) lasketaan mukaan suodatuksessa: rajattu A2 + 2 pakollista normaalia (1 <= 3/2) => osittain rajattu.
+    // Jos A2 ei kuuluisi yksilollistaminenValinnaisetKielet-joukkoon, se suodattuisi pois ja erityisiä olisi 0 => None.
+    Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU),
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+        createOsaSuoritus("A2", false, true, pakollinen = Some(false)), createOsaSuoritus("MA", false, false), createOsaSuoritus("HI", false, false))))))
   }
 
   @Test def testParseKeskeytyminen(): Unit = {

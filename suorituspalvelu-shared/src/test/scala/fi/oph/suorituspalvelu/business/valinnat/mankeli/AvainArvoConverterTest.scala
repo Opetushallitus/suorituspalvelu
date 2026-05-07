@@ -1269,6 +1269,23 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(None, map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI"))
   }
 
+  //Ehdot-hakija valinnaisen A2-kielen nelosen perusteella: nykyinen oppimäärä vahvistamatta + leikkurihetkellä A2:ssa nelonen
+  //(pakolliset kunnossa), ei VSOP + ikkuna auki → ehdot-override laukeaa.
+  @Test def testEhdotOverrideWhenOptionalA2HasFour(): Unit = {
+    val personOid = "1.2.246.562.24.00000000119"
+    val leikkuri = LocalDate.now().plusDays(7)
+    val arvosanat = Seq(("MA", "7", true), ("AI", "8", true), ("A2", "4", false))
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(vahvistusPaivamaara = None, arvosanat = arvosanat))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(vahvistusPaivamaara = None, arvosanat = arvosanat))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuri, None, nykyiset, leikkurihetkella, DEFAULT_KOUTA_HAKU, None)
+    val map = result.getAvainArvoMap()
+
+    Assertions.assertEquals(Some("true"), map.get(AvainArvoConstants.peruskouluSuoritettuKey))
+    Assertions.assertEquals(Some("7"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "MA"))
+    Assertions.assertEquals(Some("4"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "A2" + AvainArvoConstants.peruskouluAineValinnainenPostfix + "1"))
+  }
+
   //Leikkurihetkellä nelosia mutta vuosiluokkiinSitoutumatonOpetus = true → override ei laukea.
   @Test def testEhdotNoOverrideWhenVsopAtLeikkurihetki(): Unit = {
     val personOid = "1.2.246.562.24.00000000114"
