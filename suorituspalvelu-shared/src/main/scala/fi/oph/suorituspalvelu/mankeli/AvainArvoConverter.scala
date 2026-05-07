@@ -203,6 +203,9 @@ object AvainArvoConstants {
   val ensikertalainenKey = "ensikertalainen"
 
   val numeerisetPeruskoulunArvosanat = Set("10", "9", "8", "7", "6", "5", "4")
+
+  // HUOM! KoskiToSuoritusConverterissa on erikseen lista valinnaisista kielistä joita käytetään yksilöllistämisasteen tunnistamisessa
+  val ehdotValinnaisetKielet = Set("A2", "B2")
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -667,13 +670,14 @@ object AvainArvoConverter {
   private def oppimaaraVahvistettuAjoissa(o: PerusopetuksenOppimaara, deadline: LocalDate): Boolean =
     o.vahvistusPaivamaara.exists(!_.isAfter(deadline))
 
-  //Tarkistaa oliko hakijalla "ehdot" annettujen opiskeluoikeuksien tilassa: pakollisessa aineessa nelonen, oppimäärää ei oltu vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
+  //Tarkistaa oliko hakijalla "ehdot" annettujen opiskeluoikeuksien tilassa: pakollisessa aineessa tai valinnaisessa kielessä nelonen,
+  // oppimäärää ei ollut vahvistettu, eikä kyseessä ole vuosiluokkiin sitoutumaton opetus.
   private def oliEhdotLeikkurihetkella(personOid: String, opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus]): Boolean = {
     opiskeluoikeudetVahvistettuHetkella.nonEmpty &&
       etsiViimeisinPeruskoulu(personOid, opiskeluoikeudetVahvistettuHetkella, salliMontaValmista = true).exists(o =>
         o.vahvistusPaivamaara.isEmpty
           && !o.vuosiluokkiinSitoutumatonOpetus
-          && o.aineet.exists(a => a.pakollinen && a.arvosana.arvo == "4")
+          && o.aineet.exists(a => (a.pakollinen || AvainArvoConstants.ehdotValinnaisetKielet.contains(a.koodi.arvo)) && a.arvosana.arvo == "4")
       )
   }
 
