@@ -10,7 +10,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.time.LocalDate
-import TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkVuosiluokkaSuoritus}
+import TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkPerusopetuksenOppimaaraSuoritus, mkVuosiluokkaSuoritus}
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -828,5 +828,50 @@ class KoskiToSuoritusConverterTest {
       Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-08-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9),
       Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
       KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(true), None, DUMMY_KOODISTOPROVIDER))
+  }
+
+  // --- toPerusopetuksenOppimaara: jaaLuokalle extraction tests ---
+
+  private def perusopetuksenOppimaaraFromSuoritukset(suoritukset: Set[KoskiSuoritus]): fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara = {
+    val oo = mkOpiskeluoikeusForLahtokoulut(suoritukset, mkJakso("2024-08-01", "lasna"))
+    KoskiToSuoritusConverter.toSuoritukset(Seq(oo), DUMMY_KOODISTOPROVIDER, allowMissingFieldsForTests = true)
+      .collect { case po: fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara => po }
+      .head
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromHighestGradeNine(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("7", alkamispaiva = Some("2022-08-01"), jaaLuokalle = Some(false)),
+      mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(false)),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = Some(true))
+    ))
+    Assertions.assertEquals(Some(true), result.jaaLuokalle)
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleNoneWhenSourceMissing(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = None)
+    ))
+    Assertions.assertEquals(None, result.jaaLuokalle)
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromMostRecentAtSameGrade(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(true)),
+      mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = Some(false))
+    ))
+    Assertions.assertEquals(Some(false), result.jaaLuokalle)
+  }
+
+  @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromHighestWhenOnlyLowerGrades(): Unit = {
+    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+      mkPerusopetuksenOppimaaraSuoritus(),
+      mkVuosiluokkaSuoritus("7", alkamispaiva = Some("2022-08-01"), jaaLuokalle = Some(true)),
+      mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(false))
+    ))
+    Assertions.assertEquals(Some(false), result.jaaLuokalle)
   }
 }
