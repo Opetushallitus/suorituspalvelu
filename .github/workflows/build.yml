@@ -7,7 +7,7 @@ on:
 env:
   HUSKY: 0
   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -36,14 +36,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn clean package -T 1C
-        
+
       - name: Check frontend types
         run: cd suorituspalvelu-ui && pnpm run typecheck
 
       - name: Cache build artifacts
         uses: actions/cache/save@v5
         with:
-          path: suorituspalvelu-service/target
+          path: |
+            suorituspalvelu-service/target
+            suorituspalvelu-ovara/target
           key: ${{ github.sha }}
   lint-and-test-frontend:
     timeout-minutes: 10
@@ -97,7 +99,9 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/cache/restore@v5
         with:
-          path: suorituspalvelu-service/target
+          path: |
+            suorituspalvelu-service/target
+            suorituspalvelu-ovara/target
           key: ${{ github.sha }}
           fail-on-cache-miss: true
       - name: Build and upload Docker container image
@@ -112,6 +116,16 @@ jobs:
           export ARTIFACT_NAME="suorituspalvelu"
           mv suorituspalvelu-service/target/suorituspalvelu-service-exec.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
           cp -vr suorituspalvelu-service/src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
+          export BASE_IMAGE="baseimage-fatjar-openjdk21:master"
+          ./ci-tools/common/pull-image.sh
+          ./ci-tools/github-build/build-fatjar.sh $ARTIFACT_NAME
+          ./ci-tools/github-build/upload-image.sh $ARTIFACT_NAME
+          
+          ./ci-tools/common/clean-docker-build-dir.sh
+
+          export ARTIFACT_NAME="ovara-suorituspalvelu"
+          mv suorituspalvelu-ovara/target/suorituspalvelu-ovara.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
+          cp -vr suorituspalvelu-ovara/src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
           export BASE_IMAGE="baseimage-fatjar-openjdk21:master"
           ./ci-tools/common/pull-image.sh
           ./ci-tools/github-build/build-fatjar.sh $ARTIFACT_NAME
