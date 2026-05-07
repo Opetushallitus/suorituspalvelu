@@ -20,6 +20,9 @@ object KoskiToSuoritusConverter {
 
   private val LOG = LoggerFactory.getLogger(KoskiToSuoritusConverter.getClass)
 
+  // HUOM! AvainarvoConverterissa on erikseen lista valinnaisista kielistä joita käytetään ehtolaisten tunnistamisessa
+  val yksilollistaminenValinnaisetKielet = Set("A2", "B2")
+  
   val allowMissingFields = new ThreadLocal[Boolean]
 
   def dummy[A](): A =
@@ -490,7 +493,7 @@ object KoskiToSuoritusConverter {
   //Tämän tuottamat numeeriset arvot ovat käytännössä koodiston 2asteenpohjakoulutus2021 arvoja.
   def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[PerusopetuksenYksilollistaminen] = {
     val yhteisetAineetJaKielet = suoritus.osasuoritukset.getOrElse(Set.empty)
-      .filter(os => os.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p) || km.tunniste.map(_.koodiarvo).exists(Set("A2", "B2").contains)))
+      .filter(os => os.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p) || km.tunniste.map(_.koodiarvo).exists(yksilollistaminenValinnaisetKielet.contains)))
     val yksilollistettyja = yhteisetAineetJaKielet.count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
     val rajattuja = yhteisetAineetJaKielet.count(_.`rajattuOppimäärä`.exists(_.equals(true)))
     val erityisiaAineita = yksilollistettyja + rajattuja
