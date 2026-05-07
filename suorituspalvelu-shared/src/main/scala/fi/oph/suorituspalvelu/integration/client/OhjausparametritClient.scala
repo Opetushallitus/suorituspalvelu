@@ -19,7 +19,7 @@ case class Ohjausparametrit(PH_HKP: Option[DateParam] = None, suoritustenVahvist
     suoritustenVahvistuspaiva
       .map(svp => Instant.ofEpochMilli(svp.date)
         .atZone(ZoneId.of("Europe/Helsinki"))
-        .toLocalDate).getOrElse(LocalDate.now())
+        .toLocalDate).getOrElse(LocalDate.parse("2100-01-01"))
   }
 }
 
