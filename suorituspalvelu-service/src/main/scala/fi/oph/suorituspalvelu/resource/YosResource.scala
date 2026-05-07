@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKUKOHDE_OID, ES
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosNimi, YosOpiskeluOikeus, YosResponse, YosSuccessResponse, YosVirhe}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.util.LogContext
+import fi.oph.suorituspalvelu.validation.Validator
 import fi.oph.suorituspalvelu.yos.YosService
 import io.swagger.v3.oas.annotations.{Operation, Parameter}
 import io.swagger.v3.oas.annotations.media.{Content, Schema}
@@ -50,6 +51,13 @@ class YosResource @Autowired (yosService: YosService) {
             Right(None)
           else
             Left(ResponseEntity.status(HttpStatus.FORBIDDEN).body(YosErrorResponse(YosVirhe.PUUTTUVAT_OIKEUDET, YOS_EI_OIKEUKSIA))))
+        .flatMap(_ => {
+          val virheet: Set[String] = Validator.validateHenkiloOid(Some(hakijaOid), true) ++ Validator.validateHakukohdeOid(Some(hakukohdeOid), true) ++ Validator.validateHakuOid(Some(hakuOid), true)
+          if (virheet.nonEmpty)
+            Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(YosErrorResponse(YosVirhe.PUUTTEELLISET_PARAMETRIT, virheet.reduce((a, b) => String.join(". ", a, b)))))
+          else
+            Right(None)
+        })
         .flatMap(_ => {
           yosService.haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid, hakuOid, hakukohdeOid).fold(
             e => {

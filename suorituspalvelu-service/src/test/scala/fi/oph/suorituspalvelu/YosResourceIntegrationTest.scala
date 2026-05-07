@@ -38,8 +38,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
   var opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   val HAKIJA_OID = "1.2.246.562.24.21250967215"
-  val HAKU_OID = "123"
-  val HAKUKOHDE_OID = "123"
+  val HAKU_OID = "1.2.246.562.29.00000000000000043630"
+  val HAKUKOHDE_OID = "1.2.246.562.20.00000000000000043758"
   val ORGANISAATIO_TUNNISTE = "Nuketehdas"
 
   @BeforeEach
@@ -81,6 +81,14 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
       .andExpect(status().isForbidden).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosErrorResponse])
     Assertions.assertEquals(YosVirhe.PUUTTUVAT_OIKEUDET, response.virhe)
+  }
+
+  @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testInvalidParameters(): Unit = {
+    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/haku-oid-jotain/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
+      .andExpect(status().isBadRequest).andReturn()
+    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosErrorResponse])
+    Assertions.assertEquals(YosVirhe.PUUTTEELLISET_PARAMETRIT, response.virhe)
   }
 
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
