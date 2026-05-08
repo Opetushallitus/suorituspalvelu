@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
@@ -100,4 +100,43 @@ class KoskiUtilTest {
       lahtokoulu2,
       lahtokoulu1
     )))
+
+  private val KAIKKI_YHTEISET = List("AI", "A1", "B1", "MA", "BI", "GE", "FY", "KE", "HI", "YH", "LI", "TE", "MU", "KU", "KS", "KO")
+
+  private def aineet(koodit: String*): Set[PerusopetuksenOppiaine] =
+    koodit.map(k => PerusopetuksenOppiaine(
+      UUID.randomUUID(),
+      Kielistetty(None, None, None),
+      Koodi(k, "koskioppiaineetyleissivistava", Some(1)),
+      Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+      None,
+      pakollinen = true,
+      yksilollistetty = None,
+      rajattu = None
+    )).toSet
+
+  @Test def testYhteisenAineenArvosanaPuuttuuKaikkiAineetJaET(): Unit =
+    Assertions.assertFalse(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET :+ "ET" *)))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuKaikkiAineetJaKT(): Unit =
+    Assertions.assertFalse(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET :+ "KT" *)))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuKaikkiAineetJaMolemmatKatsomusaineet(): Unit =
+    Assertions.assertFalse(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET ++ List("ET", "KT") *)))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuYksiYhteinenPuuttuu(): Unit =
+    val ilmanMatikkaa = KAIKKI_YHTEISET.filterNot(_ == "MA")
+    Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(ilmanMatikkaa :+ "ET" *)))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuKatsomusainePuuttuu(): Unit =
+    Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET *)))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuTyhja(): Unit =
+    Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(Set.empty))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuVainKatsomusaine(): Unit =
+    Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet("ET")))
+
+  @Test def testYhteisenAineenArvosanaPuuttuuYlimaaraisetEivatHaittaa(): Unit =
+    Assertions.assertFalse(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET ++ List("ET", "A2", "FI") *)))
 }

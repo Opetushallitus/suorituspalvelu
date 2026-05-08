@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 
@@ -15,11 +15,35 @@ object KoskiUtil {
 
   val sisallytettavatEiPakollisetKielet = Set("A2", "B2")
 
-  def isPakollinenJaArviointiPuuttuu(osaSuoritus: KoskiOsaSuoritus): Boolean = {
-    val pakollinen = osaSuoritus.koulutusmoduuli.get.pakollinen.get
-    val arviointi = osaSuoritus.arviointi.isDefined
-    !arviointi && pakollinen
-  }
+  val YHTEISET_AINEET = List(
+    "AI",
+    "A1",
+    "B1",
+    "MA",
+    "BI",
+    "GE",
+    "FY",
+    "KE",
+    "HI",
+    "YH",
+    "LI",
+    "TE",
+    "MU",
+    "KU",
+    "KS",
+    "KO"
+  )
+
+  val KATSOMUSAINEET = List(
+    "ET",
+    "KT"
+  )
+
+  // Muista kuin katsomuaineista pitää olla kaikki, ja katsomusaineista jompi kumpi. Tässä ei voi käyttää oppiaineen
+  // pakollisuusvipua, koska tarkoitus on tunnistaa tilanne jossa arvosana (ja sitä kautta koko aine) puuttuu
+  def yhteisenAineenArvosanaPuuttuu(aineet: Set[PerusopetuksenOppiaine]): Boolean =
+    !YHTEISET_AINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
+      !KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
 
   def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
