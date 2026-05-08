@@ -18,7 +18,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.parsing.koski.TestDataUtil
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
