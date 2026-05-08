@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.ytr
+package fi.oph.suorituspalvelu.parsing.ytr
 
 import fi.oph.suorituspalvelu.business.{Koe, Koodi, SuoritusTila, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
