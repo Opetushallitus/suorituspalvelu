@@ -30,23 +30,22 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
     content: Seq[T],
     executionId: String,
     fileNumber: Int,
-    additionalInfo: Option[String] = None //fixme hmm
+    additionalInfo: Option[String] = None
   ): Unit = {
     try {
       if (content.nonEmpty) {
         val output = mapper.writeValueAsString(Seq(content.head))
-        LOG.info(s"($executionId) Tallennetaan (leikisti) $contentType siirtotiedosto $fileNumber... ensimmäinen entiteetti: $output")
-        /*siirtotiedostoPalvelu
+        LOG.info(s"($executionId) Tallennetaan $contentType siirtotiedosto $fileNumber. Ensimmäinen entiteetti: $output")
+        siirtotiedostoPalvelu
           .saveSiirtotiedosto(
-            "sure",
+            "supa",
             contentType,
             additionalInfo.getOrElse(""),
             executionId,
             fileNumber,
             new ByteArrayInputStream(mapper.writeValueAsString(content).getBytes()),
             saveRetryCount
-          ).key*/
-        "mock-key"
+          ).key
       } else {
         LOG.info(s"($executionId) Ei tallennettavaa!")
       }
