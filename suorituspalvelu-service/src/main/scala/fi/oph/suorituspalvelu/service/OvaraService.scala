@@ -113,7 +113,8 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
         "valintadata",
         valintaDataBatch,
         params.executionId,
-        tila.valintaDataTiedostoNumero
+        tila.valintaDataTiedostoNumero,
+        Some(haku.oid)
       )
     }
 
@@ -138,7 +139,8 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
           "harkinnanvaraisuudet",
           harkinnanvaraisuusBatch,
           params.executionId,
-          tila.harkinnanvaraisuusTiedostoNumero
+          tila.harkinnanvaraisuusTiedostoNumero,
+          Some(haku.oid)
         )
         tila.harkinnanvaraisuusTiedostoNumero + 1
       } else tila.harkinnanvaraisuusTiedostoNumero
@@ -165,7 +167,8 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
           "ensikertalaisuudet",
           ensikertalaisuusBatch,
           params.executionId,
-          tila.ensikertalaisuusTiedostoNumero
+          tila.ensikertalaisuusTiedostoNumero,
+          Some(haku.oid)
         )
         tila.ensikertalaisuusTiedostoNumero + 1
       } else tila.ensikertalaisuusTiedostoNumero
