@@ -65,3 +65,9 @@ db-scheduler:
   enabled: true
   polling-strategy: lock-and-fetch
   immediate-execution-enabled: true
+
+ovara:
+  region: {{aws_region}}
+  bucket: {{ovara_siirtotiedosto_s3_bucket}}
+  rolearn: {{ovara_siirtotiedosto_s3_target_role_arn}}
+  hakemus-batch-size: {{suorituspalvelu_ovara_hakemus_batch_size | default('500')}}
