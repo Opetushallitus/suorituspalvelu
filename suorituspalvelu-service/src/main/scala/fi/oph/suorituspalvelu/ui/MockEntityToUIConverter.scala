@@ -687,11 +687,11 @@ object MockEntityToUIConverter {
         ),
         PerusopetuksenOppiaineUI(
           tunniste = UUID.randomUUID(),
-          koodi = "B2",
+          koodi = "A2",
           nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("B2-kieli, saksa"),
-            sv = Optional.of("B2-kieli, saksa sv"),
-            en = Optional.of("B2-kieli, saksa en")
+            fi = Optional.of("A2-kieli, saksa"),
+            sv = Optional.of("A2-kieli, saksa sv"),
+            en = Optional.of("A2-kieli, saksa en")
           ),
           kieli = Optional.of("DE"),
           arvosana = "9",
@@ -771,7 +771,7 @@ object MockEntityToUIConverter {
         ),
         PerusopetuksenOppiaineUI(
           tunniste = UUID.randomUUID(),
-          koodi = "UE",
+          koodi = "KT",
           nimi = PerusopetuksenOppiaineNimi(
             fi = Optional.of("Uskonto tai elämänkatsomustieto"),
             sv = Optional.of("Uskonto tai elämänkatsomustieto sv"),
@@ -956,11 +956,11 @@ object MockEntityToUIConverter {
         ),
         PerusopetuksenOppiaineUI(
           tunniste = UUID.randomUUID(),
-          koodi = "B2",
+          koodi = "A2",
           nimi = PerusopetuksenOppiaineNimi(
-            fi = Optional.of("B2-kieli, saksa"),
-            sv = Optional.of("B2-kieli, saksa sv"),
-            en = Optional.of("B2-kieli, saksa en")
+            fi = Optional.of("A2-kieli, saksa"),
+            sv = Optional.of("A2-kieli, saksa sv"),
+            en = Optional.of("A2-kieli, saksa en")
           ),
           kieli = Optional.of("DE"),
           arvosana = "9",
