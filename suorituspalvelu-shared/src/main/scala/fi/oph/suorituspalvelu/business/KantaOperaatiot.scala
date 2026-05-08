@@ -126,6 +126,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             val hasChanged = dataHasChanged(existingJsonData, existingXmlData, jsonData, xmlData)
             if (!hasChanged) {
               LOG.info(s"Ei tarvetta tallentaa uutta versiota henkilölle, koska haetut tiedot ovat samat kuin kannasta löytyneellä voimassa olevalla versiolla (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
+            } else {
+              LOG.info(s"Henkilön tiedot lähdejärjestelmässä ovat muuttuneet (henkiloOid=$henkiloOid, lahdeJarjestelma=${lahdeJarjestelma.nimi}, lahdeTunniste=$lahdeTunniste).")
             }
             hasChanged
           }
@@ -185,7 +187,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                                 lahdeVersio: Option[Int]
   ): DBIOAction[Option[VersioEntiteetti], NoStream, Effect] =
     val tunniste = getUUID()
-    LOG.info(s"Luodaan uusi versio $tunniste henkilölle $henkiloOid (lahdeVersio=$lahdeVersio)")
+    LOG.info(s"Luodaan uusi versio $tunniste henkilölle $henkiloOid (lahdeJarjestelma=$lahdeJarjestelma, lahdeVersio=$lahdeVersio)")
     sql"""
       WITH subsequent_version AS (
         SELECT lower(voimassaolo) as loppu
