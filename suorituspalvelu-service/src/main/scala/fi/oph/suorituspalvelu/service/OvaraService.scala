@@ -136,7 +136,7 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
           s"(${params.executionId}) Tallennetaan haun ${haku.oid} harkinnanvaraisuus-tiedosto ${tila.harkinnanvaraisuusTiedostoNumero}, ${harkinnanvaraisuusBatch.size} henkilöä"
         )
         siirtotiedostoClient.tallennaSiirtotiedosto(
-          "harkinnanvaraisuudet",
+          "harkinnanvaraisuus",
           harkinnanvaraisuusBatch,
           params.executionId,
           tila.harkinnanvaraisuusTiedostoNumero,
@@ -164,7 +164,7 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
           s"(${params.executionId}) Tallennetaan haun ${haku.oid} ensikertalaisuus-tiedosto ${tila.ensikertalaisuusTiedostoNumero}, ${ensikertalaisuusBatch.size} henkilöä"
         )
         siirtotiedostoClient.tallennaSiirtotiedosto(
-          "ensikertalaisuudet",
+          "ensikertalainen",
           ensikertalaisuusBatch,
           params.executionId,
           tila.ensikertalaisuusTiedostoNumero,
