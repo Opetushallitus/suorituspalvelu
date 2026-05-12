@@ -23,7 +23,8 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu
+    url: jdbc:aws-wrapper:postgresql://{{host_postgresql_suorituspalvelu}}:{{port_postgresql}}/suorituspalvelu
+    driver-class-name: software.amazon.jdbc.Driver
     username: {{postgres_app_user}}
     password: {{host_postgresql_suorituspalvelu_app_password}}
   flyway:

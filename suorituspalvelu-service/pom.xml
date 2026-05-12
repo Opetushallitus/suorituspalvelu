@@ -71,6 +71,10 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>software.amazon.jdbc</groupId>
+            <artifactId>aws-advanced-jdbc-wrapper</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.kagkarlsson</groupId>
             <artifactId>db-scheduler</artifactId>
         </dependency>
