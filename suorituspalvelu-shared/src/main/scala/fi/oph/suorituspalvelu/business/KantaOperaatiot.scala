@@ -846,6 +846,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     MAPPER.readValue(rows.head, classOf[SiirtotiedostoOperaatio])
   }
 
+  //Päivittäiset tiedot muodostetaan, jos kaksi ehtoa täyttyy:
+  //1. Samana päivänä ei ole vielä muodostettu päivittäisiä niin että koko suoritus on päättynyt onnistuneesti
+  //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 6 tunnin aikana
   def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
     val idResult = Await.result(db.run(
       sql"""
@@ -855,7 +858,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                (SELECT window_end FROM siirtotiedostot WHERE success = true ORDER BY id DESC LIMIT 1),
                now(),
                now(),
-               not exists(select 1 from siirtotiedostot where run_start >= now()::date and paivittaiset)
+               (not exists(select 1 from siirtotiedostot where run_start >= now()::date and success and paivittaiset)
+                and not exists(select 1 from siirtotiedostot where run_start >= now() - interval '6 hours' and paivittaiset and run_end is null))
         RETURNING id
       """.as[Int]
     ), DB_TIMEOUT)
@@ -879,6 +883,21 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         WHERE id = $id
       """
     ), DB_TIMEOUT)
+  }
+
+  def haeVersiotJoidenDataMuuttunut(windowStart: Option[Instant], windowEnd: Instant): Map[VersioEntiteetti, String] = {
+    val versioTunnisteetQuery = windowStart match {
+      case Some(start) =>
+        sql"""SELECT tunniste FROM versiot
+              WHERE paivityshetki >= ${start.toString}::timestamptz
+                AND paivityshetki < ${windowEnd.toString}::timestamptz
+                AND upper(voimassaolo) = 'infinity'::timestamptz"""
+      case None =>
+        sql"""SELECT tunniste FROM versiot
+              WHERE paivityshetki < ${windowEnd.toString}::timestamptz
+                AND upper(voimassaolo) = 'infinity'::timestamptz"""
+    }
+    haeSuorituksetInternal(versioTunnisteetQuery)
   }
 
   def poistaHarkinnanvaraisuusYliajo(
