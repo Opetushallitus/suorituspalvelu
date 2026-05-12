@@ -152,6 +152,33 @@ class OpiskeluoikeusParsingService(
     }
   }
 
+  //Tämä parseroi vain omaan käyttöön, ei tallenna tuloksia.
+  def haeMuuttuneetSuorituksetOvara(windowStart: Option[Instant], windowEnd: Instant): Map[String, Set[Opiskeluoikeus]] = {
+    kantaOperaatiot.haeVersiotJoidenDataMuuttunut(windowStart, windowEnd)
+      .toSeq
+      .map { case (versio, opiskeluoikeusContainerRaw) =>
+        val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
+        val opiskeluoikeudet = versio.parserVersio match {
+          case None =>
+            LOG.info(s"Versio ${versio.tunniste} ei ole vielä parseroitu, parseroidaan on-demand")
+            parseOnly(versio)
+
+          case Some(storedVersion) if storedVersion < currentParserVersion =>
+            LOG.info(s"Versio ${versio.tunniste} on parseroitu vanhemmalla versiolla ($storedVersion < $currentParserVersion), parseroidaan on-demand")
+            parseOnly(versio)
+
+          case Some(storedVersion) if storedVersion > currentParserVersion =>
+            LOG.info(s"Versio ${versio.tunniste} on parseroitu uudemmalla versiolla ($storedVersion > $currentParserVersion), parseroidaan on-demand")
+            parseOnly(versio)
+
+          case _ =>
+            SUORITUS_MAPPER.readValue(opiskeluoikeusContainerRaw, classOf[Container]).opiskeluoikeudet
+        }
+        (versio.henkiloOid, opiskeluoikeudet)
+      }
+      .groupMapReduce(_._1)(_._2)(_ ++ _)
+  }
+
   private def parse(versio: VersioEntiteetti, jsonData: Seq[String], xmlData: Seq[String]): (Set[Opiskeluoikeus], Int) = {
     versio.lahdeJarjestelma match {
       case Lahdejarjestelma.KOSKI =>

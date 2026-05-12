@@ -58,3 +58,4 @@ ovara:
   bucket: mock-bucket
   rolearn: mock-rolearn
   hakemus-batch-size: 1000
+  opiskeluoikeus-batch-size: 500
