@@ -891,12 +891,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val versioTunnisteetQuery = windowStart match {
       case Some(start) =>
         sql"""SELECT tunniste FROM versiot
-              WHERE paivityshetki >= ${start.toString}::timestamptz
-                AND paivityshetki < ${windowEnd.toString}::timestamptz
+              WHERE parserointihetki >= ${start.toString}::timestamptz
+                AND parserointihetki < ${windowEnd.toString}::timestamptz
                 AND upper(voimassaolo) = 'infinity'::timestamptz"""
       case None =>
         sql"""SELECT tunniste FROM versiot
-              WHERE paivityshetki < ${windowEnd.toString}::timestamptz
+              WHERE parserointihetki < ${windowEnd.toString}::timestamptz
                 AND upper(voimassaolo) = 'infinity'::timestamptz"""
     }
     haeSuorituksetInternal(versioTunnisteetQuery)
