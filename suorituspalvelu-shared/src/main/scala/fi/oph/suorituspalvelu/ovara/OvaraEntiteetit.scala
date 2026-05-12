@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ovara
 import fi.oph.suorituspalvelu.business.{Arvosana, Koodi, KKOpiskeluoikeusTila, Korotus, Laajuus, Oppilaitos, OpiskeluoikeusJakso, Lahtokoulu, PerusopetuksenYksilollistaminen, SuoritusTila}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiOpiskeluoikeusTila}
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 // ---- KK ----
@@ -487,10 +487,19 @@ case class OvaraPerusopetuksenOppiaine(
   rajattu: Option[Boolean]
 )
 
-// ---- Henkilökohtainen kooste siirtotiedostoja varten ----
+case class OvaraVersioMetadata(
+  lahdejarjestelma: String,
+  lahdeTunniste: String,
+  parserVersio: Option[Int],
+  luontiHetki: Option[Instant],
+  paivitysHetki: Option[Instant],
+  parserointiHetki: Option[Instant]
+)
 
-case class OvaraHenkilonOpiskeluoikeudet(
+//Yhdestä versiosta voi syntyä useita opiskeluoikeuksia VIRTA-tapauksessa.
+case class OvaraVersioJaOpiskeluoikeudet(
   henkiloOid: String,
+  metadata: OvaraVersioMetadata,
   kkOpiskeluoikeudet: Seq[OvaraKKOpiskeluoikeus],
   kkSynteettisetOpiskeluoikeudet: Seq[OvaraKKSynteettinenOpiskeluoikeus],
   yoOpiskeluoikeudet: Seq[OvaraYOOpiskeluoikeus],

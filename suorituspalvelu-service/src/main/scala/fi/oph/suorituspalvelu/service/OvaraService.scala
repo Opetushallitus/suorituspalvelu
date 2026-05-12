@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
 
-import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraHenkilonOpiskeluoikeudet}
+import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -296,35 +296,36 @@ class OvaraService(
     windowEnd: Instant
   ): Int = {
     LOG.info(s"(${params.executionId}) Haetaan muuttuneet opiskeluoikeudet ikkunassa $windowStart – $windowEnd")
-    val muuttuneetPerHenkilo: Map[String, Set[fi.oph.suorituspalvelu.business.Opiskeluoikeus]] =
-      opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd)
-    LOG.info(s"(${params.executionId}) ${muuttuneetPerHenkilo.size} henkilöä, joilla on muuttuneita opiskeluoikeuksia yhteensä ${muuttuneetPerHenkilo.values.map(_.size).sum} kpl.")
+    val muuttuneet = opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd)
+    LOG.info(s"(${params.executionId}) ${muuttuneet.size} versiota muuttunut, yhteensä ${muuttuneet.map(_._2.size).sum} opiskeluoikeutta.")
 
-    val henkilot   = muuttuneetPerHenkilo.toSeq
-    val batches    = henkilot.grouped(opiskeluoikeusBatchSize).toSeq
+    val batches    = muuttuneet.grouped(opiskeluoikeusBatchSize).toSeq
     val batchCount = batches.size
     var tiedostoNumero = 1
 
     batches.zipWithIndex.foreach { (batch, batchIdx) =>
-      LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeuksia erä ${batchIdx + 1}/$batchCount (${batch.size} henkilöä)")
-      val records = batch.flatMap { (henkiloOid, kaikki) =>
-        val kkOo     = EntityToOvaraConverter.getKKOpiskeluoikeudet(kaikki)
-        val kkSyntOo = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(kaikki)
-        val yoOo     = EntityToOvaraConverter.getYOOpiskeluoikeudet(kaikki)
-        val genOo    = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(kaikki)
-        val ammatOo  = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(kaikki)
-        val pkOo     = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(kaikki)
+      LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeuksia erä ${batchIdx + 1}/$batchCount (${batch.size} versiota)")
+      val records = batch.flatMap { (v, oo) =>
+        val kkOo     = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
+        val kkSyntOo = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
+        val yoOo     = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
+        val genOo    = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
+        val ammatOo  = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
+        val pkOo     = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
         if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty)
-          Some(OvaraHenkilonOpiskeluoikeudet(henkiloOid, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo))
+          Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo))
         else None
       }
       if (records.nonEmpty) {
-        LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} henkilöä")
+        LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} versiota")
         siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeudet", records, params.executionId, tiedostoNumero)
         tiedostoNumero += 1
       }
     }
 
-    muuttuneetPerHenkilo.size
+    muuttuneet.size
   }
+
+  private def toMeta(v: fi.oph.suorituspalvelu.business.VersioEntiteetti): OvaraVersioMetadata =
+    OvaraVersioMetadata(v.lahdeJarjestelma.nimi, v.lahdeTunniste, v.parserVersio, v.luontiHetki, v.paivitysHetki, v.parserointiHetki)
 }
