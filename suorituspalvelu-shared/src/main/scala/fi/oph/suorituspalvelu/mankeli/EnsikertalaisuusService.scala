@@ -21,6 +21,19 @@ object EnsikertalaisuusConstants {
   val seliteSuoritettuKkTutkintoSynteettisesta = "Henkilöllä on VIRTA-järjestelmässä synteettisessä opiskeluoikeudessa ennen leikkuripäivämäärää suoritettu korkeakoulututkinto"
 }
 
+case class MenettamisenPeruste(peruste: String,
+                               paivamaara: LocalDate)
+
+case class EnsikertalaisuusTulos(henkiloOid: String,
+                                 hakemusOid: Option[String],
+                                 hakuOid: String,
+                                 isEnsikertalainen: Boolean,
+                                 menettamisenPeruste: Option[MenettamisenPeruste]) {
+  def toAvainArvo: AvainArvoContainer = {
+    AvainArvoContainer("ensikertalaisuus", isEnsikertalainen.toString, menettamisenPeruste.map(p => Seq(p.peruste)).getOrElse(Seq.empty))
+  }
+}
+
 @Component
 class EnsikertalaisuusService {
 
@@ -46,13 +59,14 @@ class EnsikertalaisuusService {
    * Opiskeluoikeudet ja hakemus annetaan parametreina, jotta niitä ei haeta uudelleen.
    * VTS-data haetaan tässä metodissa.
    */
-  def haeEnsikertalaisuusAvainArvo(
-    henkiloOid: String,
-    haku: KoutaHaku,
-    allOidsForPerson: Set[String],
-    opiskeluoikeudet: Seq[Opiskeluoikeus],
-    hakemus: Option[AtaruValintalaskentaHakemus]
-  ): AvainArvoContainer = {
+
+  def haeEnsikertalaisuusTulos(
+                                henkiloOid: String,
+                                haku: KoutaHaku,
+                                allOidsForPerson: Set[String],
+                                opiskeluoikeudet: Seq[Opiskeluoikeus],
+                                hakemus: Option[AtaruValintalaskentaHakemus]
+                              ): EnsikertalaisuusTulos = {
     val leikkuriLocalDate = resolveLeikkuriPvm(haku).atZone(helsinkiZone).toLocalDate
 
     val kkOpiskeluoikeudet = opiskeluoikeudet.collect {
@@ -69,53 +83,60 @@ class EnsikertalaisuusService {
     val henkilonVtsData = vtsEnsikertalaisuudet.filter(e => allOidsForPerson.contains(e.personOid))
 
     val hakemusHasKkTutkintoVuosi = hakemus.exists(h => h.korkeakoulututkintoVuosi.isDefined)
+    val hakemusKkTutkintoVuosi = hakemus.flatMap(h => h.korkeakoulututkintoVuosi)
+    val menettamisenPeruste: Option[MenettamisenPeruste] = paatteleMenettamisenPeruste(henkiloOid, leikkuriLocalDate, kkOpiskeluoikeudet, synteettisetJossaTutkinto, henkilonVtsData, hakemusKkTutkintoVuosi)
 
-    paatteleEnsikertalaisuusAvainArvo(henkiloOid, leikkuriLocalDate, kkOpiskeluoikeudet, synteettisetJossaTutkinto, henkilonVtsData, hakemusHasKkTutkintoVuosi)
+    EnsikertalaisuusTulos(
+      henkiloOid = henkiloOid,
+      hakemusOid = hakemus.map(_.hakemusOid),
+      hakuOid = haku.oid,
+      isEnsikertalainen = menettamisenPeruste.isEmpty,
+      menettamisenPeruste = menettamisenPeruste
+    )
   }
 
   /**
    * Puhdas päättelymetodi joka palauttaa AvainArvoContainerin.
    * Kaikki tarvittava data annetaan parametreina.
    */
-  def paatteleEnsikertalaisuusAvainArvo(
-    henkiloOid: String,
-    leikkuriLocalDate: LocalDate,
-    kkOpiskeluoikeudet: Seq[KKOpiskeluoikeus],
-    synteettisetOpiskeluoikeudet: Seq[KKSynteettinenOpiskeluoikeus],
-    vtsEnsikertalaisuudet: Seq[Ensikertalaisuus],
-    hakemusHasKkTutkintoVuosi: Boolean
-  ): AvainArvoContainer = {
+  def paatteleMenettamisenPeruste(
+                                         henkiloOid: String,
+                                         leikkuriLocalDate: LocalDate,
+                                         kkOpiskeluoikeudet: Seq[KKOpiskeluoikeus],
+                                         synteettisetOpiskeluoikeudet: Seq[KKSynteettinenOpiskeluoikeus],
+                                         vtsEnsikertalaisuudet: Seq[Ensikertalaisuus],
+                                         hakemusKkTutkintoVuosi: Option[Int]
+                                       ): Option[MenettamisenPeruste] = {
 
     // Tarkistus 1: SuoritettuKkTutkinto
     val suoritettuKkTutkinto = tarkistaSuoritettuKkTutkinto(kkOpiskeluoikeudet, leikkuriLocalDate)
     if (suoritettuKkTutkinto.isDefined) {
-      return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteSuoritettuKkTutkinto))
+      return Some(MenettamisenPeruste(EnsikertalaisuusConstants.seliteSuoritettuKkTutkinto, suoritettuKkTutkinto.get))
     }
 
     // Tarkistus 2: Synteettisessä opiskeluoikeudessa suoritettu KK-tutkinto
     val synteettinenTutkinto = tarkistaSuoritettuKkTutkintoSynteettisista(synteettisetOpiskeluoikeudet, leikkuriLocalDate)
     if (synteettinenTutkinto.isDefined) {
-      return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoSynteettisesta))
+      return Some(MenettamisenPeruste(EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoSynteettisesta, synteettinenTutkinto.get))
     }
 
     // Tarkistus 3: OpiskeluoikeusAlkanut
     val opiskeluoikeusAlkanut = tarkistaOpiskeluoikeusAlkanut(kkOpiskeluoikeudet, leikkuriLocalDate)
     if (opiskeluoikeusAlkanut.isDefined) {
-      return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteOpiskeluoikeusAlkanut))
+      return Some(MenettamisenPeruste(EnsikertalaisuusConstants.seliteOpiskeluoikeusAlkanut, opiskeluoikeusAlkanut.get))
     }
 
     // Tarkistus 4: KkVastaanotto (VTS)
     val kkVastaanotto = tarkistaKkVastaanotto(vtsEnsikertalaisuudet, leikkuriLocalDate)
     if (kkVastaanotto.isDefined) {
-      return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteKkVastaanotto))
+      return Some(MenettamisenPeruste(EnsikertalaisuusConstants.seliteKkVastaanotto, kkVastaanotto.get))
     }
 
     // Tarkistus 5: SuoritettuKkTutkintoHakemukselta
-    if (hakemusHasKkTutkintoVuosi) {
-      return AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "false", Seq(EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoHakemukselta))
+    if (hakemusKkTutkintoVuosi.isDefined) {
+      return Some(MenettamisenPeruste(EnsikertalaisuusConstants.seliteSuoritettuKkTutkintoHakemukselta, LocalDate.of(hakemusKkTutkintoVuosi.get, 1, 1)))
     }
-
-    AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, "true")
+    None
   }
 
   def resolveLeikkuriPvm(haku: KoutaHaku): Instant = {
