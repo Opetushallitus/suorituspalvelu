@@ -29,12 +29,16 @@ case class OvaraHarkinnanvaraisuus(
   harkinnanvaraisuudet: List[HakutoiveenHarkinnanvaraisuus]
 )
 
+case class OvaraMenettamisenPeruste(peruste: String,
+                                    paivamaara: LocalDate //Suresta tulee DateTime. Riittääkö tämä tarkkuus?
+                                   )
+
 case class OvaraEnsikertalaisuus(
   henkiloOid: String,
   hakemusOid: String,
   hakuOid: String,
   isEnsikertalainen: Boolean,
-  menettamisenPeruste: Option[String]
+  menettamisenPeruste: Option[OvaraMenettamisenPeruste]
 )
 
 case class OvaraParams(
@@ -151,11 +155,13 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
       val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
         vd.ensikertalaisuus.map(ek => {
           OvaraEnsikertalaisuus(
-            henkiloOid = vd.personOid,
-            hakemusOid = vd.hakemus.map(_.hakemusOid).getOrElse(""),
-            hakuOid = haku.oid,
-            isEnsikertalainen = ek.arvo.toBoolean,
-            menettamisenPeruste = ek.selitteet.headOption
+            henkiloOid = ek.henkiloOid,
+            hakemusOid = ek.hakemusOid.getOrElse(""),
+            hakuOid = ek.hakuOid,
+            isEnsikertalainen = ek.isEnsikertalainen,
+            menettamisenPeruste = ek.menettamisenPeruste.map(mp => {
+              OvaraMenettamisenPeruste(mp.peruste, mp.paivamaara)
+            })
           )
         })
       }
