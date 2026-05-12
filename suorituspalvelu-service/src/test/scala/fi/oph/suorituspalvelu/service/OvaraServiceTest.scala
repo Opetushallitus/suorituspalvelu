@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, ConvertedAtaruHakemus, EnsikertalaisuusConstants, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -83,7 +83,7 @@ class OvaraServiceTest {
   private def baseValintaData(
     avainArvot: Seq[CombinedAvainArvoContainer] = Seq.empty,
     harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus] = None,
-    ensikertalaisuus: Option[AvainArvoContainer] = None,
+    ensikertalaisuus: Option[EnsikertalaisuusTulos] = None,
   ) = ValintaData(
     personOid = HENKILO_OID,
     paatellytAvainArvot = avainArvot,
@@ -185,7 +185,13 @@ class OvaraServiceTest {
   @Test def testEnsikertalaisuudetTallennetaanKKHaulle(): Unit = {
     val (service, valintaDataService, hakemuspalveluClient, onrIntegration) = buildService()
     val valintaData = baseValintaData(
-      ensikertalaisuus = Some(AvainArvoContainer("ensikertalainen", "false", Seq(EnsikertalaisuusConstants.seliteKkVastaanotto)))
+      ensikertalaisuus = Some(EnsikertalaisuusTulos(
+        henkiloOid = HENKILO_OID,
+        hakemusOid = Some(HAKEMUS_OID),
+        hakuOid = KK_HAKU_OID,
+        isEnsikertalainen = false,
+        menettamisenPeruste = Some(MenettamisenPeruste(EnsikertalaisuusConstants.seliteKkVastaanotto, LocalDate.of(2024, 7, 15)))
+      ))
     )
 
     setupMocks(hakemuspalveluClient, onrIntegration, valintaDataService, KK_HAKU, valintaData)
