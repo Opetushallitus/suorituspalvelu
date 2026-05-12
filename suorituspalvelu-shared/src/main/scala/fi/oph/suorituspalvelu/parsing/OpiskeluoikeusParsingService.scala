@@ -153,7 +153,7 @@ class OpiskeluoikeusParsingService(
   }
 
   //Tämä parseroi vain omaan käyttöön, ei tallenna tuloksia.
-  def haeMuuttuneetSuorituksetOvara(windowStart: Option[Instant], windowEnd: Instant): Map[String, Set[Opiskeluoikeus]] = {
+  def haeMuuttuneetSuorituksetOvara(windowStart: Option[Instant], windowEnd: Instant): Seq[(VersioEntiteetti, Set[Opiskeluoikeus])] = {
     kantaOperaatiot.haeVersiotJoidenDataMuuttunut(windowStart, windowEnd)
       .toSeq
       .map { case (versio, opiskeluoikeusContainerRaw) =>
@@ -174,9 +174,8 @@ class OpiskeluoikeusParsingService(
           case _ =>
             SUORITUS_MAPPER.readValue(opiskeluoikeusContainerRaw, classOf[Container]).opiskeluoikeudet
         }
-        (versio.henkiloOid, opiskeluoikeudet)
+        (versio, opiskeluoikeudet)
       }
-      .groupMapReduce(_._1)(_._2)(_ ++ _)
   }
 
   private def parse(versio: VersioEntiteetti, jsonData: Seq[String], xmlData: Seq[String]): (Set[Opiskeluoikeus], Int) = {
