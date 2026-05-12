@@ -117,7 +117,7 @@ class OvaraServiceTest {
     val mockHakemuspalveluClient = Mockito.mock(classOf[HakemuspalveluClient])
     val mockOnrIntegration       = Mockito.mock(classOf[OnrIntegration])
 
-    val service = new OvaraService(500) {
+    val service = new OvaraService(500, 500) {
       override val valintaDataService: ValintaDataService     = mockValintaDataService
       override val siirtotiedostoClient: SiirtotiedostoClient = mockSiirtotiedostoClient
       override val hakemuspalveluClient: HakemuspalveluClient = mockHakemuspalveluClient

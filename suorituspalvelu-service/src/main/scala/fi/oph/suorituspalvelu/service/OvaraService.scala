@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
 
-import java.time.LocalDate
+import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraHenkilonOpiskeluoikeudet}
+
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -52,7 +54,10 @@ case class OvaraParams(
 case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
 
 @Component
-class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) {
+class OvaraService(
+  @Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int,
+  @Value("${ovara.opiskeluoikeus-batch-size}") opiskeluoikeusBatchSize: Int
+) {
 
   private val LOG = LoggerFactory.getLogger(classOf[OvaraService])
 
@@ -283,5 +288,43 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
     LOG.info(s"(${params.executionId}) Valmista!")
 
     MuodostamisTulos(totalOnnistuneet, epaonnistuneetHaut)
+  }
+
+  def muodostaOpiskeluoikeusSiirtotiedostot(
+    params: OvaraParams,
+    windowStart: Option[Instant],
+    windowEnd: Instant
+  ): Int = {
+    LOG.info(s"(${params.executionId}) Haetaan muuttuneet opiskeluoikeudet ikkunassa $windowStart – $windowEnd")
+    val muuttuneetPerHenkilo: Map[String, Set[fi.oph.suorituspalvelu.business.Opiskeluoikeus]] =
+      opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd)
+    LOG.info(s"(${params.executionId}) ${muuttuneetPerHenkilo.size} henkilöä, joilla on muuttuneita opiskeluoikeuksia yhteensä ${muuttuneetPerHenkilo.values.map(_.size).sum} kpl.")
+
+    val henkilot   = muuttuneetPerHenkilo.toSeq
+    val batches    = henkilot.grouped(opiskeluoikeusBatchSize).toSeq
+    val batchCount = batches.size
+    var tiedostoNumero = 1
+
+    batches.zipWithIndex.foreach { (batch, batchIdx) =>
+      LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeuksia erä ${batchIdx + 1}/$batchCount (${batch.size} henkilöä)")
+      val records = batch.flatMap { (henkiloOid, kaikki) =>
+        val kkOo     = EntityToOvaraConverter.getKKOpiskeluoikeudet(kaikki)
+        val kkSyntOo = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(kaikki)
+        val yoOo     = EntityToOvaraConverter.getYOOpiskeluoikeudet(kaikki)
+        val genOo    = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(kaikki)
+        val ammatOo  = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(kaikki)
+        val pkOo     = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(kaikki)
+        if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty)
+          Some(OvaraHenkilonOpiskeluoikeudet(henkiloOid, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo))
+        else None
+      }
+      if (records.nonEmpty) {
+        LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} henkilöä")
+        siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeudet", records, params.executionId, tiedostoNumero)
+        tiedostoNumero += 1
+      }
+    }
+
+    muuttuneetPerHenkilo.size
   }
 }
