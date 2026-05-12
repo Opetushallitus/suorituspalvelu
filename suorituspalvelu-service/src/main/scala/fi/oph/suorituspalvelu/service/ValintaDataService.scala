@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiske
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
-import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, AvainMetatiedotDTO, ConvertedAtaruHakemus, EnsikertalaisuusService, HakemuksenHarkinnanvaraisuus, HarkinnanvaraisuusService, ValintalaskentaHakutoive, YoMetadataConverter}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, AvainMetatiedotDTO, ConvertedAtaruHakemus, EnsikertalaisuusService, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HarkinnanvaraisuusService, ValintalaskentaHakutoive, YoMetadataConverter}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiAvainMetatiedotDTO, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
 import fi.oph.suorituspalvelu.resource.ui.YliajonMuutosUI
 import org.slf4j.LoggerFactory
@@ -32,7 +32,7 @@ case class ValintaData(personOid: String,
                        vahvistettuViimeistaan: LocalDate,
                        laskennanAlkaminen: Instant,
                        harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus] = None,
-                       ensikertalaisuus: Option[AvainArvoContainer] = None) {
+                       ensikertalaisuus: Option[EnsikertalaisuusTulos] = None) {
   def getAvainArvoMap: Map[String, String] = paatellytAvainArvot.map(a => (a.avain, a.arvo)).toMap
 
   private def hakemuksenAvainArvot = hakemus.map(_.avainArvot).getOrElse(Seq.empty).map(aa => CombinedAvainArvoContainer(aa.avain, aa.arvo, AvainArvoMetadata(aa.selitteet, None, None, arvoOnHakemukselta = true)))
@@ -133,20 +133,20 @@ class ValintaDataService {
 
     val yoMetadata = YoMetadataConverter.convert(kaikkiOpiskeluoikeudet)
 
-    val ensikertalaisuusArvo: Option[AvainArvoContainer] =
+    val ensikertalaisuusTulos: Option[EnsikertalaisuusTulos] =
       if (haku.isKKHaku())
-        Some(ensikertalaisuusService.haeEnsikertalaisuusAvainArvo(usePersonOid, haku, allOidsForPerson, kaikkiOpiskeluoikeudet, hakemus))
+        Some(ensikertalaisuusService.haeEnsikertalaisuusTulos(usePersonOid, haku, allOidsForPerson, kaikkiOpiskeluoikeudet, hakemus))
       else
         None
 
-    val rawResultsWithEnsikertalaisuus = ensikertalaisuusArvo match {
-      case Some(ek) => rawResults.copy(paatellytArvot = rawResults.paatellytArvot + ek)
+    val rawResultsWithEnsikertalaisuus = ensikertalaisuusTulos match {
+      case Some(ek) => rawResults.copy(paatellytArvot = rawResults.paatellytArvot + ek.toAvainArvo)
       case None => rawResults
     }
 
     val yliajot = fetchOverridesForOppijaAliases(allOidsForPerson, haku.oid)
     val combinedWithYliajot = combineBaseAvainArvotWithYliajot(rawResultsWithEnsikertalaisuus, yliajot)
-    ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, suoritustenAjanhetki, harkinnanvaraisuudet, ensikertalaisuusArvo)
+    ValintaData(usePersonOid, combinedWithYliajot.toSeq, yoMetadata, rawResults.convertedHakemus, kaikkiOpiskeluoikeudet, ohjausparametrit.getVahvistuspaivaLocalDate, suoritustenAjanhetki, harkinnanvaraisuudet, ensikertalaisuusTulos)
   }
 
   //Tämä palauttaa tiedot Valintalaskennan ymmärtämässä muodossa. Kts. fi.vm.sade.valintalaskenta.domain.dto.HakemusDTO
