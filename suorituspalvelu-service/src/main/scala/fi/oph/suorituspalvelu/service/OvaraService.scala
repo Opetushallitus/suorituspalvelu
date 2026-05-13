@@ -327,5 +327,5 @@ class OvaraService(
   }
 
   private def toMeta(v: fi.oph.suorituspalvelu.business.VersioEntiteetti): OvaraVersioMetadata =
-    OvaraVersioMetadata(v.lahdeJarjestelma.nimi, v.lahdeTunniste, v.parserVersio, v.luontiHetki, v.paivitysHetki, v.parserointiHetki)
+    OvaraVersioMetadata(v.lahdeJarjestelma.nimi, v.lahdeTunniste, v.lahdeVersio, v.parserVersio, v.luontiHetki, v.paivitysHetki, v.parserointiHetki)
 }
