@@ -300,19 +300,23 @@ class OvaraService(
     @scala.annotation.tailrec
     def muodostaSeuraavaTiedosto(afterTunniste: Option[UUID], totalCount: Int, tiedostoNumero: Int): Int = {
       val page = opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd, opiskeluoikeusBatchSize, afterTunniste)
-      if (page.isEmpty) totalCount
+      if (page.isEmpty) {
+        LOG.info(s"Valmista! Yhteensä $totalCount opiskeluoikeutta.")
+        totalCount
+      }
       else {
         LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeussivu (${page.size} versiota, afterTunniste=$afterTunniste), tiedostonumero $tiedostoNumero")
 
         val records = page.flatMap { (v, oo) =>
-          val kkOo     = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
-          val kkSyntOo = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
-          val yoOo     = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
-          val genOo    = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
-          val ammatOo  = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
-          val pkOo     = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
-          if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty)
-            Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo))
+          val kkOo       = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
+          val kkSyntOo   = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
+          val yoOo       = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
+          val genOo      = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
+          val ammatOo    = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
+          val pkOo       = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
+          val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(oo)
+          if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty)
+            Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
           else None
         }
 

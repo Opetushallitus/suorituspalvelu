@@ -161,7 +161,6 @@ class OpiskeluoikeusParsingService(
     afterTunniste: Option[UUID] = None
   ): Seq[(VersioEntiteetti, Set[Opiskeluoikeus])] = {
     kantaOperaatiot.haeVersiotJoidenDataMuuttunut(windowStart, windowEnd, pageSize, afterTunniste)
-      .toSeq
       .map { case (versio, opiskeluoikeusContainerRaw) =>
         val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
         val opiskeluoikeudet = versio.parserVersio match {
