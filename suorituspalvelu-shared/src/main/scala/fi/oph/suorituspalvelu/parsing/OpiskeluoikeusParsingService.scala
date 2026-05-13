@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 import java.time.Instant
+import java.util.UUID
 
 /**
  * Palvelu opiskeluoikeuksien on-demand-parserointiin.
@@ -153,8 +154,13 @@ class OpiskeluoikeusParsingService(
   }
 
   //Tämä parseroi vain omaan käyttöön, ei tallenna tuloksia.
-  def haeMuuttuneetSuorituksetOvara(windowStart: Option[Instant], windowEnd: Instant): Seq[(VersioEntiteetti, Set[Opiskeluoikeus])] = {
-    kantaOperaatiot.haeVersiotJoidenDataMuuttunut(windowStart, windowEnd)
+  def haeMuuttuneetSuorituksetOvara(
+    windowStart: Instant,
+    windowEnd: Instant,
+    pageSize: Int,
+    afterTunniste: Option[UUID] = None
+  ): Seq[(VersioEntiteetti, Set[Opiskeluoikeus])] = {
+    kantaOperaatiot.haeVersiotJoidenDataMuuttunut(windowStart, windowEnd, pageSize, afterTunniste)
       .toSeq
       .map { case (versio, opiskeluoikeusContainerRaw) =>
         val currentParserVersion = ParserVersions.forLahdejarjestelma(versio.lahdeJarjestelma)
