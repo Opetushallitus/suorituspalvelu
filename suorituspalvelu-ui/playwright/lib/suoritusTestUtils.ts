@@ -452,6 +452,19 @@ export const TUVA_SUORITUS: SuoritusSpec = {
   },
 };
 
+export const VAPAA_SIVISTYSTYO_KESKEN_SUORITUS: SuoritusSpec = {
+  perustiedot: {
+    title: `Vapaan sivistystyön koulutus (1.8.2024 ${NDASH} )`,
+    oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+    tila: 'Suoritus kesken',
+    valmistumispaiva: '-',
+    suorituskieli: 'suomi',
+  },
+  additionalChecks: async (paper) => {
+    await expect(paper.getByLabel('Suoritettu')).toHaveText('–');
+  },
+};
+
 export const VAPAA_SIVISTYSTYO_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Vapaan sivistystyön koulutus (31.12.2023 ${NDASH} )`,

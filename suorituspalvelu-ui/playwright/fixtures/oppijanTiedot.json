@@ -1035,6 +1035,27 @@
   ],
   "vapaaSivistystyoKoulutukset": [
     {
+      "tunniste": "b2d4f6a8-1c3e-5a7b-9d0f-2e4c6b8a0d2e",
+      "nimi": {
+        "fi": "Vapaan sivistystyön koulutus",
+        "sv": "Fritt bildningsarbete",
+        "en": "Liberal adult education"
+      },
+      "oppilaitos": {
+        "nimi": {
+          "fi": "Hämeen ammatti-instituutti, Lepaa",
+          "sv": null,
+          "en": null
+        },
+        "oid": "1.2.3.4"
+      },
+      "tila": "KESKEN",
+      "aloituspaiva": "2024-08-01",
+      "valmistumispaiva": null,
+      "suorituskieli": "FI",
+      "laajuus": null
+    },
+    {
       "tunniste": "94e68a1a-a869-48ff-8f7e-59a8438ee257",
       "nimi": {
         "fi": "Vapaan sivistystyön koulutus",
