@@ -9,7 +9,7 @@ import fi.oph.suorituspalvelu.business.{
   KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus,
   KKTutkinto, Koe, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus,
   PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus,
-  Suoritus, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto
+  PoistettuOpiskeluoikeus, Suoritus, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto
 }
 
 object EntityToOvaraConverter {
@@ -428,4 +428,10 @@ object EntityToOvaraConverter {
         tila = oo.tila,
         jaksot = oo.jaksot
       )).toSeq
+
+  // ---- Poistettu ----
+
+  def getPoistetutOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraPoistettuOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case oo: PoistettuOpiskeluoikeus => oo }
+      .map(oo => OvaraPoistettuOpiskeluoikeus(oid = oo.oid)).toSeq
 }
