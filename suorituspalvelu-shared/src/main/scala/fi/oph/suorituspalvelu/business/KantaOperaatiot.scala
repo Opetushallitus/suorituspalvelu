@@ -37,7 +37,7 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
 case class SiirtotiedostoOperaatio(
   id: Int,
   uuid: String,
-  windowStart: Option[Instant],
+  windowStart: Instant,
   windowEnd: Instant,
   runStart: Instant,
   runEnd: Option[Instant],
@@ -887,19 +887,21 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     ), DB_TIMEOUT)
   }
 
-  def haeVersiotJoidenDataMuuttunut(windowStart: Option[Instant], windowEnd: Instant): Map[VersioEntiteetti, String] = {
-    val versioTunnisteetQuery = windowStart match {
-      case Some(start) =>
-        sql"""SELECT tunniste FROM versiot
-              WHERE parserointihetki >= ${start.toString}::timestamptz
-                AND parserointihetki < ${windowEnd.toString}::timestamptz
-                AND upper(voimassaolo) = 'infinity'::timestamptz"""
-      case None =>
-        sql"""SELECT tunniste FROM versiot
-              WHERE parserointihetki < ${windowEnd.toString}::timestamptz
-                AND upper(voimassaolo) = 'infinity'::timestamptz"""
+  def haeVersiotJoidenDataMuuttunut(
+    windowStart: Instant,
+    windowEnd: Instant,
+    pageSize: Int,
+    afterTunniste: Option[UUID] = None
+  ): Map[VersioEntiteetti, String] = {
+    val baseQuery = sql"""SELECT tunniste FROM versiot
+          WHERE parserointihetki >= ${windowStart.toString}::timestamptz
+            AND parserointihetki < ${windowEnd.toString}::timestamptz
+            AND upper(voimassaolo) = 'infinity'::timestamptz"""
+    val withKeyset = afterTunniste match {
+      case Some(t) => baseQuery.concat(sql" AND tunniste > ${t.toString}::uuid")
+      case None    => baseQuery
     }
-    haeSuorituksetInternal(versioTunnisteetQuery)
+    haeSuorituksetInternal(withKeyset.concat(sql" ORDER BY tunniste LIMIT $pageSize"))
   }
 
   def poistaHarkinnanvaraisuusYliajo(
