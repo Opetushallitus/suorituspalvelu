@@ -292,38 +292,41 @@ class OvaraService(
 
   def muodostaOpiskeluoikeusSiirtotiedostot(
     params: OvaraParams,
-    windowStart: Option[Instant],
+    windowStart: Instant,
     windowEnd: Instant
   ): Int = {
     LOG.info(s"(${params.executionId}) Haetaan muuttuneet opiskeluoikeudet ikkunassa $windowStart – $windowEnd")
-    val muuttuneet = opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd)
-    LOG.info(s"(${params.executionId}) ${muuttuneet.size} versiota muuttunut, yhteensä ${muuttuneet.map(_._2.size).sum} opiskeluoikeutta.")
 
-    val batches    = muuttuneet.grouped(opiskeluoikeusBatchSize).toSeq
-    val batchCount = batches.size
-    var tiedostoNumero = 1
+    @scala.annotation.tailrec
+    def muodostaSeuraavaTiedosto(afterTunniste: Option[UUID], totalCount: Int, tiedostoNumero: Int): Int = {
+      val page = opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd, opiskeluoikeusBatchSize, afterTunniste)
+      if (page.isEmpty) totalCount
+      else {
+        LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeussivu (${page.size} versiota, afterTunniste=$afterTunniste), tiedostonumero $tiedostoNumero")
 
-    batches.zipWithIndex.foreach { (batch, batchIdx) =>
-      LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeuksia erä ${batchIdx + 1}/$batchCount (${batch.size} versiota)")
-      val records = batch.flatMap { (v, oo) =>
-        val kkOo     = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
-        val kkSyntOo = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
-        val yoOo     = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
-        val genOo    = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
-        val ammatOo  = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
-        val pkOo     = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
-        if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty)
-          Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo))
-        else None
-      }
-      if (records.nonEmpty) {
-        LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} versiota")
-        siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeudet", records, params.executionId, tiedostoNumero)
-        tiedostoNumero += 1
+        val records = page.flatMap { (v, oo) =>
+          val kkOo     = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
+          val kkSyntOo = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
+          val yoOo     = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
+          val genOo    = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
+          val ammatOo  = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
+          val pkOo     = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
+          if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty)
+            Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo))
+          else None
+        }
+
+        val nextTiedostoNumero = if (records.nonEmpty) {
+          LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} versiota")
+          siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeudet", records, params.executionId, tiedostoNumero)
+          tiedostoNumero + 1
+        } else tiedostoNumero
+
+        muodostaSeuraavaTiedosto(Some(page.last._1.tunniste), totalCount + page.size, nextTiedostoNumero)
       }
     }
 
-    muuttuneet.size
+    muodostaSeuraavaTiedosto(None, 0, 1)
   }
 
   private def toMeta(v: fi.oph.suorituspalvelu.business.VersioEntiteetti): OvaraVersioMetadata =

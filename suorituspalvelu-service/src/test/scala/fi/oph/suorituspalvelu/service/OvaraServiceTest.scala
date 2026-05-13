@@ -287,10 +287,11 @@ class OvaraServiceTest {
 
   @Test def testOpiskeluoikeudetTallennetaan(): Unit = {
     val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any()))
+    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
       .thenReturn(Seq((BASE_VERSIO, Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS))))
+      .thenReturn(Seq.empty)
 
-    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), None, WINDOW_END)
+    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
     Assertions.assertEquals(1, count)
     Mockito.verify(mockSiirtotiedostoClient, Mockito.times(1))
@@ -299,10 +300,11 @@ class OvaraServiceTest {
 
   @Test def testTyhjaVersioEiTallennetaSiirtotiedostoon(): Unit = {
     val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any()))
+    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
       .thenReturn(Seq((BASE_VERSIO, Set.empty[Opiskeluoikeus])))
+      .thenReturn(Seq.empty)
 
-    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), None, WINDOW_END)
+    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
     Assertions.assertEquals(1, count)
     Mockito.verify(mockSiirtotiedostoClient, Mockito.never())
@@ -317,23 +319,24 @@ class OvaraServiceTest {
       lahdeTunniste    = "virta-tunniste"
     )
     val ooVirta = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000004"))
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any()))
+    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
       .thenReturn(Seq(
         (BASE_VERSIO, Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)),
         (versioVirta,  Set[Opiskeluoikeus](ooVirta))
       ))
+      .thenReturn(Seq.empty)
 
-    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), None, WINDOW_END)
+    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
-    // 2 versiot → 2 separate records, both fit in one file
+    // 2 versiot → 2 separate records, both fit in one page/file
     Assertions.assertEquals(2, count)
     Mockito.verify(mockSiirtotiedostoClient, Mockito.times(1))
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
   }
 
-  @Test def testOpiskeluoikeudetBatchitLuovatUseampiaTiedostoja(): Unit = {
+  @Test def testOpiskeluoikeudetSivutusLuoUseampiaTiedostoja(): Unit = {
     val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet(batchSize = 2)
-    val versiotJaOo = (1 to 3).map { i =>
+    val page1 = (1 to 2).map { i =>
       val versio = BASE_VERSIO.copy(
         tunniste   = UUID.fromString(s"00000000-0000-0000-0000-0000000000${i}0"),
         henkiloOid = s"1.2.246.562.24.1000000000$i"
@@ -341,13 +344,19 @@ class OvaraServiceTest {
       val oo = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString(s"00000000-0000-0000-0000-0000000001${i}0"))
       (versio, Set[Opiskeluoikeus](oo))
     }
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any()))
-      .thenReturn(versiotJaOo)
+    val page2 = Seq((
+      BASE_VERSIO.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000030"), henkiloOid = "1.2.246.562.24.10000000003"),
+      Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000130")))
+    ))
+    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
+      .thenReturn(page1)
+      .thenReturn(page2)
+      .thenReturn(Seq.empty)
 
-    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), None, WINDOW_END)
+    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
     Assertions.assertEquals(3, count)
-    // 3 persons, batch size 2 → 2 files (batches of 2+1)
+    // page1 (2 versiot) → file 1, page2 (1 versio) → file 2
     Mockito.verify(mockSiirtotiedostoClient, Mockito.times(2))
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
   }
