@@ -487,6 +487,11 @@ case class OvaraPerusopetuksenOppiaine(
   rajattu: Option[Boolean]
 )
 
+case class OvaraPoistettuOpiskeluoikeus(
+  entiteetinTyyppi: String = "PoistettuOpiskeluoikeus",
+  oid: String
+)
+
 case class OvaraVersioMetadata(
   lahdejarjestelma: String,
   lahdeTunniste: String,
@@ -506,5 +511,6 @@ case class OvaraVersioJaOpiskeluoikeudet(
   yoOpiskeluoikeudet: Seq[OvaraYOOpiskeluoikeus],
   geneerisetOpiskeluoikeudet: Seq[OvaraGeneerinenOpiskeluoikeus],
   ammatillisetOpiskeluoikeudet: Seq[OvaraAmmatillinenOpiskeluoikeus],
-  perusopetuksenOpiskeluoikeudet: Seq[OvaraPerusopetuksenOpiskeluoikeus]
+  perusopetuksenOpiskeluoikeudet: Seq[OvaraPerusopetuksenOpiskeluoikeus],
+  poistetutOpiskeluoikeudet: Seq[OvaraPoistettuOpiskeluoikeus]
 )
