@@ -403,7 +403,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(updateLahtokoulutAction.transactionally), Duration.Inf)
   }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Seq[(VersioEntiteetti, String)] = {
     Await.result(db.run(
         (sql"""
           WITH w_versiotunnisteet(tunniste) AS ("""
@@ -427,10 +427,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
-        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) => {
+        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) =>
         (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), opiskeluoikeusContainer)
-      })
-      .map((versio, opiskeluoikeusContainer) => (versio -> opiskeluoikeusContainer)).toMap
+      )
   }
 
   /**
@@ -447,7 +446,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     else
       sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo"""
 
-    haeSuorituksetInternal(versioTunnisteetQuery)
+    haeSuorituksetInternal(versioTunnisteetQuery).toMap
   }
 
   def lisaaKoskiSkip(henkiloOid: String, opiskeluoikeusOid: String, selite: String) = {
@@ -892,7 +891,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     windowEnd: Instant,
     pageSize: Int,
     afterTunniste: Option[UUID] = None
-  ): Map[VersioEntiteetti, String] = {
+  ): Seq[(VersioEntiteetti, String)] = {
+    LOG.info(s"Haetaan versiot joiden data muuttunut $windowStart - $windowEnd. $pageSize per sivu, afterTunniste = $afterTunniste")
     val baseQuery = sql"""SELECT tunniste FROM versiot
           WHERE parserointihetki >= ${windowStart.toString}::timestamptz
             AND parserointihetki < ${windowEnd.toString}::timestamptz
@@ -901,7 +901,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       case Some(t) => baseQuery.concat(sql" AND tunniste > ${t.toString}::uuid")
       case None    => baseQuery
     }
-    haeSuorituksetInternal(withKeyset.concat(sql" ORDER BY tunniste LIMIT $pageSize"))
+    haeSuorituksetInternal(withKeyset.concat(sql" ORDER BY tunniste ASC LIMIT $pageSize"))
   }
 
   def poistaHarkinnanvaraisuusYliajo(
