@@ -490,6 +490,7 @@ case class OvaraPerusopetuksenOppiaine(
 case class OvaraVersioMetadata(
   lahdejarjestelma: String,
   lahdeTunniste: String,
+  lahdeVersio: Option[Int],
   parserVersio: Option[Int],
   luontiHetki: Option[Instant],
   paivitysHetki: Option[Instant],
