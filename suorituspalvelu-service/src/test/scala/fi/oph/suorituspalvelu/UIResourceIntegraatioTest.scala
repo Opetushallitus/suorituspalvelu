@@ -970,7 +970,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertEquals(1, oppiaineet.size)
     val oppiaine = oppiaineet.head
     Assertions.assertEquals("MA", oppiaine.koodi)
-    Assertions.assertEquals("9", oppiaine.arvosana)
+    Assertions.assertEquals(Optional.of("9"), oppiaine.arvosana)
     Assertions.assertFalse(oppiaine.valinnainen)
     Assertions.assertTrue(oppiaine.kieli.isEmpty)
 

@@ -288,6 +288,47 @@ test.describe('Tarkastusnäkymä', () => {
     await expect(page.getByText('Hae ja valitse henkilö')).toBeVisible();
   });
 
+  test('valmiin oppimäärän puuttuva pakollinen arvosana näkyy rivinä ilman arvosanaa', async ({
+    page,
+  }) => {
+    // Backend lähettää valmiille perusopetuksen oppimäärälle paikkarivin myös niille pakollisille
+    // aineille joista arvosana puuttuu. Simuloidaan tilanne poistamalla matematiikan arvosana.
+    const oppijanTiedotMaArvosanaaPuuttuu = {
+      ...OPPIJAN_TIEDOT,
+      perusopetuksenOppimaarat: OPPIJAN_TIEDOT.perusopetuksenOppimaarat.map(
+        (om) => ({
+          ...om,
+          oppiaineet: om.oppiaineet.map((oa) =>
+            oa.koodi === 'MA' ? { ...oa, arvosana: null } : oa,
+          ),
+        }),
+      ),
+    };
+    await page.unroute('**/ui/tiedot');
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({ json: oppijanTiedotMaArvosanaaPuuttuu });
+      }
+    });
+
+    await page.goto('tarkastus');
+    await selectOption({ name: 'Oppilaitos', page, option: OPPILAITOS_NIMI });
+    await getHenkilotSidebar(page)
+      .getByRole('link', { name: 'Olli Oppija, henkilötunnus: 010296-1230' })
+      .click();
+
+    // Saavutettava nimi muodostuu rivin solujen sisällöstä. Kun arvosana puuttuu, rivin nimi on
+    // pelkkä oppiaineen nimi (valinnainen-sarake näytetään vain jos jollakin on valinnainen arvosana,
+    // jossa tapauksessa sekin tulisi mukaan nimeen).
+    const matematiikkaRow = page.getByRole('row', {
+      name: 'Matematiikka',
+      exact: true,
+    });
+    await expect(matematiikkaRow).toBeVisible();
+    // Solujärjestys: oppiaineen nimi, arvosana, valinnainen. Arvosanasolu on tyhjä.
+    await expect(matematiikkaRow.getByRole('cell').nth(1)).toHaveText('');
+  });
+
   test('säilyttää hakuparametrit navigoitaessa oppijan tietoihin', async ({
     page,
   }) => {
