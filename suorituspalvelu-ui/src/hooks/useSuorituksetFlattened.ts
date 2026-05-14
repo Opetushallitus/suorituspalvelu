@@ -23,33 +23,36 @@ const convertPerusopetusOppiaineet = (
     (oppiaine) => oppiaine.koodi + (oppiaine.kieli ?? ''),
   );
   const result = Object.values(groupedOppiaineet).map?.((oppiaineGroup) => {
-    return oppiaineGroup?.reduce((mergedOppiaine, curr) => {
-      const baseOppiaine: PerusopetuksenOppiaine = {
-        ...mergedOppiaine,
-        nimi: curr.nimi,
-        tunniste: curr.tunniste,
-        koodi: curr.koodi,
-        kieli: curr.kieli,
-      };
-      if (curr.valinnainen) {
+    return oppiaineGroup?.reduce<PerusopetuksenOppiaine>(
+      (mergedOppiaine, curr) => {
+        const baseOppiaine: PerusopetuksenOppiaine = {
+          ...mergedOppiaine,
+          nimi: curr.nimi,
+          tunniste: curr.tunniste,
+          koodi: curr.koodi,
+          kieli: curr.kieli,
+        };
+        if (curr.valinnainen) {
+          return {
+            ...baseOppiaine,
+            valinnaisetArvosanat: [
+              ...(mergedOppiaine?.valinnaisetArvosanat ?? []),
+              ...(curr.arvosana ? [curr.arvosana] : []),
+            ],
+          };
+        }
+        if (mergedOppiaine.arvosana && curr.arvosana) {
+          throw new Error(
+            `Pakolliselle oppiaineelle löytyi duplikaatti-arvosanoja (tunniste: ${curr.tunniste}, koodi: ${curr.koodi}, kieli: ${curr.kieli})`,
+          );
+        }
         return {
           ...baseOppiaine,
-          valinnaisetArvosanat: [
-            ...(mergedOppiaine?.valinnaisetArvosanat ?? []),
-            curr.arvosana,
-          ],
+          arvosana: curr.arvosana,
         };
-      }
-      if (mergedOppiaine.arvosana && curr.arvosana) {
-        throw new Error(
-          `Pakolliselle oppiaineelle löytyi duplikaatti-arvosanoja (tunniste: ${curr.tunniste}, koodi: ${curr.koodi}, kieli: ${curr.kieli})`,
-        );
-      }
-      return {
-        ...baseOppiaine,
-        arvosana: curr.arvosana,
-      };
-    }, {} as PerusopetuksenOppiaine);
+      },
+      {} as PerusopetuksenOppiaine,
+    );
   });
 
   return result;

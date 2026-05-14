@@ -1063,8 +1063,10 @@ case class PerusopetuksenOppiaineUI(
   @BeanProperty nimi: PerusopetuksenOppiaineNimi,
   @(Schema @field)(example = ESIMERKKI_VIERAS_KIELI_KIELIKOODI, requiredMode = RequiredMode.REQUIRED)
   @BeanProperty kieli: Optional[String],
-  @(Schema @field)(example = ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty arvosana: String,
+  // Arvosana on Optional, koska valmiille perusopetuksen oppimäärälle näytetään myös pakolliset YHTEISET_AINEET
+  // / KATSOMUSAINEET joiden arvosana puuttuu.
+  @(Schema @field)(example = ESIMERKKI_PERUSOPETUKSEN_OPPIAINEEN_ARVOSANA, requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty arvosana: Optional[String],
   @(Schema @field)(example = "true", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty valinnainen: Boolean
 )

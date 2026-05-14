@@ -12,6 +12,7 @@ import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.junit.jupiter.api.*
 
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
@@ -30,6 +31,18 @@ class EntityToUIConverterTest {
   val DUMMY_KOODISTOPROVIDER = new KoodistoProvider {
     override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
   }
+
+  // Rakentaa odotetun puuttuvan oppiaineen paikkarivin, jollainen EntityToUIConverter lisää
+  // VALMIIN perusopetuksen oppimäärän puuttuville pakollisille aineille (arvosana = Optional.empty()).
+  private def placeholderOppiaineUI(om: PerusopetuksenOppimaara, koodi: String): PerusopetuksenOppiaineUI =
+    PerusopetuksenOppiaineUI(
+      tunniste = UUID.nameUUIDFromBytes(s"missing-${om.tunniste}-$koodi".getBytes(StandardCharsets.UTF_8)),
+      koodi = koodi,
+      nimi = PerusopetuksenOppiaineNimi(Optional.of(koodi), Optional.of(koodi), Optional.of(koodi)),
+      kieli = Optional.empty(),
+      arvosana = Optional.empty(),
+      valinnainen = false
+    )
 
   val ARVOSANAPROVIDER = new KoodistoProvider {
     override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
@@ -643,20 +656,31 @@ class EntityToUIConverterTest {
           Optional.empty
         )
       )),
-      oppiaineet = List("AI", "A1", "HI").map(koodi => oppimaara.aineet.find(_.koodi.arvo == koodi).get).map(aine => fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaineUI(
-        tunniste = aine.tunniste,
-        koodi = aine.koodi.arvo,
-        nimi = PerusopetuksenOppiaineNimi(
-          if(aine.koodi.arvo=="A1") Optional.of("A1-kieli, saksa")
-          else if(aine.koodi.arvo=="AI") Optional.of("Äidinkieli, Suomen kieli ja kirjallisuus")
-          else aine.nimi.fi.toJava,
-          aine.nimi.sv.toJava,
-          aine.nimi.en.toJava
-        ),
-        kieli = aine.kieli.map(_.arvo).toJava,
-        arvosana = aine.arvosana.arvo,
-        valinnainen = !aine.pakollinen
-      )).asJava,
+      oppiaineet = {
+        def realUI(koodi: String) = {
+          val aine = oppimaara.aineet.find(_.koodi.arvo == koodi).get
+          fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppiaineUI(
+            tunniste = aine.tunniste,
+            koodi = aine.koodi.arvo,
+            nimi = PerusopetuksenOppiaineNimi(
+              if (aine.koodi.arvo == "A1") Optional.of("A1-kieli, saksa")
+              else if (aine.koodi.arvo == "AI") Optional.of("Äidinkieli, Suomen kieli ja kirjallisuus")
+              else aine.nimi.fi.toJava,
+              aine.nimi.sv.toJava,
+              aine.nimi.en.toJava
+            ),
+            kieli = aine.kieli.map(_.arvo).toJava,
+            arvosana = Optional.of(aine.arvosana.arvo),
+            valinnainen = !aine.pakollinen
+          )
+        }
+        // Järjestys NAYTETTAVAT_OPPIAINEET-listan mukaan: olemassaolevat AI/A1, sitten puuttuvat paikkarivit,
+        // KT katsomusaineen paikkarivinä (ei ET:tä eikä KT:tä om.aineet:ssa), HI olemassa, loput puuttuvat.
+        (List(realUI("AI"), realUI("A1")) ++
+          List("B1", "MA", "BI", "GE", "FY", "KE", "TE", "KT").map(placeholderOppiaineUI(oppimaara, _)) ++
+          List(realUI("HI")) ++
+          List("YH", "MU", "KU", "KS", "LI", "KO").map(placeholderOppiaineUI(oppimaara, _))).asJava
+      },
       syotetty = oppimaara.syotetty
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, List.empty)), DUMMY_ORGANISAATIOPROVIDER, koodistoProvider).perusopetuksenOppimaarat)
   }
@@ -700,6 +724,99 @@ class EntityToUIConverterTest {
 
     Assertions.assertEquals(1, result.perusopetuksenOppimaarat.size())
     Assertions.assertTrue(result.perusopetuksenOppimaarat.get(0).oppiaineet.isEmpty, "Oppiaineet should be empty when supaTila is not VALMIS")
+  }
+
+  // Apuri puuttuvien arvosanojen testeille: rakentaa VALMIIN perusopetuksen oppimäärän, jolla on
+  // annettu joukko (koodi -> arvosana) -pareja.
+  private def valmisOppimaaraWithAineet(aineet: Set[(String, String)]): PerusopetuksenOppimaara =
+    PerusopetuksenOppimaara(
+      tunniste = UUID.randomUUID(),
+      versioTunniste = None,
+      oppilaitos = Oppilaitos(Kielistetty(Some("Testikoulu"), None, None), "1.2.3.4.5"),
+      luokka = Some("9A"),
+      luokkaAste = Some(9),
+      koskiTila = Koodi("valmistunut", "", None),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      suoritusKieli = Koodi("FI", "kieli", Some(1)),
+      koulusivistyskieli = Set.empty,
+      yksilollistaminen = None,
+      aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
+      vahvistusPaivamaara = Some(LocalDate.parse("2020-01-01")),
+      aineet = aineet.map { case (koodi, arvosana) =>
+        PerusopetuksenOppiaine(
+          tunniste = UUID.randomUUID(),
+          nimi = Kielistetty(Some(koodi), None, None),
+          koodi = Koodi(koodi, "koskioppiaineetyleissivistava", Some(1)),
+          arvosana = Koodi(arvosana, "arviointiasteikkoyleissivistava", Some(1)),
+          kieli = None,
+          pakollinen = true,
+          yksilollistetty = Some(false),
+          rajattu = Some(false)
+        )
+      },
+      lahtokoulut = List.empty,
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = false
+    )
+
+  private def oppiaineetFromConverter(oppimaara: PerusopetuksenOppimaara): java.util.List[PerusopetuksenOppiaineUI] = {
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.3"), "", Set(oppimaara), None, fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, List.empty)),
+      DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
+    )
+    result.perusopetuksenOppimaarat.get(0).oppiaineet
+  }
+
+  // YHTEISET_AINEET-listan kaikki aineet (paitsi AI/A1, joita käytetään äidinkielen/vieraan kielen testeissä erikseen).
+  private val KAIKKI_YHTEISET_PAITSI_AI_A1 =
+    List("AI", "A1", "B1", "MA", "BI", "GE", "FY", "KE", "HI", "YH", "LI", "TE", "MU", "KU", "KS", "KO")
+
+  @Test def testPerusopetuksenOppimaaraPuuttuvaYhteinenAineNakyyPaikkarivina(): Unit = {
+    // Oppimäärällä on vain HI ja KT: kaikki muut yhteiset aineet pitää näkyä paikkariveinä (arvosana = Optional.empty).
+    val oppimaara = valmisOppimaaraWithAineet(Set("HI" -> "9", "KT" -> "8"))
+    val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
+
+    val koodiToArvosana = oppiaineet.map(o => o.koodi -> o.arvosana).toMap
+    Assertions.assertEquals(Optional.of("9"), koodiToArvosana("HI"))
+    Assertions.assertEquals(Optional.of("8"), koodiToArvosana("KT"))
+    // Kaikki muut YHTEISET_AINEET ovat paikkarivejä (arvosana puuttuu).
+    val puuttuvat = KAIKKI_YHTEISET_PAITSI_AI_A1.filter(_ != "HI")
+    puuttuvat.foreach(koodi =>
+      Assertions.assertFalse(koodiToArvosana(koodi).isPresent, s"Expected placeholder for $koodi")
+    )
+    // ET-paikkariviä ei lisätä koska KT on jo annettu.
+    Assertions.assertFalse(koodiToArvosana.contains("ET"), "ET-paikkariviä ei pidä lisätä kun KT on annettu")
+  }
+
+  @Test def testPerusopetuksenOppimaaraEtRiittaaKatsomusaineeksi(): Unit = {
+    // ET on annettu, joten ei lisätä KT-paikkariviä.
+    val kaikkiYhteisetPlusEt = KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9").toSet + ("ET" -> "9")
+    val oppimaara = valmisOppimaaraWithAineet(kaikkiYhteisetPlusEt)
+    val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
+    val koodit = oppiaineet.map(_.koodi).toSet
+    Assertions.assertTrue(koodit.contains("ET"), "ET pitää olla mukana")
+    Assertions.assertFalse(koodit.contains("KT"), "KT-paikkariviä ei pidä lisätä kun ET on annettu")
+    Assertions.assertTrue(oppiaineet.forall(_.arvosana.isPresent), "Kaikki yhteiset aineet on annettu, paikkarivejä ei pidä olla")
+  }
+
+  @Test def testPerusopetuksenOppimaaraNeitherEtNorKtAddsKtPlaceholder(): Unit = {
+    // Ei ET:tä eikä KT:tä — pitää lisätä yksi KT-paikkarivi (eikä ET:tä).
+    val oppimaara = valmisOppimaaraWithAineet(KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9").toSet)
+    val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
+    val koodiToArvosana = oppiaineet.map(o => o.koodi -> o.arvosana).toMap
+    Assertions.assertFalse(koodiToArvosana("KT").isPresent, "KT pitää olla paikkarivinä (arvosana puuttuu)")
+    Assertions.assertFalse(koodiToArvosana.contains("ET"), "ET-paikkariviä ei pidä lisätä; vain yksi katsomusaine riittää")
+  }
+
+  @Test def testPerusopetuksenOppimaaraTaysinValmisEiPaikkarivejä(): Unit = {
+    // Kaikki yhteiset + KT annettuna => ei lisätä yhtään paikkariviä.
+    val kaikki = (KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9").toSet + ("KT" -> "9"))
+    val oppimaara = valmisOppimaaraWithAineet(kaikki)
+    val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
+    Assertions.assertTrue(oppiaineet.forall(_.arvosana.isPresent), "Täysin valmiilla oppimäärällä jokaisella rivillä pitää olla arvosana")
+    // Rivien lukumäärä = annetut aineet (kaikki ovat NAYTETTAVAT_OPPIAINEET:ssa).
+    Assertions.assertEquals(kaikki.size, oppiaineet.size)
   }
 
   @Test def testConvertOpiskeluoikeudet(): Unit = {

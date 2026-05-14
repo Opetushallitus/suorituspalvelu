@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkintoOsittainen, DIAOppiaine, DIATutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
-import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTO
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
@@ -12,7 +12,8 @@ import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoPro
 import org.slf4j.LoggerFactory
 
 import java.time.LocalDate
-import java.util.Optional
+import java.nio.charset.StandardCharsets
+import java.util.{Optional, UUID}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
@@ -29,6 +30,32 @@ object EntityToUIConverter {
       .filter(a => oppiaineOrder.contains(a.koodi))
       .toList
       .sortBy(a => (oppiaineOrder(a.koodi), a.valinnainen, a.kieli.orElse("")))
+
+  // Pakollisten YHTEISET_AINEET ja KATSOMUSAINEET arvosanat näytetään aina valmiin oppimäärän rivistöllä.
+  // Jos oppilaalla ei ole jotakin yhteistä ainetta, lisätään paikkarivi jolla arvosana on Optional.empty.
+  // Katsomusaineista riittää jompikumpi (ET tai KT); jos kumpaakaan ei ole, lisätään yksi KT-paikkarivi.
+  private def puuttuvienAineidenPaikkarivit(
+    om: PerusopetuksenOppimaara,
+    olemassaolevatKoodit: Set[String],
+    koodistoProvider: KoodistoProvider
+  ): Set[PerusopetuksenOppiaineUI] = {
+    val puuttuvatYhteiset = KoskiUtil.YHTEISET_AINEET.filterNot(olemassaolevatKoodit.contains)
+    val puuttuvaKatsomus =
+      if (KoskiUtil.KATSOMUSAINEET.exists(olemassaolevatKoodit.contains)) List.empty
+      else List("KT")
+    (puuttuvatYhteiset ++ puuttuvaKatsomus).map(koodi => {
+      val nimi = getKoodiNimi[PerusopetuksenOppiaineNimi](Some(koodi), KoskiUtil.KOODISTO_OPPIAINEET, koodistoProvider)
+        .orElse(PerusopetuksenOppiaineNimi(Optional.of(koodi), Optional.of(koodi), Optional.of(koodi)))
+      PerusopetuksenOppiaineUI(
+        tunniste = UUID.nameUUIDFromBytes(s"missing-${om.tunniste}-$koodi".getBytes(StandardCharsets.UTF_8)),
+        koodi = koodi,
+        nimi = nimi,
+        kieli = Optional.empty(),
+        arvosana = Optional.empty(),
+        valinnainen = false,
+      )
+    }).toSet
+  }
 
   // Structural type that defines the required shape (three Optional[String] fields)
   type NimiLike = {
@@ -913,25 +940,34 @@ object EntityToUIConverter {
             PerusopetuksenYksilollistaminen.toIntValue(y),
             getKoodiNimi[YksilollistamisNimi](Some(PerusopetuksenYksilollistaminen.toIntValue(y).toString), KOODISTO_POHJAKOULUTUS, koodistoProvider).get
           )).toJava,
-          // halutaan näyttää vain valmistuneen suorituksen oppiaineet, järjestyksessä ja suodatettuna
-          oppiaineet = filterAndSortOppiaineet(
-            (if (om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS) om.aineet else Set.empty).map(a => {
-              def getLisatieto(asiointiKieli: String): Option[String] =
-                if (a.koodi.arvo == "AI") getAidinkielenNimi(a.kieli, asiointiKieli)
-                else getVieraanKielenNimi(a.kieli, asiointiKieli)
-              PerusopetuksenOppiaineUI(
-              tunniste = a.tunniste,
-              koodi = a.koodi.arvo,
-              nimi = PerusopetuksenOppiaineNimi(
-                fi = a.nimi.fi.map(n => n + getLisatieto("fi").map(k => ", " + k).getOrElse("")).toJava,
-                sv = a.nimi.sv.map(n => n + getLisatieto("sv").map(k => ", " + k).getOrElse("")).toJava,
-                en = a.nimi.en.map(n => n + getLisatieto("en").map(k => ", " + k).getOrElse("")).toJava,
-              ),
-              kieli = a.kieli.map(k => k.arvo).toJava,
-              arvosana = a.arvosana.arvo,
-              valinnainen = !a.pakollinen,
-            )})
-          ).asJava,
+          // halutaan näyttää vain valmistuneen suorituksen oppiaineet, järjestyksessä ja suodatettuna.
+          // Pakollisten aineiden joukosta (YHTEISET_AINEET + jokin KATSOMUSAINEET) puuttuvat arvosanat lisätään
+          // paikkarivinä (arvosana puuttuu), jotta tarkastusnäkymässä erottaa mikä arvosana puuttuu.
+          oppiaineet = {
+            val onValmis = om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
+            val omanAineenOppiaineet: Set[PerusopetuksenOppiaineUI] =
+              (if (onValmis) om.aineet else Set.empty).map(a => {
+                def getLisatieto(asiointiKieli: String): Option[String] =
+                  if (a.koodi.arvo == "AI") getAidinkielenNimi(a.kieli, asiointiKieli)
+                  else getVieraanKielenNimi(a.kieli, asiointiKieli)
+                PerusopetuksenOppiaineUI(
+                  tunniste = a.tunniste,
+                  koodi = a.koodi.arvo,
+                  nimi = PerusopetuksenOppiaineNimi(
+                    fi = a.nimi.fi.map(n => n + getLisatieto("fi").map(k => ", " + k).getOrElse("")).toJava,
+                    sv = a.nimi.sv.map(n => n + getLisatieto("sv").map(k => ", " + k).getOrElse("")).toJava,
+                    en = a.nimi.en.map(n => n + getLisatieto("en").map(k => ", " + k).getOrElse("")).toJava,
+                  ),
+                  kieli = a.kieli.map(k => k.arvo).toJava,
+                  arvosana = Optional.of(a.arvosana.arvo),
+                  valinnainen = !a.pakollinen,
+                )
+              })
+            val puuttuvatPaikkarivit: Set[PerusopetuksenOppiaineUI] =
+              if (onValmis) puuttuvienAineidenPaikkarivit(om, omanAineenOppiaineet.map(_.koodi), koodistoProvider)
+              else Set.empty
+            filterAndSortOppiaineet(omanAineenOppiaineet ++ puuttuvatPaikkarivit)
+          }.asJava,
           syotetty = om.syotetty
         )
       }).toList
@@ -956,7 +992,7 @@ object EntityToUIConverter {
                 oppiaine.nimi.en.toJava
               ),
               kieli = java.util.Optional.ofNullable(oppiaine.kieli.map(_.arvo).orNull),
-              arvosana = oppiaine.arvosana.arvo,
+              arvosana = Optional.of(oppiaine.arvosana.arvo),
               valinnainen = !oppiaine.pakollinen
             )
           })

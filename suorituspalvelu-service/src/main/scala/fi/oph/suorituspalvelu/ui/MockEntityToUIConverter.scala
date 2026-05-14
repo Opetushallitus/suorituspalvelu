@@ -658,7 +658,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
           kieli = Optional.of("AI1"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -670,7 +670,7 @@ object MockEntityToUIConverter {
             en = Optional.of("A1-kieli, englanti en")
           ),
           kieli = Optional.of("EN"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -682,7 +682,7 @@ object MockEntityToUIConverter {
             en = Optional.of("B1-kieli, ruotsi en")
           ),
           kieli = Optional.of("SV"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -694,7 +694,7 @@ object MockEntityToUIConverter {
             en = Optional.of("A2-kieli, saksa en")
           ),
           kieli = Optional.of("DE"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = true
         ),
         PerusopetuksenOppiaineUI(
@@ -706,7 +706,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Matematiikka en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -718,7 +718,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Biologia en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -730,7 +730,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Maantieto en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -742,7 +742,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Fysiikka en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -754,7 +754,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Kemia en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -766,7 +766,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Terveystieto en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -778,7 +778,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Uskonto tai elämänkatsomustieto en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         )
       ),
@@ -841,7 +841,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Biologia en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -853,7 +853,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Historia en")
           ),
           kieli = Optional.empty(),
-          arvosana = "8",
+          arvosana = Optional.of("8"),
           valinnainen = false
         )
       ),
@@ -891,7 +891,7 @@ object MockEntityToUIConverter {
           en = Optional.of("matematiikka en")
         ),
         kieli = Optional.empty(),
-        arvosana = "9",
+        arvosana = Optional.of("9"),
         valinnainen = false
       )),
       syotetty = false
@@ -927,7 +927,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Äidinkieli ja kirjallisuus, suomen kieli ja kirjallisuus en")
           ),
           kieli = Optional.of("AI1"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -939,7 +939,7 @@ object MockEntityToUIConverter {
             en = Optional.of("A1-kieli, englanti en")
           ),
           kieli = Optional.of("EN"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -951,7 +951,7 @@ object MockEntityToUIConverter {
             en = Optional.of("B1-kieli, ruotsi en")
           ),
           kieli = Optional.of("SV"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -963,7 +963,7 @@ object MockEntityToUIConverter {
             en = Optional.of("A2-kieli, saksa en")
           ),
           kieli = Optional.of("DE"),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -975,7 +975,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Matematiikka en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -987,7 +987,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Biologia en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -999,7 +999,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Maantieto en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         ),
         PerusopetuksenOppiaineUI(
@@ -1011,7 +1011,7 @@ object MockEntityToUIConverter {
             en = Optional.of("Fysiikka en")
           ),
           kieli = Optional.empty(),
-          arvosana = "9",
+          arvosana = Optional.of("9"),
           valinnainen = false
         )
       )

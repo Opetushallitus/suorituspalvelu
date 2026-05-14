@@ -226,7 +226,7 @@ export interface IIBOppiaineNimi {
 }
 
 export interface IIBOppiaineUI {
-  nimi: IIBOppiaineNimi;
+  nimi?: IIBOppiaineNimi;
   suoritukset: IIBSuoritusUI[];
 }
 
@@ -546,7 +546,7 @@ export interface IPerusopetuksenOppiaineUI {
   koodi: string;
   nimi: IPerusopetuksenOppiaineNimi;
   kieli?: string;
-  arvosana: string;
+  arvosana?: string;
   valinnainen: boolean;
 }
 
