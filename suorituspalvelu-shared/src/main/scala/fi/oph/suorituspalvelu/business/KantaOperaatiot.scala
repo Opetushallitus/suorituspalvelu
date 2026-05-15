@@ -850,6 +850,19 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   //Päivittäiset tiedot muodostetaan, jos kaksi ehtoa täyttyy:
   //1. Samana päivänä ei ole vielä muodostettu päivittäisiä niin että koko suoritus on päättynyt onnistuneesti
   //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 6 tunnin aikana
+  def onkoKaynnissaOlevaOperaatio(): Boolean = {
+    val result = Await.result(db.run(
+      sql"""
+        SELECT EXISTS(
+          SELECT 1 FROM siirtotiedostot
+          WHERE run_start >= now() - interval '3 hours'
+            AND run_end IS NULL
+        )
+      """.as[Boolean]
+    ), DB_TIMEOUT)
+    result.head
+  }
+
   def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
     val idResult = Await.result(db.run(
       sql"""
