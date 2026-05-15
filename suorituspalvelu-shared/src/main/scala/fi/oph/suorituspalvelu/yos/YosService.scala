@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
 import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
@@ -103,6 +104,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
             Some(oikeus.myontaja),
             Some(oikeus.myontaja)))
     )
-    YosPaatettavaOpiskeluOikeus(oikeus.tunniste, organisaatio, oikeus.nimi, oikeus.koulutusKoodi)
+    val virtaOpiskeluOikeusId = VirtaToSuoritusConverter.getVirtaOpiskeluoikeusId(oikeus.myontaja, oikeus.virtaTunniste)
+    YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId, organisaatio, oikeus.nimi, oikeus.koulutusKoodi)
   }
 }
