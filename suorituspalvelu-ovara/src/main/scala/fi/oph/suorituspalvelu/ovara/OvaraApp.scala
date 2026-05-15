@@ -49,6 +49,10 @@ class OvaraRunner extends CommandLineRunner {
       harkinnanvaraisuudet = true,
       ensikertalaisuudet = true
     )
+    if (kantaOperaatiot.onkoKaynnissaOlevaOperaatio()) {
+      LOG.info(s"(${params.executionId}) Käynnissä oleva operaatio löytyi (alle 3 tuntia vanha, ei ole päättynyt), ei aloiteta uutta.")
+      System.exit(0)
+    }
     val operaatio: SiirtotiedostoOperaatio = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(params.executionId)
     LOG.info(s"(${params.executionId}) Siirtotiedostonmuodostusoperaatio aloitettu (#${operaatio.id}), ikkuna: ${operaatio.windowStart} – ${operaatio.windowEnd}. $operaatio")
     try {
