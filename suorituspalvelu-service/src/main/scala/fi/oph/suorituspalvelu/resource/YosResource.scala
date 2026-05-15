@@ -65,13 +65,13 @@ class YosResource @Autowired (yosService: YosService) {
               Left(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e))
             },
             r => Right(YosSuccessResponse(r.map(oikeus => YosOpiskeluOikeus(
-                  tunniste = oikeus.tunniste.toString,
+                  virtaOpiskeluOikeusId = oikeus.virtaOpiskeluOikeusId,
                   organisaatioOid = oikeus.organisaatio.oid.getOrElse(""),
                   organisaatioNimi = YosNimi(
                     oikeus.organisaatio.nimi.fi.getOrElse(""),
                     oikeus.organisaatio.nimi.sv.getOrElse(""),
                     oikeus.organisaatio.nimi.en.getOrElse("")),
-                  nimi = oikeus.nimi.map(
+                  virtaNimi = oikeus.virtaNimi.map(
                     nimi => YosNimi(
                       nimi.fi.getOrElse(""),
                       nimi.sv.getOrElse(""),

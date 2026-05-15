@@ -149,8 +149,8 @@ class YosServiceTest {
     val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty)
     assertEquals(1, oikeudet.size)
     val oikeus = oikeudet.head
-    assertEquals("Sosionomikoulutus", oikeus.nimi.get.fi.get)
-    assertNotNull(oikeus.tunniste)
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
     assertEquals("koulutuskoodi_1", oikeus.koulutusKoodi.get)
     assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
     assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
@@ -217,8 +217,8 @@ class YosServiceTest {
     val oikeudet = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).getOrElse(Set.empty)
     assertEquals(1, oikeudet.size)
     val oikeus = oikeudet.head
-    assertEquals("Sosionomikoulutus", oikeus.nimi.get.fi.get)
-    assertNotNull(oikeus.tunniste)
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
     assertEquals("koulutuskoodi_1", oikeus.koulutusKoodi.get)
     assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
     assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)

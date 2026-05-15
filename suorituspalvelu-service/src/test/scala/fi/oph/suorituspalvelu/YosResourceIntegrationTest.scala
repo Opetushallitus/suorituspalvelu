@@ -107,7 +107,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
       .andExpect(status().isOk).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
     Assertions.assertEquals(1, response.paatettavatOpiskeluOikeudet.size())
-    Assertions.assertEquals("Laivan rakennusala", response.paatettavatOpiskeluOikeudet.get(0).nimi.fi)
+    Assertions.assertEquals("Laivan rakennusala", response.paatettavatOpiskeluOikeudet.get(0).virtaNimi.fi)
 
     // tarkistetaan että kutsun tiedot tallentuvat auditlokiin
     val auditLogEntry = getLatestAuditLogEntry()
