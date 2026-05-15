@@ -32,6 +32,12 @@ case class VirtaJakso(
   Luokittelu: Option[String]
 )
 
+object VirtaOpiskeluoikeus {
+
+  def getVirtaOpiskeluoikeusId(myontaja: String, avain: String): String =
+    s"${myontaja}_${avain}"
+}
+
 case class VirtaOpiskeluoikeus(
   Laajuus: VirtaLaajuus,
   LoppuPvm: LocalDate,
@@ -46,7 +52,11 @@ case class VirtaOpiskeluoikeus(
   Myontaja: String,
   opiskelijaAvain: String,
   avain: String
-)
+) {
+
+  def getVirtaOpiskeluoikeusId: String =
+    VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(Myontaja, avain)
+}
 
 case class VirtaLukukausiIlmoittautuminen(
   IlmoittautumisPvm: LocalDate,
