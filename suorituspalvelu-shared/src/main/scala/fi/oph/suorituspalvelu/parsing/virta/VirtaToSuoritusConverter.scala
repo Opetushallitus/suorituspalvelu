@@ -212,8 +212,11 @@ object VirtaToSuoritusConverter {
     }
   }
 
+  def getVirtaOpiskeluoikeusId(myontaja: String, avain: String): String =
+    s"${myontaja}_${avain}"
+
   private def getVirtaOpiskeluoikeusId(virtaOpiskeluoikeus: VirtaOpiskeluoikeus): String =
-    s"${virtaOpiskeluoikeus.Myontaja}_${virtaOpiskeluoikeus.avain}"
+    getVirtaOpiskeluoikeusId(virtaOpiskeluoikeus.Myontaja, virtaOpiskeluoikeus.avain)
 
   private def getVirtaOpintosuoritusId(virtaOpintosuoritus: VirtaOpintosuoritus): String =
     s"${virtaOpintosuoritus.Myontaja}_${virtaOpintosuoritus.avain}"
