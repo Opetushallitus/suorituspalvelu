@@ -52,14 +52,23 @@ class OvaraRunner extends CommandLineRunner {
     val operaatio: SiirtotiedostoOperaatio = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(params.executionId)
     LOG.info(s"(${params.executionId}) Siirtotiedostonmuodostusoperaatio aloitettu (#${operaatio.id}), ikkuna: ${operaatio.windowStart} – ${operaatio.windowEnd}. $operaatio")
     try {
+      val opiskeluoikeudetOnnistuneet = ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params, operaatio.windowStart, operaatio.windowEnd)
+
       val paivittaisetTulos = if (operaatio.paivittaiset) {
         LOG.info(s"(${params.executionId}) Muodostetaan paivittaiset siirtotiedostot (valintadata, harkinnanvaraiset, ensikertalaisuudet)")
         ovaraService.muodostaPaivittaisetHauille(params)
       } else MuodostamisTulos(0, Map.empty)
-      val opiskeluoikeudetTulos = MuodostamisTulos(0, Map.empty) //Todo, poimitaan aikaikkunassa muuttuneet tiedot siirtotiedostoihin
-      val errorMessage = Some(s"Epäonnistuneet haut: ${paivittaisetTulos.epaonnistuneetHaut.map((oid, msg) => s"$oid: $msg").mkString(", ")}")
+
+      val errorMessage = if (paivittaisetTulos.epaonnistuneetHaut.nonEmpty)
+        Some(s"Epäonnistuneet haut: ${paivittaisetTulos.epaonnistuneetHaut.map((oid, msg) => s"$oid: $msg").mkString(", ")}")
+      else None
       //Tulkitaan onnistuneeksi operaatioksi sellainenkin muodostus, jossa joillekin hauille tapahtui virheitä.
-      kantaOperaatiot.paataSiirtotiedostoOperaatio(operaatio.id, true, errorMessage, Map("valintadata" -> paivittaisetTulos.onnistuneet))
+      kantaOperaatiot.paataSiirtotiedostoOperaatio(
+        operaatio.id,
+        success = true,
+        errorMessage,
+        Map("valintadata" -> paivittaisetTulos.onnistuneet, "opiskeluoikeudet" -> opiskeluoikeudetOnnistuneet)
+      )
     } catch {
       case e: Exception =>
         LOG.error(s"(${params.executionId}) Operaatio epäonnistui odottamattomasti", e)

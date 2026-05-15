@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.integration.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -15,7 +15,7 @@ case class SiirtotiedostoClientConfig(region: String, bucket: String, roleArn: S
 class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
   private val LOG = LoggerFactory.getLogger(classOf[SiirtotiedostoClient])
 
-  LOG.info(s"Luodaan SiirtotiedostoClient konfiguraatiolla $config")
+  //LOG.info(s"Luodaan SiirtotiedostoClient konfiguraatiolla $config")
   lazy val siirtotiedostoPalvelu =
     new SiirtotiedostoPalvelu(config.region, config.bucket, config.roleArn)
   val saveRetryCount = 2
@@ -24,6 +24,7 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
     .registerModule(new JavaTimeModule())
     .registerModule(new Jdk8Module())
     .registerModule(DefaultScalaModule)
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
   def tallennaSiirtotiedosto[T](
     contentType: String,

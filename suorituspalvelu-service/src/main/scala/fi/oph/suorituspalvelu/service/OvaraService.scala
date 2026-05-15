@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
 
-import java.time.LocalDate
+import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
+
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -29,12 +31,16 @@ case class OvaraHarkinnanvaraisuus(
   harkinnanvaraisuudet: List[HakutoiveenHarkinnanvaraisuus]
 )
 
+case class OvaraMenettamisenPeruste(peruste: String,
+                                    paivamaara: LocalDate //Suresta tulee DateTime. Riittääkö tämä tarkkuus?
+                                   )
+
 case class OvaraEnsikertalaisuus(
   henkiloOid: String,
   hakemusOid: String,
   hakuOid: String,
   isEnsikertalainen: Boolean,
-  menettamisenPeruste: Option[String]
+  menettamisenPeruste: Option[OvaraMenettamisenPeruste]
 )
 
 case class OvaraParams(
@@ -48,7 +54,10 @@ case class OvaraParams(
 case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
 
 @Component
-class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) {
+class OvaraService(
+  @Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int,
+  @Value("${ovara.opiskeluoikeus-batch-size}") opiskeluoikeusBatchSize: Int
+) {
 
   private val LOG = LoggerFactory.getLogger(classOf[OvaraService])
 
@@ -151,11 +160,13 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
       val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
         vd.ensikertalaisuus.map(ek => {
           OvaraEnsikertalaisuus(
-            henkiloOid = vd.personOid,
-            hakemusOid = vd.hakemus.map(_.hakemusOid).getOrElse(""),
-            hakuOid = haku.oid,
-            isEnsikertalainen = ek.arvo.toBoolean,
-            menettamisenPeruste = ek.selitteet.headOption
+            henkiloOid = ek.henkiloOid,
+            hakemusOid = ek.hakemusOid.getOrElse(""),
+            hakuOid = ek.hakuOid,
+            isEnsikertalainen = ek.isEnsikertalainen,
+            menettamisenPeruste = ek.menettamisenPeruste.map(mp => {
+              OvaraMenettamisenPeruste(mp.peruste, mp.paivamaara)
+            })
           )
         })
       }
@@ -278,4 +289,50 @@ class OvaraService(@Value("${ovara.hakemus-batch-size}") hakemusBatchSize: Int) 
 
     MuodostamisTulos(totalOnnistuneet, epaonnistuneetHaut)
   }
+
+  def muodostaOpiskeluoikeusSiirtotiedostot(
+    params: OvaraParams,
+    windowStart: Instant,
+    windowEnd: Instant
+  ): Int = {
+    LOG.info(s"(${params.executionId}) Haetaan muuttuneet opiskeluoikeudet ikkunassa $windowStart – $windowEnd")
+
+    @scala.annotation.tailrec
+    def muodostaSeuraavaTiedosto(afterTunniste: Option[UUID], totalCount: Int, tiedostoNumero: Int): Int = {
+      val page = opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd, opiskeluoikeusBatchSize, afterTunniste)
+      if (page.isEmpty) {
+        LOG.info(s"Valmista! Yhteensä $totalCount opiskeluoikeutta.")
+        totalCount
+      }
+      else {
+        LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeussivu (${page.size} versiota, afterTunniste=$afterTunniste), tiedostonumero $tiedostoNumero")
+
+        val records = page.flatMap { (v, oo) =>
+          val kkOo       = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
+          val kkSyntOo   = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
+          val yoOo       = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
+          val genOo      = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
+          val ammatOo    = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
+          val pkOo       = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
+          val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(oo)
+          if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty)
+            Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
+          else None
+        }
+
+        val nextTiedostoNumero = if (records.nonEmpty) {
+          LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} versiota")
+          siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeudet", records, params.executionId, tiedostoNumero)
+          tiedostoNumero + 1
+        } else tiedostoNumero
+
+        muodostaSeuraavaTiedosto(Some(page.last._1.tunniste), totalCount + page.size, nextTiedostoNumero)
+      }
+    }
+
+    muodostaSeuraavaTiedosto(None, 0, 1)
+  }
+
+  private def toMeta(v: fi.oph.suorituspalvelu.business.VersioEntiteetti): OvaraVersioMetadata =
+    OvaraVersioMetadata(v.lahdeJarjestelma.nimi, v.lahdeTunniste, v.lahdeVersio, v.parserVersio, v.luontiHetki, v.paivitysHetki, v.parserointiHetki)
 }

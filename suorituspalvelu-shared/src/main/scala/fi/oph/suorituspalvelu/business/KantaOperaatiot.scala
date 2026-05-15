@@ -37,7 +37,7 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
 case class SiirtotiedostoOperaatio(
   id: Int,
   uuid: String,
-  windowStart: Option[Instant],
+  windowStart: Instant,
   windowEnd: Instant,
   runStart: Instant,
   runEnd: Option[Instant],
@@ -403,7 +403,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(updateLahtokoulutAction.transactionally), Duration.Inf)
   }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Seq[(VersioEntiteetti, String)] = {
     Await.result(db.run(
         (sql"""
           WITH w_versiotunnisteet(tunniste) AS ("""
@@ -427,10 +427,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
-        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) => {
+        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) =>
         (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), opiskeluoikeusContainer)
-      })
-      .map((versio, opiskeluoikeusContainer) => (versio -> opiskeluoikeusContainer)).toMap
+      )
   }
 
   /**
@@ -447,7 +446,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     else
       sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo"""
 
-    haeSuorituksetInternal(versioTunnisteetQuery)
+    haeSuorituksetInternal(versioTunnisteetQuery).toMap
   }
 
   def lisaaKoskiSkip(henkiloOid: String, opiskeluoikeusOid: String, selite: String) = {
@@ -848,6 +847,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     MAPPER.readValue(rows.head, classOf[SiirtotiedostoOperaatio])
   }
 
+  //Päivittäiset tiedot muodostetaan, jos kaksi ehtoa täyttyy:
+  //1. Samana päivänä ei ole vielä muodostettu päivittäisiä niin että koko suoritus on päättynyt onnistuneesti
+  //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 6 tunnin aikana
   def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
     val idResult = Await.result(db.run(
       sql"""
@@ -857,7 +859,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                (SELECT window_end FROM siirtotiedostot WHERE success = true ORDER BY id DESC LIMIT 1),
                now(),
                now(),
-               not exists(select 1 from siirtotiedostot where run_start >= now()::date and paivittaiset)
+               (not exists(select 1 from siirtotiedostot where run_start >= now()::date and success and paivittaiset)
+                and not exists(select 1 from siirtotiedostot where run_start >= now() - interval '6 hours' and paivittaiset and run_end is null))
         RETURNING id
       """.as[Int]
     ), DB_TIMEOUT)
@@ -881,6 +884,24 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         WHERE id = $id
       """
     ), DB_TIMEOUT)
+  }
+
+  def haeVersiotJoidenDataMuuttunut(
+    windowStart: Instant,
+    windowEnd: Instant,
+    pageSize: Int,
+    afterTunniste: Option[UUID] = None
+  ): Seq[(VersioEntiteetti, String)] = {
+    LOG.info(s"Haetaan versiot joiden data muuttunut $windowStart - $windowEnd. $pageSize per sivu, afterTunniste = $afterTunniste")
+    val baseQuery = sql"""SELECT tunniste FROM versiot
+          WHERE parserointihetki >= ${windowStart.toString}::timestamptz
+            AND parserointihetki < ${windowEnd.toString}::timestamptz
+            AND upper(voimassaolo) = 'infinity'::timestamptz"""
+    val withKeyset = afterTunniste match {
+      case Some(t) => baseQuery.concat(sql" AND tunniste > ${t.toString}::uuid")
+      case None    => baseQuery
+    }
+    haeSuorituksetInternal(withKeyset.concat(sql" ORDER BY tunniste ASC LIMIT $pageSize"))
   }
 
   def poistaHarkinnanvaraisuusYliajo(
