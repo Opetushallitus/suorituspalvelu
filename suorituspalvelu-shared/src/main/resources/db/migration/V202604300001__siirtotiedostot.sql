@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS siirtotiedostot
 (
-    id            serial,
-    uuid          varchar,
+    id            INTEGER,
+    uuid          VARCHAR,
     window_start  TIMESTAMPTZ,
     window_end    TIMESTAMPTZ,
     run_start     TIMESTAMPTZ,
     run_end       TIMESTAMPTZ,
-    paivittaiset  boolean, --Osa tiedostoista muodostetaan vain kerran päivässä, osa jokaisella ajastetulla käynnistyksellä.
-    info          jsonb,   --ainakin tilastot tiedostoihin päätyneistä entiteettimääristä tyypeittäin, esim. {"entityTotals": {"suoritus": 300, "arvosana": 13}}
-    success       boolean,
-    error_message varchar, -- Tyhjä string, jos mikään ei mennyt vikaan
+    paivittaiset  BOOLEAN, --Osa tiedostoista muodostetaan vain kerran päivässä, osa jokaisella ajastetulla käynnistyksellä.
+    info          JSONB,   --ainakin tilastot tiedostoihin päätyneistä entiteettimääristä tyypeittäin, esim. {"entityTotals": {"suoritus": 300, "arvosana": 13}}
+    success       BOOLEAN,
+    error_message VARCHAR, -- Tyhjä string, jos mikään ei mennyt vikaan
     PRIMARY KEY (id)
 );
 
