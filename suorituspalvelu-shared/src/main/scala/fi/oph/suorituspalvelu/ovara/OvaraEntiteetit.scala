@@ -10,6 +10,7 @@ import java.util.UUID
 
 case class OvaraKKOpiskeluoikeus(
   entiteetinTyyppi: String = "KKOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   tunniste: UUID,
   virtaTunniste: String,
   tyyppiKoodi: String,
@@ -26,6 +27,7 @@ case class OvaraKKOpiskeluoikeus(
 
 case class OvaraKKSynteettinenOpiskeluoikeus(
   entiteetinTyyppi: String = "KKSynteettinenOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   tunniste: UUID,
   myontaja: String,
   containsKKTutkinto: Boolean,
@@ -94,6 +96,7 @@ case class OvaraKKSynteettinenSuoritus(
 
 case class OvaraYOOpiskeluoikeus(
   entiteetinTyyppi: String = "YOOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   tunniste: UUID,
   yoTutkinto: Option[OvaraYOTutkinto]
 )
@@ -120,6 +123,7 @@ case class OvaraKoe(
 
 case class OvaraGeneerinenOpiskeluoikeus(
   entiteetinTyyppi: String = "GeneerinenOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   tunniste: UUID,
   oid: String,
   tyyppi: Koodi,
@@ -317,6 +321,7 @@ case class OvaraVapaaSivistystyo(
 
 case class OvaraAmmatillinenOpiskeluoikeus(
   entiteetinTyyppi: String = "AmmatillinenOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   tunniste: UUID,
   oid: String,
   oppilaitos: Oppilaitos,
@@ -430,6 +435,7 @@ case class OvaraTelma(
 
 case class OvaraPerusopetuksenOpiskeluoikeus(
   entiteetinTyyppi: String = "PerusopetuksenOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   tunniste: UUID,
   oid: Option[String],
   oppilaitosOid: String,
@@ -489,6 +495,7 @@ case class OvaraPerusopetuksenOppiaine(
 
 case class OvaraPoistettuOpiskeluoikeus(
   entiteetinTyyppi: String = "PoistettuOpiskeluoikeus",
+  metadata: OvaraVersioMetadata,
   oid: String
 )
 
@@ -502,10 +509,9 @@ case class OvaraVersioMetadata(
   parserointiHetki: Option[Instant]
 )
 
-//Yhdestä versiosta voi syntyä useita opiskeluoikeuksia VIRTA-tapauksessa.
+//Sisältää henkilön kaikki opiskeluoikeudet kaikista lähdejärjestelmistä.
 case class OvaraVersioJaOpiskeluoikeudet(
   henkiloOid: String,
-  metadata: OvaraVersioMetadata,
   kkOpiskeluoikeudet: Seq[OvaraKKOpiskeluoikeus],
   kkSynteettisetOpiskeluoikeudet: Seq[OvaraKKSynteettinenOpiskeluoikeus],
   yoOpiskeluoikeudet: Seq[OvaraYOOpiskeluoikeus],

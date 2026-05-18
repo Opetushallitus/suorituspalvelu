@@ -11,7 +11,6 @@ import fi.oph.suorituspalvelu.business.{
   PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus,
   PoistettuOpiskeluoikeus, Suoritus, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto
 }
-
 object EntityToOvaraConverter {
 
   // ---- KK ----
@@ -70,9 +69,10 @@ object EntityToOvaraConverter {
     case _ => None
   }
 
-  def getKKOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraKKOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: KKOpiskeluoikeus => oo }
-      .map(oo => OvaraKKOpiskeluoikeus(
+  def getKKOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraKKOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: KKOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraKKOpiskeluoikeus(
+        metadata = meta,
         tunniste = oo.tunniste,
         virtaTunniste = oo.virtaTunniste,
         tyyppiKoodi = oo.tyyppiKoodi,
@@ -85,16 +85,17 @@ object EntityToOvaraConverter {
         isTutkintoonJohtava = oo.isTutkintoonJohtava,
         kieli = oo.kieli,
         suoritukset = oo.suoritukset.flatMap(convertKKSuoritus).toSeq
-      )).toSeq
+      )}
 
-  def getKKSynteettisetOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraKKSynteettinenOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: KKSynteettinenOpiskeluoikeus => oo }
-      .map(oo => OvaraKKSynteettinenOpiskeluoikeus(
+  def getKKSynteettisetOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraKKSynteettinenOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: KKSynteettinenOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraKKSynteettinenOpiskeluoikeus(
+        metadata = meta,
         tunniste = oo.tunniste,
         myontaja = oo.myontaja,
         containsKKTutkinto = oo.containsKKTutkinto,
         suoritukset = oo.suoritukset.flatMap(convertKKSuoritus).toSeq
-      )).toSeq
+      )}
 
   // ---- YO ----
 
@@ -110,12 +111,13 @@ object EntityToOvaraConverter {
       aineet = t.aineet.map(convertKoe)
     )
 
-  def getYOOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraYOOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: YOOpiskeluoikeus => oo }
-      .map(oo => OvaraYOOpiskeluoikeus(
+  def getYOOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraYOOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: YOOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraYOOpiskeluoikeus(
+        metadata = meta,
         tunniste = oo.tunniste,
         yoTutkinto = oo.yoTutkinto.map(convertYOTutkinto)
-      )).toSeq
+      )}
 
   // ---- Geneerinen ----
 
@@ -250,9 +252,10 @@ object EntityToOvaraConverter {
     case _ => None
   }
 
-  def getGeneerisetOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraGeneerinenOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: GeneerinenOpiskeluoikeus => oo }
-      .map(oo => OvaraGeneerinenOpiskeluoikeus(
+  def getGeneerisetOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraGeneerinenOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: GeneerinenOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraGeneerinenOpiskeluoikeus(
+        metadata = meta,
         tunniste = oo.tunniste,
         oid = oo.oid,
         tyyppi = oo.tyyppi,
@@ -260,7 +263,7 @@ object EntityToOvaraConverter {
         suoritukset = oo.suoritukset.flatMap(convertGeneerinenSuoritus).toSeq,
         tila = oo.tila,
         jaksot = oo.jaksot
-      )).toSeq
+      )}
 
   // ---- Ammatillinen ----
 
@@ -357,16 +360,17 @@ object EntityToOvaraConverter {
     case _ => None
   }
 
-  def getAmmatillisetOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraAmmatillinenOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: AmmatillinenOpiskeluoikeus => oo }
-      .map(oo => OvaraAmmatillinenOpiskeluoikeus(
+  def getAmmatillisetOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraAmmatillinenOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: AmmatillinenOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraAmmatillinenOpiskeluoikeus(
+        metadata = meta,
         tunniste = oo.tunniste,
         oid = oo.oid,
         oppilaitos = oo.oppilaitos,
         suoritukset = oo.suoritukset.flatMap(convertAmmatillinenSuoritus).toSeq,
         tila = oo.tila,
         jaksot = oo.jaksot
-      )).toSeq
+      )}
 
   // ---- Perusopetus ----
 
@@ -417,9 +421,10 @@ object EntityToOvaraConverter {
     case _ => None
   }
 
-  def getPerusopetuksenOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraPerusopetuksenOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
-      .map(oo => OvaraPerusopetuksenOpiskeluoikeus(
+  def getPerusopetuksenOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraPerusopetuksenOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: PerusopetuksenOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraPerusopetuksenOpiskeluoikeus(
+        metadata = meta,
         tunniste = oo.tunniste,
         oid = oo.oid,
         oppilaitosOid = oo.oppilaitosOid,
@@ -427,11 +432,11 @@ object EntityToOvaraConverter {
         lisatiedot = oo.lisatiedot,
         tila = oo.tila,
         jaksot = oo.jaksot
-      )).toSeq
+      )}
 
   // ---- Poistettu ----
 
-  def getPoistetutOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraPoistettuOpiskeluoikeus] =
-    opiskeluoikeudet.collect { case oo: PoistettuOpiskeluoikeus => oo }
-      .map(oo => OvaraPoistettuOpiskeluoikeus(oid = oo.oid)).toSeq
+  def getPoistetutOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraPoistettuOpiskeluoikeus] =
+    opiskeluoikeudet.collect { case (meta, oo: PoistettuOpiskeluoikeus) => (meta, oo) }
+      .map { case (meta, oo) => OvaraPoistettuOpiskeluoikeus(metadata = meta, oid = oo.oid) }
 }
