@@ -9,6 +9,7 @@ import fi.oph.suorituspalvelu.parsing.virta.{VirtaOpiskeluoikeus, VirtaToSuoritu
 import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
 import fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusNimiUI
+import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,8 +25,6 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              koodistoProvider: KoodistoProvider) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
-  private val KOULUTUS_KOODISTO = "koulutus"
-  private val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
 
   def haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid: String, hakuOid: String, hakukohdeOid: String): Either[YosErrorResponse, Set[YosPaatettavaOpiskeluOikeus]] = {
     LOGGER.info(s"Tarkistetaan kuuluuko vastaanotettava opiskelupaikka YOS piiriin. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
