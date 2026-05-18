@@ -60,6 +60,7 @@ object ApiConstants {
 
   final val OVARA_PATH                                      = VERSIONED_API_PREFIX + "/ovara"
   final val OVARA_PAIVITTAISET_PATH                         = OVARA_PATH + "/paivittaiset"
+  final val OVARA_OPISKELUOIKEUDET_PATH                     = OVARA_PATH + "/opiskeluoikeudet"
   final val OVARA_500_VIRHE                                 = "Ovara-siirtotiedostojen muodostus epäonnistui"
 
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
