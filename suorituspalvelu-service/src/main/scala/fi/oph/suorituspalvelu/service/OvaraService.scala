@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
 
 import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
+import fi.oph.suorituspalvelu.business.Opiskeluoikeus
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -298,35 +299,38 @@ class OvaraService(
     LOG.info(s"(${params.executionId}) Haetaan muuttuneet opiskeluoikeudet ikkunassa $windowStart – $windowEnd")
 
     @scala.annotation.tailrec
-    def muodostaSeuraavaTiedosto(afterTunniste: Option[UUID], totalCount: Int, tiedostoNumero: Int): Int = {
-      val page = opiskeluoikeusParsingService.haeMuuttuneetSuorituksetOvara(windowStart, windowEnd, opiskeluoikeusBatchSize, afterTunniste)
-      if (page.isEmpty) {
-        LOG.info(s"Valmista! Yhteensä $totalCount opiskeluoikeutta.")
+    def muodostaSeuraavaTiedosto(afterHenkiloOid: Option[String], totalCount: Int, tiedostoNumero: Int): Int = {
+      val henkiloBatch = kantaOperaatiot.haeMuuttuneetHenkiloOidit(windowStart, windowEnd, opiskeluoikeusBatchSize, afterHenkiloOid)
+      if (henkiloBatch.isEmpty) {
+        LOG.info(s"Valmista! Yhteensä $totalCount henkilöä.")
         totalCount
       }
       else {
-        LOG.info(s"(${params.executionId}) Käsitellään opiskeluoikeussivu (${page.size} versiota, afterTunniste=$afterTunniste), tiedostonumero $tiedostoNumero")
+        LOG.info(s"(${params.executionId}) Käsitellään sivu (${henkiloBatch.size} henkilöä, afterHenkiloOid=$afterHenkiloOid), tiedostonumero $tiedostoNumero")
 
-        val records = page.flatMap { (v, oo) =>
-          val kkOo       = EntityToOvaraConverter.getKKOpiskeluoikeudet(oo)
-          val kkSyntOo   = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(oo)
-          val yoOo       = EntityToOvaraConverter.getYOOpiskeluoikeudet(oo)
-          val genOo      = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(oo)
-          val ammatOo    = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(oo)
-          val pkOo       = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(oo)
-          val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(oo)
+        val records = henkiloBatch.flatMap { henkiloOid =>
+          val kaikkiVersiotJaOO = opiskeluoikeusParsingService.haeSuoritukset(henkiloOid)
+          val kaikkiOoJaMetadata: Seq[(OvaraVersioMetadata, Opiskeluoikeus)] =
+            kaikkiVersiotJaOO.toSeq.flatMap { case (versio, oos) => oos.toSeq.map(oo => (toMeta(versio), oo)) }
+          val kkOo        = EntityToOvaraConverter.getKKOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val kkSyntOo    = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val yoOo        = EntityToOvaraConverter.getYOOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val genOo       = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val ammatOo     = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val pkOo        = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(kaikkiOoJaMetadata)
           if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty)
-            Some(OvaraVersioJaOpiskeluoikeudet(v.henkiloOid, toMeta(v), kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
+            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
           else None
         }
 
         val nextTiedostoNumero = if (records.nonEmpty) {
-          LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} versiota")
+          LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} henkilöä")
           siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeus", records, params.executionId, tiedostoNumero)
           tiedostoNumero + 1
         } else tiedostoNumero
 
-        muodostaSeuraavaTiedosto(Some(page.last._1.tunniste), totalCount + page.size, nextTiedostoNumero)
+        muodostaSeuraavaTiedosto(Some(henkiloBatch.last), totalCount + henkiloBatch.size, nextTiedostoNumero)
       }
     }
 
