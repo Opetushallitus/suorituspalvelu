@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_403_DESCRIPTION, OVARA_500_VIRHE, OVARA_PAIVITTAISET_PATH}
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_403_DESCRIPTION, OVARA_500_VIRHE, OVARA_OPISKELUOIKEUDET_PATH, OVARA_PAIVITTAISET_PATH}
 import fi.oph.suorituspalvelu.resource.api.SyncResponse
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{OvaraParams, OvaraService}
@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.bind.annotation.{PostMapping, RequestMapping, RequestParam, RestController}
 
+import java.time.Instant
 import java.util.Optional
 import scala.jdk.OptionConverters.*
 
@@ -87,6 +88,58 @@ class OvaraResource {
     catch
       case e: Exception =>
         LOG.error("Ovara-siirtotiedostojen muodostus epäonnistui", e)
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
+  }
+
+  @PostMapping(
+    path = Array(OVARA_OPISKELUOIKEUDET_PATH),
+    produces = Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @Operation(
+    summary = "Muodostaa opiskeluoikeussiirtotiedostot Ovaraa varten annetulle aikavälille",
+    description = "Hakee annetulla aikavälillä muuttuneet opiskeluoikeudet ja muodostaa niistä siirtotiedostot Ovara-järjestelmää varten.",
+    responses = Array(
+      new ApiResponse(responseCode = "200", description = "Siirtotiedostot muodostettu onnistuneesti",
+        content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "400", description = "Puuttuva tai virheellinen aikavälipäärametri",
+        content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION,
+        content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "500", description = OVARA_500_VIRHE,
+        content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
+    ))
+  def muodostaOpiskeluoikeussiirtotiedostot(
+    @RequestParam @Parameter(description = "Aikavälin alku (ISO-8601, esim. 2026-01-01T00:00:00Z)") windowStart: String,
+    @RequestParam @Parameter(description = "Aikavälin loppu (ISO-8601, esim. 2026-06-01T00:00:00Z)") windowEnd: String,
+    @RequestParam(required = false) @Parameter(description = "Ajon tunniste, generoidaan automaattisesti jos ei annettu") executionId: Optional[String],
+    request: HttpServletRequest
+  ): ResponseEntity[SyncResponse] = {
+    try
+      val securityOperaatiot = new SecurityOperaatiot
+      LogContext(path = OVARA_OPISKELUOIKEUDET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
+        Right(None)
+          .flatMap(_ =>
+            if (securityOperaatiot.onRekisterinpitaja())
+              Right(None)
+            else
+              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+          .flatMap(_ =>
+            try Right((Instant.parse(windowStart), Instant.parse(windowEnd)))
+            catch case _: Exception => Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).build))
+          .map((start, end) => {
+            val user = AuditLog.getUser(request)
+            AuditLog.log(user, Map("windowStart" -> windowStart, "windowEnd" -> windowEnd), AuditOperation.MuodostaOpiskeluoikeussiirtotiedostotOvara, None)
+            val params = OvaraParams(
+              executionId = executionId.toScala.getOrElse(java.util.UUID.randomUUID().toString)
+            )
+            LOG.info(s"Muodostetaan opiskeluoikeus-siirtotiedostot aikavälille $windowStart – $windowEnd (${params.executionId})")
+            ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params, start, end)
+            ResponseEntity.status(HttpStatus.OK).build()
+          })
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+    catch
+      case e: Exception =>
+        LOG.error("Ovara opiskeluoikeussiirtotiedostojen muodostus epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
   }
 }
