@@ -7,6 +7,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ui.*
 import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTO
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
+import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO, VIRTA_OO_TILA_KOODISTO}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
@@ -18,9 +19,6 @@ import scala.jdk.OptionConverters.*
 
 object EntityToUIConverter {
   private val LOG = LoggerFactory.getLogger(getClass)
-  val KOULUTUS_KOODISTO = "koulutus"
-  val VIRTA_OO_TILA_KOODISTO = "virtaopiskeluoikeudentila"
-  val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
 
   private val oppiaineOrder: Map[String, Int] = UIService.NAYTETTAVAT_OPPIAINEET.zipWithIndex.toMap
 
