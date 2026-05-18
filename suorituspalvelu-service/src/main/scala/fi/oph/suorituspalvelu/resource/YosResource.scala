@@ -1,5 +1,6 @@
 package fi.oph.suorituspalvelu.resource
 
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ApiConstants.{ESIMERKKI_HAKUKOHDE_OID, ESIMERKKI_HAKU_OID, ESIMERKKI_OPPIJANUMERO, YOS_EI_OIKEUKSIA, YOS_PATH, YOS_RESPONSE_403_DESCRIPTION}
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosNimi, YosOpiskeluOikeus, YosResponse, YosSuccessResponse, YosVirhe}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
@@ -67,16 +68,11 @@ class YosResource @Autowired (yosService: YosService) {
             r => Right(YosSuccessResponse(r.map(oikeus => YosOpiskeluOikeus(
                   virtaOpiskeluOikeusId = oikeus.virtaOpiskeluOikeusId,
                   organisaatioOid = oikeus.organisaatio.oid.getOrElse(""),
-                  organisaatioNimi = YosNimi(
-                    oikeus.organisaatio.nimi.fi.getOrElse(""),
-                    oikeus.organisaatio.nimi.sv.getOrElse(""),
-                    oikeus.organisaatio.nimi.en.getOrElse("")),
-                  virtaNimi = oikeus.virtaNimi.map(
-                    nimi => YosNimi(
-                      nimi.fi.getOrElse(""),
-                      nimi.sv.getOrElse(""),
-                      nimi.en.getOrElse(""))).getOrElse(YosNimi("", "", "")),
-                  koulutusKoodi = oikeus.koulutusKoodi.getOrElse("")
+                  organisaatioNimi = kielistettyToYosNimi(oikeus.organisaatio.nimi),
+                  virtaNimi = oikeus.virtaNimi.map(kielistettyToYosNimi)
+                    .getOrElse(YosNimi("", "", "")),
+                  supaNimi = oikeus.supaNimi.map(kielistettyToYosNimi)
+                    .getOrElse(YosNimi("", "", "")),
                 ))
                 .toList.asJava)))
         })
@@ -94,5 +90,10 @@ class YosResource @Autowired (yosService: YosService) {
           ResponseEntity.ok(r)
         }).asInstanceOf[ResponseEntity[YosResponse]])
   }
-
+  
+  private def kielistettyToYosNimi(nimi: Kielistetty): YosNimi =
+    YosNimi(
+      nimi.fi.getOrElse(""),
+      nimi.sv.getOrElse(""),
+      nimi.en.getOrElse(""))
 }

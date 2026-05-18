@@ -10,6 +10,6 @@ case class YosOrganisaatio(oid: Option[String],
 case class YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId: String,
                                        organisaatio: YosOrganisaatio,
                                        virtaNimi: Option[Kielistetty],
-                                       koulutusKoodi: Option[String]
+                                       supaNimi: Option[Kielistetty]
                                       ) {
 }
