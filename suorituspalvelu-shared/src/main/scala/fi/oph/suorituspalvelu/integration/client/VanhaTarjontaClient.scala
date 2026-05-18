@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.integration.client
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.asynchttpclient.{Dsl, RequestBuilder}
+import org.asynchttpclient.{DefaultAsyncHttpClientConfig, Dsl, RequestBuilder}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
@@ -31,7 +31,7 @@ class VanhaTarjontaClient(environmentBaseUrl: String) {
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   mapper.registerModule(DefaultScalaModule)
 
-  val asyncHttpClient = Dsl.asyncHttpClient()
+  val asyncHttpClient = Dsl.asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setHttp2Enabled(false).build)
 
   def haeHakukohde(hakukohdeOid: String): Future[VanhaTarjontaHakukohde] =
     fetch(environmentBaseUrl + s"/tarjonta-service/rest/v1/hakukohde/$hakukohdeOid")

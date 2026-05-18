@@ -20,7 +20,7 @@ trait VirtaClient {
 
 class VirtaClientImpl(jarjestelma: String, tunnus: String, avain: String, environmentBaseUrl: String) extends VirtaClient {
 
-  private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build);
+  private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).setHttp2Enabled(false).build);
 
   val LOG = LoggerFactory.getLogger(classOf[VirtaClientImpl]);
 

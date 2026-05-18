@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.integration.client
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.vm.sade.javautils.nio.cas.CasClient
-import org.asynchttpclient.{Dsl, RequestBuilder}
+import org.asynchttpclient.{DefaultAsyncHttpClientConfig, Dsl, RequestBuilder}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
@@ -24,7 +24,7 @@ class KoodistoClient(environmentBaseUrl: String) {
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   mapper.registerModule(DefaultScalaModule)
 
-  val asyncHttpClient = Dsl.asyncHttpClient()
+  val asyncHttpClient = Dsl.asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setHttp2Enabled(false).build)
 
   def haeKoodisto(koodisto: String): Future[Map[String, Koodi]] =
     fetch(environmentBaseUrl + s"/koodisto-service/rest/json/${koodisto}/koodi")
