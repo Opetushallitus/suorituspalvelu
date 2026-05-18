@@ -322,7 +322,7 @@ class OvaraService(
 
         val nextTiedostoNumero = if (records.nonEmpty) {
           LOG.info(s"(${params.executionId}) Tallennetaan opiskeluoikeus-tiedosto $tiedostoNumero, ${records.size} versiota")
-          siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeudet", records, params.executionId, tiedostoNumero)
+          siirtotiedostoClient.tallennaSiirtotiedosto("opiskeluoikeus", records, params.executionId, tiedostoNumero)
           tiedostoNumero + 1
         } else tiedostoNumero
 
