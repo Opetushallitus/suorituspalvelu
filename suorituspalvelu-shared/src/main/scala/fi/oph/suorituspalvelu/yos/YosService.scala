@@ -8,19 +8,24 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaOpiskeluoikeus, VirtaToSuoritusConverter}
 import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
-import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusNimiUI
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 import java.lang
+import java.util.Optional
 
 @Service
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              opiskeluOikeusService: OpiskeluoikeusParsingService,
-                             organisaatioProvider: OrganisaatioProvider) {
+                             organisaatioProvider: OrganisaatioProvider,
+                             koodistoProvider: KoodistoProvider) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
+  private val KOULUTUS_KOODISTO = "koulutus"
+  private val VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO = "virtaopiskeluoikeudentyyppi"
 
   def haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid: String, hakuOid: String, hakukohdeOid: String): Either[YosErrorResponse, Set[YosPaatettavaOpiskeluOikeus]] = {
     LOGGER.info(s"Tarkistetaan kuuluuko vastaanotettava opiskelupaikka YOS piiriin. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
@@ -89,6 +94,15 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto, haku.isErasmusMundusTaiKaksoistutkinto, "", "")
   }
 
+  private def getKoodiNimi(koodiArvo: Option[String], koodisto: String): Option[Kielistetty] = {
+    koodiArvo.flatMap(arvo => koodistoProvider.haeKoodisto(koodisto).get(arvo).map(k => {
+      val fi = k.metadata.find(_.kieli.equalsIgnoreCase("fi")).map(_.nimi)
+      val sv = k.metadata.find(_.kieli.equalsIgnoreCase("sv")).map(_.nimi)
+      val en = k.metadata.find(_.kieli.equalsIgnoreCase("en")).map(_.nimi)
+      Kielistetty(fi, sv, en)
+    }))
+  }
+
   private def muodostaYosPaatettavaOpiskeluOikeus(oikeus: KKOpiskeluoikeus): YosPaatettavaOpiskeluOikeus = {
     val oppilaitosTiedot = organisaatioProvider.haeOrganisaationTiedot(oikeus.myontaja)
     val organisaatio = YosOrganisaatio(
@@ -105,6 +119,11 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
             Some(oikeus.myontaja)))
     )
     val virtaOpiskeluOikeusId = VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(oikeus.myontaja, oikeus.virtaTunniste)
-    YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId, organisaatio, oikeus.nimi, oikeus.koulutusKoodi)
+    val supaNimi = getKoodiNimi(oikeus.koulutusKoodi, KOULUTUS_KOODISTO)
+      .orElse(
+        getKoodiNimi(Some(oikeus.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO)
+          .orElse(None)
+      )
+    YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId, organisaatio, oikeus.nimi, supaNimi)
   }
 }
