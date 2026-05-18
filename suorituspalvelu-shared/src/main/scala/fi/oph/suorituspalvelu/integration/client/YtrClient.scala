@@ -30,6 +30,7 @@ class YtrClient(username: String, password: String, baseUrl: String) {
   val config = new DefaultAsyncHttpClientConfig.Builder()
     .setMaxRedirects(5)
     .setConnectTimeout(Duration.ofMillis(10 * 1000))
+    .setHttp2Enabled(false)
     .build
 
   private val client: AsyncHttpClient = asyncHttpClient(config);

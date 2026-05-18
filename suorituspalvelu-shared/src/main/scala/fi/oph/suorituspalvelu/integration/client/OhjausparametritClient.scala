@@ -25,7 +25,7 @@ case class Ohjausparametrit(PH_HKP: Option[DateParam] = None, suoritustenVahvist
 
 class OhjausparametritClient(environmentBaseUrl: String) {
 
-  private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build);
+  private val client: AsyncHttpClient = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).setHttp2Enabled(false).build);
 
   private val LOG = LoggerFactory.getLogger(classOf[OhjausparametritClient])
   private val mapper: ObjectMapper = new ObjectMapper()
