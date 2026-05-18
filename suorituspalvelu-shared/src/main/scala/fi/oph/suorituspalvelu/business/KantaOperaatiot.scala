@@ -899,22 +899,24 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     ), DB_TIMEOUT)
   }
 
-  def haeVersiotJoidenDataMuuttunut(
+  def haeMuuttuneetHenkiloOidit(
     windowStart: Instant,
     windowEnd: Instant,
     pageSize: Int,
-    afterTunniste: Option[UUID] = None
-  ): Seq[(VersioEntiteetti, String)] = {
-    LOG.info(s"Haetaan versiot joiden data muuttunut $windowStart - $windowEnd. $pageSize per sivu, afterTunniste = $afterTunniste")
-    val baseQuery = sql"""SELECT tunniste FROM versiot
+    afterHenkiloOid: Option[String] = None
+  ): Seq[String] = {
+    LOG.info(s"Haetaan muuttuneet henkilöt $windowStart - $windowEnd. $pageSize per sivu, afterHenkiloOid = $afterHenkiloOid")
+    val baseQuery = sql"""SELECT henkilo_oid FROM versiot
           WHERE parserointihetki >= ${windowStart.toString}::timestamptz
             AND parserointihetki < ${windowEnd.toString}::timestamptz
             AND upper(voimassaolo) = 'infinity'::timestamptz"""
-    val withKeyset = afterTunniste match {
-      case Some(t) => baseQuery.concat(sql" AND tunniste > ${t.toString}::uuid")
-      case None    => baseQuery
+    val withKeyset = afterHenkiloOid match {
+      case Some(oid) => baseQuery.concat(sql" AND henkilo_oid > $oid")
+      case None      => baseQuery
     }
-    haeSuorituksetInternal(withKeyset.concat(sql" ORDER BY tunniste ASC LIMIT $pageSize"))
+    Await.result(db.run(
+      withKeyset.concat(sql" GROUP BY henkilo_oid ORDER BY henkilo_oid ASC LIMIT $pageSize").as[String]
+    ), DB_TIMEOUT)
   }
 
   def poistaHarkinnanvaraisuusYliajo(
