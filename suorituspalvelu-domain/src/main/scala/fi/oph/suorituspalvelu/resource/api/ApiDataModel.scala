@@ -358,7 +358,7 @@ case class YosOpiskeluOikeus(
   @(Schema @field)
   @BeanProperty virtaNimi: YosNimi,
   @(Schema @field)
-  @BeanProperty koulutusKoodi: String
+  @BeanProperty supaNimi: YosNimi
 )
 
 case class YosSuccessResponse(
