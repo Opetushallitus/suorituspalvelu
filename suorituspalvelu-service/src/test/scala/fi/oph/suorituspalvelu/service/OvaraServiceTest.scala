@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, Koodi, Lahdejarjestelma, Opiskeluoikeus, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KantaOperaatiot, Koodi, Lahdejarjestelma, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
@@ -8,8 +8,8 @@ import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.mockito.Mockito
-import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentCaptor, Mockito}
+import org.mockito.ArgumentMatchers.{any, anyBoolean}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -111,9 +111,6 @@ class OvaraServiceTest {
       )
     )
 
-  // Mockito.mock uses Objenesis so the SiirtotiedostoClient constructor (which references
-  // the external SiirtotiedostoPalvelu) is never called. Unit-returning methods do nothing
-  // by default, so no stubbing is needed — we verify behaviour via HaunKasittelyTila.
   private def buildService(): (OvaraService, ValintaDataService, HakemuspalveluClient, OnrIntegration) = {
     val mockValintaDataService   = Mockito.mock(classOf[ValintaDataService])
     val mockSiirtotiedostoClient = Mockito.mock(classOf[SiirtotiedostoClient])
@@ -147,8 +144,8 @@ class OvaraServiceTest {
       .thenReturn(valintaData)
   }
 
-  // tiedostoNumero starts at 1 and increments each time a non-empty file is saved.
-  // Staying at 1 means no file was saved; becoming 2 means one file was saved.
+  // tiedostoNumero alkaa arvosta 1 ja kasvaa aina kun ei-tyhjä tiedosto tallennetaan.
+  // Arvo 1 tarkoittaa ettei tiedostoa tallennettu; arvo 2 tarkoittaa että yksi tiedosto tallennettiin.
 
   @Test def testValintadataTallennetaan(): Unit = {
     val (service, valintaDataService, hakemuspalveluClient, onrIntegration) = buildService()
@@ -273,23 +270,27 @@ class OvaraServiceTest {
     suoritukset         = Set.empty
   )
 
-  private def buildServiceForOpiskeluoikeudet(batchSize: Int = 500): (OvaraService, OpiskeluoikeusParsingService, SiirtotiedostoClient) = {
+  private def buildServiceForOpiskeluoikeudet(batchSize: Int = 500): (OvaraService, KantaOperaatiot, OpiskeluoikeusParsingService, SiirtotiedostoClient) = {
+    val mockKantaOperaatiot      = Mockito.mock(classOf[KantaOperaatiot])
     val mockParsingService       = Mockito.mock(classOf[OpiskeluoikeusParsingService])
     val mockSiirtotiedostoClient = Mockito.mock(classOf[SiirtotiedostoClient])
 
     val service = new OvaraService(500, batchSize) {
+      override val kantaOperaatiot: KantaOperaatiot                          = mockKantaOperaatiot
       override val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = mockParsingService
       override val siirtotiedostoClient: SiirtotiedostoClient                 = mockSiirtotiedostoClient
     }
 
-    (service, mockParsingService, mockSiirtotiedostoClient)
+    (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient)
   }
 
   @Test def testOpiskeluoikeudetTallennetaan(): Unit = {
-    val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
-      .thenReturn(Seq((BASE_VERSIO, Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS))))
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq(HENKILO_OID))
       .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
 
     val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
@@ -299,10 +300,12 @@ class OvaraServiceTest {
   }
 
   @Test def testTyhjaVersioEiTallennetaSiirtotiedostoon(): Unit = {
-    val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
-      .thenReturn(Seq((BASE_VERSIO, Set.empty[Opiskeluoikeus])))
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq(HENKILO_OID))
       .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set.empty[Opiskeluoikeus]))
 
     val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
@@ -311,52 +314,101 @@ class OvaraServiceTest {
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
   }
 
-  @Test def testKaksiVersiotaTuottavatKaksiErillistaRecordia(): Unit = {
-    val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
+  @Test def testKaksiVersiotaSamalleHenkilolleTuottaaYhdenRecordin(): Unit = {
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
     val versioVirta = BASE_VERSIO.copy(
       tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000003"),
       lahdeJarjestelma = Lahdejarjestelma.VIRTA,
       lahdeTunniste    = "virta-tunniste"
     )
     val ooVirta = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000004"))
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
-      .thenReturn(Seq(
-        (BASE_VERSIO, Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)),
-        (versioVirta,  Set[Opiskeluoikeus](ooVirta))
-      ))
+    // GROUP BY varmistaa että henkilö esiintyy kyselyssä vain kerran vaikka hänellä on useita muuttuneita versioita
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq(HENKILO_OID))
       .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS), versioVirta -> Set[Opiskeluoikeus](ooVirta)))
 
     val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
-    // 2 versiot → 2 separate records, both fit in one page/file
-    Assertions.assertEquals(2, count)
+    // 1 henkilö → 1 record kaikilla opiskeluoikeuksilla, 1 tiedosto
+    Assertions.assertEquals(1, count)
     Mockito.verify(mockSiirtotiedostoClient, Mockito.times(1))
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
   }
 
-  @Test def testOpiskeluoikeudetSivutusLuoUseampiaTiedostoja(): Unit = {
-    val (service, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet(batchSize = 2)
-    val page1 = (1 to 2).map { i =>
-      val versio = BASE_VERSIO.copy(
-        tunniste   = UUID.fromString(s"00000000-0000-0000-0000-0000000000${i}0"),
-        henkiloOid = s"1.2.246.562.24.1000000000$i"
-      )
-      val oo = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString(s"00000000-0000-0000-0000-0000000001${i}0"))
-      (versio, Set[Opiskeluoikeus](oo))
-    }
-    val page2 = Seq((
-      BASE_VERSIO.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000030"), henkiloOid = "1.2.246.562.24.10000000003"),
-      Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000130")))
-    ))
-    Mockito.when(mockParsingService.haeMuuttuneetSuorituksetOvara(any(), any(), any(), any()))
-      .thenReturn(page1)
-      .thenReturn(page2)
+  // HenkiloOid-perusteinen sivutus: varmistaa että afterHenkiloOid-kursorin arvot ovat oikein sivujen välillä.
+  // Kursori seuraavalle kutsulle on oltava nykyisen sivun VIIMEINEN henkiloOid
+  // (Seq säilyttää SQL ORDER BY henkilo_oid ASC -järjestyksen, joten page.last antaa suurimman henkiloOidin).
+
+  @Test def testPagingKursoriOnViimeinenHenkiloOidillaSivulta(): Unit = {
+    val oid1 = "1.2.246.562.24.10000000001"
+    val oid2 = "1.2.246.562.24.10000000002"
+
+    val (service, mockKantaOperaatiot, mockParsingService, _) = buildServiceForOpiskeluoikeudet(batchSize = 2)
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq(oid1, oid2))
       .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
+
+    service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
+
+    val captor = ArgumentCaptor.forClass(classOf[Option[_]]).asInstanceOf[ArgumentCaptor[Option[String]]]
+    Mockito.verify(mockKantaOperaatiot, Mockito.times(2))
+      .haeMuuttuneetHenkiloOidit(any(), any(), any(), captor.capture())
+
+    val cursors = captor.getAllValues
+    Assertions.assertEquals(None,       cursors.get(0), "ensimmäinen kutsu ilman kursoria")
+    Assertions.assertEquals(Some(oid2), cursors.get(1), "kursori on viimeinen (suurin) henkiloOid sivulta")
+  }
+
+  @Test def testPagingKursoriEteneeKolmenSivunLapi(): Unit = {
+    // Sivu 1: oid1 + oid2 (täysi erä, koko 2), Sivu 2: oid3 + oid4 (täysi erä, koko 2),
+    // Sivu 3: oid5 (osittainen), sitten tyhjä.
+    val oid1 = "1.2.246.562.24.10000000001"
+    val oid2 = "1.2.246.562.24.10000000002"
+    val oid3 = "1.2.246.562.24.10000000003"
+    val oid4 = "1.2.246.562.24.10000000004"
+    val oid5 = "1.2.246.562.24.10000000005"
+
+    val (service, mockKantaOperaatiot, mockParsingService, _) = buildServiceForOpiskeluoikeudet(batchSize = 2)
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq(oid1, oid2))
+      .thenReturn(Seq(oid3, oid4))
+      .thenReturn(Seq(oid5))
+      .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
+
+    val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
+
+    Assertions.assertEquals(5, count)
+
+    val captor = ArgumentCaptor.forClass(classOf[Option[_]]).asInstanceOf[ArgumentCaptor[Option[String]]]
+    Mockito.verify(mockKantaOperaatiot, Mockito.times(4))
+      .haeMuuttuneetHenkiloOidit(any(), any(), any(), captor.capture())
+
+    val cursors = captor.getAllValues
+    Assertions.assertEquals(None,       cursors.get(0), "sivu 1: ei kursoria")
+    Assertions.assertEquals(Some(oid2), cursors.get(1), "sivu 2: kursori sivun 1 viimeinen henkiloOid")
+    Assertions.assertEquals(Some(oid4), cursors.get(2), "sivu 3: kursori sivun 2 viimeinen henkiloOid")
+    Assertions.assertEquals(Some(oid5), cursors.get(3), "sivu 4 (tyhjä): kursori sivun 3 viimeinen henkiloOid")
+  }
+
+  @Test def testOpiskeluoikeudetSivutusLuoUseampiaTiedostoja(): Unit = {
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet(batchSize = 2)
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq("1.2.246.562.24.10000000001", "1.2.246.562.24.10000000002"))
+      .thenReturn(Seq("1.2.246.562.24.10000000003"))
+      .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
 
     val count = service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
 
     Assertions.assertEquals(3, count)
-    // page1 (2 versiot) → file 1, page2 (1 versio) → file 2
+    // sivu1 (2 henkilöä) → tiedosto 1, sivu2 (1 henkilö) → tiedosto 2
     Mockito.verify(mockSiirtotiedostoClient, Mockito.times(2))
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
   }
@@ -375,7 +427,7 @@ class OvaraServiceTest {
 
     val tila = Await.result(service.kasitteleHaku(KK_HAKU, OvaraParams(executionId = EXECUTION_ID)), 30.seconds)
 
-    // 600 hakijat → 2 batches (500 + 100) → 2 valintadata files
+    // 600 hakijaa → 2 erää (500 + 100) → 2 valintadata-tiedostoa
     Assertions.assertEquals(3, tila.valintaDataTiedostoNumero)
   }
 }
