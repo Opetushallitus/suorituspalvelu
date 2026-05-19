@@ -428,8 +428,8 @@ object KoskiToSuoritusConverter {
         Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(supaTila), None, VAPAA_SIVISTYSTYO))
     )
 
-  def toPerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppiaine] = {
-    if(!KoskiUtil.includePerusopetuksenOppiaine(osaSuoritus, koodistoProvider))
+  def toPerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, pakollistenKoodit: Set[String], koodistoProvider: KoodistoProvider): Option[PerusopetuksenOppiaine] = {
+    if(!KoskiUtil.includePerusopetuksenOppiaine(osaSuoritus, pakollistenKoodit, koodistoProvider))
       //Käsitellään ainakin toistaiseksi vain sellaiset oppiaineet, joille löytyy arviointi. Halutaanko jatkossa näyttää oppiaineita joilla ei ole?
       None
     else
@@ -449,6 +449,13 @@ object KoskiToSuoritusConverter {
         osaSuoritus.`yksilöllistettyOppimäärä`,
         osaSuoritus.`rajattuOppimäärä`,
       ))
+  }
+
+  def toPerusopetuksenOppiaineet(osasuoritukset: Set[KoskiOsaSuoritus], koodistoProvider: KoodistoProvider): Set[PerusopetuksenOppiaine] = {
+    val pakollistenKoodit: Set[String] = osasuoritukset
+      .filter(_.koulutusmoduuli.flatMap(_.pakollinen).contains(true))
+      .flatMap(_.koulutusmoduuli.flatMap(_.tunniste).map(_.koodiarvo))
+    osasuoritukset.flatMap(os => toPerusopetuksenOppiaine(os, pakollistenKoodit, koodistoProvider))
   }
 
   def toPerusopetuksenOppiaineenOppimaara(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): PerusopetuksenOppimaaranOppiaineidenSuoritus = {
@@ -578,7 +585,7 @@ object KoskiToSuoritusConverter {
           o.oid)).getOrElse(dummy())
 
       val supatila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
-      val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+      val aineet = suoritus.osasuoritukset.map(os => toPerusopetuksenOppiaineet(os, koodistoProvider)).getOrElse(Set.empty)
 
       val lahtokoulut9 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "9", Some(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet)), None, koodistoProvider)
       val lahtokoulut8 = getPerusopetuksenLahtokoulut(opiskeluoikeus, "8", None, lahtokoulut9.map(_.suorituksenAlku).minOption, koodistoProvider)
@@ -635,7 +642,7 @@ object KoskiToSuoritusConverter {
     val aloitusPaivamaara = parseAloitus(opiskeluoikeus)
     val vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`))
     val supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo))
-    val aineet = suoritus.osasuoritukset.map(os => os.flatMap(os => toPerusopetuksenOppiaine(os, koodistoProvider))).getOrElse(Set.empty)
+    val aineet = suoritus.osasuoritukset.map(os => toPerusopetuksenOppiaineet(os, koodistoProvider)).getOrElse(Set.empty)
     val valmistumisVuosi = if vahvistusPaivamaara.isDefined then vahvistusPaivamaara.map(_.getYear) else aloitusPaivamaara.map(_.getYear + 1)
 
     PerusopetuksenOppimaara(

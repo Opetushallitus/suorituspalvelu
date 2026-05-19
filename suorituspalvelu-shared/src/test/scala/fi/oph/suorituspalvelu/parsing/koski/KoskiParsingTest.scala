@@ -1143,6 +1143,97 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU), oppimaara.yksilollistaminen)
   }
 
+  @Test def testPerusopetuksenOppimaaranValinnaisenPakollinenVastineLuetaanSisaruksista(): Unit = {
+    // Yksikkötestit (KoskiUtilTest) kattavat itse inkluusiosäännöt suoraan kutsumalla includePerusopetuksenOppiaine-
+    // funktiota tietyllä pakollistenKoodit-joukolla. Tämä testi varmistaa korkeammalla tasolla  että toPerusopetuksenOppiaineet
+    // kerää listan pakollisista aineista ja vain ne valinnaiset, joille löytyy samalla koodilla pakollinen vastine, otetaan huomioon.
+    //  - AI pakollinen   -> mukaan (ankkuri, todistaa että wiring toimii)
+    //  - MU pakollinen   -> mukaan, ja tuo MU:n pakollistenKoodit-joukkoon
+    //  - MU valinnainen  -> mukaan (sisaruksissa pakollinen MA)
+    //  - LI valinnainen  -> EI mukaan (sisaruksissa ei pakollista LI:tä, vaikka laajuus riittäisi)
+    val koodistoProvider: KoodistoProvider = (koodisto: String) =>
+      if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
+        Set("AI", "MU", "LI").map(k =>
+          k -> fi.oph.suorituspalvelu.integration.client.Koodi(k, Koodisto(koodisto), List.empty)).toMap
+      else Map.empty
+
+    val data =
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 1,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {"oid": "1.2.246.562.10.32727448402", "nimi": {"fi": "Testikoulu"}},
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {"koodiarvo": "perusopetuksenoppimaara", "koodistoUri": "suorituksentyyppi", "koodistoVersio": 1},
+        |            "osasuoritukset": [
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {"koodiarvo": "AI", "koodistoUri": "koskioppiaineetyleissivistava", "koodistoVersio": 1},
+        |                  "pakollinen": true,
+        |                  "laajuus": {"arvo": 4, "yksikkö": {"koodiarvo": "4", "koodistoUri": "opintojenlaajuusyksikko"}}
+        |                },
+        |                "arviointi": [{"arvosana": {"koodiarvo": "9", "koodistoUri": "arviointiasteikkoyleissivistava", "koodistoVersio": 1}}]
+        |              },
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {"koodiarvo": "MU", "koodistoUri": "koskioppiaineetyleissivistava", "koodistoVersio": 1},
+        |                  "pakollinen": true,
+        |                  "laajuus": {"arvo": 3, "yksikkö": {"koodiarvo": "4", "koodistoUri": "opintojenlaajuusyksikko"}}
+        |                },
+        |                "arviointi": [{"arvosana": {"koodiarvo": "8", "koodistoUri": "arviointiasteikkoyleissivistava", "koodistoVersio": 1}}]
+        |              },
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {"koodiarvo": "MU", "koodistoUri": "koskioppiaineetyleissivistava", "koodistoVersio": 1},
+        |                  "pakollinen": false,
+        |                  "laajuus": {"arvo": 2, "yksikkö": {"koodiarvo": "4", "koodistoUri": "opintojenlaajuusyksikko"}}
+        |                },
+        |                "arviointi": [{"arvosana": {"koodiarvo": "10", "koodistoUri": "arviointiasteikkoyleissivistava", "koodistoVersio": 1}}]
+        |              },
+        |              {
+        |                "koulutusmoduuli": {
+        |                  "tunniste": {"koodiarvo": "LI", "koodistoUri": "koskioppiaineetyleissivistava", "koodistoVersio": 1},
+        |                  "pakollinen": false,
+        |                  "laajuus": {"arvo": 3, "yksikkö": {"koodiarvo": "4", "koodistoUri": "opintojenlaajuusyksikko"}}
+        |                },
+        |                "arviointi": [{"arvosana": {"koodiarvo": "9", "koodistoUri": "arviointiasteikkoyleissivistava", "koodistoVersio": 1}}]
+        |              }
+        |            ]
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {"koodiarvo": "9", "koodistoUri": "perusopetuksenluokkaaste", "koodistoVersio": 1}
+        |            },
+        |            "luokka": "9A",
+        |            "alkamispäivä": "2023-08-15",
+        |            "tyyppi": {"koodiarvo": "perusopetuksenvuosiluokka", "koodistoUri": "suorituksentyyppi", "koodistoVersio": 1},
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin
+
+    val oppimaara = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
+      .flatMap(henkilo => henkilo.opiskeluoikeudet.map {
+        case Right(oo) => KoskiToSuoritusConverter.toSuoritukset(Seq(KoskiParser.parseKoskiData(oo.data)), koodistoProvider, true)
+        case Left(exception) => Assertions.fail(exception)
+      }).next().headOption.get.asInstanceOf[PerusopetuksenOppimaara]
+
+    Assertions.assertEquals(
+      Set(("AI", true), ("MU", true), ("MU", false)),
+      oppimaara.aineet.map(a => (a.koodi.arvo, a.pakollinen)))
+  }
+
   @Test def testPerusopetuksenOppimaaranLahtokoulutJaLuokka(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""
         |[
