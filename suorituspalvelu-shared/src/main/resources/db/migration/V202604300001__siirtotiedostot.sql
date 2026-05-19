@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS siirtotiedostot
 (
     id            INTEGER,
     uuid          VARCHAR,
-    window_start  TIMESTAMPTZ,
+    window_start  TIMESTAMPTZ NOT NULL,
     window_end    TIMESTAMPTZ,
     run_start     TIMESTAMPTZ,
     run_end       TIMESTAMPTZ,
@@ -18,7 +18,7 @@ CREATE SEQUENCE IF NOT EXISTS siirtotiedosto_id_seq START 1;
 COMMENT ON COLUMN siirtotiedostot.window_start IS 'Siirtotiedosto-operaation aikaikkunan (mitkä tiedot mukaan) alkuhetki';
 COMMENT ON COLUMN siirtotiedostot.window_end IS 'Siirtotiedosto-operaation aikaikkunan (mitkä tiedot mukaan) loppuhetki';
 COMMENT ON COLUMN siirtotiedostot.run_start IS 'Siirtotiedosto-operaation suorituksen alkuhetki';
-COMMENT ON COLUMN siirtotiedostot.run_end IS 'Siirtotiedosto-operaation suorituksen alkuhetki';
+COMMENT ON COLUMN siirtotiedostot.run_end IS 'Siirtotiedosto-operaation suorituksen loppuhetki';
 COMMENT ON COLUMN siirtotiedostot.info IS 'Tietoja tallennetuista entiteeteistä, mm. lukumäärät';
 COMMENT ON COLUMN siirtotiedostot.error_message IS 'null, jos mikään ei mennyt vikaan';
 
