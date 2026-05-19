@@ -5,10 +5,9 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.parsing.virta.{VirtaOpiskeluoikeus, VirtaToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus
 import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
-import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
-import fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusNimiUI
+import fi.oph.suorituspalvelu.resource.api.YosErrorResponse
 import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 import java.lang
-import java.util.Optional
 
 @Service
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
@@ -57,10 +55,15 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
           LOGGER.error(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid")
           Left(new RuntimeException(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid"))
         case (Some(h), hk) =>
-          val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
-          val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
-          LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
-          Right(kuuluukoYOSsinPiiriin)
+          if (!hakuOid.equals(hk.hakuOid)) {
+            LOGGER.error(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid")
+            Left(new RuntimeException(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid"))
+          } else {
+            val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
+            val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
+            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
+            Right(kuuluukoYOSsinPiiriin)
+          }
       }
     } catch {
       case e: Exception =>
