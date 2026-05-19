@@ -570,9 +570,9 @@ object KoskiToSuoritusConverter {
     val oppimaaranTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy())
     val kotiopetuslainen = isKotiopetus(opiskeluoikeus)
     val erityinenTutkinto = suoritus.suoritustapa.exists(_.koodiarvo == "erityinentutkinto")
-    val valmisErityinenTutkinto = kotiopetuslainen && oppimaaranTila==VALMIS && erityinenTutkinto
+    val valmisErityinenTutkinto = kotiopetuslainen && oppimaaranTila == VALMIS && erityinenTutkinto
 
-    if (kotiopetuslainen && !valmisErityinenTutkinto) {
+    if (kotiopetuslainen && !valmisErityinenTutkinto && suoritus.vahvistus.isEmpty) {
       LOG.info(s"Ei muodosteta oppimäärää Koski-opiskeluoikeudelle ${opiskeluoikeus.oid}, koska kyse on kotiopetuslaisesta joka ei ole suorittanut erityistä tutkintoa.")
       None
     } else if (!isYlaAste(opiskeluoikeus) && !kotiopetuslainen) {
