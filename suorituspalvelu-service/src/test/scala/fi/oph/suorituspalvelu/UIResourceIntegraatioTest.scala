@@ -1250,7 +1250,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       organisaatioOid = oppilaitosOid,
       nimi = Map("fi" -> "Testihakukohde"),
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = None,
-      johtaaTutkintoon = Some(true)
+      johtaaTutkintoon = Some(true),
+      hakuOid = "1.2.4"
     )
     Mockito.when(hakuProvider.haeHaku(hakuOid)).thenReturn(Some(koutaHaku))
     Mockito.when(hakukohdeProvider.haeHakukohde(hakukohdeOid)).thenReturn(Some(koutaHakukohde))
