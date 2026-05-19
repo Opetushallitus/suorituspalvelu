@@ -67,7 +67,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
         organisaatioOid = "NukeTehdas",
         nimi = Map.empty,
         voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),
-        johtaaTutkintoon = Some(true)))
+        johtaaTutkintoon = Some(true),
+        hakuOid = HAKU_OID))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenReturn(None)
   }
 
@@ -116,7 +117,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaePaattyvatOpiskeluOikeudet.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      "hakijaOid" -> HAKIJA_OID,
+      "henkiloOid" -> HAKIJA_OID,
       "hakuOid" -> HAKU_OID,
       "hakukohdeOid" -> HAKUKOHDE_OID,
     ), auditLogEntry.target)
