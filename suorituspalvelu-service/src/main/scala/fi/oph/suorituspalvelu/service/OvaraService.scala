@@ -33,8 +33,7 @@ case class OvaraHarkinnanvaraisuus(
 )
 
 case class OvaraMenettamisenPeruste(peruste: String,
-                                    paivamaara: LocalDate //Suresta tulee DateTime. Riittääkö tämä tarkkuus?
-                                   )
+                                    paivamaara: LocalDate)
 
 case class OvaraEnsikertalaisuus(
   henkiloOid: String,
@@ -157,7 +156,6 @@ class OvaraService(
     } else tila.harkinnanvaraisuusTiedostoNumero
 
     val nextEnsikertalaisuusTiedostoNumero = if (params.ensikertalaisuudet && haku.isKKHaku()) {
-      LOG.info(s"Käsitellään ensikertalaisuudet!")
       val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
         vd.ensikertalaisuus.map(ek => {
           OvaraEnsikertalaisuus(

@@ -15,7 +15,6 @@ case class SiirtotiedostoClientConfig(region: String, bucket: String, roleArn: S
 class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
   private val LOG = LoggerFactory.getLogger(classOf[SiirtotiedostoClient])
 
-  //LOG.info(s"Luodaan SiirtotiedostoClient konfiguraatiolla $config")
   lazy val siirtotiedostoPalvelu =
     new SiirtotiedostoPalvelu(config.region, config.bucket, config.roleArn)
   val saveRetryCount = 2
