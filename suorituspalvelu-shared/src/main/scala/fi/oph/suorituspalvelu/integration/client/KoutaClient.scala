@@ -20,7 +20,9 @@ case class KoutaHakukohde(oid: String,
                           organisaatioOid: String,
                           nimi: Map[String, String],
                           voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean],
-                          johtaaTutkintoon: Option[Boolean])
+                          johtaaTutkintoon: Option[Boolean],
+                          hakuOid: String,
+                         )
 
 case class KoutaHaku(oid: String,
                      tila: String,

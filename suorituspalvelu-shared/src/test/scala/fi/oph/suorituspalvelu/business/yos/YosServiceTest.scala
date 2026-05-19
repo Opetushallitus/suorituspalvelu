@@ -38,7 +38,7 @@ class YosServiceTest {
     Map.empty, "", Some("haunkohdejoukko_12"), List.empty, None, Some(2026))
 
   private val HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN = KoutaHakukohde(
-    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true)
+    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true), HAKU_OID
   )
 
   private val VIRTA_VERSIO = VersioEntiteetti(
@@ -100,6 +100,13 @@ class YosServiceTest {
   def returnsExceptionWhenHakukohdeIsNotFound(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(null)
+    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
+  }
+
+  @Test
+  def returnsExceptionWhenHakukohdeDoesNotMatchHaku(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(hakuOid = "1.2.3.4"))
     assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
   }
 
