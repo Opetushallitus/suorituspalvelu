@@ -25,8 +25,11 @@ case class RefreshChangesSinceJobData(muuttuneetJalkeen: String, muuttuneetEnnen
 @Component
 class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
                    tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider,
-                   opiskeluoikeusParsingService: OpiskeluoikeusParsingService, @Value("${integrations.koski.cron}") cron: String,
-                   @Value("${integrations.koski.bufferseconds:120}") bufferSeconds: String) {
+                   opiskeluoikeusParsingService: OpiskeluoikeusParsingService,
+                   @Value("${integrations.koski.cron}") cron: String,
+                   @Value("${integrations.koski.bufferseconds:120}") bufferSeconds: String,
+                   @Value("${integrations.koski.muuttuneet-cron-job-enabled}") muuttuneetCronJobEnabled: Boolean) {
+
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
 
@@ -38,27 +41,29 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
-  scheduler.scheduleJob("koski-poll-muuttuneet", (ctx, data) => {
-    val start = Instant.now()
-    val prevStart = Option.apply(data).map(Instant.parse(_))
-    LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan koski-poll-muuttuneet alkaen: $prevStart")
-    if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
-      try
-        //Kerätään tulokset palautuvasta SaferIteratorista jotta sisältö sivuvaikutuksineen tulee käsitellyksi.
-        val (changed, exceptions) = refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(bufferSeconds.toInt))
-          .foldLeft((0, 0))((counts, result) => (counts._1 + {
-            result.versio.map(_ => 1).getOrElse(0)
-          }, counts._2 + {
-            result.exception.map(_ => 1).getOrElse(0)
-          }))
-        LOG.info(s"(job id ${ctx.getJobId}) : koski-poll-muuttuneet alkaen $prevStart valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
-        start.toString
-      catch
-        case e: Exception =>
-          LOG.error(s"(job id ${ctx.getJobId}) Muuttuneiden KOSKI-tietojen pollaus alkaen $prevStart epäonnistui", e)
-          prevStart.map(_.toString).orNull
-    } else start.toString
-  }, cron)
+  if(muuttuneetCronJobEnabled) {
+    scheduler.scheduleJob("koski-poll-muuttuneet", (ctx, data) => {
+      val start = Instant.now()
+      val prevStart = Option.apply(data).map(Instant.parse(_))
+      LOG.info(s"(job id ${ctx.getJobId}) Aloitetaan koski-poll-muuttuneet alkaen: $prevStart")
+      if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
+        try
+          //Kerätään tulokset palautuvasta SaferIteratorista jotta sisältö sivuvaikutuksineen tulee käsitellyksi.
+          val (changed, exceptions) = refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(bufferSeconds.toInt))
+            .foldLeft((0, 0))((counts, result) => (counts._1 + {
+              result.versio.map(_ => 1).getOrElse(0)
+            }, counts._2 + {
+              result.exception.map(_ => 1).getOrElse(0)
+            }))
+          LOG.info(s"(job id ${ctx.getJobId}) : koski-poll-muuttuneet alkaen $prevStart valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
+          start.toString
+        catch
+          case e: Exception =>
+            LOG.error(s"(job id ${ctx.getJobId}) Muuttuneiden KOSKI-tietojen pollaus alkaen $prevStart epäonnistui", e)
+            prevStart.map(_.toString).orNull
+      } else start.toString
+    }, cron)
+  }
 
   def refreshKoskiChangesSince(ctx: SupaJobContext, muuttuneetJalkeen: Instant, muuttuneetEnnen: Option[Instant] = None): SaferIterator[SyncResultForHenkilo] =
     val fetchedAt = Instant.now()
