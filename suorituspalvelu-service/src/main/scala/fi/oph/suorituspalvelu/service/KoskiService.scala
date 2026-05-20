@@ -29,8 +29,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
                    @Value("${integrations.koski.cron}") cron: String,
                    @Value("${integrations.koski.bufferseconds:120}") bufferSeconds: String,
                    @Value("${integrations.koski.muuttuneet-cron-job-enabled}") muuttuneetCronJobEnabled: Boolean) {
-
-
+  
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
 
   val mapper = new ObjectMapper()
