@@ -93,7 +93,7 @@ object TestDataUtil {
       vahvistusPaivamaara,
       suoritusVuosi,
       laajuusArvo.map(arvo => Laajuus(arvo, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), "tuva", Some(supaTila), None, LahtokouluTyyppi.TUVA))
+      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), "tuva", supaTila, None, LahtokouluTyyppi.TUVA))
     )
 
   def getTestTelma(laajuusArvo: Option[BigDecimal] = Some(BigDecimal(13)),
@@ -116,7 +116,7 @@ object TestDataUtil {
       suoritusVuosi,
       suoritusKieli,
       laajuusArvo.map(arvo => Laajuus(arvo, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), LahtokouluTyyppi.TELMA.defaultLuokka.get, Some(supaTila), None, LahtokouluTyyppi.TELMA))
+      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), LahtokouluTyyppi.TELMA.defaultLuokka.get, supaTila, None, LahtokouluTyyppi.TELMA))
     )
 
   def getTestVapaaSivistystyo(laajuusArvo: Option[BigDecimal] = Some(BigDecimal(14)),
@@ -139,7 +139,7 @@ object TestDataUtil {
       suoritusVuosi,
       laajuusArvo.map(arvo => Laajuus(arvo, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       suoritusKieli,
-      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), LahtokouluTyyppi.VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(supaTila), None, LahtokouluTyyppi.VAPAA_SIVISTYSTYO))
+      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), LahtokouluTyyppi.VAPAA_SIVISTYSTYO.defaultLuokka.get, supaTila, None, LahtokouluTyyppi.VAPAA_SIVISTYSTYO))
     )
 
   def getTestGeneerinenOpiskeluoikeus(suoritukset: Set[Suoritus],

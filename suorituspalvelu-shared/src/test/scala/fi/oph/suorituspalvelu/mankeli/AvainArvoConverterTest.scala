@@ -424,7 +424,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
     )
 
     val telmaOikeus = AmmatillinenOpiskeluoikeus(
@@ -473,7 +473,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
     )
 
     val telmaOikeus = AmmatillinenOpiskeluoikeus(
@@ -516,7 +516,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
     )
 
     val haku = KoutaHaku(
@@ -563,7 +563,7 @@ class AvainArvoConverterTest {
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Some(Laajuus(38, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA))
     )
 
     val tuvaOikeus = GeneerinenOpiskeluoikeus(
@@ -612,7 +612,7 @@ class AvainArvoConverterTest {
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       None,
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA))
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
@@ -650,7 +650,7 @@ class AvainArvoConverterTest {
       Some(LocalDate.parse("2022-05-15")),
       suoritusVuosi,
       Some(Laajuus(22, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", Some(VALMIS), None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA))
     )
 
     val haku = KoutaHaku(
@@ -699,7 +699,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Some(Laajuus(28, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       Koodi("FI", "kieli", Some(1)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, SuoritusTila.VALMIS, None, VAPAA_SIVISTYSTYO))
     )
 
     val opistovuosiOikeus = GeneerinenOpiskeluoikeus(
@@ -749,7 +749,7 @@ class AvainArvoConverterTest {
       suoritusVuosi,
       Some(Laajuus(22, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       Koodi("FI", "kieli", Some(1)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, VAPAA_SIVISTYSTYO))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), VAPAA_SIVISTYSTYO.defaultLuokka.get, SuoritusTila.VALMIS, None, VAPAA_SIVISTYSTYO))
     )
 
     val opistovuosiOikeus = GeneerinenOpiskeluoikeus(

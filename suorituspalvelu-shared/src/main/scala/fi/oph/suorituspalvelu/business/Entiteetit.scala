@@ -358,7 +358,7 @@ case class Lahtokoulu(
   oppilaitosOid: String,
   valmistumisvuosi: Option[Int],
   luokka: String,
-  tila: Option[SuoritusTila],
+  tila: SuoritusTila,
   arvosanaPuuttuu: Option[Boolean],
   suoritusTyyppi: LahtokouluTyyppi
 )

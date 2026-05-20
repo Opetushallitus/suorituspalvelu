@@ -49,7 +49,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
       oppilaitosOid,
       Some(aloitusVuosi + 1),
       "9A",
-      Some(tila),
+      tila,
       None,
       VUOSILUOKKA_9
     ))

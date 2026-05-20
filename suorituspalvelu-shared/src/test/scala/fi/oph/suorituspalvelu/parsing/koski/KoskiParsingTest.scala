@@ -868,7 +868,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
     Assertions.assertEquals(2023, telma.suoritusVuosi)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
-    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2022-06-06"), Some(LocalDate.parse("2023-03-15")), "1.2.246.562.10.54019331674", Some(2023), TELMA.defaultLuokka.get, Some(VALMIS), None, TELMA)), telma.lahtokoulut)
+    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2022-06-06"), Some(LocalDate.parse("2023-03-15")), "1.2.246.562.10.54019331674", Some(2023), TELMA.defaultLuokka.get, VALMIS, None, TELMA)), telma.lahtokoulut)
   }
 
   @Test def testTelmaOsasuoritukset(): Unit = {
@@ -1356,8 +1356,8 @@ class KoskiParsingTest {
     Assertions.assertEquals("9G", oppimaara.luokka.get)
     Assertions.assertEquals(
       List(
-        Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), "9G", Some(VALMIS), Some(true), VUOSILUOKKA_9),
-        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", None, None, VUOSILUOKKA_8)
+        Lahtokoulu(LocalDate.parse("2020-08-15"), Some(LocalDate.parse("2021-06-01")), "1.2.246.562.10.32727448402", Some(2021), "9G", VALMIS, Some(true), VUOSILUOKKA_9),
+        Lahtokoulu(LocalDate.parse("2019-08-15"), Some(LocalDate.parse("2020-06-01")), "1.2.246.562.10.32727448402", Some(2020), "8G", VALMIS, None, VUOSILUOKKA_8)
       ), oppimaara.lahtokoulut
     )
 
@@ -2398,7 +2398,7 @@ class KoskiParsingTest {
         |]
         |""".stripMargin).get.asInstanceOf[PerusopetukseenValmistavaOpetus]
 
-    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2023-06-01"), Some(LocalDate.parse("2024-04-16")), "1.2.246.562.10.32727448402", Some(2024), PERUSOPETUKSEEN_VALMISTAVA_OPETUS.defaultLuokka.get, Some(SuoritusTila.VALMIS), None, PERUSOPETUKSEEN_VALMISTAVA_OPETUS)), opetus.lahtokoulut)
+    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2023-06-01"), Some(LocalDate.parse("2024-04-16")), "1.2.246.562.10.32727448402", Some(2024), PERUSOPETUKSEEN_VALMISTAVA_OPETUS.defaultLuokka.get, SuoritusTila.VALMIS, None, PERUSOPETUKSEEN_VALMISTAVA_OPETUS)), opetus.lahtokoulut)
 
   @Test def testTuvaOpiskeluoikeus(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
@@ -2523,7 +2523,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(LocalDate.parse("2022-08-01"), tuva.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-04-16")), tuva.vahvistusPaivamaara)
     Assertions.assertEquals(None, tuva.hyvaksyttyLaajuus)
-    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2022-08-01"), Some(LocalDate.parse("2023-04-16")), "1.2.246.562.10.41945921983", Some(2023), TUVA.defaultLuokka.get, Some(VALMIS), None, TUVA)), tuva.lahtokoulut)
+    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2022-08-01"), Some(LocalDate.parse("2023-04-16")), "1.2.246.562.10.41945921983", Some(2023), TUVA.defaultLuokka.get, VALMIS, None, TUVA)), tuva.lahtokoulut)
 
   @Test def testVapaaSivistysTyoOpiskeluoikeus(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
@@ -2683,7 +2683,7 @@ class KoskiParsingTest {
       Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)),
       Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.hyvaksyttyLaajuus)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), vst.suoritusKieli)
-    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2025-04-16")), "1.2.246.562.10.63029756333", Some(2025), VAPAA_SIVISTYSTYO.defaultLuokka.get, Some(VALMIS), None, VAPAA_SIVISTYSTYO)), vst.lahtokoulut)
+    Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2025-04-16")), "1.2.246.562.10.63029756333", Some(2025), VAPAA_SIVISTYSTYO.defaultLuokka.get, VALMIS, None, VAPAA_SIVISTYSTYO)), vst.lahtokoulut)
 
   @Test def testMitatoituOpiskeluoikeusPalautetaanPoistettunaOpiskeluoikeutena(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
