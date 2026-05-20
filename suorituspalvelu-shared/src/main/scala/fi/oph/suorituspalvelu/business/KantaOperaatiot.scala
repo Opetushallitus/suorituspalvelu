@@ -380,7 +380,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 ${lahtokoulu.oppilaitosOid},
                 ${lahtokoulu.valmistumisvuosi},
                 ${lahtokoulu.luokka},
-                ${lahtokoulu.tila.map(t => t.toString).orNull},
+                ${lahtokoulu.tila.toString},
                 ${lahtokoulu.arvosanaPuuttuu},
                 ${lahtokoulu.suoritusTyyppi.toString})
               """))
