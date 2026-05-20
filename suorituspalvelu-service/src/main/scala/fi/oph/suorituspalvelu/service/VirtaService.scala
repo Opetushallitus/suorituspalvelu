@@ -51,7 +51,7 @@ object VirtaUtil {
 @Component
 class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseDef, tarjontaIntegration: TarjontaIntegration,
                    onrIntegration: OnrIntegration, virtaClient: VirtaClient, hakemuspalveluClient: HakemuspalveluClientImpl,
-                   @Value("${integrations.virta.cron}") cron: String) {
+                   @Value("${integrations.virta.cron}") cron: String, @Value("${integrations.virta.cron-job-enabled}") cronJobEnabled: Boolean) {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
   implicit val onrRetryConfig: RetryConfig = RetryConfig()
@@ -164,9 +164,10 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
 
   def syncVirtaForAktiivisetHaut(): UUID = refreshAktiivisetHautJobHandle.run("")
 
-  scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
-    refreshVirtaForAktiivisetHautJob(ctx, data)
-    null
-  }, cron)
-
+  if(cronJobEnabled) {
+    scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
+      refreshVirtaForAktiivisetHautJob(ctx, data)
+      null
+    }, cron)  
+  }
 }

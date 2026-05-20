@@ -20,7 +20,8 @@ import scala.jdk.CollectionConverters.*
 
 @Service
 class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluClientImpl, ytrIntegration: YtrIntegration,
-                 tarjontaIntegration: TarjontaIntegration, kantaOperaatiot: KantaOperaatiot, @Value("${integrations.ytr.cron}") cron: String) {
+                 tarjontaIntegration: TarjontaIntegration, kantaOperaatiot: KantaOperaatiot, @Value("${integrations.ytr.cron}") cron: String,
+                 @Value("${integrations.ytr.cron-job-enabled}") cronJobEnabled: Boolean) {
 
   val LOG = LoggerFactory.getLogger(classOf[YTRService])
 
@@ -105,8 +106,10 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
 
   def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJobHandle.run(null)
 
-  scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
-    refreshYTRForAktiivisetHautJob(ctx, data)
-    null
-  }, cron)
+  if(cronJobEnabled) {
+    scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
+      refreshYTRForAktiivisetHautJob(ctx, data)
+      null
+    }, cron)
+  }
 }
