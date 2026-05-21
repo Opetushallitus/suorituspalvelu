@@ -68,6 +68,7 @@ object UIService {
 
   val NAYTETTAVAT_OPPIAINEET = List(
     "AI",
+    "AOM",
     "A1",
     "A2",
     "B1",
