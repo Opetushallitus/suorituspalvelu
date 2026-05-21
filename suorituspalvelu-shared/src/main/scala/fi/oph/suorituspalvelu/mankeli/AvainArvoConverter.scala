@@ -765,10 +765,34 @@ object AvainArvoConverter {
     hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
   }
 
-  private def convertParhaatPeruskoulunArvosanatJaKielet(personOid: String, aineetPaasuoritukselta: Seq[PerusopetuksenOppiaine], aineetOppiaineenOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
+  private def convertParhaatPeruskoulunArvosanatJaKielet(personOid: String, aineetPaasuoritukselta: Set[PerusopetuksenOppiaine], aineetOppiaineenOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
     //Otetaan mukaan vain sellaiset oppiaineen oppimäärät, joiden aine löytyy varsinaisen oppimäärän aineista.
     val paasuorituksenAineet = aineetPaasuoritukselta.map(_.koodi.arvo)
     val huomioitavatOppiaineenOppimaarat = aineetOppiaineenOppimaarilta.filter(a => paasuorituksenAineet.contains(a.koodi.arvo))
+
+    //Todo fixme, kuuluuko "A" = "A-kieli" mukaan A-kieliin? Ei? Löytyy kuitenkin koodistosta koskioppiaineetyleissivistava.
+    def isAKieli(aine: String) =  Set("A1", "A2").contains(aine)
+    def isBKieli(aine: String) =  Set("B1", "B2", "B3").contains(aine)
+
+    val pakollisetJaKieletPohjasuoritukselta: Set[PerusopetuksenOppiaine] = aineetPaasuoritukselta.filter(a => a.pakollinen || a.kieli.isDefined)
+    val pakollinenToMahdollisetKorotukset: Set[(PerusopetuksenOppiaine, Set[PerusopetuksenOppiaine])] = pakollisetJaKieletPohjasuoritukselta.map {
+      //A-kielet
+      case pohjaOppiaine: PerusopetuksenOppiaine if pohjaOppiaine.kieli.isDefined && isAKieli(pohjaOppiaine.koodi.arvo) =>
+        pohjaOppiaine -> aineetOppiaineenOppimaarilta.filter(mahdollinenKorotus => {
+          //Sama kieli kuin pohjaOppiaineella ja jokin A-kielen laajuus
+          mahdollinenKorotus.kieli.exists(k => k.arvo == pohjaOppiaine.kieli.get.arvo) && isAKieli(mahdollinenKorotus.koodi.arvo)
+        })
+      //B-kielet
+      case pohjaOppiaine: PerusopetuksenOppiaine if pohjaOppiaine.kieli.isDefined && isBKieli(pohjaOppiaine.koodi.arvo) =>
+        pohjaOppiaine -> aineetOppiaineenOppimaarilta.filter(mahdollinenKorotus => {
+          //Sama kieli ja sama B-kielen laajuus kuin pohjaOppiaineella
+          mahdollinenKorotus.kieli.exists(korotuksenKieli => pohjaOppiaine.kieli.get.arvo.equals(korotuksenKieli.arvo)) && mahdollinenKorotus.koodi.arvo == pohjaOppiaine.koodi.arvo
+        })
+      //Kaikki muut aineet
+      case pohjaOppiaine: PerusopetuksenOppiaine =>
+        //Sama pohjaOppiaine
+        pohjaOppiaine -> aineetOppiaineenOppimaarilta.filter(_.koodi.arvo == pohjaOppiaine.koodi.arvo)
+    }
 
     val pakollisetJaKielet = aineetPaasuoritukselta.filter(a => a.pakollinen || a.kieli.isDefined) ++ huomioitavatOppiaineenOppimaarat.filter(a => a.pakollinen || a.kieli.isDefined)
     val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ huomioitavatOppiaineenOppimaarat.filter(a => !a.pakollinen && a.kieli.isEmpty)
