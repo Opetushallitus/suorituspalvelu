@@ -107,9 +107,12 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
   def startRefreshYTRForAktiivisetHautJob(): UUID = refreshAktiivisetHautJobHandle.run(null)
 
   if(cronJobEnabled) {
+    LOG.info(s"Ajastetaan YTR-ajo (ytr-refresh-aktiiviset) cronilla $cron koska integrations.ytr.cron-job-enabled on $cronJobEnabled")
     scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
       refreshYTRForAktiivisetHautJob(ctx, data)
       null
     }, cron)
+  } else {
+    LOG.info(s"Ei ajasteta YTR-ajoa (ytr-refresh-aktiiviset) cronilla $cron koska integrations.ytr.cron-job-enabled on $cronJobEnabled")
   }
 }

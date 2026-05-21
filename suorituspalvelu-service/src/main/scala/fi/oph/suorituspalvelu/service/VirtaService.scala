@@ -165,9 +165,12 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   def syncVirtaForAktiivisetHaut(): UUID = refreshAktiivisetHautJobHandle.run("")
 
   if(cronJobEnabled) {
+    LOG.info(s"Ajastetaan Virta-ajo (virta-refresh-aktiiviset) cronilla $cron koska integrations.virta.cron-job-enabled on $cronJobEnabled")
     scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
       refreshVirtaForAktiivisetHautJob(ctx, data)
       null
-    }, cron)  
+    }, cron)
+  } else {
+    LOG.info(s"Ei ajasteta Virta-ajoa (virta-refresh-aktiiviset) cronilla $cron koska integrations.virta.cron-job-enabled on $cronJobEnabled")
   }
 }
