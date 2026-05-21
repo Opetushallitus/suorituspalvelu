@@ -29,7 +29,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
                    @Value("${integrations.koski.cron}") cron: String,
                    @Value("${integrations.koski.bufferseconds:120}") bufferSeconds: String,
                    @Value("${integrations.koski.muuttuneet-cron-job-enabled}") muuttuneetCronJobEnabled: Boolean) {
-  
+
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
 
   val mapper = new ObjectMapper()
@@ -41,6 +41,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   if(muuttuneetCronJobEnabled) {
+    LOG.info(s"Ajastetaan Koski-ajo (koski-poll-muuttuneet) cronilla $cron koska integrations.koski.muuttuneet-cron-job-enabled on $muuttuneetCronJobEnabled")
     scheduler.scheduleJob("koski-poll-muuttuneet", (ctx, data) => {
       val start = Instant.now()
       val prevStart = Option.apply(data).map(Instant.parse(_))
@@ -62,6 +63,8 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
             prevStart.map(_.toString).orNull
       } else start.toString
     }, cron)
+  } else {
+    LOG.info(s"Ei ajasteta Koski-ajoa (koski-poll-muuttuneet) cronilla $cron koska integrations.koski.muuttuneet-cron-job-enabled on $muuttuneetCronJobEnabled")
   }
 
   def refreshKoskiChangesSince(ctx: SupaJobContext, muuttuneetJalkeen: Instant, muuttuneetEnnen: Option[Instant] = None): SaferIterator[SyncResultForHenkilo] =
