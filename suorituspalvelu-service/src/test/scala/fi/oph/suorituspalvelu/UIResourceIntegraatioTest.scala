@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OpintopolkuVastaanotto, Organisaatio, OrganisaatioNimi, VTSClient, VanhaTarjontaHaku, VanhaTarjontaHakukohde, Vastaanotot}
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
@@ -56,6 +56,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
+
+  @MockitoBean
+  val hakukohderyhmaIntegration: HakukohderyhmaIntegration = null
 
   @MockitoBean
   var vtsClient: VTSClient = null
@@ -1783,6 +1786,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
       .thenReturn(Ohjausparametrit(suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)), valintalaskentapaiva = Some(DateParam(1768290647351L))))
+
+    Mockito.when(hakukohderyhmaIntegration.getHakukohderyhmatForHaku(hakuOid))
+      .thenReturn(Map.empty)
 
     // haetaan valintadata
     val result = mvc.perform(MockMvcRequestBuilders

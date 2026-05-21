@@ -282,14 +282,14 @@ object HakemusConverter {
   }
 
 
-  def convertHakutoiveet(hakemus: AtaruValintalaskentaHakemus): (List[ValintalaskentaHakutoive], Set[AvainArvoContainer]) = {
+  def convertHakutoiveet(hakemus: AtaruValintalaskentaHakemus, hakukohderyhmatByHakukohde: Map[String, Set[String]]): (List[ValintalaskentaHakutoive], Set[AvainArvoContainer]) = {
     val hakutoiveResults: List[(ValintalaskentaHakutoive, Set[AvainArvoContainer])] = hakemus.hakutoiveet.zipWithIndex.map((hakutoive, index) => {
       val prioriteetti = index + 1
       val valintalaskentaHakutoive = ValintalaskentaHakutoive(
         hakemus.hakuOid,
         hakutoive.hakukohdeOid,
         prioriteetti,
-        Set.empty //Todo, add hakukohderyhmaoids
+        hakukohderyhmatByHakukohde.getOrElse(hakutoive.hakukohdeOid, Set.empty)
       )
 
       val aa = Set(
@@ -313,8 +313,8 @@ object HakemusConverter {
     (hakutoiveet, aas)
   }
 
-  def convertHakemus(hakemus: AtaruValintalaskentaHakemus): ConvertedAtaruHakemus = {
-    val hakutoiveData: (List[ValintalaskentaHakutoive], Set[AvainArvoContainer]) = convertHakutoiveet(hakemus)
+  def convertHakemus(hakemus: AtaruValintalaskentaHakemus, hakukohderyhmatByHakukohde: Map[String, Set[String]]): ConvertedAtaruHakemus = {
+    val hakutoiveData: (List[ValintalaskentaHakutoive], Set[AvainArvoContainer]) = convertHakutoiveet(hakemus, hakukohderyhmatByHakukohde)
 
     //Todo, arvoille "language" ja "pohjakoulutus_vuosi" erilliskäsittelyä Koostepalvelussa. Päästäänkö nyt eroon?
     val avainArvotHakemukselta: Set[AvainArvoContainer] = hakemus.keyValues.map((k, v) => {
@@ -333,17 +333,21 @@ object AvainArvoConverter {
   val LOG = LoggerFactory.getLogger(getClass)
 
   def convertOpiskeluoikeudet(personOid: String, vahvistettuViimeistaan: LocalDate, opiskeluoikeudet: Seq[Opiskeluoikeus], haku: KoutaHaku, harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus]): AvainArvoConverterResults = {
-    convertOpiskeluoikeudet(personOid, vahvistettuViimeistaan, None, opiskeluoikeudet, Seq.empty, haku, harkinnanvaraisuudet)
+    convertOpiskeluoikeudet(personOid, vahvistettuViimeistaan, None, opiskeluoikeudet, Seq.empty, haku, harkinnanvaraisuudet, Map.empty)
   }
 
   def convertOpiskeluoikeudet(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], haku: KoutaHaku, harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus]): AvainArvoConverterResults = {
-    convertOpiskeluoikeudet(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, Seq.empty, haku, harkinnanvaraisuudet)
+    convertOpiskeluoikeudet(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, Seq.empty, haku, harkinnanvaraisuudet, Map.empty)
   }
 
   def convertOpiskeluoikeudet(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus], haku: KoutaHaku, harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus]): AvainArvoConverterResults = {
+    convertOpiskeluoikeudet(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, haku, harkinnanvaraisuudet, Map.empty)
+  }
+
+  def convertOpiskeluoikeudet(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], opiskeluoikeudetVahvistettuHetkella: Seq[Opiskeluoikeus], haku: KoutaHaku, harkinnanvaraisuudet: Option[HakemuksenHarkinnanvaraisuus], hakukohderyhmatByHakukohde: Map[String, Set[String]]): AvainArvoConverterResults = {
 
     //Todo, valintapisteet avain-arvoiksi
-    val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h))
+    val convertedHakemus: Option[ConvertedAtaruHakemus] = hakemus.map(h => HakemusConverter.convertHakemus(h, hakukohderyhmatByHakukohde))
 
     val harkinnanvaraisuusArvot: Option[AvainArvoContainer] = harkinnanvaraisuudet.map(getHarkinnanvaraisuusArvot)
 
