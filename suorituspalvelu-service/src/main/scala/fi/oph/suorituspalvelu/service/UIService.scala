@@ -71,6 +71,7 @@ object UIService {
     "A1",
     "A2",
     "B1",
+    "B2",
     "MA",
     "BI",
     "GE",
