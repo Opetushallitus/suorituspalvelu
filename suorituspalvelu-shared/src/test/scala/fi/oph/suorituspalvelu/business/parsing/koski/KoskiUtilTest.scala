@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOsaSuoritus, KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -100,4 +100,102 @@ class KoskiUtilTest {
       lahtokoulu2,
       lahtokoulu1
     )))
+
+  private val tunnetutOppiaineet: Set[String] = Set("AI", "MA", "HI", "LI", "A1", "A2", "B1", "B2")
+
+  private val oppiaineKoodistoProvider: KoodistoProvider = (koodisto: String) =>
+    if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
+      tunnetutOppiaineet.map(k => k -> null.asInstanceOf[fi.oph.suorituspalvelu.integration.client.Koodi]).toMap
+    else Map.empty
+
+  private def mkOsa(koodi: String, pakollinen: Boolean, laajuus: Option[BigDecimal], hasArviointi: Boolean): KoskiOsaSuoritus =
+    KoskiOsaSuoritus(
+      tyyppi = null,
+      koulutusmoduuli = Some(KoskiKoulutusModuuli(
+        tunniste = Some(KoskiKoodi(koodi, "koskioppiaineetyleissivistava", None, Kielistetty(None, None, None), None)),
+        koulutustyyppi = None,
+        laajuus = laajuus.map(arvo => KoskiLaajuus(arvo, None)),
+        kieli = None,
+        pakollinen = Some(pakollinen),
+        osaAlue = None,
+        `ryhmä` = None)),
+      arviointi = if (hasArviointi) Some(Set(KoskiArviointi(KoskiKoodi("8", "arviointiasteikkoyleissivistava", None, Kielistetty(None, None, None), None), None, true))) else None,
+      predictedArviointi = None,
+      `yksilöllistettyOppimäärä` = None,
+      `rajattuOppimäärä` = None,
+      suorituskieli = None,
+      vastaavuustodistuksenTiedot = None,
+      osasuoritukset = None,
+      korotettu = None
+    )
+
+  @Test def testIncludePerusopetuksenOppiaineEiArviointia(): Unit =
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("AI", pakollinen = true, laajuus = Some(BigDecimal(4)), hasArviointi = false),
+      Set("AI"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineKoulukohtainen(): Unit =
+    // koodi ei kuulu standardikoodistoon -> ei mukaan
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("KOULUKOHTAINEN_X", pakollinen = true, laajuus = Some(BigDecimal(3)), hasArviointi = true),
+      Set("KOULUKOHTAINEN_X"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineXXEiTiedossa(): Unit =
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("XX", pakollinen = true, laajuus = Some(BigDecimal(3)), hasArviointi = true),
+      Set("XX"),
+      // "XX" sisällytetään tilapäisesti koodistoon jotta isKoulukohtainen-tarkistus ei mätsää
+      (koodisto: String) =>
+        if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
+          (tunnetutOppiaineet + "XX").map(k => k -> null.asInstanceOf[fi.oph.suorituspalvelu.integration.client.Koodi]).toMap
+        else Map.empty))
+
+  @Test def testIncludePerusopetuksenOppiainePakollinenAinaMukaan(): Unit =
+    // Pakollinen mukaan vaikka laajuutta ei ole määritelty
+    Assertions.assertTrue(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("AI", pakollinen = true, laajuus = None, hasArviointi = true),
+      Set("AI"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineValinnainenA2MukaanIlmanVastinetta(): Unit =
+    // A2-kieli sisällytetään vaikka olisi valinnainen ja ilman pakollista vastinetta
+    Assertions.assertTrue(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("A2", pakollinen = false, laajuus = None, hasArviointi = true),
+      Set.empty,
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineValinnainenB2MukaanIlmanVastinetta(): Unit =
+    Assertions.assertTrue(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("B2", pakollinen = false, laajuus = None, hasArviointi = true),
+      Set.empty,
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineValinnainenVastineLaajuusTasanKaksi(): Unit =
+    // Raja-arvo: laajuus tasan 2 vvk -> mukaan kun pakollinen vastine löytyy
+    Assertions.assertTrue(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("MA", pakollinen = false, laajuus = Some(BigDecimal(2)), hasArviointi = true),
+      Set("MA"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineValinnainenVastineLaajuusAlle2(): Unit =
+    // laajuus < 2 -> ei mukaan vaikka pakollinen vastine löytyy
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("MA", pakollinen = false, laajuus = Some(BigDecimal("1.5")), hasArviointi = true),
+      Set("MA"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineValinnainenEiVastinettaLaajuusRiittava(): Unit =
+    // Laajuus riittävä mutta pakollinen vastine puuttuu -> ei mukaan (regressio commitista 3f71a8f7)
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("LI", pakollinen = false, laajuus = Some(BigDecimal(3)), hasArviointi = true),
+      Set("AI", "MA"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiaineValinnainenEiVastinettaEiLaajuutta(): Unit =
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("HI", pakollinen = false, laajuus = None, hasArviointi = true),
+      Set.empty,
+      oppiaineKoodistoProvider))
 }
