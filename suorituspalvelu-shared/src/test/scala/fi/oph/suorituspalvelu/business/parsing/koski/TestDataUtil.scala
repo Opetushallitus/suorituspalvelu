@@ -32,7 +32,7 @@ object TestDataUtil {
   def mkOpiskeluoikeusWithTila(jaksot: KoskiOpiskeluoikeusJakso*): KoskiOpiskeluoikeus =
     KoskiOpiskeluoikeus("1.2.3", None, None, Some(KoskiOpiskeluoikeusTila(jaksot.toList)), None, None, None)
 
-  def mkVuosiluokkaSuoritus(luokkaAste: String, alkamispaiva: Option[String] = None, vahvistuspaiva: Option[String] = None, luokka: Option[String] = Some("9A")): KoskiSuoritus =
+  def mkVuosiluokkaSuoritus(luokkaAste: String, alkamispaiva: Option[String] = None, vahvistuspaiva: Option[String] = None, luokka: Option[String] = Some("9A"), jaaLuokalle: Option[Boolean] = None): KoskiSuoritus =
     KoskiSuoritus(
       tyyppi = KoskiSuoritusTyyppi("perusopetuksenvuosiluokka", "suorituksentyyppi", Kielistetty(None, None, None)),
       koulutusmoduuli = Some(KoskiKoulutusModuuli(
@@ -49,6 +49,24 @@ object TestDataUtil {
       korotettuOpiskeluoikeusOid = None,
       suoritustapa = None,
       luokka = luokka,
+      jääLuokalle = jaaLuokalle
+    )
+
+  def mkPerusopetuksenOppimaaraSuoritus(): KoskiSuoritus =
+    KoskiSuoritus(
+      tyyppi = KoskiSuoritusTyyppi("perusopetuksenoppimaara", "suorituksentyyppi", Kielistetty(None, None, None)),
+      koulutusmoduuli = None,
+      suorituskieli = None,
+      koulusivistyskieli = None,
+      alkamispäivä = None,
+      vahvistus = None,
+      osasuoritukset = Some(Set.empty),
+      arviointi = None,
+      keskiarvo = None,
+      korotettuKeskiarvo = None,
+      korotettuOpiskeluoikeusOid = None,
+      suoritustapa = None,
+      luokka = None,
       jääLuokalle = None
     )
   }

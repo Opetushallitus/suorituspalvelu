@@ -496,7 +496,7 @@ object KoskiToSuoritusConverter {
   //Tämän tuottamat numeeriset arvot ovat käytännössä koodiston 2asteenpohjakoulutus2021 arvoja.
   def getYksilollistaminen(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): Option[PerusopetuksenYksilollistaminen] = {
     val yhteisetAineetJaKielet = suoritus.osasuoritukset.getOrElse(Set.empty)
-      .filter(os => os.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p) || km.tunniste.map(_.koodiarvo).exists(Set("A2", "B2").contains)))
+      .filter(os => os.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p) || km.tunniste.map(_.koodiarvo).exists(KoskiUtil.sisallytettavatEiPakollisetKielet.contains)))
     val yksilollistettyja = yhteisetAineetJaKielet.count(_.`yksilöllistettyOppimäärä`.exists(_.equals(true)))
     val rajattuja = yhteisetAineetJaKielet.count(_.`rajattuOppimäärä`.exists(_.equals(true)))
     val erityisiaAineita = yksilollistettyja + rajattuja
@@ -614,6 +614,16 @@ object KoskiToSuoritusConverter {
         }
         .maxOption
 
+      val jaaLuokalle = opiskeluoikeus.suoritukset.getOrElse(Set.empty)
+        .filter(s => s.tyyppi.koodiarvo == SUORITUSTYYPPI_PERUSOPETUKSENVUOSILUOKKA)
+        .toList
+        .flatMap(s => s.koulutusmoduuli.flatMap(_.tunniste.map(_.koodiarvo))
+          .filter(Set("7", "8", "9").contains)
+          .map(la => (la.toInt, s.alkamispäivä.map(LocalDate.parse), s)))
+        .sortBy { case (la, alku, _) => (la, alku.map(_.toEpochDay).getOrElse(Long.MinValue)) }
+        .lastOption
+        .flatMap { case (_, _, s) => s.`jääLuokalle` }
+
       Some(PerusopetuksenOppimaara(
         tunniste = UUID.randomUUID(),
         versioTunniste = None,
@@ -630,7 +640,8 @@ object KoskiToSuoritusConverter {
         lahtokoulut = lahtokoulut,
         syotetty = false,
         vuosiluokkiinSitoutumatonOpetus = opiskeluoikeus.lisätiedot.exists(_.vuosiluokkiinSitoutumatonOpetus.exists(_.equals(true))),
-        luokkaAste = maxLuokkaAste
+        luokkaAste = maxLuokkaAste,
+        jaaLuokalle = jaaLuokalle
       ))
     }
   }
