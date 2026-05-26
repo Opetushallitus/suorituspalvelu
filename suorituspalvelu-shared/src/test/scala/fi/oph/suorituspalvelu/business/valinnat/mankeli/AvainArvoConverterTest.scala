@@ -99,6 +99,13 @@ class AvainArvoConverterTest {
     AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", LocalDate.now(), Some(BASE_HAKEMUS),
       opiskeluoikeudet, DEFAULT_KOUTA_HAKU, None).getAvainArvoMap()
 
+  // Rakentaa hakemuksen annetuista avain-arvoista lisäten automaattisesti pohjakoulutus_vuosi=2016,
+  // jotta hakemukselta tulevat arvosanat huomioidaan. Palauttaa kaikki päätellyt avain-arvot selitteineen.
+  private def hakemukseltaConvertTulos(keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty): Set[AvainArvoContainer] = {
+    val hakemus = BASE_HAKEMUS.copy(keyValues = keyValues + (AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2016"))
+    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", LocalDate.now(), Some(hakemus), opiskeluoikeudet, DEFAULT_KOUTA_HAKU, None).paatellytArvot
+  }
+
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
     val fileName = "/1_2_246_562_98_69863082363.json"
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(this.getClass.getResourceAsStream(fileName)).toList
@@ -263,7 +270,7 @@ class AvainArvoConverterTest {
       (b1Englanti, Seq.empty)
     )
 
-    val result    = AvainArvoConverter.convertOppiaineetToContainers(aineetJaKorotukset)
+    val result    = AvainArvoConverter.pakollisetJaKieletToContainers(aineetJaKorotukset)
     val resultMap = result.map(aa => aa.avain -> aa.arvo).toMap
 
     Assertions.assertEquals("10", resultMap("PK_A1"),         "First A1 grade should be korotus 10")
@@ -1125,6 +1132,83 @@ class AvainArvoConverterTest {
     }
 
     Assertions.assertFalse(resultMap.contains("PK_FY"))
+  }
+
+  @Test def testSupanKorotusVoittaaHakemuksenAineenSeliteOnSupa(): Unit = {
+    // Hakemuksella KE=7, Supassa korotus KE=9 → korotus voittaa, selite on Supa
+    val tulos = hakemukseltaConvertTulos(
+      Map("arvosana-KE_group0" -> "arvosana-KE-7"),
+      Seq(korotusOpiskeluoikeus(Set(aine("KE", "9"))))
+    )
+    val ke = tulos.find(_.avain == "PK_KE").get
+    Assertions.assertEquals("9", ke.arvo)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteSupa, ke.selitteet.head)
+  }
+
+  @Test def testHakemuksenAineVoittaaHeikoimmanSupanKorotuksenSeliteOnHakemus(): Unit = {
+    // Hakemuksella KE=9, Supassa korotusyritys KE=7 → hakemus voittaa, selite on hakemus
+    val tulos = hakemukseltaConvertTulos(
+      Map("arvosana-KE_group0" -> "arvosana-KE-9"),
+      Seq(korotusOpiskeluoikeus(Set(aine("KE", "7"))))
+    )
+    val ke = tulos.find(_.avain == "PK_KE").get
+    Assertions.assertEquals("9", ke.arvo)
+    Assertions.assertEquals(AvainArvoConstants.arvosananLahdeSeliteHakemus, ke.selitteet.head)
+  }
+
+  //Huom. Tässä testissä vain yksi A1-kieli tulee "pakollisen" A1-kielen kautta, toinen on valinnainen.
+  //Tapaus, jossa pakollisia A1-kieliä on useampia, vain yksi välittyy avain-arvoihin ja sitä kautta valinnoille.
+  @Test def testHakemuksenNumeroituA1Kieli(): Unit = {
+    // Pakollinen A1-EN hakemukselta sekä valinnainen A1-FI: EN järjestyy ensin (PK_A1), FI toiseksi (PK_A12)
+    val tulos = hakemukseltaConvertTulos(Map(
+      "arvosana-A1_group0"                      -> "arvosana-A1-8",
+      "oppimaara-kieli-A1_group0"               -> "EN",
+      "oppiaine-valinnainen-kieli_group0"        -> "oppiaine-valinnainen-kieli-a1",
+      "oppimaara-kieli-valinnainen-kieli_group0" -> "FI",
+      "arvosana-valinnainen-kieli_group0"        -> "arvosana-valinnainen-kieli-9"
+    ))
+    val arvot = tulos.map(c => c.avain -> c.arvo).toMap
+    Assertions.assertEquals(Some("8"),  arvot.get("PK_A1"))
+    Assertions.assertEquals(Some("EN"), arvot.get("PK_A1_OPPIAINE"))
+    Assertions.assertEquals(Some("9"),  arvot.get("PK_A12"))
+    Assertions.assertEquals(Some("FI"), arvot.get("PK_A12_OPPIAINE"))
+    Assertions.assertFalse(arvot.contains("PK_A13"), "Ei kolmatta A1-kieltä")
+  }
+
+  @Test def testA2KorotusSupastaKorottaaHakemuksenA1ta(): Unit = {
+    // A1-EN hakemukselta, A2-EN korotus Supasta → A-kieli-logiikka: A2 voi korottaa samaa A1-kieltä
+    val tulos = hakemukseltaConvertTulos(
+      Map("arvosana-A1_group0" -> "arvosana-A1-8", "oppimaara-kieli-A1_group0" -> "EN"),
+      Seq(korotusOpiskeluoikeus(Set(aine("A2", "10", Some("EN")))))
+    )
+    val arvot = tulos.map(c => c.avain -> c.arvo).toMap
+    Assertions.assertEquals(Some("10"), arvot.get("PK_A1"))
+    Assertions.assertEquals(Some("EN"), arvot.get("PK_A1_OPPIAINE"))
+    Assertions.assertFalse(arvot.contains("PK_A2"),  "A2-korotus ei luo uutta PK_A2-avainta")
+    Assertions.assertFalse(arvot.contains("PK_A12"), "A2-korotus ei luo uutta A1-numeroa")
+  }
+
+  @Test def testB1KorotusSupastaEriKielellaeEiKorotaHakemuksenB1ta(): Unit = {
+    // B1-SV hakemukselta, B1-EN korotus Supasta → B-kieli-logiikka: eri kieli ei korota
+    val tulos = hakemukseltaConvertTulos(
+      Map("arvosana-B1_group0" -> "arvosana-B1-7", "oppimaara-kieli-B1_group0" -> "SV"),
+      Seq(korotusOpiskeluoikeus(Set(aine("B1", "10", Some("EN")))))
+    )
+    val arvot = tulos.map(c => c.avain -> c.arvo).toMap
+    Assertions.assertEquals(Some("7"),  arvot.get("PK_B1"))
+    Assertions.assertEquals(Some("SV"), arvot.get("PK_B1_OPPIAINE"))
+    Assertions.assertFalse(arvot.contains("PK_B12"), "B1-EN korotus ei luo uutta B1-numeroa")
+  }
+
+  @Test def testHakemuksenAidinkieliKielitieto(): Unit = {
+    // suomi-aidinkielena → PK_AI_OPPIAINE="FI", PK_AI_KIELITIETO="AI1" (ei "FI")
+    val tulos = hakemukseltaConvertTulos(Map(
+      "arvosana-A_group0"  -> "arvosana-A-9",
+      "oppimaara-a_group0" -> "suomi-aidinkielena"
+    ))
+    val avainArvoMap = tulos.map(c => c.avain -> c.arvo).toMap
+    Assertions.assertEquals("FI",  avainArvoMap("PK_AI_OPPIAINE"),   "PK_AI_OPPIAINE should be FI")
+    Assertions.assertEquals("AI1", avainArvoMap("PK_AI_KIELITIETO"), "PK_AI_KIELITIETO should be raw AI1")
   }
 
   @Test def peruskouluPaattotodistusVuosiHakemukselta(): Unit = {
