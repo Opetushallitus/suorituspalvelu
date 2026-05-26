@@ -52,13 +52,13 @@ class KoskiParsingTest {
       }
     }).next().headOption
 
-  private def getFirstSuoritusFromJson(data: String): Option[Suoritus] =
+  private def getFirstSuoritusFromJson(data: String, koodistoProvider: KoodistoProvider = DUMMY_KOODISTOPROVIDER): Option[Suoritus] =
     val splitData = KoskiIntegration.splitKoskiDataByHenkilo(new ByteArrayInputStream(data.getBytes))
     splitData.flatMap(henkilo => {
       henkilo.opiskeluoikeudet.map {
         case Right(opiskeluoikeus) =>
           val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
-          KoskiToSuoritusConverter.toSuoritukset(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER, true)
+          KoskiToSuoritusConverter.toSuoritukset(Seq(koskiOpiskeluoikeus), koodistoProvider, true)
         case Left(exception) => Assertions.fail(exception)
       }
     }).next().headOption
@@ -1361,6 +1361,107 @@ class KoskiParsingTest {
       ), oppimaara.lahtokoulut
     )
 
+  @Test def testPerusopetuksenOppimaaranLahtokoulutKaikkiYhteisetAineetMukana(): Unit =
+    val koodistoProvider: KoodistoProvider = _ =>
+      (KoskiUtil.YHTEISET_AINEET ++ KoskiUtil.KATSOMUSAINEET)
+        .map(k => k -> fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty))
+        .toMap
+
+    val osasuoritukset = (KoskiUtil.YHTEISET_AINEET :+ "KT").map(koodi =>
+      s"""
+         |{
+         |  "koulutusmoduuli": {
+         |    "tunniste": {
+         |      "koodiarvo": "$koodi",
+         |      "nimi": { "fi": "$koodi" },
+         |      "koodistoUri": "koskioppiaineetyleissivistava",
+         |      "koodistoVersio": 1
+         |    },
+         |    "pakollinen": true
+         |  },
+         |  "arviointi": [
+         |    {
+         |      "arvosana": {
+         |        "koodiarvo": "9",
+         |        "koodistoUri": "arviointiasteikkoyleissivistava",
+         |        "koodistoVersio": 1
+         |      }
+         |    }
+         |  ]
+         |}""".stripMargin).mkString(",")
+
+    val oppimaara = getFirstSuoritusFromJson(s"""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": { "fi": "Hatsalan klassillinen koulu" }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2020-08-15",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            {
+        |              "alku": "2021-06-01",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": [$osasuoritukset]
+        |          },
+        |          {
+        |            "koulutusmoduuli": {
+        |              "tunniste": {
+        |                "koodiarvo": "9",
+        |                "nimi": { "fi": "9. vuosiluokka" },
+        |                "koodistoUri": "perusopetuksenluokkaaste",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            "luokka": "9G",
+        |            "alkamispäivä": "2020-08-15",
+        |            "vahvistus": { "päivä": "2021-06-01" },
+        |            "tyyppi": {
+        |              "koodiarvo": "perusopetuksenvuosiluokka",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "osasuoritukset": []
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin, koodistoProvider).get.asInstanceOf[PerusopetuksenOppimaara]
+
+    val ysiluokka = oppimaara.lahtokoulut.find(_.suoritusTyyppi == VUOSILUOKKA_9).get
+    Assertions.assertEquals(Some(false), ysiluokka.arvosanaPuuttuu)
+
   @Test def testPerusopetuksenOppimaaranLahtokoulutEiAlkamispaivaa(): Unit =
     val oppimaara = getFirstSuoritusFromJson("""
         |[
@@ -2188,6 +2289,67 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(LocalDate.parse("2024-06-01")), oppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2022-04-16")), oppimaara.vahvistusPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), oppimaara.suoritusKieli)
+
+  @Test def testAikuistenPerusopetuksenLahtokoulullaEiArvosanaPuuttuuVipua(): Unit =
+    val oppimaara = getFirstSuoritusFromJson("""
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.30563266636",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.30563266636",
+        |        "versionumero": 127,
+        |        "aikaleima": "2024-09-12T15:12:40.365225",
+        |        "oid": "1.2.246.562.15.50478693398",
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.32727448402",
+        |          "nimi": { "fi": "Hatsalan klassillinen koulu" }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2023-08-15",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            {
+        |              "alku": "2024-06-01",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "aikuistenperusopetuksenoppimaara",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            },
+        |            "vahvistus": { "päivä": "2024-06-01" },
+        |            "suorituskieli": {
+        |              "koodiarvo": "FI",
+        |              "koodistoUri": "kieli",
+        |              "koodistoVersio": 1
+        |            }
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin).get.asInstanceOf[PerusopetuksenOppimaara]
+
+    // arvosanaPuuttuu-vipu on tehty opojen ohjausnäkymää varten ja koskee vain ysejä,
+    // joten aikuisten oppimäärän lähtökoulun arvon on aina oltava None.
+    Assertions.assertTrue(oppimaara.lahtokoulut.nonEmpty, "Testi edellyttää että aikuisten oppimäärälle muodostuu lähtökoulu")
+    Assertions.assertTrue(oppimaara.lahtokoulut.forall(_.arvosanaPuuttuu.isEmpty))
 
   @Test def testPerusopetukseenvalmistavaopetus(): Unit =
     val opetus = getFirstSuoritusFromJson("""
