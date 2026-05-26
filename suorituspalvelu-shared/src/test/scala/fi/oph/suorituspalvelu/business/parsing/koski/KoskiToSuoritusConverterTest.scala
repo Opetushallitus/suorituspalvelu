@@ -82,8 +82,8 @@ class KoskiToSuoritusConverterTest {
     // Tarkistetaan että löytyy yksi perusopetuksen opiskeluoikeusopiskeluoikeus, joka sisältää neljä suoritusta
     // (perusopetuksen oppimäärän ja kolme vuosiluokkaa). Tästä seuraa yksi parseroitu suoritus koska vuosiluokista
     // tarvittavat tiedot (lähtökoulu) yhdistetään oppimäärän parseroituun suoritukseen
-    Assertions.assertEquals(oikeudet.size, 1)
-    Assertions.assertEquals(oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size, 1)
+    Assertions.assertEquals(1, oikeudet.size)
+    Assertions.assertEquals(1, oikeudet.head.asInstanceOf[PerusopetuksenOpiskeluoikeus].suoritukset.size)
   }
 
   @Test def testKoskiParsingForAmmatillistenOpiskeluoikeuksienSuoritukset(): Unit = {
@@ -767,7 +767,7 @@ class KoskiToSuoritusConverterTest {
       Set(suoritus),
       mkJakso("2024-01-01", "lasna")
     )
-    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(false), None, DUMMY_KOODISTOPROVIDER)
+    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.KESKEN), Some(false), None, DUMMY_KOODISTOPROVIDER)
     Assertions.assertEquals(List.empty, result)
   }
 
@@ -777,7 +777,7 @@ class KoskiToSuoritusConverterTest {
       Set(suoritus),
       mkJakso("2024-01-01", "lasna")
     )
-    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(false), None, DUMMY_KOODISTOPROVIDER)
+    val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.KESKEN), Some(false), None, DUMMY_KOODISTOPROVIDER)
     Assertions.assertEquals(List.empty, result)
   }
 
@@ -789,8 +789,8 @@ class KoskiToSuoritusConverterTest {
       mkJakso("2025-06-01", "valmistunut")
     )
     Assertions.assertEquals(
-      List(Lahtokoulu(LocalDate.parse("2024-08-01"), Some(LocalDate.parse("2025-06-01")), oo.oppilaitos.get.oid, Some(2025), "9B", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
-      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(true), None, DUMMY_KOODISTOPROVIDER))
+      List(Lahtokoulu(LocalDate.parse("2024-08-01"), Some(LocalDate.parse("2025-06-01")), oo.oppilaitos.get.oid, Some(2025), "9B", VALMIS, Some(true), VUOSILUOKKA_9)),
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.VALMIS), Some(true), None, DUMMY_KOODISTOPROVIDER))
   }
 
   @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaKesken(): Unit = {
@@ -803,9 +803,9 @@ class KoskiToSuoritusConverterTest {
     )
 
     Assertions.assertEquals(List(
-      Lahtokoulu(LocalDate.parse("2024-05-01"), None, oo.oppilaitos.get.oid, Some(2025), "9A", Some(KESKEN), Some(true), VUOSILUOKKA_9),
-      Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2025), "9A", Some(KESKEN), Some(true), VUOSILUOKKA_9)),
-      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(true), None, DUMMY_KOODISTOPROVIDER))
+      Lahtokoulu(LocalDate.parse("2024-05-01"), None, oo.oppilaitos.get.oid, Some(2025), "9A", KESKEN, Some(true), VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2025), "9A", KESKEN, Some(true), VUOSILUOKKA_9)),
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.KESKEN), Some(true), None, DUMMY_KOODISTOPROVIDER))
   }
 
   @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaValmistunut(): Unit = {
@@ -819,8 +819,8 @@ class KoskiToSuoritusConverterTest {
     )
 
     Assertions.assertEquals(List(
-      Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-08-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9),
-      Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2024), "9A", Some(VALMIS), Some(true), VUOSILUOKKA_9)),
-      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(true), None, DUMMY_KOODISTOPROVIDER))
+      Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2024-08-01")), oo.oppilaitos.get.oid, Some(2024), "9A", VALMIS, Some(true), VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2024-01-01"), Some(LocalDate.parse("2024-03-01")), oo.oppilaitos.get.oid, Some(2024), "9A", VALMIS, Some(true), VUOSILUOKKA_9)),
+      KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.VALMIS), Some(true), None, DUMMY_KOODISTOPROVIDER))
   }
 }
