@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
-import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOppilaitos, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter}
+import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOppilaitos, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter, KoskiVahvistus}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
@@ -935,4 +935,31 @@ class KoskiToSuoritusConverterTest {
     ))
     Assertions.assertEquals(Some(false), result.jaaLuokalle)
   }
+
+  // --- isKotiopetus tests ---
+
+  private def mkOpiskeluoikeusForKotiopetus(kotiopetusjaksot: List[KoskiKotiopetusjakso], oppimaaranVahvistus: Option[String]): KoskiOpiskeluoikeus =
+    val oppimaara = mkPerusopetuksenOppimaaraSuoritus().copy(vahvistus = oppimaaranVahvistus.map(p => KoskiVahvistus(p)))
+    KoskiOpiskeluoikeus("1.2.3", None, None, None, Some(Set(oppimaara)),
+      Some(KoskiLisatiedot(erityisenTuenPäätökset = None, vuosiluokkiinSitoutumatonOpetus = None, kotiopetusjaksot = Some(kotiopetusjaksot))), None)
+
+  @Test def testIsKotiopetusJaksoIlmanLoppua(): Unit =
+    val oo = mkOpiskeluoikeusForKotiopetus(List(KoskiKotiopetusjakso("2021-08-24", None)), Some("2023-06-01"))
+    Assertions.assertTrue(KoskiToSuoritusConverter.isKotiopetus(oo), "Kotiopetusjakso ilman loppupäivää tarkoittaa kotiopetuslaista")
+
+  @Test def testIsKotiopetusJaksoLoppunutEnnenVahvistusta(): Unit =
+    val oo = mkOpiskeluoikeusForKotiopetus(List(KoskiKotiopetusjakso("2021-08-24", Some("2023-05-01"))), Some("2023-06-01"))
+    Assertions.assertFalse(KoskiToSuoritusConverter.isKotiopetus(oo), "Kun kotiopetusjakso on loppunut ennen oppimäärän vahvistusta, kyseessä ei ole kotiopetuslainen")
+
+  @Test def testIsKotiopetusJaksoLoppuuSamanaPaivanaKuinVahvistus(): Unit =
+    val oo = mkOpiskeluoikeusForKotiopetus(List(KoskiKotiopetusjakso("2021-08-24", Some("2023-06-01"))), Some("2023-06-01"))
+    Assertions.assertTrue(KoskiToSuoritusConverter.isKotiopetus(oo), "Kun kotiopetusjakso loppuu samana päivänä kuin oppimäärä vahvistetaan, kyseessä on kotiopetuslainen")
+
+  @Test def testIsKotiopetusJaksoLoppuuVahvistuksenJalkeen(): Unit =
+    val oo = mkOpiskeluoikeusForKotiopetus(List(KoskiKotiopetusjakso("2021-08-24", Some("2023-07-01"))), Some("2023-06-01"))
+    Assertions.assertTrue(KoskiToSuoritusConverter.isKotiopetus(oo), "Kun kotiopetusjakso loppuu oppimäärän vahvistuksen jälkeen, kyseessä on kotiopetuslainen")
+
+  @Test def testIsKotiopetusEiKotiopetusjaksoja(): Unit =
+    val oo = mkOpiskeluoikeusForKotiopetus(List.empty, Some("2023-06-01"))
+    Assertions.assertFalse(KoskiToSuoritusConverter.isKotiopetus(oo), "Ilman kotiopetusjaksoja ei ole kotiopetuslainen")
 }
