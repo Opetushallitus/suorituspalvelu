@@ -529,9 +529,9 @@ object KoskiToSuoritusConverter {
     val loytyyJaksoIlmanLoppua = opiskeluoikeus.lisätiedot.flatMap(_.kotiopetusjaksot).getOrElse(List.empty).exists(_.loppu.isEmpty)
     val myohaisinJaksonLoppu = opiskeluoikeus.lisätiedot.flatMap(_.kotiopetusjaksot).getOrElse(List.empty).flatMap(j => j.loppu.map(l => LocalDate.parse(l))).maxOption
     val oppimaaranVahvistus = opiskeluoikeus.suoritukset.get.filter(s => s.tyyppi.koodiarvo == SUORITUSTYYPPI_PERUSOPETUKSENOPPIMAARA).flatMap(o => o.vahvistus.map(v => LocalDate.parse(v.`päivä`))).minOption
-    val kotiopetusLoppunutOppimaaranVahvistukseen = oppimaaranVahvistus.exists(v => myohaisinJaksonLoppu.exists(l => !v.isBefore(l)))
+    val kotiopetusEiLoppunutEnnenVahvistusta = oppimaaranVahvistus.exists(v => myohaisinJaksonLoppu.exists(l => !l.isBefore(v)))
 
-    loytyyJaksoIlmanLoppua || kotiopetusLoppunutOppimaaranVahvistukseen
+    loytyyJaksoIlmanLoppua || kotiopetusEiLoppunutEnnenVahvistusta
   }
 
   def isYlaAste(opiskeluoikeus: KoskiOpiskeluoikeus): Boolean = {
