@@ -317,8 +317,8 @@ object KoskiToSuoritusConverter {
         ost.flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.flatMap(l => l.yksikkö)))
       //Oletus, että kaikkien osasuoritusten laajuuksien yksiköt ovat samat.
       laajuudenYksikot.headOption.map(ly => {
-        val osasuoritustenLaajuudet: Set[BigDecimal] =
-          ost.filter(os => !vainHyvaksytytArvioinnit || os.arviointi.exists(arviointi => arviointi.exists(_.hyväksytty)))
+        val osasuoritustenLaajuudet: Seq[BigDecimal] =
+          ost.toSeq.filter(os => !vainHyvaksytytArvioinnit || os.arviointi.exists(arviointi => arviointi.exists(_.hyväksytty)))
             .flatMap(os => os.koulutusmoduuli.flatMap(km => km.laajuus.map(l => l.arvo)))
         Laajuus(
           osasuoritustenLaajuudet.sum,
