@@ -7,9 +7,10 @@ import fi.oph.suorituspalvelu.business.{
   ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus,
   IBOppiaineSuoritus, IBOppiaineRyhma, IBTutkinto, KKOpintosuoritus,
   KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus,
-  KKTutkinto, Koe, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus,
-  PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus,
-  PoistettuOpiskeluoikeus, Suoritus, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto
+  KKTutkinto, Koe, LukionOppimaara, Opiskeluoikeus, PerusopetukseenValmistavaOpetus,
+  PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara,
+  PerusopetuksenOppimaaranOppiaineidenSuoritus, PoistettuOpiskeluoikeus, Suoritus, Telma,
+  Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto
 }
 object EntityToOvaraConverter {
 
@@ -417,6 +418,9 @@ object EntityToOvaraConverter {
       vahvistusPaivamaara = oos.vahvistusPaivamaara,
       aineet = oos.aineet.map(convertPerusopetuksenOppiaine),
       syotetty = oos.syotetty
+    ))
+    case pvo: PerusopetukseenValmistavaOpetus => Some(OvaraPerusopetukseenValmistavaOpetus(
+      lahtokoulut = pvo.lahtokoulut
     ))
     case _ => None
   }
