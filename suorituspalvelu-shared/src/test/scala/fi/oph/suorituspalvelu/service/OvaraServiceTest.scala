@@ -196,19 +196,9 @@ class OvaraServiceTest {
 
     setupMocks(hakemuspalveluClient, onrIntegration, valintaDataService, KK_HAKU, valintaData)
 
-    val tila = Await.result(service.kasitteleHaku(KK_HAKU, OvaraParams(executionId = EXECUTION_ID, ensikertalaisuudet = true)), 30.seconds)
+    val tila = Await.result(service.kasitteleHaku(KK_HAKU, OvaraParams(executionId = EXECUTION_ID)), 30.seconds)
 
     Assertions.assertEquals(2, tila.ensikertalaisuusTiedostoNumero)
-  }
-
-  @Test def testEnsikertalaisuuksiaEiTallennetaKunLippuPoissa(): Unit = {
-    val (service, valintaDataService, hakemuspalveluClient, onrIntegration) = buildService()
-    setupMocks(hakemuspalveluClient, onrIntegration, valintaDataService, KK_HAKU,
-      baseValintaData(avainArvot = Seq(ensikertalaisuusAvainArvo(ensikertalainen = true))))
-
-    val tila = Await.result(service.kasitteleHaku(KK_HAKU, OvaraParams(executionId = EXECUTION_ID, ensikertalaisuudet = false)), 30.seconds)
-
-    Assertions.assertEquals(1, tila.ensikertalaisuusTiedostoNumero)
   }
 
   @Test def testEnsikertalaisuudetEiTallennetaToisenAsteenHaulle(): Unit = {
@@ -216,7 +206,7 @@ class OvaraServiceTest {
     setupMocks(hakemuspalveluClient, onrIntegration, valintaDataService, TOISEN_ASTEEN_YHTEISHAKU,
       baseValintaData(avainArvot = Seq(ensikertalaisuusAvainArvo(ensikertalainen = true))))
 
-    val tila = Await.result(service.kasitteleHaku(TOISEN_ASTEEN_YHTEISHAKU, OvaraParams(executionId = EXECUTION_ID, ensikertalaisuudet = true)), 30.seconds)
+    val tila = Await.result(service.kasitteleHaku(TOISEN_ASTEEN_YHTEISHAKU, OvaraParams(executionId = EXECUTION_ID)), 30.seconds)
 
     Assertions.assertEquals(1, tila.ensikertalaisuusTiedostoNumero)
   }
