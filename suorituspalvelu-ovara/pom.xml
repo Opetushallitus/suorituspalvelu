@@ -18,46 +18,10 @@
     </properties>
 
     <dependencies>
-        <!--
-            suorituspalvelu-service thin jar.
-            spring-boot-maven-plugin with classifier:exec puts the fat jar at *-exec.jar,
-            leaving the plain jar here usable as a library dependency.
-            Web/security stack is excluded — ovara runs without an embedded server.
-        -->
         <dependency>
             <groupId>fi.oph.suorituspalvelu</groupId>
-            <artifactId>suorituspalvelu-service</artifactId>
+            <artifactId>suorituspalvelu-shared</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springdoc</groupId>
-                    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fi.vm.sade.java-utils</groupId>
-                    <artifactId>opintopolku-cas-servlet-filter</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fi.vm.sade.java-utils</groupId>
-                    <artifactId>opintopolku-user-details-service</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.security</groupId>
-                    <artifactId>spring-security-cas</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-security</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.session</groupId>
-                    <artifactId>spring-session-jdbc</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
