@@ -849,7 +849,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   //Päivittäiset tiedot muodostetaan, jos kaksi ehtoa täyttyy:
   //1. Samana päivänä ei ole vielä muodostettu päivittäisiä niin että koko suoritus on päättynyt onnistuneesti
-  //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 6 tunnin aikana
+  //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 3 tunnin aikana
   def onkoKaynnissaOlevaOperaatio(): Boolean = {
     val result = Await.result(db.run(
       sql"""
