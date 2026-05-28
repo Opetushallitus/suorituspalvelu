@@ -44,10 +44,7 @@ class OvaraRunner extends CommandLineRunner {
 
   override def run(args: String*): Unit = {
     val params    = OvaraParams(
-      vainAktiiviset = true,
-      avainArvot = true,
-      harkinnanvaraisuudet = true,
-      ensikertalaisuudet = true
+      vainAktiiviset = true
     )
     if (kantaOperaatiot.onkoKaynnissaOlevaOperaatio()) {
       LOG.info(s"(${params.executionId}) Käynnissä oleva operaatio löytyi (alle 3 tuntia vanha, ei ole päättynyt), ei aloiteta uutta.")

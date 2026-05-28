@@ -1,7 +1,6 @@
 package fi.oph.suorituspalvelu.resource
 
-import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_403_DESCRIPTION, OVARA_500_VIRHE, OVARA_OPISKELUOIKEUDET_PATH, OVARA_PAIVITTAISET_PATH}
-import fi.oph.suorituspalvelu.resource.api.SyncResponse
+import fi.oph.suorituspalvelu.resource.ApiConstants.{DATASYNC_RESPONSE_403_DESCRIPTION, OVARA_409_VIRHE, OVARA_500_VIRHE, OVARA_OPISKELUOIKEUDET_PATH, OVARA_PAIVITTAISET_PATH}
 import fi.oph.suorituspalvelu.security.{AuditLog, AuditOperation, SecurityOperaatiot}
 import fi.oph.suorituspalvelu.service.{OvaraParams, OvaraService}
 import fi.oph.suorituspalvelu.util.LogContext
@@ -17,6 +16,8 @@ import org.springframework.web.bind.annotation.{PostMapping, RequestMapping, Req
 
 import java.time.Instant
 import java.util.Optional
+import java.util.concurrent.{CompletableFuture, ExecutorService}
+import java.util.concurrent.atomic.AtomicReference
 import scala.jdk.OptionConverters.*
 
 @RequestMapping(path = Array(""))
@@ -31,6 +32,27 @@ class OvaraResource {
   val LOG = LoggerFactory.getLogger(classOf[OvaraResource])
 
   @Autowired var ovaraService: OvaraService = null
+  @Autowired var ovaraExecutor: ExecutorService = null
+
+  private val runningExecutionId = new AtomicReference[String](null)
+
+  private def claimOrConflict(executionId: String): Either[ResponseEntity[String], String] =
+    if runningExecutionId.compareAndSet(null, executionId) then Right(executionId)
+    else Left(ResponseEntity.status(HttpStatus.CONFLICT)
+      .body(s"$OVARA_409_VIRHE (käynnissä: ${runningExecutionId.get})"))
+
+  private def submitJob(executionId: String, job: => Unit): Unit =
+    try
+      CompletableFuture
+        .runAsync(() => {
+          try job
+          catch case e: Exception => LOG.error(s"($executionId) Ovara-ajo epäonnistui", e)
+        }, ovaraExecutor)
+        .whenComplete((_, _) => runningExecutionId.set(null))
+    catch
+      case e: Exception =>
+        runningExecutionId.set(null)
+        throw e
 
   @PostMapping(
     path = Array(OVARA_PAIVITTAISET_PATH),
@@ -39,55 +61,47 @@ class OvaraResource {
   @Operation(
     summary = "Muodostaa päivittäiset siirtotiedostot Ovaraa varten",
     description = "Hakee kaikkien aktiivisten toisen asteen hakujen hakijat ja muodostaa heistä avain-arvo- ja " +
-      "harkinnanvaraisuussiirtotiedostot Ovara-järjestelmää varten. Ajo voi kestää useita minuutteja.",
+      "harkinnanvaraisuussiirtotiedostot Ovara-järjestelmää varten. Ajo käynnistetään taustalle ja voi kestää useita minuutteja.",
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Siirtotiedostot muodostettu onnistuneesti",
-        content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "202", description = "Siirtotiedostojen muodostus käynnistetty, palauttaa ajon tunnisteen",
+        content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
       new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION,
         content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "409", description = OVARA_409_VIRHE,
+        content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
       new ApiResponse(responseCode = "500", description = OVARA_500_VIRHE,
         content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
   def muodostaPaivittaiset(
     @RequestParam(required = false) @Parameter(description = "Ajon tunniste, generoidaan automaattisesti jos ei annettu") executionId: Optional[String],
     @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Käsitellään vain aktiiviset haut") vainAktiiviset: Boolean,
-    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Muodostetaan avain-arvotiedostot") avainArvot: Boolean,
-    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Muodostetaan harkinnanvaraisuustiedostot") harkinnanvaraisuudet: Boolean,
-    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Muodostetaan ensikertalaisuustiedostot") ensikertalaisuudet: Boolean,
     request: HttpServletRequest
-  ): ResponseEntity[SyncResponse] = {
+  ): ResponseEntity[String] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
       LogContext(path = OVARA_PAIVITTAISET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
-            if (securityOperaatiot.onRekisterinpitaja())
-              Right(None)
-            else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
-          .map(_ => {
-            val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map(
-              "vainAktiiviset"     -> vainAktiiviset.toString,
-              "avainArvot"         -> avainArvot.toString,
-              "harkinnanvaraisuudet" -> harkinnanvaraisuudet.toString,
-              "ensikertalaisuudet" -> ensikertalaisuudet.toString
-            ), AuditOperation.MuodostaPaivittaisetOvara, None)
+            if (securityOperaatiot.onRekisterinpitaja()) Right(None)
+            else Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build()))
+          .flatMap(_ => {
             val params = OvaraParams(
-              executionId        = executionId.toScala.getOrElse(java.util.UUID.randomUUID().toString),
-              vainAktiiviset     = vainAktiiviset,
-              avainArvot         = avainArvot,
-              harkinnanvaraisuudet = harkinnanvaraisuudet,
-              ensikertalaisuudet = ensikertalaisuudet
+              executionId    = executionId.toScala.getOrElse(java.util.UUID.randomUUID().toString),
+              vainAktiiviset = vainAktiiviset
             )
-            LOG.info(s"Muodostetaan päivittäiset Ovara-siirtotiedostot $params")
-            ovaraService.muodostaPaivittaisetHauille(params)
-            ResponseEntity.status(HttpStatus.OK).build()
+            claimOrConflict(params.executionId).map(eid => {
+              AuditLog.log(AuditLog.getUser(request), Map(
+                "vainAktiiviset" -> vainAktiiviset.toString
+              ), AuditOperation.MuodostaPaivittaisetOvara, None)
+              LOG.info(s"Käynnistetään päivittäiset Ovara-siirtotiedostot $params")
+              submitJob(eid, ovaraService.muodostaPaivittaisetHauille(params))
+              ResponseEntity.status(HttpStatus.ACCEPTED).body(eid)
+            })
           })
-          .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[String]])
     catch
       case e: Exception =>
-        LOG.error("Ovara-siirtotiedostojen muodostus epäonnistui", e)
+        LOG.error("Päivittäisten Ovara-siirtotiedostojen käynnistys epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
   }
 
@@ -97,14 +111,16 @@ class OvaraResource {
   )
   @Operation(
     summary = "Muodostaa opiskeluoikeussiirtotiedostot Ovaraa varten annetulle aikavälille",
-    description = "Hakee annetulla aikavälillä muuttuneet opiskeluoikeudet ja muodostaa niistä siirtotiedostot Ovara-järjestelmää varten.",
+    description = "Hakee annetulla aikavälillä muuttuneet opiskeluoikeudet ja muodostaa niistä siirtotiedostot Ovara-järjestelmää varten. Ajo käynnistetään taustalle.",
     responses = Array(
-      new ApiResponse(responseCode = "200", description = "Siirtotiedostot muodostettu onnistuneesti",
-        content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "202", description = "Siirtotiedostojen muodostus käynnistetty, palauttaa ajon tunnisteen",
+        content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
       new ApiResponse(responseCode = "400", description = "Puuttuva tai virheellinen aikavälipäärametri",
         content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
       new ApiResponse(responseCode = "403", description = DATASYNC_RESPONSE_403_DESCRIPTION,
         content = Array(new Content(schema = new Schema(implementation = classOf[Void])))),
+      new ApiResponse(responseCode = "409", description = OVARA_409_VIRHE,
+        content = Array(new Content(schema = new Schema(implementation = classOf[String])))),
       new ApiResponse(responseCode = "500", description = OVARA_500_VIRHE,
         content = Array(new Content(schema = new Schema(implementation = classOf[Void]))))
     ))
@@ -113,33 +129,35 @@ class OvaraResource {
     @RequestParam @Parameter(description = "Aikavälin loppu (ISO-8601, esim. 2026-06-01T00:00:00Z)") windowEnd: String,
     @RequestParam(required = false) @Parameter(description = "Ajon tunniste, generoidaan automaattisesti jos ei annettu") executionId: Optional[String],
     request: HttpServletRequest
-  ): ResponseEntity[SyncResponse] = {
+  ): ResponseEntity[String] = {
     try
       val securityOperaatiot = new SecurityOperaatiot
       LogContext(path = OVARA_OPISKELUOIKEUDET_PATH, identiteetti = securityOperaatiot.getIdentiteetti())(() =>
         Right(None)
           .flatMap(_ =>
-            if (securityOperaatiot.onRekisterinpitaja())
-              Right(None)
-            else
-              Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build))
+            if (securityOperaatiot.onRekisterinpitaja()) Right(None)
+            else Left(ResponseEntity.status(HttpStatus.FORBIDDEN).build()))
           .flatMap(_ =>
             try Right((Instant.parse(windowStart), Instant.parse(windowEnd)))
-            catch case _: Exception => Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).build))
-          .map((start, end) => {
-            val user = AuditLog.getUser(request)
-            AuditLog.log(user, Map("windowStart" -> windowStart, "windowEnd" -> windowEnd), AuditOperation.MuodostaOpiskeluoikeussiirtotiedostotOvara, None)
+            catch case _: Exception => Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+          .flatMap((start, end) => {
             val params = OvaraParams(
               executionId = executionId.toScala.getOrElse(java.util.UUID.randomUUID().toString)
             )
-            LOG.info(s"Muodostetaan opiskeluoikeus-siirtotiedostot aikavälille $windowStart – $windowEnd (${params.executionId})")
-            ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params, start, end)
-            ResponseEntity.status(HttpStatus.OK).build()
+            claimOrConflict(params.executionId).map(eid => {
+              AuditLog.log(AuditLog.getUser(request), Map(
+                "windowStart" -> windowStart,
+                "windowEnd"   -> windowEnd
+              ), AuditOperation.MuodostaOpiskeluoikeussiirtotiedostotOvara, None)
+              LOG.info(s"Käynnistetään opiskeluoikeus-siirtotiedostot aikavälille $windowStart – $windowEnd ($eid)")
+              submitJob(eid, ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params, start, end))
+              ResponseEntity.status(HttpStatus.ACCEPTED).body(eid)
+            })
           })
-          .fold(e => e, r => r).asInstanceOf[ResponseEntity[SyncResponse]])
+          .fold(e => e, r => r).asInstanceOf[ResponseEntity[String]])
     catch
       case e: Exception =>
-        LOG.error("Ovara opiskeluoikeussiirtotiedostojen muodostus epäonnistui", e)
+        LOG.error("Ovara opiskeluoikeussiirtotiedostojen käynnistys epäonnistui", e)
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
   }
 }
