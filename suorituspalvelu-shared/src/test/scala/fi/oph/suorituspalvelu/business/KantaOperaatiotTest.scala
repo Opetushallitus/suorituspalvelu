@@ -1733,4 +1733,192 @@ class KantaOperaatiotTest {
     val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set((NOW.getYear - 1).toString, NOW.getYear.toString), vuodet)
   }
+
+  // ---- Siirtotiedosto-operaatiot ----
+
+  private val BOOTSTRAP_WINDOW_END = Instant.parse("2026-05-01T00:00:00Z")
+
+  @Test def testAloitaSiirtotiedostoOperaatioLuoOperaation(): Unit = {
+    val uuid = UUID.randomUUID().toString
+    val before = Instant.now()
+    val op = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(uuid)
+    val after = Instant.now()
+
+    Assertions.assertTrue(op.id > 0)
+    Assertions.assertEquals(uuid, op.uuid)
+    // windowStart comes from bootstrap row's window_end
+    Assertions.assertEquals(BOOTSTRAP_WINDOW_END, op.windowStart)
+    // windowEnd is set to now() at insert time
+    Assertions.assertFalse(op.windowEnd.isBefore(before.minusSeconds(1)))
+    Assertions.assertFalse(op.windowEnd.isAfter(after.plusSeconds(1)))
+    Assertions.assertFalse(op.runStart.isBefore(before.minusSeconds(1)))
+    Assertions.assertFalse(op.runStart.isAfter(after.plusSeconds(1)))
+    Assertions.assertTrue(op.runEnd.isEmpty)
+    Assertions.assertTrue(op.success.isEmpty)
+    Assertions.assertTrue(op.errorMessage.isEmpty)
+  }
+
+  @Test def testAloitaSiirtotiedostoOperaatioWindowStartEdellisenPaattymisesta(): Unit = {
+    val op1 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    kantaOperaatiot.paataSiirtotiedostoOperaatio(op1.id, success = true, None, Map.empty)
+
+    val op2 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+
+    // toisen operaation ikkuna alkaa siitä mihin edellinen päättyi
+    Assertions.assertEquals(op1.windowEnd.truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
+                             op2.windowStart.truncatedTo(java.time.temporal.ChronoUnit.SECONDS))
+  }
+
+  @Test def testPaataSiirtotiedostoOperaatioOnnistui(): Unit = {
+    val op = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    kantaOperaatiot.paataSiirtotiedostoOperaatio(op.id, success = true, None, Map("opiskeluoikeudet" -> 42))
+
+    // operaatio ei enää näy käynnissäolevana
+    Assertions.assertFalse(kantaOperaatiot.onkoKaynnissaOlevaOperaatio())
+
+    // onnistunut operaatio on uuden operaation ikkunan lähtöpiste
+    val op2 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    Assertions.assertEquals(op.windowEnd.truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
+                             op2.windowStart.truncatedTo(java.time.temporal.ChronoUnit.SECONDS))
+  }
+
+  @Test def testPaataSiirtotiedostoOperaatioEpaonnistui(): Unit = {
+    val op = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    kantaOperaatiot.paataSiirtotiedostoOperaatio(op.id, success = false, Some("virhe tapahtui"), Map.empty)
+
+    // epäonnistunut operaatio ei enää ole käynnissä
+    Assertions.assertFalse(kantaOperaatiot.onkoKaynnissaOlevaOperaatio())
+
+    // epäonnistunut operaatio ei päivitä ikkunaa — seuraavan windowStart tulee bootstrap-riviltä (tai edellisestä onnistuneesta)
+    val op2 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    Assertions.assertEquals(BOOTSTRAP_WINDOW_END, op2.windowStart)
+  }
+
+  @Test def testOnkoKaynnissaOlevaOperaatioFalseIlmanOperaatioita(): Unit = {
+    // ainoastaan bootstrap-rivi olemassa (run_end asetettu, run_start kaukana menneisyydessä)
+    Assertions.assertFalse(kantaOperaatiot.onkoKaynnissaOlevaOperaatio())
+  }
+
+  @Test def testOnkoKaynnissaOlevaOperaatioTrueKunOperaatioKaynnissa(): Unit = {
+    kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+
+    Assertions.assertTrue(kantaOperaatiot.onkoKaynnissaOlevaOperaatio())
+  }
+
+  @Test def testOnkoKaynnissaOlevaOperaatioFalseKunOperaatioPaattynyt(): Unit = {
+    val op = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    kantaOperaatiot.paataSiirtotiedostoOperaatio(op.id, success = true, None, Map.empty)
+
+    Assertions.assertFalse(kantaOperaatiot.onkoKaynnissaOlevaOperaatio())
+  }
+
+  @Test def testPaivittaisetTrueEnsimmaisellaAjolla(): Unit = {
+    val op = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+
+    // bootstrap-rivi ei ole paivittaiset=true & success=true tänään → paivittaiset on true
+    Assertions.assertTrue(op.paivittaiset)
+  }
+
+  @Test def testPaivittaisetFalseJosOnnistunutPaivittainenJoTanaan(): Unit = {
+    val op1 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    // op1 on paivittaiset=true; päätetään onnistuneesti
+    kantaOperaatiot.paataSiirtotiedostoOperaatio(op1.id, success = true, None, Map.empty)
+
+    val op2 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+
+    // jo on onnistunut paivittainen tänään → paivittaiset on false
+    Assertions.assertFalse(op2.paivittaiset)
+  }
+
+  @Test def testPaivittaisetFalseJosPaivittainenKaynnissa(): Unit = {
+    val op1 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+    // op1 käynnissä (ei päätetty)
+
+    val op2 = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(UUID.randomUUID().toString)
+
+    // käynnissä oleva paivittainen estää uuden paivittaisen aloituksen
+    Assertions.assertFalse(op2.paivittaiset)
+  }
+
+  private def tallennaVersiotKaikkiinLahdejarjestelmiin(henkiloOid: String): Unit =
+    val koski = kantaOperaatiot.tallennaJarjestelmaVersio(
+      henkiloOid, Lahdejarjestelma.KOSKI, Seq(s"""{"oid":"$henkiloOid"}"""), Seq.empty, Instant.now(), "1.2.3", Some(1)
+    ).get
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koski, Set.empty, Seq.empty, ParserVersions.KOSKI)
+    val virta = kantaOperaatiot.tallennaJarjestelmaVersio(
+      henkiloOid, Lahdejarjestelma.VIRTA, Seq.empty, Seq(s"<virta/>"), Instant.now(), "VIRTA", None
+    ).get
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(virta, Set.empty, Seq.empty, ParserVersions.KOSKI)
+    val ytr = kantaOperaatiot.tallennaJarjestelmaVersio(
+      henkiloOid, Lahdejarjestelma.YTR, Seq(s"""{"ytr":"$henkiloOid"}"""), Seq.empty, Instant.now(), "YTR", None
+    ).get
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(ytr, Set.empty, Seq.empty, ParserVersions.KOSKI)
+
+  @Test def testHaeMuuttuneetHenkiloOiditTyhjaKunEiVersioita(): Unit = {
+    val tulos = kantaOperaatiot.haeMuuttuneetHenkiloOidit(
+      Instant.now().minusSeconds(60), Instant.now().plusSeconds(60), 100
+    )
+    Assertions.assertTrue(tulos.isEmpty)
+  }
+
+  @Test def testHaeMuuttuneetHenkiloOiditPalauttaaHenkilotIkkunassa(): Unit = {
+    val before = Instant.now()
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000001")
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000002")
+    val after = Instant.now()
+
+    val tulos = kantaOperaatiot.haeMuuttuneetHenkiloOidit(before.minusMillis(1), after.plusMillis(1), 100)
+
+    Assertions.assertEquals(
+      Seq("1.2.246.562.24.00000000001", "1.2.246.562.24.00000000002"),
+      tulos
+    )
+  }
+
+  @Test def testHaeMuuttuneetHenkiloOiditEiPalautaIkkunanUlkopuolelta(): Unit = {
+    val before = Instant.now()
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000003")
+    val after = Instant.now()
+
+    // ikkuna päättyy ennen tallennusta
+    val liianVanha = kantaOperaatiot.haeMuuttuneetHenkiloOidit(before.minusSeconds(60), before, 100)
+    Assertions.assertTrue(liianVanha.isEmpty)
+
+    // ikkuna alkaa tallennuksen jälkeen
+    val liianUusi = kantaOperaatiot.haeMuuttuneetHenkiloOidit(after.plusMillis(1), after.plusSeconds(60), 100)
+    Assertions.assertTrue(liianUusi.isEmpty)
+  }
+
+  @Test def testHaeMuuttuneetHenkiloOiditSivutus(): Unit = {
+    val before = Instant.now()
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000004")
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000005")
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000006")
+    val after = Instant.now()
+
+    val window = (before.minusMillis(1), after.plusMillis(1))
+
+    // page size 2 → kaksi ensimmäistä (aakkosjärjestys)
+    val sivu1 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2)
+    Assertions.assertEquals(Seq("1.2.246.562.24.00000000004", "1.2.246.562.24.00000000005"), sivu1)
+
+    // afterHenkiloOid skippaa jo haetut → kolmas
+    val sivu2 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2, Some(sivu1.last))
+    Assertions.assertEquals(Seq("1.2.246.562.24.00000000006"), sivu2)
+
+    // toisen sivun jälkeen tyhjä
+    val sivu3 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2, Some(sivu2.last))
+    Assertions.assertTrue(sivu3.isEmpty)
+  }
+
+  @Test def testHaeMuuttuneetHenkiloOiditSamaOidPalautuuVainKerran(): Unit = {
+    // sama henkilö kolmesta lähteestä (KOSKI + VIRTA + YTR) → palautetaan vain kerran
+    val before = Instant.now()
+    tallennaVersiotKaikkiinLahdejarjestelmiin("1.2.246.562.24.00000000007")
+    val after = Instant.now()
+
+    val tulos = kantaOperaatiot.haeMuuttuneetHenkiloOidit(before.minusMillis(1), after.plusMillis(1), 100)
+
+    Assertions.assertEquals(Seq("1.2.246.562.24.00000000007"), tulos)
+  }
 }
