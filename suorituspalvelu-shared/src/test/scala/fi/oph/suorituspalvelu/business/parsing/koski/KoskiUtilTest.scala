@@ -42,7 +42,7 @@ class KoskiUtilTest {
           yksilollistaminen = None,
           aloitusPaivamaara = None,
           vahvistusPaivamaara = Some(LocalDate.now()),
-          aineet = Set.empty,
+          aineet = Seq.empty,
           lahtokoulut = List(Lahtokoulu(LocalDate.now().minusDays(1), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), "9A", SuoritusTila.KESKEN, None, VUOSILUOKKA_9)),
           syotetty = false,
           vuosiluokkiinSitoutumatonOpetus = false
@@ -74,7 +74,7 @@ class KoskiUtilTest {
           yksilollistaminen = None,
           aloitusPaivamaara = Some(LocalDate.now()),
           vahvistusPaivamaara = Some(LocalDate.now()),
-          aineet = Set.empty,
+          aineet = Seq.empty,
           lahtokoulut = List(Lahtokoulu(LocalDate.now(), Some(LocalDate.now()), "1.2.3", Some(LocalDate.now.getYear), "9A", SuoritusTila.VALMIS, None, VUOSILUOKKA_9)),
           syotetty = false,
           vuosiluokkiinSitoutumatonOpetus = false
@@ -201,7 +201,7 @@ class KoskiUtilTest {
 
   private val KAIKKI_YHTEISET = List("AI", "A1", "B1", "MA", "BI", "GE", "FY", "KE", "HI", "YH", "LI", "TE", "MU", "KU", "KS", "KO")
 
-  private def aineet(koodit: String*): Set[PerusopetuksenOppiaine] =
+  private def aineet(koodit: String*): Seq[PerusopetuksenOppiaine] =
     koodit.map(k => PerusopetuksenOppiaine(
       UUID.randomUUID(),
       Kielistetty(None, None, None),
@@ -211,7 +211,7 @@ class KoskiUtilTest {
       pakollinen = true,
       yksilollistetty = None,
       rajattu = None
-    )).toSet
+    )).toSeq
 
   @Test def testYhteisenAineenArvosanaPuuttuuKaikkiAineetJaET(): Unit =
     Assertions.assertFalse(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET :+ "ET" *)))
@@ -230,7 +230,7 @@ class KoskiUtilTest {
     Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET *)))
 
   @Test def testYhteisenAineenArvosanaPuuttuuTyhja(): Unit =
-    Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(Set.empty))
+    Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(Seq.empty))
 
   @Test def testYhteisenAineenArvosanaPuuttuuVainKatsomusaine(): Unit =
     Assertions.assertTrue(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet("ET")))

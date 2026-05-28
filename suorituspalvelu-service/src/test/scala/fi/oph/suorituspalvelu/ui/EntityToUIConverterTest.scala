@@ -76,7 +76,7 @@ class EntityToUIConverterTest {
       Some(3.4),
       Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1)),
-      Set(
+      Seq(
         AmmatillisenTutkinnonOsa(
           UUID.randomUUID(),
           Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen"), None, None),
@@ -85,7 +85,7 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           Some(Arvosana(Koodi("1", "arviointiasteikkoammatillinen15", None), Kielistetty(None, None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set(AmmatillisenTutkinnonOsaAlue(
+          Seq(AmmatillisenTutkinnonOsaAlue(
             UUID.randomUUID(),
             Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
             Koodi("106915", "ammatillisenoppiaineet", None),
@@ -103,7 +103,7 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinen15", None), Kielistetty(Some("Hyväksytty"), None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty,
+          Seq.empty,
           None
         )
       )
@@ -195,7 +195,7 @@ class EntityToUIConverterTest {
       None,
       Koodi("naytto", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1)),
-      Set(
+      Seq(
         AmmatillisenTutkinnonOsa(
           UUID.randomUUID(),
           Kielistetty(Some("Viestintä- ja vuorovaikutusosaaminen"), None, None),
@@ -204,7 +204,7 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           None,
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set.empty,
+          Seq.empty,
           None
         )
       )
@@ -274,7 +274,7 @@ class EntityToUIConverterTest {
       Some(3.4),
       Koodi("ops", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1)),
-      Set(
+      Seq(
         AmmatillisenTutkinnonOsa(
           UUID.randomUUID(),
           Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen"), None, None),
@@ -283,7 +283,7 @@ class EntityToUIConverterTest {
           Some(LocalDate.parse("2022-01-01")),
           Some(Arvosana(Koodi("Hyväksytty", "arviointiasteikkoammatillinent1k3", None), Kielistetty(None, None, None))),
           Some(Laajuus(10, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-          Set(AmmatillisenTutkinnonOsaAlue(
+          Seq(AmmatillisenTutkinnonOsaAlue(
             UUID.randomUUID(),
             Kielistetty(Some("Ajoneuvokaupan myyntitehtävissä toimiminen 1"), None, None),
             Koodi("106915", "ammatillisenoppiaineet", None),
@@ -564,7 +564,7 @@ class EntityToUIConverterTest {
       yksilollistaminen = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY),
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2020-01-01")),
-      aineet = Set(
+      aineet = Seq(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = Kielistetty(Some("A1-kieli"), None, None),
@@ -699,7 +699,7 @@ class EntityToUIConverterTest {
       yksilollistaminen = None,
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = None,
-      aineet = Set(
+      aineet = Seq(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
           nimi = Kielistetty(Some("Historia"), None, None),
@@ -728,7 +728,7 @@ class EntityToUIConverterTest {
 
   // Apuri puuttuvien arvosanojen testeille: rakentaa VALMIIN perusopetuksen oppimäärän, jolla on
   // annettu joukko (koodi -> arvosana) -pareja.
-  private def valmisOppimaaraWithAineet(aineet: Set[(String, String)]): PerusopetuksenOppimaara =
+  private def valmisOppimaaraWithAineet(aineet: Seq[(String, String)]): PerusopetuksenOppimaara =
     PerusopetuksenOppimaara(
       tunniste = UUID.randomUUID(),
       versioTunniste = None,
@@ -774,7 +774,7 @@ class EntityToUIConverterTest {
 
   @Test def testPerusopetuksenOppimaaraPuuttuvaYhteinenAineNakyyPaikkarivina(): Unit = {
     // Oppimäärällä on vain HI ja KT: kaikki muut yhteiset aineet pitää näkyä paikkariveinä (arvosana = Optional.empty).
-    val oppimaara = valmisOppimaaraWithAineet(Set("HI" -> "9", "KT" -> "8"))
+    val oppimaara = valmisOppimaaraWithAineet(Seq("HI" -> "9", "KT" -> "8"))
     val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
 
     val koodiToArvosana = oppiaineet.map(o => o.koodi -> o.arvosana).toMap
@@ -791,7 +791,7 @@ class EntityToUIConverterTest {
 
   @Test def testPerusopetuksenOppimaaraEtRiittaaKatsomusaineeksi(): Unit = {
     // ET on annettu, joten ei lisätä KT-paikkariviä.
-    val kaikkiYhteisetPlusEt = KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9").toSet + ("ET" -> "9")
+    val kaikkiYhteisetPlusEt = KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9") :+ ("ET" -> "9")
     val oppimaara = valmisOppimaaraWithAineet(kaikkiYhteisetPlusEt)
     val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
     val koodit = oppiaineet.map(_.koodi).toSet
@@ -802,7 +802,7 @@ class EntityToUIConverterTest {
 
   @Test def testPerusopetuksenOppimaaraNeitherEtNorKtAddsKtPlaceholder(): Unit = {
     // Ei ET:tä eikä KT:tä — pitää lisätä yksi KT-paikkarivi (eikä ET:tä).
-    val oppimaara = valmisOppimaaraWithAineet(KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9").toSet)
+    val oppimaara = valmisOppimaaraWithAineet(KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9"))
     val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
     val koodiToArvosana = oppiaineet.map(o => o.koodi -> o.arvosana).toMap
     Assertions.assertFalse(koodiToArvosana("KT").isPresent, "KT pitää olla paikkarivinä (arvosana puuttuu)")
@@ -811,7 +811,7 @@ class EntityToUIConverterTest {
 
   @Test def testPerusopetuksenOppimaaraTaysinValmisEiPaikkarivejä(): Unit = {
     // Kaikki yhteiset + KT annettuna => ei lisätä yhtään paikkariviä.
-    val kaikki = (KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9").toSet + ("KT" -> "9"))
+    val kaikki = (KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9") :+ ("KT" -> "9"))
     val oppimaara = valmisOppimaaraWithAineet(kaikki)
     val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
     Assertions.assertTrue(oppiaineet.forall(_.arvosana.isPresent), "Täysin valmiilla oppimäärällä jokaisella rivillä pitää olla arvosana")
@@ -1150,7 +1150,7 @@ class EntityToUIConverterTest {
       aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
       vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
       suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
-      osasuoritukset = Set(
+      osasuoritukset = Seq(
         IBOppiaineSuoritus(
           tunniste = oppiaineTunniste1,
           nimi = Kielistetty(Some("Suomi A"), Some("Finska A"), Some("Finnish A")),
@@ -1257,7 +1257,7 @@ class EntityToUIConverterTest {
       aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
       vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
       suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
-      osasuoritukset = Set(
+      osasuoritukset = Seq(
         IBOppiaineSuoritus(
           tunniste = grouped,
           nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics: Analysis and Approaches HL")),

@@ -188,7 +188,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         Some(LocalDate.parse(s"$vuosi-06-01")),
-        Set.empty,
+        Seq.empty,
         List(Lahtokoulu(LocalDate.parse(s"${vuosi-1}-08-01"), Some(LocalDate.parse(s"$vuosi-06-01")), oppilaitosOid, Some(LocalDate.now.getYear), "9A", VALMIS, None, VUOSILUOKKA_9)),
         false,
         false,
@@ -256,7 +256,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
-        Set.empty,
+        Seq.empty,
         List(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-01"), None, oppilaitosOid, Some(valmistumisvuosi), "9A", VALMIS, None, VUOSILUOKKA_9)),
         false,
         false,
@@ -316,7 +316,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
-        Set.empty,
+        Seq.empty,
         List(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-01"), None, descendantOid, Some(valmistumisvuosi), "9A", VALMIS, None, VUOSILUOKKA_9)),
         false,
         false,
@@ -413,7 +413,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         None,
-        Set.empty,
+        Seq.empty,
         List(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-18"), None, oppilaitosOid, Some(valmistumisvuosi), "9G", VALMIS, None, VUOSILUOKKA_9)),
         false,
         false,
@@ -474,7 +474,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         None,
-        Set.empty,
+        Seq.empty,
         List(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi - 1}-08-18"), None, descendantOid, Some(valmistumisvuosi), "9G", VALMIS, None, VUOSILUOKKA_9)),
         false,
         false,
@@ -654,7 +654,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
         None,
         None,
         Some(LocalDate.parse(s"$valmistumisvuosi-06-01")),
-        Set.empty,
+        Seq.empty,
         List(Lahtokoulu(LocalDate.parse(s"${valmistumisvuosi-1}-08-01"), Some(LocalDate.parse(s"$valmistumisvuosi-06-01")), oppilaitosOid, Some(valmistumisvuosi), luokka, VALMIS, None, VUOSILUOKKA_9)),
         false,
         false,
@@ -753,7 +753,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3.4", Some(1))
-    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("ops", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("ops", "suoritustapa", Some(1)), suoritusKieli, Seq.empty)
     val opiskeluoikeudet = Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
     ).asInstanceOf[Set[Opiskeluoikeus]]
@@ -860,7 +860,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // tallennetaan tutkinnot
     val koskiVersio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3.4", Some(1))
-    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("ops", "suoritustapa", Some(1)), suoritusKieli, Set.empty)
+    val ammatillinenTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi(tutkintoKoodi, "koulutus", Some(1)), fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Koodi("valmistunut", "jokutila", Some(1)), fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS, Some(LocalDate.now()), Some(LocalDate.now()), None, Koodi("ops", "suoritustapa", Some(1)), suoritusKieli, Seq.empty)
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, Set(
       AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", fi.oph.suorituspalvelu.business.Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"), Set(ammatillinenTutkinto), None, List.empty),
     ), List.empty, ParserVersions.KOSKI)
@@ -2080,7 +2080,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2022-08-15")),
       Some(LocalDate.parse("2023-06-30")),
-      Set(
+      Seq(
         // L1 oppiaine
         EBOppiaine(
           UUID.randomUUID(),
@@ -2092,7 +2092,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           Koodi("L1", "eboppiaineet", Some(1)),
           Some(EBLaajuus(4.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           Some(Koodi("FI", "kieli", Some(1))),
-          Set(
+          Seq(
             EBOppiaineenOsasuoritus(
               Kielistetty(
                 Some("Kirjallinen koe"),
@@ -2145,7 +2145,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
           Koodi("L2", "eboppiaineet", Some(1)),
           Some(EBLaajuus(3.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           Some(Koodi("EN", "kieli", Some(1))),
-          Set(
+          Seq(
             EBOppiaineenOsasuoritus(
               Kielistetty(
                 Some("Lopullinen arvosana"),

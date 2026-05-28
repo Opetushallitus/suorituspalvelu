@@ -41,7 +41,7 @@ object KoskiUtil {
 
   // Muista kuin katsomuaineista pitää olla kaikki, ja katsomusaineista jompi kumpi. Tässä ei voi käyttää oppiaineen
   // pakollisuusvipua, koska tarkoitus on tunnistaa tilanne jossa arvosana (ja sitä kautta koko aine) puuttuu
-  def yhteisenAineenArvosanaPuuttuu(aineet: Set[PerusopetuksenOppiaine]): Boolean =
+  def yhteisenAineenArvosanaPuuttuu(aineet: Seq[PerusopetuksenOppiaine]): Boolean =
     !YHTEISET_AINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
       !KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
 
