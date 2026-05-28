@@ -45,10 +45,7 @@ case class OvaraEnsikertalaisuus(
 
 case class OvaraParams(
   executionId: String = UUID.randomUUID().toString,
-  vainAktiiviset: Boolean = true,
-  avainArvot: Boolean = true,
-  harkinnanvaraisuudet: Boolean = true,
-  ensikertalaisuudet: Boolean = true
+  vainAktiiviset: Boolean = true
 )
 
 case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
@@ -155,7 +152,7 @@ class OvaraService(
       } else tila.harkinnanvaraisuusTiedostoNumero
     } else tila.harkinnanvaraisuusTiedostoNumero
 
-    val nextEnsikertalaisuusTiedostoNumero = if (params.ensikertalaisuudet && haku.isKKHaku()) {
+    val nextEnsikertalaisuusTiedostoNumero = if (haku.isKKHaku()) {
       val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
         vd.ensikertalaisuus.map(ek => {
           OvaraEnsikertalaisuus(
