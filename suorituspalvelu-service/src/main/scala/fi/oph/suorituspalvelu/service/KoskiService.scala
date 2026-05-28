@@ -25,7 +25,8 @@ case class RefreshChangesSinceJobData(muuttuneetJalkeen: String, muuttuneetEnnen
 @Component
 class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, hakemuspalveluClient: HakemuspalveluClientImpl,
                    tarjontaIntegration: TarjontaIntegration, koskiIntegration: KoskiIntegration, koodistoProvider: KoodistoProvider,
-                   opiskeluoikeusParsingService: OpiskeluoikeusParsingService, @Value("${integrations.koski.cron}") cron: String) {
+                   opiskeluoikeusParsingService: OpiskeluoikeusParsingService, @Value("${integrations.koski.cron}") cron: String,
+                   @Value("${integrations.koski.bufferseconds:120}") bufferSeconds: String) {
 
   val LOG = LoggerFactory.getLogger(classOf[KoskiService])
 
@@ -44,7 +45,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
     if (prevStart.isDefined) { // tyhjä tarkoittaa ettei taskia ajettu koskaan tässä ympäristössä
       try
         //Kerätään tulokset palautuvasta SaferIteratorista jotta sisältö sivuvaikutuksineen tulee käsitellyksi.
-        val (changed, exceptions) = refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(60))
+        val (changed, exceptions) = refreshKoskiChangesSince(ctx, prevStart.get.minusSeconds(bufferSeconds.toInt))
           .foldLeft((0, 0))((counts, result) => (counts._1 + {
             result.versio.map(_ => 1).getOrElse(0)
           }, counts._2 + {
