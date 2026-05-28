@@ -428,6 +428,18 @@ export const TELMA_SUORITUS: SuoritusSpec = {
   },
 };
 
+export const TUVA_KESKEN_SUORITUS: SuoritusSpec = {
+  perustiedot: {
+    title: `Tutkintokoulutukseen valmentava koulutus (1.8.2024 ${NDASH} )`,
+    oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+    tila: 'Suoritus kesken',
+    valmistumispaiva: '-',
+  },
+  additionalChecks: async (paper) => {
+    await expect(paper.getByLabel('Suoritettu')).toHaveText('–');
+  },
+};
+
 export const TUVA_SUORITUS: SuoritusSpec = {
   perustiedot: {
     title: `Tutkintokoulutukseen valmentava koulutus (31.12.2023 ${NDASH} 1.6.2017)`,
@@ -437,6 +449,19 @@ export const TUVA_SUORITUS: SuoritusSpec = {
   },
   additionalChecks: async (paper) => {
     await expect(paper.getByLabel('Suoritettu')).toHaveText('38 vk');
+  },
+};
+
+export const VAPAA_SIVISTYSTYO_KESKEN_SUORITUS: SuoritusSpec = {
+  perustiedot: {
+    title: `Vapaan sivistystyön koulutus (1.8.2024 ${NDASH} )`,
+    oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
+    tila: 'Suoritus kesken',
+    valmistumispaiva: '-',
+    suorituskieli: 'suomi',
+  },
+  additionalChecks: async (paper) => {
+    await expect(paper.getByLabel('Suoritettu')).toHaveText('–');
   },
 };
 

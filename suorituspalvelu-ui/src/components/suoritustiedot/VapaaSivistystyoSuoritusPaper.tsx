@@ -17,7 +17,11 @@ export const VapaaSivistystyoSuoritusPaper = ({
       <SuorituksenPerustiedotIndicator perustiedot={suoritus} />
       <LabeledInfoItem
         label={t('oppija.suoritettu')}
-        value={`${suoritus.laajuus?.arvo} ${translateKielistetty(suoritus.laajuus?.yksikko)}`}
+        value={
+          suoritus.laajuus
+            ? `${suoritus.laajuus.arvo} ${translateKielistetty(suoritus.laajuus.yksikko)}`
+            : '–'
+        }
       />
     </SuoritusInfoPaper>
   );
