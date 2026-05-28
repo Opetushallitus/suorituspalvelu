@@ -493,6 +493,11 @@ case class OvaraPerusopetuksenOppiaine(
   rajattu: Option[Boolean]
 )
 
+case class OvaraPerusopetukseenValmistavaOpetus(
+  entiteetinTyyppi: String = "PerusopetukseenValmistavaOpetus",
+  lahtokoulut: List[Lahtokoulu]
+) extends OvaraPerusopetuksenSuoritus
+
 case class OvaraPoistettuOpiskeluoikeus(
   entiteetinTyyppi: String = "PoistettuOpiskeluoikeus",
   metadata: OvaraVersioMetadata,
