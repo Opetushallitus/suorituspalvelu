@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, AvainMetatiedotDTO, ConvertedAtaruHakemus, EnsikertalaisuusService, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HarkinnanvaraisuusService, ValintalaskentaHakutoive, YoMetadataConverter}
@@ -57,6 +57,8 @@ class ValintaDataService {
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
 
   @Autowired val tarjontaIntegration: TarjontaIntegration = null
+
+  @Autowired val hakukohderyhmaIntegration: HakukohderyhmaIntegration = null
 
   @Autowired val harkinnanvaraisuusService: HarkinnanvaraisuusService = null
 
@@ -139,7 +141,9 @@ class ValintaDataService {
       else
         None
 
-    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, vahvistettuViimeistaan, hakemus, kaikkiOpiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, haku, harkinnanvaraisuudet)
+    val hakukohderyhmat = hakukohderyhmaIntegration.getHakukohderyhmatForHaku(haku.oid)
+
+    val rawResults = AvainArvoConverter.convertOpiskeluoikeudet(usePersonOid, hakemus, kaikkiOpiskeluoikeudet, opiskeluoikeudetVahvistettuHetkella, vahvistettuViimeistaan, haku, harkinnanvaraisuudet, hakukohderyhmat)
 
     val yoMetadata = YoMetadataConverter.convert(kaikkiOpiskeluoikeudet)
 

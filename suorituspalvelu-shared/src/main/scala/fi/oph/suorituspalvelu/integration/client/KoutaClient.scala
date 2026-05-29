@@ -75,6 +75,16 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
     hakukohdeTulosF.map(_.getOrElse(throw new RuntimeException(s"Hakukohdetta $hakukohdeOid ei löytynyt!")))
   }
 
+  def fetchHakukohteetByHaku(hakuOid: String): Future[List[KoutaHakukohde]] = {
+    val url = environmentBaseUrl + "/kouta-internal/hakukohde/search?haku=" + hakuOid
+    doGet(url).map(resultOpt =>
+      resultOpt.map(result => {
+        val typeRef = new TypeReference[List[KoutaHakukohde]] {}
+        mapper.readValue(result, typeRef)
+      }).getOrElse(List.empty)
+    )
+  }
+
   def fetchHaut(): Future[Map[String, KoutaHaku]] = {
     val url = environmentBaseUrl + "/kouta-internal/haku/search"
     val hakuTulos: Future[Seq[KoutaHaku]] = doGet(url).map(resultOpt => {

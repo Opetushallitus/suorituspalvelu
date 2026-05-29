@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHaku, Ohjausparametrit}
-import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
@@ -38,6 +38,9 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
+
+  @MockitoBean
+  val hakukohderyhmaIntegration: HakukohderyhmaIntegration = null
 
   final val ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA = SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA + "_1.2.246.562.10.52320123196"
 
@@ -135,6 +138,8 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
       .thenReturn(Future.successful(Seq(testHakemus)))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
+    Mockito.when(hakukohderyhmaIntegration.getHakukohderyhmatForHaku(hakuOid))
+      .thenReturn(Map.empty)
 
     val result = mvc.perform(jsonPost(ApiConstants.VALINTALASKENTA_VALINTADATA_PATH, ValintalaskentaDataPayload(Optional.of(hakuOid), Optional.of(hakukohdeOid), null))
         .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -176,5 +181,88 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-degreeRequirement" && aa.arvo == "UNREVIEWED"))
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-eligibility" && aa.arvo == "ELIGIBLE"))
     Assertions.assertTrue(hakemus.avaimet.asScala.exists(aa => aa.avain == "preference2-Koulutus-id-languageRequirement" && aa.arvo == "UNREVIEWED"))
+  }
+
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testHaeValintaDataPalauttaaHakukohderyhmaOidit(): Unit = {
+    val personOid = "1.2.246.562.24.21250967211"
+    val hakuOid = "1.2.246.562.29.01000000000000013275"
+    val hakemusOid = "1.2.246.562.11.01000000000000023251"
+    val hakukohdeOid = "1.2.246.562.20.00000000000000044758"
+    val hakukohdeOid1 = "1.2.246.562.20.00000000000000000001"
+    val hakukohdeOid2 = "1.2.246.562.20.00000000000000000002"
+    val hakukohderyhmaOid1 = "1.2.246.562.28.00000000000000000001"
+    val hakukohderyhmaOid2 = "1.2.246.562.28.00000000000000000002"
+    val hakukohderyhmaOid3 = "1.2.246.562.28.00000000000000000003"
+
+    val testHakemus = AtaruValintalaskentaHakemus(
+      hakemusOid = hakemusOid,
+      personOid = personOid,
+      hakuOid = hakuOid,
+      asiointikieli = "fi",
+      hakutoiveet = List(
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid1,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = None
+        ),
+        Hakutoive(
+          processingState = "unprocessed",
+          eligibilityState = "eligible",
+          paymentObligation = "not-obligated",
+          kkApplicationPaymentObligation = "unreviewed",
+          hakukohdeOid = hakukohdeOid2,
+          languageRequirement = "unreviewed",
+          degreeRequirement = "unreviewed",
+          harkinnanvaraisuus = None
+        )
+      ),
+      maksuvelvollisuus = Map.empty,
+      keyValues = Map.empty,
+      korkeakoulututkintoVuosi = None
+    )
+
+    val haku = KoutaHaku(
+      oid = hakuOid,
+      tila = "julkaistu",
+      nimi = Map("fi" -> s"Testi haku"),
+      hakutapaKoodiUri = "hakutapa_01",
+      kohdejoukkoKoodiUri = Some("haunkohdejoukko_14#1"),
+      hakuajat = List.empty,
+      kohdejoukonTarkenneKoodiUri = None,
+      hakuvuosi = Some(2022)
+    )
+
+    Mockito.when(tarjontaIntegration.getHaku(hakuOid)).thenReturn(Some(haku))
+    Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
+      .thenReturn(Ohjausparametrit(suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)), valintalaskentapaiva = Some(DateParam(1768290647351L))))
+    Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(Some(hakukohdeOid), false, Set.empty, false))
+      .thenReturn(Future.successful(Seq(testHakemus)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
+    Mockito.when(hakukohderyhmaIntegration.getHakukohderyhmatForHaku(hakuOid))
+      .thenReturn(Map(
+        hakukohdeOid1 -> Set(hakukohderyhmaOid1, hakukohderyhmaOid2),
+        hakukohdeOid2 -> Set(hakukohderyhmaOid3)
+      ))
+
+    val result = mvc.perform(jsonPost(ApiConstants.VALINTALASKENTA_VALINTADATA_PATH, ValintalaskentaDataPayload(Optional.of(hakuOid), Optional.of(hakukohdeOid), null))
+        .contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    val parsedResult = objectMapper.readValue(result.getResponse.getContentAsString(java.nio.charset.Charset.forName("UTF-8")), classOf[ValintalaskentaDataSuccessResponse])
+    val hakemus = parsedResult.valintaHakemukset.asScala.head
+
+    val hakutoive1 = hakemus.hakukohteet.asScala.find(_.oid == hakukohdeOid1).get
+    Assertions.assertEquals(Set(hakukohderyhmaOid1, hakukohderyhmaOid2), hakutoive1.hakukohdeRyhmatOids.asScala.toSet)
+
+    val hakutoive2 = hakemus.hakukohteet.asScala.find(_.oid == hakukohdeOid2).get
+    Assertions.assertEquals(Set(hakukohderyhmaOid3), hakutoive2.hakukohdeRyhmatOids.asScala.toSet)
   }
 }

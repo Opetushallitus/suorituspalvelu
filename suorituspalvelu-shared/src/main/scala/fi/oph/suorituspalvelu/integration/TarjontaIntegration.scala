@@ -27,6 +27,7 @@ class TarjontaIntegration {
 
   private val HAUT_TIMEOUT = 120.seconds
   private val OHJAUSPARAMETRIT_TIMEOUT = 30.seconds
+  private val HAKUKOHTEET_TIMEOUT = 120.seconds
 
   private val allHautCache: LoadingCache[String, Map[String, KoutaHaku]] = Caffeine.newBuilder()
     .expireAfterWrite(java.time.Duration.ofHours(6))
@@ -36,21 +37,32 @@ class TarjontaIntegration {
     })
 
   private val hakukohdeCache: LoadingCache[String, KoutaHakukohde] = Caffeine.newBuilder()
-    .expireAfterWrite(java.time.Duration.ofHours(6))
-    .refreshAfterWrite(java.time.Duration.ofHours(3))
+    .expireAfterWrite(java.time.Duration.ofHours(4))
+    .refreshAfterWrite(java.time.Duration.ofHours(1))
     .build[String, KoutaHakukohde](hakukohdeOid => {
       Await.result(koutaClient.fetchHakukohde(hakukohdeOid), OHJAUSPARAMETRIT_TIMEOUT)
     })
 
   private val ohjausparametritCache: LoadingCache[String, Ohjausparametrit] = Caffeine.newBuilder()
-    .expireAfterWrite(java.time.Duration.ofHours(6))
-    .refreshAfterWrite(java.time.Duration.ofHours(3))
+    .expireAfterWrite(java.time.Duration.ofHours(4))
+    .refreshAfterWrite(java.time.Duration.ofHours(1))
     .build[String, Ohjausparametrit](hakuOid => {
       Await.result(ohjausparametritClient.haeOhjausparametrit(hakuOid), OHJAUSPARAMETRIT_TIMEOUT)
     })
 
+  private val hakukohteetByHakuCache: LoadingCache[String, List[KoutaHakukohde]] = Caffeine.newBuilder()
+    .expireAfterWrite(java.time.Duration.ofHours(4))
+    .refreshAfterWrite(java.time.Duration.ofHours(1))
+    .build[String, List[KoutaHakukohde]](hakuOid => {
+      Await.result(koutaClient.fetchHakukohteetByHaku(hakuOid), HAKUKOHTEET_TIMEOUT)
+    })
+
   def getHakukohde(hakukohdeOid: String): KoutaHakukohde = {
     hakukohdeCache.get(hakukohdeOid)
+  }
+
+  def getHakukohteetForHaku(hakuOid: String): List[KoutaHakukohde] = {
+    hakukohteetByHakuCache.get(hakuOid)
   }
 
   def getHaku(hakuOid: String): Option[KoutaHaku] = {
