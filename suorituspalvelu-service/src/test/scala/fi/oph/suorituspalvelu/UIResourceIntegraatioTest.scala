@@ -1598,6 +1598,36 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(1, suoritukset.size)
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaPerusopetuksenOppimaaranJaOppiaineenOppimaaranSuoritusSamalleOppijalle(): Unit =
+    // Regressiotesti: perusopetuksen oppimäärän ja oppiaineen oppimäärän tallennusten täytyy elää
+    // rinnakkain samalla oppijalla. Aiemmin oppiaineen oppimäärä tallennettiin virheellisesti
+    // lähdejärjestelmällä SYOTETTY_PERUSOPETUS, jolloin se päätti perusopetuksen oppimäärän
+    // voimassaolon (ja päinvastoin).
+    val oppijaNumero = "1.2.246.562.24.21250967214"
+    val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
+
+    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(UIService.EXAMPLE_OPPILAITOS_OID)).thenReturn(Some(organisaatio))
+
+    // tallennetaan ensin perusopetuksen oppimäärä
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
+      .andExpect(status().isOk)
+
+    // ja sen jälkeen oppiaineen oppimäärä samalle oppijalle
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_OPPIAINE_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppiaineenOppimaaranSuoritus().copy(oppijaOid = Optional.of(oppijaNumero)))))
+      .andExpect(status().isOk)
+
+    // molempien suoritusten on löydyttävä kannasta
+    val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
+    Assertions.assertEquals(2, suoritukset.size)
+
   /*
    * Integraatiotestit perusopetuksen oppimäärän suorituksen poistolle
    */
