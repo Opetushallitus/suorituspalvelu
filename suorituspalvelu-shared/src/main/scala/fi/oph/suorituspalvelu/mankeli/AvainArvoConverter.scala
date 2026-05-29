@@ -735,7 +735,7 @@ object AvainArvoConverter {
     korkeimmatArvosanatAineittain
   }
 
-  def perusopetuksenValinnaisetOppiaineetToAvainArvot(aineet: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
+  def perusopetuksenValinnaisetOppiaineetToAvainArvot(aineet: Seq[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
     val byAine = aineet.groupBy(_.koodi.arvo)
 
     byAine.flatMap((aine, ainesuoritukset) => {
@@ -751,7 +751,7 @@ object AvainArvoConverter {
   def convertAidinkieliKielikoodi(kieliKoodi: String): String =
     AvainArvoConstants.aidinkieliKoodiMapping.getOrElse(kieliKoodi, kieliKoodi)
 
-  def perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(personOid: String, aineet: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
+  def perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(personOid: String, aineet: Seq[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
     val koodiArvot = aineet.map(_.koodi.arvo)
     AvainArvoConstants.oppiaineKoodiMapping.foreach { case (sourceKoodi, targetKoodi) =>
       if (koodiArvot.contains(sourceKoodi) && koodiArvot.contains(targetKoodi)) {
@@ -782,14 +782,14 @@ object AvainArvoConverter {
       })
 
       Set(arvosanaArvot) ++ kieliOppiaineArvot ++ kieliTietoArvot
-    })
+    }).toSet
   }
 
   def hakemuksellaIlmoitettuPeruskoulu2017TaiAiempi(hakemus: AtaruValintalaskentaHakemus): Boolean = {
     hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
   }
 
-  private def convertParhaatPeruskoulunArvosanatJaKielet(personOid: String, aineetPaasuoritukselta: Set[PerusopetuksenOppiaine], aineetOppiaineenOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
+  private def convertParhaatPeruskoulunArvosanatJaKielet(personOid: String, aineetPaasuoritukselta: Seq[PerusopetuksenOppiaine], aineetOppiaineenOppimaarilta: Set[PerusopetuksenOppiaine]): Set[AvainArvoContainer] = {
     //Otetaan mukaan vain sellaiset oppiaineen oppimäärät, joiden aine löytyy varsinaisen oppimäärän aineista.
     val paasuorituksenAineet = aineetPaasuoritukselta.map(_.koodi.arvo)
     val huomioitavatOppiaineenOppimaarat = aineetOppiaineenOppimaarilta.filter(a => paasuorituksenAineet.contains(a.koodi.arvo))
@@ -829,7 +829,7 @@ object AvainArvoConverter {
 
       case (Some(po), _) if oppimaaraVahvistettuAjoissa(po, vahvistettuViimeistaan) =>
         val vahvistettuAjoissaSelite = s"Löytyi perusopetuksen oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${po.vahvistusPaivamaara.getOrElse("-")}"
-        val aineetPaasuoritukselta = perusopetuksenOppimaara.map(_.aineet).getOrElse(Set.empty)
+        val aineetPaasuoritukselta = perusopetuksenOppimaara.map(_.aineet).getOrElse(Seq.empty)
         val aineetOppimaarilta = oppiaineenOppimaarat.flatMap(_.aineet).toSet
 
         val arvosanaJaKieliArvot = convertParhaatPeruskoulunArvosanatJaKielet(personOid, aineetPaasuoritukselta, aineetOppimaarilta).filter(aa => {
@@ -855,7 +855,7 @@ object AvainArvoConverter {
 
         //Suorituspalvelusta voi löytyä korotuksia hakemuksella ilmoitetuille arvosanoille (esim. perusopetus suoritettu 2017, korotuksia vuodelta 2018). Otetaan ne huomioon.
         //Huomioidaan kuitenkin vain sellaiset korotukset, joille löytyi arvosana hakemukselta.
-        val korotuksetSuorituspalvelusta = perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(personOid, oppiaineenOppimaarat.flatMap(_.aineet).toSet)
+        val korotuksetSuorituspalvelusta = perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot(personOid, oppiaineenOppimaarat.flatMap(_.aineet).toSeq)
         val hakemuksenArvosanojenAvaimet = arvosanatHakemukselta.map(_.avain)
         val huomioitavatKorotukset = korotuksetSuorituspalvelusta.filter(k => hakemuksenArvosanojenAvaimet.contains(k.avain))
 

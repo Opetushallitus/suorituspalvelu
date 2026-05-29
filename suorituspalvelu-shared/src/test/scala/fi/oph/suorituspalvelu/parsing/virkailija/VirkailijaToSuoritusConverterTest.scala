@@ -76,7 +76,7 @@ class VirkailijaToSuoritusConverterTest {
           Some(EI_YKSILOLLISTETTY),
           None,
           suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
-          suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
+          suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSeq.map(oppiaine => PerusopetuksenOppiaine(
             converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara].aineet.head.tunniste,
             Kielistetty(Some("matematiikka"), None, None),
             oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
@@ -85,7 +85,7 @@ class VirkailijaToSuoritusConverterTest {
             oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
             None,
             None
-          ))).getOrElse(Set.empty),
+          ))).getOrElse(Seq.empty),
           List(Lahtokoulu(LocalDate.now, Some(LocalDate.now), suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), "9A", SuoritusTila.VALMIS, None, VUOSILUOKKA_9)),
           syotetty = true,
           vuosiluokkiinSitoutumatonOpetus = false,

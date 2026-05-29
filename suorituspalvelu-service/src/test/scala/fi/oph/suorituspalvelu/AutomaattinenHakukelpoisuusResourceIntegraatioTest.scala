@@ -112,7 +112,7 @@ class AutomaattinenHakukelpoisuusResourceIntegraatioTest extends BaseIntegraatio
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(60)),
-      osasuoritukset = Set.empty
+      osasuoritukset = Seq.empty
     )
 
     val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(

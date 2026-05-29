@@ -37,7 +37,7 @@ object VirkailijaToSuoritusConverter {
     val vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp))
     val luokka = suoritus.luokka.toScala
     val supaTila = SuoritusTila.valueOf(suoritus.tila.get)
-    val aineet = suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSet.map(oppiaine => PerusopetuksenOppiaine(
+    val aineet = suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSeq.map(oppiaine => PerusopetuksenOppiaine(
       UUID.randomUUID(),
       toOppiaineenNimi(oppiaine.koodi.get, koodistoProvider),
       oppiaine.koodi.toScala.map(k => Koodi(k, "koskioppiaineetyleissivistava", Some(1))).getOrElse(dummy()),
@@ -46,7 +46,7 @@ object VirkailijaToSuoritusConverter {
       oppiaine.valinnainen.toScala.map(p => !p).getOrElse(dummy()),
       None,
       None
-    ))).getOrElse(Set.empty)
+    ))).getOrElse(Seq.empty)
 
     PerusopetuksenOpiskeluoikeus(
       UUID.randomUUID(),

@@ -134,7 +134,7 @@ class KoskiToSuoritusConverterTest {
 
     val baseSuoritus = KoskiSuoritus(
       null, null, null, null, null, null,
-      osasuoritukset = Some(Set.empty), null, null, null, null, null, null, null
+      osasuoritukset = Some(Seq.empty), null, null, null, null, null, null, null
     )
 
     val baseOikeus =  KoskiOpiskeluoikeus(
@@ -152,7 +152,7 @@ class KoskiToSuoritusConverterTest {
     }
 
     // Ei erityisiä aineita
-    val suoritusVainTavallisia = baseSuoritus.copy(osasuoritukset = Some(Set(createOsaSuoritus("HI", false, false))))
+    val suoritusVainTavallisia = baseSuoritus.copy(osasuoritukset = Some(Seq(createOsaSuoritus("HI", false, false))))
     Assertions.assertEquals(None, KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, suoritusVainTavallisia))
 
     // Ei osasuorituksia
@@ -164,66 +164,66 @@ class KoskiToSuoritusConverterTest {
 
     // Vain yksilöllistettyjä, osittain (1 <= 3/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("BI", false, false), createOsaSuoritus("MA", true, false), createOsaSuoritus("LI", false, false))))))
 
     // Vain yksilöllistettyjä, pääosin (2 > 3/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("LI", true, false), createOsaSuoritus("AI", true, false), createOsaSuoritus("A1", false, false))))))
 
     // Vain rajattuja, osittain (1 <= 3/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("GE", false, false), createOsaSuoritus("BI", false, true), createOsaSuoritus("HI", false, false))))))
 
     // Vain rajattuja, pääosin (2 > 3/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("KE", false, true), createOsaSuoritus("B1", false, true), createOsaSuoritus("A1", false, false))))))
 
     // Sekä yksilöllistettyjä että rajattuja, yksilöllistettyjä enemmän, osittain (yht 2+1 <= 6/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", true, false), createOsaSuoritus("FY", true, false),
         createOsaSuoritus("GE", false, false), createOsaSuoritus("BI", false, false), createOsaSuoritus("LI", false, false))))))
 
     // Sekä yksilöllistettyjä että rajattuja, yksilöllistettyjä enemmän, pääosin (yht 2+1 > 4/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", true, false), createOsaSuoritus("GE", false, false), createOsaSuoritus("FY", true, false))))))
 
     // Sekä yksilöllistettyjä että rajattuja, rajattuja enemmän, osittain (yht 1+2 <= 6/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", false, true), createOsaSuoritus("FY", true, false),
         createOsaSuoritus("GE", false, false), createOsaSuoritus("BI", false, false), createOsaSuoritus("LI", false, false))))))
 
     // Sekä yksilöllistettyjä että rajattuja, rajattuja enemmän, pääosin (yht 1+2 > 4/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", false, true), createOsaSuoritus("GE", false, false), createOsaSuoritus("FY", true, false))))))
 
     // Yhtä paljon yksilöllistettyjä ja rajattuja, osittain (yht 1+1 <= 4/2) => rajattu
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", false, true), createOsaSuoritus("FY", true, false),
         createOsaSuoritus("GE", false, false), createOsaSuoritus("BI", false, false))))))
 
     // Yhtä paljon yksilöllistettyjä ja rajattuja, pääosin (yht 1+1 > 3/2) => rajattu
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.PAAOSIN_TAI_KOKONAAN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", false, true), createOsaSuoritus("MA", false, false), createOsaSuoritus("FY", true, false))))))
 
     // Rajatapaus: tasan puolet erityisiä => osittain (2+0 <= 4/2)
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_YKSILOLLISTETTY),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("HI", true, false), createOsaSuoritus("MA", true, false), createOsaSuoritus("LI", false, false), createOsaSuoritus("GE", false, false))))))
 
     // Valinnainen kieli A2 (ei pakollinen) lasketaan mukaan suodatuksessa: rajattu A2 + 2 pakollista normaalia (1 <= 3/2) => osittain rajattu.
     // Jos A2 ei kuuluisi yksilollistaminenValinnaisetKielet-joukkoon, se suodattuisi pois ja erityisiä olisi 0 => None.
     Assertions.assertEquals(Some(PerusopetuksenYksilollistaminen.OSITTAIN_RAJATTU),
-      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Set(
+      KoskiToSuoritusConverter.getYksilollistaminen(baseOikeus, baseSuoritus.copy(osasuoritukset = Some(Seq(
         createOsaSuoritus("A2", false, true, pakollinen = Some(false)), createOsaSuoritus("MA", false, false), createOsaSuoritus("HI", false, false))))))
   }
 
@@ -242,7 +242,7 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2024-06-15"),
           KoskiKoodi("eronnut", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Some(Set.empty),
+      Some(Seq.empty),
       None,
       None
     )
@@ -262,7 +262,7 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2024-06-15"),
           KoskiKoodi("valmistunut", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Some(Set.empty),
+      Some(Seq.empty),
       None,
       None
     )
@@ -274,7 +274,7 @@ class KoskiToSuoritusConverterTest {
       None,
       Some(KoskiOpiskeluoikeusTyyppi("arvo", "koodisto", None)),
       None,
-      Some(Set.empty),
+      Some(Seq.empty),
       None,
       None
     )
@@ -295,7 +295,7 @@ class KoskiToSuoritusConverterTest {
           LocalDate.parse("2025-05-05"),
           KoskiKoodi("läsnä", "koodisto", None, Kielistetty(None, None, None), None)
         )))),
-      Some(Set.empty),
+      Some(Seq.empty),
       None,
       None
     )
@@ -339,7 +339,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set.empty),
+      osasuoritukset = Some(Seq.empty),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -390,7 +390,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set(osasuoritus)),
+      osasuoritukset = Some(Seq(osasuoritus)),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -444,7 +444,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set(osasuoritus)),
+      osasuoritukset = Some(Seq(osasuoritus)),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -535,7 +535,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set(osasuoritus1, osasuoritus2)),
+      osasuoritukset = Some(Seq(osasuoritus1, osasuoritus2)),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -644,7 +644,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set(osasuoritus1, osasuoritus2)),
+      osasuoritukset = Some(Seq(osasuoritus1, osasuoritus2)),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -706,7 +706,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set(mkOsasuoritus("123", 5), mkOsasuoritus("456", 5), mkOsasuoritus("789", 5))),
+      osasuoritukset = Some(Seq(mkOsasuoritus("123", 5), mkOsasuoritus("456", 5), mkOsasuoritus("789", 5))),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -772,7 +772,7 @@ class KoskiToSuoritusConverterTest {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set(osasuoritus)),
+      osasuoritukset = Some(Seq(osasuoritus)),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -817,7 +817,7 @@ class KoskiToSuoritusConverterTest {
 
   // --- getPerusopetuksenLahtokoulut tests ---
 
-  private def mkOpiskeluoikeusForLahtokoulut(suoritukset: Set[KoskiSuoritus], jaksot: KoskiOpiskeluoikeusJakso*): KoskiOpiskeluoikeus =
+  private def mkOpiskeluoikeusForLahtokoulut(suoritukset: Seq[KoskiSuoritus], jaksot: KoskiOpiskeluoikeusJakso*): KoskiOpiskeluoikeus =
     KoskiOpiskeluoikeus(
       "1.2.246.562.15.123",
       Some(KoskiOppilaitos(Kielistetty(Some("Testikoulu"), None, None), "1.2.246.562.10.999")),
@@ -831,7 +831,7 @@ class KoskiToSuoritusConverterTest {
   @Test def testGetPerusopetuksenLahtokoulutNoMatchingLuokkaAste(): Unit = {
     val suoritus = mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2024-01-01"))
     val oo = mkOpiskeluoikeusForLahtokoulut(
-      Set(suoritus),
+      Seq(suoritus),
       mkJakso("2024-01-01", "lasna")
     )
     val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.KESKEN), Some(false), None, DUMMY_KOODISTOPROVIDER)
@@ -841,7 +841,7 @@ class KoskiToSuoritusConverterTest {
   @Test def testGetPerusopetuksenLahtokoulutMissingAlkamispaiva(): Unit = {
     val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = None)
     val oo = mkOpiskeluoikeusForLahtokoulut(
-      Set(suoritus),
+      Seq(suoritus),
       mkJakso("2024-01-01", "lasna")
     )
     val result = KoskiToSuoritusConverter.getPerusopetuksenLahtokoulut(oo, "9", Some(SuoritusTila.KESKEN), Some(false), None, DUMMY_KOODISTOPROVIDER)
@@ -851,7 +851,7 @@ class KoskiToSuoritusConverterTest {
   @Test def testGetPerusopetuksenLahtokoulutSingleMatchSinglePeriod(): Unit = {
     val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), vahvistuspaiva = Some("2025-06-01"), luokka = Some("9B"))
     val oo = mkOpiskeluoikeusForLahtokoulut(
-      Set(suoritus),
+      Seq(suoritus),
       mkJakso("2024-01-01", "lasna"),
       mkJakso("2025-06-01", "valmistunut")
     )
@@ -863,7 +863,7 @@ class KoskiToSuoritusConverterTest {
   @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaKesken(): Unit = {
     val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-01-01"), luokka = Some("9A"))
     val oo = mkOpiskeluoikeusForLahtokoulut(
-      Set(suoritus),
+      Seq(suoritus),
       mkJakso("2024-01-01", "lasna"),
       mkJakso("2024-03-01", "eronnut"),
       mkJakso("2024-05-01", "lasna")
@@ -878,7 +878,7 @@ class KoskiToSuoritusConverterTest {
   @Test def testGetPerusopetuksenLahtokoulutInterruptedLasnaValmistunut(): Unit = {
     val suoritus = mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-01-01"), vahvistuspaiva = Some("2024-08-01"), luokka = Some("9A"))
     val oo = mkOpiskeluoikeusForLahtokoulut(
-      Set(suoritus),
+      Seq(suoritus),
       mkJakso("2024-01-01", "lasna"),
       mkJakso("2024-03-01", "eronnut"),
       mkJakso("2024-05-01", "lasna"),
@@ -893,7 +893,7 @@ class KoskiToSuoritusConverterTest {
 
   // --- toPerusopetuksenOppimaara: jaaLuokalle extraction tests ---
 
-  private def perusopetuksenOppimaaraFromSuoritukset(suoritukset: Set[KoskiSuoritus]): fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara = {
+  private def perusopetuksenOppimaaraFromSuoritukset(suoritukset: Seq[KoskiSuoritus]): fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara = {
     val oo = mkOpiskeluoikeusForLahtokoulut(suoritukset, mkJakso("2024-08-01", "lasna"))
     KoskiToSuoritusConverter.toSuoritukset(Seq(oo), DUMMY_KOODISTOPROVIDER, allowMissingFieldsForTests = true)
       .collect { case po: fi.oph.suorituspalvelu.business.PerusopetuksenOppimaara => po }
@@ -901,7 +901,7 @@ class KoskiToSuoritusConverterTest {
   }
 
   @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromHighestGradeNine(): Unit = {
-    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+    val result = perusopetuksenOppimaaraFromSuoritukset(Seq(
       mkPerusopetuksenOppimaaraSuoritus(),
       mkVuosiluokkaSuoritus("7", alkamispaiva = Some("2022-08-01"), jaaLuokalle = Some(false)),
       mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(false)),
@@ -911,7 +911,7 @@ class KoskiToSuoritusConverterTest {
   }
 
   @Test def testToPerusopetuksenOppimaaraJaaLuokalleNoneWhenSourceMissing(): Unit = {
-    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+    val result = perusopetuksenOppimaaraFromSuoritukset(Seq(
       mkPerusopetuksenOppimaaraSuoritus(),
       mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = None)
     ))
@@ -919,7 +919,7 @@ class KoskiToSuoritusConverterTest {
   }
 
   @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromMostRecentAtSameGrade(): Unit = {
-    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+    val result = perusopetuksenOppimaaraFromSuoritukset(Seq(
       mkPerusopetuksenOppimaaraSuoritus(),
       mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(true)),
       mkVuosiluokkaSuoritus("9", alkamispaiva = Some("2024-08-01"), jaaLuokalle = Some(false))
@@ -928,7 +928,7 @@ class KoskiToSuoritusConverterTest {
   }
 
   @Test def testToPerusopetuksenOppimaaraJaaLuokalleFromHighestWhenOnlyLowerGrades(): Unit = {
-    val result = perusopetuksenOppimaaraFromSuoritukset(Set(
+    val result = perusopetuksenOppimaaraFromSuoritukset(Seq(
       mkPerusopetuksenOppimaaraSuoritus(),
       mkVuosiluokkaSuoritus("7", alkamispaiva = Some("2022-08-01"), jaaLuokalle = Some(true)),
       mkVuosiluokkaSuoritus("8", alkamispaiva = Some("2023-08-01"), jaaLuokalle = Some(false))
@@ -940,7 +940,7 @@ class KoskiToSuoritusConverterTest {
 
   private def mkOpiskeluoikeusForKotiopetus(kotiopetusjaksot: List[KoskiKotiopetusjakso], oppimaaranVahvistus: Option[String]): KoskiOpiskeluoikeus =
     val oppimaara = mkPerusopetuksenOppimaaraSuoritus().copy(vahvistus = oppimaaranVahvistus.map(p => KoskiVahvistus(p)))
-    KoskiOpiskeluoikeus("1.2.3", None, None, None, Some(Set(oppimaara)),
+    KoskiOpiskeluoikeus("1.2.3", None, None, None, Some(Seq(oppimaara)),
       Some(KoskiLisatiedot(erityisenTuenPäätökset = None, vuosiluokkiinSitoutumatonOpetus = None, kotiopetusjaksot = Some(kotiopetusjaksot))), None)
 
   @Test def testIsKotiopetusJaksoIlmanLoppua(): Unit =

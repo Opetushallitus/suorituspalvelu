@@ -153,7 +153,7 @@ class AvainArvoConverterTest {
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("A1", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None)
     )
 
-    val avainArvot = aineet.flatMap(aine => AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot("1.2.3.4.5", Set(aine)).toList)
+    val avainArvot = aineet.flatMap(aine => AvainArvoConverter.perusopetuksenPakollisetOppiaineetJaKieletToAvainArvot("1.2.3.4.5", Seq(aine)).toList)
     val resultMap = avainArvot.map(aa => (aa.avain, aa.arvo)).toMap
 
     // AI kieli codes should be transformed in OPPIAINE
@@ -198,7 +198,7 @@ class AvainArvoConverterTest {
   }
 
   @Test def testAOMRemappedToA1(): Unit = {
-    val aineet = Set(
+    val aineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Äidinkielenomainen kieli A-oppimäärä"), None, None),
         Koodi("AOM", "koodisto", None), Koodi("9", "koodisto", None),
         Some(Koodi("FI", "kielivalikoima", None)), true, None, None)
@@ -215,7 +215,7 @@ class AvainArvoConverterTest {
   }
 
   @Test def testETRemappedToKT(): Unit = {
-    val aineet = Set(
+    val aineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("Elämänkatsomustieto"), None, None),
         Koodi("ET", "koodisto", None), Koodi("8", "koodisto", None),
         None, true, None, None)
@@ -228,7 +228,7 @@ class AvainArvoConverterTest {
   }
 
   @Test def testAOMAndA1ConflictLogsErrorAndRemaps(): Unit = {
-    val aineet = Set(
+    val aineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("AOM"), None, None),
         Koodi("AOM", "koodisto", None), Koodi("9", "koodisto", None),
         Some(Koodi("FI", "kielivalikoima", None)), true, None, None),
@@ -241,7 +241,7 @@ class AvainArvoConverterTest {
   }
 
   @Test def testETAndKTConflictLogsErrorAndRemaps(): Unit = {
-    val aineet = Set(
+    val aineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("ET"), None, None),
         Koodi("ET", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None),
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("KT"), None, None),
@@ -252,7 +252,7 @@ class AvainArvoConverterTest {
   }
 
   @Test def testKorkeimmatArvosanat(): Unit = {
-    val aineet = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti, hankala savotta"), None, None), Koodi("A1", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None),
+    val aineet = Seq(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti, hankala savotta"), None, None), Koodi("A1", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("A1", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("biologia, suoritus"), None, None), Koodi("BI", "koodisto", None), Koodi("S", "koodisto", None), None, true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("biologia"), None, None), Koodi("BI", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None),
@@ -287,7 +287,7 @@ class AvainArvoConverterTest {
   }
 
   @Test def testOrpoaOppiaineenOppimaaraaEiKuuluHuomioida(): Unit = {
-    val aineet = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("biologia"), None, None), Koodi("BI", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None))
+    val aineet = Seq(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("biologia"), None, None), Koodi("BI", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None))
     val baseOppimaara = PerusopetuksenOppimaara(UUID.randomUUID(), None, Oppilaitos(Kielistetty(None, None, None), "1.2.3"), None, Koodi("arvo", "koodisto", Some(1)), SuoritusTila.KESKEN, Koodi("arvo", "koodisto", Some(1)), Set.empty, None, Some(LocalDate.parse("2025-05-30")), Some(LocalDate.parse("2025-05-30")), aineet, List.empty, false, false, None)
     val baseOpiskeluoikeus = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.246.562.15.09876543210"), "1.2.246.562.10.09876543211", Set(baseOppimaara), None, SuoritusTila.VALMIS, List.empty)
 
@@ -381,7 +381,7 @@ class AvainArvoConverterTest {
 
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val leikkuripaivanJalkeenValmistunutTutkinto = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
-      Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2024-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Set.empty)
+      Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2024-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("kieli", "suorituskieli", Some(1)), Seq.empty)
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(leikkuripaivanJalkeenValmistunutTutkinto), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuriPaiva, oikeudet, DEFAULT_KOUTA_HAKU, None)
@@ -397,7 +397,7 @@ class AvainArvoConverterTest {
 
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val ajoissaValmistunut = AmmatillinenPerustutkinto(UUID.randomUUID(), Kielistetty(Some("diplomi"), None, None), Koodi("123456", "koulutus", Some(1)), Oppilaitos(Kielistetty(None, None, None), "1.2.3.4"),
-      Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("FI", "suorituskieli", Some(1)), Set.empty)
+      Koodi("valmistunut", "jokutila", Some(1)), SuoritusTila.VALMIS, Some(LocalDate.parse("2021-01-01")), Some(LocalDate.parse("2023-04-03")), None, Koodi("tapa", "suoritustapa", Some(1)), Koodi("FI", "suorituskieli", Some(1)), Seq.empty)
     val oikeudet = Seq(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(ajoissaValmistunut), None, List.empty))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, leikkuriPaiva, oikeudet, DEFAULT_KOUTA_HAKU, None)
@@ -781,7 +781,7 @@ class AvainArvoConverterTest {
     val oppilaitosOid = "1.2.246.562.10.00000000234"
     val personOid = "1.2.246.562.98.69863082363"
 
-    val oppiaineet = Set(
+    val oppiaineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None),
         Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None),
         None, true, None, None),
@@ -839,8 +839,8 @@ class AvainArvoConverterTest {
 
     val opiskeluoikeusOid = "1.2.246.562.15.09876543210"
     val oppilaitosOid = "1.2.246.562.10.00000000234"
-    val oppiaineetArvosanoissaNelosia = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("4", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None))
-    val oppiaineetArvosanoissaEiNelosia = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None))
+    val oppiaineetArvosanoissaNelosia = Seq(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("4", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None))
+    val oppiaineetArvosanoissaEiNelosia = Seq(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("arvo", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None))
     val perusopetuksenOppimaaraBase = PerusopetuksenOppimaara(
       UUID.randomUUID(),
       None,
@@ -1017,7 +1017,7 @@ class AvainArvoConverterTest {
     val oppilaitosOid = "1.2.246.562.10.00000000234"
     val personOid = "1.2.246.562.98.69863082363"
 
-    val oppiaineet = Set(
+    val oppiaineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None),
         Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None),
         None, true, None, None),
@@ -1118,7 +1118,7 @@ class AvainArvoConverterTest {
 
     val opiskeluoikeusOid = "1.2.246.562.15.09876543210"
     val oppilaitosOid = "1.2.246.562.10.00000000234"
-    val oppiaineet = Set(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None), Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None))
+    val oppiaineet = Seq(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None), Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None), None, true, None, None))
 
     val perusopetuksenOppimaaraBase = PerusopetuksenOppimaara(
       UUID.randomUUID(),
@@ -1181,7 +1181,7 @@ class AvainArvoConverterTest {
         Koodi(koodi, "koodisto", None),
         Koodi(arvosana, "koodisto", None),
         None, pakollinen, None, None)
-    }.toSet
+    }.toSeq
     val oppimaara = PerusopetuksenOppimaara(
       UUID.randomUUID(), None,
       Oppilaitos(Kielistetty(None, None, None), oppilaitosOid),
@@ -1916,7 +1916,7 @@ class AvainArvoConverterTest {
     val oppilaitosOid = "1.2.246.562.10.00000000234"
     val personOid = "1.2.246.562.98.69863082363"
 
-    val oppiaineet = Set(
+    val oppiaineet = Seq(
       PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("historia"), None, None),
         Koodi("HI", "koodisto", None), Koodi("8", "koodisto", None),
         None, true, None, None),
