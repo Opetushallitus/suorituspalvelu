@@ -7,9 +7,9 @@ import java.util.UUID
 case class YosOrganisaatio(oid: Option[String],
                            nimi: Kielistetty)
 
-case class YosPaatettavaOpiskeluOikeus(tunniste: UUID,
+case class YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId: String,
                                        organisaatio: YosOrganisaatio,
-                                       nimi: Option[Kielistetty],
-                                       koulutusKoodi: Option[String]
+                                       virtaNimi: Option[Kielistetty],
+                                       supaNimi: Option[Kielistetty]
                                       ) {
 }

@@ -1,11 +1,11 @@
 package fi.oph.suorituspalvelu.business.yos
 
 import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.VOIMASSA
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Koodi, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration
-import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.client.{Koodi, KoodiMetadata, Koodisto, KoutaHaku, KoutaHakukohde, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
-import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.yos.YosService
 import org.junit.jupiter.api.Assertions.{assertEquals, assertFalse, assertNotNull, assertTrue}
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -24,8 +24,9 @@ class YosServiceTest {
   private val tarjontaMock: TarjontaIntegration = Mockito.mock(classOf[TarjontaIntegration])
   private val oikeusMock: OpiskeluoikeusParsingService = Mockito.mock(classOf[OpiskeluoikeusParsingService])
   private val organisaatioMock: OrganisaatioProvider = Mockito.mock(classOf[OrganisaatioProvider])
+  private val koodistoMock: KoodistoProvider = Mockito.mock(classOf[KoodistoProvider])
 
-  private val service = YosService(tarjontaMock, oikeusMock, organisaatioMock)
+  private val service = YosService(tarjontaMock, oikeusMock, organisaatioMock, koodistoMock)
 
   private val HAKIJA_OID = "1.2.246.562.24.71794920276"
   private val HAKU_OID = "1.2.246.562.29.00000000000000074021"
@@ -37,7 +38,7 @@ class YosServiceTest {
     Map.empty, "", Some("haunkohdejoukko_12"), List.empty, None, Some(2026))
 
   private val HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN = KoutaHakukohde(
-    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true)
+    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true), HAKU_OID
   )
 
   private val VIRTA_VERSIO = VersioEntiteetti(
@@ -64,7 +65,7 @@ class YosServiceTest {
   ))
 
   private val YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS = KKOpiskeluoikeus(
-    virtaTila = Koodi(arvo = "1", koodisto = "virtakoodisto", versio = Some(1)),
+    virtaTila = fi.oph.suorituspalvelu.business.Koodi(arvo = "1", koodisto = "virtakoodisto", versio = Some(1)),
     isTutkintoonJohtava = true,
     rahoitusLahde = Some("1"),
     tyyppiKoodi = "1",
@@ -99,6 +100,13 @@ class YosServiceTest {
   def returnsExceptionWhenHakukohdeIsNotFound(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(null)
+    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
+  }
+
+  @Test
+  def returnsExceptionWhenHakukohdeDoesNotMatchHaku(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(hakuOid = "1.2.3.4"))
     assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
   }
 
@@ -146,12 +154,50 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
     ))
+    Mockito.when(koodistoMock.haeKoodisto("koulutus")).thenReturn(Map("koulutuskoodi_1" ->
+      Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")))))
     val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty)
     assertEquals(1, oikeudet.size)
     val oikeus = oikeudet.head
-    assertEquals("Sosionomikoulutus", oikeus.nimi.get.fi.get)
-    assertNotNull(oikeus.tunniste)
-    assertEquals("koulutuskoodi_1", oikeus.koulutusKoodi.get)
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
+    assertEquals("Agrologi", oikeus.supaNimi.get.fi.get)
+    assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
+    assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
+  }
+
+  @Test
+  def hakijalleLoytyyPaatettavaOpiskeluOikeusVaikkaLuokitteluPuuttuu(): Unit = {
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot("02629")).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(luokittelu = Some("")))
+    ))
+    Mockito.when(koodistoMock.haeKoodisto("koulutus")).thenReturn(Map("koulutuskoodi_1" ->
+      Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")))))
+    val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    val oikeus = oikeudet.head
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
+    assertEquals("Agrologi", oikeus.supaNimi.get.fi.get)
+    assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
+    assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
+  }
+
+  @Test
+  def hakijalleLoytyyPaatettavaOpiskeluOikeusVaikkaRahoitusLahdePuuttuu(): Unit = {
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot("02629")).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(rahoitusLahde = None))
+    ))
+    Mockito.when(koodistoMock.haeKoodisto("koulutus")).thenReturn(Map("koulutuskoodi_1" ->
+      Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")))))
+    val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    val oikeus = oikeudet.head
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
+    assertEquals("Agrologi", oikeus.supaNimi.get.fi.get)
     assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
     assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
   }
@@ -160,7 +206,7 @@ class YosServiceTest {
   def vaarassaTilassaOlevaOpiskeluOikeusEiKuuluYos(): Unit = {
     Mockito.when(organisaatioMock.haeOrganisaationTiedot("02629")).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
-      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(virtaTila = Koodi("3", "virtatila", Some(1))))
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(virtaTila = fi.oph.suorituspalvelu.business.Koodi("3", "virtatila", Some(1))))
     ))
     assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID).getOrElse(Set.empty).isEmpty)
     Mockito.verifyNoInteractions(organisaatioMock)
@@ -214,12 +260,14 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
     ))
+    Mockito.when(koodistoMock.haeKoodisto("koulutus")).thenReturn(Map("koulutuskoodi_1" ->
+      Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")))))
     val oikeudet = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).getOrElse(Set.empty)
     assertEquals(1, oikeudet.size)
     val oikeus = oikeudet.head
-    assertEquals("Sosionomikoulutus", oikeus.nimi.get.fi.get)
-    assertNotNull(oikeus.tunniste)
-    assertEquals("koulutuskoodi_1", oikeus.koulutusKoodi.get)
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
+    assertEquals("Agrologi", oikeus.supaNimi.get.fi.get)
     assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
     assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
   }

@@ -3,12 +3,12 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.VOIMASSA
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Koodi, Lahdejarjestelma, Opiskeluoikeus, ParserVersions}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
+import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse, YosVirhe}
-import fi.oph.suorituspalvelu.security.{SecurityConstants, AuditOperation}
+import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -47,6 +47,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
     Mockito.reset(onrIntegration)
     Mockito.reset(tarjontaIntegration)
     Mockito.reset(organisaatioProvider)
+    Mockito.reset(koodistoProvider)
     Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(HAKIJA_OID))).thenReturn(Future.successful(Map(HAKIJA_OID -> OnrMasterHenkilo(HAKIJA_OID, None, None, None, None, None))))
     Mockito.when(onrIntegration.getAliasesForPersonOids(Set(HAKIJA_OID))).thenReturn(Future.successful(PersonOidsWithAliases(Map(HAKIJA_OID -> Set.empty))))
     Mockito.when(tarjontaIntegration.getHaku(HAKU_OID)).thenReturn(Some(
@@ -66,7 +67,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
         organisaatioOid = "NukeTehdas",
         nimi = Map.empty,
         voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),
-        johtaaTutkintoon = Some(true)))
+        johtaaTutkintoon = Some(true),
+        hakuOid = HAKU_OID))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenReturn(None)
   }
 
@@ -102,18 +104,20 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testReturnsPaatettavatOpiskeluOikeudet(): Unit = {
     insertOpiskeluOikeus()
+    Mockito.when(koodistoProvider.haeKoodisto("koulutus")).thenReturn(Map("koulutus_1" ->
+      fi.oph.suorituspalvelu.integration.client.Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")))))
 
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().isOk).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
     Assertions.assertEquals(1, response.paatettavatOpiskeluOikeudet.size())
-    Assertions.assertEquals("Laivan rakennusala", response.paatettavatOpiskeluOikeudet.get(0).nimi.fi)
-
+    Assertions.assertEquals("Laivan rakennusala", response.paatettavatOpiskeluOikeudet.get(0).virtaNimi.fi)
+    Assertions.assertEquals("Agrologi", response.paatettavatOpiskeluOikeudet.get(0).supaNimi.fi)
     // tarkistetaan että kutsun tiedot tallentuvat auditlokiin
     val auditLogEntry = getLatestAuditLogEntry()
     Assertions.assertEquals(AuditOperation.HaePaattyvatOpiskeluOikeudet.name, auditLogEntry.operation)
     Assertions.assertEquals(Map(
-      "hakijaOid" -> HAKIJA_OID,
+      "henkiloOid" -> HAKIJA_OID,
       "hakuOid" -> HAKU_OID,
       "hakukohdeOid" -> HAKUKOHDE_OID,
     ), auditLogEntry.target)
@@ -144,7 +148,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
       tunniste = UUID.randomUUID(),
       virtaTunniste = "",
       tyyppiKoodi = "1",
-      koulutusKoodi = None,
+      koulutusKoodi = Some("koulutus_1"),
       alkuPvm = LocalDate.now(),
       loppuPvm = LocalDate.now(),
       virtaTila = Koodi("1", "koodisto", None),

@@ -350,15 +350,15 @@ case class YosNimi(fi: String, sv: String, en: String)
 
 case class YosOpiskeluOikeus(
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
-  @BeanProperty tunniste: String,
+  @BeanProperty virtaOpiskeluOikeusId: String,
   @(Schema @field)(example = ESIMERKKI_OPPILAITOS_OID)
   @BeanProperty organisaatioOid: String,
   @(Schema @field)
   @BeanProperty organisaatioNimi: YosNimi,
   @(Schema @field)
-  @BeanProperty nimi: YosNimi,
+  @BeanProperty virtaNimi: YosNimi,
   @(Schema @field)
-  @BeanProperty koulutusKoodi: String
+  @BeanProperty supaNimi: YosNimi
 )
 
 case class YosSuccessResponse(

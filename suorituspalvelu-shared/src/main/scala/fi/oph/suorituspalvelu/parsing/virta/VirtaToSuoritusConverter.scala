@@ -212,9 +212,6 @@ object VirtaToSuoritusConverter {
     }
   }
 
-  private def getVirtaOpiskeluoikeusId(virtaOpiskeluoikeus: VirtaOpiskeluoikeus): String =
-    s"${virtaOpiskeluoikeus.Myontaja}_${virtaOpiskeluoikeus.avain}"
-
   private def getVirtaOpintosuoritusId(virtaOpintosuoritus: VirtaOpintosuoritus): String =
     s"${virtaOpintosuoritus.Myontaja}_${virtaOpintosuoritus.avain}"
 
@@ -234,7 +231,7 @@ object VirtaToSuoritusConverter {
 
     val kkOpiskeluoikeudet = virtaOpiskelijat.flatMap(opiskelija => {
       val virtaOpiskeluoikeudet = opiskelija.Opiskeluoikeudet.filterNot(oo =>
-        seenOpiskeluoikeusIds.contains(getVirtaOpiskeluoikeusId(oo))
+        seenOpiskeluoikeusIds.contains(oo.getVirtaOpiskeluoikeusId)
       )
       val virtaSuoritukset = opiskelija.Opintosuoritukset.getOrElse(Seq.empty).filterNot(s =>
         seenSuoritusIds.contains(getVirtaOpintosuoritusId(s))
@@ -252,7 +249,7 @@ object VirtaToSuoritusConverter {
       })
 
       seenSuoritusIds ++= virtaSuoritukset.map(getVirtaOpintosuoritusId)
-      seenOpiskeluoikeusIds ++= virtaOpiskeluoikeudet.map(getVirtaOpiskeluoikeusId)
+      seenOpiskeluoikeusIds ++= virtaOpiskeluoikeudet.map(oo => oo.getVirtaOpiskeluoikeusId)
 
       val (orphanSuoritukset, opiskeluoikeudet) =
         virtaOpiskeluoikeudet.foldLeft((suoritusRoots, List.empty[KKOpiskeluoikeusBase])) {

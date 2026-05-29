@@ -5,9 +5,11 @@ import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+import fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus
 import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
-import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse}
-import fi.oph.suorituspalvelu.util.OrganisaatioProvider
+import fi.oph.suorituspalvelu.resource.api.YosErrorResponse
+import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO}
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -17,7 +19,8 @@ import java.lang
 @Service
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              opiskeluOikeusService: OpiskeluoikeusParsingService,
-                             organisaatioProvider: OrganisaatioProvider) {
+                             organisaatioProvider: OrganisaatioProvider,
+                             koodistoProvider: KoodistoProvider) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
@@ -52,10 +55,15 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
           LOGGER.error(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid")
           Left(new RuntimeException(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid"))
         case (Some(h), hk) =>
-          val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
-          val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
-          LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
-          Right(kuuluukoYOSsinPiiriin)
+          if (!hakuOid.equals(hk.hakuOid)) {
+            LOGGER.error(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid")
+            Left(new RuntimeException(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid"))
+          } else {
+            val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
+            val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
+            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
+            Right(kuuluukoYOSsinPiiriin)
+          }
       }
     } catch {
       case e: Exception =>
@@ -88,6 +96,15 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto, haku.isErasmusMundusTaiKaksoistutkinto, "", "")
   }
 
+  private def getKoodiNimi(koodiArvo: Option[String], koodisto: String): Option[Kielistetty] = {
+    koodiArvo.flatMap(arvo => koodistoProvider.haeKoodisto(koodisto).get(arvo).map(k => {
+      val fi = k.metadata.find(_.kieli.equalsIgnoreCase("fi")).map(_.nimi)
+      val sv = k.metadata.find(_.kieli.equalsIgnoreCase("sv")).map(_.nimi)
+      val en = k.metadata.find(_.kieli.equalsIgnoreCase("en")).map(_.nimi)
+      Kielistetty(fi, sv, en)
+    }))
+  }
+
   private def muodostaYosPaatettavaOpiskeluOikeus(oikeus: KKOpiskeluoikeus): YosPaatettavaOpiskeluOikeus = {
     val oppilaitosTiedot = organisaatioProvider.haeOrganisaationTiedot(oikeus.myontaja)
     val organisaatio = YosOrganisaatio(
@@ -103,6 +120,12 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
             Some(oikeus.myontaja),
             Some(oikeus.myontaja)))
     )
-    YosPaatettavaOpiskeluOikeus(oikeus.tunniste, organisaatio, oikeus.nimi, oikeus.koulutusKoodi)
+    val virtaOpiskeluOikeusId = VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(oikeus.myontaja, oikeus.virtaTunniste)
+    val supaNimi = getKoodiNimi(oikeus.koulutusKoodi, KOULUTUS_KOODISTO)
+      .orElse(
+        getKoodiNimi(Some(oikeus.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO)
+          .orElse(None)
+      )
+    YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId, organisaatio, oikeus.nimi, supaNimi)
   }
 }
