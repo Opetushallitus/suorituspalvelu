@@ -30,6 +30,7 @@ integrations:
     password: password
     base-url: https://virkailija.testiopintopolku.fi
     cron: "0 */2 * * * *"
+    bufferseconds: 60
   ataru:
     cron: "0 */2 * * * *"
     koski-refresh-enabled: false
