@@ -1,7 +1,7 @@
 import { Box, Stack } from '@mui/material';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditSuoritusPaper } from './EditSuoritusPaper';
-import { useSuoritusManager } from '@/lib/suoritusManager';
+import { getSuoritusEditId, useSuoritusManager } from '@/lib/suoritusManager';
 import {
   type PerusopetuksenOppiaineenOppimaarat,
   type PerusopetuksenOppimaara,
@@ -30,10 +30,14 @@ export const PerusopetusSuoritusEditor = ({
     mode,
   } = useSuoritusManager({ oppijaOid: henkiloOID });
 
+  const isEditingThisSuoritus =
+    mode === 'existing' &&
+    suoritusFields?.versioTunniste === getSuoritusEditId(suoritusProp);
+
   return (
     <Box>
       <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start' }}>
-        {suoritusFields && mode === 'existing' ? (
+        {isEditingThisSuoritus ? (
           <EditSuoritusPaper
             mode={mode}
             suoritus={suoritusFields}

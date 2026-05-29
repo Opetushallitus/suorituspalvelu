@@ -429,6 +429,75 @@ test.describe('Suorituksen muokkaus', () => {
     await expect(editSuoritusForm).toBeVisible();
   });
 
+  test('vain klikatun perusopetus-suorituksen paperi siirtyy muokkaustilaan', async ({
+    page,
+  }) => {
+    const tiedotKaksiPerusopetusta = {
+      ...OPPIJAN_TIEDOT,
+      perusopetuksenOppiaineenOppimaarat:
+        OPPIJAN_TIEDOT.perusopetuksenOppiaineenOppimaarat.map((s) => ({
+          ...s,
+          syotetty: true,
+        })),
+    };
+
+    await page.route('**/ui/tiedot', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          json: tiedotKaksiPerusopetusta,
+        });
+      }
+    });
+    await page.reload();
+
+    await expect(
+      page.getByRole('heading', { name: 'Suoritukset' }),
+    ).toBeVisible();
+
+    const editablePapers = page
+      .locator('[data-test-id="suoritus-paper"]')
+      .filter({
+        has: page.getByRole('button', { name: 'Muokkaa suoritusta' }),
+      });
+    await expect(editablePapers).toHaveCount(2);
+
+    const oppimaaraPaper = editablePapers.filter({
+      has: page.getByRole('heading', {
+        name: /^Perusopetuksen oppimäärä \(/,
+      }),
+    });
+    const oppiaineenOppimaaraPaper = editablePapers.filter({
+      has: page.getByRole('heading', {
+        name: /^Perusopetuksen oppiaineen oppimäärä \(/,
+      }),
+    });
+
+    await expect(oppimaaraPaper).toBeVisible();
+    await expect(oppiaineenOppimaaraPaper).toBeVisible();
+    await expect(
+      oppimaaraPaper.getByRole('button', { name: 'Muokkaa suoritusta' }),
+    ).toBeVisible();
+    await expect(
+      oppiaineenOppimaaraPaper.getByRole('button', {
+        name: 'Muokkaa suoritusta',
+      }),
+    ).toBeVisible();
+
+    await oppimaaraPaper
+      .getByRole('button', { name: 'Muokkaa suoritusta' })
+      .click();
+
+    const editForms = page.getByRole('region', { name: 'Muokkaa suoritusta' });
+    await expect(editForms).toHaveCount(1);
+    await expect(editForms.first().getByLabel('Luokka')).toHaveValue('9A');
+
+    await expect(
+      oppiaineenOppimaaraPaper.getByRole('button', {
+        name: 'Muokkaa suoritusta',
+      }),
+    ).toBeVisible();
+  });
+
   test('poistaminen lähettää poistopyynnön ja päivittää näkymän', async ({
     page,
   }) => {
