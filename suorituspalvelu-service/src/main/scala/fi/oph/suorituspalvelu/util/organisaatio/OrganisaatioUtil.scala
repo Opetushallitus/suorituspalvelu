@@ -1,10 +1,14 @@
 package fi.oph.suorituspalvelu.util.organisaatio
 
-import fi.oph.suorituspalvelu.integration.client.{Organisaatio, HierarkiaOrganisaatio}
+import fi.oph.suorituspalvelu.integration.client.{HierarkiaOrganisaatio, Organisaatio}
 
 object OrganisaatioUtil {
 
   val varhaiskasvatuksenOrganisaatiotyypit = Set("organisaatiotyyppi_07", "organisaatiotyyppi_08")
+  val AKTIIVINEN = "AKTIIVINEN"
+
+  private def isAktiivinen(org: HierarkiaOrganisaatio): Boolean =
+    org.status.contains(AKTIIVINEN)
 
   def filterAndFlattenHierarkia(hierarkia: Seq[HierarkiaOrganisaatio]): Map[String, Organisaatio] = {
     //Säästetään vain sellaiset organisaatiot, joilla on vähintään yksi muu kuin varhaiskasvatuksen organisaatiotyyppi
@@ -16,9 +20,14 @@ object OrganisaatioUtil {
       }
     }
 
+    // Lakkautetut jätetään pois jälkeläisistä, jotta esim. käyttöoikeuksien laajennus ei ulotu lakkautettuihin
+    // aliorganisaatioihin. Itse lakkautetut organisaatiot säilyvät lookup-taulussa; suodatus näkyvyydestä
+    // tapahtuu OrganisaatioProviderissa.
     def collectDescendantOids(org: HierarkiaOrganisaatio): Seq[String] = {
-      val childrenOids = org.children.flatMap(child => child.oid +: collectDescendantOids(child))
-      childrenOids
+      org.children.flatMap {
+        case child if isAktiivinen(child) => child.oid +: collectDescendantOids(child)
+        case _ => Seq.empty
+      }
     }
 
     def flatten(orgs: Seq[HierarkiaOrganisaatio]): Map[String, Organisaatio] = {
@@ -30,7 +39,8 @@ object OrganisaatioUtil {
           parentOid = org.parentOid,
           allDescendantOids = descendantOids,
           tyypit = org.organisaatiotyypit,
-          oppilaitosTyyppi = org.oppilaitostyyppi
+          oppilaitosTyyppi = org.oppilaitostyyppi,
+          status = org.status
         )
         val childrenMap = flatten(org.children)
 

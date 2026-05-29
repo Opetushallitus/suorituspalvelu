@@ -12,9 +12,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class OrganisaatioNimi(fi: String, sv: String, en: String)
 
-case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String], tyypit: Seq[String], oppilaitosTyyppi: Option[String] = None)
+case class Organisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], allDescendantOids: Seq[String], tyypit: Seq[String], oppilaitosTyyppi: Option[String] = None, status: Option[String] = None)
 
-case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio], organisaatiotyypit: Seq[String], oppilaitosKoodi: Option[String] = None, oppilaitostyyppi: Option[String] = None)
+case class HierarkiaOrganisaatio(oid: String, nimi: OrganisaatioNimi, parentOid: Option[String], children: Seq[HierarkiaOrganisaatio], organisaatiotyypit: Seq[String], oppilaitosKoodi: Option[String] = None, oppilaitostyyppi: Option[String] = None, status: Option[String] = None)
 
 case class HierarkiaResponse(numHits: Int, organisaatiot: Seq[HierarkiaOrganisaatio])
 
@@ -28,9 +28,9 @@ class OrganisaatioClient(environmentBaseUrl: String) {
 
   val asyncHttpClient = Dsl.asyncHttpClient()
 
-  //Todo, mahdollisesti tarkistettava lakkautetut & suunnitellut-parametrit käyttötarkoituksen mukaan. Luultavasti muita kuin aktiivisia ei kuitenkaan haluta?
+  // Haetaan myös lakkautetut, jotta käsin syötettäviä suorituksia voi lisätä myös niille. Suodatus tehdään OrganisaatioProviderissa.
   def haeHierarkia(): Future[Seq[HierarkiaOrganisaatio]] = {
-    fetch(environmentBaseUrl + "/organisaatio-service/rest/organisaatio/v4/hierarkia/hae?aktiiviset=true&lakkautetut=false&suunnitellut=false")
+    fetch(environmentBaseUrl + "/organisaatio-service/rest/organisaatio/v4/hierarkia/hae?aktiiviset=true&lakkautetut=true&suunnitellut=false")
       .map(data => data.map(d => mapper.readValue(d, classOf[HierarkiaResponse])).getOrElse(HierarkiaResponse(0, Seq.empty)))
       .map(_.organisaatiot)
       .map(_.toSeq)
