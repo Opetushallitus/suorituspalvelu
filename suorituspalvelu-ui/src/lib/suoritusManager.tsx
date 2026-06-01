@@ -75,6 +75,13 @@ const createNewSuoritusFields = (
   };
 };
 
+export const getSuoritusEditId = (
+  suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaarat,
+): string =>
+  'versioTunniste' in suoritus && suoritus.versioTunniste
+    ? suoritus.versioTunniste
+    : suoritus.tunniste;
+
 const createEditableSuoritusFields = ({
   oppijaOid,
   suoritus,
@@ -83,10 +90,7 @@ const createEditableSuoritusFields = ({
   suoritus: PerusopetuksenOppimaara | PerusopetuksenOppiaineenOppimaarat;
 }): SuoritusFields => {
   return {
-    versioTunniste:
-      'versioTunniste' in suoritus && suoritus.versioTunniste
-        ? suoritus.versioTunniste
-        : suoritus.tunniste,
+    versioTunniste: getSuoritusEditId(suoritus),
     oppijaOid,
     oppilaitosOid: suoritus.oppilaitos.oid,
     tila: suoritus.tila,

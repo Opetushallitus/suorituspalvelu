@@ -823,7 +823,7 @@ class UIResource {
             val user = AuditLog.getUser(request)
             AuditLog.log(user, Map(UI_OPPIJANUMERO_PARAM_NAME -> suoritus.oppijaOid.get()), AuditOperation.TallennaPerusopetuksenOppiaineenOppimaaranSuoritus, Some(suoritus))
             val now = Instant.now()
-            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), Lahdejarjestelma.SYOTETTY_PERUSOPETUS, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, now, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.SYOTETTY_PERUSOPETUS), None)
+            val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(suoritus.oppijaOid.get(), Lahdejarjestelma.SYOTETYT_OPPIAINEET, Seq(objectMapper.writeValueAsString(suoritus)), Seq.empty, now, Lahdejarjestelma.defaultLahdeTunniste(Lahdejarjestelma.SYOTETYT_OPPIAINEET), None)
 
             if (versio.isEmpty)
               LOG.info(s"Tallennettava perusopetuksen oppiaineen oppimaaran suoritus oppijalle ${suoritus.oppijaOid} ei sisältänyt muutoksia aikaisempaan versioon verrattuna")
