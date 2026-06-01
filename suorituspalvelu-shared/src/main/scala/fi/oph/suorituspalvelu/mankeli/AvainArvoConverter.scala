@@ -186,6 +186,9 @@ object AvainArvoConstants {
     "AIAI" -> "XX"
   )
 
+  // Käänteinen kuvaus: atarulta tuleva äidinkielitieto on jo muunnettu FI/SV/... -muotoon,
+  // joten synteettistä oppiainetta varten täytyy palauttaa raaka AI-koodi.
+  // "XX" vastaa atarussa "muu-oppilaan-aidinkieli" -> AI6.
   val aidinkieliKoodiReverseMapping: Map[String, String] = Map(
     "FI"    -> "AI1",
     "SV"    -> "AI2",
@@ -196,8 +199,10 @@ object AvainArvoConstants {
     "FI_2"  -> "AI7",
     "SV_2"  -> "AI8",
     "FI_SE" -> "AI9",
+    //ruotsi saamenkielisille olisi AI10, mutta tätä arvoa ei saada hakemuksen kautta. XX tulkitaan arvoksi AI6.
     "FI_VK" -> "AI11",
     "SV_VK" -> "AI12",
+    //Myös AIAI on arvo, jota ei saada atarun kautta.
   )
 
   val oppiaineKoodiMapping: Map[String, String] = Map(
@@ -235,6 +240,9 @@ object AvainArvoConstants {
 
   val arvosananLahdeSeliteSupa = "Tieto löytyi Suorituspalvelusta."
   val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
+
+  val kielitiedonLahdeSeliteSupa = "Kielitieto löytyi Suorituspalvelusta."
+  val kielitiedonLahdeSeliteHakemus = "Kielitieto löytyi hakemukselta."
 
   final val yksMatAiKey = "yks_mat_ai"
   val ensikertalainenKey = "ensikertalainen"
@@ -797,10 +805,11 @@ object AvainArvoConverter {
     def kieliContainerit(avain: String, aine: PerusopetuksenOppiaine): Set[AvainArvoContainer] =
       aine.kieli.map { kieli =>
         val kieliArvo = if (aine.koodi.arvo == "AI") convertAidinkieliKielikoodi(kieli.arvo) else kieli.arvo
-        val selite = if (pohjaArvosanatOvatHakemukselta) AvainArvoConstants.arvosananLahdeSeliteHakemus else AvainArvoConstants.arvosananLahdeSeliteSupa
+
+        val kielitietoLahdeSelite = if (pohjaArvosanatOvatHakemukselta) AvainArvoConstants.kielitiedonLahdeSeliteHakemus else AvainArvoConstants.kielitiedonLahdeSeliteSupa
         Set(
-          AvainArvoContainer(avain + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix, kieliArvo, Seq(selite)),
-          AvainArvoContainer(avain + AvainArvoConstants.peruskouluAineenKieliTietoPostfix, kieli.arvo, Seq(selite))
+          AvainArvoContainer(avain + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix, kieliArvo, Seq(kielitietoLahdeSelite)),
+          AvainArvoContainer(avain + AvainArvoConstants.peruskouluAineenKieliTietoPostfix, kieli.arvo, Seq(kielitietoLahdeSelite))
         )
       }.getOrElse(Set.empty)
 
@@ -856,8 +865,8 @@ object AvainArvoConverter {
           (base, true)
         }
         val kieli = kieliMap.get(container.avain).map { k =>
-          val rawK = if (baseKoodi == "AI") AvainArvoConstants.aidinkieliKoodiReverseMapping.getOrElse(k, k) else k
-          Koodi(rawK, "kielivalikoima", None)
+          val reverseMappedKieli = if (baseKoodi == "AI") AvainArvoConstants.aidinkieliKoodiReverseMapping.getOrElse(k, k) else k
+          Koodi(reverseMappedKieli, "kielivalikoima", None)
         }
         PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(None, None, None),
           Koodi(baseKoodi, "koodisto", None), Koodi(container.arvo, "koodisto", None),
