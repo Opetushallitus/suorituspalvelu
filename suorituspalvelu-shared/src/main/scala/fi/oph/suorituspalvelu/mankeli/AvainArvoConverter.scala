@@ -774,12 +774,12 @@ object AvainArvoConverter {
     hakemus.keyValues.get(AvainArvoConstants.ataruPohjakoulutusVuosiKey).flatMap(v => Option.apply(v)).map(_.toInt).exists(_ <= 2017)
   }
 
+  //Muunnetaan aiemmin aineittain ryhmitellyt pohja-aineet + mahdolliset korotukset avain-arvoiksi
   def pakollisetJaKieletToContainers(
-    aineetJaKorotukset: Seq[(PerusopetuksenOppiaine, Seq[PerusopetuksenOppiaine])],
-    hakemukselta: Boolean = false
+                                      aineetJaKorotukset: Seq[(PerusopetuksenOppiaine, Seq[PerusopetuksenOppiaine])],
+                                      pohjaArvosanatOvatHakemukselta: Boolean = false
   ): Set[AvainArvoContainer] = {
-    //A-kielet ja B-kielet numeroidaan ja päätyvät tämän perusteella eri avainten alle: A1, A12, A13 ja B1, B12, B13 jne.
-    def teeMuunnokset(aine: PerusopetuksenOppiaine): PerusopetuksenOppiaine =
+    def teeOppiaineKoodiMuunnokset(aine: PerusopetuksenOppiaine): PerusopetuksenOppiaine =
       AvainArvoConstants.oppiaineKoodiMapping.get(aine.koodi.arvo)
         .map(newKoodi => aine.copy(koodi = aine.koodi.copy(arvo = newKoodi)))
         .getOrElse(aine)
@@ -788,21 +788,28 @@ object AvainArvoConverter {
       (pohja +: korotukset).maxBy(_.arvosana.arvo)(Ordering.fromLessThan((a, b) =>
         PerusopetuksenArvosanaOrdering.compareArvosana(a, b) < 0))
 
+    //Ainoastaan pohja-arvosanat voivat tulla hakemukselta, kaikki mahdolliset korotukset tulevat Suorituspalvelusta.
+    //Tästä seuraa, että arvoihin päätynyt arvosana on hakemukselta ainoastaan, jos pohjaArvosana == parasArvosana.
     def arvosanaSelite(parasArvosana: PerusopetuksenOppiaine, pohjaArvosana: PerusopetuksenOppiaine): String =
-      if (parasArvosana.tunniste == pohjaArvosana.tunniste && hakemukselta) AvainArvoConstants.arvosananLahdeSeliteHakemus
+      if (parasArvosana.tunniste == pohjaArvosana.tunniste && pohjaArvosanatOvatHakemukselta) AvainArvoConstants.arvosananLahdeSeliteHakemus
       else AvainArvoConstants.arvosananLahdeSeliteSupa
 
     def kieliContainerit(avain: String, aine: PerusopetuksenOppiaine): Set[AvainArvoContainer] =
       aine.kieli.map { kieli =>
         val kieliArvo = if (aine.koodi.arvo == "AI") convertAidinkieliKielikoodi(kieli.arvo) else kieli.arvo
-        val selite = if (hakemukselta) AvainArvoConstants.arvosananLahdeSeliteHakemus else "Kielitieto löytyi Koskesta."
+        val selite = if (pohjaArvosanatOvatHakemukselta) AvainArvoConstants.arvosananLahdeSeliteHakemus else AvainArvoConstants.arvosananLahdeSeliteSupa
         Set(
           AvainArvoContainer(avain + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix, kieliArvo, Seq(selite)),
           AvainArvoContainer(avain + AvainArvoConstants.peruskouluAineenKieliTietoPostfix, kieli.arvo, Seq(selite))
         )
       }.getOrElse(Set.empty)
 
-    val muunnetutAineetJaKorotukset = aineetJaKorotukset.map { case (aine, korotukset) => (teeMuunnokset(aine), korotukset.map(teeMuunnokset)) }
+    val muunnetutAineetJaKorotukset = aineetJaKorotukset.map {
+      case (aine, korotukset) => (teeOppiaineKoodiMuunnokset(aine), korotukset.map(teeOppiaineKoodiMuunnokset))
+    }
+
+    //A-kielet ja B-kielet numeroidaan ja päätyvät tämän perusteella eri avainten alle: A1, A12, A13 ja B1, B12, B13 jne.
+    //Muille ei tehdä vastaavia numerointeja.
     val (numeroitavat, muut) = muunnetutAineetJaKorotukset.partition(t => AvainArvoConstants.kieltenNumerointiKoodit.contains(t._1.koodi.arvo))
 
     val numeroitujenContainerit: Set[AvainArvoContainer] =
