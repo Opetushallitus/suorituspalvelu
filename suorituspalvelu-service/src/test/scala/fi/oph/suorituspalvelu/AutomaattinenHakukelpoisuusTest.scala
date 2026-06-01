@@ -228,7 +228,7 @@ class AutomaattinenHakukelpoisuusTest {
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
-      osat = Set.empty
+      osat = Seq.empty
     )
 
     val ammatillinenOpiskeluoikeus = AmmatillinenOpiskeluoikeus(
@@ -261,7 +261,7 @@ class AutomaattinenHakukelpoisuusTest {
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
-      osat = Set.empty
+      osat = Seq.empty
     )
 
     val ammatillinenOpiskeluoikeus = AmmatillinenOpiskeluoikeus(
@@ -307,7 +307,7 @@ class AutomaattinenHakukelpoisuusTest {
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
-      osat = Set.empty
+      osat = Seq.empty
     )
 
     val ammatillinenOpiskeluoikeus = AmmatillinenOpiskeluoikeus(
@@ -353,7 +353,7 @@ class AutomaattinenHakukelpoisuusTest {
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
-      osat = Set.empty
+      osat = Seq.empty
     )
 
     val ammatillinenOpiskeluoikeus = AmmatillinenOpiskeluoikeus(
@@ -399,7 +399,7 @@ class AutomaattinenHakukelpoisuusTest {
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
-      osat = Set.empty
+      osat = Seq.empty
     )
 
     val ammatillinenOpiskeluoikeus = AmmatillinenOpiskeluoikeus(
@@ -454,7 +454,7 @@ class AutomaattinenHakukelpoisuusTest {
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
-      osat = Set.empty
+      osat = Seq.empty
     )
 
     val ammatillinenOpiskeluoikeus = AmmatillinenOpiskeluoikeus(
@@ -485,7 +485,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(45)),
-      osasuoritukset = Set.empty
+      osasuoritukset = Seq.empty
     )
 
     val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
@@ -517,7 +517,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = KESKEN,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei valmistumispäivää
-      osasuoritukset = Set.empty
+      osasuoritukset = Seq.empty
     )
 
     val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
@@ -549,7 +549,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS, // VALMIS-tila mutta ei vahvistuspäivämäärää
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei vahvistuspäivämäärää
-      osasuoritukset = Set.empty
+      osasuoritukset = Seq.empty
     )
 
     val geneerinenOpiskeluoikeus = GeneerinenOpiskeluoikeus(
@@ -590,15 +590,15 @@ class AutomaattinenHakukelpoisuusTest {
     )
   }
 
-  private def createEBOppiaineet(): Set[EBOppiaine] = {
-    Set(
+  private def createEBOppiaineet(): Seq[EBOppiaine] = {
+    Seq(
       EBOppiaine(
         tunniste = UUID.randomUUID(),
         nimi = Kielistetty(Some("Ensimmäinen kieli (L1)"), Some("Första språket (L1)"), Some("First Language (L1)")),
         koodi = Koodi("L1", "eboppiaineet", Some(1)),
         laajuus = Some(EBLaajuus(BigDecimal(4.0), Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
         suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
-        osasuoritukset = Set.empty
+        osasuoritukset = Seq.empty
       ),
       EBOppiaine(
         tunniste = UUID.randomUUID(),
@@ -606,7 +606,7 @@ class AutomaattinenHakukelpoisuusTest {
         koodi = Koodi("L2", "eboppiaineet", Some(1)),
         laajuus = Some(EBLaajuus(BigDecimal(3.0), Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
         suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
-        osasuoritukset = Set.empty
+        osasuoritukset = Seq.empty
       )
     )
   }

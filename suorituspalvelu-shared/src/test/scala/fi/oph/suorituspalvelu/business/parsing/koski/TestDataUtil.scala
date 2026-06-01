@@ -20,7 +20,7 @@ object TestDataUtil {
                                   keskiarvo: Option[BigDecimal] = Some(BigDecimal(3.5)),
                                   suoritustapa: Koodi = getTestKoodi(),
                                   suoritusKieli: Koodi = getTestKoodi(),
-                                  osat: Set[AmmatillisenTutkinnonOsa] = Set.empty): AmmatillinenPerustutkinto =
+                                  osat: Seq[AmmatillisenTutkinnonOsa] = Seq.empty): AmmatillinenPerustutkinto =
     AmmatillinenPerustutkinto(UUID.randomUUID(), nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, KoskiToSuoritusConverter.convertKoskiTila(tila.arvo), aloitusPaivamaara, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
 
   def mkKoodi(koodiarvo: String, koodistoUri: String = "koodisto"): KoskiKoodi =
@@ -42,7 +42,7 @@ object TestDataUtil {
       koulusivistyskieli = None,
       alkamispäivä = alkamispaiva,
       vahvistus = vahvistuspaiva.map(p => KoskiVahvistus(p)),
-      osasuoritukset = Some(Set.empty),
+      osasuoritukset = Some(Seq.empty),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,
@@ -60,7 +60,7 @@ object TestDataUtil {
       koulusivistyskieli = None,
       alkamispäivä = None,
       vahvistus = None,
-      osasuoritukset = Some(Set.empty),
+      osasuoritukset = Some(Seq.empty),
       arviointi = None,
       keskiarvo = None,
       korotettuKeskiarvo = None,

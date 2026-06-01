@@ -94,7 +94,7 @@ case class EBOppiaine(
   koodi: Koodi,
   laajuus: Option[EBLaajuus],
   suorituskieli: Option[Koodi],
-  osasuoritukset: Set[EBOppiaineenOsasuoritus]
+  osasuoritukset: Seq[EBOppiaineenOsasuoritus]
 )
 
 case class EBTutkinto(
@@ -106,7 +106,7 @@ case class EBTutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
-  osasuoritukset: Set[EBOppiaine]
+  osasuoritukset: Seq[EBOppiaine]
 ) extends Suoritus, Tyypitetty
 
 case class DIAArvosana(
@@ -150,7 +150,7 @@ case class DIATutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
-  osasuoritukset: Set[DIAOppiaine]
+  osasuoritukset: Seq[DIAOppiaine]
 ) extends Suoritus, Tyypitetty
 
 case class IBArvosana(
@@ -182,7 +182,7 @@ case class IBTutkinto(
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
   suorituskieli: Option[Koodi],
-  osasuoritukset: Set[IBOppiaineSuoritus]
+  osasuoritukset: Seq[IBOppiaineSuoritus]
 ) extends Suoritus, Tyypitetty
 
 case class OpiskeluoikeusJakso(alku: LocalDate, tila: SuoritusTila)
@@ -224,7 +224,7 @@ case class AmmatillinenPerustutkinto(
   keskiarvo: Option[BigDecimal],
   suoritustapa: Koodi,
   suoritusKieli: Koodi,
-  osat: Set[AmmatillisenTutkinnonOsa]
+  osat: Seq[AmmatillisenTutkinnonOsa]
 ) extends Suoritus, Tyypitetty
 
 case class AmmatillinenTutkintoOsittainen(
@@ -240,7 +240,7 @@ case class AmmatillinenTutkintoOsittainen(
   korotettuOpiskeluoikeusOid: Option[String],
   suoritustapa: Koodi,
   suoritusKieli: Koodi,
-  osat: Set[AmmatillisenTutkinnonOsa]
+  osat: Seq[AmmatillisenTutkinnonOsa]
 ) extends Suoritus, Tyypitetty
 
 case class AmmatillisenTutkinnonOsaAlue(
@@ -260,7 +260,7 @@ case class AmmatillisenTutkinnonOsa(
   arviointiPaiva: Option[LocalDate],
   arvosana: Option[Arvosana],
   laajuus: Option[Laajuus],
-  osaAlueet: Set[AmmatillisenTutkinnonOsaAlue],
+  osaAlueet: Seq[AmmatillisenTutkinnonOsaAlue],
   korotettu: Option[Korotus]
 ) extends Tyypitetty
 
@@ -404,7 +404,7 @@ case class PerusopetuksenOppimaara(
   yksilollistaminen: Option[PerusopetuksenYksilollistaminen],
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
-  aineet: Set[PerusopetuksenOppiaine],
+  aineet: Seq[PerusopetuksenOppiaine],
   lahtokoulut: List[Lahtokoulu],
   syotetty: Boolean, // Käsin tallennetulle tiedolle true, muutoin false.
   vuosiluokkiinSitoutumatonOpetus: Boolean,

@@ -945,8 +945,8 @@ object EntityToUIConverter {
           // paikkarivinä (arvosana puuttuu), jotta tarkastusnäkymässä erottaa mikä arvosana puuttuu.
           oppiaineet = {
             val onValmis = om.supaTila == fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-            val omanAineenOppiaineet: Set[PerusopetuksenOppiaineUI] =
-              (if (onValmis) om.aineet else Set.empty).map(a => {
+            val omanAineenOppiaineet: Seq[PerusopetuksenOppiaineUI] =
+              (if (onValmis) om.aineet else Seq.empty).map(a => {
                 def getLisatieto(asiointiKieli: String): Option[String] =
                   if (a.koodi.arvo == "AI") getAidinkielenNimi(a.kieli, asiointiKieli)
                   else getVieraanKielenNimi(a.kieli, asiointiKieli)
@@ -963,9 +963,9 @@ object EntityToUIConverter {
                   valinnainen = !a.pakollinen,
                 )
               })
-            val puuttuvatPaikkarivit: Set[PerusopetuksenOppiaineUI] =
-              if (onValmis) puuttuvienAineidenPaikkarivit(om, omanAineenOppiaineet.map(_.koodi), koodistoProvider)
-              else Set.empty
+            val puuttuvatPaikkarivit: Seq[PerusopetuksenOppiaineUI] =
+              if (onValmis) puuttuvienAineidenPaikkarivit(om, omanAineenOppiaineet.map(_.koodi).toSet, koodistoProvider).toSeq
+              else Seq.empty
             filterAndSortOppiaineet(omanAineenOppiaineet ++ puuttuvatPaikkarivit)
           }.asJava,
           syotetty = om.syotetty
