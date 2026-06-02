@@ -98,14 +98,14 @@ class AvainArvoConverterTest {
   }
 
   private def convertArvot(opiskeluoikeudet: Seq[Opiskeluoikeus]): Map[String, String] =
-    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", LocalDate.now(), Some(BASE_HAKEMUS),
-      opiskeluoikeudet, DEFAULT_KOUTA_HAKU, None).getAvainArvoMap()
+    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", Some(BASE_HAKEMUS),
+      opiskeluoikeudet, Seq.empty, LocalDate.now(), DEFAULT_KOUTA_HAKU, None, Map.empty).getAvainArvoMap()
 
   // Rakentaa hakemuksen annetuista avain-arvoista lisäten automaattisesti pohjakoulutus_vuosi=2016,
   // jotta hakemukselta tulevat arvosanat huomioidaan. Palauttaa kaikki päätellyt avain-arvot selitteineen.
   private def hakemukseltaConvertTulos(keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty): Set[AvainArvoContainer] = {
     val hakemus = BASE_HAKEMUS.copy(keyValues = keyValues + (AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2016"))
-    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", LocalDate.now(), Some(hakemus), opiskeluoikeudet, DEFAULT_KOUTA_HAKU, None).paatellytArvot
+    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", Some(hakemus), opiskeluoikeudet, Seq.empty, LocalDate.now(), DEFAULT_KOUTA_HAKU, None, Map.empty).paatellytArvot
   }
 
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
