@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.yos
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Opiskeluoikeus}
+import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
 
 object YosPredicate {
 
@@ -31,8 +32,10 @@ object YosPredicate {
 
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
     hakutoive match {
-      case YosHakutoive(true, true, false, false, _, _) =>
+      case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET) =>
         true
+      case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET) =>
+        true  
       case _ =>
         false
     }
@@ -53,3 +56,4 @@ object YosPredicate {
   }
 
 }
+

@@ -22,6 +22,7 @@ case class KoutaHakukohde(oid: String,
                           voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean],
                           johtaaTutkintoon: Option[Boolean],
                           hakuOid: String,
+                          koulutusasteKoodiUrit: List[String] = List.empty
                          )
 
 case class KoutaHaku(oid: String,

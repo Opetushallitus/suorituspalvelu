@@ -38,7 +38,7 @@ class YosServiceTest {
     Map.empty, "", Some("haunkohdejoukko_12"), List.empty, None, Some(2026))
 
   private val HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN = KoutaHakukohde(
-    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true), HAKU_OID
+    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true), HAKU_OID, List("kansallinenkoulutusluokitus2016koulutusastetaso2_62")
   )
 
   private val VIRTA_VERSIO = VersioEntiteetti(
@@ -114,7 +114,8 @@ class YosServiceTest {
   def hakutoiveKuuluuYOSPiiriin(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
+    assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(t => t.kuuluukoYosPiiriin)
+      .getOrElse(false))
   }
 
   @Test
@@ -122,7 +123,8 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
       Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukkoKoodiUri = Some("haunkohdejoukko_11"))))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(t => t.kuuluukoYosPiiriin)
+      .getOrElse(false))
   }
 
   @Test
@@ -130,7 +132,8 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
       Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukonTarkenneKoodiUri = Some("haunkohdejoukontarkenne_010"))))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(t => t.kuuluukoYosPiiriin)
+      .getOrElse(false))
   }
 
   @Test
@@ -138,7 +141,17 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
       Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukonTarkenneKoodiUri = Some("haunkohdejoukontarkenne_3"))))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
-    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).getOrElse(false))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(t => t.kuuluukoYosPiiriin)
+      .getOrElse(false))
+  }
+
+  @Test
+  def hakutoiveenKoulutusAsteEiKuuluYosPiiriin(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN
+      .copy(koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_82")))
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(t => t.kuuluukoYosPiiriin)
+      .getOrElse(false))
   }
 
   @Test
