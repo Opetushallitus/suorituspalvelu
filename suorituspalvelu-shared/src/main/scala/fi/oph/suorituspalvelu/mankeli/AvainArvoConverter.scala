@@ -225,27 +225,27 @@ object AvainArvoConstants {
   final val ataruPohjakoulutusVuosiKey = "pohjakoulutus_vuosi"
   final val ataruPohjakoulutusKieliKey = "pohjakoulutus_kieli"
 
-  val POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS = "0"
-  val POHJAKOULUTUS_PERUSKOULU = "1"
-  val POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY = "2"
-  val POHJAKOULUTUS_PERUSKOULU_TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY = "3"
-  val POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY = "6"
-  val POHJAKOULUTUS_PERUSKOULU_OSITTAIN_RAJOITETTU = "8"
-  val POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU = "9"
-  val POHJAKOULUTUS_EI_PAATTOTODISTUSTA = "7"
+  final val POHJAKOULUTUS_ULKOMAILLA_SUORITETTU_KOULUTUS = "0"
+  final val POHJAKOULUTUS_PERUSKOULU = "1"
+  final val POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY = "2"
+  final val POHJAKOULUTUS_PERUSKOULU_TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY = "3"
+  final val POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY = "6"
+  final val POHJAKOULUTUS_PERUSKOULU_OSITTAIN_RAJOITETTU = "8"
+  final val POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU = "9"
+  final val POHJAKOULUTUS_EI_PAATTOTODISTUSTA = "7"
 
   val hakemuksenPohjakoulutuksetUskotaanHakemusta = Set(POHJAKOULUTUS_PERUSKOULU, POHJAKOULUTUS_PERUSKOULU_OSITTAIN_YKSILOLLISTETTY,
     POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_YKSILOLLISTETTY, POHJAKOULUTUS_PERUSKOULU_TOIMINTA_ALUEITTAIN_YKSILOLLISTETTY,
     POHJAKOULUTUS_PERUSKOULU_OSITTAIN_RAJOITETTU, POHJAKOULUTUS_PERUSKOULU_PAAOSIN_TAI_KOKONAAN_RAJOITETTU)
 
-  val arvosananLahdeSeliteSupa = "Tieto löytyi Suorituspalvelusta."
-  val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
+  final val arvosananLahdeSeliteSupa = "Tieto löytyi Suorituspalvelusta."
+  final val arvosananLahdeSeliteHakemus = "Tieto löytyi hakemukselta."
 
-  val kielitiedonLahdeSeliteSupa = "Kielitieto löytyi Suorituspalvelusta."
-  val kielitiedonLahdeSeliteHakemus = "Kielitieto löytyi hakemukselta."
+  final val kielitiedonLahdeSeliteSupa = "Kielitieto löytyi Suorituspalvelusta."
+  final val kielitiedonLahdeSeliteHakemus = "Kielitieto löytyi hakemukselta."
 
   final val yksMatAiKey = "yks_mat_ai"
-  val ensikertalainenKey = "ensikertalainen"
+  final val ensikertalainenKey = "ensikertalainen"
 
   val numeerisetPeruskoulunArvosanat = Set("10", "9", "8", "7", "6", "5", "4")
 
