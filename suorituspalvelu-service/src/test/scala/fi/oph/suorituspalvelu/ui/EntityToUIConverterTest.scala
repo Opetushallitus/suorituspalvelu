@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -1240,6 +1240,134 @@ class EntityToUIConverterTest {
       en = Optional.of("Mathematics: Analysis and Approaches HL")
     ), suoritus2.nimi)
     Assertions.assertEquals(Optional.of("7"), suoritus2.predictedGrade)
+  }
+
+  private def oppiaineenOppimaaraOpiskeluoikeus(aineet: Set[PerusopetuksenOppiaine]): PerusopetuksenOpiskeluoikeus =
+    PerusopetuksenOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      oid = Some("1.2.3"),
+      oppilaitosOid = "1.2.246.562.10.11168857016",
+      suoritukset = Set(PerusopetuksenOppimaaranOppiaineidenSuoritus(
+        tunniste = UUID.randomUUID(),
+        versioTunniste = None,
+        oppilaitos = Oppilaitos(Kielistetty(Some("Keltinmäen koulu"), None, None), "1.2.246.562.10.11168857016"),
+        koskiTila = Koodi("valmistunut", "", None),
+        supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+        suoritusKieli = Koodi("FI", "kieli", Some(1)),
+        aloitusPaivamaara = Some(LocalDate.parse("2015-01-01")),
+        vahvistusPaivamaara = Some(LocalDate.parse("2016-06-01")),
+        aineet = aineet,
+        syotetty = false
+      )),
+      lisatiedot = None,
+      tila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      jaksot = List.empty
+    )
+
+  @Test def testConvertPerusopetuksenOppiaineenOppimaaraVieraskieliOppiaine(): Unit = {
+    val a1Tunniste = UUID.randomUUID()
+    val aineet = Set(PerusopetuksenOppiaine(
+      tunniste = a1Tunniste,
+      nimi = Kielistetty(Some("A1-kieli"), Some("A1-språk"), Some("A1 language")),
+      koodi = Koodi("A1", "koskioppiaineetyleissivistava", Some(1)),
+      arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+      kieli = Some(Koodi("EN", "kielivalikoima", Some(1))),
+      pakollinen = true,
+      yksilollistetty = Some(false),
+      rajattu = Some(false)
+    ))
+
+    val koodistoProvider = new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] =
+        if (koodisto == UIService.KOODISTO_KIELIVALIKOIMA)
+          Map("EN" -> fi.oph.suorituspalvelu.integration.client.Koodi("EN", Koodisto(UIService.KOODISTO_KIELIVALIKOIMA), List(
+            KoodiMetadata("FI", "englanti"),
+            KoodiMetadata("SV", "engelska"),
+            KoodiMetadata("EN", "English"),
+          )))
+        else Map.empty
+    }
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(oppiaineenOppimaaraOpiskeluoikeus(aineet)),
+      DUMMY_ORGANISAATIOPROVIDER, koodistoProvider
+    ).perusopetuksenOppiaineenOppimaarat
+
+    Assertions.assertEquals(1, result.size())
+    val oppiaineet = result.get(0).oppiaineet.asScala
+    val a1 = oppiaineet.find(_.tunniste == a1Tunniste).get
+    Assertions.assertEquals(Optional.of("A1-kieli, englanti"), a1.nimi.fi)
+    Assertions.assertEquals(Optional.of("A1-språk, engelska"), a1.nimi.sv)
+    Assertions.assertEquals(Optional.of("A1 language, English"), a1.nimi.en)
+    Assertions.assertEquals(Optional.of("EN"), a1.kieli)
+  }
+
+  @Test def testConvertPerusopetuksenOppiaineenOppimaaraAidinkieli(): Unit = {
+    val aiTunniste = UUID.randomUUID()
+    val aineet = Set(PerusopetuksenOppiaine(
+      tunniste = aiTunniste,
+      nimi = Kielistetty(Some("Äidinkieli ja kirjallisuus"), Some("Modersmål och litteratur"), Some("Native language and literature")),
+      koodi = Koodi("AI", "koskioppiaineetyleissivistava", Some(1)),
+      arvosana = Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
+      kieli = Some(Koodi("AI1", "oppiaineaidinkielijakirjallisuus", Some(1))),
+      pakollinen = true,
+      yksilollistetty = Some(false),
+      rajattu = Some(false)
+    ))
+
+    val koodistoProvider = new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] =
+        if (koodisto == UIService.KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS)
+          Map("AI1" -> fi.oph.suorituspalvelu.integration.client.Koodi("AI1", Koodisto(UIService.KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS), List(
+            KoodiMetadata("FI", "Suomen kieli ja kirjallisuus"),
+            KoodiMetadata("SV", "Finska språket och litteratur"),
+            KoodiMetadata("EN", "Finnish language and literature"),
+          )))
+        else Map.empty
+    }
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(oppiaineenOppimaaraOpiskeluoikeus(aineet)),
+      DUMMY_ORGANISAATIOPROVIDER, koodistoProvider
+    ).perusopetuksenOppiaineenOppimaarat
+
+    Assertions.assertEquals(1, result.size())
+    val oppiaineet = result.get(0).oppiaineet.asScala
+    val ai = oppiaineet.find(_.tunniste == aiTunniste).get
+    Assertions.assertEquals(Optional.of("Äidinkieli ja kirjallisuus, Suomen kieli ja kirjallisuus"), ai.nimi.fi)
+    Assertions.assertEquals(Optional.of("Modersmål och litteratur, Finska språket och litteratur"), ai.nimi.sv)
+    Assertions.assertEquals(Optional.of("Native language and literature, Finnish language and literature"), ai.nimi.en)
+    Assertions.assertEquals(Optional.of("AI1"), ai.kieli)
+  }
+
+  @Test def testConvertPerusopetuksenOppiaineenOppimaaraIlmanKielta(): Unit = {
+    val maTunniste = UUID.randomUUID()
+    val aineet = Set(PerusopetuksenOppiaine(
+      tunniste = maTunniste,
+      nimi = Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")),
+      koodi = Koodi("MA", "koskioppiaineetyleissivistava", Some(1)),
+      arvosana = Koodi("8", "arviointiasteikkoyleissivistava", Some(1)),
+      kieli = None,
+      pakollinen = true,
+      yksilollistetty = Some(false),
+      rajattu = Some(false)
+    ))
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(oppiaineenOppimaaraOpiskeluoikeus(aineet)),
+      DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
+    ).perusopetuksenOppiaineenOppimaarat
+
+    Assertions.assertEquals(1, result.size())
+    val oppiaineet = result.get(0).oppiaineet.asScala
+    val ma = oppiaineet.find(_.tunniste == maTunniste).get
+    Assertions.assertEquals(Optional.of("Matematiikka"), ma.nimi.fi)
+    Assertions.assertEquals(Optional.of("Matematik"), ma.nimi.sv)
+    Assertions.assertEquals(Optional.of("Mathematics"), ma.nimi.en)
+    Assertions.assertEquals(Optional.empty(), ma.kieli)
   }
 
   @Test def testConvertIBTutkintoIlmanRyhmaa(): Unit = {
