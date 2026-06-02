@@ -5,5 +5,5 @@ case class YosHakutoive(korkeakoulutus: Boolean,
                         jatkoTutkinto: Boolean,
                         kaksoisTutkinto: Boolean,
                         organisaatioOid: String, //TODO OPHYOS-171, poliisi, ahvenanmaa ja maanpuolustustarkastelua varten
-                        tutkinnonTaso: String, //TODO OPHYOS-173: tarvitaan päättelyyn mitä lakkautetaan
+                        tutkinnonAste: YosKoulutusAsteLuokka, //TODO OPHYOS-173: tarvitaan päättelyyn mitä lakkautetaan
                        )
