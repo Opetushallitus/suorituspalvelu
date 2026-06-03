@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus
 import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYSSA, VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA}
 import fi.oph.suorituspalvelu.resource.api.YosErrorResponse
-import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO}
+import fi.oph.suorituspalvelu.util.KoodistoConstants.KOULUTUS_KOODISTO
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT, YOS_KOULUTUSASTE_KOODISTO}
 import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
@@ -167,10 +167,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     )
     val virtaOpiskeluOikeusId = VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(oikeus.myontaja, oikeus.virtaTunniste)
     val supaNimi = getKoodiNimi(oikeus.koulutusKoodi, KOULUTUS_KOODISTO)
-      .orElse( //TODO: Tämä taitaa olla turha, koska koulutusastetta ei voi päätellä ilman koulutuskoodia
-        getKoodiNimi(Some(oikeus.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO)
-          .orElse(None)
-      )
+      .orElse(None)
     YosPaatettavaOpiskeluOikeus(virtaOpiskeluOikeusId, organisaatio, oikeus.nimi, supaNimi)
   }
 }
