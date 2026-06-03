@@ -26,8 +26,6 @@ object YosConstants {
  * Yliopiston maisteritutkinto (alempi+ylempi korkekaoulututkinto) = 63 + 72(?). Päätettävät opiskeluoikeudet 2)
  * Yliopiston maisteritutkinto (yliopiston ylempi korkeakoulututkinto) = 72. Päätettävät opiskeluoikeudet 2)
  *
- * Yliopiston jatkotutkinto (lisensiaatin ja tohtorin tutkinnot) = 81 ja 82 (nämä eivät kuulu yos piiriin)
- *
  *
  * 1) Alemmat korkeakoulututkinnot = 62, 63, 63 + 72(?)
  * 2) Alemmat + ylemmät korkeakoulututkinnot = 62, 63, 63 + 72(?), 72, 71
