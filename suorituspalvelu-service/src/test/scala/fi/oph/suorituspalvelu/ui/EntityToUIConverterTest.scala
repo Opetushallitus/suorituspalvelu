@@ -24,14 +24,6 @@ import scala.jdk.OptionConverters.*
  */
 class EntityToUIConverterTest {
 
-  val DUMMY_ORGANISAATIOPROVIDER = new OrganisaatioProvider {
-    override def orgLookupTable(): Map[String, Organisaatio] = Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
-  }
-
-  val DUMMY_KOODISTOPROVIDER = new KoodistoProvider {
-    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
-  }
-
   // Rakentaa odotetun puuttuvan oppiaineen paikkarivin, jollainen EntityToUIConverter lisää
   // VALMIIN perusopetuksen oppimäärän puuttuville pakollisille aineille (arvosana = Optional.empty()).
   private def placeholderOppiaineUI(om: PerusopetuksenOppimaara, koodi: String): PerusopetuksenOppiaineUI =
@@ -43,24 +35,32 @@ class EntityToUIConverterTest {
       arvosana = Optional.empty(),
       valinnainen = false
     )
-
-  val ARVOSANAPROVIDER = new KoodistoProvider {
-    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
-      "Hyväksytty" -> fi.oph.suorituspalvelu.integration.client.Koodi(
-        "Hyväksytty",
-        Koodisto("arviointiasteikkoammatillinen15"),
-        List(
-          KoodiMetadata("FI", "Hyväksytty")
-        )
+  
+  val ARVOSANAPROVIDER = buildDummyKoodistoProvider(Map(
+    "Hyväksytty" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+      "Hyväksytty",
+      fi.oph.suorituspalvelu.integration.client.Koodisto("arviointiasteikkoammatillinen15"),
+      List(
+        KoodiMetadata("FI", "Hyväksytty")
       ),
-      "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
-        "1",
-        Koodisto("arviointiasteikkoammatillinen15"),
-        List(
-          KoodiMetadata("FI", "1")
-        )
-      )
+      "arviointiasteikkoammatillinen15_hyvaksytty"
+    ),
+    "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+      "1",
+      fi.oph.suorituspalvelu.integration.client.Koodisto("arviointiasteikkoammatillinen15"),
+      List(
+        KoodiMetadata("FI", "1")
+      ),
+      "arviointiasteikkoammatillinen15_1"
     )
+  ))
+
+  val DUMMY_ORGANISAATIOPROVIDER: OrganisaatioProvider = () => Map("1.2.3" -> Organisaatio("1.2.3", OrganisaatioNimi("", "", ""), None, Seq.empty, Seq.empty))
+
+  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = new KoodistoProvider {
+    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
+
+    override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
   }
 
   @Test def testConvertAmmatillinenTutkinto(): Unit = {
@@ -601,31 +601,33 @@ class EntityToUIConverterTest {
       vuosiluokkiinSitoutumatonOpetus = false
     )
 
-    val koodistoProvider = new KoodistoProvider {
-      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
+    val koodistoProvider = buildDummyKoodistoProvider(Map(
         "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
           "1",
           Koodisto("2asteenpohjakoulutus2021"),
           List(
             KoodiMetadata("FI", "Perusopetuksen oppimäärä")
-          )
+          ),
+          "2asteenpohjakoulutus2021_1"
         ),
         "DE" -> fi.oph.suorituspalvelu.integration.client.Koodi(
           "DE",
           Koodisto("kielivalikoima"),
           List(
             KoodiMetadata("FI", "saksa")
-          )
+          ),
+          "2asteenpohjakoulutus2021.DE"
         ),
         "AI1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
           "AI1",
           Koodisto("oppiaineaidinkielijakirjallisuus"),
           List(
             KoodiMetadata("FI", "Suomen kieli ja kirjallisuus")
-          )
+          ),
+          "2asteenpohjakoulutus2021_AI1"
         ),
       )
-    }
+    )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.PerusopetuksenOppimaaraUI(
       versioTunniste = oppimaara.versioTunniste.toJava,
@@ -859,26 +861,26 @@ class EntityToUIConverterTest {
     val KOULUTUKSEN_NIMI_EN = "Bachelor of Health Care"
     val KOULUTUKSEN_TILA_FI = "aktiivinen"
     val KOULUTUKSEN_TILA_EN = "active"
-    val koulutusProvider = new KoodistoProvider {
-      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map(
-        "671103" -> fi.oph.suorituspalvelu.integration.client.Koodi(
-          "671103",
-          Koodisto("koulutus"),
-          List(
-            KoodiMetadata("FI", KOULUTUKSEN_NIMI_FI),
-            KoodiMetadata("EN", KOULUTUKSEN_NIMI_EN),
-          )
+    val koulutusProvider = buildDummyKoodistoProvider(Map(
+      "671103" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+        "671103",
+        Koodisto("koulutus"),
+        List(
+          KoodiMetadata("FI", KOULUTUKSEN_NIMI_FI),
+          KoodiMetadata("EN", KOULUTUKSEN_NIMI_EN),
         ),
-        "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
-          "1",
-          Koodisto("virtaopintooikeudentila"),
-          List(
-            KoodiMetadata("FI", KOULUTUKSEN_TILA_FI),
-            KoodiMetadata("EN", KOULUTUKSEN_TILA_EN),
-          )
-        )
+        "koulutus_671103"
+      ),
+      "1" -> fi.oph.suorituspalvelu.integration.client.Koodi(
+        "1",
+        Koodisto("virtaopintooikeudentila"),
+        List(
+          KoodiMetadata("FI", KOULUTUKSEN_TILA_FI),
+          KoodiMetadata("EN", KOULUTUKSEN_TILA_EN),
+        ),
+        "virtaopintooikeudentila_1"
       )
-    }
+    ))
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusUI(
       virtaOpiskeluoikeus.tunniste,
@@ -1440,4 +1442,11 @@ class EntityToUIConverterTest {
     Assertions.assertEquals(1, fallback.suoritukset.size())
     Assertions.assertEquals(ungrouped, fallback.suoritukset.get(0).tunniste)
   }
+
+  private def buildDummyKoodistoProvider(koodistoMap: Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty): KoodistoProvider =
+    new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = koodistoMap
+
+      override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
+    }
 }

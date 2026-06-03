@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.business.parsing.virkailija
 import fi.oph.suorituspalvelu.business.*
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY
+import fi.oph.suorituspalvelu.business.testsupport.TestUtil.buildDummyKoodistoProvider
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
@@ -20,6 +21,8 @@ import scala.jdk.OptionConverters.*
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
 class VirkailijaToSuoritusConverterTest {
+  
+  private val DUMMY_KOODISTOPROVIDER = buildDummyKoodistoProvider(Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")), "")))
 
   @Test def testConvertPerusopetuksenOppimaara(): Unit =
     val versioTunniste = UUID.randomUUID()
@@ -50,7 +53,7 @@ class VirkailijaToSuoritusConverterTest {
       Seq.empty,
       Seq.empty
     )
-    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))), () => Map(organisaatio.oid -> organisaatio))
+    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, DUMMY_KOODISTOPROVIDER, () => Map(organisaatio.oid -> organisaatio))
 
     val expected = PerusopetuksenOpiskeluoikeus(
       converted.tunniste,
@@ -126,7 +129,7 @@ class VirkailijaToSuoritusConverterTest {
       Seq.empty,
       Seq.empty
     )
-    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versioTunniste, suoritus, koodisto => Map("MA" -> fi.oph.suorituspalvelu.integration.client.Koodi("", null, List(KoodiMetadata("FI", "matematiikka")))), () => Map(organisaatio.oid -> organisaatio))
+    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versioTunniste, suoritus, DUMMY_KOODISTOPROVIDER, () => Map(organisaatio.oid -> organisaatio))
 
     val expected = PerusopetuksenOpiskeluoikeus(
       converted.tunniste,
