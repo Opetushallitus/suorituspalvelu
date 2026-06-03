@@ -6,6 +6,8 @@ import scala.annotation.tailrec
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future, Promise}
 
+class NonRetriableException(message: String) extends RuntimeException(message)
+
 object Util {
 
   private val LOG: Logger = LoggerFactory.getLogger(Util.getClass)
@@ -52,6 +54,9 @@ object Util {
           try
             Await.result(operation, Duration.Inf)
           catch
+            case e: NonRetriableException =>
+              LOG.error(s"$failMessage: ${e.getMessage}. Virhe ei ole uudelleenyritettävissä.")
+              throw e
             case e: Throwable if remainingRetries > 0 =>
               LOG.warn(
                 s"$failMessage: ${e.getMessage}. Yritetään uudelleen ${currentDelay}ms kuluttua ($remainingRetries yritystä jäljellä)."

@@ -58,7 +58,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  final val ONR_TIMEOUT = 5.minutes
+  final val ONR_TIMEOUT = 15.minutes
   final val HAKEMUSPALVELU_TIMEOUT = 1.minutes
   final val VIRTA_TIMEOUT = 2.minutes //Timeout yhden henkilön tietojen haulle ja persistoinnille
 

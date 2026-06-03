@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrMasterHenkilo}
+import fi.oph.suorituspalvelu.integration.{NonRetriableException, OnrHenkiloPerustiedot, OnrMasterHenkilo, Util}
 import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
@@ -26,7 +26,7 @@ trait OnrClient {
   def getPerustiedotByHetus(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
 }
 
-class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends OnrClient {
+class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String, onrRetries: Int = 3, onrRetryDelayMillis: Long = 10000) extends OnrClient {
 
   val LOG = LoggerFactory.getLogger(classOf[OnrClientImpl]);
 
@@ -110,58 +110,71 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
   }
 
   private def doPost(url: String, body: Object): Future[String] = {
-    val req = new RequestBuilder()
-      .setMethod("POST")
-      .setHeader("Content-Type", "application/json")
-      .setBody(mapper.writeValueAsString(body))
-      .setUrl(url)
-      .build()
-    try {
-      asScala(casClient.execute(req)).map {
-        case r if r.getStatusCode == 200 =>
-          r.getResponseBody()
-        case r =>
-          val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
-          LOG.error(
-            errorStr
-          )
-          throw new RuntimeException(errorStr)
-      }
-    } catch {
-      case e: Throwable =>
-        LOG.error(
-          s"Haku oppijanumerorekisteristä epäonnistui", e
-        )
-        Future.failed(e)
-    }
+    Util.retryWithBackoff(
+      operation = {
+        val req = new RequestBuilder()
+          .setMethod("POST")
+          .setHeader("Content-Type", "application/json")
+          .setBody(mapper.writeValueAsString(body))
+          .setUrl(url)
+          .build()
+        try {
+          asScala(casClient.execute(req)).map {
+            case r if r.getStatusCode == 200 =>
+              r.getResponseBody()
+            case r if r.getStatusCode >= 500 =>
+              val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+              LOG.error(errorStr)
+              throw new RuntimeException(errorStr)
+            case r =>
+              val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+              LOG.error(errorStr)
+              throw new NonRetriableException(errorStr)
+          }
+        } catch {
+          case e: Throwable =>
+            LOG.error(s"Haku oppijanumerorekisteristä epäonnistui", e)
+            Future.failed(e)
+        }
+      },
+      retries = onrRetries,
+      retryDelayMillis = onrRetryDelayMillis,
+      failMessage = s"ONR POST-kutsu epäonnistui: $url"
+    )
   }
 
   private def doGet(url: String): Future[Option[String]] = {
-
     LOG.info(s"haetaan, $url")
-    val req = new RequestBuilder()
-      .setMethod("GET")
-      .setUrl(url)
-      .build()
-    try {
-      asScala(casClient.execute(req)).map {
-        case r if r.getStatusCode == 200 =>
-          Some(r.getResponseBody())
-        case r if r.getStatusCode == 404 =>
-          None
-        case r =>
-          val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
-          LOG.error(
-            errorStr
-          )
-          throw new RuntimeException(errorStr)
-      }
-    } catch {
-      case e: Throwable =>
-        LOG.error(
-          s"Haku oppijanumerorekisteristä epäonnistui", e
-        )
-        Future.failed(e)
-    }
+    Util.retryWithBackoff(
+      operation = {
+        val req = new RequestBuilder()
+          .setMethod("GET")
+          .setUrl(url)
+          .build()
+        try {
+          asScala(casClient.execute(req)).map {
+            case r if r.getStatusCode == 200 =>
+              Some(r.getResponseBody())
+            case r if r.getStatusCode == 404 =>
+              None
+            case r if r.getStatusCode >= 500 =>
+              val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+              LOG.error(errorStr)
+              throw new RuntimeException(errorStr)
+            case r =>
+              val errorStr = s"Haku oppijanumerorekisteristä epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+              LOG.error(errorStr)
+              throw new NonRetriableException(errorStr)
+          }
+        } catch {
+          case e: Throwable =>
+            LOG.error(s"Haku oppijanumerorekisteristä epäonnistui", e)
+            Future.failed(e)
+        }
+      },
+      retries = onrRetries,
+      retryDelayMillis = onrRetryDelayMillis,
+      failMessage = s"ONR GET-kutsu epäonnistui: $url"
+    )
   }
 }
