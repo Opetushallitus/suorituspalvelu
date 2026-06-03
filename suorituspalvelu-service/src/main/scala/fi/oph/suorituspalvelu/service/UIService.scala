@@ -163,7 +163,7 @@ class UIService {
   }
 
   def haeSyotettavienSuoritustenOppilaitokset(): List[Oppilaitos] = {
-    organisaatioProvider.haeKaikkiOrganisaatiot()
+    organisaatioProvider.haeKaikkiOrganisaatiot(mukaanLukienLakkautetut = true)
       .values
       .filter(organisaatio => organisaatio.tyypit.contains("organisaatiotyyppi_02"))
       .map(organisaatio => Oppilaitos(OppilaitosNimi(

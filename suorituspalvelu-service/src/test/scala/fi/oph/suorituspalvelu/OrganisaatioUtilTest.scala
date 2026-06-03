@@ -58,7 +58,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test child organisaatio", "", ""),
       parentOid = Some(parentOid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val parentOrg = HierarkiaOrganisaatio(
@@ -66,7 +67,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test parent organisaatio", "", ""),
       parentOid = None,
       children = Seq(childOrg),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(parentOrg))
@@ -104,7 +106,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test grandchild organisaatio 1", "", ""),
       parentOid = Some(child1Oid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val grandchild2 = HierarkiaOrganisaatio(
@@ -112,7 +115,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test grandchild organisaatio 2", "", ""),
       parentOid = Some(child1Oid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val child1 = HierarkiaOrganisaatio(
@@ -120,7 +124,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test child organisaatio 1", "", ""),
       parentOid = Some(rootOid),
       children = Seq(grandchild1, grandchild2),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val child2 = HierarkiaOrganisaatio(
@@ -128,7 +133,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test child organisaatio 2", "", ""),
       parentOid = Some(rootOid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val root = HierarkiaOrganisaatio(
@@ -136,7 +142,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test root organisaatio", "", ""),
       parentOid = None,
       children = Seq(child1, child2),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(root))
@@ -181,7 +188,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test organisaatio 1", "", ""),
       parentOid = None,
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val org2 = HierarkiaOrganisaatio(
@@ -189,7 +197,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test organisaatio 2", "", ""),
       parentOid = None,
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(org1, org2))
@@ -216,7 +225,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test great grandchild organisaatio 1", "", ""),
       parentOid = Some(grandchild2Oid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val grandchild1 = HierarkiaOrganisaatio(
@@ -224,7 +234,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test grandchild organisaatio 1", "", ""),
       parentOid = Some(child1Oid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val grandchild2 = HierarkiaOrganisaatio(
@@ -232,7 +243,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test grandchild organisaatio 2", "", ""),
       parentOid = Some(child1Oid),
       children = Seq(greatGrandchild),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val child1 = HierarkiaOrganisaatio(
@@ -240,7 +252,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test child organisaatio 1", "", ""),
       parentOid = Some(rootOid),
       children = Seq(grandchild1, grandchild2),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val child2 = HierarkiaOrganisaatio(
@@ -248,7 +261,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test child organisaatio 2", "", ""),
       parentOid = Some(rootOid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val root = HierarkiaOrganisaatio(
@@ -256,7 +270,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Test root organisaatio", "", ""),
       parentOid = None,
       children = Seq(child1, child2),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(root))
@@ -311,7 +326,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Mixed types organisaatio", "", ""),
       parentOid = None,
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_07", "organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_07", "organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     // The organization should be kept because it has at least one non-varhaiskasvatus type
@@ -341,7 +357,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Regular child", "", ""),
       parentOid = Some(rootOid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     // Create a root organization with both types of children
@@ -350,7 +367,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Root org", "", ""),
       parentOid = None,
       children = Seq(regularChild, varhaiskasvatusChild),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(root))
@@ -400,7 +418,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Regular grandchild", "", ""),
       parentOid = Some(regularBranchOid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     // Create a varhaiskasvatus-only branch, this should get filtered out
@@ -418,7 +437,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Mixed-type grandchild", "", ""),
       parentOid = Some(varhaiskasvatusBranchOid),
       children = Seq.empty,
-      organisaatiotyypit = Seq("organisaatiotyyppi_07", "organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_07", "organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     // Create a regular branch
@@ -427,7 +447,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Regular branch", "", ""),
       parentOid = Some(rootOid),
       children = Seq(mixedTypeGrandchild),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     // Create a root with both branches
@@ -436,7 +457,8 @@ class OrganisaatioUtilTest {
       nimi = OrganisaatioNimi("Complex root", "", ""),
       parentOid = None,
       children = Seq(regularBranch, varhaiskasvatusBranch),
-      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
     )
 
     val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(root))
@@ -457,6 +479,128 @@ class OrganisaatioUtilTest {
     assertTrue(rootDescendants.contains(mixedTypeGrandchildOid))
     assertFalse(rootDescendants.contains(varhaiskasvatusBranchRegularGrandchildOid))
     assertFalse(rootDescendants.contains(varhaiskasvatusBranchOid))
+  }
+
+  @Test
+  def testLakkautetutSailyvatFlattenedMapissaMuttaEivatJalkelaisissa(): Unit = {
+    val parentOid = "1.2.246.562.10.57118763150"
+    val aktiivinenChildOid = "1.2.246.562.10.57118763151"
+    val lakkautettuChildOid = "1.2.246.562.10.57118763152"
+
+    val aktiivinenChild = HierarkiaOrganisaatio(
+      oid = aktiivinenChildOid,
+      nimi = OrganisaatioNimi("Aktiivinen lapsi", "", ""),
+      parentOid = Some(parentOid),
+      children = Seq.empty,
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
+    )
+
+    val lakkautettuChild = HierarkiaOrganisaatio(
+      oid = lakkautettuChildOid,
+      nimi = OrganisaatioNimi("Lakkautettu lapsi", "", ""),
+      parentOid = Some(parentOid),
+      children = Seq.empty,
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("PASSIIVINEN")
+    )
+
+    val parent = HierarkiaOrganisaatio(
+      oid = parentOid,
+      nimi = OrganisaatioNimi("Vanhempi", "", ""),
+      parentOid = None,
+      children = Seq(aktiivinenChild, lakkautettuChild),
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
+    )
+
+    val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(parent))
+
+    // Sekä lakkautettu että aktiivinen säilyvät lookup-taulussa
+    assertTrue(result.contains(parentOid))
+    assertTrue(result.contains(aktiivinenChildOid))
+    assertTrue(result.contains(lakkautettuChildOid))
+
+    // Lakkautettu ei kuitenkaan ole vanhemman jälkeläisissä
+    val parentDescendants = result(parentOid).allDescendantOids
+    assertEquals(1, parentDescendants.size)
+    assertTrue(parentDescendants.contains(aktiivinenChildOid))
+    assertFalse(parentDescendants.contains(lakkautettuChildOid))
+
+    // Status välittyy malliin
+    assertEquals(Some("PASSIIVINEN"), result(lakkautettuChildOid).status)
+    assertEquals(Some("AKTIIVINEN"), result(aktiivinenChildOid).status)
+  }
+
+  @Test
+  def testPuuttuvaStatusKohdellaanLakkautettuna(): Unit = {
+    val parentOid = "1.2.246.562.10.57118763153"
+    val childOid = "1.2.246.562.10.57118763154"
+
+    val childIlmanStatusta = HierarkiaOrganisaatio(
+      oid = childOid,
+      nimi = OrganisaatioNimi("Statuksetön lapsi", "", ""),
+      parentOid = Some(parentOid),
+      children = Seq.empty,
+      organisaatiotyypit = Seq("organisaatiotyyppi_01")
+    )
+
+    val parent = HierarkiaOrganisaatio(
+      oid = parentOid,
+      nimi = OrganisaatioNimi("Vanhempi", "", ""),
+      parentOid = None,
+      children = Seq(childIlmanStatusta),
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
+    )
+
+    val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(parent))
+
+    assertTrue(result(parentOid).allDescendantOids.isEmpty)
+  }
+
+  @Test
+  def testLakkautetunAlapuuOnJalkelaisistaPois(): Unit = {
+    val rootOid = "1.2.246.562.10.57118763155"
+    val lakkautettuMidOid = "1.2.246.562.10.57118763156"
+    val aktiivinenLeafOid = "1.2.246.562.10.57118763157"
+
+    val aktiivinenLeaf = HierarkiaOrganisaatio(
+      oid = aktiivinenLeafOid,
+      nimi = OrganisaatioNimi("Aktiivinen lapsenlapsi", "", ""),
+      parentOid = Some(lakkautettuMidOid),
+      children = Seq.empty,
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
+    )
+
+    val lakkautettuMid = HierarkiaOrganisaatio(
+      oid = lakkautettuMidOid,
+      nimi = OrganisaatioNimi("Lakkautettu välitaso", "", ""),
+      parentOid = Some(rootOid),
+      children = Seq(aktiivinenLeaf),
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("PASSIIVINEN")
+    )
+
+    val root = HierarkiaOrganisaatio(
+      oid = rootOid,
+      nimi = OrganisaatioNimi("Juuri", "", ""),
+      parentOid = None,
+      children = Seq(lakkautettuMid),
+      organisaatiotyypit = Seq("organisaatiotyyppi_01"),
+      status = Some("AKTIIVINEN")
+    )
+
+    val result = OrganisaatioUtil.filterAndFlattenHierarkia(Seq(root))
+
+    // Kaikki organisaatiot säilyvät lookup-taulussa
+    assertTrue(result.contains(rootOid))
+    assertTrue(result.contains(lakkautettuMidOid))
+    assertTrue(result.contains(aktiivinenLeafOid))
+
+    // Mutta juuri ei näe lakkautetun läpi: ei lakkautettua välitasoa eikä sen aktiivista lasta
+    assertTrue(result(rootOid).allDescendantOids.isEmpty)
   }
 
 }
