@@ -10,8 +10,8 @@ import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYS
 import fi.oph.suorituspalvelu.resource.api.YosErrorResponse
 import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO}
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
-import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT}
-import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_JA_ALEMMAT_ASTEET}
+import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT, YOS_KOULUTUSASTE_KOODISTO}
+import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -36,7 +36,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     ).flatMap(toiveJaPiiri => {
       if (toiveJaPiiri.kuuluukoYosPiiriin) {
         LOGGER.info(s"Vastaanotettava opiskelupaikka kuului YOS piiriin. Haetaan päätettävät opiskeluoikeudet. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
-        hakijanPaatettavatOpiskeluOikeudet(hakijaOid).fold(
+        hakijanPaatettavatOpiskeluOikeudet(hakijaOid, toiveJaPiiri.hakutoive).fold(
           e => Left(YosErrorResponse(VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, e.getMessage)),
           r => Right(r))
       } else {
@@ -76,7 +76,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       }
   }
 
-  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String): Either[Throwable, Set[YosPaatettavaOpiskeluOikeus]] = {
+  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoive: YosHakutoive): Either[Throwable, Set[YosPaatettavaOpiskeluOikeus]] = {
     try {
       LOGGER.info(s"Haetaan hakijan $oppilasNro päätettävät opiskeluoikeudet")
       val oikeudet: Set[Opiskeluoikeus] = opiskeluOikeusService.haeSuoritukset(oppilasNro)
@@ -86,6 +86,10 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       LOGGER.info(s"Löytyi ${oikeudet.size} käsiteltävää oikeutta hakijalle $oppilasNro, suodatetaan niistä YOS piiriin kuuluvat")
       val paatettavatOikeudet = oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus))
         .map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
+        .filter(oikeus => {
+          val oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
+          YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoive.koulutusAste, oikeudenAste)
+        })
         .map(muodostaYosPaatettavaOpiskeluOikeus)
       LOGGER.info(s"Oikeuksista löytyi ${paatettavatOikeudet.size} kappaletta päätettävää oikeutta hakijalle $oppilasNro")
       Right(paatettavatOikeudet)
@@ -97,12 +101,12 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   }
 
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
-    val koulutusAste = getKoulutusasteHakutoiveelle(hakutoive)
+    val koulutusAste = getKoulutusAsteHakutoiveelle(hakutoive)
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto,
       haku.isErasmusMundusTaiKaksoistutkinto, "", koulutusAste)
   }
   
-  private def getKoulutusasteHakutoiveelle(hakutoive: KoutaHakukohde): YosKoulutusAsteLuokka = {
+  private def getKoulutusAsteHakutoiveelle(hakutoive: KoutaHakukohde): YosKoulutusAsteLuokka = {
     val koodit = hakutoive.koulutusasteKoodiUrit.map(_.split("_").last)
     val containsAlempi: Boolean = koodit.exists(k => KOULUTUSASTE_ALEMMAT.contains(k))
     val containsYlempi: Boolean = koodit.exists(k => KOULUTUSASTE_YLEMMAT.contains(k))
@@ -111,6 +115,27 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
         YLEMMAT_JA_ALEMMAT_ASTEET
       case (true, false) =>
         ALEMMAT_ASTEET
+      case _ =>
+        EI_YOS_KOULUTUSASTETTA
+    }
+  }
+
+  private def getKoulutusAsteOpiskeluOikeudelle(oikeus: KKOpiskeluoikeus): YosKoulutusAsteLuokka = {
+    val koodiAsteArvot = oikeus.koulutusKoodi
+      .flatMap(k => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(k))
+      .map(k => koodistoProvider.haeAlakoodit(k.koodiUri))
+      .getOrElse(List.empty)
+      .filter(k => k.koodisto.koodistoUri.equals(YOS_KOULUTUSASTE_KOODISTO))
+      .map(k => k.koodiArvo)
+
+    val containsAlempi: Boolean = koodiAsteArvot.exists(k => KOULUTUSASTE_ALEMMAT.contains(k))
+    val containsYlempi: Boolean = koodiAsteArvot.exists(k => KOULUTUSASTE_YLEMMAT.contains(k))
+
+    (containsAlempi, containsYlempi) match {
+      case (true, _) =>
+        ALEMMAT_ASTEET
+      case (false, true) =>
+        YLEMMAT_ASTEET
       case _ =>
         EI_YOS_KOULUTUSASTETTA
     }
@@ -142,7 +167,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     )
     val virtaOpiskeluOikeusId = VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(oikeus.myontaja, oikeus.virtaTunniste)
     val supaNimi = getKoodiNimi(oikeus.koulutusKoodi, KOULUTUS_KOODISTO)
-      .orElse(
+      .orElse( //TODO: Tämä taitaa olla turha, koska koulutusastetta ei voi päätellä ilman koulutuskoodia
         getKoodiNimi(Some(oikeus.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO)
           .orElse(None)
       )

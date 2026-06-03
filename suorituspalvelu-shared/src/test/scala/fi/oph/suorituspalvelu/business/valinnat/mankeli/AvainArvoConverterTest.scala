@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.business.valinnat.mankeli
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
+import fi.oph.suorituspalvelu.business.testsupport.TestUtil.buildDummyKoodistoProvider
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
@@ -19,15 +20,15 @@ import java.util.UUID
 @TestInstance(Lifecycle.PER_CLASS)
 class AvainArvoConverterTest {
 
-  val DEFAULT_OPPIAINEKOODI = fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty)
-  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map(
+  val DEFAULT_OPPIAINEKOODI = fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty, "")
+  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = buildDummyKoodistoProvider(Map(
     "HI" -> DEFAULT_OPPIAINEKOODI, "KO" -> DEFAULT_OPPIAINEKOODI, "BI" -> DEFAULT_OPPIAINEKOODI,
     "B1" -> DEFAULT_OPPIAINEKOODI, "LI" -> DEFAULT_OPPIAINEKOODI,
     "YH" -> DEFAULT_OPPIAINEKOODI, "KU" -> DEFAULT_OPPIAINEKOODI, "GE" -> DEFAULT_OPPIAINEKOODI,
     "TH" -> DEFAULT_OPPIAINEKOODI, "MA" -> DEFAULT_OPPIAINEKOODI, "B2" -> DEFAULT_OPPIAINEKOODI,
     "TE" -> DEFAULT_OPPIAINEKOODI, "KT" -> DEFAULT_OPPIAINEKOODI, "FY" -> DEFAULT_OPPIAINEKOODI,
     "AI" -> DEFAULT_OPPIAINEKOODI, "MU" -> DEFAULT_OPPIAINEKOODI, "A1" -> DEFAULT_OPPIAINEKOODI,
-    "KE" -> DEFAULT_OPPIAINEKOODI)
+    "KE" -> DEFAULT_OPPIAINEKOODI))
 
   val DEFAULT_KOUTA_HAKU = KoutaHaku(
     oid = "1.2.246.562.29.01000000000000012345",

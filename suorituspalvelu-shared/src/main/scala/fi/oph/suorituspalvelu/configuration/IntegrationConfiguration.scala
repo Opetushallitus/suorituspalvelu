@@ -197,8 +197,17 @@ class IntegrationConfiguration {
       .refreshAfterWrite(Duration.ofHours(12))
       .build(koodisto => Await.result(koodistoClient.haeKoodisto(koodisto.toString), KOODISTO_TIMEOUT))
 
-    (koodisto: String) =>
-      cache.get(koodisto)
+    val alaRelaatioCache = Caffeine.newBuilder()
+      .maximumSize(10000)
+      .expireAfterWrite(Duration.ofHours(24))
+      .refreshAfterWrite(Duration.ofHours(12))
+      .build(koodiUri => Await.result(koodistoClient.haeKoodinAlaRelaatiot(koodiUri.toString), KOODISTO_TIMEOUT))
+
+    new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, Koodi] = cache.get(koodisto)
+
+      override def haeAlakoodit(koodiUri: String): List[Koodi] = alaRelaatioCache.get(koodiUri)
+    }
   }
 
   @Bean
