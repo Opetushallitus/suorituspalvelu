@@ -3,6 +3,8 @@ package fi.oph.suorituspalvelu.business.parsing.koski
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_8, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.*
+import fi.oph.suorituspalvelu.business.testsupport.TestUtil
+import fi.oph.suorituspalvelu.business.testsupport.TestUtil.buildDummyKoodistoProvider
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.Koodisto
 import fi.oph.suorituspalvelu.parsing.koski.*
@@ -17,7 +19,7 @@ import java.time.LocalDate
 @TestInstance(Lifecycle.PER_CLASS)
 class KoskiParsingTest {
 
-  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map("AI" -> fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty))
+  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = buildDummyKoodistoProvider(Map("AI" -> fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty, "AI")))
 
   @Test def testKoskiParsingAndConversion(): Unit =
     Seq(
