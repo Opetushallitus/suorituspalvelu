@@ -3,9 +3,9 @@ package fi.oph.suorituspalvelu.configuration
 import scala.concurrent.duration.DurationInt
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration.KOUTA_OID_LENGTH
-import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl, TarjontaIntegration, VanhaTarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, KoskiIntegration, OnrIntegrationImpl, TarjontaIntegration, VanhaTarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, VTSClient, VanhaTarjontaClient, YtrClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, HakukohderyhmaClient, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, VTSClient, VanhaTarjontaClient, YtrClient}
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
@@ -35,6 +35,10 @@ class IntegrationConfiguration {
   @Bean
   def getKoutaIntegration(): TarjontaIntegration =
     new TarjontaIntegration
+
+  @Bean
+  def getHakukohderyhmaIntegration(): HakukohderyhmaIntegration =
+    new HakukohderyhmaIntegration
 
   @Bean
   def getVanhaTarjontaClient(@Value("${integrations.koski.base-url}") envBaseUrl: String): VanhaTarjontaClient =
@@ -131,6 +135,27 @@ class IntegrationConfiguration {
     val casClient: CasClient = CasClientBuilder.build(casConfig)
 
     new KoutaClient(casClient, envBaseUrl)
+  }
+
+  @Bean
+  def getHakukohderyhmaClient(@Value("${integrations.koski.username}") user: String,
+                              @Value("${integrations.koski.password}") password: String,
+                              @Value("${integrations.koski.base-url}") envBaseUrl: String): HakukohderyhmaClient = {
+
+    val CALLER_ID = "1.2.246.562.10.00000000001.suorituspalvelu"
+    val casConfig: CasConfig = new CasConfig.CasConfigBuilder(
+      user,
+      password,
+      envBaseUrl + "/cas",
+      envBaseUrl + "/hakukohderyhmapalvelu",
+      CALLER_ID,
+      CALLER_ID,
+      "/auth/cas")
+      .setJsessionName("ring-session").build
+
+    val casClient: CasClient = CasClientBuilder.build(casConfig)
+
+    new HakukohderyhmaClient(casClient, envBaseUrl)
   }
 
   @Bean
