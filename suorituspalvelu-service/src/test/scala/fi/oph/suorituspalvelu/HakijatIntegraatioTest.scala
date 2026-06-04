@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.business.Lahdejarjestelma.KOSKI
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Lahdejarjestelma, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.*
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -17,6 +18,7 @@ import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
@@ -212,7 +214,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // haetaan luokat
@@ -307,7 +309,7 @@ class LahtokoulutIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // mockataan onr-vastaus ja haetaan luokat
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.OPISKELIJAT_LAHTOKOULUT_PATH
           .replace(ApiConstants.OPISKELIJAT_HENKILOOID_PARAM_PLACEHOLDER, oppijaNumero), ""))

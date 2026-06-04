@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OpintopolkuVastaanotto, Organisaatio, OrganisaatioNimi, VTSClient, VanhaTarjontaHaku, VanhaTarjontaHakukohde, Vastaanotot}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OpintopolkuVastaanotto, Organisaatio, OrganisaatioNimi, RetryConfig, VTSClient, VanhaTarjontaHaku, VanhaTarjontaHakukohde, Vastaanotot}
 import fi.oph.suorituspalvelu.integration.{OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -16,6 +16,7 @@ import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.validation.UIValidator
 import org.junit.jupiter.api.*
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -82,7 +83,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ROOLI_ORGANISAATION_1_2_246_562_10_52320123196_KATSELIJA))
   @Test def testHaeKayttajanTiedotNotFound(): Unit =
     // mockataan onr-vastaus
-    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(None))
+    Mockito.when(onrIntegration.getAsiointikieli(eqTo("kayttaja"))(any[RetryConfig]())).thenReturn(Future.successful(None))
 
     // haetaan käyttäjän tiedot
     val result = mvc.perform(MockMvcRequestBuilders
@@ -97,7 +98,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_OPPIJOIDEN_KATSELIJA))
   @Test def testHaeKayttajanTiedotOppijoidenKatselijaAllowed(): Unit = {
     // mockataan onr-vastaus
-    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
+    Mockito.when(onrIntegration.getAsiointikieli(eqTo("kayttaja"))(any[RetryConfig]())).thenReturn(Future.successful(Some("fi")))
 
     // haetaan käyttäjän tiedot
     val result = mvc.perform(MockMvcRequestBuilders
@@ -113,7 +114,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_HAKENEIDEN_KATSELIJA))
   @Test def testHaeKayttajanTiedotHakeneidenKatselijaAllowed(): Unit = {
     // mockataan onr-vastaus
-    Mockito.when(onrIntegration.getAsiointikieli("kayttaja")).thenReturn(Future.successful(Some("fi")))
+    Mockito.when(onrIntegration.getAsiointikieli(eqTo("kayttaja"))(any[RetryConfig]())).thenReturn(Future.successful(Some("fi")))
 
     // haetaan käyttäjän tiedot
     val result = mvc.perform(MockMvcRequestBuilders
@@ -629,7 +630,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     // mockataan onr-vastaus
     val onrPerustiedot = OnrHenkiloPerustiedot(hakusanaOppijanumero, Some(etunimet), Some(sukunimi), Some(hetu))
-    Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(hakusanaOppijanumero)))
+    Mockito.when(onrIntegration.getPerustiedotByPersonOids(eqTo(Set(hakusanaOppijanumero)))(any[RetryConfig]()))
       .thenReturn(Future.successful(Seq(onrPerustiedot)))
 
     // mockataan organisaatiopalvelun vastaus
@@ -728,7 +729,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967216"
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map.empty))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map.empty))
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
@@ -760,8 +761,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(koskiVersio.get, opiskeluoikeudet, KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet), ParserVersions.KOSKI)
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
@@ -792,8 +793,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // mockataan Hakemuspalvelun vastaus, kun kysytään hakukohderyhmäoidilla
     Mockito.when(hakemuspalveluClient.checkPermission(AtaruPermissionRequest(Set(oppijaNumero), Set(oppilaitosOid), Set.empty)))
@@ -826,8 +827,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val syntymaAika = Some(LocalDate.of(2000, 1, 1))
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, syntymaAika))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // mockataan Hakemuspalvelun vastaus, kun kysytään hakukohderyhmäoidilla
     Mockito.when(hakemuspalveluClient.checkPermission(AtaruPermissionRequest(Set(oppijaNumero), Set("1.2.246.562.28.36220136912"), Set.empty)))
@@ -866,9 +867,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ), List.empty, ParserVersions.KOSKI)
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, Some(henkilotunnus), None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
-    Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.successful(List(OnrHenkiloPerustiedot(oppijaNumero, None, None, Some(henkilotunnus)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, Some(henkilotunnus), None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getPerustiedotByHetus(eqTo(Set(henkilotunnus)))(any[RetryConfig]())).thenReturn(Future.successful(List(OnrHenkiloPerustiedot(oppijaNumero, None, None, Some(henkilotunnus)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val request = OppijanTiedotRequest(Optional.of(henkilotunnus), Optional.empty())
@@ -895,7 +896,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val henkilotunnus = "123456-789A"
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.successful(List.empty))
+    Mockito.when(onrIntegration.getPerustiedotByHetus(eqTo(Set(henkilotunnus)))(any[RetryConfig]())).thenReturn(Future.successful(List.empty))
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val request = OppijanTiedotRequest(Optional.of(henkilotunnus), Optional.empty())
@@ -911,7 +912,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val henkilotunnus = "123456-789A"
 
     // mockataan ONR-vastaus palauttamaan virheen
-    Mockito.when(onrIntegration.getPerustiedotByHetus(Set(henkilotunnus))).thenReturn(Future.failed(new RuntimeException("ONR connection failed")))
+    Mockito.when(onrIntegration.getPerustiedotByHetus(eqTo(Set(henkilotunnus)))(any[RetryConfig]())).thenReturn(Future.failed(new RuntimeException("ONR connection failed")))
 
     // suoritetaan kutsu ja tarkistetaan että palautetaan 500
     val request = OppijanTiedotRequest(Optional.of(henkilotunnus), Optional.empty())
@@ -930,7 +931,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // mockataan ONR-vastaus suorituksen tallennusta varten
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(UIService.EXAMPLE_OPPILAITOS_OID)).thenReturn(Some(organisaatio))
 
     // tallennetaan käsin syötetty oppimäärä
@@ -943,8 +944,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       .andReturn()
 
     // mockataan ONR-vastaus tietojen hakua varten
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // suoritetaan kutsu ja parseroidaan vastaus
     val request = OppijanTiedotRequest(Optional.of(oppijaNumero), Optional.empty())
@@ -1174,7 +1175,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967216"
 
     // mockataan ONR-vastaus - henkilöä ei löydy
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map.empty))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map.empty))
 
     // suoritetaan kutsu
     val request = OppijanVastaanototRequest(Optional.of(oppijaNumero))
@@ -1189,8 +1190,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967230"
 
     // mockataan ONR-vastaukset
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // mockataan VTS-vastaus - ei vastaanottoja
     Mockito.when(vtsClient.fetchVastaanotot(oppijaNumero)).thenReturn(Future.successful(None))
@@ -1226,8 +1227,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val vanhaTarjoajaOid2 = "1.2.246.562.10.00000000003"
 
     // mockataan ONR-vastaukset
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // mockataan VTS-vastaus: yksi Kouta-vastaanotto ja yksi vanhan tarjonnan vastaanotto
     val koutaVastaanotto = OpintopolkuVastaanotto(oppijaNumero, hakuOid, hakukohdeOid, "VastaanotaSitovasti", "2025-07-15T10:00:00Z")
@@ -1318,8 +1319,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967232"
 
     // mockataan ONR-vastaukset
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     // mockataan VTS-vastaus palauttamaan virheen
     Mockito.when(vtsClient.fetchVastaanotot(oppijaNumero)).thenReturn(Future.failed(new RuntimeException("VTS connection failed")))
@@ -1436,7 +1437,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967214"
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(false))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(false))
 
     // tuntematon henkilöoid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
@@ -1456,7 +1457,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(UIService.EXAMPLE_OPPILAITOS_OID)).thenReturn(Some(organisaatio))
 
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
@@ -1551,7 +1552,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967211"
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(false))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(false))
 
     // tuntematon henkilöoid ei sallittu
     val result = mvc.perform(MockMvcRequestBuilders
@@ -1571,7 +1572,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(UIService.EXAMPLE_OPPILAITOS_OID)).thenReturn(Some(organisaatio))
 
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
@@ -1604,7 +1605,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967214"
     val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
 
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(UIService.EXAMPLE_OPPILAITOS_OID)).thenReturn(Some(organisaatio))
 
     // tallennetaan ensin perusopetuksen oppimäärä
@@ -1793,7 +1794,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     kantaOperaatiot.tallennaYliajot(Seq(yliajo, eriHaunYliajo))
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaNumero, Lahdejarjestelma.SYOTETYT_OPPIAINEET, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", None)
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
 
     Mockito.when(tarjontaIntegration.getHaku(hakuOid))
@@ -1964,7 +1965,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
 
     // validin suorituksen tallentaminen tunnetulle henkilölle ok
     val yliajotPayload = objectMapper.writeValueAsString(yliajoContainer)
@@ -2049,7 +2050,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
 
     // mockataan ONR-vastaus
-    Mockito.when(onrIntegration.henkiloExists(oppijaNumero)).thenReturn(Future.successful(true))
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
 
     val yliajotPayload = objectMapper.writeValueAsString(yliajoContainer)
     val result = mvc.perform(MockMvcRequestBuilders
@@ -2209,9 +2210,9 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     ), Seq.empty, ParserVersions.KOSKI)
 
     // Mock ONR & organisaatiopalvelu
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero)))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]()))
       .thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set(oppijaNumero)))))
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(oppilaitosNimi, "Europaskolan i Helsingfors", "European School of Helsinki"), None, Seq.empty, Seq.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
@@ -2332,7 +2333,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       ApiConstants.ESIMERKKI_OPPIJANUMERO, ApiConstants.ESIMERKKI_HAKU_OID, ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA, selite)), tallennusHetki)
 
     // mockataan onr-vastaus ja tehdään kutsu
-    Mockito.when(onrIntegration.getPerustiedotByPersonOids(Set(ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA)))
+    Mockito.when(onrIntegration.getPerustiedotByPersonOids(eqTo(Set(ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA)))(any[RetryConfig]()))
       .thenReturn(Future.successful(Seq(OnrHenkiloPerustiedot(ApiConstants.ESIMERKKI_YLIAJO_VIRKAILIJA, Some(virkailijaEtunimi), Some(virkailijaSukunimi), None))))
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_YLIAJOT_HISTORIA_PATH, "")
