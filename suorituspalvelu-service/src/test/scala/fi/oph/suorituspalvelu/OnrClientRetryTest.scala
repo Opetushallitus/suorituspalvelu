@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.integration.NonRetriableException
-import fi.oph.suorituspalvelu.integration.client.OnrClientImpl
+import fi.oph.suorituspalvelu.integration.client.{OnrClientImpl, RetryConfig}
 import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.{Request, Response}
 import org.junit.jupiter.api.Assertions.*
@@ -21,10 +21,12 @@ class OnrClientRetryTest {
   private var mockCasClient: CasClient = _
   private var client: OnrClientImpl = _
 
+  private val testRetryConfig = RetryConfig(retries = 2, retryDelayMillis = 10)
+
   @BeforeEach
   def setup(): Unit = {
     mockCasClient = mock(classOf[CasClient])
-    client = new OnrClientImpl(mockCasClient, "http://localhost", onrRetries = 2, onrRetryDelayMillis = 10)
+    client = new OnrClientImpl(mockCasClient, "http://localhost")
   }
 
   private def successResponse(body: String): CompletableFuture[Response] = {
@@ -53,7 +55,7 @@ class OnrClientRetryTest {
       .thenReturn(connectionError)
       .thenReturn(successResponse("{}"))
 
-    val result = Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3")), 10.seconds)
+    val result = Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3"), testRetryConfig), 10.seconds)
     assertEquals(Map.empty, result)
     verify(mockCasClient, times(2)).execute(any(classOf[Request]))
   }
@@ -66,7 +68,7 @@ class OnrClientRetryTest {
       .thenReturn(failFuture)
       .thenReturn(okFuture)
 
-    val result = Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3")), 10.seconds)
+    val result = Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3"), testRetryConfig), 10.seconds)
     assertEquals(Map.empty, result)
     verify(mockCasClient, times(2)).execute(any(classOf[Request]))
   }
@@ -77,7 +79,7 @@ class OnrClientRetryTest {
     when(mockCasClient.execute(any(classOf[Request]))).thenReturn(badRequestFuture)
 
     assertThrows(classOf[NonRetriableException], () =>
-      Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3")), 5.seconds)
+      Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3"), testRetryConfig), 5.seconds)
     )
     // 4xx ei retriata — vain yksi kutsu
     verify(mockCasClient, times(1)).execute(any(classOf[Request]))
@@ -88,7 +90,7 @@ class OnrClientRetryTest {
     when(mockCasClient.execute(any(classOf[Request]))).thenReturn(connectionError)
 
     assertThrows(classOf[RuntimeException], () =>
-      Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3")), 10.seconds)
+      Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3"), testRetryConfig), 10.seconds)
     )
     // 1 initial attempt + 2 retries = 3 total
     verify(mockCasClient, times(3)).execute(any(classOf[Request]))
@@ -99,7 +101,7 @@ class OnrClientRetryTest {
     val okFuture = successResponse("{}")
     when(mockCasClient.execute(any(classOf[Request]))).thenReturn(okFuture)
 
-    Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3")), 5.seconds)
+    Await.result(client.getMasterHenkilosForPersonOids(Set("1.2.3"), testRetryConfig), 5.seconds)
     verify(mockCasClient, times(1)).execute(any(classOf[Request]))
   }
 
@@ -111,7 +113,7 @@ class OnrClientRetryTest {
       .thenReturn(connectionError)
       .thenReturn(successResponse("""{"kieliKoodi":"fi"}"""))
 
-    val result = Await.result(client.getAsiointikieli("1.2.3"), 10.seconds)
+    val result = Await.result(client.getAsiointikieli("1.2.3", testRetryConfig), 10.seconds)
     assertTrue(result.isDefined)
     verify(mockCasClient, times(2)).execute(any(classOf[Request]))
   }
@@ -121,7 +123,7 @@ class OnrClientRetryTest {
     when(mockCasClient.execute(any(classOf[Request]))).thenReturn(connectionError)
 
     assertThrows(classOf[RuntimeException], () =>
-      Await.result(client.getAsiointikieli("1.2.3"), 10.seconds)
+      Await.result(client.getAsiointikieli("1.2.3", testRetryConfig), 10.seconds)
     )
     verify(mockCasClient, times(3)).execute(any(classOf[Request]))
   }
@@ -131,7 +133,7 @@ class OnrClientRetryTest {
     val notFoundFuture = errorResponse(404)
     when(mockCasClient.execute(any(classOf[Request]))).thenReturn(notFoundFuture)
 
-    val result = Await.result(client.getAsiointikieli("1.2.3"), 5.seconds)
+    val result = Await.result(client.getAsiointikieli("1.2.3", testRetryConfig), 5.seconds)
     assertFalse(result.isDefined)
     // 404 on validi vastaus, ei retriata
     verify(mockCasClient, times(1)).execute(any(classOf[Request]))
@@ -143,7 +145,7 @@ class OnrClientRetryTest {
     when(mockCasClient.execute(any(classOf[Request]))).thenReturn(forbiddenFuture)
 
     assertThrows(classOf[NonRetriableException], () =>
-      Await.result(client.getAsiointikieli("1.2.3"), 5.seconds)
+      Await.result(client.getAsiointikieli("1.2.3", testRetryConfig), 5.seconds)
     )
     // 4xx ei retriata — vain yksi kutsu
     verify(mockCasClient, times(1)).execute(any(classOf[Request]))

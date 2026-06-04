@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.*
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import org.slf4j.LoggerFactory
@@ -21,6 +22,8 @@ class LahtokoulutService {
   @Autowired val kantaOperaatiot: KantaOperaatiot = null
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
 
   val ONR_TIMEOUT = 10.seconds
   

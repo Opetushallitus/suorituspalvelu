@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, KantaOperaatiot, Opiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, OhjausparametritClient, RetryConfig}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, AvainArvoConverterResults, AvainMetatiedotDTO, ConvertedAtaruHakemus, EnsikertalaisuusService, HarkinnanvaraisuusService, ValintalaskentaHakutoive, YoMetadataConverter}
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaApiAvainArvo, ValintalaskentaApiAvainMetatiedotDTO, ValintalaskentaApiHakemus, ValintalaskentaApiHakutoive}
@@ -45,6 +45,8 @@ class ValintaDataService {
   @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig()
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
 

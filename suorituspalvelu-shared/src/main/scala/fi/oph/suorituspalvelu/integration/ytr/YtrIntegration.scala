@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.integration.ytr
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import fi.oph.suorituspalvelu.integration.client.{YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
+import fi.oph.suorituspalvelu.integration.client.{RetryConfig, YtrClient, YtrHetuPostData, YtrMassOperationQueryResponse}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, Util}
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
 import fi.oph.suorituspalvelu.util.ZipUtil
@@ -33,6 +33,8 @@ class YtrIntegration {
   @Autowired val ytrClient: YtrClient = null
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig()
 
   @Autowired var database: JdbcBackend.JdbcDatabaseDef = null
 
