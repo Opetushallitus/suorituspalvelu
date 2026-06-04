@@ -32,7 +32,7 @@ class KoodistoClient(environmentBaseUrl: String) {
     
   def haeKoodinAlaRelaatiot(koodiUri: String): Future[List[Koodi]] =
     fetch(environmentBaseUrl + s"/koodisto-service/rest/json/relaatio/sisaltyy-alakoodit/$koodiUri")
-      .map(data => mapper.readValue(data, classOf[List[Koodi]]))
+      .map(data => mapper.readValue(data, classOf[Array[Koodi]]).toList)
 
   private def fetch(url: String): Future[String] =
     LOG.info(s"fetch, $url")
