@@ -137,7 +137,7 @@ class UIService {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
-  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 0)
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
 
@@ -153,7 +153,7 @@ class UIService {
 
   @Autowired val vtsClient: VTSClient = null
 
-  val ONR_TIMEOUT = 10.seconds
+  val ONR_TIMEOUT = 65.seconds
   val VTS_TIMEOUT = 30.seconds
 
   def haeOppilaitoksetJoihinOikeudet(oppilaitosOids: Set[String]): Set[Oppilaitos] = {
@@ -334,7 +334,7 @@ class UIService {
   def haeYliajonMuutosHistoria(personOid: String, hakuOid: String, avain: String): Seq[YliajonMuutosUI] = {
     val muutokset = this.kantaOperaatiot.haeYliajoMuutokset(personOid, hakuOid, avain)
     val virkailijaOidit = muutokset.map(_.virkailijaOid).toSet
-    val virkailijat = Await.result(onrIntegration.getPerustiedotByPersonOids(virkailijaOidit), 10.seconds).map(h => h.oidHenkilo -> h).toMap
+    val virkailijat = Await.result(onrIntegration.getPerustiedotByPersonOids(virkailijaOidit), 65.seconds).map(h => h.oidHenkilo -> h).toMap
     muutokset.map(muutos => YliajonMuutosUI(muutos.arvo.toJava, muutos.luotu, virkailijat.get(muutos.virkailijaOid).map(v => (v.etunimet.getOrElse("") + " " + v.sukunimi.getOrElse("")).trim).toJava, muutos.selite))
   }
 }
