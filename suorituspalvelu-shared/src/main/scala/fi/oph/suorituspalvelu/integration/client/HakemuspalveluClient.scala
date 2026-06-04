@@ -167,7 +167,7 @@ class HakemuspalveluClientImpl(casClient: CasClient, environmentBaseUrl: String)
     val hakukohdeParam = if (hakukohdeOid.isDefined) s"&hakukohdeOid=${hakukohdeOid.get}" else ""
     val salliYksiloimattomatParam = if (salliYksiloimattomat) s"&salliYksiloimattomat=true" else ""
     val url = environmentBaseUrl + s"/lomake-editori/api/external/valintalaskenta?harkinnanvaraisuustiedotHakutoiveille=$haeHarkinnanvaraisuudet$hakukohdeParam$salliYksiloimattomatParam"
-    LOG.info(s"Fetching hakemukset for hakukohde $hakukohdeOid from $url, hakemusOids: $hakemusOids")
+    LOG.debug(s"Haetaan hakemuksia osoitteesta $url. Hakukohde $hakukohdeOid, ${hakemusOids.size} hakemusOidia")
     doPost(url, hakemusOids).map(data => mapper.readValue(data, classOf[Array[AtaruValintalaskentaHakemus]])).map(hakemukset => hakemukset.toSeq)
   }
 

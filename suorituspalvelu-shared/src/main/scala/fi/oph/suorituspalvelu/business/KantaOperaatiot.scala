@@ -33,6 +33,19 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
       .map(_.toString())
 )
 
+case class SiirtotiedostoOperaatio(
+  id: Int,
+  uuid: String,
+  windowStart: Instant,
+  windowEnd: Instant,
+  runStart: Instant,
+  runEnd: Option[Instant],
+  paivittaiset: Boolean,
+  entityTotals: Map[String, Int],
+  success: Option[Boolean],
+  errorMessage: Option[String]
+)
+
 object KantaOperaatiot {
 
   val MAPPER: ObjectMapper = {
@@ -389,7 +402,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     Await.result(db.run(updateLahtokoulutAction.transactionally), DB_TIMEOUT)
   }
 
-  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Map[VersioEntiteetti, String] = {
+  private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Seq[(VersioEntiteetti, String)] = {
     Await.result(db.run(
         (sql"""
           WITH w_versiotunnisteet(tunniste) AS ("""
@@ -413,10 +426,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
-        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) => {
+        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) =>
         (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), opiskeluoikeusContainer)
-      })
-      .map((versio, opiskeluoikeusContainer) => (versio -> opiskeluoikeusContainer)).toMap
+      )
   }
 
   /**
@@ -433,7 +445,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     else
       sql"""SELECT tunniste FROM versiot WHERE henkilo_oid=${henkiloOid} AND ${timestamp.toString}::timestamptz <@ voimassaolo"""
 
-    haeSuorituksetInternal(versioTunnisteetQuery)
+    haeSuorituksetInternal(versioTunnisteetQuery).toMap
   }
 
   def lisaaKoskiSkip(henkiloOid: String, opiskeluoikeusOid: String, selite: String) = {
@@ -810,6 +822,100 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     // Suoritetaan operaatiot samassa transaktiossa
     Await.result(db.run(
       DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
+    ), DB_TIMEOUT)
+  }
+
+  private def haeSiirtotiedostoOperaatio(id: Int): SiirtotiedostoOperaatio = {
+    val rows = Await.result(db.run(
+      sql"""
+        SELECT json_build_object(
+          'id',          id,
+          'uuid',        uuid,
+          'windowStart', to_char(window_start AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'windowEnd',   to_char(window_end   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'runStart',    to_char(run_start    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'runEnd',      to_char(run_end      AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+          'paivittaiset', paivittaiset,
+          'entityTotals', COALESCE(info->'entityTotals', '{}'::jsonb),
+          'success',     success,
+          'errorMessage', error_message
+        )::text
+        FROM siirtotiedostot
+        WHERE id = $id
+      """.as[String]
+    ), DB_TIMEOUT)
+    MAPPER.readValue(rows.head, classOf[SiirtotiedostoOperaatio])
+  }
+
+  //Päivittäiset tiedot muodostetaan, jos kaksi ehtoa täyttyy:
+  //1. Samana päivänä ei ole vielä muodostettu päivittäisiä niin että koko suoritus on päättynyt onnistuneesti
+  //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 3 tunnin aikana
+  def onkoKaynnissaOlevaOperaatio(): Boolean = {
+    val result = Await.result(db.run(
+      sql"""
+        SELECT EXISTS(
+          SELECT 1 FROM siirtotiedostot
+          WHERE run_start >= now() - interval '3 hours'
+            AND run_end IS NULL
+        )
+      """.as[Boolean]
+    ), DB_TIMEOUT)
+    result.head
+  }
+
+  def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
+    val idResult = Await.result(db.run(
+      sql"""
+        INSERT INTO siirtotiedostot(id, uuid, window_start, window_end, run_start, paivittaiset)
+        SELECT nextval('siirtotiedosto_id_seq'),
+               $uuid,
+               (SELECT window_end FROM siirtotiedostot WHERE success = true ORDER BY id DESC LIMIT 1),
+               now(),
+               now(),
+               (not exists(select 1 from siirtotiedostot where run_start >= now()::date and success and paivittaiset)
+                and not exists(select 1 from siirtotiedostot where run_start >= now() - interval '6 hours' and paivittaiset and run_end is null))
+        RETURNING id
+      """.as[Int]
+    ), DB_TIMEOUT)
+    haeSiirtotiedostoOperaatio(idResult.head)
+  }
+
+  def paataSiirtotiedostoOperaatio(
+    id: Int,
+    success: Boolean,
+    errorMessage: Option[String],
+    entityTotals: Map[String, Int]
+  ): Unit = {
+    val infoJson = MAPPER.writeValueAsString(Map("entityTotals" -> entityTotals))
+    Await.result(db.run(
+      sqlu"""
+        UPDATE siirtotiedostot
+        SET run_end       = now(),
+            success       = $success,
+            error_message = ${errorMessage.orNull},
+            info          = $infoJson::jsonb
+        WHERE id = $id
+      """
+    ), DB_TIMEOUT)
+  }
+
+  def haeMuuttuneetHenkiloOidit(
+    windowStart: Instant,
+    windowEnd: Instant,
+    pageSize: Int,
+    afterHenkiloOid: Option[String] = None
+  ): Seq[String] = {
+    LOG.info(s"Haetaan muuttuneet henkilöt $windowStart - $windowEnd. $pageSize per sivu, afterHenkiloOid = $afterHenkiloOid")
+    val baseQuery = sql"""SELECT henkilo_oid FROM versiot
+          WHERE parserointihetki >= ${windowStart.toString}::timestamptz
+            AND parserointihetki < ${windowEnd.toString}::timestamptz
+            AND upper(voimassaolo) = 'infinity'::timestamptz"""
+    val withKeyset = afterHenkiloOid match {
+      case Some(oid) => baseQuery.concat(sql" AND henkilo_oid > $oid")
+      case None      => baseQuery
+    }
+    Await.result(db.run(
+      withKeyset.concat(sql" GROUP BY henkilo_oid ORDER BY henkilo_oid ASC LIMIT $pageSize").as[String]
     ), DB_TIMEOUT)
   }
 

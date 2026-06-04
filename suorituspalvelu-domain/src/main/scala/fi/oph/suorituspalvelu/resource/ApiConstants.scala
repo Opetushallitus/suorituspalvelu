@@ -58,6 +58,12 @@ object ApiConstants {
   final val DATASYNC_UUDELLEENPARSEROI_PATH                 = DATASYNC_PATH + "/uudelleenparseroi"
   final val DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI       = "Uudelleenparseroinnin käynnistys epäonnistui"
 
+  final val OVARA_PATH                                      = VERSIONED_API_PREFIX + "/ovara"
+  final val OVARA_PAIVITTAISET_PATH                         = OVARA_PATH + "/paivittaiset"
+  final val OVARA_OPISKELUOIKEUDET_PATH                     = OVARA_PATH + "/opiskeluoikeudet"
+  final val OVARA_500_VIRHE                                 = "Ovara-siirtotiedostojen muodostus epäonnistui"
+  final val OVARA_409_VIRHE                                 = "Ovara-ajo on jo käynnissä"
+
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
@@ -103,6 +109,10 @@ object ApiConstants {
   final val VALINTALASKENTA_LIIKAA_PARAMETREJA              = "Anna parametrina vain joko hakukohdeOid tai lista hakemusOideja"
   final val VALINTALASKENTA_500_VIRHE                       = "Valintalaskentatietojen haku epäonnistui: "
   final val VALINTALASKENTA_HAKEMUKSET_MAX_MAARA            = VALINTALASKENTA_HAKEMUKSET_MAX_MAARA_STR.toInt
+
+  final val YOS_PATH                                        = VERSIONED_API_PREFIX + "/yos"
+  final val YOS_RESPONSE_403_DESCRIPTION                    = "Käyttäjällä ei ole rekisterinpitäjä- tai palvelukäyttäjäoikeutta"
+  final val YOS_EI_OIKEUKSIA                                = "Käyttäjällä ei ole oikeuksia YOS-rajapinnan käyttöön"
 
   final val HARKINNANVARAISUUS_HAKEMUKSET_MAX_MAARA_STR     = "5000"
   final val HARKINNANVARAISUUS_EI_OIKEUKSIA                 = "Käyttäjällä ei ole oikeuksia hakea harkinnanvaraisuustietoja"

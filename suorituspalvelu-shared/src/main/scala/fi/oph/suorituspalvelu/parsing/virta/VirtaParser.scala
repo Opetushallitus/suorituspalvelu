@@ -28,8 +28,15 @@ case class VirtaJakso(
   AlkuPvm: LocalDate,
   Koulutuskoodi: Option[String],
   koulutusmoduulitunniste: String,
-  Koulutuskunta: Option[String]
+  Koulutuskunta: Option[String],
+  Luokittelu: Option[String]
 )
+
+object VirtaOpiskeluoikeus {
+
+  def getVirtaOpiskeluoikeusId(myontaja: String, avain: String): String =
+    s"${myontaja}_${avain}"
+}
 
 case class VirtaOpiskeluoikeus(
   Laajuus: VirtaLaajuus,
@@ -45,7 +52,11 @@ case class VirtaOpiskeluoikeus(
   Myontaja: String,
   opiskelijaAvain: String,
   avain: String
-)
+) {
+
+  def getVirtaOpiskeluoikeusId: String =
+    VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(Myontaja, avain)
+}
 
 case class VirtaLukukausiIlmoittautuminen(
   IlmoittautumisPvm: LocalDate,

@@ -99,9 +99,23 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>opiskelijavalinnat-utils</groupId>
             <artifactId>java-cas</artifactId>
          </dependency>
+        <dependency>
+            <groupId>fi.vm.sade.dokumenttipalvelu</groupId>
+            <artifactId>dokumenttipalvelu</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>

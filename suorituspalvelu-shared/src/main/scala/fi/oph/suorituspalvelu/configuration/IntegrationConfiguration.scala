@@ -5,9 +5,10 @@ import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration.KOUTA_OID_LENGTH
 import fi.oph.suorituspalvelu.integration.{KoskiIntegration, OnrIntegrationImpl, TarjontaIntegration, VanhaTarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
-import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, VTSClient, VanhaTarjontaClient, YtrClient}
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, SiirtotiedostoClient, SiirtotiedostoClientConfig, VTSClient, VanhaTarjontaClient, YtrClient}
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
+import org.springframework.context.annotation.Lazy
 import fi.oph.suorituspalvelu.util.organisaatio.OrganisaatioUtil
 import fi.vm.sade.javautils.nio.cas.{CasClient, CasClientBuilder, CasConfig}
 import org.springframework.beans.factory.annotation.Value
@@ -21,6 +22,7 @@ import scala.concurrent.{Await, Future}
 class IntegrationConfiguration {
 
   @Bean
+  @Lazy
   def getKoskiIntegration(): KoskiIntegration =
     new KoskiIntegration
 
@@ -29,6 +31,7 @@ class IntegrationConfiguration {
     new OnrIntegrationImpl
 
   @Bean
+  @Lazy
   def getYtrIntegration(): YtrIntegration =
     new YtrIntegration
 
@@ -45,6 +48,7 @@ class IntegrationConfiguration {
     new VanhaTarjontaIntegration
 
   @Bean
+  @Lazy
   def getKoskiClient(@Value("${integrations.koski.username}") user: String,
                      @Value("${integrations.koski.password}") password: String,
                      @Value("${integrations.koski.base-url}") envBaseUrl: String): KoskiClient =
@@ -55,6 +59,7 @@ class IntegrationConfiguration {
     new OhjausparametritClient(envBaseUrl)
 
   @Bean
+  @Lazy
   def getVirtaClient(@Value("${integrations.virta.jarjestelma}") jarjestelma: String,
                      @Value("${integrations.virta.tunnus}") tunnus: String,
                      @Value("${integrations.virta.avain}") avain: String,
@@ -62,6 +67,7 @@ class IntegrationConfiguration {
     new VirtaClientImpl(jarjestelma, tunnus, avain, environmentBaseUrl)
 
   @Bean
+  @Lazy
   def getYtrClient(@Value("${integrations.ytr.username}") user: String,
                    @Value("${integrations.ytr.password}") password: String,
                    @Value("${integrations.ytr.base-url}") envBaseUrl: String): YtrClient =
@@ -154,6 +160,12 @@ class IntegrationConfiguration {
     new VTSClient(casClient, envBaseUrl)
   }
 
+  @Bean
+  def getSiirtotiedostoClient(@Value("${ovara.region}") region: String,
+                              @Value("${ovara.bucket}") bucket: String,
+                              @Value("${ovara.rolearn}") roleArn: String): SiirtotiedostoClient =
+    new SiirtotiedostoClient(SiirtotiedostoClientConfig(region, bucket, roleArn))
+
   private val ORGANISAATIO_TIMEOUT = 30.seconds
 
   @Bean
@@ -185,8 +197,17 @@ class IntegrationConfiguration {
       .refreshAfterWrite(Duration.ofHours(12))
       .build(koodisto => Await.result(koodistoClient.haeKoodisto(koodisto.toString), KOODISTO_TIMEOUT))
 
-    (koodisto: String) =>
-      cache.get(koodisto)
+    val alaRelaatioCache = Caffeine.newBuilder()
+      .maximumSize(10000)
+      .expireAfterWrite(Duration.ofHours(24))
+      .refreshAfterWrite(Duration.ofHours(12))
+      .build(koodiUri => Await.result(koodistoClient.haeKoodinAlaRelaatiot(koodiUri.toString), KOODISTO_TIMEOUT))
+
+    new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, Koodi] = cache.get(koodisto)
+
+      override def haeAlakoodit(koodiUri: String): List[Koodi] = alaRelaatioCache.get(koodiUri)
+    }
   }
 
   @Bean

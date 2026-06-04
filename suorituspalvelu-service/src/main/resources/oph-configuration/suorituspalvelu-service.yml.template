@@ -35,7 +35,7 @@ integrations:
     password: {{suorituspalvelu_app_password}}
     base-url: {{suorituspalvelu_koski_base_url}}
     cron: {{suorituspalvelu_koski_polling_cron}}
-    bufferseconds: {{suorituspalvelu_koski_polling_bufferseconds}}
+    bufferseconds: {{suorituspalvelu_koski_polling_bufferseconds | default('60')}}
   ataru:
     cron: {{suorituspalvelu_ataru_polling_cron}}
     koski-refresh-enabled: {{suorituspalvelu_ataru_koski_refresh_enabled | default('true')}}
@@ -57,3 +57,10 @@ db-scheduler:
   enabled: true
   polling-strategy: lock-and-fetch
   immediate-execution-enabled: true
+
+ovara:
+  region: {{aws_region}}
+  bucket: {{ovara_siirtotiedosto_s3_bucket}}
+  rolearn: {{ovara_siirtotiedosto_s3_target_role_arn}}
+  hakemus-batch-size: {{suorituspalvelu_ovara_hakemus_batch_size | default('500')}}
+  opiskeluoikeus-batch-size: {{suorituspalvelu_ovara_opiskeluoikeus_batch_size | default('500')}}
