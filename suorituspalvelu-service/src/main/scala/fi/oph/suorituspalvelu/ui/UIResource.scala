@@ -51,7 +51,7 @@ class UIResource {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
-  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 0)
 
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
@@ -65,7 +65,7 @@ class UIResource {
 
   @Autowired val valintaDataService: ValintaDataService = null
 
-  val ONR_TIMEOUT = 10.seconds;
+  val ONR_TIMEOUT = 65.seconds;
 
   @GetMapping(
     path = Array(UI_KAYTTAJAN_TIEDOT_PATH),

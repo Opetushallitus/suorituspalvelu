@@ -8,6 +8,9 @@ import fi.oph.suorituspalvelu.integration.{NonRetriableException, OnrHenkiloPeru
 import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
+
+import java.time.Duration
+import java.time.temporal.{ChronoUnit, TemporalUnit}
 import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 
@@ -18,7 +21,7 @@ case class Henkiloviite(henkiloOid: String, masterOid: String) {
   def bothOids: Set[String] = Set(henkiloOid, masterOid)
 }
 
-case class RetryConfig(retries: Int = 3, retryDelayMillis: Long = 5000)
+case class RetryConfig(retries: Int = 3, retryDelayMillis: Long = 5000, requestTimeoutMillis: Int = 60000)
 
 trait OnrClient {
   def getHenkiloviitteetForHenkilot(personOids: Set[String], retryConfig: RetryConfig = RetryConfig()): Future[Set[Henkiloviite]]
@@ -120,6 +123,7 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
           .setHeader("Content-Type", "application/json")
           .setBody(serializedBody)
           .setUrl(url)
+          .setRequestTimeout(Duration.of(retryConfig.requestTimeoutMillis, ChronoUnit.MILLIS))
           .build()
         try {
           asScala(casClient.execute(req)).map {
@@ -153,6 +157,7 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
         val req = new RequestBuilder()
           .setMethod("GET")
           .setUrl(url)
+          .setRequestTimeout(Duration.of(retryConfig.requestTimeoutMillis, ChronoUnit.MILLIS))
           .build()
         try {
           asScala(casClient.execute(req)).map {
