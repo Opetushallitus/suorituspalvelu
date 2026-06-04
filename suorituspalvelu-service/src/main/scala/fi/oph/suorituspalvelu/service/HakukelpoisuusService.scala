@@ -63,10 +63,10 @@ class HakukelpoisuusService {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
-  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 1)
 
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
-    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
+    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 65.seconds).allOids
     allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid).values.flatten).toSeq
   }
 
