@@ -98,14 +98,14 @@ class AvainArvoConverterTest {
   }
 
   private def convertArvot(opiskeluoikeudet: Seq[Opiskeluoikeus]): Map[String, String] =
-    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", LocalDate.now(), Some(BASE_HAKEMUS),
-      opiskeluoikeudet, DEFAULT_KOUTA_HAKU, None).getAvainArvoMap()
+    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", Some(BASE_HAKEMUS),
+      opiskeluoikeudet, Seq.empty, LocalDate.now(), DEFAULT_KOUTA_HAKU, None, Map.empty).getAvainArvoMap()
 
   // Rakentaa hakemuksen annetuista avain-arvoista lisäten automaattisesti pohjakoulutus_vuosi=2016,
   // jotta hakemukselta tulevat arvosanat huomioidaan. Palauttaa kaikki päätellyt avain-arvot selitteineen.
   private def hakemukseltaConvertTulos(keyValues: Map[String, String], opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq.empty): Set[AvainArvoContainer] = {
     val hakemus = BASE_HAKEMUS.copy(keyValues = keyValues + (AvainArvoConstants.ataruPohjakoulutusVuosiKey -> "2016"))
-    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", LocalDate.now(), Some(hakemus), opiskeluoikeudet, DEFAULT_KOUTA_HAKU, None).paatellytArvot
+    AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", Some(hakemus), opiskeluoikeudet, Seq.empty, LocalDate.now(), DEFAULT_KOUTA_HAKU, None, Map.empty).paatellytArvot
   }
 
   @Test def testAvainArvoConverterForPeruskouluKeys(): Unit = {
@@ -2165,7 +2165,7 @@ class AvainArvoConverterTest {
     )
 
     // Yhteislaajuus 5 + 8 = 13 < 19
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None, Map.empty)
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
   }
@@ -2178,7 +2178,7 @@ class AvainArvoConverterTest {
     )
 
     // Yhteislaajuus 15 + 10 = 25 >= 19, mutta tuorein vuosi 2022 < vuosiVahintaan 2023
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2024)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2024)), None, Map.empty)
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
   }
@@ -2193,7 +2193,7 @@ class AvainArvoConverterTest {
 
     // Yhteislaajuus 12 + 8 + 5 = 25 >= 19. Kynnys ylittyy vuonna 2021 (12 + 8 = 20 >= 19).
     // Tuorein vuosi 2022 >= 2021 (vuosiVahintaan). Suoritusvuosi = 2021 (kynnyksen ylittämisvuosi, ei tuorein).
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None, Map.empty)
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
     Assertions.assertEquals(Some("2021"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
   }
@@ -2206,7 +2206,7 @@ class AvainArvoConverterTest {
     )
 
     // Yhteislaajuus 13 + 14 = 27 >= 25
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None, Map.empty)
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
     Assertions.assertEquals(Some("2022"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
   }
@@ -2219,7 +2219,7 @@ class AvainArvoConverterTest {
     )
 
     // Yhteislaajuus 8 + 10 = 18 < 26.5
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None, Map.empty)
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
   }
@@ -2233,7 +2233,7 @@ class AvainArvoConverterTest {
     )
 
     // Yhteislaajuus 14 + 14 = 28 >= 26.5, mutta kynnyksenYlittamisvuosi 2021 < vuosiVahintaan 2022
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2023)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2023)), None, Map.empty)
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
   }
@@ -2249,7 +2249,7 @@ class AvainArvoConverterTest {
 
     // Yhteislaajuus 14 + 14 + 5 = 33 >= 26.5. Kynnys ylittyy vuonna 2021 (14 + 14 = 28 >= 26.5).
     // Suoritusvuosi = 2021 (kynnyksen ylittämisvuosi, ei tuorein).
-    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, DEFAULT_LEIKKURIPVM, Some(BASE_HAKEMUS), opiskeluoikeudet, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None)
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None, Map.empty)
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
     Assertions.assertEquals(Some("2021"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
   }
