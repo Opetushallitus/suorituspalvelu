@@ -9,6 +9,7 @@ import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.{Assertions, Test}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
@@ -120,7 +121,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   @Test def testHaeOhjattavatJaLuokatTamaVuosi(): Unit =
     lisaaSuoritukset()
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(OPPIJANUMERO_YSI_KESKEN, OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_KESKEN, OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_KESKEN -> Set(OPPIJANUMERO_YSI_KESKEN), OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))))
 
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta
@@ -132,7 +133,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   @Test def testHaeOhjattavatJaLuokatViimevuosi(): Unit =
     lisaaSuoritukset()
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))))
 
     // palautuu vain oppijat joilla valmis suoritus haetulta vuodelta
@@ -152,7 +153,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   @Test def testHaeOhjattavatJaLuokatTamaVuosiLuokka(): Unit =
     lisaaSuoritukset()
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(OPPIJANUMERO_YSI_KESKEN, OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_KESKEN, OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_KESKEN -> Set(OPPIJANUMERO_YSI_KESKEN), OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))))
 
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta ja luokka täsmää
@@ -164,7 +165,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   @Test def testHaeOhjattavatJaLuokatViimevuosiLuokka(): Unit =
     lisaaSuoritukset()
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))))
 
     // palautuu oppijat joilla valmis suoritus haetulta vuodelta ja luokka täsmää
@@ -176,7 +177,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   @Test def testHaeOhjattavatJaLuokatAlias(): Unit =
     lisaaSuoritukset()
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, OPPIJANUMERO_ALIAS)))))
 
     // palautuu oppijat joilla valmis suoritus haetulta vuodelta ja luokka täsmää

@@ -4,7 +4,7 @@ package fi.oph.suorituspalvelu
 
 import com.nimbusds.jose.util.StandardCharset
 import fi.oph.suorituspalvelu.business.Lahdejarjestelma
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, KoutaHaku, YtrClient, YtrHetuPostData, YtrMassOperation, YtrMassOperationQueryResponse}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, KoutaHaku, YtrClient, YtrHetuPostData, YtrMassOperation, YtrMassOperationQueryResponse, RetryConfig}
 import fi.oph.suorituspalvelu.integration.ytr.YtrDataForHenkilo
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.ytr.YtrParser
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, TarjontaIntegration}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -147,7 +148,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
       personOid -> OnrMasterHenkilo(personOid, None, None, hetuToPersonOid.find(_._2 == personOid).map(_._1), None, None)
     }).toMap
 
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(hetuToPersonOid.values.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(onrData))
     Mockito.when(ytrClient.fetchOne(YtrHetuPostData(hetuToPersonOid.keySet.head, Some(List.empty))))
       .thenReturn(Future.successful(Some(personJson)))
@@ -217,7 +218,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(ataruTiedot))
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(hetuToPersonOid.values.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(onrData))
     Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
       .thenReturn(Future.successful(massOperation))
@@ -277,7 +278,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(ataruTiedot))
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(hetuToPersonOid.values.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(onrData))
     Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
       .thenReturn(Future.successful(massOperation))
@@ -336,7 +337,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(ataruTiedot))
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(hetuToPersonOid.values.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(onrData))
     Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
       .thenReturn(Future.failed(new RuntimeException("Temporary create failure")))
@@ -395,7 +396,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(ataruTiedot))
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(hetuToPersonOid.values.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(hetuToPersonOid.values.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(onrData))
     Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
       .thenReturn(Future.successful(massOperation))
@@ -465,7 +466,7 @@ class YtrSyncIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(ataruTiedot))
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(personOids.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(personOids.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(onrData))
     Mockito.when(ytrClient.createYtrMassOperation(org.mockito.ArgumentMatchers.any()))
       .thenReturn(Future.successful(massOperation))

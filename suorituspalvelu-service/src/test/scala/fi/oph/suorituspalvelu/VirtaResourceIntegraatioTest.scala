@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Opiskeluoikeus, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases}
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, HakemuspalveluClientImpl, RetryConfig}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.resource.ApiConstants
@@ -11,6 +11,7 @@ import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.service.VirtaUtil
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.*
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
@@ -102,8 +103,8 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
     val oppijaNumero = "1.2.246.562.24.21250967215"
 
     // mockataan ONR- ja VIRTA-vastaukset
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set.empty))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set.empty))))
     Mockito.when(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)).thenReturn(Future.successful(scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString))
 
     // suoritetaan kutsu ja varmistetaan että saadaan jobId
@@ -129,8 +130,8 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
 
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaNumero))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set.empty))))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(Map(oppijaNumero -> OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaNumero)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaNumero -> Set.empty))))
     Mockito.when(virtaClient.haeTiedotOppijanumerolle(oppijaNumero)).thenReturn(Future.successful(virtaXml))
 
     val result = mvc.perform(jsonPost(ApiConstants.VIRTA_DATASYNC_HENKILO_PATH, VirtaPaivitaTiedotHenkilollePayload(Optional.of(oppijaNumero))))
@@ -188,9 +189,9 @@ class VirtaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val virtaXml: String = scala.io.Source.fromResource("1_2_246_562_24_21250967215.xml").mkString
 
-    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(haunHakijatOids.toSet))
+    Mockito.when(onrIntegration.getMasterHenkilosForPersonOids(eqTo(haunHakijatOids.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(haunHakijatOids.map(oppijaNumero => (oppijaNumero, OnrMasterHenkilo(oppijaNumero, None, None, None, None, None))).toMap))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(haunHakijatOids.toSet))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(haunHakijatOids.toSet))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(aliasMap)))
     Mockito.when(hakemuspalveluClient.getHaunHakijat(hakuOid))
       .thenReturn(Future.successful(henkiloTiedot))

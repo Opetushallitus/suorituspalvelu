@@ -8,7 +8,7 @@ import com.github.dockerjava.api.model.{ExposedPort, HostConfig, PortBinding, Po
 import com.github.kagkarlsson.scheduler.Scheduler
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti.postgresPort
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Koodi}
+import fi.oph.suorituspalvelu.integration.client.{Koodi, KoodiMetadata, Koodisto, RetryConfig}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -58,6 +58,8 @@ object BaseIntegraatioTesti {
 class BaseIntegraatioTesti {
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 0, retryDelayMillis = 1)
 
   @MockitoBean
   var koodistoProvider: KoodistoProvider = null

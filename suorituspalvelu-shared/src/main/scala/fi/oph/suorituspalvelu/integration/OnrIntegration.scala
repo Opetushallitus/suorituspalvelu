@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.integration
 
-import fi.oph.suorituspalvelu.integration.client.{Henkiloviite, OnrClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{Henkiloviite, OnrClientImpl, RetryConfig}
 import org.springframework.beans.factory.annotation.Autowired
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,17 +46,17 @@ trait OnrIntegration {
    * @param personOids  joukko master- tai duplikaattihenkilöoideja joilla halutaan aliakset
    * @return            duplikaatit per haettu henkilöOid
    */
-  def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases]
+  def getAliasesForPersonOids(personOids: Set[String])(implicit retryConfig: RetryConfig): Future[PersonOidsWithAliases]
 
-  def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]]
+  def getMasterHenkilosForPersonOids(personOids: Set[String])(implicit retryConfig: RetryConfig): Future[Map[String, OnrMasterHenkilo]]
 
-  def getAsiointikieli(oid: String): Future[Option[String]]
+  def getAsiointikieli(oid: String)(implicit retryConfig: RetryConfig): Future[Option[String]]
 
-  def henkiloExists(oid: String): Future[Boolean]
+  def henkiloExists(oid: String)(implicit retryConfig: RetryConfig): Future[Boolean]
 
-  def getPerustiedotByHetus(hetus: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
+  def getPerustiedotByHetus(hetus: Set[String])(implicit retryConfig: RetryConfig): Future[Seq[OnrHenkiloPerustiedot]]
 
-  def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]]
+  def getPerustiedotByPersonOids(personOids: Set[String])(implicit retryConfig: RetryConfig): Future[Seq[OnrHenkiloPerustiedot]]
 }
 
 class OnrIntegrationImpl extends OnrIntegration {
@@ -67,8 +67,8 @@ class OnrIntegrationImpl extends OnrIntegration {
 
   @Autowired val onrClient: OnrClientImpl = null
 
-  override def getAliasesForPersonOids(personOids: Set[String]): Future[PersonOidsWithAliases] = {
-    val viitteet: Future[Set[Henkiloviite]] = onrClient.getHenkiloviitteetForHenkilot(personOids)
+  override def getAliasesForPersonOids(personOids: Set[String])(implicit retryConfig: RetryConfig): Future[PersonOidsWithAliases] = {
+    val viitteet: Future[Set[Henkiloviite]] = onrClient.getHenkiloviitteetForHenkilot(personOids, retryConfig)
 
     viitteet.flatMap((viiteResult: Set[Henkiloviite]) => {
       LOG.info(s"Got ${viiteResult.size} viittees for ${personOids.size} personOids")
@@ -91,24 +91,24 @@ class OnrIntegrationImpl extends OnrIntegration {
     })
   }
 
-  override def getMasterHenkilosForPersonOids(personOids: Set[String]): Future[Map[String, OnrMasterHenkilo]] = {
-    onrClient.getMasterHenkilosForPersonOids(personOids)
+  override def getMasterHenkilosForPersonOids(personOids: Set[String])(implicit retryConfig: RetryConfig): Future[Map[String, OnrMasterHenkilo]] = {
+    onrClient.getMasterHenkilosForPersonOids(personOids, retryConfig)
   }
 
-  override def getAsiointikieli(oid: String): Future[Option[String]] =
-    onrClient.getAsiointikieli(oid)
+  override def getAsiointikieli(oid: String)(implicit retryConfig: RetryConfig): Future[Option[String]] =
+    onrClient.getAsiointikieli(oid, retryConfig)
 
-  override def henkiloExists(oid: String): Future[Boolean] =
-    this.getAsiointikieli(oid).map(optKieli => optKieli.isDefined)
+  override def henkiloExists(oid: String)(implicit retryConfig: RetryConfig): Future[Boolean] =
+    this.getAsiointikieli(oid)(retryConfig).map(optKieli => optKieli.isDefined)
 
-  override def getPerustiedotByHetus(hetus: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
-    onrClient.getPerustiedotByHetus(hetus)
+  override def getPerustiedotByHetus(hetus: Set[String])(implicit retryConfig: RetryConfig): Future[Seq[OnrHenkiloPerustiedot]] = {
+    onrClient.getPerustiedotByHetus(hetus, retryConfig)
   }
 
-  override def getPerustiedotByPersonOids(personOids: Set[String]): Future[Seq[OnrHenkiloPerustiedot]] = {
+  override def getPerustiedotByPersonOids(personOids: Set[String])(implicit retryConfig: RetryConfig): Future[Seq[OnrHenkiloPerustiedot]] = {
     if(personOids.isEmpty)
       Future.successful(Seq.empty)
     else
-      onrClient.getPerustiedotByPersonOids(personOids)
+      onrClient.getPerustiedotByPersonOids(personOids, retryConfig)
   }
 }

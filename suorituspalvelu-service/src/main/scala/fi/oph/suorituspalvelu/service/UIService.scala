@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl, VTSClient, VanhaTarjontaClient, Vastaanotot}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl, RetryConfig, VTSClient, VanhaTarjontaClient, Vastaanotot}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
@@ -136,6 +136,8 @@ class UIService {
   @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClientImpl = null
 
