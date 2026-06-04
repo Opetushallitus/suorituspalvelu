@@ -1153,11 +1153,17 @@ class KoskiParsingTest {
     //  - MU pakollinen   -> mukaan, ja tuo MU:n pakollistenKoodit-joukkoon
     //  - MU valinnainen  -> mukaan (sisaruksissa pakollinen MA)
     //  - LI valinnainen  -> EI mukaan (sisaruksissa ei pakollista LI:tä, vaikka laajuus riittäisi)
-    val koodistoProvider: KoodistoProvider = (koodisto: String) =>
-      if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
-        Set("AI", "MU", "LI").map(k =>
-          k -> fi.oph.suorituspalvelu.integration.client.Koodi(k, Koodisto(koodisto), List.empty)).toMap
-      else Map.empty
+    val koodistoProvider: KoodistoProvider = new KoodistoProvider {
+
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] =
+        if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
+          Set("AI", "MU", "LI").map(k =>
+            k -> fi.oph.suorituspalvelu.integration.client.Koodi(k, Koodisto(koodisto), List.empty, s"${koodisto}_$k")).toMap
+        else Map.empty
+
+      override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
+
+    }
 
     val data =
       """
@@ -1451,10 +1457,10 @@ class KoskiParsingTest {
     )
 
   @Test def testPerusopetuksenOppimaaranLahtokoulutKaikkiYhteisetAineetMukana(): Unit =
-    val koodistoProvider: KoodistoProvider = _ =>
+    val koodistoProvider: KoodistoProvider = buildDummyKoodistoProvider(
       (KoskiUtil.YHTEISET_AINEET ++ KoskiUtil.KATSOMUSAINEET)
-        .map(k => k -> fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty))
-        .toMap
+        .map(k => k -> fi.oph.suorituspalvelu.integration.client.Koodi("", Koodisto(""), List.empty, ""))
+        .toMap)
 
     val osasuoritukset = (KoskiUtil.YHTEISET_AINEET :+ "KT").map(koodi =>
       s"""
