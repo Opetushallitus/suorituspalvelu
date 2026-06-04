@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.yos
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Opiskeluoikeus}
+import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET, YLEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA}
 
 object YosPredicate {
 
@@ -31,8 +32,10 @@ object YosPredicate {
 
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
     hakutoive match {
-      case YosHakutoive(true, true, false, false, _, _) =>
+      case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET) =>
         true
+      case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET) =>
+        true  
       case _ =>
         false
     }
@@ -46,10 +49,21 @@ object YosPredicate {
         && (oikeus.rahoitusLahde.isEmpty || oikeus.rahoitusLahde.exists(rl => rl.isBlank) || oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
         && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
         && (oikeus.luokittelu.isEmpty || oikeus.luokittelu.exists(l => l.isBlank) || !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
-        // TODO OPHYOS-173: tutkinnonastevertailu
         // TODO OPHYOS-171: maanpuolustuskorkeakoulu, poliisiammattikorkeakoulu tai Högskolan på Åland
       case _ =>
         false
   }
 
+  def kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(vastaanotettavanAste: YosKoulutusAsteLuokka, oikeudenAste: YosKoulutusAsteLuokka): Boolean = {
+    (vastaanotettavanAste, oikeudenAste) match
+      case (YLEMMAT_JA_ALEMMAT_ASTEET, YLEMMAT_ASTEET) =>
+        true
+      case (YLEMMAT_JA_ALEMMAT_ASTEET, ALEMMAT_ASTEET) =>
+        true
+      case (ALEMMAT_ASTEET, ALEMMAT_ASTEET) =>
+        true
+      case _ =>
+        false
+  }
 }
+

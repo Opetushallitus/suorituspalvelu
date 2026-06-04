@@ -14,7 +14,7 @@ case class Koodisto(koodistoUri: String)
 
 case class KoodiMetadata(kieli: String, nimi: String)
 
-case class Koodi(koodiArvo: String, koodisto: Koodisto, metadata: List[KoodiMetadata])
+case class Koodi(koodiArvo: String, koodisto: Koodisto, metadata: List[KoodiMetadata], koodiUri: String)
 
 class KoodistoClient(environmentBaseUrl: String) {
 
@@ -29,6 +29,10 @@ class KoodistoClient(environmentBaseUrl: String) {
   def haeKoodisto(koodisto: String): Future[Map[String, Koodi]] =
     fetch(environmentBaseUrl + s"/koodisto-service/rest/json/${koodisto}/koodi")
       .map(data => mapper.readValue(data, classOf[Array[Koodi]])).map(koodit => koodit.map(k => k.koodiArvo -> k).toMap)
+    
+  def haeKoodinAlaRelaatiot(koodiUri: String): Future[List[Koodi]] =
+    fetch(environmentBaseUrl + s"/koodisto-service/rest/json/relaatio/sisaltyy-alakoodit/$koodiUri")
+      .map(data => mapper.readValue(data, classOf[List[Koodi]]))
 
   private def fetch(url: String): Future[String] =
     LOG.info(s"fetch, $url")

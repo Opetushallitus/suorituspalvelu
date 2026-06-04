@@ -128,13 +128,13 @@ class BaseIntegraatioTesti {
     val oppiaineKoodisto = Seq("AI", "A1", "A2", "B1", "B2", "B3", "MA", "BI", "GE", "FY", "KE", "HI", "YH",
       "LI", "TE", "MU", "KU", "KS", "KO", "KT", "ET", "AOM", "FI", "OP")
       .map(arvo => arvo -> Koodi(arvo, Koodisto("koskioppiaineetyleissivistava"), List(
-        KoodiMetadata("FI", arvo), KoodiMetadata("SV", arvo), KoodiMetadata("EN", arvo)))).toMap
+        KoodiMetadata("FI", arvo), KoodiMetadata("SV", arvo), KoodiMetadata("EN", arvo)), koodiUri = s"koskioppiaineetyleissivistava_$arvo")).toMap
     Mockito.when(koodistoProvider.haeKoodisto("koskioppiaineetyleissivistava")).thenReturn(oppiaineKoodisto)
 
     val kieliKoodisto = Map(
-      "FI" -> Koodi("FI", Koodisto("kieli"), List(KoodiMetadata("FI", "suomi"), KoodiMetadata("SV", "finska"), KoodiMetadata("EN", "Finnish"))),
-      "SV" -> Koodi("SV", Koodisto("kieli"), List(KoodiMetadata("FI", "ruotsi"), KoodiMetadata("SV", "svenska"), KoodiMetadata("EN", "Swedish"))),
-      "EN" -> Koodi("EN", Koodisto("kieli"), List(KoodiMetadata("FI", "englanti"), KoodiMetadata("SV", "engelska"), KoodiMetadata("EN", "English")))
+      "FI" -> Koodi("FI", Koodisto("kieli"), List(KoodiMetadata("FI", "suomi"), KoodiMetadata("SV", "finska"), KoodiMetadata("EN", "Finnish")), koodiUri = "kieli_FI"),
+      "SV" -> Koodi("SV", Koodisto("kieli"), List(KoodiMetadata("FI", "ruotsi"), KoodiMetadata("SV", "svenska"), KoodiMetadata("EN", "Swedish")), koodiUri = "kieli_SV"),
+      "EN" -> Koodi("EN", Koodisto("kieli"), List(KoodiMetadata("FI", "englanti"), KoodiMetadata("SV", "engelska"), KoodiMetadata("EN", "English")), koodiUri = "kieli_EN")
     )
     Mockito.when(koodistoProvider.haeKoodisto("kieli")).thenReturn(kieliKoodisto)
   }
