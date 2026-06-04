@@ -30,7 +30,7 @@ case class EnsikertalaisuusTulos(henkiloOid: String,
                                  isEnsikertalainen: Boolean,
                                  menettamisenPeruste: Option[MenettamisenPeruste]) {
   def toAvainArvo: AvainArvoContainer = {
-    AvainArvoContainer("ensikertalaisuus", isEnsikertalainen.toString, menettamisenPeruste.map(p => Seq(p.peruste)).getOrElse(Seq.empty))
+    AvainArvoContainer(AvainArvoConstants.ensikertalainenKey, isEnsikertalainen.toString, menettamisenPeruste.map(p => Seq(p.peruste)).getOrElse(Seq.empty))
   }
 }
 

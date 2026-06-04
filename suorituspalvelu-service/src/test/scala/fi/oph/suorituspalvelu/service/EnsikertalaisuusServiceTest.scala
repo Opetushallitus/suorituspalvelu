@@ -4,7 +4,7 @@ import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus, KKTutkinto, Koodi, Lahdejarjestelma, Opiskeluoikeus, ParserVersions, Suoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemusBaseFields, AtaruValintalaskentaHakemus, Ensikertalaisuus, HakemuspalveluClientImpl, KoutaHaku, KoutaHakuaika, VTSClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
-import fi.oph.suorituspalvelu.mankeli.{EnsikertalaisuusConstants, EnsikertalaisuusService, EnsikertalaisuusTulos, MenettamisenPeruste}
+import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, EnsikertalaisuusConstants, EnsikertalaisuusService, EnsikertalaisuusTulos, MenettamisenPeruste}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
@@ -40,6 +40,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
   val HENKILO_OID = "1.2.246.562.24.10000000001"
   val ALIAS_OID = "1.2.246.562.24.10000000002"
   val HAKU_OID = "1.2.246.562.29.00000000000000099901"
+  val HAKEMUS_OID = "1.2.246.562.11.00000000000000006321"
 
   // Haku jonka viimeinen hakuaika päättyy 2025-03-31
   val testHaku = KoutaHaku(
@@ -423,5 +424,29 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
     val result = ensikertalaisuusService.paatteleMenettamisenPeruste(
       HENKILO_OID, leikkuriLocalDate, Seq.empty, Seq(syntOo), Seq.empty, None)
     Assertions.assertEquals(suoritusPvm, result.get.paivamaara)
+  }
+
+  /**
+   * 26. toAvainArvo: ensikertalainen ilman menettämisen perustetta
+   */
+  @Test def testToAvainArvoEnsikertalainen(): Unit = {
+    val tulos = EnsikertalaisuusTulos(HENKILO_OID, Some(HAKEMUS_OID), HAKU_OID, isEnsikertalainen = true, menettamisenPeruste = None)
+    val avainArvo = tulos.toAvainArvo
+    Assertions.assertEquals(AvainArvoConstants.ensikertalainenKey, avainArvo.avain)
+    Assertions.assertEquals("true", avainArvo.arvo)
+    Assertions.assertEquals(Seq.empty, avainArvo.selitteet)
+  }
+
+  /**
+   * 27. toAvainArvo: ei ensikertalainen, menettämisen peruste sisältyy selitteisiin
+   */
+  @Test def testToAvainArvoEiEnsikertalainen(): Unit = {
+    val peruste = EnsikertalaisuusConstants.seliteKkVastaanotto
+    val tulos = EnsikertalaisuusTulos(HENKILO_OID, Some(HAKEMUS_OID), HAKU_OID, isEnsikertalainen = false,
+      menettamisenPeruste = Some(MenettamisenPeruste(peruste, LocalDate.of(2020, 1, 1))))
+    val avainArvo = tulos.toAvainArvo
+    Assertions.assertEquals(AvainArvoConstants.ensikertalainenKey, avainArvo.avain)
+    Assertions.assertEquals("false", avainArvo.arvo)
+    Assertions.assertEquals(Seq(peruste), avainArvo.selitteet)
   }
 }
