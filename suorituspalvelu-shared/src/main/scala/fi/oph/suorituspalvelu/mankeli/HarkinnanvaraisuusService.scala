@@ -214,7 +214,7 @@ class HarkinnanvaraisuusService {
   }
 
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
-    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
+    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 65.seconds).allOids
     allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid, useKoskiSkipTable = true).values.flatten).toSeq
   }
 

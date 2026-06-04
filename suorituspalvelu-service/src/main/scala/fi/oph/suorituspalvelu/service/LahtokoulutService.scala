@@ -23,10 +23,8 @@ class LahtokoulutService {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
-  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 1)
 
-  val ONR_TIMEOUT = 10.seconds
-  
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
     kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, None)
   }
@@ -40,7 +38,7 @@ class LahtokoulutService {
         .map(aliakset => {
           henkilotJaLuokat.flatMap((h, l) => aliakset.allOidsByQueriedOids(h).map(oid => (oid, l)))
         })
-      Await.result(r, 30.seconds)
+      Await.result(r, 65.seconds)
   }
 
   def haeLahtokouluAuthorizations(henkiloOid: String): Seq[LahtokouluAuthorization] = {
@@ -51,6 +49,6 @@ class LahtokoulutService {
         KoskiUtil.luoLahtokouluAuthorizations(lahtokoulut.toSeq)
       })
 
-    Await.result(r, 30.seconds)
+    Await.result(r, 65.seconds)
   }
 }
