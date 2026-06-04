@@ -25,6 +25,14 @@ object EntityToUIConverter {
 
   private val oppiaineOrder: Map[String, Int] = UIService.NAYTETTAVAT_OPPIAINEET.zipWithIndex.toMap
 
+  private def getVieraanKielenNimi(kieli: Option[Koodi], asiointiKieli: String, koodistoProvider: KoodistoProvider): Option[String] =
+    kieli.flatMap(k => koodistoProvider.haeKoodisto(UIService.KOODISTO_KIELIVALIKOIMA).get(k.arvo)
+      .flatMap(_.metadata.find(_.kieli.equalsIgnoreCase(asiointiKieli)).map(_.nimi)))
+
+  private def getAidinkielenNimi(kieli: Option[Koodi], asiointiKieli: String, koodistoProvider: KoodistoProvider): Option[String] =
+    kieli.flatMap(k => koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(k.arvo)
+      .flatMap(_.metadata.find(_.kieli.equalsIgnoreCase(asiointiKieli)).map(_.nimi)))
+
   private def filterAndSortOppiaineet(oppiaineet: Iterable[PerusopetuksenOppiaineUI]): List[PerusopetuksenOppiaineUI] =
     oppiaineet
       .filter(a => oppiaineOrder.contains(a.koodi))
@@ -403,17 +411,12 @@ object EntityToUIConverter {
 
   def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[DIATutkintoUI] = {
     def toDiaOppiaineUI(oppiaine: DIAOppiaine) = {
-      def getVieraanKielenNimi(kieli: Option[Koodi], asiointiKieli: String): Option[String] =
-        kieli
-          .flatMap(kieli => koodistoProvider.haeKoodisto(UIService.KOODISTO_KIELIVALIKOIMA)
-          .get(kieli.arvo)
-            .flatMap(koodi => koodi.metadata.find(m => m.kieli.equalsIgnoreCase(asiointiKieli)).map(m => m.nimi)))
       DIAOppiaineUI(
         tunniste = oppiaine.tunniste,
         nimi = DIAOppiaineNimiUI(
-          fi = oppiaine.nimi.fi.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "fi").map(k => ", " + k).getOrElse("")).toJava,
-          sv = oppiaine.nimi.sv.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "sv").map(k => ", " + k).getOrElse("")).toJava,
-          en = oppiaine.nimi.en.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "en").map(k => ", " + k).getOrElse("")).toJava,
+          fi = oppiaine.nimi.fi.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "fi", koodistoProvider).map(k => ", " + k).getOrElse("")).toJava,
+          sv = oppiaine.nimi.sv.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "sv", koodistoProvider).map(k => ", " + k).getOrElse("")).toJava,
+          en = oppiaine.nimi.en.map(n => n + getVieraanKielenNimi(oppiaine.kieli, "en", koodistoProvider).map(k => ", " + k).getOrElse("")).toJava,
         ),
         laajuus = oppiaine.laajuus.map(_.arvo).toJava,
         kirjallinen = oppiaine.kirjallinenKoe.map(_.arvosana.arvosana.arvo).toJava,
@@ -904,12 +907,6 @@ object EntityToUIConverter {
         }).toList
 
   def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[PerusopetuksenOppimaaraUI] =
-    def getVieraanKielenNimi(kieli: Option[Koodi], asiointiKieli: String): Option[String] =
-      kieli.flatMap(kieli => koodistoProvider.haeKoodisto(UIService.KOODISTO_KIELIVALIKOIMA).get(kieli.arvo).flatMap(koodi => koodi.metadata.find(m => m.kieli.equalsIgnoreCase(asiointiKieli)).map(m => m.nimi)))
-
-    def getAidinkielenNimi(kieli: Option[Koodi], asiointiKieli: String): Option[String] =
-      kieli.flatMap(kieli => koodistoProvider.haeKoodisto(KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS).get(kieli.arvo).flatMap(koodi => koodi.metadata.find(m => m.kieli.equalsIgnoreCase(asiointiKieli)).map(m => m.nimi)))
-
     opiskeluoikeudet
       .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
       .flatMap(_.suoritukset)
@@ -948,8 +945,8 @@ object EntityToUIConverter {
             val omanAineenOppiaineet: Seq[PerusopetuksenOppiaineUI] =
               (if (onValmis) om.aineet else Seq.empty).map(a => {
                 def getLisatieto(asiointiKieli: String): Option[String] =
-                  if (a.koodi.arvo == "AI") getAidinkielenNimi(a.kieli, asiointiKieli)
-                  else getVieraanKielenNimi(a.kieli, asiointiKieli)
+                  if (a.koodi.arvo == "AI") getAidinkielenNimi(a.kieli, asiointiKieli, koodistoProvider)
+                  else getVieraanKielenNimi(a.kieli, asiointiKieli, koodistoProvider)
                 PerusopetuksenOppiaineUI(
                   tunniste = a.tunniste,
                   koodi = a.koodi.arvo,
@@ -975,7 +972,7 @@ object EntityToUIConverter {
   def getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PerusopetuksenOppimaara78Luokkalaiset] =
     None
 
-  def getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[PerusopetuksenOppiaineenOppimaaratUI] = {
+  def getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[PerusopetuksenOppiaineenOppimaaratUI] = {
     opiskeluoikeudet
       .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
       .flatMap(_.suoritukset)
@@ -983,13 +980,16 @@ object EntityToUIConverter {
       .map(oppiaineidenSuoritus => {
         val oppiaineet: Set[PerusopetuksenOppiaineUI] =
           oppiaineidenSuoritus.aineet.map(oppiaine => {
+            def getLisatieto(asiointiKieli: String): Option[String] =
+              if (oppiaine.koodi.arvo == "AI") getAidinkielenNimi(oppiaine.kieli, asiointiKieli, koodistoProvider)
+              else getVieraanKielenNimi(oppiaine.kieli, asiointiKieli, koodistoProvider)
             PerusopetuksenOppiaineUI(
               tunniste = oppiaine.tunniste,
               koodi = oppiaine.koodi.arvo,
               nimi = PerusopetuksenOppiaineNimi(
-                oppiaine.nimi.fi.toJava,
-                oppiaine.nimi.sv.toJava,
-                oppiaine.nimi.en.toJava
+                fi = oppiaine.nimi.fi.map(n => n + getLisatieto("fi").map(k => ", " + k).getOrElse("")).toJava,
+                sv = oppiaine.nimi.sv.map(n => n + getLisatieto("sv").map(k => ", " + k).getOrElse("")).toJava,
+                en = oppiaine.nimi.en.map(n => n + getLisatieto("en").map(k => ", " + k).getOrElse("")).toJava,
               ),
               kieli = java.util.Optional.ofNullable(oppiaine.kieli.map(_.arvo).orNull),
               arvosana = Optional.of(oppiaine.arvosana.arvo),
@@ -1096,7 +1096,7 @@ object EntityToUIConverter {
         vapaaSivistystyoKoulutukset =               getVapaaSivistystyoKoulutukset(opiskeluoikeudet).asJava,
         perusopetuksenOppimaarat =                  getPerusopetuksenOppimaarat(opiskeluoikeudet, koodistoProvider).asJava,
         perusopetuksenOppimaara78Luokkalaiset =     getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet).toJava,
-        perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet).asJava
+        perusopetuksenOppiaineenOppimaarat =        getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet, koodistoProvider).asJava
       )
   }
 
