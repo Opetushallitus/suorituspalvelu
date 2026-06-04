@@ -323,8 +323,8 @@ object UIValidator {
     else if (!avainArvoStringPattern.matches(avain.get)) {
       Set(VALIDATION_AVAIN_EI_VALIDI)
     } else {
-      //Vain sellaisia arvoja voi yliajaa, joita AvainArvoConverter tuottaa
-      if (!AvainArvoConstants.avainToAvaimenSeliteMap.keySet.contains(avain.get))
+      //Vain sellaisia arvoja voi yliajaa, joita AvainArvoConverter tuottaa. Kaikkien "PK_"-alkuisten arvosanojen yliajaminen on sallittua.
+      if (!AvainArvoConstants.avainToAvaimenSeliteMap.keySet.contains(avain.get) && !avain.get.startsWith(AvainArvoConstants.peruskouluAineenArvosanaPrefix))
         Set(VALIDATION_AVAIN_EI_SALLITTU)
       else
         Set.empty
