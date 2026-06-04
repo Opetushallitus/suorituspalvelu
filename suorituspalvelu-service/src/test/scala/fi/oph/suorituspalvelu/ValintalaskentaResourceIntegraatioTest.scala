@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu
 
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHaku, Ohjausparametrit}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHaku, Ohjausparametrit, RetryConfig}
 import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{ValintalaskentaDataFailureResponse, ValintalaskentaDataPayload, ValintalaskentaDataSuccessResponse}
@@ -8,6 +8,7 @@ import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
@@ -136,7 +137,7 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(Some(hakukohdeOid), false, Set.empty, false))
       .thenReturn(Future.successful(Seq(testHakemus)))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
     Mockito.when(hakukohderyhmaIntegration.getHakukohderyhmatForHaku(hakuOid))
       .thenReturn(Map.empty)

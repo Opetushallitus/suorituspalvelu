@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, HarkinnanvaraisuusYliajo, KantaOperaatiot, Lahdejarjestelma, Opiskeluoikeus, ParserVersions}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import fi.oph.suorituspalvelu.mankeli.{HarkinnanvaraisuudenSyy, UseitaVahvistettujaOppimaariaException}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
@@ -49,6 +50,8 @@ class UIResource {
   val LOG = LoggerFactory.getLogger(classOf[UIResource]);
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 1000)
 
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 

@@ -12,6 +12,8 @@ import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.validation.Validator
 import org.junit.jupiter.api.{Assertions, Test}
 import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -211,7 +213,7 @@ class AutomaattinenHakukelpoisuusResourceIntegraatioTest extends BaseIntegraatio
   }
 
   private def setupMocksWithOpiskeluoikeudet(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus]): Unit = {
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(personOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "SYOTETTY", Some(1)).get
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet.toSet, Seq.empty, ParserVersions.KOSKI)
