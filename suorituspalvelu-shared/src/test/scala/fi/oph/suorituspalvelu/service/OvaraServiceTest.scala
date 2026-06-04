@@ -7,6 +7,7 @@ import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
 import fi.oph.suorituspalvelu.ovara.{OvaraLahtokoulu, OvaraLahtokouluTyyppi, OvaraPerusopetuksenOppimaara, OvaraSuoritusTila, OvaraVersioJaOpiskeluoikeudet}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -258,9 +259,12 @@ class OvaraServiceTest {
 
   val BASE_KK_OPISKELUOIKEUS = KKOpiskeluoikeus(
     tunniste            = UUID.fromString("00000000-0000-0000-0000-000000000002"),
+    nimi                = Some(Kielistetty(Some("Lääkärintutkinto"), None, None)),
     virtaTunniste       = "virta-1",
     tyyppiKoodi         = "1",
     koulutusKoodi       = None,
+    rahoitusLahde       = Some("6"),
+    luokittelu          = Some("1"),
     alkuPvm             = LocalDate.of(2020, 9, 1),
     loppuPvm            = LocalDate.of(2024, 6, 1),
     virtaTila           = Koodi("1", "virtaopiskeluoikeudentila", None),
