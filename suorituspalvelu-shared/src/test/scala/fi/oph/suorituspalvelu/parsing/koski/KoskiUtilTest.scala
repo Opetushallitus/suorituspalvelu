@@ -103,10 +103,16 @@ class KoskiUtilTest {
 
   private val tunnetutOppiaineet: Set[String] = Set("AI", "MA", "HI", "LI", "A1", "A2", "B1", "B2")
 
-  private val oppiaineKoodistoProvider: KoodistoProvider = (koodisto: String) =>
-    if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
-      tunnetutOppiaineet.map(k => k -> null.asInstanceOf[fi.oph.suorituspalvelu.integration.client.Koodi]).toMap
-    else Map.empty
+  private val oppiaineKoodistoProvider: KoodistoProvider = new KoodistoProvider {
+
+    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] =
+      if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
+        tunnetutOppiaineet.map(k => k -> fi.oph.suorituspalvelu.integration.client.Koodi(k, Koodisto(KoskiUtil.KOODISTO_OPPIAINEET), List.empty, "")).toMap
+      else Map.empty
+
+    override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
+
+  }
 
   private def mkOsa(koodi: String, pakollinen: Boolean, laajuus: Option[BigDecimal], hasArviointi: Boolean, koodistoUri: String = "koskioppiaineetyleissivistava"): KoskiOsaSuoritus =
     KoskiOsaSuoritus(
@@ -155,10 +161,16 @@ class KoskiUtilTest {
       mkOsa("XX", pakollinen = true, laajuus = Some(BigDecimal(3)), hasArviointi = true),
       Set("XX"),
       // "XX" sisällytetään tilapäisesti koodistoon jotta isKoulukohtainen-tarkistus ei mätsää
-      (koodisto: String) =>
-        if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
-          (tunnetutOppiaineet + "XX").map(k => k -> null.asInstanceOf[fi.oph.suorituspalvelu.integration.client.Koodi]).toMap
-        else Map.empty))
+      new KoodistoProvider {
+
+        override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] =
+          if (koodisto == KoskiUtil.KOODISTO_OPPIAINEET)
+            (tunnetutOppiaineet + "XX").map(k => k -> fi.oph.suorituspalvelu.integration.client.Koodi(k, Koodisto(KoskiUtil.KOODISTO_OPPIAINEET), List.empty, "")).toMap
+          else Map.empty
+
+        override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
+
+      }))
 
   @Test def testIncludePerusopetuksenOppiainePakollinenAinaMukaan(): Unit =
     // Pakollinen mukaan vaikka laajuutta ei ole määritelty
