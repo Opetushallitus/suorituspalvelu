@@ -5,9 +5,9 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.{FailureHandler, TaskDescriptor}
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Lahdejarjestelma, ParserVersions, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, SyncResultForHenkilo, TarjontaIntegration, Util}
-import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
+import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, RetryConfig}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.jobs.{SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
@@ -54,6 +54,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
                    @Value("${integrations.virta.cron}") cron: String) {
 
   implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
+  implicit val onrRetryConfig: RetryConfig = RetryConfig()
 
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
