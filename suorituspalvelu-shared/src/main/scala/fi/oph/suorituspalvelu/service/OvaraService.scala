@@ -151,7 +151,7 @@ class OvaraService(
       } else tila.harkinnanvaraisuusTiedostoNumero
     } else tila.harkinnanvaraisuusTiedostoNumero
 
-    val nextEnsikertalaisuusTiedostoNumero = if (haku.isKKHaku()) {
+    val nextEnsikertalaisuusTiedostoNumero = if (haku.isKorkeakouluHaku) {
       val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
         vd.ensikertalaisuus.map(ek => {
           OvaraEnsikertalaisuus(
