@@ -1355,7 +1355,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     // mockataan organisaatiopalvelun vastaus
     val oppilaitosOid = "1.2.246.562.10.52320123196"
     val organisaatio = Organisaatio(oppilaitosOid, OrganisaatioNimi(UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI, UIService.EXAMPLE_OPPILAITOS_NIMI), None, Seq.empty, Seq("organisaatiotyyppi_02"))
-    Mockito.when(organisaatioProvider.haeKaikkiOrganisaatiot()).thenReturn(Map(oppilaitosOid -> organisaatio))
+    Mockito.when(organisaatioProvider.haeKaikkiOrganisaatiot(true)).thenReturn(Map(oppilaitosOid -> organisaatio))
 
     val result = mvc.perform(MockMvcRequestBuilders
         .get(ApiConstants.UI_TALLENNA_SUORITUS_OPPILAITOKSET_PATH))
