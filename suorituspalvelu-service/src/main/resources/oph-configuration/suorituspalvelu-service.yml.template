@@ -35,7 +35,7 @@ integrations:
     password: {{suorituspalvelu_app_password}}
     base-url: {{suorituspalvelu_koski_base_url}}
     cron: {{suorituspalvelu_koski_polling_cron}}
-    bufferseconds: {{suorituspalvelu_koski_polling_bufferseconds}}
+    bufferseconds: {{suorituspalvelu_koski_polling_bufferseconds | default('60')}}
   ataru:
     cron: {{suorituspalvelu_ataru_polling_cron}}
     koski-refresh-enabled: {{suorituspalvelu_ataru_koski_refresh_enabled | default('true')}}
