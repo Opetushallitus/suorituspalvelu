@@ -68,7 +68,9 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
         nimi = Map.empty,
         voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),
         johtaaTutkintoon = Some(true),
-        hakuOid = HAKU_OID))
+        hakuOid = HAKU_OID,
+        koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_72")
+      ))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenReturn(None)
   }
 
@@ -106,6 +108,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
     insertOpiskeluOikeus()
     Mockito.when(koodistoProvider.haeKoodisto("koulutus")).thenReturn(Map("koulutus_1" ->
       fi.oph.suorituspalvelu.integration.client.Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")), koodiUri = "koulutus_1")))
+    Mockito.when(koodistoProvider.haeAlakoodit("koulutus_1")).thenReturn(List(fi.oph.suorituspalvelu.integration.client.Koodi("72", Koodisto("kansallinenkoulutusluokitus2016koulutusastetaso2"), List.empty, "kansallinenkoulutusluokitus2016koulutusastetaso2_72")))
 
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().isOk).andReturn()
