@@ -36,6 +36,7 @@ integrations:
     base-url: {{suorituspalvelu_koski_base_url}}
     cron: {{suorituspalvelu_koski_polling_cron}}
     bufferseconds: {{suorituspalvelu_koski_polling_bufferseconds}}
+    muuttuneet-cron-job-enabled: {{suorituspalvelu_koski_muuttuneet_cron_job_enabled | default('true')}}
   ataru:
     cron: {{suorituspalvelu_ataru_polling_cron}}
     koski-refresh-enabled: {{suorituspalvelu_ataru_koski_refresh_enabled | default('true')}}
@@ -47,11 +48,13 @@ integrations:
     avain: {{suoritusrekisteri_virta_avain}}
     base-url: {{suorituspalvelu_virta_base_url}}
     cron: {{suorituspalvelu_virta_cron}}
+    cron-job-enabled: {{suorituspalvelu_virta_cron_job_enabled | default('true')}}
   ytr:
     username: {{suoritusrekisteri_ytl_http_username}}
     password: {{suoritusrekisteri_ytl_http_password}}
     base-url: {{suoritusrekisteri_ytl_http_host}}
     cron: {{suorituspalvelu_ytr_cron}}
+    cron-job-enabled: {{suorituspalvelu_ytr_cron_job_enabled | default('true')}}
 
 db-scheduler:
   enabled: true
