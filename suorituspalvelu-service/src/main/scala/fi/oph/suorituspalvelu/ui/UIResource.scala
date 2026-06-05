@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.suorituspalvelu.business.{AvainArvoYliajo, HarkinnanvaraisuusYliajo, KantaOperaatiot, Lahdejarjestelma, Opiskeluoikeus, ParserVersions}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import fi.oph.suorituspalvelu.mankeli.{HarkinnanvaraisuudenSyy, UseitaVahvistettujaOppimaariaException}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
@@ -50,6 +51,8 @@ class UIResource {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 0)
+
   @Autowired val organisaatioProvider: OrganisaatioProvider = null
 
   @Autowired val koodistoProvider: KoodistoProvider = null
@@ -62,7 +65,7 @@ class UIResource {
 
   @Autowired val valintaDataService: ValintaDataService = null
 
-  val ONR_TIMEOUT = 10.seconds;
+  val ONR_TIMEOUT = 65.seconds;
 
   @GetMapping(
     path = Array(UI_KAYTTAJAN_TIEDOT_PATH),

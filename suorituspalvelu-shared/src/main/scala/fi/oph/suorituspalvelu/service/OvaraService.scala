@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, SiirtotiedostoClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, RetryConfig, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuusService}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
@@ -67,6 +67,8 @@ class OvaraService(
   @Autowired val opiskeluoikeusParsingService: OpiskeluoikeusParsingService = null
 
   @Autowired val onrIntegration: OnrIntegration = null
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig()
 
   @Autowired val hakemuspalveluClient: HakemuspalveluClient = null
 

@@ -1,6 +1,6 @@
 package fi.oph.suorituspalvelu.integration
 
-import fi.oph.suorituspalvelu.integration.Util
+import fi.oph.suorituspalvelu.integration.{NonRetriableException, Util}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
@@ -39,6 +39,23 @@ class UtilTest {
     )
     Assertions.assertEquals("success", result)
     Assertions.assertEquals(3, attempts.get())
+  }
+
+  @Test def testRetryWithBackoff_nonRetriableExceptionIsNotRetried(): Unit = {
+    val attempts = new AtomicInteger(0)
+    def operation = Future {
+      attempts.incrementAndGet()
+      throw new NonRetriableException("client error")
+    }
+
+    val exception = Assertions.assertThrows(classOf[NonRetriableException], () => {
+      Await.result(
+        Util.retryWithBackoff(operation, retries = 3, retryDelayMillis = 10),
+        5.seconds
+      )
+    })
+    Assertions.assertEquals("client error", exception.getMessage)
+    Assertions.assertEquals(1, attempts.get())
   }
 
   @Test def testRetryWithBackoff_failsAfterAllRetriesExhausted(): Unit = {

@@ -2,6 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Opiskeluoikeus, SuoritusTila, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -62,8 +63,10 @@ class HakukelpoisuusService {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 1)
+
   def haeSupaTiedot(personOid: String): Seq[Opiskeluoikeus] = {
-    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 10.seconds).allOids
+    val allOidsForPerson = Await.result(onrIntegration.getAliasesForPersonOids(Set(personOid)), 65.seconds).allOids
     allOidsForPerson.flatMap(oid => opiskeluoikeusParsingService.haeSuoritukset(oid).values.flatten).toSeq
   }
 
