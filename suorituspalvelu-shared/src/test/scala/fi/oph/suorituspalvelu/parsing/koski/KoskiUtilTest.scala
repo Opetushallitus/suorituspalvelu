@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.parsing.koski
+package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
