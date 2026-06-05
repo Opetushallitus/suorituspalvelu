@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl, VTSClient, VanhaTarjontaClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, HakemuspalveluClientImpl, VTSClient, VanhaTarjontaClient, Vastaanotot}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, OnrMasterHenkilo}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
@@ -243,19 +243,9 @@ class UIService {
 
   def haeOppijanVastaanotot(henkiloOid: String): Option[(Seq[VastaanottoUI], Seq[VanhaVastaanottoUI])] =
     resolveMasterHenkilo(henkiloOid).map(masterHenkilo => {
-      def haeAliakset(oppijaOid: String): Set[String] = {
-        try
-          Set(Set(henkiloOid), Await.result(onrIntegration.getAliasesForPersonOids(Set(masterHenkilo.oidHenkilo)), ONR_TIMEOUT).allOids).flatten
-        catch
-          case e: Exception =>
-            LOG.warn("Aliaksien hakeminen ONR:stä epäonnistui henkilölle: " + henkiloOid, e)
-            Set(henkiloOid)
-      }
-
-      val aliakset = haeAliakset(henkiloOid)
-      val vastaanotot = Await.result(Future.sequence(aliakset.map(oid => vtsClient.fetchVastaanotot(oid))).map(_.flatten), VTS_TIMEOUT)
-      val opintopolku = EntityToUIConverter.getVastaanotot(vastaanotot.flatMap(_.opintopolku).toSeq.distinct, hakuProvider, hakukohdeProvider, organisaatioProvider)
-      val vanhat = EntityToUIConverter.getVanhatVastaanotot(vastaanotot.flatMap(_.vanhat).toSeq.distinct)
+      val vastaanotot: Seq[Vastaanotot] = Await.result(vtsClient.fetchVastaanotot(henkiloOid), VTS_TIMEOUT).toSeq
+      val opintopolku = EntityToUIConverter.getVastaanotot(vastaanotot.flatMap(_.opintopolku), hakuProvider, hakukohdeProvider, organisaatioProvider)
+      val vanhat = EntityToUIConverter.getVanhatVastaanotot(vastaanotot.flatMap(_.vanhat))
       (opintopolku, vanhat)
     })
 
