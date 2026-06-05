@@ -244,7 +244,7 @@ class ValintalaskentaResourceIntegraatioTest extends BaseIntegraatioTesti {
       .thenReturn(Ohjausparametrit(suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)), valintalaskentapaiva = Some(DateParam(1768290647351L))))
     Mockito.when(hakemuspalveluClient.getValintalaskentaHakemukset(Some(hakukohdeOid), false, Set.empty, false))
       .thenReturn(Future.successful(Seq(testHakemus)))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
     Mockito.when(hakukohderyhmaIntegration.getHakukohderyhmatForHaku(hakuOid))
       .thenReturn(Map(
