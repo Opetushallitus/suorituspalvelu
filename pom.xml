@@ -2,7 +2,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.14</version>
+        <version>3.5.7</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -22,13 +22,10 @@
         <revision>0.1.0-SNAPSHOT</revision>
         <encoding>UTF-8</encoding>
         <scala.version>3.3.3</scala.version>
+        <spring.boot.version>3.3.5</spring.boot.version>
         <jackson.version>2.18.1</jackson.version>
         <java.cas.version>1.2.4-SNAPSHOT</java.cas.version>
         <maven.compiler.release>21</maven.compiler.release>
-        <tomcat.version>10.1.55</tomcat.version>
-        <netty.version>4.1.133.Final</netty.version>
-        <spring-security.version>6.5.9</spring-security.version>
-        <postgresql.version>42.7.11</postgresql.version>
     </properties>
 
     <dependencyManagement>
@@ -87,12 +84,12 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-cas</artifactId>
-                <version>6.5.9</version>
+                <version>6.5.6</version>
             </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.7.11</version>
+                <version>42.7.8</version>
             </dependency>
             <dependency>
                 <groupId>org.flywaydb</groupId>
@@ -153,7 +150,7 @@
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-servlet-api</artifactId>
-                <version>10.1.55</version>
+                <version>10.1.48</version>
             </dependency>
             <dependency>
                 <groupId>com.scalatsi</groupId>
@@ -168,7 +165,7 @@
             <dependency>
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
-                <version>3.0.10</version>
+                <version>3.0.3</version>
             </dependency>
             <!-- Lisätty enforcer-pluginin takia -->
             <dependency>
