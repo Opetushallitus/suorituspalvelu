@@ -1443,6 +1443,27 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("7"), map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "BI"))
   }
 
+  //Ehdot-override: ei-numeeriset arvosanat (esim. "S") eivät saa päätyä tulokseen.
+  @Test def testEhdotOverrideNonNumericArvosanaExcluded(): Unit = {
+    val personOid = "1.2.246.562.24.00000000119"
+    val leikkuri = LocalDate.now().minusDays(1)
+    val nykyiset = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "8", true), ("AI", "8", true), ("KE", "S", true))
+    ))
+    val leikkurihetkella = Seq(buildEhdotTestOpiskeluoikeus(
+      vahvistusPaivamaara = None,
+      arvosanat = Seq(("MA", "4", true), ("AI", "8", true), ("KE", "S", true))
+    ))
+
+    val result = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, nykyiset, leikkurihetkella, leikkuri, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val map = result.getAvainArvoMap()
+
+    Assertions.assertEquals(Some("true"), map.get(AvainArvoConstants.peruskouluSuoritettuKey))
+    // Ei-numeerinen "S" ei saa päätyä tulokseen
+    Assertions.assertEquals(None, map.get(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "KE"))
+  }
+
   //Ehdot pending + ikkuna kiinni (today < leikkuri - 2 vko) → override ei laukea, ei arvosanoja.
   @Test def testEhdotNoOverrideWhenWindowClosed(): Unit = {
     val personOid = "1.2.246.562.24.00000000112"

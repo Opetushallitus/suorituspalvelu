@@ -943,8 +943,12 @@ object AvainArvoConverter {
     val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ valinnaisiksiHuomioitavatOppiaineenOppimaarat.filter(a => !a.pakollinen && a.kieli.isEmpty)
     val valinnaisetSupasta = perusopetuksenValinnaisetOppiaineetToAvainArvot(valinnaisetAineet)
 
+    val tuloksetIlmanEiNumeerisia = (pakollisetSupasta ++ valinnaisetSupasta).filter(aa => {
+      //Päästetään parhaistakin arvosanoista läpi vain numeeriset arvosanat. Säilytetään lisäksi mukana olevat kielitiedot.
+      aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliOppiainePostfix) || aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliTietoPostfix) || AvainArvoConstants.numeerisetPeruskoulunArvosanat.contains(aa.arvo)
+    })
 
-    pakollisetSupasta ++ valinnaisetSupasta
+    tuloksetIlmanEiNumeerisia
   }
 
   def convertPeruskouluArvot(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], ehdotOverrideAktiivinen: Boolean = false): Set[AvainArvoContainer] = {
@@ -974,10 +978,8 @@ object AvainArvoConverter {
         val aineetPaasuoritukselta = perusopetuksenOppimaara.map(_.aineet).getOrElse(Seq.empty)
         val aineetOppimaarilta = oppiaineenOppimaarat.flatMap(_.aineet).toSet
 
-        val arvosanaJaKieliArvot = convertParhaatPeruskoulunArvosanatJaKielet(personOid, aineetPaasuoritukselta, aineetOppimaarilta).filter(aa => {
-          //Päästetään parhaistakin arvosanoista läpi vain numeeriset arvosanat. Säilytetään lisäksi mukana olevat kielitiedot.
-          aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliOppiainePostfix) || aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliTietoPostfix) || AvainArvoConstants.numeerisetPeruskoulunArvosanat.contains(aa.arvo)
-        })
+        val arvosanaJaKieliArvot = convertParhaatPeruskoulunArvosanatJaKielet(personOid, aineetPaasuoritukselta, aineetOppimaarilta)
+
         val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "true", Seq(vahvistettuAjoissaSelite))
         val suoritusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
         val paattotodistusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluPaattotodistusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
