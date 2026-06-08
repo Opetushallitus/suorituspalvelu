@@ -5,7 +5,9 @@ import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration.KOUTA_OID_LENGTH
 import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, KoskiIntegration, OnrIntegrationImpl, TarjontaIntegration, VanhaTarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.virta.VirtaClientImpl
+
 import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, HakukohderyhmaClient, Koodi, KoodistoClient, KoskiClient, KoutaClient, OhjausparametritClient, OnrClientImpl, Organisaatio, OrganisaatioClient, SiirtotiedostoClient, SiirtotiedostoClientConfig, VTSClient, VanhaTarjontaClient, YtrClient}
+
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.integration.ytr.YtrIntegration
 import org.springframework.context.annotation.Lazy
@@ -222,8 +224,17 @@ class IntegrationConfiguration {
       .refreshAfterWrite(Duration.ofHours(12))
       .build(koodisto => Await.result(koodistoClient.haeKoodisto(koodisto.toString), KOODISTO_TIMEOUT))
 
-    (koodisto: String) =>
-      cache.get(koodisto)
+    val alaRelaatioCache = Caffeine.newBuilder()
+      .maximumSize(10000)
+      .expireAfterWrite(Duration.ofHours(24))
+      .refreshAfterWrite(Duration.ofHours(12))
+      .build(koodiUri => Await.result(koodistoClient.haeKoodinAlaRelaatiot(koodiUri.toString), KOODISTO_TIMEOUT))
+
+    new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, Koodi] = cache.get(koodisto)
+
+      override def haeAlakoodit(koodiUri: String): List[Koodi] = alaRelaatioCache.get(koodiUri)
+    }
   }
 
   @Bean

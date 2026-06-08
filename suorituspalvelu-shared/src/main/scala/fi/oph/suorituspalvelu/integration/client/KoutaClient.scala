@@ -19,7 +19,11 @@ case class KoutaHakuaika(alkaa: String, paattyy: Option[String])
 case class KoutaHakukohde(oid: String,
                           organisaatioOid: String,
                           nimi: Map[String, String],
-                          voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean])
+                          voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean],
+                          johtaaTutkintoon: Option[Boolean],
+                          hakuOid: String,
+                          koulutusasteKoodiUrit: List[String] = List.empty
+                         )
 
 case class KoutaHaku(oid: String,
                      tila: String,
@@ -39,23 +43,35 @@ case class KoutaHaku(oid: String,
     "haunkohdejoukko_24"
   )
 
-  val kkHakuUri = "haunkohdejoukko_12"
-
   val toisenAsteenYhteishakuUri = "haunkohdejoukko_11"
+  val korkeakouluHaunKohdeJoukkoUri = "haunkohdejoukko_12"
+  
+  val erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_010"
+  val jatkotutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_3"
 
-  def isToisenAsteenHaku() = {
+  def isToisenAsteenHaku(): Boolean = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     toisenAsteenUrit.contains(kohdejoukkoPrefix)
   }
 
-  def isToisenAsteenYhteisHaku() = {
+  def isToisenAsteenYhteisHaku(): Boolean = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(toisenAsteenYhteishakuUri)
   }
-
-  def isKKHaku() = {
+  
+  def isKorkeakouluHaku: Boolean = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
-    kohdejoukkoPrefix.equals(kkHakuUri)
+    kohdejoukkoPrefix.equals(korkeakouluHaunKohdeJoukkoUri)
+  }
+  
+  def isErasmusMundusTaiKaksoistutkinto: Boolean = {
+    val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
+    kohdejoukkoPrefix.equals(erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri)
+  }
+  
+  def isJatkotutkinto: Boolean = {
+    val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
+    kohdejoukkoPrefix.equals(jatkotutkintoKohdejoukonTarkenneUri)
   }
 }
 

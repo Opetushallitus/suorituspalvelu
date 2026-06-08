@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, 
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemusBaseFields, AtaruValintalaskentaHakemus, Ensikertalaisuus, HakemuspalveluClientImpl, KoutaHaku, KoutaHakuaika, VTSClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, EnsikertalaisuusConstants, EnsikertalaisuusService, EnsikertalaisuusTulos, MenettamisenPeruste}
+
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
@@ -91,7 +92,10 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
       myontaja = "1.2.246.562.10.00000000001",
       isTutkintoonJohtava = isTutkintoonJohtava,
       kieli = Some("fi"),
-      suoritukset = suoritukset
+      suoritukset = suoritukset,
+      luokittelu = None,
+      rahoitusLahde = None,
+      nimi = None
     )
 
   private def luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto: Boolean, suoritukset: Set[Suoritus] = Set.empty): KKSynteettinenOpiskeluoikeus =

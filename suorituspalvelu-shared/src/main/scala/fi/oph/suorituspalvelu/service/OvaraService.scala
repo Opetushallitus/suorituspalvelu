@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, HakemuspalveluClient, KoutaHaku, RetryConfig, SiirtotiedostoClient}
+
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuusService}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
@@ -154,7 +155,7 @@ class OvaraService(
       } else tila.harkinnanvaraisuusTiedostoNumero
     } else tila.harkinnanvaraisuusTiedostoNumero
 
-    val nextEnsikertalaisuusTiedostoNumero = if (haku.isKKHaku()) {
+    val nextEnsikertalaisuusTiedostoNumero = if (haku.isKorkeakouluHaku) {
       val ensikertalaisuusBatch = valintaDatat.flatMap { vd =>
         vd.ensikertalaisuus.map(ek => {
           OvaraEnsikertalaisuus(

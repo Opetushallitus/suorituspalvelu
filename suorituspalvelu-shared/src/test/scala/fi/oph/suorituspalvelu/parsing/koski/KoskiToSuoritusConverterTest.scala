@@ -11,12 +11,11 @@ import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 
 import java.time.LocalDate
 import fi.oph.suorituspalvelu.business.TestDataUtil.{mkJakso, mkOpiskeluoikeusWithTila, mkPerusopetuksenOppimaaraSuoritus, mkVuosiluokkaSuoritus}
+import fi.oph.suorituspalvelu.business.testsupport.TestUtil.DUMMY_KOODISTOPROVIDER
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
 class KoskiToSuoritusConverterTest {
-
-  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = koodisto => Map().empty
 
   def getOikeudetByType(oikeudet: Seq[fi.oph.suorituspalvelu.business.Opiskeluoikeus]): (Seq[PerusopetuksenOpiskeluoikeus], Seq[AmmatillinenOpiskeluoikeus], Seq[GeneerinenOpiskeluoikeus], Seq[PoistettuOpiskeluoikeus]) = {
     val perusopetukset = oikeudet.collect { case po: PerusopetuksenOpiskeluoikeus => po }
