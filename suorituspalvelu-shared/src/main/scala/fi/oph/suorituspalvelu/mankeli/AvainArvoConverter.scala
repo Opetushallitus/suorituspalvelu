@@ -251,7 +251,7 @@ object AvainArvoConstants {
 
   val aKielet: Set[String] = Set("A1", "A2")
   val bKielet: Set[String] = Set("B1", "B2", "B3")
-  val kieltenNumerointiKoodit: Set[String] = aKielet ++ bKielet
+  val kieltenNumerointiKoodit: Set[String] = aKielet ++ bKielet ++ Set("AI")
 }
 
 object PerusopetuksenArvosanaOrdering {
@@ -924,18 +924,26 @@ object AvainArvoConverter {
           //Sama kieli ja sama B-kielen laajuus kuin pohjaOppiaineella (vain sama B1-kieli voi korottaa sama B1-kieltä jne)
           mahdollinenKorotus.kieli.exists(korotuksenKieli => pohjaOppiaine.kieli.get.arvo.equals(korotuksenKieli.arvo)) && mahdollinenKorotus.koodi.arvo == pohjaOppiaine.koodi.arvo
         })
+      //Äidinkielet
+      case pohjaOppiaine: PerusopetuksenOppiaine if pohjaOppiaine.kieli.isDefined && pohjaOppiaine.koodi.arvo.equals("AI") =>
+        pohjaOppiaine -> aineetOppiaineenOppimaarilta.filter(mahdollinenKorotus => {
+          //Äidinkielellä oltava sama aine (AI) sekä sama kieli, jotta korotus huomioidaan
+          mahdollinenKorotus.kieli.exists(korotuksenKieli => pohjaOppiaine.kieli.get.arvo.equals(korotuksenKieli.arvo)) && mahdollinenKorotus.koodi.arvo == pohjaOppiaine.koodi.arvo
+        })
+
       //Kaikki muut aineet
       case pohjaOppiaine: PerusopetuksenOppiaine =>
         //Sama pohjaOppiaine
         pohjaOppiaine -> aineetOppiaineenOppimaarilta.filter(_.koodi.arvo == pohjaOppiaine.koodi.arvo)
     }
 
-    val pakollisetSupasta = pakollisetJaKieletToContainers(
-      pakollinenToMahdollisetKorotukset
-        .sortBy { case (aine, _) => (aine.koodi.arvo, aine.kieli.map(_.arvo).getOrElse("")) }
-        .map { case (aine, korotukset) => (aine, korotukset.toSeq) },
-      paasuoritusOnHakemukselta
-    )
+    val pakollisetAineetJaKorotukset =
+      pakollisetJaKieletToContainers(
+        pakollinenToMahdollisetKorotukset
+          .sortBy { case (aine, _) => (aine.koodi.arvo, aine.kieli.map(_.arvo).getOrElse("")) }
+          .map { case (aine, korotukset) => (aine, korotukset.toSeq) },
+        paasuoritusOnHakemukselta
+      )
 
     //Huomioidaan valinnaisiksi vain sellaiset oppiaineen oppimäärät, joiden aine löytyy varsinaisen oppimäärän aineista.
     val paasuorituksenAineet = aineetPaasuoritukselta.map(_.koodi.arvo)
@@ -943,8 +951,12 @@ object AvainArvoConverter {
     val valinnaisetAineet = aineetPaasuoritukselta.filter(a => !a.pakollinen && a.kieli.isEmpty) ++ valinnaisiksiHuomioitavatOppiaineenOppimaarat.filter(a => !a.pakollinen && a.kieli.isEmpty)
     val valinnaisetSupasta = perusopetuksenValinnaisetOppiaineetToAvainArvot(valinnaisetAineet)
 
+    val tuloksetIlmanEiNumeerisia = (pakollisetAineetJaKorotukset ++ valinnaisetSupasta).filter(aa => {
+      //Päästetään parhaistakin arvosanoista läpi vain numeeriset arvosanat. Säilytetään lisäksi mukana olevat kielitiedot.
+      aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliOppiainePostfix) || aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliTietoPostfix) || AvainArvoConstants.numeerisetPeruskoulunArvosanat.contains(aa.arvo)
+    })
 
-    pakollisetSupasta ++ valinnaisetSupasta
+    tuloksetIlmanEiNumeerisia
   }
 
   def convertPeruskouluArvot(personOid: String, vahvistettuViimeistaan: LocalDate, hakemus: Option[AtaruValintalaskentaHakemus], opiskeluoikeudet: Seq[Opiskeluoikeus], ehdotOverrideAktiivinen: Boolean = false): Set[AvainArvoContainer] = {
@@ -974,10 +986,8 @@ object AvainArvoConverter {
         val aineetPaasuoritukselta = perusopetuksenOppimaara.map(_.aineet).getOrElse(Seq.empty)
         val aineetOppimaarilta = oppiaineenOppimaarat.flatMap(_.aineet).toSet
 
-        val arvosanaJaKieliArvot = convertParhaatPeruskoulunArvosanatJaKielet(personOid, aineetPaasuoritukselta, aineetOppimaarilta).filter(aa => {
-          //Päästetään parhaistakin arvosanoista läpi vain numeeriset arvosanat. Säilytetään lisäksi mukana olevat kielitiedot.
-          aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliOppiainePostfix) || aa.avain.endsWith(AvainArvoConstants.peruskouluAineenKieliTietoPostfix) || AvainArvoConstants.numeerisetPeruskoulunArvosanat.contains(aa.arvo)
-        })
+        val arvosanaJaKieliArvot = convertParhaatPeruskoulunArvosanatJaKielet(personOid, aineetPaasuoritukselta, aineetOppimaarilta)
+
         val suoritusArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritettuKey, "true", Seq(vahvistettuAjoissaSelite))
         val suoritusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluSuoritusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
         val paattotodistusVuosiArvo = AvainArvoContainer(AvainArvoConstants.peruskouluPaattotodistusvuosiKey, po.vahvistusPaivamaara.map(_.getYear).get.toString, Seq(vahvistettuAjoissaSelite))
