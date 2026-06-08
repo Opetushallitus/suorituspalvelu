@@ -287,6 +287,32 @@ class AvainArvoConverterTest {
     Assertions.assertEquals("EN", resultMap("PK_B12_OPPIAINE"))
   }
 
+  //Useita AI-oppiaineita: eri äidinkielen oppimäärät, (esim. AI1 ja AI7) pitäisi numeroida kuten A- ja B-kielet.
+  @Test def testMultipleAidinkieliArvosanatAreNumbered(): Unit = {
+    val aiSuomi = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(None, None, None),
+      Koodi("AI", "koodisto", None), Koodi("9", "koodisto", None),
+      Some(Koodi("AI1", "oppiaineaidinkielijakirjallisuus", None)), true, None, None)
+    val aiSuomiToisenaKielena = PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(None, None, None),
+      Koodi("AI", "koodisto", None), Koodi("8", "koodisto", None),
+      Some(Koodi("AI7", "oppiaineaidinkielijakirjallisuus", None)), true, None, None)
+
+    val aineetJaKorotukset = Seq(
+      (aiSuomi, Seq.empty[PerusopetuksenOppiaine]),
+      (aiSuomiToisenaKielena, Seq.empty[PerusopetuksenOppiaine])
+    )
+
+    val result    = AvainArvoConverter.pakollisetJaKieletToContainers(aineetJaKorotukset)
+    val resultMap = result.map(aa => aa.avain -> aa.arvo).toMap
+
+    // AI-aineet pitäisi numeroida kuten A-kielet: PK_AI (AI1/suomi) ja PK_AI2 (AI2/ruotsi)
+    Assertions.assertEquals("9", resultMap(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI"),  "First AI (suomi) -> PK_AI")
+    Assertions.assertEquals("FI", resultMap(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI" + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix), "Second AI (suomi) -> PK_AI_OPPIAINE")
+    Assertions.assertEquals("AI1", resultMap(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI" + AvainArvoConstants.peruskouluAineenKieliTietoPostfix), "Second AI (suomi) -> PK_AI_OPPIAINE")
+    Assertions.assertEquals("8", resultMap(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI2"), "Second AI (ruotsi) -> PK_AI2")
+    Assertions.assertEquals("FI_2", resultMap(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI2" + AvainArvoConstants.peruskouluAineenKieliOppiainePostfix), "Second AI (ruotsi) -> PK_AI2_OPPIAINE")
+    Assertions.assertEquals("AI7", resultMap(AvainArvoConstants.peruskouluAineenArvosanaPrefix + "AI2" + AvainArvoConstants.peruskouluAineenKieliTietoPostfix), "Second AI (ruotsi) -> PK_AI2_OPPIAINE")
+  }
+
   @Test def testKorkeimmatArvosanat(): Unit = {
     val aineet = Seq(PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti, hankala savotta"), None, None), Koodi("A1", "koodisto", None), Koodi("8", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None),
                      PerusopetuksenOppiaine(UUID.randomUUID(), Kielistetty(Some("englanti"), None, None), Koodi("A1", "koodisto", None), Koodi("10", "koodisto", None), Some(Koodi("EN", "kielivalikoima", None)), true, None, None),
@@ -442,6 +468,21 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("7"),  arvot.get("PK_B1"))
     Assertions.assertEquals(Some("SV"), arvot.get("PK_B1_OPPIAINE"))
     Assertions.assertFalse(arvot.contains("PK_B12"), "B1-EN korotus ilman pohjasuoritusta ei luo uutta B1-numeroa")
+  }
+
+  @Test def testAidinkielenKorotusVainSamallakielella(): Unit = {
+    // AI-AI1 ja AI-AI7 pääsuorituksella, vain AI-AI1 korotus oppiaineen oppimäärältä
+    val arvot = convertArvot(Seq(
+      paasuoritusOpiskeluoikeus(Set(aine("AI", "7", Some("AI1")), aine("AI", "9", Some("AI7")))),
+      korotusOpiskeluoikeus(Set(aine("AI", "8", Some("AI1")), aine("AI", "10", Some("AI6"))) //AI6-korotusta ei huomioida, koska eri kieli
+    )))
+
+    Assertions.assertEquals(Some("8"), arvot.get("PK_AI")) //Sisältä korotuksen
+    Assertions.assertEquals(Some("FI"), arvot.get("PK_AI_OPPIAINE"))
+    Assertions.assertEquals(Some("AI1"), arvot.get("PK_AI_KIELITIETO"))
+    Assertions.assertEquals(Some("9"), arvot.get("PK_AI2")) //Ei korotusta
+    Assertions.assertEquals(Some("FI_2"), arvot.get("PK_AI2_OPPIAINE"))
+    Assertions.assertEquals(Some("AI7"), arvot.get("PK_AI2_KIELITIETO"))
   }
 
   @Test def testYoArvoEnnenLeikkuripaivaa(): Unit = {
