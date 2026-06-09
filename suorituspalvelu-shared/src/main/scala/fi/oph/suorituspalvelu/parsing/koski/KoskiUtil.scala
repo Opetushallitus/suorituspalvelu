@@ -47,9 +47,10 @@ object KoskiUtil {
 
   def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, pakollistenKoodit: Set[String], koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
+    val oppiaineKoodistoUri = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodistoUri
 
     val hasArviointi = osaSuoritus.arviointi.isDefined
-    val isKoulukohtainen = !koodistoProvider.haeKoodisto(KOODISTO_OPPIAINEET).contains(oppiaineKoodi)
+    val isKoulukohtainen = !koodistoProvider.haeKoodisto(KOODISTO_OPPIAINEET).contains(oppiaineKoodi) || oppiaineKoodistoUri != KOODISTO_OPPIAINEET
     val aineTiedossa = !"XX".equals(oppiaineKoodi)
     val pakollinen = osaSuoritus.koulutusmoduuli.exists(km => km.pakollinen.exists(p => p))
     val sisallytettavaEiPakollinenKieli = sisallytettavatEiPakollisetKielet.contains(oppiaineKoodi)
