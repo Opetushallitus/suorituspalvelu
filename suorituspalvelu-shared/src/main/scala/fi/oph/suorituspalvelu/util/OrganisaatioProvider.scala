@@ -18,7 +18,7 @@ trait OrganisaatioProvider {
   def haeKaikkiOrganisaatiot(): Map[String, Organisaatio] =
     orgLookupTable().filter((tunniste, _) => tunniste.startsWith("1.2.246"))
 
-  // Palauttaa organisaatin yläorganisaatioiden tunnisteet (oid)
+  // Palauttaa organisaation yläorganisaatioiden tunnisteet (oid)
   def haeKaikkiOrganisaationParenttienOidit(orgOid: String): List[String] =
     orgLookupTable().get(orgOid).flatMap(_.parentOid)
       .map(parent => List(parent) ++ haeKaikkiOrganisaationParenttienOidit(parent)).getOrElse(List.empty)
