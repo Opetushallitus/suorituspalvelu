@@ -101,9 +101,10 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   }
 
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
+    val organisaatioJaVanhemmat = List(hakutoive.organisaatioOid) ++ organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(hakutoive.organisaatioOid)
     val koulutusAste = getKoulutusAsteHakutoiveelle(hakutoive)
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto,
-      haku.isErasmusMundusTaiKaksoistutkinto, "", koulutusAste)
+      haku.isErasmusMundusTaiKaksoistutkinto, organisaatioJaVanhemmat, koulutusAste)
   }
   
   private def getKoulutusAsteHakutoiveelle(hakutoive: KoutaHakukohde): YosKoulutusAsteLuokka = {
