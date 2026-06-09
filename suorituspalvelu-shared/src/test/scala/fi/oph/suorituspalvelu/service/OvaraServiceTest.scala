@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KantaOperaatiot, Koodi, Lahdejarjestelma, Opiskeluoikeus, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, SiirtotiedostoClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, RetryConfig, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
 import fi.oph.suorituspalvelu.ovara.OvaraVersioJaOpiskeluoikeudet
@@ -137,7 +137,7 @@ class OvaraServiceTest {
   ): Unit = {
     Mockito.when(hakemuspalveluClient.getHaunHakijat(haku.oid))
       .thenReturn(Future.successful(Seq(BASE_HAKIJA)))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(any()))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(any())(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(HENKILO_OID -> Set(HENKILO_OID)))))
     Mockito.when(valintaDataService.fetchValintalaskentaHakemukset(any(), any(), any()))
       .thenReturn(Future.successful(Seq(BASE_VALINTALASKENTA_HAKEMUS)))
@@ -216,7 +216,7 @@ class OvaraServiceTest {
     val (service, valintaDataService, hakemuspalveluClient, onrIntegration) = buildService()
     Mockito.when(hakemuspalveluClient.getHaunHakijat(KK_HAKU.oid))
       .thenReturn(Future.successful(Seq(BASE_HAKIJA)))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(any()))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(any())(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(HENKILO_OID -> Set(HENKILO_OID)))))
     Mockito.when(valintaDataService.fetchValintalaskentaHakemukset(any(), any(), any()))
       .thenReturn(Future.successful(Seq(BASE_VALINTALASKENTA_HAKEMUS)))
@@ -456,7 +456,7 @@ class OvaraServiceTest {
     val hakijat = (1 to 600).map(i => AtaruHakemuksenHenkilotiedot(s"hakemus-$i", Some(s"henkilo-$i"), None))
     Mockito.when(hakemuspalveluClient.getHaunHakijat(KK_HAKU.oid))
       .thenReturn(Future.successful(hakijat))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(any()))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(any())(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map.empty)))
     Mockito.when(valintaDataService.fetchValintalaskentaHakemukset(any(), any(), any()))
       .thenReturn(Future.successful(Seq(BASE_VALINTALASKENTA_HAKEMUS)))

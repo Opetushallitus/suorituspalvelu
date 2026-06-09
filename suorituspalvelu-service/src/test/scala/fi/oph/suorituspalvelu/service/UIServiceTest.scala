@@ -3,13 +3,14 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Lahdejarjestelma}
+import fi.oph.suorituspalvelu.business.{Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.security.SecurityConstants
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.{Assertions, Test}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
@@ -46,7 +47,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     val oppijaOid = "1.2.246.562.24.21583363334"
 
     // mockataan onr-vastaus, ei aliaksia
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaOid)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
 
     Assertions.assertEquals(false, uiService.hasOppijanKatseluOikeus(oppijaOid))
 
@@ -61,7 +62,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
     val permissionRequest = AtaruPermissionRequest(Set(oppijaOid), Set(oppilaitosOid), Set.empty)
     val permissionResponse = AtaruPermissionResponse(Some(onOikeus), None)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaOid)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
     Mockito.when(hakemuspalveluClient.checkPermission(permissionRequest)).thenReturn(Future.successful(permissionResponse))
 
     // palautuu atarun vastaus
@@ -76,7 +77,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
     // mockataan onr ja organisaatiopalvelun vastaukset
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosOid)).thenReturn(Some(organisaatio))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaOid)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
 
     // tallennetaan valmis perusopetuksen oppimäärä
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
@@ -121,7 +122,7 @@ class UIServiceTest extends BaseIntegraatioTesti {
 
     // mockataan onr ja organisaatiopalvelun vastaukset
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(oppilaitosJohonOikeudetOid)).thenReturn(Some(organisaatio))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(oppijaOid))).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(oppijaOid)))(any[RetryConfig]())).thenReturn(Future.successful(PersonOidsWithAliases(Map(oppijaOid -> Set(oppijaOid)))))
 
     // tallennetaan valmis perusopetuksen oppimäärä
     val versio = kantaOperaatiot.tallennaJarjestelmaVersio(oppijaOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1))
