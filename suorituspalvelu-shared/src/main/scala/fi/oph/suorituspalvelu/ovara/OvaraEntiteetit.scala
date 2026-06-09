@@ -504,6 +504,10 @@ case class OvaraPoistettuOpiskeluoikeus(
   oid: String
 )
 
+case class OvaraHenkiloMetadata(
+  viimeisinMuutos: Instant
+)
+
 case class OvaraVersioMetadata(
   lahdejarjestelma: String,
   lahdeTunniste: String,
@@ -517,6 +521,7 @@ case class OvaraVersioMetadata(
 //Sisältää henkilön kaikki opiskeluoikeudet kaikista lähdejärjestelmistä.
 case class OvaraVersioJaOpiskeluoikeudet(
   henkiloOid: String,
+  metadata: OvaraHenkiloMetadata,
   kkOpiskeluoikeudet: Seq[OvaraKKOpiskeluoikeus],
   kkSynteettisetOpiskeluoikeudet: Seq[OvaraKKSynteettinenOpiskeluoikeus],
   yoOpiskeluoikeudet: Seq[OvaraYOOpiskeluoikeus],

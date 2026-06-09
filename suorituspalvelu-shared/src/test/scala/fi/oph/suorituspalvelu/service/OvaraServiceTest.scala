@@ -4,6 +4,7 @@ import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, 
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
+import fi.oph.suorituspalvelu.ovara.OvaraVersioJaOpiskeluoikeudet
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
@@ -242,7 +243,7 @@ class OvaraServiceTest {
     parserVersio     = Some(3),
     luontiHetki      = None,
     paivitysHetki    = Some(Instant.parse("2024-01-15T10:00:00Z")),
-    parserointiHetki = None
+    parserointiHetki = Some(Instant.parse("2024-01-15T10:01:23Z"))
   )
 
   val BASE_KK_OPISKELUOIKEUS = KKOpiskeluoikeus(
@@ -325,6 +326,53 @@ class OvaraServiceTest {
     Assertions.assertEquals(1, count)
     Mockito.verify(mockSiirtotiedostoClient, Mockito.times(1))
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
+  }
+
+  @Test def testHenkiloMetadataViimeisinMuutosOnMaxParserointiHetki(): Unit = {
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
+
+    val varhainenHetki    = Instant.parse("2024-01-10T08:00:00Z")
+    val keskimmainenHetki = Instant.parse("2024-01-12T09:00:00Z")
+    val viimeisinHetki    = Instant.parse("2024-01-15T10:01:23Z")
+
+    val versioVarhainen = BASE_VERSIO.copy(
+      tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000010"),
+      parserointiHetki = Some(varhainenHetki)
+    )
+    val versioKeskimmainen = BASE_VERSIO.copy(
+      tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000011"),
+      lahdeJarjestelma = Lahdejarjestelma.VIRTA,
+      lahdeTunniste    = "virta-tunniste",
+      parserointiHetki = Some(keskimmainenHetki)
+    )
+    val versioViimeisin = BASE_VERSIO.copy(
+      tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000012"),
+      lahdeTunniste    = "koski-tunniste-2",
+      parserointiHetki = Some(viimeisinHetki)
+    )
+
+    val ooVarhainen    = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000020"))
+    val ooKeskimmainen = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000021"))
+    val ooViimeisin    = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000022"))
+
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq(HENKILO_OID))
+      .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
+      .thenReturn(Map(
+        versioViimeisin    -> Set[Opiskeluoikeus](ooViimeisin),
+        versioVarhainen    -> Set[Opiskeluoikeus](ooVarhainen),
+        versioKeskimmainen -> Set[Opiskeluoikeus](ooKeskimmainen)
+      ))
+
+    service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
+
+    val captor = ArgumentCaptor.forClass(classOf[Seq[_]]).asInstanceOf[ArgumentCaptor[Seq[OvaraVersioJaOpiskeluoikeudet]]]
+    Mockito.verify(mockSiirtotiedostoClient).tallennaSiirtotiedosto(any(), captor.capture(), any(), any(), any())
+
+    val records = captor.getValue
+    Assertions.assertEquals(1, records.size)
+    Assertions.assertEquals(viimeisinHetki, records.head.metadata.viimeisinMuutos)
   }
 
   // HenkiloOid-perusteinen sivutus: varmistaa että afterHenkiloOid-kursorin arvot ovat oikein sivujen välillä.
