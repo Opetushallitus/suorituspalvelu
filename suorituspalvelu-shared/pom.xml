@@ -102,6 +102,10 @@
             <groupId>opiskelijavalinnat-utils</groupId>
             <artifactId>java-cas</artifactId>
          </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>

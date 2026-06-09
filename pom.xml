@@ -166,6 +166,11 @@
                 <artifactId>async-http-client</artifactId>
                 <version>3.0.3</version>
             </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-http2</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
             <!-- Lisätty enforcer-pluginin takia -->
             <dependency>
                 <groupId>com.google.errorprone</groupId>
