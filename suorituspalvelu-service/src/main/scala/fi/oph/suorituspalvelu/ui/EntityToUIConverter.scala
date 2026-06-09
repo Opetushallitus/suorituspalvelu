@@ -137,6 +137,7 @@ object EntityToUIConverter {
             getKoodiNimi[OpiskeluoikeusNimiUI](Some(o.tyyppiKoodi), VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO, koodistoProvider)
               .orElse(OpiskeluoikeusNimiUI(Optional.empty(), Optional.empty(), Optional.empty()))
           ),
+        virtaNimi = o.nimi.map(kielistettyToKKOpiskeluoikeusNimi).toJava,
         oppilaitos = getKKOppilaitos(o.myontaja, organisaatioProvider),
         voimassaolonAlku = o.alkuPvm,
         voimassaolonLoppu = o.loppuPvm,
@@ -177,6 +178,14 @@ object EntityToUIConverter {
     koodistoProvider: KoodistoProvider
   ): Optional[SuorituskieliUI] =
     getKoodiNimi[SuorituskieliUI](kielikoodi.map(_.toUpperCase), KOODISTO_SUORITUSKIELET, koodistoProvider)
+
+  private def kielistettyToKKOpiskeluoikeusNimi(kielistetty: Kielistetty): KKOpiskeluoikeusNimiUI = {
+    KKOpiskeluoikeusNimiUI(
+      fi = kielistetty.fi.toJava,
+      sv = kielistetty.sv.toJava,
+      en = kielistetty.en.toJava
+    )
+  }
 
   private def kielistettyToKKSuoritusNimi(kielistetty: Kielistetty): KKSuoritusNimiUI = {
     KKSuoritusNimiUI(

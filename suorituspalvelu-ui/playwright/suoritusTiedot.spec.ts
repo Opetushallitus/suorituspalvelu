@@ -86,6 +86,10 @@ test.describe('Suoritustiedot', () => {
         label: 'Tutkintotaso',
         value: 'Ylempi korkeakoulututkinto',
       },
+      {
+        label: 'VIRTA-nimi',
+        value: 'Kasvatustieteen maisteri',
+      },
     ]);
   });
 

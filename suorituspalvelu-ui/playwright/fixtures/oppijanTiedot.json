@@ -13,6 +13,11 @@
         "sv": "Kasvatust. maist., kasvatustiede sv",
         "en": "Kasvatust. maist., kasvatustiede en"
       },
+      "virtaNimi": {
+        "fi": "Kasvatustieteen maisteri",
+        "sv": "Kasvatustieteen maisteri sv",
+        "en": "Kasvatustieteen maisteri en"
+      },
       "oppilaitos": {
         "nimi": {
           "fi": "Tampereen yliopisto",
