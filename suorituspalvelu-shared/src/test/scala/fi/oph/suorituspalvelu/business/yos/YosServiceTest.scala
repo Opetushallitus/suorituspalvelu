@@ -48,7 +48,7 @@ class YosServiceTest {
   )
 
   private val YOS_HAKUTOIVE = YosHakutoive(korkeakoulutus = true, tutkintoonJohtava = true, jatkoTutkinto = false,
-    kaksoisTutkinto = false, organisaatioOid = "", koulutusAste = YLEMMAT_JA_ALEMMAT_ASTEET)
+    kaksoisTutkinto = false, organisaatioJaVanhemmat = List(ORGANISAATIO_OID), koulutusAste = YLEMMAT_JA_ALEMMAT_ASTEET)
 
   private val VIRTA_VERSIO = VersioEntiteetti(
     lahdeJarjestelma = Lahdejarjestelma.VIRTA,
