@@ -8,8 +8,7 @@ import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
-
-import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
+import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraHenkiloMetadata, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
 import fi.oph.suorituspalvelu.business.Opiskeluoikeus
 
 import java.time.{Instant, LocalDate}
@@ -314,8 +313,12 @@ class OvaraService(
           val ammatOo     = EntityToOvaraConverter.getAmmatillisetOpiskeluoikeudet(kaikkiOoJaMetadata)
           val pkOo        = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(kaikkiOoJaMetadata)
           val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(kaikkiOoJaMetadata)
-          if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty)
-            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
+          if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty) {
+            //Parserointihetki on optionaalinen, mutta koska muuttuneet tiedot on poimittu parserointihetken perusteella, vähintään yksi parserointihetki on oikeasti löydyttävä.
+            val viimeisinParserointiMuutos = kaikkiOoJaMetadata.map(_._1).flatMap(_.parserointiHetki).max
+            val henkiloMetadata = OvaraHenkiloMetadata(viimeisinParserointiMuutos)
+            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
+          }
           else None
         }
 
@@ -333,5 +336,13 @@ class OvaraService(
   }
 
   private def toMeta(v: fi.oph.suorituspalvelu.business.VersioEntiteetti): OvaraVersioMetadata =
-    OvaraVersioMetadata(v.lahdeJarjestelma.nimi, v.lahdeTunniste, v.lahdeVersio, v.parserVersio, v.luontiHetki, v.paivitysHetki, v.parserointiHetki)
+    OvaraVersioMetadata(
+      lahdejarjestelma = v.lahdeJarjestelma.nimi,
+      lahdeTunniste = v.lahdeTunniste,
+      lahdeVersio = v.lahdeVersio,
+      parserVersio = v.parserVersio,
+      luontiHetki = v.luontiHetki,
+      paivitysHetki = v.paivitysHetki,
+      parserointiHetki = v.parserointiHetki
+    )
 }
