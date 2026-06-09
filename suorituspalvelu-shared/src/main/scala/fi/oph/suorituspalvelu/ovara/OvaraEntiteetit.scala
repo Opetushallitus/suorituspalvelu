@@ -158,7 +158,7 @@ case class OvaraDIATutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
-  osasuoritukset: Set[OvaraDIAOppiaine]
+  osasuoritukset: Seq[OvaraDIAOppiaine]
 ) extends OvaraGeneerinenSuoritus
 
 case class OvaraDIAOppiaine(
@@ -210,7 +210,7 @@ case class OvaraEBTutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
-  osasuoritukset: Set[OvaraEBOppiaine]
+  osasuoritukset: Seq[OvaraEBOppiaine]
 ) extends OvaraGeneerinenSuoritus
 
 case class OvaraEBOppiaine(
@@ -220,7 +220,7 @@ case class OvaraEBOppiaine(
   koodi: Koodi,
   laajuus: Option[OvaraEBLaajuus],
   suorituskieli: Option[Koodi],
-  osasuoritukset: Set[OvaraEBOppiaineenOsasuoritus]
+  osasuoritukset: Seq[OvaraEBOppiaineenOsasuoritus]
 )
 
 case class OvaraEBOppiaineenOsasuoritus(
@@ -254,7 +254,7 @@ case class OvaraIBTutkinto(
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
   suorituskieli: Option[Koodi],
-  osasuoritukset: Set[OvaraIBOppiaineSuoritus]
+  osasuoritukset: Seq[OvaraIBOppiaineSuoritus]
 ) extends OvaraGeneerinenSuoritus
 
 case class OvaraIBOppiaineSuoritus(
@@ -345,7 +345,7 @@ case class OvaraAmmatillinenPerustutkinto(
   keskiarvo: Option[BigDecimal],
   suoritustapa: Koodi,
   suoritusKieli: Koodi,
-  osat: Set[OvaraAmmatillisenTutkinnonOsa]
+  osat: Seq[OvaraAmmatillisenTutkinnonOsa]
 ) extends OvaraAmmatillinenSuoritus
 
 case class OvaraAmmatillinenTutkintoOsittainen(
@@ -362,7 +362,7 @@ case class OvaraAmmatillinenTutkintoOsittainen(
   korotettuOpiskeluoikeusOid: Option[String],
   suoritustapa: Koodi,
   suoritusKieli: Koodi,
-  osat: Set[OvaraAmmatillisenTutkinnonOsa]
+  osat: Seq[OvaraAmmatillisenTutkinnonOsa]
 ) extends OvaraAmmatillinenSuoritus
 
 case class OvaraAmmatillisenTutkinnonOsa(
@@ -374,7 +374,7 @@ case class OvaraAmmatillisenTutkinnonOsa(
   arviointiPaiva: Option[LocalDate],
   arvosana: Option[Arvosana],
   laajuus: Option[Laajuus],
-  osaAlueet: Set[OvaraAmmatillisenTutkinnonOsaAlue],
+  osaAlueet: Seq[OvaraAmmatillisenTutkinnonOsaAlue],
   korotettu: Option[Korotus]
 )
 
@@ -460,7 +460,7 @@ case class OvaraPerusopetuksenOppimaara(
   yksilollistaminen: Option[PerusopetuksenYksilollistaminen],
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
-  aineet: Set[OvaraPerusopetuksenOppiaine],
+  aineet: Seq[OvaraPerusopetuksenOppiaine],
   lahtokoulut: List[Lahtokoulu],
   syotetty: Boolean,
   vuosiluokkiinSitoutumatonOpetus: Boolean,
