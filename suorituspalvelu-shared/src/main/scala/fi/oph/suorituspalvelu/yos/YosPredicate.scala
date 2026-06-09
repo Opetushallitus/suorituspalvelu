@@ -33,9 +33,9 @@ object YosPredicate {
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
     hakutoive match {
       case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET) =>
-        true
+        YosConstants.YOS_BLACK_LISTED_ORGANIZATION_OIDS.intersect(hakutoive.organisaatioJaVanhemmat).isEmpty
       case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET) =>
-        true  
+        YosConstants.YOS_BLACK_LISTED_ORGANIZATION_OIDS.intersect(hakutoive.organisaatioJaVanhemmat).isEmpty
       case _ =>
         false
     }
