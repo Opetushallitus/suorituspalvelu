@@ -33,9 +33,9 @@ object YosPredicate {
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
     hakutoive match {
       case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET) =>
-        YosConstants.YOS_BLACK_LISTED_ORGANIZATION_OIDS.intersect(hakutoive.organisaatioJaVanhemmat).isEmpty
+        kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
       case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET) =>
-        YosConstants.YOS_BLACK_LISTED_ORGANIZATION_OIDS.intersect(hakutoive.organisaatioJaVanhemmat).isEmpty
+        kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
       case _ =>
         false
     }
@@ -49,10 +49,13 @@ object YosPredicate {
         && (oikeus.rahoitusLahde.isEmpty || oikeus.rahoitusLahde.exists(rl => rl.isBlank) || oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
         && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
         && (oikeus.luokittelu.isEmpty || oikeus.luokittelu.exists(l => l.isBlank) || !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
-        // TODO OPHYOS-171: maanpuolustuskorkeakoulu, poliisiammattikorkeakoulu tai Högskolan på Åland
       case _ =>
         false
   }
+
+  def kuuluukoOrganisaatioYosinPiiriin(organisaatiot: List[String], oppilaitosnro: Option[String] = None): Boolean =
+    YosConstants.YOS_BLACK_LISTED_ORGANIZATION_OIDS.intersect(organisaatiot).isEmpty
+    && !oppilaitosnro.exists(YosConstants.YOS_BLACK_LISTED_OPPILAITOSNRO.contains(_))
 
   def kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(vastaanotettavanAste: YosKoulutusAsteLuokka, oikeudenAste: YosKoulutusAsteLuokka): Boolean = {
     (vastaanotettavanAste, oikeudenAste) match

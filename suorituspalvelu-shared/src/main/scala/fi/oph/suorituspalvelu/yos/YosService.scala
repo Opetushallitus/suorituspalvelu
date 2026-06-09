@@ -87,6 +87,10 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       val paatettavatOikeudet = oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus))
         .map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
         .filter(oikeus => {
+          val parentOrganisaatiot = organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(oikeus.myontaja)
+          YosPredicate.kuuluukoOrganisaatioYosinPiiriin(parentOrganisaatiot, Some(oikeus.myontaja))
+        })
+        .filter(oikeus => {
           val oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
           YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoive.koulutusAste, oikeudenAste)
         })
