@@ -1033,7 +1033,7 @@ object EntityToUIConverter {
       }
 
       val hakukohdeOrganisaatioIds = hakukohde match
-        case hakukohde: KoutaHakukohde => List(hakukohde.organisaatioOid)
+        case hakukohde: KoutaHakukohde => List(hakukohde.tarjoaja)
         case hakukohde: VanhaTarjontaHakukohde => hakukohde.tarjoajaOids
       val hakukohdeOppilaitokset = hakukohdeOrganisaatioIds.flatMap(oid =>
         organisaatioProvider.haeOrganisaationTiedot(oid) match
