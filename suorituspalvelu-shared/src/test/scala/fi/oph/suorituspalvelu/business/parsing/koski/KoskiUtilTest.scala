@@ -108,11 +108,11 @@ class KoskiUtilTest {
       tunnetutOppiaineet.map(k => k -> null.asInstanceOf[fi.oph.suorituspalvelu.integration.client.Koodi]).toMap
     else Map.empty
 
-  private def mkOsa(koodi: String, pakollinen: Boolean, laajuus: Option[BigDecimal], hasArviointi: Boolean): KoskiOsaSuoritus =
+  private def mkOsa(koodi: String, pakollinen: Boolean, laajuus: Option[BigDecimal], hasArviointi: Boolean, koodistoUri: String = "koskioppiaineetyleissivistava"): KoskiOsaSuoritus =
     KoskiOsaSuoritus(
       tyyppi = null,
       koulutusmoduuli = Some(KoskiKoulutusModuuli(
-        tunniste = Some(KoskiKoodi(koodi, "koskioppiaineetyleissivistava", None, Kielistetty(None, None, None), None)),
+        tunniste = Some(KoskiKoodi(koodi, koodistoUri, None, Kielistetty(None, None, None), None)),
         koulutustyyppi = None,
         laajuus = laajuus.map(arvo => KoskiLaajuus(arvo, None)),
         kieli = None,
@@ -140,6 +140,13 @@ class KoskiUtilTest {
     Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
       mkOsa("KOULUKOHTAINEN_X", pakollinen = true, laajuus = Some(BigDecimal(3)), hasArviointi = true),
       Set("KOULUKOHTAINEN_X"),
+      oppiaineKoodistoProvider))
+
+  @Test def testIncludePerusopetuksenOppiainePaikallinenValinnainen(): Unit =
+    // paikallinen valinnainen: koodiarvo löytyy koodistosta mutta koodistoUri on paikallinen -> ei mukaan
+    Assertions.assertFalse(KoskiUtil.includePerusopetuksenOppiaine(
+      mkOsa("MA", pakollinen = false, laajuus = Some(BigDecimal(3)), hasArviointi = true, koodistoUri = "painotus"),
+      Set("MA"),
       oppiaineKoodistoProvider))
 
   @Test def testIncludePerusopetuksenOppiaineXXEiTiedossa(): Unit =
