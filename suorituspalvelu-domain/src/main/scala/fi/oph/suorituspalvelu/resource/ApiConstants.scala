@@ -58,6 +58,12 @@ object ApiConstants {
   final val DATASYNC_UUDELLEENPARSEROI_PATH                 = DATASYNC_PATH + "/uudelleenparseroi"
   final val DATASYNC_UUDELLEENPARSEROINTI_EPAONNISTUI       = "Uudelleenparseroinnin käynnistys epäonnistui"
 
+  final val OVARA_PATH                                      = VERSIONED_API_PREFIX + "/ovara"
+  final val OVARA_PAIVITTAISET_PATH                         = OVARA_PATH + "/paivittaiset"
+  final val OVARA_OPISKELUOIKEUDET_PATH                     = OVARA_PATH + "/opiskeluoikeudet"
+  final val OVARA_500_VIRHE                                 = "Ovara-siirtotiedostojen muodostus epäonnistui"
+  final val OVARA_409_VIRHE                                 = "Ovara-ajo on jo käynnissä"
+
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_NAME             = "oppilaitosOid"
   final val LAHETTAVAT_OPPILAITOSOID_PARAM_PLACEHOLDER      = "{" + LAHETTAVAT_OPPILAITOSOID_PARAM_NAME + "}"
   final val LAHETTAVAT_VUOSI_PARAM_NAME                     = "vuosi"
