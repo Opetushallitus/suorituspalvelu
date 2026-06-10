@@ -65,7 +65,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
     Mockito.when(tarjontaIntegration.getHakukohde(HAKUKOHDE_OID)).thenReturn(
       KoutaHakukohde(
         oid = HAKUKOHDE_OID,
-        organisaatioOid = "NukeTehdas",
+        tarjoaja = "NukeTehdas",
         nimi = Map.empty,
         voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),
         johtaaTutkintoon = Some(true),
