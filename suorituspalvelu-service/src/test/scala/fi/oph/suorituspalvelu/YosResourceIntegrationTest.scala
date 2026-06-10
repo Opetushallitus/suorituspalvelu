@@ -11,6 +11,7 @@ import fi.oph.suorituspalvelu.resource.api.{YosErrorResponse, YosSuccessResponse
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
 import org.junit.jupiter.api.*
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.{WithAnonymousUser, WithMockUser}
@@ -64,7 +65,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
     Mockito.when(tarjontaIntegration.getHakukohde(HAKUKOHDE_OID)).thenReturn(
       KoutaHakukohde(
         oid = HAKUKOHDE_OID,
-        organisaatioOid = "NukeTehdas",
+        tarjoaja = "NukeTehdas",
         nimi = Map.empty,
         voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),
         johtaaTutkintoon = Some(true),
@@ -97,6 +98,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testReturnsEmptyListForHakijaWithNoOpiskeluOikeuksia(): Unit = {
+    Mockito.when(organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().isOk).andReturn()
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
@@ -106,6 +108,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testReturnsPaatettavatOpiskeluOikeudet(): Unit = {
     insertOpiskeluOikeus()
+    Mockito.when(organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
     Mockito.when(koodistoProvider.haeKoodisto("koulutus")).thenReturn(Map("koulutus_1" ->
       fi.oph.suorituspalvelu.integration.client.Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")), koodiUri = "koulutus_1")))
     Mockito.when(koodistoProvider.haeAlakoodit("koulutus_1")).thenReturn(List(fi.oph.suorituspalvelu.integration.client.Koodi("72", Koodisto("kansallinenkoulutusluokitus2016koulutusastetaso2"), List.empty, "kansallinenkoulutusluokitus2016koulutusastetaso2_72")))
@@ -138,6 +141,7 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testReturnsErrorVirhePaattyvienOpiskeluOikeuksienHaussa(): Unit = {
     insertOpiskeluOikeus()
+    Mockito.when(organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenThrow(new RuntimeException("FAIL"))
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().is5xxServerError()).andReturn()

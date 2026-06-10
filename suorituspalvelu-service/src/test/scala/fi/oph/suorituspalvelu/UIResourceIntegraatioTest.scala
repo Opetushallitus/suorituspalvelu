@@ -1247,7 +1247,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
     val koutaHakukohde = KoutaHakukohde(
       oid = hakukohdeOid,
-      organisaatioOid = oppilaitosOid,
+      tarjoaja = oppilaitosOid,
       nimi = Map("fi" -> "Testihakukohde"),
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = None,
       johtaaTutkintoon = Some(true),

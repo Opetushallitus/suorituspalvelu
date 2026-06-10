@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class KoutaHakuaika(alkaa: String, paattyy: Option[String])
 
 case class KoutaHakukohde(oid: String,
-                          organisaatioOid: String,
+                          tarjoaja: String,
                           nimi: Map[String, String],
                           voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean],
                           johtaaTutkintoon: Option[Boolean],

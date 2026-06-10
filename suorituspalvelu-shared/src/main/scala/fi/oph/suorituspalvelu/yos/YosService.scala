@@ -87,6 +87,10 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       val paatettavatOikeudet = oikeudet.filter(oikeus => YosPredicate.kuuluukoOpiskeluoikeusYosinPiiriin(oikeus))
         .map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
         .filter(oikeus => {
+          val parentOrganisaatiot = organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(oikeus.myontaja)
+          YosPredicate.kuuluukoOrganisaatioYosinPiiriin(parentOrganisaatiot, Some(oikeus.myontaja))
+        })
+        .filter(oikeus => {
           val oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
           YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoive.koulutusAste, oikeudenAste)
         })
@@ -101,9 +105,10 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   }
 
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
+    val organisaatioJaVanhemmat = List(hakutoive.tarjoaja) ++ organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(hakutoive.tarjoaja)
     val koulutusAste = getKoulutusAsteHakutoiveelle(hakutoive)
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto,
-      haku.isErasmusMundusTaiKaksoistutkinto, "", koulutusAste)
+      haku.isErasmusMundusTaiKaksoistutkinto, organisaatioJaVanhemmat, koulutusAste)
   }
   
   private def getKoulutusAsteHakutoiveelle(hakutoive: KoutaHakukohde): YosKoulutusAsteLuokka = {

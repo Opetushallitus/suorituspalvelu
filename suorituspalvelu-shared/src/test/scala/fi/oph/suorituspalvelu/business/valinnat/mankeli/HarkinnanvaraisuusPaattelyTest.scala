@@ -659,7 +659,7 @@ class HarkinnanvaraisuusPaattelyTest {
   private def createHakukohde(oid: String, harkinnanvaraisetSallittu: Boolean) = {
     KoutaHakukohde(
       oid = oid,
-      organisaatioOid = "1.2.3",
+      tarjoaja = "1.2.3",
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(harkinnanvaraisetSallittu),
       johtaaTutkintoon = Some(true),

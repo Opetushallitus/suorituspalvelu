@@ -143,7 +143,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val hakukohde1 = KoutaHakukohde(
       oid = hakukohdeOid1,
-      organisaatioOid = "1.2.3",
+      tarjoaja = "1.2.3",
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true),
       johtaaTutkintoon = Some(true),
@@ -151,7 +151,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     )
     val hakukohde2 = KoutaHakukohde(
       oid = hakukohdeOid2,
-      organisaatioOid = "1.2.3",
+      tarjoaja = "1.2.3",
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true),
       johtaaTutkintoon = Some(true),
@@ -338,7 +338,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val hakukohde = KoutaHakukohde(
       oid = hakukohdeOid,
-      organisaatioOid = "1.2.3",
+      tarjoaja = "1.2.3",
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true),
       johtaaTutkintoon = Some(true),
@@ -452,9 +452,9 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       korkeakoulututkintoVuosi = None
     )
 
-    val hakukohde1 = KoutaHakukohde(oid = hakukohdeOid1, organisaatioOid = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
-    val hakukohde2 = KoutaHakukohde(oid = hakukohdeOid2, organisaatioOid = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
-    val hakukohde3 = KoutaHakukohde(oid = hakukohdeOid3, organisaatioOid = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
+    val hakukohde1 = KoutaHakukohde(oid = hakukohdeOid1, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
+    val hakukohde2 = KoutaHakukohde(oid = hakukohdeOid2, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
+    val hakukohde3 = KoutaHakukohde(oid = hakukohdeOid3, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
 
     val ohjausparametrit = Ohjausparametrit(
       suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)),
@@ -542,7 +542,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val hakukohde = KoutaHakukohde(
       oid = hakukohdeOid,
-      organisaatioOid = "1.2.3",
+      tarjoaja = "1.2.3",
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),  // Ei harkinnanvarainen hakukohde
       johtaaTutkintoon = Some(true),
