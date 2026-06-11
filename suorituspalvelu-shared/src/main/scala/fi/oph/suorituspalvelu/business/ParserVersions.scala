@@ -7,7 +7,7 @@ package fi.oph.suorituspalvelu.business
  * niin että se vaikuttaa lopputulokseen.
  */
 object ParserVersions {
-  val KOSKI = 11
+  val KOSKI = 12
   val VIRTA = 7
   val YTR = 2
   val SYOTETTY_PERUSOPETUS = 1
