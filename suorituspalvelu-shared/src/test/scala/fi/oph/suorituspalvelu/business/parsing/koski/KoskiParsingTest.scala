@@ -3418,7 +3418,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("IB-tutkinto"), Some("IB-examen"), Some("IB Diploma Programme")), tutkinto.nimi)
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("International School of Helsinki"), Some("International School of Helsinki"), Some("International School of Helsinki")), "1.2.246.562.10.73383452576"), tutkinto.oppilaitos)
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), tutkinto.koskiTila)
-    Assertions.assertEquals(SuoritusTila.VALMIS, tutkinto.supaTila)
+    Assertions.assertEquals(SuoritusTila.KESKEN, tutkinto.supaTila) // ei voida merkitä valmiiksi koska toistaiseksi saadaan vain predicted gradet
     Assertions.assertEquals(Some(LocalDate.parse("2021-08-18")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2024-05-31")), tutkinto.vahvistusPaivamaara)
     Assertions.assertEquals(Some(Koodi("EN", "kieli", Some(1))), tutkinto.suorituskieli)
