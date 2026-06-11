@@ -591,13 +591,13 @@ class AvainArvoConverterTest {
       None
     )
 
-  private def ebOppiaine(koodiArvo: String, laajuus: Option[BigDecimal], osasuoritukset: Seq[EBOppiaineenOsasuoritus] = Seq.empty): EBOppiaine =
+  private def ebOppiaine(koodiArvo: String, laajuus: Option[BigDecimal], osasuoritukset: Seq[EBOppiaineenOsasuoritus] = Seq.empty, suorituskieli: Option[String] = None): EBOppiaine =
     EBOppiaine(
       UUID.randomUUID(),
       Kielistetty(Some(koodiArvo), None, None),
       Koodi(koodiArvo, "eboppiaineet", Some(1)),
       laajuus.map(l => EBLaajuus(l, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-      None,
+      suorituskieli.map(k => Koodi(k, "kieli", Some(1))),
       osasuoritukset
     )
 
@@ -759,6 +759,30 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("eb_l1_final"))
+  }
+
+  @Test def testEbOppiaineKieli(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(
+      ebOppiaine("L1", None, suorituskieli = Some("FI")),
+      ebOppiaine("MA", None, suorituskieli = Some("EN"))
+    )
+    val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(Some("fi"), converterResult.getAvainArvoMap().get("eb_l1_kieli"))
+    Assertions.assertEquals(Some("en"), converterResult.getAvainArvoMap().get("eb_ma_kieli"))
+  }
+
+  @Test def testEbOppiaineIlmanSuorituskielta(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(ebOppiaine("L1", None))
+    val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("eb_l1_kieli"))
   }
 
   @Test def testEbUseampiTutkintoHeittaaPoikkeuksen(): Unit = {

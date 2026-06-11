@@ -110,6 +110,7 @@ object AvainArvoConstants {
   final val ebOppiaineWrittenPostfix = "_written"
   final val ebOppiaineOralPostfix = "_oral"
   final val ebOppiaineFinalPostfix = "_final"
+  final val ebOppiaineKieliPostfix = "_kieli"
   final val ebWrittenKomponenttiKoodi = "Written" // koodisto ebtutkinnonoppiaineenkomponentti
   final val ebOralKomponenttiKoodi = "Oral" // koodisto ebtutkinnonoppiaineenkomponentti
   final val ebFinalKomponenttiKoodi = "Final" // koodisto ebtutkinnonoppiaineenkomponentti
@@ -764,7 +765,14 @@ object AvainArvoConverter {
             finalKomponentti.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} lopullinen arvosana.")))).toSet
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ writtenArvot ++ oralArvot ++ finalArvot
+    val kieliArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.suorituskieli.map(kieli =>
+        AvainArvoContainer(
+          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineKieliPostfix,
+          kieli.arvo.toLowerCase,
+          Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suorituskieli.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ writtenArvot ++ oralArvot ++ finalArvot ++ kieliArvot
     LOG.info(s"EB-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
