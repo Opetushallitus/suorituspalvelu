@@ -105,6 +105,8 @@ object AvainArvoConstants {
   final val ammSuoritettuKey = "AM_TILA"
   final val ebSuoritettuKey = "eb_tila"
   final val ebSuoritusvuosiKey = "eb_suoritusvuosi"
+  final val ebOppiaineLaajuusPrefix = "eb_"
+  final val ebOppiaineLaajuusPostfix = "_laajuus"
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -704,6 +706,9 @@ object AvainArvoConverter {
       .flatMap(_.suoritukset)
       .collect { case eb: EBTutkinto => eb }
 
+    if (ebTutkinnot.size > 1)
+      throw new RuntimeException(s"Oppijalla $personOid on ${ebTutkinnot.size} EB-tutkintoa, odotettiin korkeintaan yhtä.")
+
     val ebTutkinto = ebTutkinnot.headOption
     val valmisEbTutkinto = ebTutkinto.filter(eb =>
       eb.supaTila == SuoritusTila.VALMIS &&
@@ -719,7 +724,14 @@ object AvainArvoConverter {
     val suoritusvuosiArvo = valmisEbTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
       AvainArvoContainer(AvainArvoConstants.ebSuoritusvuosiKey, vp.getYear.toString, Seq(s"EB-tutkinnon vahvistuspäivä: $vp.")))
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo
+    val laajuusArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.laajuus.map(l =>
+        AvainArvoContainer(
+          AvainArvoConstants.ebOppiaineLaajuusPrefix + oppiaine.koodi.arvo + AvainArvoConstants.ebOppiaineLaajuusPostfix,
+          l.arvo.toString,
+          Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot
     LOG.info(s"EB-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }

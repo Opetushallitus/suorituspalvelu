@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, EBLaajuus, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -583,7 +583,17 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuorituslukukausiKey))
   }
 
-  private def ebOpiskeluoikeus(supaTila: SuoritusTila, vahvistusPaivamaara: Option[LocalDate]): GeneerinenOpiskeluoikeus = {
+  private def ebOppiaine(koodiArvo: String, laajuus: Option[BigDecimal]): EBOppiaine =
+    EBOppiaine(
+      UUID.randomUUID(),
+      Kielistetty(Some(koodiArvo), None, None),
+      Koodi(koodiArvo, "eboppiaineet", Some(1)),
+      laajuus.map(l => EBLaajuus(l, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+      None,
+      Seq.empty
+    )
+
+  private def ebOpiskeluoikeus(supaTila: SuoritusTila, vahvistusPaivamaara: Option[LocalDate], oppiaineet: Seq[EBOppiaine] = Seq.empty): GeneerinenOpiskeluoikeus = {
     val ebTutkinto = EBTutkinto(
       UUID.randomUUID(),
       Kielistetty(Some("EB-tutkinto"), None, None),
@@ -593,7 +603,7 @@ class AvainArvoConverterTest {
       supaTila,
       Some(LocalDate.parse("2021-01-01")),
       vahvistusPaivamaara,
-      Seq.empty
+      oppiaineet
     )
     GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ebtutkinto", "opiskeluoikeudentyyppi", None), "1.2.3.4", Set(ebTutkinto), None, List.empty)
   }
@@ -645,6 +655,42 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, Seq.empty, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebSuoritettuKey))
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebSuoritusvuosiKey))
+  }
+
+  @Test def testEbOppiaineLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(
+      ebOppiaine("FIN", Some(BigDecimal(4))),
+      ebOppiaine("MATH", Some(BigDecimal("3.5")))
+    )
+    val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get("eb_FIN_laajuus"))
+    Assertions.assertEquals(Some("3.5"), converterResult.getAvainArvoMap().get("eb_MATH_laajuus"))
+  }
+
+  @Test def testEbOppiaineIlmanLaajuutta(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(ebOppiaine("FIN", None))
+    val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("eb_FIN_laajuus"))
+  }
+
+  @Test def testEbUseampiTutkintoHeittaaPoikkeuksen(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oikeudet = Seq(
+      ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03"))),
+      ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")))
+    )
+
+    Assertions.assertThrows(classOf[RuntimeException], () =>
+      AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
