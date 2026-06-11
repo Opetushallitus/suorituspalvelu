@@ -562,9 +562,10 @@ object EntityToUIConverter {
                 suoritukset = oppiaineet.map(o => IBSuoritusUI(
                   tunniste = o.tunniste,
                   nimi = IBSuoritusNimiUI(
-                    fi = o.nimi.fi.toJava,
-                    sv = o.nimi.sv.toJava,
-                    en = o.nimi.en.toJava
+                    // Kielen nimi tarkoituksella aina englanniksi koska aineiden nimet aina myös englanniksi
+                    fi = o.nimi.fi.map(n => n + getVieraanKielenNimi(o.kieli, "en", koodistoProvider).map(k => ", " + k).getOrElse("")).toJava,
+                    sv = o.nimi.sv.map(n => n + getVieraanKielenNimi(o.kieli, "en", koodistoProvider).map(k => ", " + k).getOrElse("")).toJava,
+                    en = o.nimi.en.map(n => n + getVieraanKielenNimi(o.kieli, "en", koodistoProvider).map(k => ", " + k).getOrElse("")).toJava,
                   ),
                   predictedGrade = o.predictedArvosana.map(_.arvosana.arvo).toJava
                 )).toList.asJava

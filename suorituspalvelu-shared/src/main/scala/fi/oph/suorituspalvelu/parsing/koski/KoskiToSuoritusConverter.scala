@@ -802,7 +802,8 @@ object KoskiToSuoritusConverter {
       ryhma = koulutusmoduuli.flatMap(k => k.`ryhmä`.map(r => IBOppiaineRyhma(r.nimi, asKoodiObject(r)))),
       predictedArvosana = parasPredictedArviointi.map(pa => IBArvosana(asKoodiObject(pa.arvosana), pa.hyväksytty)),
       laajuus = koulutusmoduuli.flatMap(_.laajuus.map(l => IBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
-      suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject)
+      suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject),
+      kieli = koulutusmoduuli.flatMap(_.kieli.map(t => asKoodiObject(t)))
     )
   }
 

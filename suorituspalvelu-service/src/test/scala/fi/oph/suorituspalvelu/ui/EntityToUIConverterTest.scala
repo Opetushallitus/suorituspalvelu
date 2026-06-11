@@ -1161,7 +1161,8 @@ class EntityToUIConverterTest {
           )),
           predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-          suorituskieli = Some(Koodi("FI", "kieli", Some(1)))
+          suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
+          kieli = Some(Koodi("FI", "kieli", Some(1)))
         ),
         IBOppiaineSuoritus(
           tunniste = oppiaineTunniste2,
@@ -1173,7 +1174,8 @@ class EntityToUIConverterTest {
           )),
           predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-          suorituskieli = Some(Koodi("EN", "kieli", Some(1)))
+          suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
+          kieli = None
         )
       )
     )
@@ -1240,6 +1242,87 @@ class EntityToUIConverterTest {
       en = Optional.of("Mathematics: Analysis and Approaches HL")
     ), suoritus2.nimi)
     Assertions.assertEquals(Optional.of("7"), suoritus2.predictedGrade)
+  }
+
+  @Test def testConvertIBTutkintoKieliOppiaineenKieli(): Unit = {
+    val oppiaineTunnisteFi = UUID.randomUUID()
+    val oppiaineTunnisteIlman = UUID.randomUUID()
+
+    val ibTutkinto = IBTutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("IB-tutkinto"), Some("IB-examen"), Some("IB Diploma Programme")),
+      koodi = Koodi("301102", "koulutus", Some(12)),
+      oppilaitos = Oppilaitos(Kielistetty(Some("International School of Helsinki"), None, None), "1.2.246.562.10.73383452576"),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)),
+      supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
+      aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
+      vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
+      suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
+      osasuoritukset = Seq(
+        IBOppiaineSuoritus(
+          tunniste = oppiaineTunnisteFi,
+          nimi = Kielistetty(Some("Suomi A"), Some("Finska A"), Some("Finnish A")),
+          koodi = Koodi("FIN_A", "oppiaineetib", Some(1)),
+          ryhma = Some(IBOppiaineRyhma(
+            nimi = Kielistetty(Some("Kielet: Ensimmäinen kieli"), Some("Språk: Första språket"), Some("Language: First Language")),
+            koodi = Koodi("1", "aineryhmaib", Some(1))
+          )),
+          predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
+          laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
+          kieli = Some(Koodi("FI", "kieli", Some(1)))
+        ),
+        IBOppiaineSuoritus(
+          tunniste = oppiaineTunnisteIlman,
+          nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics HL")),
+          koodi = Koodi("MAA", "oppiaineetib", Some(1)),
+          ryhma = Some(IBOppiaineRyhma(
+            nimi = Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")),
+            koodi = Koodi("5", "aineryhmaib", Some(1))
+          )),
+          predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
+          laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+          suorituskieli = None,
+          kieli = None
+        )
+      )
+    )
+
+    val koodistoProvider = new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] =
+        if (koodisto == UIService.KOODISTO_KIELIVALIKOIMA)
+          Map("FI" -> fi.oph.suorituspalvelu.integration.client.Koodi("FI", Koodisto(UIService.KOODISTO_KIELIVALIKOIMA), List(
+            KoodiMetadata("FI", "suomi"),
+            KoodiMetadata("SV", "finska"),
+            KoodiMetadata("EN", "Finnish"),
+          )))
+        else Map.empty
+    }
+
+    val result = EntityToUIConverter.getOppijanTiedot(
+      None, None, None, "1.2.3", "2.3.4", None,
+      Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ibtutkinto", "opiskeluoikeudentyyppi", None), "", Set(ibTutkinto), None, List.empty)),
+      DUMMY_ORGANISAATIOPROVIDER, koodistoProvider
+    ).ibTutkinto
+
+    Assertions.assertTrue(result.isPresent)
+    val suoritukset = result.get().oppiaineet.asScala.flatMap(_.suoritukset.asScala)
+
+    // Kun oppiaineella on kieli, kielen nimi liitetään oppiaineen nimeen (vrt. perusopetuksen oppimäärä).
+    val suoritusFi = suoritukset.find(_.tunniste == oppiaineTunnisteFi).get
+    Assertions.assertEquals(IBSuoritusNimiUI(
+      fi = Optional.of("Suomi A, Finnish"),
+      sv = Optional.of("Finska A, Finnish"),
+      en = Optional.of("Finnish A, Finnish")
+    ), suoritusFi.nimi)
+
+    // Ilman kieltä oppiaineen nimeen ei liitetä mitään.
+    val suoritusIlman = suoritukset.find(_.tunniste == oppiaineTunnisteIlman).get
+    Assertions.assertEquals(IBSuoritusNimiUI(
+      fi = Optional.of("Matematiikka: pitkä oppimäärä"),
+      sv = Optional.of("Matematik: lång kurs"),
+      en = Optional.of("Mathematics HL")
+    ), suoritusIlman.nimi)
   }
 
   private def oppiaineenOppimaaraOpiskeluoikeus(aineet: Set[PerusopetuksenOppiaine]): PerusopetuksenOpiskeluoikeus =
@@ -1396,7 +1479,8 @@ class EntityToUIConverterTest {
           )),
           predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-          suorituskieli = Some(Koodi("EN", "kieli", Some(1)))
+          suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
+          kieli = None
         ),
         IBOppiaineSuoritus(
           tunniste = ungrouped,
@@ -1405,7 +1489,8 @@ class EntityToUIConverterTest {
           ryhma = None,
           predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
-          suorituskieli = Some(Koodi("FI", "kieli", Some(1)))
+          suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
+          kieli = Some(Koodi("FI", "kieli", Some(1)))
         )
       )
     )
