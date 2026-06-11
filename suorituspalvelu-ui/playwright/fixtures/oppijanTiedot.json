@@ -13,6 +13,11 @@
         "sv": "Kasvatust. maist., kasvatustiede sv",
         "en": "Kasvatust. maist., kasvatustiede en"
       },
+      "virtaNimi": {
+        "fi": "Kasvatustieteen maisteri",
+        "sv": "Kasvatustieteen maisteri sv",
+        "en": "Kasvatustieteen maisteri en"
+      },
       "oppilaitos": {
         "nimi": {
           "fi": "Tampereen yliopisto",
@@ -31,6 +36,32 @@
       },
       "sektori": "YO",
       "tutkintotaso": "YLEMPI"
+    },
+    {
+      "tunniste": "f0a1b3c4-d5e6-4789-9abc-0123456789ab",
+      "nimi": {
+        "fi": "Tradenomi, liiketalous",
+        "sv": "Tradenomi, liiketalous sv",
+        "en": "Tradenomi, liiketalous en"
+      },
+      "oppilaitos": {
+        "nimi": {
+          "fi": "Lapin ammattikorkeakoulu",
+          "sv": "Lapin ammattikorkeakoulu sv",
+          "en": "Lapland University of Applied Sciences"
+        },
+        "oid": "1.2.3.5"
+      },
+      "voimassaolonAlku": "1995-08-01",
+      "voimassaolonLoppu": "1999-06-01",
+      "supaTila": "PAATTYNYT",
+      "virtaTila": {
+        "fi": "päättynyt",
+        "sv": "avslutad",
+        "en": "ended"
+      },
+      "sektori": "AMK",
+      "tutkintotaso": "ALEMPI"
     }
   ],
   "kkTutkinnot": [

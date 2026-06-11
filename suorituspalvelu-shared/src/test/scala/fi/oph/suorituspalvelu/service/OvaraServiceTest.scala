@@ -248,12 +248,10 @@ class OvaraServiceTest {
 
   val BASE_KK_OPISKELUOIKEUS = KKOpiskeluoikeus(
     tunniste            = UUID.fromString("00000000-0000-0000-0000-000000000002"),
-    nimi                = Some(Kielistetty(Some("Lääkärintutkinto"), None, None)),
     virtaTunniste       = "virta-1",
+    nimi                = Some(Kielistetty(Some("Lääkärintutkinto"), None, None)),
     tyyppiKoodi         = "1",
     koulutusKoodi       = None,
-    rahoitusLahde       = Some("6"),
-    luokittelu          = Some("1"),
     alkuPvm             = LocalDate.of(2020, 9, 1),
     loppuPvm            = LocalDate.of(2024, 6, 1),
     virtaTila           = Koodi("1", "virtaopiskeluoikeudentila", None),
@@ -261,7 +259,9 @@ class OvaraServiceTest {
     myontaja            = "1.2.246.562.10.00000000001",
     isTutkintoonJohtava = true,
     kieli               = None,
-    suoritukset         = Set.empty
+    suoritukset         = Set.empty,
+    rahoitusLahde       = Some("6"),
+    luokittelu          = Some("1")
   )
 
   private def buildServiceForOpiskeluoikeudet(batchSize: Int = 500): (OvaraService, KantaOperaatiot, OpiskeluoikeusParsingService, SiirtotiedostoClient) = {
