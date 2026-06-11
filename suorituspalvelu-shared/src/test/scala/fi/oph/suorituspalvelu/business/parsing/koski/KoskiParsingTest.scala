@@ -3372,6 +3372,16 @@ class KoskiParsingTest {
         |                    "koodistoUri": "aineryhmaib",
         |                    "koodistoVersio": 1
         |                  },
+        |                  "taso": {
+        |                    "koodiarvo": "HL",
+        |                    "nimi": {
+        |                      "fi": "Higher Level",
+        |                      "sv": "Higher Level",
+        |                      "en": "Higher Level"
+        |                    },
+        |                    "koodistoUri": "oppiaineentasoib",
+        |                    "koodistoVersio": 1
+        |                  },
         |                  "laajuus": {
         |                    "arvo": 1.0,
         |                    "yksikkö": {
@@ -3434,6 +3444,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(Koodi("FI", "kieli", Some(1))), finA.suorituskieli)
     Assertions.assertEquals(Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)), finA.predictedArvosana)
     Assertions.assertEquals(Some(Koodi("FI", "kieli", Some(1))), finA.kieli) // kielioppiaineen kieli ekstraktoidaan koulutusmoduulin kieli-kentästä
+    Assertions.assertEquals(None, finA.taso)
 
     // Test Mathematics oppiaine
     val maa = tutkinto.osasuoritukset.find(_.koodi.arvo == "MAA").get
@@ -3444,6 +3455,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Some(Koodi("EN", "kieli", Some(1))), maa.suorituskieli)
     Assertions.assertEquals(Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)), maa.predictedArvosana)
     Assertions.assertEquals(None, maa.kieli) // ei-kielioppiaineella ei ole kieli-kenttää
+    Assertions.assertEquals(Some(Koodi("HL", "oppiaineentasoib", Some(1))), maa.taso)
   }
 
   @Test def testIBTutkintoIlmanRyhmaa(): Unit = {

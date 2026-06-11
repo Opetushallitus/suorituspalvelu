@@ -1162,7 +1162,8 @@ class EntityToUIConverterTest {
           predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
-          kieli = Some(Koodi("FI", "kieli", Some(1)))
+          kieli = Some(Koodi("FI", "kieli", Some(1))),
+          taso = None
         ),
         IBOppiaineSuoritus(
           tunniste = oppiaineTunniste2,
@@ -1175,7 +1176,8 @@ class EntityToUIConverterTest {
           predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
-          kieli = None
+          kieli = None,
+          taso = None
         )
       )
     )
@@ -1270,11 +1272,12 @@ class EntityToUIConverterTest {
           predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
-          kieli = Some(Koodi("FI", "kieli", Some(1)))
+          kieli = Some(Koodi("FI", "kieli", Some(1))),
+          taso = Some(Koodi("HL", "oppiaineentasoib", Some(1)))
         ),
         IBOppiaineSuoritus(
           tunniste = oppiaineTunnisteIlman,
-          nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics HL")),
+          nimi = Kielistetty(Some("Matematiikka: pitkä oppimäärä"), Some("Matematik: lång kurs"), Some("Mathematics")),
           koodi = Koodi("MAA", "oppiaineetib", Some(1)),
           ryhma = Some(IBOppiaineRyhma(
             nimi = Kielistetty(Some("Matematiikka"), Some("Matematik"), Some("Mathematics")),
@@ -1283,7 +1286,8 @@ class EntityToUIConverterTest {
           predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = None,
-          kieli = None
+          kieli = None,
+          taso = None
         )
       )
     )
@@ -1308,20 +1312,20 @@ class EntityToUIConverterTest {
     Assertions.assertTrue(result.isPresent)
     val suoritukset = result.get().oppiaineet.asScala.flatMap(_.suoritukset.asScala)
 
-    // Kun oppiaineella on kieli, kielen nimi liitetään oppiaineen nimeen (vrt. perusopetuksen oppimäärä).
+    // Kun oppiaineella on sekä taso että kieli, taso (koodiarvo) ja kielen nimi liitetään oppiaineen nimeen tässä järjestyksessä (vrt. perusopetuksen oppimäärä).
     val suoritusFi = suoritukset.find(_.tunniste == oppiaineTunnisteFi).get
     Assertions.assertEquals(IBSuoritusNimiUI(
-      fi = Optional.of("Suomi A, Finnish"),
-      sv = Optional.of("Finska A, Finnish"),
-      en = Optional.of("Finnish A, Finnish")
+      fi = Optional.of("Suomi A (HL), Finnish"),
+      sv = Optional.of("Finska A (HL), Finnish"),
+      en = Optional.of("Finnish A (HL), Finnish")
     ), suoritusFi.nimi)
 
-    // Ilman kieltä oppiaineen nimeen ei liitetä mitään.
+    // Ilman tasoa ja kieltä oppiaineen nimeen ei liitetä mitään.
     val suoritusIlman = suoritukset.find(_.tunniste == oppiaineTunnisteIlman).get
     Assertions.assertEquals(IBSuoritusNimiUI(
       fi = Optional.of("Matematiikka: pitkä oppimäärä"),
       sv = Optional.of("Matematik: lång kurs"),
-      en = Optional.of("Mathematics HL")
+      en = Optional.of("Mathematics")
     ), suoritusIlman.nimi)
   }
 
@@ -1480,7 +1484,8 @@ class EntityToUIConverterTest {
           predictedArvosana = Some(IBArvosana(Koodi("7", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
-          kieli = None
+          kieli = None,
+          taso = None
         ),
         IBOppiaineSuoritus(
           tunniste = ungrouped,
@@ -1490,7 +1495,8 @@ class EntityToUIConverterTest {
           predictedArvosana = Some(IBArvosana(Koodi("6", "arviointiasteikkoib", Some(1)), true)),
           laajuus = Some(IBLaajuus(1.0, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
           suorituskieli = Some(Koodi("FI", "kieli", Some(1))),
-          kieli = Some(Koodi("FI", "kieli", Some(1)))
+          kieli = Some(Koodi("FI", "kieli", Some(1))),
+          taso = None
         )
       )
     )

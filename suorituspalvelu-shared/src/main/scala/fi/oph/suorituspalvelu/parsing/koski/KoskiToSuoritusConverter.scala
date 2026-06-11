@@ -803,7 +803,8 @@ object KoskiToSuoritusConverter {
       predictedArvosana = parasPredictedArviointi.map(pa => IBArvosana(asKoodiObject(pa.arvosana), pa.hyväksytty)),
       laajuus = koulutusmoduuli.flatMap(_.laajuus.map(l => IBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
       suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject),
-      kieli = koulutusmoduuli.flatMap(_.kieli.map(t => asKoodiObject(t)))
+      kieli = koulutusmoduuli.flatMap(_.kieli.map(t => asKoodiObject(t))),
+      taso = koulutusmoduuli.flatMap(k => k.taso.map(t => asKoodiObject(t)))
     )
   }
 
