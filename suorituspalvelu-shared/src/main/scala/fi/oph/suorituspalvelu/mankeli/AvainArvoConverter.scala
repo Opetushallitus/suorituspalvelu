@@ -105,8 +105,14 @@ object AvainArvoConstants {
   final val ammSuoritettuKey = "AM_TILA"
   final val ebSuoritettuKey = "eb_tila"
   final val ebSuoritusvuosiKey = "eb_suoritusvuosi"
-  final val ebOppiaineLaajuusPrefix = "eb_"
+  final val ebOppiainePrefix = "eb_"
   final val ebOppiaineLaajuusPostfix = "_laajuus"
+  final val ebOppiaineWrittenPostfix = "_written"
+  final val ebOppiaineOralPostfix = "_oral"
+  final val ebOppiaineFinalPostfix = "_final"
+  final val ebWrittenKomponenttiKoodi = "Written" // koodisto ebtutkinnonoppiaineenkomponentti
+  final val ebOralKomponenttiKoodi = "Oral" // koodisto ebtutkinnonoppiaineenkomponentti
+  final val ebFinalKomponenttiKoodi = "Final" // koodisto ebtutkinnonoppiaineenkomponentti
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -727,11 +733,38 @@ object AvainArvoConverter {
     val laajuusArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.laajuus.map(l =>
         AvainArvoContainer(
-          AvainArvoConstants.ebOppiaineLaajuusPrefix + oppiaine.koodi.arvo + AvainArvoConstants.ebOppiaineLaajuusPostfix,
+          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineLaajuusPostfix,
           l.arvo.toString,
           Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot
+    val writtenArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.osasuoritukset
+        .find(_.koodi.arvo == AvainArvoConstants.ebWrittenKomponenttiKoodi)
+        .map(written =>
+          AvainArvoContainer(
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineWrittenPostfix,
+            written.arvosana.arvosana.arvo,
+            Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
+
+    val oralArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.osasuoritukset
+        .find(_.koodi.arvo == AvainArvoConstants.ebOralKomponenttiKoodi)
+        .map(oral =>
+          AvainArvoContainer(
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineOralPostfix,
+            oral.arvosana.arvosana.arvo,
+            Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
+
+    val finalArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.osasuoritukset
+        .find(_.koodi.arvo == AvainArvoConstants.ebFinalKomponenttiKoodi)
+        .map(finalKomponentti =>
+          AvainArvoContainer(
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineFinalPostfix,
+            finalKomponentti.arvosana.arvosana.arvo,
+            Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} lopullinen arvosana.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ writtenArvot ++ oralArvot ++ finalArvot
     LOG.info(s"EB-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
