@@ -686,8 +686,8 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get("dia_fin_laajuus"))
-    Assertions.assertEquals(Some("3.5"), converterResult.getAvainArvoMap().get("dia_math_laajuus"))
+    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get("DIA_FIN_LAAJUUS"))
+    Assertions.assertEquals(Some("3.5"), converterResult.getAvainArvoMap().get("DIA_MATH_LAAJUUS"))
   }
 
   @Test def testDiaOppiaineIlmanLaajuutta(): Unit = {
@@ -697,7 +697,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("dia_fin_laajuus"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_FIN_LAAJUUS"))
   }
 
   @Test def testDiaOppiaineKirjallinen(): Unit = {
@@ -707,7 +707,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("9"), converterResult.getAvainArvoMap().get("dia_fin_kirjallinen"))
+    Assertions.assertEquals(Some("9"), converterResult.getAvainArvoMap().get("DIA_FIN_KIRJALLINEN"))
   }
 
   @Test def testDiaOppiaineIlmanKirjallista(): Unit = {
@@ -717,7 +717,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("dia_fin_kirjallinen"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_FIN_KIRJALLINEN"))
   }
 
   @Test def testDiaOppiaineSuullinen(): Unit = {
@@ -727,7 +727,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("8"), converterResult.getAvainArvoMap().get("dia_fin_suullinen"))
+    Assertions.assertEquals(Some("8"), converterResult.getAvainArvoMap().get("DIA_FIN_SUULLINEN"))
   }
 
   @Test def testDiaOppiaineIlmanSuullista(): Unit = {
@@ -737,7 +737,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("dia_fin_suullinen"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_FIN_SUULLINEN"))
   }
 
   @Test def testDiaOppiaineVastaavuus(): Unit = {
@@ -748,7 +748,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("8.5"), converterResult.getAvainArvoMap().get("dia_fin_vastaavuus"))
+    Assertions.assertEquals(Some("8.5"), converterResult.getAvainArvoMap().get("DIA_FIN_VASTAAVUUS"))
   }
 
   @Test def testDiaOppiaineIlmanVastaavuutta(): Unit = {
@@ -758,7 +758,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("dia_fin_vastaavuus"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_FIN_VASTAAVUUS"))
   }
 
   @Test def testDiaUseampiTutkintoHeittaaPoikkeuksen(): Unit = {

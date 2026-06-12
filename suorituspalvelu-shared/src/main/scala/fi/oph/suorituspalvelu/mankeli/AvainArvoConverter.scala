@@ -103,13 +103,13 @@ object AvainArvoConstants {
   final val lukioSuoritettuKey = "LK_TILA"
   final val yoSuoritettuKey = "YO_TILA"
   final val ammSuoritettuKey = "AM_TILA"
-  final val diaSuoritettuKey = "dia_tila"
-  final val diaSuoritusvuosiKey = "dia_suoritusvuosi"
-  final val diaOppiainePrefix = "dia_"
-  final val diaOppiaineLaajuusPostfix = "_laajuus"
-  final val diaOppiaineKirjallinenPostfix = "_kirjallinen"
-  final val diaOppiaineSuullinenPostfix = "_suullinen"
-  final val diaOppiaineVastaavuusPostfix = "_vastaavuus"
+  final val diaSuoritettuKey = "DIA_TILA"
+  final val diaSuoritusvuosiKey = "DIA_SUORITUSVUOSI"
+  final val diaOppiainePrefix = "DIA_"
+  final val diaOppiaineLaajuusPostfix = "_LAAJUUS"
+  final val diaOppiaineKirjallinenPostfix = "_KIRJALLINEN"
+  final val diaOppiaineSuullinenPostfix = "_SUULLINEN"
+  final val diaOppiaineVastaavuusPostfix = "_VASTAAVUUS"
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -730,28 +730,28 @@ object AvainArvoConverter {
     val laajuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.laajuus.map(l =>
         AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineLaajuusPostfix,
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineLaajuusPostfix,
           l.arvo.toString,
           Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
 
     val kirjallinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.kirjallinenKoe.map(koe =>
         AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineKirjallinenPostfix,
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineKirjallinenPostfix,
           koe.arvosana.arvosana.arvo,
           Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
 
     val suullinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.suullinenKoe.map(koe =>
         AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineSuullinenPostfix,
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineSuullinenPostfix,
           koe.arvosana.arvosana.arvo,
           Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
 
     val vastaavuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.vastaavuustodistuksenTiedot.map(vtt =>
         AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineVastaavuusPostfix,
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineVastaavuusPostfix,
           vtt.keskiarvo.toString,
           Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} vastaavuustodistuksen keskiarvo.")))).toSet
 
