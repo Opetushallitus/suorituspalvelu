@@ -675,8 +675,8 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get("EB_L1_LAAJUUS"))
-    Assertions.assertEquals(Some("3.5"), converterResult.getAvainArvoMap().get("EB_MA_LAAJUUS"))
+    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineLaajuusPostfix))
+    Assertions.assertEquals(Some("3.5"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "MA" + AvainArvoConstants.ebOppiaineLaajuusPostfix))
   }
 
   @Test def testEbOppiaineIlmanLaajuutta(): Unit = {
@@ -686,7 +686,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("EB_L1_LAAJUUS"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineLaajuusPostfix))
   }
 
   @Test def testEbOppiaineWritten(): Unit = {
@@ -699,8 +699,8 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("9.0"), converterResult.getAvainArvoMap().get("EB_L1_WRITTEN"))
-    Assertions.assertEquals(Some("7.0"), converterResult.getAvainArvoMap().get("EB_MA_WRITTEN"))
+    Assertions.assertEquals(Some("9.0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineWrittenPostfix))
+    Assertions.assertEquals(Some("7.0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "MA" + AvainArvoConstants.ebOppiaineWrittenPostfix))
   }
 
   @Test def testEbOppiaineIlmanWrittenKomponenttia(): Unit = {
@@ -710,7 +710,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("EB_L1_WRITTEN"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineWrittenPostfix))
   }
 
   @Test def testEbOppiaineOral(): Unit = {
@@ -723,8 +723,8 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("8.5"), converterResult.getAvainArvoMap().get("EB_L1_ORAL"))
-    Assertions.assertEquals(Some("7.0"), converterResult.getAvainArvoMap().get("EB_MA_ORAL"))
+    Assertions.assertEquals(Some("8.5"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineOralPostfix))
+    Assertions.assertEquals(Some("7.0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "MA" + AvainArvoConstants.ebOppiaineOralPostfix))
   }
 
   @Test def testEbOppiaineIlmanOralKomponenttia(): Unit = {
@@ -734,7 +734,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("EB_L1_ORAL"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineOralPostfix))
   }
 
   @Test def testEbOppiaineFinal(): Unit = {
@@ -747,8 +747,8 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("8.5"), converterResult.getAvainArvoMap().get("EB_L1_FINAL"))
-    Assertions.assertEquals(Some("7.0"), converterResult.getAvainArvoMap().get("EB_MA_FINAL"))
+    Assertions.assertEquals(Some("8.5"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineFinalPostfix))
+    Assertions.assertEquals(Some("7.0"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "MA" + AvainArvoConstants.ebOppiaineFinalPostfix))
   }
 
   @Test def testEbOppiaineIlmanFinalKomponenttia(): Unit = {
@@ -758,7 +758,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("EB_L1_FINAL"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineFinalPostfix))
   }
 
   @Test def testEbOppiaineKieli(): Unit = {
@@ -771,8 +771,8 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(Some("fi"), converterResult.getAvainArvoMap().get("EB_L1_KIELI"))
-    Assertions.assertEquals(Some("en"), converterResult.getAvainArvoMap().get("EB_MA_KIELI"))
+    Assertions.assertEquals(Some("fi"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineKieliPostfix))
+    Assertions.assertEquals(Some("en"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "MA" + AvainArvoConstants.ebOppiaineKieliPostfix))
   }
 
   @Test def testEbOppiaineIlmanSuorituskielta(): Unit = {
@@ -782,7 +782,7 @@ class AvainArvoConverterTest {
     val oikeudet = Seq(ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
-    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("EB_L1_KIELI"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineKieliPostfix))
   }
 
   @Test def testEbUseampiTutkintoHeittaaPoikkeuksen(): Unit = {
