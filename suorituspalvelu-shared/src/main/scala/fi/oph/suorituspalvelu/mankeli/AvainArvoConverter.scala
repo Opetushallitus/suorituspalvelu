@@ -103,14 +103,14 @@ object AvainArvoConstants {
   final val lukioSuoritettuKey = "LK_TILA"
   final val yoSuoritettuKey = "YO_TILA"
   final val ammSuoritettuKey = "AM_TILA"
-  final val ebSuoritettuKey = "eb_tila"
-  final val ebSuoritusvuosiKey = "eb_suoritusvuosi"
-  final val ebOppiainePrefix = "eb_"
-  final val ebOppiaineLaajuusPostfix = "_laajuus"
-  final val ebOppiaineWrittenPostfix = "_written"
-  final val ebOppiaineOralPostfix = "_oral"
-  final val ebOppiaineFinalPostfix = "_final"
-  final val ebOppiaineKieliPostfix = "_kieli"
+  final val ebSuoritettuKey = "EB_TILA"
+  final val ebSuoritusvuosiKey = "EB_SUORITUSVUOSI"
+  final val ebOppiainePrefix = "EB_"
+  final val ebOppiaineLaajuusPostfix = "_LAAJUUS"
+  final val ebOppiaineWrittenPostfix = "_WRITTEN"
+  final val ebOppiaineOralPostfix = "_ORAL"
+  final val ebOppiaineFinalPostfix = "_FINAL"
+  final val ebOppiaineKieliPostfix = "_KIELI"
   final val ebWrittenKomponenttiKoodi = "Written" // koodisto ebtutkinnonoppiaineenkomponentti
   final val ebOralKomponenttiKoodi = "Oral" // koodisto ebtutkinnonoppiaineenkomponentti
   final val ebFinalKomponenttiKoodi = "Final" // koodisto ebtutkinnonoppiaineenkomponentti
@@ -734,7 +734,7 @@ object AvainArvoConverter {
     val laajuusArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.laajuus.map(l =>
         AvainArvoContainer(
-          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineLaajuusPostfix,
+          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineLaajuusPostfix,
           l.arvo.toString,
           Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
 
@@ -743,7 +743,7 @@ object AvainArvoConverter {
         .find(_.koodi.arvo == AvainArvoConstants.ebWrittenKomponenttiKoodi)
         .map(written =>
           AvainArvoContainer(
-            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineWrittenPostfix,
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineWrittenPostfix,
             written.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
 
@@ -752,7 +752,7 @@ object AvainArvoConverter {
         .find(_.koodi.arvo == AvainArvoConstants.ebOralKomponenttiKoodi)
         .map(oral =>
           AvainArvoContainer(
-            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineOralPostfix,
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineOralPostfix,
             oral.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
 
@@ -761,14 +761,14 @@ object AvainArvoConverter {
         .find(_.koodi.arvo == AvainArvoConstants.ebFinalKomponenttiKoodi)
         .map(finalKomponentti =>
           AvainArvoContainer(
-            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineFinalPostfix,
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineFinalPostfix,
             finalKomponentti.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} lopullinen arvosana.")))).toSet
 
     val kieliArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.suorituskieli.map(kieli =>
         AvainArvoContainer(
-          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.ebOppiaineKieliPostfix,
+          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineKieliPostfix,
           kieli.arvo.toLowerCase,
           Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suorituskieli.")))).toSet
 
