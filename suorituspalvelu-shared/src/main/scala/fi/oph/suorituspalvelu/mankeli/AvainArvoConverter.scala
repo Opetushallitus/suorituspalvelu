@@ -2,14 +2,14 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, DIATutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoConverterUtil, AvainArvoDTO}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.slf4j.LoggerFactory
 
-import java.util.{List as JavaList, UUID}
+import java.util.{UUID, List as JavaList}
 import scala.jdk.CollectionConverters.*
 import java.time.LocalDate
 import scala.collection.immutable
@@ -47,6 +47,8 @@ object AvainArvoConstants {
     yoSuoritusvuosiKey -> "Ylioppilastutkinnon suoritusvuosi",
     yoSuorituslukukausiKey -> "Ylioppilastutkinnon suorituslukukausi",
     ammSuoritettuKey -> "Ammatillinen tutkinto suoritettu",
+    diaSuoritettuKey -> "DIA-tutkinto suoritettu",
+    diaSuoritusvuosiKey -> "DIA-tutkinnon suoritusvuosi",
     ammSuoritusvuosiKey -> "Ammatillisen tutkinnon suoritusvuosi",
     ammSuorituslukukausiKey -> "Ammatillisen tutkinnon suorituslukukausi",
     ammTutkintoKieliKey -> "Ammatillisen tutkinnon suorituskieli",
@@ -101,6 +103,8 @@ object AvainArvoConstants {
   final val lukioSuoritettuKey = "LK_TILA"
   final val yoSuoritettuKey = "YO_TILA"
   final val ammSuoritettuKey = "AM_TILA"
+  final val diaSuoritettuKey = "dia_tila"
+  final val diaSuoritusvuosiKey = "dia_suoritusvuosi"
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -383,6 +387,7 @@ object AvainArvoConverter {
     val peruskouluArvot = convertPeruskouluArvot(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, ehdotOverrideAktiivinen)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val diaArvot = convertDiaArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku, toisenAsteenPk)
 
@@ -390,6 +395,7 @@ object AvainArvoConverter {
       peruskouluArvot
         ++ ammatillisetArvot
         ++ yoArvot
+        ++ diaArvot
         ++ lukioArvot
         ++ lisapistekoulutusArvot
         ++ toisenAsteenPk.toSet
@@ -690,6 +696,32 @@ object AvainArvoConverter {
     LOG.info(s"Yo-arvot käsitelty henkilölle $personOid. ${kaikkiArvot}")
     kaikkiArvot
 
+  }
+
+  def convertDiaArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+    val diaTutkinnot: Seq[DIATutkinto] = opiskeluoikeudet
+      .collect { case o: GeneerinenOpiskeluoikeus => o }
+      .flatMap(_.suoritukset)
+      .collect { case dia: DIATutkinto => dia }
+
+    val diaTutkinto = diaTutkinnot.headOption
+    val valmisDiaTutkinto = diaTutkinto.filter(dia =>
+      dia.supaTila == SuoritusTila.VALMIS &&
+        dia.vahvistusPaivamaara.exists(v => !v.isAfter(vahvistettuViimeistaan)))
+
+    val diaSelite = diaTutkinto match {
+      case Some(dia) if dia.supaTila == SuoritusTila.VALMIS && dia.vahvistusPaivamaara.exists(v => v.isAfter(vahvistettuViimeistaan)) =>
+        s"Löytyi DIA-tutkinto, jonka tila on ${dia.supaTila}, mutta sen vahvistuspäivä ${dia.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")} on leikkuripäivän $vahvistettuViimeistaan jälkeen."
+      case Some(dia) => s"Löytyi DIA-tutkinto, jonka tila on ${dia.supaTila} ja vahvistuspäivä ${dia.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
+      case None => "DIA-tutkintoa ei löytynyt."
+    }
+
+    val suoritusvuosiArvo = valmisDiaTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
+      AvainArvoContainer(AvainArvoConstants.diaSuoritusvuosiKey, vp.getYear.toString, Seq(s"DIA-tutkinnon vahvistuspäivä: $vp.")))
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, valmisDiaTutkinto.nonEmpty.toString, Seq(diaSelite))) ++ suoritusvuosiArvo
+    LOG.info(s"DIA-arvot käsitelty henkilölle $personOid. $arvot")
+    arvot
   }
 
   //TODO lukiosuorituksia ei ole vielä parseroitu eikä niitä saada Koskesta massaluovutusrajapinnan kautta. Tämä päättely ei siis vielä toimi.
