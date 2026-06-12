@@ -118,8 +118,11 @@ object AvainArvoConstants {
   final val ebFinalKomponenttiKoodi = "Final" // koodisto ebtutkinnonoppiaineenkomponentti
   final val diaSuoritettuKey = "dia_tila"
   final val diaSuoritusvuosiKey = "dia_suoritusvuosi"
-  final val diaOppiaineLaajuusPrefix = "dia_"
+  final val diaOppiainePrefix = "dia_"
   final val diaOppiaineLaajuusPostfix = "_laajuus"
+  final val diaOppiaineKirjallinenPostfix = "_kirjallinen"
+  final val diaOppiaineSuullinenPostfix = "_suullinen"
+  final val diaOppiaineVastaavuusPostfix = "_vastaavuus"
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -816,11 +819,32 @@ object AvainArvoConverter {
     val laajuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.laajuus.map(l =>
         AvainArvoContainer(
-          AvainArvoConstants.diaOppiaineLaajuusPrefix + oppiaine.koodi.arvo + AvainArvoConstants.diaOppiaineLaajuusPostfix,
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineLaajuusPostfix,
           l.arvo.toString,
           Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, valmisDiaTutkinto.nonEmpty.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot
+    val kirjallinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.kirjallinenKoe.map(koe =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineKirjallinenPostfix,
+          koe.arvosana.arvosana.arvo,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
+
+    val suullinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.suullinenKoe.map(koe =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineSuullinenPostfix,
+          koe.arvosana.arvosana.arvo,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
+
+    val vastaavuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.vastaavuustodistuksenTiedot.map(vtt =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toLowerCase + AvainArvoConstants.diaOppiaineVastaavuusPostfix,
+          vtt.keskiarvo.toString,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} vastaavuustodistuksen keskiarvo.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, valmisDiaTutkinto.nonEmpty.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ kirjallinenArvot ++ suullinenArvot ++ vastaavuusArvot
     LOG.info(s"DIA-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
