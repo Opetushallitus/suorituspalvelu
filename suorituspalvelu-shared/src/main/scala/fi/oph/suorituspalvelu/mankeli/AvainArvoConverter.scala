@@ -105,6 +105,8 @@ object AvainArvoConstants {
   final val ammSuoritettuKey = "AM_TILA"
   final val diaSuoritettuKey = "dia_tila"
   final val diaSuoritusvuosiKey = "dia_suoritusvuosi"
+  final val diaOppiaineLaajuusPrefix = "dia_"
+  final val diaOppiaineLaajuusPostfix = "_laajuus"
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -704,6 +706,9 @@ object AvainArvoConverter {
       .flatMap(_.suoritukset)
       .collect { case dia: DIATutkinto => dia }
 
+    if (diaTutkinnot.size > 1)
+      throw new RuntimeException(s"Oppijalla $personOid on ${diaTutkinnot.size} DIA-tutkintoa, odotettiin korkeintaan yhtä.")
+
     val diaTutkinto = diaTutkinnot.headOption
     val valmisDiaTutkinto = diaTutkinto.filter(dia =>
       dia.supaTila == SuoritusTila.VALMIS &&
@@ -719,7 +724,14 @@ object AvainArvoConverter {
     val suoritusvuosiArvo = valmisDiaTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
       AvainArvoContainer(AvainArvoConstants.diaSuoritusvuosiKey, vp.getYear.toString, Seq(s"DIA-tutkinnon vahvistuspäivä: $vp.")))
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, valmisDiaTutkinto.nonEmpty.toString, Seq(diaSelite))) ++ suoritusvuosiArvo
+    val laajuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.laajuus.map(l =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiaineLaajuusPrefix + oppiaine.koodi.arvo + AvainArvoConstants.diaOppiaineLaajuusPostfix,
+          l.arvo.toString,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, valmisDiaTutkinto.nonEmpty.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot
     LOG.info(s"DIA-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }

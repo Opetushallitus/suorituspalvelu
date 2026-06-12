@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, DIATutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, DIALaajuus, DIAOppiaine, DIATutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -583,7 +583,20 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("2"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ammSuorituslukukausiKey))
   }
 
-  private def diaOpiskeluoikeus(supaTila: SuoritusTila, vahvistusPaivamaara: Option[LocalDate]): GeneerinenOpiskeluoikeus = {
+  private def diaOppiaine(koodiArvo: String, laajuus: Option[BigDecimal]): DIAOppiaine =
+    DIAOppiaine(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some(koodiArvo), None, None),
+      koodi = Koodi(koodiArvo, "diaoppiaineet", Some(1)),
+      laajuus = laajuus.map(l => DIALaajuus(l, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
+      osaAlue = None,
+      kieli = None,
+      vastaavuustodistuksenTiedot = None,
+      kirjallinenKoe = None,
+      suullinenKoe = None
+    )
+
+  private def diaOpiskeluoikeus(supaTila: SuoritusTila, vahvistusPaivamaara: Option[LocalDate], oppiaineet: Seq[DIAOppiaine] = Seq.empty): GeneerinenOpiskeluoikeus = {
     val diaTutkinto = DIATutkinto(
       UUID.randomUUID(),
       Kielistetty(Some("DIA-tutkinto"), None, None),
@@ -594,7 +607,7 @@ class AvainArvoConverterTest {
       supaTila,
       Some(LocalDate.parse("2021-01-01")),
       vahvistusPaivamaara,
-      Seq.empty
+      oppiaineet
     )
     GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("diatutkinto", "opiskeluoikeudentyyppi", None), "1.2.3.4", Set(diaTutkinto), None, List.empty)
   }
@@ -648,6 +661,42 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, Seq.empty, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
     Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.diaSuoritettuKey))
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.diaSuoritusvuosiKey))
+  }
+
+  @Test def testDiaOppiaineLaajuus(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(
+      diaOppiaine("FIN", Some(BigDecimal(4))),
+      diaOppiaine("MATH", Some(BigDecimal("3.5")))
+    )
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get("dia_FIN_laajuus"))
+    Assertions.assertEquals(Some("3.5"), converterResult.getAvainArvoMap().get("dia_MATH_laajuus"))
+  }
+
+  @Test def testDiaOppiaineIlmanLaajuutta(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(diaOppiaine("FIN", None))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("dia_FIN_laajuus"))
+  }
+
+  @Test def testDiaUseampiTutkintoHeittaaPoikkeuksen(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oikeudet = Seq(
+      diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03"))),
+      diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")))
+    )
+
+    Assertions.assertThrows(classOf[RuntimeException], () =>
+      AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
