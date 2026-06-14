@@ -713,32 +713,36 @@ object AvainArvoConverter {
       .flatMap(_.suoritukset)
       .collect { case eb: EBTutkinto => eb }
 
-    if (ebTutkinnot.size > 1)
-      throw new RuntimeException(s"Oppijalla $personOid on ${ebTutkinnot.size} EB-tutkintoa, odotettiin korkeintaan yhtä.")
-
-    val ebTutkinto = ebTutkinnot.headOption
-    val valmisEbTutkinto = ebTutkinto.filter(eb =>
+    // Päättely tehdään valmiilta (VALMIS-tilainen ja leikkuripäivään mennessä vahvistettu) EB-tutkinnolta. Tämän lisäksi
+    // henkilöllä voi (ainakin teoriassa) olla esim. keskeytynyt tutkinto ilman että se on virhe, mutta valmiita sallitaan
+    // korkeintaan yksi.
+    val valmiitEbTutkinnot = ebTutkinnot.filter(eb =>
       eb.supaTila == SuoritusTila.VALMIS &&
         eb.vahvistusPaivamaara.exists(v => !v.isAfter(vahvistettuViimeistaan)))
 
-    val ebSelite = ebTutkinto match {
-      case Some(eb) if eb.supaTila == SuoritusTila.VALMIS && eb.vahvistusPaivamaara.exists(_.isAfter(vahvistettuViimeistaan)) =>
-        s"Löytyi EB-tutkinto, jonka tila on ${eb.supaTila}, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. Vahvistuspäivä: ${eb.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
-      case Some(eb) => s"Löytyi EB-tutkinto, jonka tila on ${eb.supaTila} ja vahvistuspäivä ${eb.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
+    if (valmiitEbTutkinnot.size > 1)
+      throw new RuntimeException(s"Oppijalla $personOid on ${valmiitEbTutkinnot.size} valmista EB-tutkintoa, odotettiin korkeintaan yhtä.")
+
+    val valmisEbTutkinto = valmiitEbTutkinnot.headOption
+
+    val ebSelite = valmisEbTutkinto match {
+      case Some(eb) => s"Löytyi valmis EB-tutkinto, jonka vahvistuspäivä ${eb.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
+      case None if ebTutkinnot.nonEmpty =>
+        s"Löytyi ${ebTutkinnot.size} EB-tutkinto(a), mutta yksikään ei ollut valmis ja vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä."
       case None => "EB-tutkintoa ei löytynyt."
     }
 
     val suoritusvuosiArvo = valmisEbTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
       AvainArvoContainer(AvainArvoConstants.ebSuoritusvuosiKey, vp.getYear.toString, Seq(s"EB-tutkinnon vahvistuspäivä: $vp.")))
 
-    val laajuusArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+    val laajuusArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.laajuus.map(l =>
         AvainArvoContainer(
           AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineLaajuusPostfix,
           l.arvo.toString,
           Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
 
-    val writtenArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+    val writtenArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.osasuoritukset
         .find(_.koodi.arvo == AvainArvoConstants.ebWrittenKomponenttiKoodi)
         .map(written =>
@@ -747,7 +751,7 @@ object AvainArvoConverter {
             written.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
 
-    val oralArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+    val oralArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.osasuoritukset
         .find(_.koodi.arvo == AvainArvoConstants.ebOralKomponenttiKoodi)
         .map(oral =>
@@ -756,7 +760,7 @@ object AvainArvoConverter {
             oral.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
 
-    val finalArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+    val finalArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.osasuoritukset
         .find(_.koodi.arvo == AvainArvoConstants.ebFinalKomponenttiKoodi)
         .map(finalKomponentti =>
@@ -765,7 +769,7 @@ object AvainArvoConverter {
             finalKomponentti.arvosana.arvosana.arvo,
             Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} lopullinen arvosana.")))).toSet
 
-    val kieliArvot = ebTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+    val kieliArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.suorituskieli.map(kieli =>
         AvainArvoContainer(
           AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineKieliPostfix,

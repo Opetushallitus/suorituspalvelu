@@ -785,7 +785,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineKieliPostfix))
   }
 
-  @Test def testEbUseampiTutkintoHeittaaPoikkeuksen(): Unit = {
+  @Test def testEbUseampiValmisTutkintoHeittaaPoikkeuksen(): Unit = {
     val personOid = "1.2.246.562.98.69863082363"
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val oikeudet = Seq(
@@ -795,6 +795,24 @@ class AvainArvoConverterTest {
 
     Assertions.assertThrows(classOf[RuntimeException], () =>
       AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty))
+  }
+
+  @Test def testEbUseaTutkintoVainYksiValmisEiHeitaPoikkeusta(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(ebOppiaine("L1", Some(BigDecimal(4))))
+    // Vain yksi valmis (ja ajoissa vahvistettu) tutkinto, muut keskeneräisiä tai myöhässä vahvistettuja.
+    // Kaikki avaimet päätellään johdonmukaisesti valmiilta tutkinnolta.
+    val oikeudet = Seq(
+      ebOpiskeluoikeus(SuoritusTila.KESKEN, None),
+      ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2024-04-03"))),
+      ebOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet)
+    )
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebSuoritettuKey))
+    Assertions.assertEquals(Some("2023"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebSuoritusvuosiKey))
+    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get(AvainArvoConstants.ebOppiainePrefix + "L1" + AvainArvoConstants.ebOppiaineLaajuusPostfix))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
