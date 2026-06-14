@@ -798,23 +798,27 @@ object AvainArvoConverter {
       .flatMap(_.suoritukset)
       .collect { case dia: DIATutkinto => dia }
 
-    if (diaTutkinnot.size > 1)
-      throw new RuntimeException(s"Oppijalla $personOid on ${diaTutkinnot.size} DIA-tutkintoa, odotettiin korkeintaan yhtä.")
+    // Päättely tehdään valmiilta (VALMIS-tilainen ja leikkuripäivään mennessä vahvistettu) DIA-tutkinnolta. Tämän lisäksi
+    // henkilöllä voi (ainakin teoriassa) olla esim. keskeytynyt tutkinto ilman että se on virhe, mutta valmiita sallitaan
+    // korkeintaan yksi.
+    val valmiitDiaTutkinnot = diaTutkinnot.filter(_.supaTila == SuoritusTila.VALMIS)
+    if (valmiitDiaTutkinnot.size > 1)
+      throw new RuntimeException(s"Oppijalla $personOid on ${valmiitDiaTutkinnot.size} valmista DIA-tutkintoa, odotettiin korkeintaan yhtä.")
 
-    val diaTutkinto = diaTutkinnot.headOption
-    val valmisDiaTutkinto = diaTutkinto.filter(dia =>
-      dia.supaTila == SuoritusTila.VALMIS &&
-        dia.vahvistusPaivamaara.exists(v => !v.isAfter(vahvistettuViimeistaan)))
+    val diaTutkinto = valmiitDiaTutkinnot.headOption
+    val vahvistettuAjoissa = diaTutkinto.flatMap(_.vahvistusPaivamaara).exists(v => !v.isAfter(vahvistettuViimeistaan))
 
     val diaSelite = diaTutkinto match {
-      case Some(dia) if dia.supaTila == SuoritusTila.VALMIS && dia.vahvistusPaivamaara.exists(v => v.isAfter(vahvistettuViimeistaan)) =>
+      case Some(dia) if dia.vahvistusPaivamaara.exists(v => v.isAfter(vahvistettuViimeistaan)) =>
         s"Löytyi DIA-tutkinto, jonka tila on ${dia.supaTila}, mutta sen vahvistuspäivä ${dia.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")} on leikkuripäivän $vahvistettuViimeistaan jälkeen."
       case Some(dia) => s"Löytyi DIA-tutkinto, jonka tila on ${dia.supaTila} ja vahvistuspäivä ${dia.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
-      case None => "DIA-tutkintoa ei löytynyt."
+      case None => "Valmista DIA-tutkintoa ei löytynyt."
     }
 
-    val suoritusvuosiArvo = valmisDiaTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
-      AvainArvoContainer(AvainArvoConstants.diaSuoritusvuosiKey, vp.getYear.toString, Seq(s"DIA-tutkinnon vahvistuspäivä: $vp.")))
+    val suoritusvuosiArvo = if (vahvistettuAjoissa) {
+      diaTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
+        AvainArvoContainer(AvainArvoConstants.diaSuoritusvuosiKey, vp.getYear.toString, Seq(s"DIA-tutkinnon vahvistuspäivä: $vp.")))
+    } else None
 
     val laajuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
       oppiaine.laajuus.map(l =>
@@ -844,7 +848,7 @@ object AvainArvoConverter {
           vtt.keskiarvo.toString,
           Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} vastaavuustodistuksen keskiarvo.")))).toSet
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, valmisDiaTutkinto.nonEmpty.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ kirjallinenArvot ++ suullinenArvot ++ vastaavuusArvot
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, vahvistettuAjoissa.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ kirjallinenArvot ++ suullinenArvot ++ vastaavuusArvot
     LOG.info(s"DIA-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }

@@ -993,7 +993,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_FIN_VASTAAVUUS"))
   }
 
-  @Test def testDiaUseampiTutkintoHeittaaPoikkeuksen(): Unit = {
+  @Test def testDiaUseampiValmisTutkintoHeittaaPoikkeuksen(): Unit = {
     val personOid = "1.2.246.562.98.69863082363"
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
     val oikeudet = Seq(
@@ -1003,6 +1003,23 @@ class AvainArvoConverterTest {
 
     Assertions.assertThrows(classOf[RuntimeException], () =>
       AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty))
+  }
+
+  // Keskeytyneitä DIA-tutkintoja voi olla useita; ne eivät estä laskentaa eivätkä vaikuta avaimiin,
+  // vaan kaikki avaimet lasketaan ainoasta valmiista tutkinnosta.
+  @Test def testDiaKeskeytynytEiEstaValmiinKasittelya(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val keskeytynyt = diaOpiskeluoikeus(SuoritusTila.KESKEYTYNYT, Some(LocalDate.parse("2020-04-03")), Seq(diaOppiaine("MATH", Some(BigDecimal(9)))))
+    val valmis = diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), Seq(diaOppiaine("FIN", Some(BigDecimal(4)))))
+    val oikeudet = Seq(keskeytynyt, valmis)
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.diaSuoritettuKey))
+    Assertions.assertEquals(Some("2023"), converterResult.getAvainArvoMap().get(AvainArvoConstants.diaSuoritusvuosiKey))
+    // Avaimet tulevat valmiista tutkinnosta, ei keskeytyneestä.
+    Assertions.assertEquals(Some("4"), converterResult.getAvainArvoMap().get("DIA_FIN_LAAJUUS"))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_MATH_LAAJUUS"))
   }
 
   @Test def testTelmaRiittavaLaajuus(): Unit = {
