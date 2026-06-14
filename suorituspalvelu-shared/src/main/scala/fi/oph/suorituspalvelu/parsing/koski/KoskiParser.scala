@@ -70,7 +70,8 @@ case class KoskiKoulutusModuuli(tunniste: Option[KoskiKoodi],
                                 kieli: Option[KoskiKoodi],
                                 pakollinen: Option[Boolean],
                                 osaAlue: Option[KoskiKoodi],
-                                `ryhmä`: Option[KoskiKoodi]) // IB-tutkinnon osasuoritusten ryhmittely
+                                `ryhmä`: Option[KoskiKoodi],  // IB-tutkinnon osasuoritusten ryhmittely
+                                taso: Option[KoskiKoodi])     // IB-tutkinnon oppiaineiden taso
 
 case class KoskiSuoritusTyyppi(koodiarvo: String,
                                koodistoUri: String,

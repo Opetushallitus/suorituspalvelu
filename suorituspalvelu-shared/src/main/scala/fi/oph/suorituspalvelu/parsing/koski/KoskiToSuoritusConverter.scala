@@ -802,11 +802,19 @@ object KoskiToSuoritusConverter {
       ryhma = koulutusmoduuli.flatMap(k => k.`ryhmä`.map(r => IBOppiaineRyhma(r.nimi, asKoodiObject(r)))),
       predictedArvosana = parasPredictedArviointi.map(pa => IBArvosana(asKoodiObject(pa.arvosana), pa.hyväksytty)),
       laajuus = koulutusmoduuli.flatMap(_.laajuus.map(l => IBLaajuus(l.arvo, asKoodiObject(l.yksikkö.get)))),
-      suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject)
+      suorituskieli = osaSuoritus.suorituskieli.map(asKoodiObject),
+      kieli = koulutusmoduuli.flatMap(_.kieli.map(t => asKoodiObject(t))),
+      taso = koulutusmoduuli.flatMap(k => k.taso.map(t => asKoodiObject(t)))
     )
   }
 
   def toIbTutkinto(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): IBTutkinto = {
+    // ei voida merkitä valmiiksi koska toistaiseksi saadaan vain predicted gradet
+    val supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()) match {
+      case SuoritusTila.VALMIS => SuoritusTila.KESKEN
+      case tila => tila
+    }
+
     IBTutkinto(
       tunniste = UUID.randomUUID(),
       nimi = suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(_.nimi)).getOrElse(dummy()),
@@ -821,7 +829,7 @@ object KoskiToSuoritusConverter {
           o.oid)).getOrElse(dummy()),
       suorituskieli = suoritus.suorituskieli.map(asKoodiObject),
       koskiTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => asKoodiObject(tila)).getOrElse(dummy()),
-      supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
+      supaTila = supaTila,
       aloitusPaivamaara = parseAloitus(opiskeluoikeus),
       vahvistusPaivamaara = suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
       osasuoritukset = suoritus.osasuoritukset.map(_.map(o => toIbOppiaine(o))).getOrElse(Seq.empty))

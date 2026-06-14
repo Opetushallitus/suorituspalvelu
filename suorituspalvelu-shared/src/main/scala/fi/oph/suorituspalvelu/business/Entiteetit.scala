@@ -169,7 +169,9 @@ case class IBOppiaineSuoritus(
   ryhma: Option[IBOppiaineRyhma],
   predictedArvosana: Option[IBArvosana],
   laajuus: Option[IBLaajuus],
-  suorituskieli: Option[Koodi]
+  suorituskieli: Option[Koodi],
+  kieli: Option[Koodi],
+  taso: Option[Koodi]            // IB-oppiaineen taso (HL/SL)
 )
 
 case class IBTutkinto(

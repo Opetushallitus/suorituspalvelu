@@ -42,7 +42,7 @@ object TestDataUtil {
       tyyppi = KoskiSuoritusTyyppi("perusopetuksenvuosiluokka", "suorituksentyyppi", Kielistetty(None, None, None)),
       koulutusmoduuli = Some(KoskiKoulutusModuuli(
         tunniste = Some(mkKoodi(luokkaAste, "perusopetuksenluokkaaste")),
-        koulutustyyppi = None, laajuus = None, kieli = None, pakollinen = None, osaAlue = None, ryhmä = None)),
+        koulutustyyppi = None, laajuus = None, kieli = None, pakollinen = None, osaAlue = None, ryhmä = None, taso = None)),
       suorituskieli = None,
       koulusivistyskieli = None,
       alkamispäivä = alkamispaiva,
