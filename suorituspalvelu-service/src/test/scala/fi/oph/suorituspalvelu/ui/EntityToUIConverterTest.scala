@@ -840,7 +840,8 @@ class EntityToUIConverterTest {
       suoritukset = Set.empty,
       rahoitusLahde = None,
       nimi = Some(Kielistetty(Some("Sosekoulutus"), None, None)),
-      luokittelu = Some("6")
+      luokittelu = Some("6"),
+      liittyvaOpiskeluoikeusAvain = None
     )
 
     val virtaEiTutkintoonJohtavaOpiskeluoikeus = virtaOpiskeluoikeus.copy(
@@ -1006,7 +1007,8 @@ class EntityToUIConverterTest {
       suoritukset = Set(virtaTutkinto),
       rahoitusLahde = None,
       nimi = Some(Kielistetty(Some("Sosekoulutus"), None, None)),
-      luokittelu = Some("6")
+      luokittelu = Some("6"),
+      liittyvaOpiskeluoikeusAvain = None
     )
 
     Assertions.assertEquals(java.util.List.of(KKSuoritusUI(

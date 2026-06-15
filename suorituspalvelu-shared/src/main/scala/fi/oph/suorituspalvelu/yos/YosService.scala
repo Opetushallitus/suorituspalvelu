@@ -91,7 +91,16 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
           YosPredicate.kuuluukoOrganisaatioYosinPiiriin(parentOrganisaatiot, Some(oikeus.myontaja))
         })
         .filter(oikeus => {
-          val oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
+          var oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
+          //tarkistetaan onko ylemmällä asteestella linkki alemmalle asteelle ja käytetään sitä 
+          if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
+            oikeudenAste = oikeudet.find(o => o.isInstanceOf[KKOpiskeluoikeus] && o.asInstanceOf[KKOpiskeluoikeus].virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get)
+              .map(o => getKoulutusAsteOpiskeluOikeudelle(o.asInstanceOf[KKOpiskeluoikeus]))
+              .filter(o => o.equals(ALEMMAT_ASTEET)).getOrElse(oikeudenAste)
+            if (oikeudenAste.equals(ALEMMAT_ASTEET)) {
+              LOGGER.info(s"Opiskeluoikeudelle ${oikeus.virtaTunniste} löytyi linkki alemmalle asteelle. Käytetään alempaa astetta koulutusasteen YOS-vertailussa")
+            }
+          }
           YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoive.koulutusAste, oikeudenAste)
         })
         .map(muodostaYosPaatettavaOpiskeluOikeus)

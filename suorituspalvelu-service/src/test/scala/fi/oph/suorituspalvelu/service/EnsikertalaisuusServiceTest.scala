@@ -93,7 +93,8 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
       suoritukset = suoritukset,
       luokittelu = None,
       rahoitusLahde = None,
-      nimi = None
+      nimi = None,
+      liittyvaOpiskeluoikeusAvain = None
     )
 
   private def luoKKSynteettinenOpiskeluoikeus(containsKKTutkinto: Boolean, suoritukset: Set[Suoritus] = Set.empty): KKSynteettinenOpiskeluoikeus =

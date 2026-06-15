@@ -20,6 +20,8 @@ case class VirtaOpiskeluoikeusKoulutusala(versio: String, koodi: Int)
 
 case class VirtaLaajuus(Opintopiste: BigDecimal)
 
+case class VirtaLiittyvyys(liittyvaOpiskeluoikeusAvain: String)
+
 case class VirtaJakso(
   @JacksonXmlElementWrapper(useWrapping = false) Nimi: Seq[VirtaNimi],
   Rahoituslahde: Option[String],
@@ -51,7 +53,8 @@ case class VirtaOpiskeluoikeus(
   AlkuPvm: LocalDate,
   Myontaja: String,
   opiskelijaAvain: String,
-  avain: String
+  avain: String,
+  Liittyvyys: Option[VirtaLiittyvyys]
 ) {
 
   def getVirtaOpiskeluoikeusId: String =
