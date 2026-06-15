@@ -279,7 +279,8 @@ object VirtaToSuoritusConverter {
               isTutkintoonJohtava = isTutkintoonJohtavaOpiskeluoikeusTyyppi(oo.Tyyppi),
               kieli = jakso.flatMap(_.Koulutuskieli),
               suoritukset =
-                fixSuoritusRoots(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet
+                fixSuoritusRoots(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet,
+              liittyvaOpiskeluoikeusAvain = oo.Liittyvyys.map(l => l.liittyvaOpiskeluoikeusAvain)
             )
             (muutSuoritukset, kkOpiskeluoikeus :: kkOpiskeluoikeudet)
         }

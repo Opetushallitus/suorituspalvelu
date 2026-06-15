@@ -523,7 +523,8 @@ case class KKOpiskeluoikeus(
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
   suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
   rahoitusLahde: Option[String],
-  luokittelu: Option[String]
+  luokittelu: Option[String],
+  liittyvaOpiskeluoikeusAvain: Option[String]
 ) extends KKOpiskeluoikeusBase(synteettinen = false)
 
 case class KKSynteettinenOpiskeluoikeus(

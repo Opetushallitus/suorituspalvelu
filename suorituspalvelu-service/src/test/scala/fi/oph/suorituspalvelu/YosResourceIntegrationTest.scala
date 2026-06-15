@@ -166,7 +166,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
       suoritukset = Set.empty,
       rahoitusLahde = Some("5"),
       nimi = Some(Kielistetty(Some("Laivan rakennusala"), None, None)),
-      luokittelu = Some("3")
+      luokittelu = Some("3"),
+      liittyvaOpiskeluoikeusAvain = None
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.VIRTA)
   }
