@@ -262,7 +262,8 @@ class OvaraServiceTest {
     myontaja            = "1.2.246.562.10.00000000001",
     isTutkintoonJohtava = true,
     kieli               = None,
-    suoritukset         = Set.empty
+    suoritukset         = Set.empty,
+    liittyvaOpiskeluoikeusAvain = None
   )
 
   private def buildServiceForOpiskeluoikeudet(batchSize: Int = 500): (OvaraService, KantaOperaatiot, OpiskeluoikeusParsingService, SiirtotiedostoClient) = {

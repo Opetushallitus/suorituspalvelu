@@ -106,7 +106,8 @@ class ReparseIntegraatioTest extends BaseIntegraatioTesti {
       suoritukset = Set.empty,
       rahoitusLahde = None,
       nimi = Some(Kielistetty(Some("Laivan rakennusala"), None, None)),
-      luokittelu = Some("6")
+      luokittelu = Some("6"),
+      liittyvaOpiskeluoikeusAvain = None
     ))
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, opiskeluoikeudet, Seq.empty, ParserVersions.VIRTA)
 
