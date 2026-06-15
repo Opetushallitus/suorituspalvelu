@@ -25,7 +25,8 @@ case class OvaraKKOpiskeluoikeus(
   kieli: Option[String],
   suoritukset: Seq[OvaraKKSuoritus],
   rahoitusLahde: Option[String],
-  luokittelu: Option[String]
+  luokittelu: Option[String],
+  liittyvaOpiskeluoikeusAvain: Option[String]
 )
 
 case class OvaraKKSynteettinenOpiskeluoikeus(
