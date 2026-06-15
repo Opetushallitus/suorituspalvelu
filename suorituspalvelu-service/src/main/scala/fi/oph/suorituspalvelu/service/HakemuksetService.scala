@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemusBaseFields, HakemuspalveluClient}
 import fi.oph.suorituspalvelu.jobs.SupaScheduler
+import fi.oph.suorituspalvelu.util.{LogMetricsOperation, logOperation}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -30,6 +31,7 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
         val hakemukset = Await.result(hakemusPalveluClient.getMuuttuneetHakemukset(prevStart.get.minusSeconds(60)), 1.minutes)
         LOG.info(s"Saatiin ${hakemukset.size} muuttunutta hakemusta")
         prosessoiMuuttuneetHakemukset(hakemukset)
+        LOG.logOperation(LogMetricsOperation.ATARUPOLLMUUTTUNEET)
         start.toString
       catch
         case e: Exception =>

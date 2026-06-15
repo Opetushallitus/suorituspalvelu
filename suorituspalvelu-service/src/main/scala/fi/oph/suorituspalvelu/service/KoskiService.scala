@@ -9,7 +9,7 @@ import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
-import fi.oph.suorituspalvelu.util.KoodistoProvider
+import fi.oph.suorituspalvelu.util.{KoodistoProvider, LogMetricsOperation, logOperation}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -51,6 +51,7 @@ class KoskiService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot, h
           }, counts._2 + {
             result.exception.map(_ => 1).getOrElse(0)
           }))
+        LOG.logOperation(LogMetricsOperation.KOSKIPOLLMUUTTUNEET)
         LOG.info(s"(job id ${ctx.getJobId}) : koski-poll-muuttuneet alkaen $prevStart valmis. Muuttuneita oppijoita: $changed, poikkeuksia: $exceptions.")
         start.toString
       catch
