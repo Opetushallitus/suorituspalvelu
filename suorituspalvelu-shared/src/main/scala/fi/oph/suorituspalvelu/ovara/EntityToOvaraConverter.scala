@@ -88,7 +88,8 @@ object EntityToOvaraConverter {
         kieli = oo.kieli,
         suoritukset = oo.suoritukset.flatMap(convertKKSuoritus).toSeq,
         rahoitusLahde = oo.rahoitusLahde,
-        luokittelu = oo.luokittelu
+        luokittelu = oo.luokittelu,
+        liittyvaOpiskeluoikeusAvain = oo.liittyvaOpiskeluoikeusAvain
       )}
 
   def getKKSynteettisetOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraKKSynteettinenOpiskeluoikeus] =
