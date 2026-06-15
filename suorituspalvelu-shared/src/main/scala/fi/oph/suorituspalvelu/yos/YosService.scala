@@ -92,7 +92,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
         })
         .filter(oikeus => {
           var oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
-          //tarkistetaan onko ylemmällä asteestella linkki alemmalle asteelle ja käytetään sitä 
+          //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään sitä 
           if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
             oikeudenAste = oikeudet.find(o => o.isInstanceOf[KKOpiskeluoikeus] && o.asInstanceOf[KKOpiskeluoikeus].virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get)
               .map(o => getKoulutusAsteOpiskeluOikeudelle(o.asInstanceOf[KKOpiskeluoikeus]))
