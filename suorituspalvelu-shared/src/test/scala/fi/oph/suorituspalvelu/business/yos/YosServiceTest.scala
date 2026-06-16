@@ -95,6 +95,7 @@ class YosServiceTest {
     Mockito.reset(oikeusMock)
     Mockito.reset(organisaatioMock)
     Mockito.reset(tarjontaMock)
+    Mockito.reset(koodistoMock)
     Mockito.when(koodistoMock.haeKoodisto("koulutus")).thenReturn(Map(
       "koulutus_1" -> Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")), koodiUri = "koulutus_1"),
       "koulutus_12" -> Koodi(koodiArvo = "12", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Perushoitaja")), koodiUri = "koulutus_12"),
@@ -299,7 +300,6 @@ class YosServiceTest {
 
   @Test
   def vaarassaTilassaOlevaOpiskeluOikeusEiKuuluYos(): Unit = {
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(virtaTila = fi.oph.suorituspalvelu.business.Koodi("3", "virtatila", Some(1))))
     ))
@@ -309,7 +309,6 @@ class YosServiceTest {
 
   @Test
   def tutkintoonJohtamatonOpiskeluOikeusEiKuuluYos(): Unit = {
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(isTutkintoonJohtava = false))
     ))
@@ -319,7 +318,6 @@ class YosServiceTest {
 
   @Test
   def tilausKoulutusOpiskeluOikeusEiKuuluYos(): Unit = {
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(rahoitusLahde = Some("4")))
     ))
@@ -329,7 +327,6 @@ class YosServiceTest {
 
   @Test
   def vaarallaVirtaTyypillaOlevaOpiskeluOikeusEiKuuluYos(): Unit = {
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(tyyppiKoodi = "5"))
     ))
@@ -339,7 +336,6 @@ class YosServiceTest {
 
   @Test
   def kaksoistutkintoOpiskeluOikeusEiKuuluYos(): Unit = {
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(luokittelu = Some("6")))
     ))
@@ -352,7 +348,7 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
     Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any())).thenReturn(ORGANISAATIO)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any(), any())).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
     ))
@@ -372,7 +368,7 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(
       HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_62")))
     Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any())).thenReturn(ORGANISAATIO)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any(), any())).thenReturn(ORGANISAATIO)
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
       VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
     ))
@@ -385,7 +381,7 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(
       HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_62")))
     Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
-    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any())).thenReturn(ORGANISAATIO)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any(), any())).thenReturn(ORGANISAATIO)
     val alempiPaattynytOpiskeluOikeus = KKOpiskeluoikeus(
       tunniste = UUID.randomUUID(),
       virtaTunniste = "virtatunniste-2",
