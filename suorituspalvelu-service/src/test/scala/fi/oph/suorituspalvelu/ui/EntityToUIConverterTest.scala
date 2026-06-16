@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.ui
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.integration.client
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaToSuoritusConverter
@@ -1381,8 +1382,11 @@ class EntityToUIConverterTest {
             KoodiMetadata("FI", "englanti"),
             KoodiMetadata("SV", "engelska"),
             KoodiMetadata("EN", "English"),
-          )))
+          ),
+          ""))
         else Map.empty
+
+      override def haeAlakoodit(koodiUri: String): List[client.Koodi] = List.empty  
     }
 
     val result = EntityToUIConverter.getOppijanTiedot(
@@ -1420,8 +1424,10 @@ class EntityToUIConverterTest {
             KoodiMetadata("FI", "Suomen kieli ja kirjallisuus"),
             KoodiMetadata("SV", "Finska språket och litteratur"),
             KoodiMetadata("EN", "Finnish language and literature"),
-          )))
+          ), ""))
         else Map.empty
+      
+      override def haeAlakoodit(koodiUri: String): List[client.Koodi] = List.empty
     }
 
     val result = EntityToUIConverter.getOppijanTiedot(
