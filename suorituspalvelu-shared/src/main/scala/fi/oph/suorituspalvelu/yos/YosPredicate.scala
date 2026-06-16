@@ -41,16 +41,12 @@ object YosPredicate {
     }
   }
 
-  def kuuluukoOpiskeluoikeusYosinPiiriin(opiskeluoikeus: Opiskeluoikeus): Boolean = {
-    opiskeluoikeus match
-      case oikeus: KKOpiskeluoikeus =>
-        YOS_PIIRIIN_KUULUVAT_VIRTAOPISKELUOIKEUDEN_TILAT.contains(oikeus.virtaTila.arvo)
-        && oikeus.isTutkintoonJohtava
-        && (oikeus.rahoitusLahde.isEmpty || oikeus.rahoitusLahde.exists(rl => rl.isBlank) || oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
-        && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
-        && (oikeus.luokittelu.isEmpty || oikeus.luokittelu.exists(l => l.isBlank) || !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
-      case _ =>
-        false
+  def kuuluukoOpiskeluoikeusYosinPiiriin(oikeus: KKOpiskeluoikeus): Boolean = {
+    YOS_PIIRIIN_KUULUVAT_VIRTAOPISKELUOIKEUDEN_TILAT.contains(oikeus.virtaTila.arvo)
+    && oikeus.isTutkintoonJohtava
+    && (oikeus.rahoitusLahde.isEmpty || oikeus.rahoitusLahde.exists(rl => rl.isBlank) || oikeus.rahoitusLahde.get != RAHOITUSLAHDE_TILAUSKOULUTUS)
+    && YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT.contains(oikeus.tyyppiKoodi)
+    && (oikeus.luokittelu.isEmpty || oikeus.luokittelu.exists(l => l.isBlank) || !VIRTA_LUOKITTELUT_JOTKA_EIVAT_KUULU_YOS_PIIRIIN.contains(oikeus.luokittelu.get))
   }
 
   def kuuluukoOrganisaatioYosinPiiriin(organisaatiot: List[String], oppilaitosnro: Option[String] = None): Boolean =
