@@ -19,6 +19,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Random
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TUVA, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
+import fi.oph.suorituspalvelu.business.TestDataUtil
+import fi.oph.suorituspalvelu.business.testsupport.TestUtil.DUMMY_KOODISTOPROVIDER
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
@@ -469,7 +471,7 @@ class KantaOperaatiotTest {
           case Right(opiskeluoikeus) =>
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkilo.oppijaOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero)).get
             val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
-            val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), koodisto => Map.empty).toSet
+            val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER).toSet
             this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Seq.empty, ParserVersions.KOSKI)
             oo
           case Left(ex) => throw ex
@@ -497,7 +499,7 @@ class KantaOperaatiotTest {
           case Right(opiskeluoikeus) =>
             val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(henkilo.oppijaOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero)).get
             val koskiOpiskeluoikeus = KoskiParser.parseKoskiData(opiskeluoikeus.data)
-            val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), koodisto => Map.empty).toSet
+            val oo: Set[Opiskeluoikeus] = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(koskiOpiskeluoikeus), DUMMY_KOODISTOPROVIDER).toSet
             this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo, Seq.empty, ParserVersions.KOSKI)
             oo
           case Left(ex) => throw ex
@@ -539,7 +541,7 @@ class KantaOperaatiotTest {
       opiskeluoikeudet.foreach {
         case Right(opiskeluoikeus) =>
           val versio = this.kantaOperaatiot.tallennaJarjestelmaVersio(HENKILONUMERO + i, Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"value\"}"), Seq.empty, opiskeluoikeus.aikaleima, opiskeluoikeus.oid, Some(opiskeluoikeus.versioNumero)).get
-          val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(opiskeluoikeus.data)), koodisto => Map.empty)
+          val oo = KoskiToSuoritusConverter.parseOpiskeluoikeudet(Seq(KoskiParser.parseKoskiData(opiskeluoikeus.data)), DUMMY_KOODISTOPROVIDER)
           this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, oo.toSet, Seq.empty, ParserVersions.KOSKI)
         case Left(ex) => throw ex
       }

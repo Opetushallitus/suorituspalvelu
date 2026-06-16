@@ -36,4 +36,8 @@ trait OrganisaatioProvider {
       .filter((tunniste, _) => tunniste.startsWith("1.2.246"))
       .filter((_, o) => mukaanLukienLakkautetut || onAktiivinen(o))
 
+  // Palauttaa organisaation yläorganisaatioiden tunnisteet (oid)
+  def haeKaikkiOrganisaationParenttienOidit(orgOid: String): List[String] =
+    orgLookupTable().get(orgOid).flatMap(_.parentOid)
+      .map(parent => List(parent) ++ haeKaikkiOrganisaationParenttienOidit(parent)).getOrElse(List.empty)
 }

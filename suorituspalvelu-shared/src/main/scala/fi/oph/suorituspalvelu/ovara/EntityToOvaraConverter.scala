@@ -75,6 +75,7 @@ object EntityToOvaraConverter {
       .map { case (meta, oo) => OvaraKKOpiskeluoikeus(
         metadata = meta,
         tunniste = oo.tunniste,
+        nimi = oo.nimi,
         virtaTunniste = oo.virtaTunniste,
         tyyppiKoodi = oo.tyyppiKoodi,
         koulutusKoodi = oo.koulutusKoodi,
@@ -85,7 +86,10 @@ object EntityToOvaraConverter {
         myontaja = oo.myontaja,
         isTutkintoonJohtava = oo.isTutkintoonJohtava,
         kieli = oo.kieli,
-        suoritukset = oo.suoritukset.flatMap(convertKKSuoritus).toSeq
+        suoritukset = oo.suoritukset.flatMap(convertKKSuoritus).toSeq,
+        rahoitusLahde = oo.rahoitusLahde,
+        luokittelu = oo.luokittelu,
+        liittyvaOpiskeluoikeusAvain = oo.liittyvaOpiskeluoikeusAvain
       )}
 
   def getKKSynteettisetOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraKKSynteettinenOpiskeluoikeus] =
