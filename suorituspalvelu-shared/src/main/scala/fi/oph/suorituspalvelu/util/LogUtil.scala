@@ -41,6 +41,8 @@ enum LogMetricsOperation:
 
 extension (logger: Logger) {
 
+  // Operaatio jonka avulla lokitetaan tapahtumia AWS CloudWatchin lokimetriikoita varten. Tarkoitus on että varsinaiset
+  // operaation tietoa lokittavat kutsut tehdään erikseen.
   def logOperation(operation: LogMetricsOperation): Unit = {
     LogContext(logMetricsOperation = operation.toString)(() =>
       logger.info(s"Operaatio ${operation.toString} valmis"))
