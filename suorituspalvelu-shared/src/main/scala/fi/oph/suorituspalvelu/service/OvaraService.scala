@@ -302,7 +302,7 @@ class OvaraService(
       else {
         LOG.info(s"(${params.executionId}) Käsitellään sivu (${henkiloBatch.size} henkilöä, afterHenkiloOid=$afterHenkiloOid), tiedostonumero $tiedostoNumero")
 
-        val records = henkiloBatch.flatMap { henkiloOid =>
+        val records = henkiloBatch.flatMap { case (henkiloOid, viimeisinParserointiMuutos) =>
           val kaikkiVersiotJaOO = opiskeluoikeusParsingService.haeSuoritukset(henkiloOid)
           val kaikkiOoJaMetadata: Seq[(OvaraVersioMetadata, Opiskeluoikeus)] =
             kaikkiVersiotJaOO.toSeq.flatMap { case (versio, oos) => oos.toSeq.map(oo => (toMeta(versio), oo)) }
@@ -314,8 +314,6 @@ class OvaraService(
           val pkOo        = EntityToOvaraConverter.getPerusopetuksenOpiskeluoikeudet(kaikkiOoJaMetadata)
           val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(kaikkiOoJaMetadata)
           if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty) {
-            //Parserointihetki on optionaalinen, mutta koska muuttuneet tiedot on poimittu parserointihetken perusteella, vähintään yksi parserointihetki on oikeasti löydyttävä.
-            val viimeisinParserointiMuutos = kaikkiOoJaMetadata.map(_._1).flatMap(_.parserointiHetki).max
             val henkiloMetadata = OvaraHenkiloMetadata(viimeisinParserointiMuutos)
             Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
           }
@@ -328,7 +326,7 @@ class OvaraService(
           tiedostoNumero + 1
         } else tiedostoNumero
 
-        muodostaSeuraavaTiedosto(Some(henkiloBatch.last), totalCount + henkiloBatch.size, nextTiedostoNumero)
+        muodostaSeuraavaTiedosto(Some(henkiloBatch.last._1), totalCount + henkiloBatch.size, nextTiedostoNumero)
       }
     }
 
