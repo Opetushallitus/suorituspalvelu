@@ -34,6 +34,8 @@ implicit val strList: GetResult[List[String]] = GetResult[List[String]](r =>
       .map(_.toString())
 )
 
+implicit val getInstant: GetResult[Instant] = GetResult[Instant](r => r.nextTimestamp().toInstant)
+
 case class SiirtotiedostoOperaatio(
   id: Int,
   uuid: String,
@@ -904,9 +906,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     windowEnd: Instant,
     pageSize: Int,
     afterHenkiloOid: Option[String] = None
-  ): Seq[String] = {
+  ): Seq[(String, Instant)] = {
     LOG.info(s"Haetaan muuttuneet henkilöt $windowStart - $windowEnd. $pageSize per sivu, afterHenkiloOid = $afterHenkiloOid")
-    val baseQuery = sql"""SELECT henkilo_oid FROM versiot
+    val baseQuery = sql"""SELECT henkilo_oid, MAX(parserointihetki) FROM versiot
           WHERE parserointihetki >= ${windowStart.toString}::timestamptz
             AND parserointihetki < ${windowEnd.toString}::timestamptz
             AND upper(voimassaolo) = 'infinity'::timestamptz"""
@@ -915,7 +917,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       case None      => baseQuery
     }
     Await.result(db.run(
-      withKeyset.concat(sql" GROUP BY henkilo_oid ORDER BY henkilo_oid ASC LIMIT $pageSize").as[String]
+      withKeyset.concat(sql" GROUP BY henkilo_oid ORDER BY henkilo_oid ASC LIMIT $pageSize").as[(String, Instant)]
     ), DB_TIMEOUT)
   }
 
