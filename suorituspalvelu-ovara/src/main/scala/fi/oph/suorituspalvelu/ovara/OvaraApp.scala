@@ -43,17 +43,21 @@ class OvaraRunner extends CommandLineRunner {
   @Autowired var kantaOperaatiot: KantaOperaatiot = _
 
   override def run(args: String*): Unit = {
-    val params    = OvaraParams(
-      vainAktiiviset = true
-    )
+    val executionId = java.util.UUID.randomUUID().toString
     if (kantaOperaatiot.onkoKaynnissaOlevaOperaatio()) {
-      LOG.info(s"(${params.executionId}) Käynnissä oleva operaatio löytyi (alle 3 tuntia vanha, ei ole päättynyt), ei aloiteta uutta.")
+      LOG.info(s"($executionId) Käynnissä oleva operaatio löytyi (alle 3 tuntia vanha, ei ole päättynyt), ei aloiteta uutta.")
       System.exit(0)
     }
-    val operaatio: SiirtotiedostoOperaatio = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(params.executionId)
+    val operaatio: SiirtotiedostoOperaatio = kantaOperaatiot.aloitaSiirtotiedostoOperaatio(executionId)
+    val params = OvaraParams(
+      executionId = executionId,
+      vainAktiiviset = true,
+      windowStart = Some(operaatio.windowStart),
+      windowEnd = Some(operaatio.windowEnd)
+    )
     LOG.info(s"(${params.executionId}) Siirtotiedostonmuodostusoperaatio aloitettu (#${operaatio.id}), ikkuna: ${operaatio.windowStart} – ${operaatio.windowEnd}. $operaatio")
     try {
-      val opiskeluoikeudetOnnistuneet = ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params, operaatio.windowStart, operaatio.windowEnd)
+      val opiskeluoikeudetOnnistuneet = ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params)
 
       val paivittaisetTulos = if (operaatio.paivittaiset) {
         LOG.info(s"(${params.executionId}) Muodostetaan paivittaiset siirtotiedostot (valintadata, harkinnanvaraiset, ensikertalaisuudet)")
