@@ -275,10 +275,12 @@ class OvaraServiceTest {
     (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient)
   }
 
+  val WINDOW_HETKI = Instant.parse("2024-01-15T10:01:23Z")
+
   @Test def testOpiskeluoikeudetTallennetaan(): Unit = {
     val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq(HENKILO_OID))
+      .thenReturn(Seq((HENKILO_OID, WINDOW_HETKI)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
@@ -293,7 +295,7 @@ class OvaraServiceTest {
   @Test def testTyhjaVersioEiTallennetaSiirtotiedostoon(): Unit = {
     val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq(HENKILO_OID))
+      .thenReturn(Seq((HENKILO_OID, WINDOW_HETKI)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(BASE_VERSIO -> Set.empty[Opiskeluoikeus]))
@@ -315,7 +317,7 @@ class OvaraServiceTest {
     val ooVirta = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000004"))
     // GROUP BY varmistaa että henkilö esiintyy kyselyssä vain kerran vaikka hänellä on useita muuttuneita versioita
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq(HENKILO_OID))
+      .thenReturn(Seq((HENKILO_OID, WINDOW_HETKI)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS), versioVirta -> Set[Opiskeluoikeus](ooVirta)))
@@ -328,41 +330,35 @@ class OvaraServiceTest {
       .tallennaSiirtotiedosto(any(), any(), any(), any(), any())
   }
 
-  @Test def testHenkiloMetadataViimeisinMuutosOnMaxParserointiHetki(): Unit = {
+  @Test def testHenkiloMetadataViimeisinMuutosOnSelectionQueryArvo(): Unit = {
+    // Metadata.viimeisinMuutos pitää tulla haeMuuttuneetHenkiloOidit-kyselyn palauttamasta MAX(parserointihetki)-arvosta,
+    // EI haeSuoritukset-kutsun palauttamien versioiden parserointiHetkistä. Tämä testi varmistaa että edes silloin kun
+    // valitseva versio (jonka parserointiHetki ikkunassa toi henkilön mukaan) ei tuota opiskeluoikeuksia ja muu versio
+    // tuo opiskeluoikeudet mutta sen parserointiHetki on None, metadataan päätyvä viimeisinMuutos saadaan oikein
+    // alkuperäisen henkilöt valitsevan kyselyn tuloksista.
     val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
 
-    val varhainenHetki    = Instant.parse("2024-01-10T08:00:00Z")
-    val keskimmainenHetki = Instant.parse("2024-01-12T09:00:00Z")
-    val viimeisinHetki    = Instant.parse("2024-01-15T10:01:23Z")
+    val aikaikkunaanOsuvaHetki = Instant.parse("2024-01-15T10:01:23Z")
 
-    val versioVarhainen = BASE_VERSIO.copy(
+    val versioValitseva = BASE_VERSIO.copy(
       tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000010"),
-      parserointiHetki = Some(varhainenHetki)
+      parserointiHetki = Some(aikaikkunaanOsuvaHetki)
     )
-    val versioKeskimmainen = BASE_VERSIO.copy(
+    val versioIlmanParserointiHetkea = BASE_VERSIO.copy(
       tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000011"),
       lahdeJarjestelma = Lahdejarjestelma.VIRTA,
       lahdeTunniste    = "virta-tunniste",
-      parserointiHetki = Some(keskimmainenHetki)
+      parserointiHetki = None
     )
-    val versioViimeisin = BASE_VERSIO.copy(
-      tunniste         = UUID.fromString("00000000-0000-0000-0000-000000000012"),
-      lahdeTunniste    = "koski-tunniste-2",
-      parserointiHetki = Some(viimeisinHetki)
-    )
-
-    val ooVarhainen    = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000020"))
-    val ooKeskimmainen = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000021"))
-    val ooViimeisin    = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000022"))
+    val oo = BASE_KK_OPISKELUOIKEUS.copy(tunniste = UUID.fromString("00000000-0000-0000-0000-000000000020"))
 
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq(HENKILO_OID))
+      .thenReturn(Seq((HENKILO_OID, aikaikkunaanOsuvaHetki)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(
-        versioViimeisin    -> Set[Opiskeluoikeus](ooViimeisin),
-        versioVarhainen    -> Set[Opiskeluoikeus](ooVarhainen),
-        versioKeskimmainen -> Set[Opiskeluoikeus](ooKeskimmainen)
+        versioValitseva              -> Set.empty[Opiskeluoikeus],
+        versioIlmanParserointiHetkea -> Set[Opiskeluoikeus](oo)
       ))
 
     service.muodostaOpiskeluoikeusSiirtotiedostot(OvaraParams(executionId = EXECUTION_ID), Instant.parse("2024-01-01T00:00:00Z"), WINDOW_END)
@@ -372,7 +368,7 @@ class OvaraServiceTest {
 
     val records = captor.getValue
     Assertions.assertEquals(1, records.size)
-    Assertions.assertEquals(viimeisinHetki, records.head.metadata.viimeisinMuutos)
+    Assertions.assertEquals(aikaikkunaanOsuvaHetki, records.head.metadata.viimeisinMuutos)
   }
 
   // HenkiloOid-perusteinen sivutus: varmistaa että afterHenkiloOid-kursorin arvot ovat oikein sivujen välillä.
@@ -385,7 +381,7 @@ class OvaraServiceTest {
 
     val (service, mockKantaOperaatiot, mockParsingService, _) = buildServiceForOpiskeluoikeudet(batchSize = 2)
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq(oid1, oid2))
+      .thenReturn(Seq((oid1, WINDOW_HETKI), (oid2, WINDOW_HETKI)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
@@ -412,9 +408,9 @@ class OvaraServiceTest {
 
     val (service, mockKantaOperaatiot, mockParsingService, _) = buildServiceForOpiskeluoikeudet(batchSize = 2)
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq(oid1, oid2))
-      .thenReturn(Seq(oid3, oid4))
-      .thenReturn(Seq(oid5))
+      .thenReturn(Seq((oid1, WINDOW_HETKI), (oid2, WINDOW_HETKI)))
+      .thenReturn(Seq((oid3, WINDOW_HETKI), (oid4, WINDOW_HETKI)))
+      .thenReturn(Seq((oid5, WINDOW_HETKI)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))
@@ -437,8 +433,8 @@ class OvaraServiceTest {
   @Test def testOpiskeluoikeudetSivutusLuoUseampiaTiedostoja(): Unit = {
     val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet(batchSize = 2)
     Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
-      .thenReturn(Seq("1.2.246.562.24.10000000001", "1.2.246.562.24.10000000002"))
-      .thenReturn(Seq("1.2.246.562.24.10000000003"))
+      .thenReturn(Seq(("1.2.246.562.24.10000000001", WINDOW_HETKI), ("1.2.246.562.24.10000000002", WINDOW_HETKI)))
+      .thenReturn(Seq(("1.2.246.562.24.10000000003", WINDOW_HETKI)))
       .thenReturn(Seq.empty)
     Mockito.when(mockParsingService.haeSuoritukset(any(), anyBoolean()))
       .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](BASE_KK_OPISKELUOIKEUS)))

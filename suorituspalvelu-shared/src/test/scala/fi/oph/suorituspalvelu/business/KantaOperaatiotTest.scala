@@ -1871,8 +1871,12 @@ class KantaOperaatiotTest {
 
     Assertions.assertEquals(
       Seq("1.2.246.562.24.00000000001", "1.2.246.562.24.00000000002"),
-      tulos
+      tulos.map(_._1)
     )
+    tulos.foreach { case (_, parserointiHetki) =>
+      Assertions.assertTrue(!parserointiHetki.isBefore(before.minusMillis(1)) && !parserointiHetki.isAfter(after.plusMillis(1)),
+        s"parserointiHetki $parserointiHetki not within [$before, $after]")
+    }
   }
 
   @Test def testHaeMuuttuneetHenkiloOiditEiPalautaIkkunanUlkopuolelta(): Unit = {
@@ -1900,14 +1904,14 @@ class KantaOperaatiotTest {
 
     // page size 2 → kaksi ensimmäistä (aakkosjärjestys)
     val sivu1 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2)
-    Assertions.assertEquals(Seq("1.2.246.562.24.00000000004", "1.2.246.562.24.00000000005"), sivu1)
+    Assertions.assertEquals(Seq("1.2.246.562.24.00000000004", "1.2.246.562.24.00000000005"), sivu1.map(_._1))
 
     // afterHenkiloOid skippaa jo haetut → kolmas
-    val sivu2 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2, Some(sivu1.last))
-    Assertions.assertEquals(Seq("1.2.246.562.24.00000000006"), sivu2)
+    val sivu2 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2, Some(sivu1.last._1))
+    Assertions.assertEquals(Seq("1.2.246.562.24.00000000006"), sivu2.map(_._1))
 
     // toisen sivun jälkeen tyhjä
-    val sivu3 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2, Some(sivu2.last))
+    val sivu3 = kantaOperaatiot.haeMuuttuneetHenkiloOidit(window._1, window._2, 2, Some(sivu2.last._1))
     Assertions.assertTrue(sivu3.isEmpty)
   }
 
@@ -1919,6 +1923,6 @@ class KantaOperaatiotTest {
 
     val tulos = kantaOperaatiot.haeMuuttuneetHenkiloOidit(before.minusMillis(1), after.plusMillis(1), 100)
 
-    Assertions.assertEquals(Seq("1.2.246.562.24.00000000007"), tulos)
+    Assertions.assertEquals(Seq("1.2.246.562.24.00000000007"), tulos.map(_._1))
   }
 }
