@@ -114,7 +114,7 @@ class OvaraResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testMuodostaOpiskeluoikeussiirtotiedostotAccepted(): Unit =
-    Mockito.when(ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(any(), any(), any()))
+    Mockito.when(ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(any()))
       .thenReturn(0)
 
     val result = mvc.perform(opiskeluoikeudetPost)
@@ -128,7 +128,7 @@ class OvaraResourceIntegraatioTest extends BaseIntegraatioTesti {
     val executionId = result.getResponse.getContentAsString(Charset.forName("UTF-8")).replaceAll("\"", "")
     Assertions.assertFalse(executionId.isBlank)
 
-    Mockito.verify(ovaraService, Mockito.timeout(2000)).muodostaOpiskeluoikeusSiirtotiedostot(any(), any(), any())
+    Mockito.verify(ovaraService, Mockito.timeout(2000)).muodostaOpiskeluoikeusSiirtotiedostot(any())
 
   @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
   @Test def testMuodostaOpiskeluoikeussiirtotiedostotConflictWhenPaivittaisetRunning(): Unit =

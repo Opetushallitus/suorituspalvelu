@@ -44,7 +44,9 @@ case class OvaraEnsikertalaisuus(
 
 case class OvaraParams(
   executionId: String = UUID.randomUUID().toString,
-  vainAktiiviset: Boolean = true
+  vainAktiiviset: Boolean = true,
+  windowStart: Option[Instant] = None,
+  windowEnd: Option[Instant] = None
 )
 
 case class MuodostamisTulos(onnistuneet: Int, epaonnistuneetHaut: Map[String, String])
@@ -285,11 +287,9 @@ class OvaraService(
     MuodostamisTulos(totalOnnistuneet, epaonnistuneetHaut)
   }
 
-  def muodostaOpiskeluoikeusSiirtotiedostot(
-    params: OvaraParams,
-    windowStart: Instant,
-    windowEnd: Instant
-  ): Int = {
+  def muodostaOpiskeluoikeusSiirtotiedostot(params: OvaraParams): Int = {
+    val windowStart = params.windowStart.getOrElse(throw new IllegalArgumentException("OvaraParams.windowStart vaaditaan"))
+    val windowEnd   = params.windowEnd.getOrElse(throw new IllegalArgumentException("OvaraParams.windowEnd vaaditaan"))
     LOG.info(s"(${params.executionId}) Haetaan muuttuneet opiskeluoikeudet ikkunassa $windowStart – $windowEnd")
 
     @scala.annotation.tailrec
@@ -303,7 +303,8 @@ class OvaraService(
         LOG.info(s"(${params.executionId}) Käsitellään sivu (${henkiloBatch.size} henkilöä, afterHenkiloOid=$afterHenkiloOid), tiedostonumero $tiedostoNumero")
 
         val records = henkiloBatch.flatMap { case (henkiloOid, viimeisinParserointiMuutos) =>
-          val kaikkiVersiotJaOO = opiskeluoikeusParsingService.haeSuoritukset(henkiloOid)
+          // windowEnd toimii kiinteänä ajanhetkenä jotta erän käsittelyn aikana tapahtuvat muutokset eivät vaikuta lopputulokseen.
+          val kaikkiVersiotJaOO = opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, windowEnd, useKoskiSkipTable = false)
           val kaikkiOoJaMetadata: Seq[(OvaraVersioMetadata, Opiskeluoikeus)] =
             kaikkiVersiotJaOO.toSeq.flatMap { case (versio, oos) => oos.toSeq.map(oo => (toMeta(versio), oo)) }
           val kkOo        = EntityToOvaraConverter.getKKOpiskeluoikeudet(kaikkiOoJaMetadata)

@@ -142,7 +142,9 @@ class OvaraResource {
             catch case _: Exception => Left(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
           .flatMap((start, end) => {
             val params = OvaraParams(
-              executionId = executionId.toScala.getOrElse(java.util.UUID.randomUUID().toString)
+              executionId = executionId.toScala.getOrElse(java.util.UUID.randomUUID().toString),
+              windowStart = Some(start),
+              windowEnd = Some(end)
             )
             claimOrConflict(params.executionId).map(eid => {
               AuditLog.log(AuditLog.getUser(request), Map(
@@ -150,7 +152,7 @@ class OvaraResource {
                 "windowEnd"   -> windowEnd
               ), AuditOperation.MuodostaOpiskeluoikeussiirtotiedostotOvara, None)
               LOG.info(s"Käynnistetään opiskeluoikeus-siirtotiedostot aikavälille $windowStart – $windowEnd ($eid)")
-              submitJob(eid, ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params, start, end))
+              submitJob(eid, ovaraService.muodostaOpiskeluoikeusSiirtotiedostot(params))
               ResponseEntity.status(HttpStatus.ACCEPTED).body(eid)
             })
           })
