@@ -2,14 +2,14 @@ package fi.oph.suorituspalvelu
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHakukohde, Ohjausparametrit}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHakukohde, Ohjausparametrit, RetryConfig}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{HakemustenHarkinnanvaraisuudetPayload, HarkinnanvaraisuusFailureResponse, ValintaApiHakemuksenHarkinnanvaraisuus}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.mockito.Mockito
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.junit.jupiter.api.{Assertions, Test}
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.context.support.WithAnonymousUser
@@ -172,7 +172,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
       .thenReturn(ohjausparametrit)
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
 
     // Execute the request
@@ -354,7 +354,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid))
       .thenReturn(ohjausparametrit)
 
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
 
     // Execute request
@@ -463,7 +463,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid2)).thenReturn(hakukohde2)
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid3)).thenReturn(hakukohde3)
     Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid)).thenReturn(ohjausparametrit)
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
 
     val result = mvc.perform(jsonPost(ApiConstants.VALINNAT_HARKINNANVARAISUUS_PATH, HakemustenHarkinnanvaraisuudetPayload(List(hakemusOid).asJava))
@@ -552,7 +552,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     Mockito.when(tarjontaIntegration.getHakukohde(hakukohdeOid)).thenReturn(hakukohde)
     Mockito.when(tarjontaIntegration.getOhjausparametrit(hakuOid)).thenReturn(ohjausparametrit)
-    Mockito.when(onrIntegration.getAliasesForPersonOids(Set(personOid)))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(personOid)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(personOid -> Set(personOid)))))
 
     // Execute request

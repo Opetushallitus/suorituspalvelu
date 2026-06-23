@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.*
 import fi.oph.suorituspalvelu.business.KantaOperaatiot
 import fi.oph.suorituspalvelu.integration.OnrIntegration
+import fi.oph.suorituspalvelu.integration.client.RetryConfig
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.resource.api.LahtokouluAuthorization
 import org.slf4j.LoggerFactory
@@ -22,8 +23,8 @@ class LahtokoulutService {
 
   @Autowired val onrIntegration: OnrIntegration = null
 
-  val ONR_TIMEOUT = 10.seconds
-  
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 1)
+
   def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
     kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, None)
   }
@@ -37,7 +38,7 @@ class LahtokoulutService {
         .map(aliakset => {
           henkilotJaLuokat.flatMap((h, l) => aliakset.allOidsByQueriedOids(h).map(oid => (oid, l)))
         })
-      Await.result(r, 30.seconds)
+      Await.result(r, 65.seconds)
   }
 
   def haeLahtokouluAuthorizations(henkiloOid: String): Seq[LahtokouluAuthorization] = {
@@ -48,6 +49,6 @@ class LahtokoulutService {
         KoskiUtil.luoLahtokouluAuthorizations(lahtokoulut.toSeq)
       })
 
-    Await.result(r, 30.seconds)
+    Await.result(r, 65.seconds)
   }
 }

@@ -1,11 +1,12 @@
 package fi.oph.suorituspalvelu
 
 import fi.oph.suorituspalvelu.integration.{OnrIntegrationImpl, PersonOidsWithAliases}
-import fi.oph.suorituspalvelu.integration.client.{Henkiloviite, OnrClientImpl}
+import fi.oph.suorituspalvelu.integration.client.{Henkiloviite, OnrClientImpl, RetryConfig}
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{BeforeEach, Test, TestInstance}
 import org.mockito.Mockito.*
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.MockitoAnnotations
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -18,6 +19,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 @TestInstance(Lifecycle.PER_CLASS)
 class OnrIntegrationTest {
   private var onrIntegration: OnrIntegrationImpl = _
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 10)
 
   @MockBean
   private var mockOnrClient: OnrClientImpl = _
@@ -41,7 +43,7 @@ class OnrIntegrationTest {
     val personOids = Set(personOid1, personOid2)
     val emptyViitteet = Set.empty[Henkiloviite]
 
-    when(mockOnrClient.getHenkiloviitteetForHenkilot(personOids))
+    when(mockOnrClient.getHenkiloviitteetForHenkilot(eqTo(personOids), any[RetryConfig]()))
       .thenReturn(Future.successful(emptyViitteet))
 
     val result = Await.result(onrIntegration.getAliasesForPersonOids(personOids), 5.seconds)
@@ -63,7 +65,7 @@ class OnrIntegrationTest {
       Henkiloviite(aliasForPersonOid1, personOid1),
     )
 
-    when(mockOnrClient.getHenkiloviitteetForHenkilot(personOids))
+    when(mockOnrClient.getHenkiloviitteetForHenkilot(eqTo(personOids), any[RetryConfig]()))
       .thenReturn(Future.successful(viitteet))
 
     val result = Await.result(onrIntegration.getAliasesForPersonOids(personOids), 5.seconds)
@@ -91,7 +93,7 @@ class OnrIntegrationTest {
       Henkiloviite(alias2ForPersonOid2, personOid2)
     )
 
-    when(mockOnrClient.getHenkiloviitteetForHenkilot(personOids))
+    when(mockOnrClient.getHenkiloviitteetForHenkilot(eqTo(personOids), any[RetryConfig]()))
       .thenReturn(Future.successful(viitteet))
 
     val result = Await.result(onrIntegration.getAliasesForPersonOids(personOids), 2.seconds)
@@ -120,7 +122,7 @@ class OnrIntegrationTest {
     )
 
     val personOids = Set(queriedOid)
-    when(mockOnrClient.getHenkiloviitteetForHenkilot(personOids))
+    when(mockOnrClient.getHenkiloviitteetForHenkilot(eqTo(personOids), any[RetryConfig]()))
       .thenReturn(Future.successful(viitteet))
 
     val result = Await.result(onrIntegration.getAliasesForPersonOids(personOids), 2.seconds)
@@ -137,7 +139,7 @@ class OnrIntegrationTest {
     val personOids = Set("1.2.3")
     val exception = new RuntimeException("Test error")
 
-    when(mockOnrClient.getHenkiloviitteetForHenkilot(personOids))
+    when(mockOnrClient.getHenkiloviitteetForHenkilot(eqTo(personOids), any[RetryConfig]()))
       .thenReturn(Future.failed(exception))
 
     val thrown = assertThrows(classOf[RuntimeException], () =>
