@@ -413,6 +413,25 @@ class YosServiceTest {
   }
 
   @Test
+  def palauttaHakijanPaatettavanOpiskeluOikeudenJonkaKoulutusAsteOnYlempiKuinHakutoiveenMuttaSeOnLaaketieteenLisensiaatti(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(
+      HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_62")))
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any(), any())).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(koulutusKoodi = Some("772101")))
+    ))
+    val oikeudet = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    val oikeus = oikeudet.head
+    assertEquals("Sosionomikoulutus", oikeus.virtaNimi.get.fi.get)
+    assertNotNull(oikeus.virtaOpiskeluOikeusId)
+    assertEquals("Tinasepän kuparipaja", oikeus.organisaatio.nimi.fi.get)
+    assertEquals(ORGANISAATIO_OID, oikeus.organisaatio.oid.get)
+  }
+
+  @Test
   def palauttaaVirheHakuToiveenPaattellyssa(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenThrow(RuntimeException("FAIL"))
     val virhe = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).left
