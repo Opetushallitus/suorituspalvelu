@@ -236,4 +236,76 @@ class YoMetadataConverterTest {
     Assertions.assertEquals("I", aidinkieli("ARVO"))
 
   }
+
+  @Test
+  def testKokeetWithAndWithoutPisteet(): Unit = {
+    val yoOpiskeluoikeus =
+      YOOpiskeluoikeus(
+        UUID.randomUUID(),
+        Some(YOTutkinto(
+          UUID.randomUUID(),
+          Koodi("FI", "kieli", Some(1)),
+          SuoritusTila.VALMIS,
+          Some(LocalDate.parse("2022-06-01")),
+          Set(
+            //EA Englanti pitkä, kaksi koetta: yksi pisteillä, yksi ilman
+            Koe(UUID.randomUUID(), Koodi("EA", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("M", "koskiyoarvosanat", Some(1)), Some(95)),
+            Koe(UUID.randomUUID(), Koodi("EA", "yokokeet", Some(1)), LocalDate.parse("2022-12-21"), Koodi("L", "koskiyoarvosanat", Some(1)), None),
+            //A Äidinkieli, yksi koe ilman pisteitä
+            Koe(UUID.randomUUID(), Koodi("A", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("E", "koskiyoarvosanat", Some(1)), None),
+            //PS Psykologia (ainereaali), yksi koe ilman pisteitä
+            Koe(UUID.randomUUID(), Koodi("PS", "yokokeet", Some(1)), LocalDate.parse("2022-06-01"), Koodi("M", "koskiyoarvosanat", Some(1)), None),
+          )
+        ))
+      )
+
+    val convertedArvot = YoMetadataConverter.convert(Seq(yoOpiskeluoikeus))
+
+    //EA Englanti, pitkä, kaksi koesuoritusta: yksi pisteillä, yksi ilman
+    val englanti = convertedArvot.find(_.avain.equals("EA")).get
+    Assertions.assertEquals(2, englanti.metatiedot.size)
+
+    val englantiKoeWithPisteet = englanti.metatiedot.find(_("ARVO").equals("M")).get
+    Assertions.assertEquals("95", englantiKoeWithPisteet("PISTEET"))
+    Assertions.assertEquals("2022", englantiKoeWithPisteet("SUORITUSVUOSI"))
+    Assertions.assertEquals("1", englantiKoeWithPisteet("SUORITUSLUKUKAUSI"))
+
+    val englantiKoeWithoutPisteet = englanti.metatiedot.find(_("ARVO").equals("L")).get
+    Assertions.assertFalse(englantiKoeWithoutPisteet.contains("PISTEET"))
+    Assertions.assertEquals("2022", englantiKoeWithoutPisteet("SUORITUSVUOSI"))
+    Assertions.assertEquals("2", englantiKoeWithoutPisteet("SUORITUSLUKUKAUSI"))
+
+    //A Äidinkieli, yksittäinen koe ilman pisteitä
+    val aidinkieli = convertedArvot.find(_.avain.equals("A")).get.metatiedot.head
+    Assertions.assertEquals("E", aidinkieli("ARVO"))
+    Assertions.assertFalse(aidinkieli.contains("PISTEET"))
+
+    //AIDINKIELI-ryhmän koe ilman pisteitä (sama koe kuin "A", lisätiedolla)
+    val aidinkieliRyhma = convertedArvot.find(_.avain.equals("AIDINKIELI")).get.metatiedot.head
+    Assertions.assertEquals("E", aidinkieliRyhma("ARVO"))
+    Assertions.assertFalse(aidinkieliRyhma.contains("PISTEET"))
+    Assertions.assertEquals("FI", aidinkieliRyhma("LISATIETO"))
+
+    //PITKA_KIELI-ryhmä sisältää sekä pisteilla että ilman pisteitä olevat EA-kokeet
+    val pitkaKieliRyhma = convertedArvot.find(_.avain.equals("PITKA_KIELI")).get.metatiedot
+    Assertions.assertEquals(2, pitkaKieliRyhma.size)
+
+    val pitkaKieliWithPisteet = pitkaKieliRyhma.find(_("ARVO").equals("M")).get
+    Assertions.assertEquals("95", pitkaKieliWithPisteet("PISTEET"))
+    Assertions.assertEquals("EN", pitkaKieliWithPisteet("LISATIETO"))
+
+    val pitkaKieliWithoutPisteet = pitkaKieliRyhma.find(_("ARVO").equals("L")).get
+    Assertions.assertFalse(pitkaKieliWithoutPisteet.contains("PISTEET"))
+    Assertions.assertEquals("EN", pitkaKieliWithoutPisteet("LISATIETO"))
+
+    //PS yksittäisenä kokeena ilman pisteitä
+    val psykologia = convertedArvot.find(_.avain.equals("PS")).get.metatiedot.head
+    Assertions.assertEquals("M", psykologia("ARVO"))
+    Assertions.assertFalse(psykologia.contains("PISTEET"))
+
+    //AINEREAALI-ryhmässä PS ilman pisteitä
+    val aineReaali = convertedArvot.find(_.avain.equals("AINEREAALI")).get.metatiedot.head
+    Assertions.assertEquals("M", aineReaali("ARVO"))
+    Assertions.assertFalse(aineReaali.contains("PISTEET"))
+  }
 }
