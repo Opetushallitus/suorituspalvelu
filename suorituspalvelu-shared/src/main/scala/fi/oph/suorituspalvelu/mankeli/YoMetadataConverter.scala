@@ -101,7 +101,6 @@ object YoMetadataConverter {
     val aineet =
       yoTutkinto.aineet
         .filter(a => ryhmaanKuuluvatAineet.contains(a.koodi.arvo))
-        .filter(_.pisteet.isDefined)
 
     val resultMaps = aineet.map(aine => {
       val lisatieto = aineToLisatietoMap.get(aine.koodi.arvo)
@@ -126,14 +125,16 @@ object YoMetadataConverter {
     }
     val baseMap = Map(
       "ARVO" -> arvosana,
-      "PISTEET" -> koe.pisteet.get.toString,
       "SUORITUSVUOSI" -> koe.tutkintoKerta.getYear.toString,
       "SUORITUSLUKUKAUSI" -> getTutkintokerta(koe.tutkintoKerta)
     )
-    if (lisatieto.isDefined) {
-      baseMap + ("LISATIETO" -> lisatieto.get)
-    } else {
-      baseMap
+    val withPisteet = koe.pisteet match {
+      case Some(p) => baseMap + ("PISTEET" -> p.toString)
+      case None => baseMap
+    }
+    lisatieto match {
+      case Some(l) => withPisteet + ("LISATIETO" -> l)
+      case None => withPisteet
     }
   }
 
@@ -141,7 +142,6 @@ object YoMetadataConverter {
     val byKokeenTyyppi: Map[String, Set[Koe]] = yo.aineet.groupBy(_.koodi.arvo)
     byKokeenTyyppi.map { case (arvo, kokeet) =>
       val kokeidenMetatiedot = kokeet
-        .filter(_.pisteet.isDefined)
         .map(koe => koeToMap(koe, None))
         .toList
       (arvo, kokeidenMetatiedot)
