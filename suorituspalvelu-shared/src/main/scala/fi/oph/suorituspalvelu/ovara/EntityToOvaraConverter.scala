@@ -185,7 +185,7 @@ object EntityToOvaraConverter {
       .map { case (meta, oo) => OvaraKKOpiskeluoikeus(
         metadata = meta,
         tunniste = oo.tunniste,
-        nimi = oo.nimi,
+        nimi = oo.nimi.map(convertKielistetty),
         virtaTunniste = oo.virtaTunniste,
         tyyppiKoodi = oo.tyyppiKoodi,
         koulutusKoodi = oo.koulutusKoodi,
