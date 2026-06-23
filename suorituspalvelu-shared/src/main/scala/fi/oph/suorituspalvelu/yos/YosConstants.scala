@@ -25,6 +25,13 @@ object YosConstants {
 
   def YOS_BLACK_LISTED_ORGANIZATION_OIDS: Seq[String] = Seq(POLIISI_AMK_OID, MAANPUOLUSTUS_KK_OID, AHVENANMAAN_KK_OID)
   def YOS_BLACK_LISTED_OPPILAITOSNRO: Seq[String] = Seq(POLIISI_AMK_OPPILAITOSNRO, MAANPUOLUSTUS_KK_OPPILAITOSNRO, AHVENANMAAN_KK_OPPILAITOSNRO)
+  
+  /* Seuraavat koulutuskoodit on luetultu tähän ja niitä käytetään tutkinnonaste vertailussa (tulkitaan ylempi+alempi):
+     - Lääketieteen lisensiaatti (772101, 772100)
+     - Eläinlääketieteen lisensiaatti (772301, 772300)
+     - Hammaslääketieteen lisensiaatti (772201, 772200)
+   */
+  def LAAKETIETEEN_LISENSIAATIT_KOULUTUSKOODIT: Seq[String] = Seq("772101", "772100", "772301", "772300", "772201", "772200")
 }
 
 /**
