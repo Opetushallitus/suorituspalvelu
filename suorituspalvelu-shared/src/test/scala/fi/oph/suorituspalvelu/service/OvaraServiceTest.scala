@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.service
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KantaOperaatiot, Koodi, Lahdejarjestelma, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, VersioEntiteetti}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
-import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, SiirtotiedostoClient}
+import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, RetryConfig, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
 import fi.oph.suorituspalvelu.ovara.{OvaraLahtokoulu, OvaraLahtokouluTyyppi, OvaraPerusopetuksenOppimaara, OvaraSuoritusTila, OvaraVersioJaOpiskeluoikeudet}
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.mockito.{ArgumentCaptor, Mockito}
-import org.mockito.ArgumentMatchers.{any, anyBoolean}
+import org.mockito.ArgumentMatchers.{any, anyBoolean, eq => eqTo}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -21,6 +21,8 @@ import scala.concurrent.duration.DurationInt
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
 class OvaraServiceTest {
+
+  implicit val onrRetryConfig: RetryConfig = RetryConfig()
 
   val HAKEMUS_OID   = "1.2.246.562.11.00000000000000006321"
   val HENKILO_OID   = "1.2.246.562.24.10000000001"
@@ -138,7 +140,7 @@ class OvaraServiceTest {
   ): Unit = {
     Mockito.when(hakemuspalveluClient.getHaunHakijat(haku.oid))
       .thenReturn(Future.successful(Seq(BASE_HAKIJA)))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(any()))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(any())(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(HENKILO_OID -> Set(HENKILO_OID)))))
     Mockito.when(valintaDataService.fetchValintalaskentaHakemukset(any(), any(), any()))
       .thenReturn(Future.successful(Seq(BASE_VALINTALASKENTA_HAKEMUS)))
@@ -217,7 +219,7 @@ class OvaraServiceTest {
     val (service, valintaDataService, hakemuspalveluClient, onrIntegration) = buildService()
     Mockito.when(hakemuspalveluClient.getHaunHakijat(KK_HAKU.oid))
       .thenReturn(Future.successful(Seq(BASE_HAKIJA)))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(any()))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(any())(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(HENKILO_OID -> Set(HENKILO_OID)))))
     Mockito.when(valintaDataService.fetchValintalaskentaHakemukset(any(), any(), any()))
       .thenReturn(Future.successful(Seq(BASE_VALINTALASKENTA_HAKEMUS)))
@@ -528,7 +530,7 @@ class OvaraServiceTest {
     val hakijat = (1 to 600).map(i => AtaruHakemuksenHenkilotiedot(s"hakemus-$i", Some(s"henkilo-$i"), None))
     Mockito.when(hakemuspalveluClient.getHaunHakijat(KK_HAKU.oid))
       .thenReturn(Future.successful(hakijat))
-    Mockito.when(onrIntegration.getAliasesForPersonOids(any()))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(any())(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map.empty)))
     Mockito.when(valintaDataService.fetchValintalaskentaHakemukset(any(), any(), any()))
       .thenReturn(Future.successful(Seq(BASE_VALINTALASKENTA_HAKEMUS)))
