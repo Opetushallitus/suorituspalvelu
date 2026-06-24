@@ -612,5 +612,6 @@ case class OvaraVersioJaOpiskeluoikeudet(
   geneerisetOpiskeluoikeudet: Seq[OvaraGeneerinenOpiskeluoikeus],
   ammatillisetOpiskeluoikeudet: Seq[OvaraAmmatillinenOpiskeluoikeus],
   perusopetuksenOpiskeluoikeudet: Seq[OvaraPerusopetuksenOpiskeluoikeus],
-  poistetutOpiskeluoikeudet: Seq[OvaraPoistettuOpiskeluoikeus]
+  poistetutOpiskeluoikeudet: Seq[OvaraPoistettuOpiskeluoikeus],
+  lahtokoulut: Seq[OvaraLahtokoulu] = Seq.empty
 )

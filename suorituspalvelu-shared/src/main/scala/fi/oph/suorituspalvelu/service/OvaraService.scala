@@ -316,7 +316,8 @@ class OvaraService(
           val poistettuOo = EntityToOvaraConverter.getPoistetutOpiskeluoikeudet(kaikkiOoJaMetadata)
           if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty) {
             val henkiloMetadata = OvaraHenkiloMetadata(viimeisinParserointiMuutos)
-            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo))
+            val lahtokoulut = EntityToOvaraConverter.getLahtokoulut(kaikkiOoJaMetadata.map(_._2).toSet)
+            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo, lahtokoulut))
           }
           else None
         }

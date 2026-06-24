@@ -18,7 +18,7 @@ import fi.oph.suorituspalvelu.business.{
 }
 import fi.oph.suorituspalvelu.parsing.koski.{
   Kielistetty, KoskiErityisenTuenPaatos, KoskiKotiopetusjakso, KoskiKoodi,
-  KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila
+  KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiUtil
 }
 
 object EntityToOvaraConverter {
@@ -559,4 +559,8 @@ object EntityToOvaraConverter {
   def getPoistetutOpiskeluoikeudet(opiskeluoikeudet: Seq[(OvaraVersioMetadata, Opiskeluoikeus)]): Seq[OvaraPoistettuOpiskeluoikeus] =
     opiskeluoikeudet.collect { case (meta, oo: PoistettuOpiskeluoikeus) => (meta, oo) }
       .map { case (meta, oo) => OvaraPoistettuOpiskeluoikeus(metadata = meta, oid = oo.oid) }
+
+  // Kokoaa henkilön kaikki lähtökoulut käyttäen samaa logiikkaa kuin Koski-pään tallennus (KoskiUtil.getLahtokouluMetadata).
+  def getLahtokoulut(opiskeluoikeudet: Set[Opiskeluoikeus]): Seq[OvaraLahtokoulu] =
+    KoskiUtil.getLahtokouluMetadata(opiskeluoikeudet).map(convertLahtokoulu)
 }

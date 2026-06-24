@@ -1,10 +1,11 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KantaOperaatiot, Koodi, Lahdejarjestelma, Opiskeluoikeus, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KantaOperaatiot, Koodi, Lahdejarjestelma, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, VersioEntiteetti}
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
-import fi.oph.suorituspalvelu.ovara.OvaraVersioJaOpiskeluoikeudet
+import fi.oph.suorituspalvelu.ovara.{OvaraLahtokoulu, OvaraLahtokouluTyyppi, OvaraPerusopetuksenOppimaara, OvaraSuoritusTila, OvaraVersioJaOpiskeluoikeudet}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.junit.jupiter.api.{Assertions, Test}
 import org.junit.jupiter.api.TestInstance
@@ -376,6 +377,74 @@ class OvaraServiceTest {
     val records = captor.getValue
     Assertions.assertEquals(1, records.size)
     Assertions.assertEquals(aikaikkunaanOsuvaHetki, records.head.metadata.viimeisinMuutos)
+  }
+
+  @Test def testHenkiloTasonLahtokoulutKerattyOpiskeluoikeuksista(): Unit = {
+    // Top-level lahtokoulut tulee koota suoritus-tason kentistä.
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
+
+    val lahtokoulu = Lahtokoulu(
+      suorituksenAlku = LocalDate.of(2024, 8, 1),
+      suorituksenLoppu = Some(LocalDate.of(2025, 6, 1)),
+      oppilaitosOid = "1.2.246.562.10.0099",
+      valmistumisvuosi = Some(2025),
+      luokka = "9A",
+      tila = SuoritusTila.KESKEN,
+      arvosanaPuuttuu = Some(false),
+      suoritusTyyppi = LahtokouluTyyppi.VUOSILUOKKA_9
+    )
+    val oppilaitos = Oppilaitos(Kielistetty(Some("Koulu"), None, None), "1.2.246.562.10.001")
+    val pom = PerusopetuksenOppimaara(
+      tunniste = UUID.fromString("00000000-0000-0000-0000-000000000030"),
+      versioTunniste = None,
+      oppilaitos = oppilaitos,
+      luokka = Some("9A"),
+      koskiTila = Koodi("lasna", "koskiopiskeluoikeudentila", None),
+      supaTila = SuoritusTila.KESKEN,
+      suoritusKieli = Koodi("FI", "kieli", None),
+      koulusivistyskieli = Set(Koodi("FI", "kieli", None)),
+      yksilollistaminen = None,
+      aloitusPaivamaara = Some(LocalDate.of(2023, 8, 1)),
+      vahvistusPaivamaara = None,
+      aineet = Seq.empty,
+      lahtokoulut = List(lahtokoulu),
+      syotetty = false,
+      vuosiluokkiinSitoutumatonOpetus = false,
+      luokkaAste = Some(9)
+    )
+    val pkOo = PerusopetuksenOpiskeluoikeus(
+      tunniste = UUID.fromString("00000000-0000-0000-0000-000000000031"),
+      oid = Some("1.2.246.562.15.0099"),
+      oppilaitosOid = "1.2.246.562.10.001",
+      suoritukset = Set(pom),
+      lisatiedot = None,
+      tila = SuoritusTila.KESKEN,
+      jaksot = List.empty
+    )
+
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq((HENKILO_OID, WINDOW_HETKI)))
+      .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuorituksetAjanhetkella(any(), any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](pkOo)))
+
+    service.muodostaOpiskeluoikeusSiirtotiedostot(opiskeluoikeusParams)
+
+    val captor = ArgumentCaptor.forClass(classOf[Seq[_]]).asInstanceOf[ArgumentCaptor[Seq[OvaraVersioJaOpiskeluoikeudet]]]
+    Mockito.verify(mockSiirtotiedostoClient).tallennaSiirtotiedosto(any(), captor.capture(), any(), any(), any())
+
+    val record = captor.getValue.head
+    Assertions.assertEquals(1, record.lahtokoulut.size)
+    val topLevel = record.lahtokoulut.head
+    Assertions.assertEquals(LocalDate.of(2024, 8, 1), topLevel.suorituksenAlku)
+    Assertions.assertEquals(OvaraLahtokouluTyyppi.VUOSILUOKKA_9, topLevel.suoritusTyyppi)
+    Assertions.assertEquals(OvaraSuoritusTila.KESKEN, topLevel.tila)
+
+    // Sisäkkäinen kopio jää paikalleen ja sisältää saman lähtökoulun
+    val nested = record.perusopetuksenOpiskeluoikeudet.head
+      .suoritukset.collect { case x: OvaraPerusopetuksenOppimaara => x }.head
+      .lahtokoulut
+    Assertions.assertEquals(Seq(topLevel), nested)
   }
 
   // HenkiloOid-perusteinen sivutus: varmistaa että afterHenkiloOid-kursorin arvot ovat oikein sivujen välillä.
