@@ -352,4 +352,59 @@ class EntityToOvaraConverterTest {
     Assertions.assertEquals(META, out.metadata)
     Assertions.assertEquals("1.2.246.562.15.0007", out.oid)
   }
+
+  @Test def testGetLahtokoulutKokoaaKaikistaEntiteeteista(): Unit = {
+    def lk(alku: LocalDate, tyyppi: LahtokouluTyyppi, oppilaitosSuffix: String): Lahtokoulu =
+      LAHTOKOULU.copy(suorituksenAlku = alku, suoritusTyyppi = tyyppi, oppilaitosOid = s"1.2.246.562.10.$oppilaitosSuffix")
+
+    val lkTuva  = lk(LocalDate.of(2024, 8, 1), LahtokouluTyyppi.TUVA, "001")
+    val lkVst   = lk(LocalDate.of(2024, 8, 2), LahtokouluTyyppi.VAPAA_SIVISTYSTYO, "002")
+    val lkTelma = lk(LocalDate.of(2024, 8, 3), LahtokouluTyyppi.TELMA, "003")
+    val lkPom   = lk(LocalDate.of(2024, 8, 4), LahtokouluTyyppi.VUOSILUOKKA_9, "004")
+    val lkPvo   = lk(LocalDate.of(2024, 8, 5), LahtokouluTyyppi.PERUSOPETUKSEEN_VALMISTAVA_OPETUS, "005")
+
+    val tuva = Tuva(UUID.randomUUID(), kielistetty("tuva"), koodi("tk"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS,
+      LocalDate.of(2023, 8, 1), Some(LocalDate.of(2024, 6, 1)), 2024, Some(LAAJUUS), List(lkTuva))
+    val vst = VapaaSivistystyo(UUID.randomUUID(), kielistetty("vst"), koodi("vk"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS,
+      LocalDate.of(2023, 8, 1), Some(LocalDate.of(2024, 6, 1)), 2024, Some(LAAJUUS), koodi("FI"), List(lkVst))
+    // PerusopetukseenValmistavaOpetus elää GeneerinenOpiskeluoikeus-puolella (ks. KoskiUtil.getLahtokouluMetadata).
+    val pvo = PerusopetukseenValmistavaOpetus(List(lkPvo))
+    val genOo = GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.246.562.15.0011", koodi("gen"), "1.2.246.562.10.1", Set(tuva, vst, pvo), None, List.empty)
+
+    val telma = Telma(UUID.randomUUID(), kielistetty("telma"), koodi("tek"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS,
+      LocalDate.of(2023, 8, 1), Some(LocalDate.of(2024, 6, 1)), 2024, koodi("FI"), Some(LAAJUUS), List(lkTelma))
+    val ammOo = AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.246.562.15.0012", OPPILAITOS, Set(telma), None, List.empty)
+
+    val pom = PerusopetuksenOppimaara(UUID.randomUUID(), None, OPPILAITOS, Some("9A"), koodi("kt"), SuoritusTila.VALMIS, koodi("FI"), Set(koodi("FI")),
+      None, Some(LocalDate.of(2023, 8, 1)), Some(LocalDate.of(2024, 6, 1)), Seq.empty, List(lkPom),
+      syotetty = false, vuosiluokkiinSitoutumatonOpetus = false, luokkaAste = Some(9))
+    val pkOo = PerusopetuksenOpiskeluoikeus(UUID.randomUUID(), Some("1.2.246.562.15.0013"), "1.2.246.562.10.1", Set(pom), None, SuoritusTila.VALMIS, List.empty)
+
+    val out = EntityToOvaraConverter.getLahtokoulut(Set[Opiskeluoikeus](genOo, ammOo, pkOo))
+
+    Assertions.assertEquals(5, out.size)
+    Assertions.assertEquals(
+      Seq(LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 2), LocalDate.of(2024, 8, 3), LocalDate.of(2024, 8, 4), LocalDate.of(2024, 8, 5)),
+      out.map(_.suorituksenAlku)
+    )
+    // Kaikki viisi tyyppiä mukana
+    Assertions.assertEquals(
+      Set(OvaraLahtokouluTyyppi.TUVA, OvaraLahtokouluTyyppi.VAPAA_SIVISTYSTYO, OvaraLahtokouluTyyppi.TELMA, OvaraLahtokouluTyyppi.VUOSILUOKKA_9, OvaraLahtokouluTyyppi.PERUSOPETUKSEEN_VALMISTAVA_OPETUS),
+      out.map(_.suoritusTyyppi).toSet
+    )
+  }
+
+  @Test def testGetLahtokoulutTyhjaKkYo(): Unit = {
+    // KK/YO eivät kanna lähtökouluja — palautuu tyhjä lista vaikka opiskeluoikeuksia ja niiden suorituksia on olemassa.
+    val kkTutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo", BigDecimal(180),
+      Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("fi"), Some("613101"), Some("a-1"), Seq.empty, Some("avain-t"))
+    val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", "1", None, LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1),
+      koodi("v"), KKOpiskeluoikeusTila.VOIMASSA, "myo", true, None, Set(kkTutkinto))
+    val koe = Koe(UUID.randomUUID(), koodi("MA"), LocalDate.of(2024, 3, 15), koodi("E"), Some(80))
+    val yot = YOTutkinto(UUID.randomUUID(), koodi("FI"), SuoritusTila.VALMIS, Some(LocalDate.of(2024, 6, 1)), Set(koe))
+    val yo = YOOpiskeluoikeus(UUID.randomUUID(), Some(yot))
+
+    val out = EntityToOvaraConverter.getLahtokoulut(Set[Opiskeluoikeus](kk, yo))
+    Assertions.assertTrue(out.isEmpty)
+  }
 }
