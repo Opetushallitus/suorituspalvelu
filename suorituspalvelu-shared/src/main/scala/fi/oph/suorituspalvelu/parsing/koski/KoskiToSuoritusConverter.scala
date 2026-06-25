@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, PERUSOPETUKSEEN_VALMISTAVA_OPETUS, TELMA, TUVA, VAPAA_SIVISTYSTYO, VUOSILUOKKA_9}
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillinenTutkintoOsittainen, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, Koodi, Korotus, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillinenTutkintoOsittainen, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, Koodi, Korotus, Laajuus, Lahtokoulu, LahtokouluTyyppi, LukionOppimaara, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetukseenValmistavaOpetus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila, Telma, TelmaArviointi, TelmaOsasuoritus, LisapisteOsasuoritus, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.parsing.koski
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.slf4j.LoggerFactory
@@ -304,11 +304,35 @@ object KoskiToSuoritusConverter {
       case "12" => toErikoisAmmattiTutkinto(opiskeluoikeus, suoritus)
   }
 
-  //Vahvistuspäivän vuosi, tai kuluva vuosi jos ei vahvistettu
-  //Suunniteltu käyttöön suoritustyypeille Tuva, Telma, Opistovuosi
-  def getLisapistekoulutusSuoritusvuosi(suoritus: KoskiSuoritus): Int = {
-    suoritus.vahvistus.map(_.`päivä`).map(p => LocalDate.parse(p).getYear)
-      .getOrElse(LocalDate.now.getYear)
+  //Yksittäisen osasuorituksen suoritusvuosi: viimeisin hyväksytyn arvioinnin päivä, tai jos sitä ei ole,
+  //vara-arvona emo-suorituksen vahvistuspäivän vuosi. Jos kumpaakaan ei ole, palautetaan None (osasuoritusta
+  //ei tällöin huomioida lisäpisteiden kynnyksen ylittämisvuoden laskennassa).
+  def getLisapisteOsasuoritusVuosi(osasuoritus: KoskiOsaSuoritus, suoritus: KoskiSuoritus): Option[Int] = {
+    val arviointiVuodet = osasuoritus.arviointi.toSeq.flatten
+      .filter(_.hyväksytty)
+      .flatMap(_.`päivä`)
+      .map(p => LocalDate.parse(p).getYear)
+    arviointiVuodet.maxOption
+      .orElse(suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`).getYear))
+  }
+
+  //Telma/Tuva: poimitaan hyväksytysti suoritetut osasuoritukset laajuuksineen ja suoritusvuosineen, jotta
+  //lisäpisteiden kynnyksen ylittämisvuosi voidaan laskea osasuoritustasolla (ks. AvainArvoConverter).
+  def getLisapisteOsasuoritukset(suoritus: KoskiSuoritus): Seq[LisapisteOsasuoritus] = {
+    suoritus.osasuoritukset.getOrElse(Seq.empty).flatMap(osasuoritus => {
+      val hyvaksytty = osasuoritus.arviointi.exists(arviointi => arviointi.exists(_.hyväksytty))
+      if (!hyvaksytty) None
+      else
+        for {
+          km    <- osasuoritus.koulutusmoduuli
+          l     <- km.laajuus
+          yks   <- l.yksikkö
+          vuosi <- getLisapisteOsasuoritusVuosi(osasuoritus, suoritus)
+        } yield LisapisteOsasuoritus(
+          Laajuus(l.arvo, asKoodiObject(yks), Some(yks.nimi), yks.lyhytNimi),
+          vuosi
+        )
+    })
   }
 
   def getLisapistekoulutusYhteenlaskettuLaajuus(suoritus: KoskiSuoritus, vainHyvaksytytArvioinnit: Boolean): Option[Laajuus] = {
@@ -353,11 +377,11 @@ object KoskiToSuoritusConverter {
       supaTila,
       aloitusPaivamaara.get,
       vahvistusPaivamaara,
-      getLisapistekoulutusSuoritusvuosi(suoritus),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),
       getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true),
       parseLasnaolot(opiskeluoikeus, None, vahvistusPaivamaara).map(l =>
-        Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, TELMA.defaultLuokka.get, supaTila, None, TELMA))
+        Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, TELMA.defaultLuokka.get, supaTila, None, TELMA)),
+      getLisapisteOsasuoritukset(suoritus)
     )
   }
 
@@ -391,10 +415,10 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       aloitusPaivamaara.get,
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      getLisapistekoulutusSuoritusvuosi(suoritus),
       getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, true),
       parseLasnaolot(opiskeluoikeus, None, vahvistusPaivamaara).map(l =>
-        Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, TUVA.defaultLuokka.get, supaTila, None, TUVA))
+        Lahtokoulu(l._1, l._2, oppilaitos.oid, valmistumisVuosi, TUVA.defaultLuokka.get, supaTila, None, TUVA)),
+      getLisapisteOsasuoritukset(suoritus)
     )
 
   def toVapaaSivistystyoKoulutus(opiskeluoikeus: KoskiOpiskeluoikeus, suoritus: KoskiSuoritus): VapaaSivistystyo =
@@ -411,6 +435,15 @@ object KoskiToSuoritusConverter {
     val supaTila = parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy())
     val valmistumisVuosi = if vahvistusPaivamaara.isDefined then vahvistusPaivamaara.map(_.getYear) else aloitusPaivamaara.map(_.getYear + 1)
 
+    //Opistovuoden osasuorituksilla ei ole omia päivämääriä, joten suoritusvuosi päätellään koko suorituksen tilasta:
+    //valmistunut -> vahvistusvuosi, keskeytynyt (esim. eronnut) -> keskeytymisvuosi, kesken -> aloitusvuosi + 1
+    //(opistovuosi on tarkoitettu yhden lukuvuoden mittaiseksi).
+    val vstSuoritusVuosi = supaTila match {
+      case VALMIS      => vahvistusPaivamaara.map(_.getYear).getOrElse(aloitusPaivamaara.get.getYear + 1)
+      case KESKEYTYNYT => parseKeskeytyminen(opiskeluoikeus).map(_.getYear).getOrElse(aloitusPaivamaara.get.getYear + 1)
+      case KESKEN      => aloitusPaivamaara.get.getYear + 1
+    }
+
     VapaaSivistystyo(
       UUID.randomUUID(),
       suoritus.koulutusmoduuli.flatMap(km => km.tunniste.map(t => t.nimi)).getOrElse(dummy()),
@@ -420,7 +453,7 @@ object KoskiToSuoritusConverter {
       supaTila,
       aloitusPaivamaara.get,
       vahvistusPaivamaara,
-      getLisapistekoulutusSuoritusvuosi(suoritus),
+      vstSuoritusVuosi,
       //Huom. Tässä ei ole filtteröintiä hyväksytyn arvioinnin perusteella vrt. Telma, koska arviointeja ei ole.
       getLisapistekoulutusYhteenlaskettuLaajuus(suoritus, false),
       suoritus.suorituskieli.map(k => asKoodiObject(k)).getOrElse(dummy()),

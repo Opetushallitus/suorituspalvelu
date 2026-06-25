@@ -5,7 +5,7 @@ import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LisapisteOsasuoritus, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -597,10 +597,10 @@ class AvainArvoConverterTest {
       SuoritusTila.VALMIS,
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
-      suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some (Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA)),
+      Seq(LisapisteOsasuoritus(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None), suoritusVuosi))
     )
 
     val telmaOikeus = AmmatillinenOpiskeluoikeus(
@@ -646,10 +646,10 @@ class AvainArvoConverterTest {
       SuoritusTila.VALMIS,
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
-      suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA)),
+      Seq(LisapisteOsasuoritus(Laajuus(24, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None), suoritusVuosi))
     )
 
     val telmaOikeus = AmmatillinenOpiskeluoikeus(
@@ -689,10 +689,10 @@ class AvainArvoConverterTest {
       SuoritusTila.VALMIS,
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
-      suoritusVuosi,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), TELMA.defaultLuokka.get, VALMIS, None, TELMA)),
+      Seq(LisapisteOsasuoritus(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None), suoritusVuosi))
     )
 
     val haku = KoutaHaku(
@@ -737,9 +737,9 @@ class AvainArvoConverterTest {
       SuoritusTila.VALMIS,
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
-      suoritusVuosi,
       Some(Laajuus(38, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA)),
+      Seq(LisapisteOsasuoritus(Laajuus(38, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None), suoritusVuosi))
     )
 
     val tuvaOikeus = GeneerinenOpiskeluoikeus(
@@ -786,9 +786,9 @@ class AvainArvoConverterTest {
       SuoritusTila.VALMIS,
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
-      suoritusVuosi,
       None,
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA)),
+      Seq.empty
     )
 
     val oikeudet = Seq(GeneerinenOpiskeluoikeus(
@@ -824,9 +824,9 @@ class AvainArvoConverterTest {
       SuoritusTila.VALMIS,
       LocalDate.parse("2021-01-01"),
       Some(LocalDate.parse("2022-05-15")),
-      suoritusVuosi,
       Some(Laajuus(22, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2021-01-01"), Some(LocalDate.parse("2022-05-15")), "1.2.3.4", Some(2022), "tuva", VALMIS, None, TUVA)),
+      Seq(LisapisteOsasuoritus(Laajuus(22, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None), suoritusVuosi))
     )
 
     val haku = KoutaHaku(
@@ -2314,5 +2314,57 @@ class AvainArvoConverterTest {
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2022)), None, Map.empty)
     Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritettuKey))
     Assertions.assertEquals(Some("2021"), converterResult.getAvainArvoMap().get(AvainArvoConstants.opistovuosiSuoritusvuosiKey))
+  }
+
+  @Test def testTelmaKynnyksenYlittyyYhdenSuorituksenOsasuorituksista(): Unit = {
+    // Kynnyksen ylittyminen lasketaan yksittäisen suorituksen osasuorituksista: 13 (2020) + 14 (2022) = 27 >= 25,
+    // ylittämisvuosi on 2022 (osasuoritus, joka vie summan kynnyksen yli).
+    val telma = TestDataUtil.getTestTelma(osasuoritukset = Seq(
+      LisapisteOsasuoritus(Laajuus(13, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None), 2020),
+      LisapisteOsasuoritus(Laajuus(14, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None), 2022)
+    ))
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestAmmatillinenOpiskeluoikeus(Set(telma))
+    )
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2023)), None, Map.empty)
+    Assertions.assertEquals(Some("true"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
+    Assertions.assertEquals(Some("2022"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
+  }
+
+  @Test def testTelmaKynnysVuosiOsasuorituksistaEiSuoritusVuodesta(): Unit = {
+    // Bug-regressio: aiemmin keskeneräisen suorituksen suoritusVuosi oli kuluva vuosi, jolloin lisäpisteet myönnettiin
+    // toistuvasti. Vaikka suoritustason suoritusVuosi olisi tuore (2024), kynnyksen ylittämisvuosi otetaan
+    // osasuoritusten todellisista suoritusvuosista (2020), joten liian vanhaa suoritusta ei huomioida.
+    val telma = TestDataUtil.getTestTelma(
+      suoritusVuosi = 2024,
+      osasuoritukset = Seq(LisapisteOsasuoritus(Laajuus(26, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None), 2020))
+    )
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestAmmatillinenOpiskeluoikeus(Set(telma))
+    )
+
+    // hakuvuosi 2024 -> vuosiVahintaan 2023; osasuorituksen vuosi 2020 < 2023 -> ei huomioida
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2024)), None, Map.empty)
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.telmaSuoritusvuosiKey))
+  }
+
+  @Test def testTuvaKynnysVuosiOsasuorituksistaEiSuoritusVuodesta(): Unit = {
+    // Sama bug-regressio Tuvalle: osasuoritusten vuosi (2020) ratkaisee, ei tuore suoritustason suoritusVuosi (2024).
+    val tuva = TestDataUtil.getTestTuva(
+      suoritusVuosi = 2024,
+      osasuoritukset = Seq(LisapisteOsasuoritus(Laajuus(20, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None), 2020))
+    )
+    val opiskeluoikeudet: Seq[Opiskeluoikeus] = Seq(
+      getToisenAsteenPeruskoulutusOpiskeluoikeus(LocalDate.parse("2018-06-01")),
+      TestDataUtil.getTestGeneerinenOpiskeluoikeus(Set(tuva))
+    )
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(BASE_HAKEMUS.personOid, Some(BASE_HAKEMUS), opiskeluoikeudet, Seq.empty, DEFAULT_LEIKKURIPVM, DEFAULT_KOUTA_HAKU.copy(hakuvuosi = Some(2024)), None, Map.empty)
+    Assertions.assertEquals(Some("false"), converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritettuKey))
+    Assertions.assertEquals(None, converterResult.getAvainArvoMap().get(AvainArvoConstants.tuvaSuoritusvuosiKey))
   }
 }

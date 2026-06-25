@@ -432,10 +432,10 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
-      2020,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(18, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
-      List(Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TELMA.defaultLuokka.get, VALMIS, None, TELMA))
+      List(Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TELMA.defaultLuokka.get, VALMIS, None, TELMA)),
+      Seq.empty
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.Telma(
@@ -472,9 +472,9 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
-      2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None)))),
-      List(Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TUVA.defaultLuokka.get, VALMIS, None, TUVA))
+      List(Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TUVA.defaultLuokka.get, VALMIS, None, TUVA)),
+      Seq.empty
     )
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.TuvaUI(

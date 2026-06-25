@@ -481,13 +481,14 @@ object AvainArvoConverter {
       case o: GeneerinenOpiskeluoikeus => o.suoritukset.collect { case s: Tuva => s }
     }.flatten
     val yhteisLaajuus: BigDecimal = tuvaSuoritukset.flatMap(_.hyvaksyttyLaajuus.map(_.arvo)).sum
+    //Kynnyksen ylittämisvuosi lasketaan osasuoritustasolla yli kaikkien Tuva-suoritusten
     val kynnyksenYlittamisvuosi: Option[Int] = {
-      val sorted = tuvaSuoritukset.sortBy(_.suoritusVuosi)
-      sorted.foldLeft((BigDecimal(0), Option.empty[Int])) { case ((cumulative, found), suoritus) =>
+      val sorted = tuvaSuoritukset.flatMap(_.osasuoritukset).sortBy(_.suoritusvuosi)
+      sorted.foldLeft((BigDecimal(0), Option.empty[Int])) { case ((cumulative, found), osasuoritus) =>
         if (found.isDefined) (cumulative, found)
         else {
-          val newCumulative = cumulative + suoritus.hyvaksyttyLaajuus.map(_.arvo).getOrElse(BigDecimal(0))
-          if (newCumulative >= AvainArvoConstants.tuvaMinimiLaajuus) (newCumulative, Some(suoritus.suoritusVuosi))
+          val newCumulative = cumulative + osasuoritus.laajuus.arvo
+          if (newCumulative >= AvainArvoConstants.tuvaMinimiLaajuus) (newCumulative, Some(osasuoritus.suoritusvuosi))
           else (newCumulative, None)
         }
       }._2
@@ -523,13 +524,14 @@ object AvainArvoConverter {
       case o: AmmatillinenOpiskeluoikeus => o.suoritukset.collect { case s: Telma => s }
     }.flatten
     val yhteisLaajuus: BigDecimal = telmat.flatMap(_.hyvaksyttyLaajuus.map(_.arvo)).sum
+    //Kynnyksen ylittämisvuosi lasketaan osasuoritustasolla yli kaikkien Telma-suoritusten
     val kynnyksenYlittamisvuosi: Option[Int] = {
-      val sorted = telmat.sortBy(_.suoritusVuosi)
-      sorted.foldLeft((BigDecimal(0), Option.empty[Int])) { case ((cumulative, found), suoritus) =>
+      val sorted = telmat.flatMap(_.osasuoritukset).sortBy(_.suoritusvuosi)
+      sorted.foldLeft((BigDecimal(0), Option.empty[Int])) { case ((cumulative, found), osasuoritus) =>
         if (found.isDefined) (cumulative, found)
         else {
-          val newCumulative = cumulative + suoritus.hyvaksyttyLaajuus.map(_.arvo).getOrElse(BigDecimal(0))
-          if (newCumulative >= AvainArvoConstants.telmaMinimiLaajuus) (newCumulative, Some(suoritus.suoritusVuosi))
+          val newCumulative = cumulative + osasuoritus.laajuus.arvo
+          if (newCumulative >= AvainArvoConstants.telmaMinimiLaajuus) (newCumulative, Some(osasuoritus.suoritusvuosi))
           else (newCumulative, None)
         }
       }._2

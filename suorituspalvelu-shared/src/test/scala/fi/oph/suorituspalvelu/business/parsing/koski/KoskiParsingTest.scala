@@ -63,6 +63,42 @@ class KoskiParsingTest {
       }
     }).next().headOption
 
+  //Rakentaa opistovuosi (VST) -koski-JSONin annetuilla opiskeluoikeusjaksoilla ja valinnaisella vahvistuksella,
+  //jotta suoritusvuoden päättelyä eri tiloissa (valmis/kesken/eronnut) voidaan testata.
+  private def vapaaSivistystyoJson(jaksot: String, vahvistus: Option[String]): String =
+    val vahvistusJson = vahvistus.map(p => s""""vahvistus": { "päivä": "$p" },""").getOrElse("")
+    s"""
+       |[
+       |  {
+       |    "oppijaOid": "1.2.246.562.24.75291104630",
+       |    "opiskeluoikeudet": [
+       |      {
+       |        "oppijaOid": "1.2.246.562.24.75291104630",
+       |        "versionumero": 127,
+       |        "aikaleima": "2024-09-12T15:12:40.365225",
+       |        "oid": "1.2.246.562.15.50478693398",
+       |        "oppilaitos": { "oid": "1.2.246.562.10.63029756333", "nimi": { "fi": "Lahden kansanopisto" } },
+       |        "tila": { "opiskeluoikeusjaksot": [ $jaksot ] },
+       |        "suoritukset": [
+       |          {
+       |            "tyyppi": { "koodiarvo": "vstoppivelvollisillesuunnattukoulutus", "koodistoUri": "suorituksentyyppi", "koodistoVersio": 1 },
+       |            $vahvistusJson
+       |            "koulutusmoduuli": { "tunniste": { "koodiarvo": "999909", "nimi": { "fi": "Kansanopistojen vapaan sivistystyön koulutus oppivelvollisille" }, "koodistoUri": "koulutus", "koodistoVersio": 12 } },
+       |            "suorituskieli": { "koodiarvo": "FI", "koodistoUri": "kieli", "koodistoVersio": 1 },
+       |            "osasuoritukset": [
+       |              {
+       |                "tyyppi": { "koodiarvo": "vstosaamiskokonaisuus", "koodistoUri": "suorituksentyyppi", "koodistoVersio": 1 },
+       |                "koulutusmoduuli": { "laajuus": { "arvo": 30.0, "yksikkö": { "koodiarvo": "2", "nimi": { "fi": "opintopistettä" }, "lyhytNimi": { "fi": "op" }, "koodistoUri": "opintojenlaajuusyksikko", "koodistoVersio": 1 } } }
+       |              }
+       |            ]
+       |          }
+       |        ]
+       |      }
+       |    ]
+       |  }
+       |]
+       |""".stripMargin
+
   @Test def testAmmatillisetOpiskeluoikeudet(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(
       """
@@ -866,7 +902,6 @@ class KoskiParsingTest {
     Assertions.assertEquals(Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus (TELMA)"), None, None), telma.nimi)
     Assertions.assertEquals(LocalDate.parse("2022-06-06"), telma.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), telma.vahvistusPaivamaara)
-    Assertions.assertEquals(2023, telma.suoritusVuosi)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), telma.suoritusKieli)
     Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2022-06-06"), Some(LocalDate.parse("2023-03-15")), "1.2.246.562.10.54019331674", Some(2023), TELMA.defaultLuokka.get, VALMIS, None, TELMA)), telma.lahtokoulut)
   }
@@ -891,6 +926,13 @@ class KoskiParsingTest {
     Assertions.assertEquals(oikeudet.size, 1)
     Assertions.assertEquals(oikeudet.head.suoritukset.size, 1)
     Assertions.assertEquals(telmaLaajuus.get, 60)
+
+    //Osasuoritukset poimitaan lisäpisteiden kynnyksen ylittämisvuoden laskentaa varten: 4 hyväksyttyä osasuoritusta,
+    //laajuudet 18 + 20 + 10 + 12 = 60, kaikkien suoritusvuosi arvioinnin päivästä (2023-05-10) = 2023.
+    Assertions.assertEquals(4, telmaSuoritus.osasuoritukset.size)
+    Assertions.assertEquals(Set(18, 20, 10, 12).map(BigDecimal(_)), telmaSuoritus.osasuoritukset.map(_.laajuus.arvo).toSet)
+    Assertions.assertEquals(BigDecimal(60), telmaSuoritus.osasuoritukset.map(_.laajuus.arvo).sum)
+    Assertions.assertEquals(Set(2023), telmaSuoritus.osasuoritukset.map(_.suoritusvuosi).toSet)
   }
 
   @Test def testPerusopetuksenOpiskeluoikeudet(): Unit =
@@ -2770,7 +2812,33 @@ class KoskiParsingTest {
       Some(Laajuus(4.5, Koodi("2", "opintojenlaajuusyksikko", Some(1)),
       Some(Kielistetty(Some("opintopistettä"), None, None)), Some(Kielistetty(Some("op"), None, None)))), vst.hyvaksyttyLaajuus)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), vst.suoritusKieli)
+    //Valmistunut opistovuosi -> suoritusvuosi vahvistuspäivästä.
+    Assertions.assertEquals(2025, vst.suoritusVuosi)
     Assertions.assertEquals(List(Lahtokoulu(LocalDate.parse("2024-05-01"), Some(LocalDate.parse("2025-04-16")), "1.2.246.562.10.63029756333", Some(2025), VAPAA_SIVISTYSTYO.defaultLuokka.get, VALMIS, None, VAPAA_SIVISTYSTYO)), vst.lahtokoulut)
+
+  //Keskeneräisellä opistovuodella ei ole vahvistuspäivää eikä osasuorituksilla päivämääriä, joten suoritusvuosi
+  //päätellään aloitusvuodesta + 1 (opistovuosi on tarkoitettu yhden lukuvuoden mittaiseksi).
+  @Test def testVapaaSivistysTyoSuoritusKesken(): Unit =
+    val vst = getFirstSuoritusFromJson(vapaaSivistystyoJson(jaksot = """
+        |            { "alku": "2024-08-01", "tila": { "koodiarvo": "lasna", "koodistoUri": "koskiopiskeluoikeudentila", "koodistoVersio": 1 } }
+        |""".stripMargin, vahvistus = None)).get.asInstanceOf[VapaaSivistystyo]
+
+    Assertions.assertEquals(SuoritusTila.KESKEN, vst.supaTila)
+    Assertions.assertEquals(LocalDate.parse("2024-08-01"), vst.aloitusPaivamaara)
+    Assertions.assertEquals(None, vst.vahvistusPaivamaara)
+    Assertions.assertEquals(2025, vst.suoritusVuosi)
+
+  //Eronnut/keskeytynyt opistovuosi -> suoritusvuosi keskeytymisjakson alkamisvuodesta.
+  @Test def testVapaaSivistysTyoSuoritusEronnut(): Unit =
+    val vst = getFirstSuoritusFromJson(vapaaSivistystyoJson(jaksot = """
+        |            { "alku": "2024-08-01", "tila": { "koodiarvo": "lasna", "koodistoUri": "koskiopiskeluoikeudentila", "koodistoVersio": 1 } },
+        |            { "alku": "2025-02-01", "tila": { "koodiarvo": "eronnut", "koodistoUri": "koskiopiskeluoikeudentila", "koodistoVersio": 1 } }
+        |""".stripMargin, vahvistus = None)).get.asInstanceOf[VapaaSivistystyo]
+
+    Assertions.assertEquals(SuoritusTila.KESKEYTYNYT, vst.supaTila)
+    Assertions.assertEquals(LocalDate.parse("2024-08-01"), vst.aloitusPaivamaara)
+    Assertions.assertEquals(None, vst.vahvistusPaivamaara)
+    Assertions.assertEquals(2025, vst.suoritusVuosi)
 
   @Test def testMitatoituOpiskeluoikeusPalautetaanPoistettunaOpiskeluoikeutena(): Unit =
     val opiskeluoikeus = getFirstOpiskeluoikeusFromJson(

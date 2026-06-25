@@ -276,6 +276,13 @@ case class TelmaArviointi(
   hyvaksytty: Boolean
 )
 
+//Hyväksytysti suoritettu lisäpistekoulutuksen osasuoritus laajuuksineen ja suoritusvuosineen.
+//Käytetään Telma- ja Tuva-suorituksissa lisäpisteiden kynnyksen ylittämisvuoden laskentaan osasuoritustasolla.
+case class LisapisteOsasuoritus(
+  laajuus: Laajuus,
+  suoritusvuosi: Int
+)
+
 case class Telma(
   tunniste: UUID,
   nimi: Kielistetty,
@@ -285,10 +292,10 @@ case class Telma(
   supaTila: SuoritusTila,
   aloitusPaivamaara: LocalDate,
   vahvistusPaivamaara: Option[LocalDate],
-  suoritusVuosi: Int,
   suoritusKieli: Koodi,
   hyvaksyttyLaajuus: Option[Laajuus],
-  lahtokoulut: List[Lahtokoulu]
+  lahtokoulut: List[Lahtokoulu],
+  osasuoritukset: Seq[LisapisteOsasuoritus]
 ) extends Suoritus, Tyypitetty
 
 case class Tuva(
@@ -300,9 +307,9 @@ case class Tuva(
   supaTila: SuoritusTila,
   aloitusPaivamaara: LocalDate,
   vahvistusPaivamaara: Option[LocalDate],
-  suoritusVuosi: Int,
   hyvaksyttyLaajuus: Option[Laajuus],
-  lahtokoulut: List[Lahtokoulu]
+  lahtokoulut: List[Lahtokoulu],
+  osasuoritukset: Seq[LisapisteOsasuoritus]
 ) extends Suoritus, Tyypitetty
 
 //Opistovuosi

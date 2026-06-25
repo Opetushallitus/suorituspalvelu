@@ -81,7 +81,12 @@ object TestDataUtil {
                   suoritusVuosi: Int = 2022,
                   oppilaitos: Oppilaitos = Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
                   koskiTila: Koodi = Koodi("valmistunut", "suorituksentila", Some(1)),
-                  supaTila: SuoritusTila = SuoritusTila.VALMIS): Tuva =
+                  supaTila: SuoritusTila = SuoritusTila.VALMIS,
+                  osasuoritukset: Seq[LisapisteOsasuoritus] = Seq.empty): Tuva =
+    val laajuus = laajuusArvo.map(arvo => Laajuus(arvo, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None))
+    //Ellei osasuorituksia anneta erikseen, johdetaan yksi osasuoritus suorituksen laajuudesta ja suoritusvuodesta
+    //(säilyttää vanhojen testien semantiikan, joissa kynnyksen ylittäminen perustui suoritustason laajuuteen).
+    val osat = if (osasuoritukset.nonEmpty) osasuoritukset else laajuus.map(l => LisapisteOsasuoritus(l, suoritusVuosi)).toSeq
     Tuva(
       UUID.randomUUID(),
       Kielistetty(Some("Tutkintokoulutukseen valmentava koulutus"), None, None),
@@ -91,9 +96,9 @@ object TestDataUtil {
       supaTila,
       aloitusPaivamaara,
       vahvistusPaivamaara,
-      suoritusVuosi,
-      laajuusArvo.map(arvo => Laajuus(arvo, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), "tuva", supaTila, None, LahtokouluTyyppi.TUVA))
+      laajuus,
+      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), "tuva", supaTila, None, LahtokouluTyyppi.TUVA)),
+      osat
     )
 
   def getTestTelma(laajuusArvo: Option[BigDecimal] = Some(BigDecimal(13)),
@@ -103,7 +108,11 @@ object TestDataUtil {
                    oppilaitos: Oppilaitos = Oppilaitos(Kielistetty(Some("Testioppilaitos"), None, None), "1.2.3.4"),
                    koskiTila: Koodi = Koodi("valmistunut", "suorituksentila", Some(1)),
                    supaTila: SuoritusTila = SuoritusTila.VALMIS,
-                   suoritusKieli: Koodi = Koodi("FI", "kieli", Some(1))): Telma =
+                   suoritusKieli: Koodi = Koodi("FI", "kieli", Some(1)),
+                   osasuoritukset: Seq[LisapisteOsasuoritus] = Seq.empty): Telma =
+    val laajuus = laajuusArvo.map(arvo => Laajuus(arvo, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None))
+    //Ellei osasuorituksia anneta erikseen, johdetaan yksi osasuoritus suorituksen laajuudesta ja suoritusvuodesta.
+    val osat = if (osasuoritukset.nonEmpty) osasuoritukset else laajuus.map(l => LisapisteOsasuoritus(l, suoritusVuosi)).toSeq
     Telma(
       UUID.randomUUID(),
       Kielistetty(Some("Työhön ja itsenäiseen elämään valmentava koulutus"), None, None),
@@ -113,10 +122,10 @@ object TestDataUtil {
       supaTila,
       aloitusPaivamaara,
       vahvistusPaivamaara,
-      suoritusVuosi,
       suoritusKieli,
-      laajuusArvo.map(arvo => Laajuus(arvo, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
-      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), LahtokouluTyyppi.TELMA.defaultLuokka.get, supaTila, None, LahtokouluTyyppi.TELMA))
+      laajuus,
+      List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), LahtokouluTyyppi.TELMA.defaultLuokka.get, supaTila, None, LahtokouluTyyppi.TELMA)),
+      osat
     )
 
   def getTestVapaaSivistystyo(laajuusArvo: Option[BigDecimal] = Some(BigDecimal(14)),
