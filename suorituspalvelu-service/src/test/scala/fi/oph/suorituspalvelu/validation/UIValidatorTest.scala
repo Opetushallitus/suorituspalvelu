@@ -3,6 +3,7 @@ package fi.oph.suorituspalvelu.validation
 import fi.oph.suorituspalvelu.integration.client.{Koodi, Koodisto}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.ui.SyotettyPerusopetuksenOppiaine
+import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.*
 
 import java.time.Instant
@@ -11,6 +12,12 @@ import java.util.{Optional, UUID}
 /**
  */
 class UIValidatorTest {
+
+  val DUMMY_KOODISTOPROVIDER: KoodistoProvider = new KoodistoProvider {
+    override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty
+
+    override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
+  }
 
   // oppijanumero
   @Test def testValidateOppijanumeroRequiredMissing(): Unit = {
@@ -225,7 +232,7 @@ class UIValidatorTest {
   @Test def testValidateOppiaineRequiredMissing(): Unit = {
     Assertions.assertEquals(
       Set(UIValidator.VALIDATION_OPPIAINE_TYHJA),
-      UIValidator.validatePerusopetuksenOppimaaranOppiaine(None, koodisto => Map.empty)
+      UIValidator.validatePerusopetuksenOppimaaranOppiaine(None, DUMMY_KOODISTOPROVIDER)
     )
   }
 
@@ -305,7 +312,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map.empty
+        DUMMY_KOODISTOPROVIDER
       )
     )
   }
@@ -320,7 +327,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map.empty
+        DUMMY_KOODISTOPROVIDER
       )
     )
   }
@@ -335,7 +342,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map.empty
+        DUMMY_KOODISTOPROVIDER
       )
     )
   }
@@ -350,7 +357,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map("DE" -> Koodi("", Koodisto(""), List()))
+        buildDummyKoodistoProvider(Map("DE" -> Koodi("", Koodisto(""), List(), "")))
       )
     )
   }
@@ -366,7 +373,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map.empty
+        DUMMY_KOODISTOPROVIDER
       )
     )
   }
@@ -381,7 +388,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map.empty
+        DUMMY_KOODISTOPROVIDER
       )
     )
   }
@@ -396,7 +403,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map.empty
+        DUMMY_KOODISTOPROVIDER
       )
     )
   }
@@ -411,7 +418,7 @@ class UIValidatorTest {
           Optional.of(8),
           Optional.of(false)
         ),
-        koodisto => Map("AI1" -> Koodi("", Koodisto(""), List()))
+        buildDummyKoodistoProvider(Map("AI1" -> Koodi("", Koodisto(""), List(), "")))
       )
     )
   }
@@ -505,5 +512,12 @@ class UIValidatorTest {
       UIValidator.validateHarkinnanvaraisuudenSyy(None, true)
     )
   }
+
+  private def buildDummyKoodistoProvider(koodistoMap: Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = Map.empty): KoodistoProvider =
+    new KoodistoProvider {
+      override def haeKoodisto(koodisto: String): Map[String, fi.oph.suorituspalvelu.integration.client.Koodi] = koodistoMap
+
+      override def haeAlakoodit(koodiUri: String): List[fi.oph.suorituspalvelu.integration.client.Koodi] = List.empty
+    }
 
 }

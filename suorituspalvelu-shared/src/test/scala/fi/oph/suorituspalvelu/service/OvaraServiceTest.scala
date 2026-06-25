@@ -257,6 +257,7 @@ class OvaraServiceTest {
   )
 
   val BASE_KK_OPISKELUOIKEUS = KKOpiskeluoikeus(
+    nimi                = None,
     tunniste            = UUID.fromString("00000000-0000-0000-0000-000000000002"),
     virtaTunniste       = "virta-1",
     tyyppiKoodi         = "1",
@@ -268,7 +269,10 @@ class OvaraServiceTest {
     myontaja            = "1.2.246.562.10.00000000001",
     isTutkintoonJohtava = true,
     kieli               = None,
-    suoritukset         = Set.empty
+    suoritukset         = Set.empty,
+    rahoitusLahde       = None,
+    luokittelu          = None,
+    liittyvaOpiskeluoikeusAvain = None
   )
 
   private def buildServiceForOpiskeluoikeudet(batchSize: Int = 500): (OvaraService, KantaOperaatiot, OpiskeluoikeusParsingService, SiirtotiedostoClient) = {

@@ -1,5 +1,7 @@
 package fi.oph.suorituspalvelu.ovara
 
+import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
+
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
@@ -95,6 +97,7 @@ case class OvaraLahtokoulu(
 case class OvaraKKOpiskeluoikeus(
   entiteetinTyyppi: String = "KKOpiskeluoikeus",
   metadata: OvaraVersioMetadata,
+  nimi: Option[Kielistetty],
   tunniste: UUID,
   virtaTunniste: String,
   tyyppiKoodi: String,

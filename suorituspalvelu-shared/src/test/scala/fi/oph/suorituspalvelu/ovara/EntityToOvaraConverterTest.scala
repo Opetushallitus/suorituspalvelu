@@ -103,7 +103,7 @@ class EntityToOvaraConverterTest {
     )
     mapping.foreach { case (in, expected) =>
       val tutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), in, "komo", BigDecimal(0), None, None, "m", None, None, None, Seq.empty, None)
-      val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", "1", None, LocalDate.of(2020, 1, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.VOIMASSA, "myo", true, None, Set(tutkinto))
+      val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", None, LocalDate.of(2020, 1, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.VOIMASSA, "myo", true, None, Set(tutkinto), None, None, None)
       val out = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk))).head
       val outT = out.suoritukset.collect { case t: OvaraKKTutkinto => t }.head
       Assertions.assertEquals(expected, outT.supaTila, s"$in")
@@ -137,7 +137,7 @@ class EntityToOvaraConverterTest {
       KKOpiskeluoikeusTila.PAATTYNYT -> OvaraKKOpiskeluoikeusTila.PAATTYNYT
     )
     mapping.foreach { case (in, expected) =>
-      val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", "1", None, LocalDate.of(2020, 1, 1), LocalDate.of(2024, 6, 1), koodi("v"), in, "myo", true, None, Set.empty)
+      val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", None, LocalDate.of(2020, 1, 1), LocalDate.of(2024, 6, 1), koodi("v"), in, "myo", true, None, Set.empty, None, None, None)
       val out = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk))).head
       Assertions.assertEquals(expected, out.supaTila, s"$in")
     }
@@ -195,7 +195,7 @@ class EntityToOvaraConverterTest {
     val tutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo", BigDecimal(180), Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("fi"), Some("613101"), Some("a-1"), Seq.empty, Some("avain-t"))
     val opinto = KKOpintosuoritus(UUID.randomUUID(), Some(kielistetty("o")), SuoritusTila.VALMIS, "komo", BigDecimal(5), Some(BigDecimal(3)), Some(LocalDate.of(2023, 5, 1)), Some(LocalDate.of(2023, 6, 1)), "myo", Some("vastuu"), Some("jk"), Some(BigDecimal(1)), Some("4"), Some("4-1"), Some("fi"), Some(1), Some("ka"), opinnaytetyo = false, Some("a-1"), Seq.empty, "avain-o")
     val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.KESKEN, "komo", Some(LocalDate.of(2023, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("613101"), Some("a-1"), Seq.empty)
-    val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", "1", Some("613101"), LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, Some("fi"), Set(tutkinto, opinto, synt))
+    val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", Some("613101"), LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, Some("fi"), Set(tutkinto, opinto, synt), None, None, None)
 
     val out = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk))).head
 
@@ -398,8 +398,8 @@ class EntityToOvaraConverterTest {
     // KK/YO eivät kanna lähtökouluja — palautuu tyhjä lista vaikka opiskeluoikeuksia ja niiden suorituksia on olemassa.
     val kkTutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo", BigDecimal(180),
       Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("fi"), Some("613101"), Some("a-1"), Seq.empty, Some("avain-t"))
-    val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", "1", None, LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1),
-      koodi("v"), KKOpiskeluoikeusTila.VOIMASSA, "myo", true, None, Set(kkTutkinto))
+    val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", None, LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1),
+      koodi("v"), KKOpiskeluoikeusTila.VOIMASSA, "myo", true, None, Set(kkTutkinto), None, None, None)
     val koe = Koe(UUID.randomUUID(), koodi("MA"), LocalDate.of(2024, 3, 15), koodi("E"), Some(80))
     val yot = YOTutkinto(UUID.randomUUID(), koodi("FI"), SuoritusTila.VALMIS, Some(LocalDate.of(2024, 6, 1)), Set(koe))
     val yo = YOOpiskeluoikeus(UUID.randomUUID(), Some(yot))
