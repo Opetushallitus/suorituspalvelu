@@ -10,7 +10,7 @@ import fi.oph.suorituspalvelu.resource.api.YosVirhe.{VIRHE_HAKUTOIVEEN_PAATTELYS
 import fi.oph.suorituspalvelu.resource.api.YosErrorResponse
 import fi.oph.suorituspalvelu.util.KoodistoConstants.KOULUTUS_KOODISTO
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
-import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT, YOS_KOULUTUSASTE_KOODISTO}
+import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT, LAAKETIETEEN_LISENSIAATIT_KOULUTUSKOODIT, YOS_KOULUTUSASTE_KOODISTO}
 import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -157,23 +157,27 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   }
 
   private def getKoulutusAsteOpiskeluOikeudelle(oikeus: KKOpiskeluoikeus): YosKoulutusAsteLuokka = {
-    val koodiAsteArvot = oikeus.koulutusKoodi
-      .flatMap(k => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(k))
-      .map(k => koodistoProvider.haeAlakoodit(k.koodiUri))
-      .getOrElse(List.empty)
-      .filter(k => k.koodisto.koodistoUri.equals(YOS_KOULUTUSASTE_KOODISTO))
-      .map(k => k.koodiArvo)
+    if (LAAKETIETEEN_LISENSIAATIT_KOULUTUSKOODIT.contains(oikeus.koulutusKoodi.getOrElse(""))) {
+      ALEMMAT_ASTEET
+    } else {
+      val koodiAsteArvot = oikeus.koulutusKoodi
+        .flatMap(k => koodistoProvider.haeKoodisto(KOULUTUS_KOODISTO).get(k))
+        .map(k => koodistoProvider.haeAlakoodit(k.koodiUri))
+        .getOrElse(List.empty)
+        .filter(k => k.koodisto.koodistoUri.equals(YOS_KOULUTUSASTE_KOODISTO))
+        .map(k => k.koodiArvo)
 
-    val containsAlempi: Boolean = koodiAsteArvot.exists(k => KOULUTUSASTE_ALEMMAT.contains(k))
-    val containsYlempi: Boolean = koodiAsteArvot.exists(k => KOULUTUSASTE_YLEMMAT.contains(k))
+      val containsAlempi: Boolean = koodiAsteArvot.exists(k => KOULUTUSASTE_ALEMMAT.contains(k))
+      val containsYlempi: Boolean = koodiAsteArvot.exists(k => KOULUTUSASTE_YLEMMAT.contains(k))
 
-    (containsAlempi, containsYlempi) match {
-      case (true, _) =>
-        ALEMMAT_ASTEET
-      case (false, true) =>
-        YLEMMAT_ASTEET
-      case _ =>
-        EI_YOS_KOULUTUSASTETTA
+      (containsAlempi, containsYlempi) match {
+        case (true, _) =>
+          ALEMMAT_ASTEET
+        case (false, true) =>
+          YLEMMAT_ASTEET
+        case _ =>
+          EI_YOS_KOULUTUSASTETTA
+      }
     }
   }
 
