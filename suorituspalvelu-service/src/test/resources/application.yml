@@ -52,3 +52,10 @@ db-scheduler:
   enabled: true
   polling-strategy: lock-and-fetch
   immediate-execution-enabled: true
+
+ovara:
+  region: mock-region
+  bucket: mock-bucket
+  rolearn: mock-rolearn
+  hakemus-batch-size: 1000
+  opiskeluoikeus-batch-size: 500

@@ -97,7 +97,7 @@ class OnrClientImpl(casClient: CasClient, environmentBaseUrl: String) extends On
           val chunkResult: Future[Set[Henkiloviite]] = {
             doPost(environmentBaseUrl + "/oppijanumerorekisteri-service/s2s/duplicateHenkilos", queryObject, retryConfig)
               .map(result => {
-                LOG.info(s"Saatiin tulos: $result")
+                LOG.debug(s"Saatiin tulos: $result")
                 val typeRef = new TypeReference[List[Henkiloviite]] {}
                 val parsed = mapper.readValue(result, typeRef).toSet
                 LOG.info(s"Tiedot oppijanumerorekisteristä haettu, erä ${chunk._2 + 1}/${batches.size}, henkiloviitteet: ${parsed.size}")

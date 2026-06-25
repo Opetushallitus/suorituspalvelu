@@ -15,6 +15,7 @@
         <module>suorituspalvelu-service</module>
         <module>suorituspalvelu-shared</module>
         <module>suorituspalvelu-domain</module>
+        <module>suorituspalvelu-ovara</module>
     </modules>
 
     <properties>
@@ -178,6 +179,16 @@
                 <type>pom</type>
                 <version>2.0.3</version>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>fi.vm.sade.dokumenttipalvelu</groupId>
+                <artifactId>dokumenttipalvelu</artifactId>
+                <version>6.15-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.14</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

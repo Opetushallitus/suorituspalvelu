@@ -11,6 +11,7 @@ import org.springframework.context.annotation.{Bean, Configuration, Profile}
 import org.springframework.context.event.{ContextClosedEvent, EventListener}
 
 import java.time.Duration
+import java.util.concurrent.{ExecutorService, Executors}
 import javax.sql.DataSource
 
 @Configuration
@@ -18,6 +19,8 @@ class JobConfiguration {
 
   @Bean def getScheduler(dataSource: DataSource, kantaOperaatiot: KantaOperaatiot, errorService: ErrorService): SupaScheduler =
     new SupaScheduler(5, Duration.ofSeconds(2), dataSource, kantaOperaatiot, errorService)
+
+  @Bean def ovaraExecutor(): ExecutorService = Executors.newSingleThreadExecutor()
 
 }
 

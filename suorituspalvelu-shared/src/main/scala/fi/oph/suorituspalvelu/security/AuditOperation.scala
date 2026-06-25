@@ -88,4 +88,8 @@ object AuditOperation {
   case object Uudelleenparseroi extends AuditOperation("LÄHDEDATAN UUDELLEENPARSEROINTI")
 
   case object HaeJobData extends AuditOperation("JOBIEN TIETOJEN HAKU")
+
+  case object MuodostaPaivittaisetOvara extends AuditOperation("OVARA PÄIVITTÄISTEN SIIRTOTIEDOSTOJEN MUODOSTUS")
+
+  case object MuodostaOpiskeluoikeussiirtotiedostotOvara extends AuditOperation("OVARA OPISKELUOIKEUSSIIRTOTIEDOSTOJEN MUODOSTUS")
 }
