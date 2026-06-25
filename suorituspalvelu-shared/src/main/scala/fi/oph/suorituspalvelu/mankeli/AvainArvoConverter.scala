@@ -2,14 +2,14 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, DIATutkinto, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoConverterUtil, AvainArvoDTO}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.slf4j.LoggerFactory
 
-import java.util.{List as JavaList, UUID}
+import java.util.{UUID, List as JavaList}
 import scala.jdk.CollectionConverters.*
 import java.time.LocalDate
 import scala.collection.immutable
@@ -49,6 +49,8 @@ object AvainArvoConstants {
     ammSuoritettuKey -> "Ammatillinen tutkinto suoritettu",
     ebSuoritettuKey -> "EB-tutkinto suoritettu",
     ebSuoritusvuosiKey -> "EB-tutkinnon suoritusvuosi",
+    diaSuoritettuKey -> "DIA-tutkinto suoritettu",
+    diaSuoritusvuosiKey -> "DIA-tutkinnon suoritusvuosi",
     ammSuoritusvuosiKey -> "Ammatillisen tutkinnon suoritusvuosi",
     ammSuorituslukukausiKey -> "Ammatillisen tutkinnon suorituslukukausi",
     ammTutkintoKieliKey -> "Ammatillisen tutkinnon suorituskieli",
@@ -114,6 +116,13 @@ object AvainArvoConstants {
   final val ebWrittenKomponenttiKoodi = "Written" // koodisto ebtutkinnonoppiaineenkomponentti
   final val ebOralKomponenttiKoodi = "Oral" // koodisto ebtutkinnonoppiaineenkomponentti
   final val ebFinalKomponenttiKoodi = "Final" // koodisto ebtutkinnonoppiaineenkomponentti
+  final val diaSuoritettuKey = "DIA_TILA"
+  final val diaSuoritusvuosiKey = "DIA_SUORITUSVUOSI"
+  final val diaOppiainePrefix = "DIA_"
+  final val diaOppiaineLaajuusPostfix = "_LAAJUUS"
+  final val diaOppiaineKirjallinenPostfix = "_KIRJALLINEN"
+  final val diaOppiaineSuullinenPostfix = "_SUULLINEN"
+  final val diaOppiaineVastaavuusPostfix = "_VASTAAVUUS"
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -397,6 +406,7 @@ object AvainArvoConverter {
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ebArvot = convertEbArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val diaArvot = convertDiaArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku, toisenAsteenPk)
 
@@ -405,6 +415,7 @@ object AvainArvoConverter {
         ++ ammatillisetArvot
         ++ yoArvot
         ++ ebArvot
+        ++ diaArvot
         ++ lukioArvot
         ++ lisapistekoulutusArvot
         ++ toisenAsteenPk.toSet
@@ -778,6 +789,67 @@ object AvainArvoConverter {
 
     val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ writtenArvot ++ oralArvot ++ finalArvot ++ kieliArvot
     LOG.info(s"EB-arvot käsitelty henkilölle $personOid. $arvot")
+    arvot
+  }
+
+  def convertDiaArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+    val diaTutkinnot: Seq[DIATutkinto] = opiskeluoikeudet
+      .collect { case o: GeneerinenOpiskeluoikeus => o }
+      .flatMap(_.suoritukset)
+      .collect { case dia: DIATutkinto => dia }
+
+    // Päättely tehdään valmiilta (VALMIS-tilainen ja leikkuripäivään mennessä vahvistettu) DIA-tutkinnolta. Tämän lisäksi
+    // henkilöllä voi (ainakin teoriassa) olla esim. keskeytynyt tutkinto ilman että se on virhe, mutta valmiita sallitaan
+    // korkeintaan yksi.
+    val valmiitDiaTutkinnot = diaTutkinnot.filter(_.supaTila == SuoritusTila.VALMIS)
+    if (valmiitDiaTutkinnot.size > 1)
+      throw new RuntimeException(s"Oppijalla $personOid on ${valmiitDiaTutkinnot.size} valmista DIA-tutkintoa, odotettiin korkeintaan yhtä.")
+
+    val diaTutkinto = valmiitDiaTutkinnot.headOption
+    val vahvistettuAjoissa = diaTutkinto.flatMap(_.vahvistusPaivamaara).exists(v => !v.isAfter(vahvistettuViimeistaan))
+
+    val diaSelite = diaTutkinto match {
+      case Some(dia) if dia.vahvistusPaivamaara.exists(v => v.isAfter(vahvistettuViimeistaan)) =>
+        s"Löytyi DIA-tutkinto, jonka tila on ${dia.supaTila}, mutta sen vahvistuspäivä ${dia.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")} on leikkuripäivän $vahvistettuViimeistaan jälkeen."
+      case Some(dia) => s"Löytyi DIA-tutkinto, jonka tila on ${dia.supaTila} ja vahvistuspäivä ${dia.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
+      case None => "Valmista DIA-tutkintoa ei löytynyt."
+    }
+
+    val suoritusvuosiArvo = if (vahvistettuAjoissa) {
+      diaTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
+        AvainArvoContainer(AvainArvoConstants.diaSuoritusvuosiKey, vp.getYear.toString, Seq(s"DIA-tutkinnon vahvistuspäivä: $vp.")))
+    } else None
+
+    val laajuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.laajuus.map(l =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineLaajuusPostfix,
+          l.arvo.toString,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
+
+    val kirjallinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.kirjallinenKoe.map(koe =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineKirjallinenPostfix,
+          koe.arvosana.arvosana.arvo,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
+
+    val suullinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.suullinenKoe.map(koe =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineSuullinenPostfix,
+          koe.arvosana.arvosana.arvo,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
+
+    val vastaavuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.vastaavuustodistuksenTiedot.map(vtt =>
+        AvainArvoContainer(
+          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineVastaavuusPostfix,
+          vtt.keskiarvo.toString,
+          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} vastaavuustodistuksen keskiarvo.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, vahvistettuAjoissa.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ kirjallinenArvot ++ suullinenArvot ++ vastaavuusArvot
+    LOG.info(s"DIA-arvot käsitelty henkilölle $personOid. $arvot")
     arvot
   }
 
