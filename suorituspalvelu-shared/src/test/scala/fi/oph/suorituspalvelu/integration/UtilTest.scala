@@ -1,4 +1,4 @@
-package fi.oph.suorituspalvelu.business.integration
+package fi.oph.suorituspalvelu.integration
 
 import fi.oph.suorituspalvelu.integration.{NonRetriableException, Util}
 import org.junit.jupiter.api.TestInstance.Lifecycle
