@@ -21,6 +21,13 @@ class HakemuksetService(supaScheduler: SupaScheduler, hakemusPalveluClient: Hake
 
   val LOG = LoggerFactory.getLogger(classOf[HakemuksetService])
 
+  LOG.info(
+    s"""Muuttuneiden hakemuksien tietoja päivitetään lähdejärjestelmistä seuraavasti:
+       |
+       |* Koski: $koskiRefreshEnabled
+       |* Virta: $virtaRefreshEnabled
+       |* YTR:   $ytrRefreshEnabled""".stripMargin)
+
   // Pollataan atarusta muuttuneita hakemuksia
   supaScheduler.scheduleJob("ataru-poll-muuttuneet", (ctx, data) => {
     val start = Instant.now()

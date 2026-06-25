@@ -31,6 +31,7 @@ integrations:
     base-url: https://virkailija.testiopintopolku.fi
     cron: "0 */2 * * * *"
     bufferseconds: 60
+    muuttuneet-cron-job-enabled: false
   ataru:
     cron: "0 */2 * * * *"
     koski-refresh-enabled: false
@@ -41,12 +42,14 @@ integrations:
     password: password
     base-url: https://registry.integration.yo-test.ylioppilastutkinto.fi
     cron: "0 0 0 30 2 *"
+    cron-job-enabled: false
   virta:
     jarjestelma:
     tunnus:
     avain:
     base-url:
     cron: "0 0 0 30 2 *"
+    cron-job-enabled: false
 
 db-scheduler:
   enabled: true
