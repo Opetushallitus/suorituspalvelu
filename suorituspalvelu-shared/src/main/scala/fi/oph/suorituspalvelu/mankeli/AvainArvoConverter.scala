@@ -111,6 +111,17 @@ object AvainArvoConstants {
   final val diaOppiaineSuullinenPostfix = "_SUULLINEN"
   final val diaOppiaineVastaavuusPostfix = "_VASTAAVUUS"
 
+  //Äidinkieli (koodi "AI") voi DIA-tutkinnossa olla sekä suomeksi että saksaksi, jolloin molemmat ovat erillisiä
+  // oppiaineita samalla koodilla. Geneerinen DIA_<KOODI>_<POSTFIX> -avain olisi tällöin moniselitteinen, joten
+  // äidinkielen avaimet erotellaan kielen mukaan (SUOMI/SAKSA).
+  final val diaAidinkieliKoodiArvo = "AI"
+  final val diaAidinkieliAvainPrefix = "DIA_AIDINKIELI"   // DIA_AIDINKIELI_<POSTFIX>_<KIELI>
+  // Vastaavuustodistus poikkeaa määrittelyn mukaan muista: ei AIDINKIELI-osaa -> DIA_VASTAAVUUS_<KIELI>.
+  val diaAidinkieliKieliToSuffix: Map[String, String] = Map(
+    "FI" -> "SUOMI",
+    "DE" -> "SAKSA"
+  )
+
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
   final val yoSuoritusvuosiKey = "YO_SUORITUSVUOSI"
@@ -703,6 +714,21 @@ object AvainArvoConverter {
 
   }
 
+  // Geneerinen avain muille DIA-oppiaineille; äidinkielelle (koodi "AI") kielikohtainen avain (SUOMI/SAKSA).
+  // Palauttaa None, jos äidinkielen kieltä ei tunneta (esim. S2 tai puuttuva), jolloin avainta ei tuoteta.
+  def diaOppiaineAvain(oppiaine: business.DIAOppiaine, postfix: String): Option[String] =
+    if (oppiaine.koodi.arvo == AvainArvoConstants.diaAidinkieliKoodiArvo)
+      oppiaine.kieli.map(_.arvo)
+        .flatMap(AvainArvoConstants.diaAidinkieliKieliToSuffix.get)
+        .map { suffix =>
+          val base =
+            if (postfix == AvainArvoConstants.diaOppiaineVastaavuusPostfix) "DIA" + postfix
+            else AvainArvoConstants.diaAidinkieliAvainPrefix + postfix
+          base + "_" + suffix
+        }
+    else
+      Some(AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + postfix)
+
   def convertDiaArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
     val diaTutkinnot: Seq[DIATutkinto] = opiskeluoikeudet
       .collect { case o: GeneerinenOpiskeluoikeus => o }
@@ -731,33 +757,46 @@ object AvainArvoConverter {
         AvainArvoContainer(AvainArvoConstants.diaSuoritusvuosiKey, vp.getYear.toString, Seq(s"DIA-tutkinnon vahvistuspäivä: $vp.")))
     } else None
 
-    val laajuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
-      oppiaine.laajuus.map(l =>
-        AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineLaajuusPostfix,
-          l.arvo.toString,
-          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
+    val oppiaineet = diaTutkinto.toSeq.flatMap(_.osasuoritukset)
 
-    val kirjallinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
-      oppiaine.kirjallinenKoe.map(koe =>
-        AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineKirjallinenPostfix,
-          koe.arvosana.arvosana.arvo,
-          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
+    // Äidinkielet (koodi "AI"), joiden kieltä ei tunneta (esim. S2 tai puuttuva), jätetään huomiotta. Logitetaan ne.
+    val tunnistamattomatAidinkielet = oppiaineet.filter(oppiaine =>
+      oppiaine.koodi.arvo == AvainArvoConstants.diaAidinkieliKoodiArvo &&
+        oppiaine.kieli.map(_.arvo).flatMap(AvainArvoConstants.diaAidinkieliKieliToSuffix.get).isEmpty)
+    if (tunnistamattomatAidinkielet.nonEmpty)
+      LOG.info(s"Oppijalla $personOid on DIA-äidinkieliä, joiden kieltä ei tunnistettu, joten niille ei tuoteta avaimia. Kielet: ${tunnistamattomatAidinkielet.map(_.kieli.map(_.arvo).getOrElse("ei tiedossa"))}")
 
-    val suullinenArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
-      oppiaine.suullinenKoe.map(koe =>
-        AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineSuullinenPostfix,
-          koe.arvosana.arvosana.arvo,
-          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
+    val laajuusArvot = oppiaineet.flatMap(oppiaine =>
+      oppiaine.laajuus.flatMap(l =>
+        diaOppiaineAvain(oppiaine, AvainArvoConstants.diaOppiaineLaajuusPostfix).map(avain =>
+          AvainArvoContainer(
+            avain,
+            l.arvo.toString,
+            Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} laajuus."))))).toSet
 
-    val vastaavuusArvot = diaTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
-      oppiaine.vastaavuustodistuksenTiedot.map(vtt =>
-        AvainArvoContainer(
-          AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase +AvainArvoConstants.diaOppiaineVastaavuusPostfix,
-          vtt.keskiarvo.toString,
-          Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} vastaavuustodistuksen keskiarvo.")))).toSet
+    val kirjallinenArvot = oppiaineet.flatMap(oppiaine =>
+      oppiaine.kirjallinenKoe.flatMap(koe =>
+        diaOppiaineAvain(oppiaine, AvainArvoConstants.diaOppiaineKirjallinenPostfix).map(avain =>
+          AvainArvoContainer(
+            avain,
+            koe.arvosana.arvosana.arvo,
+            Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana."))))).toSet
+
+    val suullinenArvot = oppiaineet.flatMap(oppiaine =>
+      oppiaine.suullinenKoe.flatMap(koe =>
+        diaOppiaineAvain(oppiaine, AvainArvoConstants.diaOppiaineSuullinenPostfix).map(avain =>
+          AvainArvoContainer(
+            avain,
+            koe.arvosana.arvosana.arvo,
+            Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana."))))).toSet
+
+    val vastaavuusArvot = oppiaineet.flatMap(oppiaine =>
+      oppiaine.vastaavuustodistuksenTiedot.flatMap(vtt =>
+        diaOppiaineAvain(oppiaine, AvainArvoConstants.diaOppiaineVastaavuusPostfix).map(avain =>
+          AvainArvoContainer(
+            avain,
+            vtt.keskiarvo.toString,
+            Seq(s"DIA-oppiaineen ${oppiaine.koodi.arvo} vastaavuustodistuksen keskiarvo."))))).toSet
 
     val arvot = Set(AvainArvoContainer(AvainArvoConstants.diaSuoritettuKey, vahvistettuAjoissa.toString, Seq(diaSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ kirjallinenArvot ++ suullinenArvot ++ vastaavuusArvot
     LOG.info(s"DIA-arvot käsitelty henkilölle $personOid. $arvot")

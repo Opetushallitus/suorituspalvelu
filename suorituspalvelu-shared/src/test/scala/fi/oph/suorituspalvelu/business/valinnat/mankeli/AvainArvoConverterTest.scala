@@ -596,18 +596,21 @@ class AvainArvoConverterTest {
     laajuus: Option[BigDecimal],
     kirjallinenKoe: Option[DIAOppiaineenKoesuoritus] = None,
     suullinenKoe: Option[DIAOppiaineenKoesuoritus] = None,
-    vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot] = None): DIAOppiaine =
+    vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot] = None,
+    kieli: Option[Koodi] = None): DIAOppiaine =
     DIAOppiaine(
       tunniste = UUID.randomUUID(),
       nimi = Kielistetty(Some(koodiArvo), None, None),
       koodi = Koodi(koodiArvo, "diaoppiaineet", Some(1)),
       laajuus = laajuus.map(l => DIALaajuus(l, Koodi("4", "opintojenlaajuusyksikko", Some(1)))),
       osaAlue = None,
-      kieli = None,
+      kieli = kieli,
       vastaavuustodistuksenTiedot = vastaavuustodistuksenTiedot,
       kirjallinenKoe = kirjallinenKoe,
       suullinenKoe = suullinenKoe
     )
+
+  private def diaAidinkieliKoodi(kieliArvo: String): Koodi = Koodi(kieliArvo, "oppiainediaaidinkieli", Some(1))
 
   private def diaOpiskeluoikeus(supaTila: SuoritusTila, vahvistusPaivamaara: Option[LocalDate], oppiaineet: Seq[DIAOppiaine] = Seq.empty): GeneerinenOpiskeluoikeus = {
     val diaTutkinto = DIATutkinto(
@@ -759,6 +762,89 @@ class AvainArvoConverterTest {
 
     val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
     Assertions.assertEquals(None, converterResult.getAvainArvoMap().get("DIA_FIN_VASTAAVUUS"))
+  }
+
+  // Äidinkieli (koodi "AI") tuottaa kielikohtaiset avaimet (SUOMI/SAKSA), ei geneerisiä DIA_AI_* -avaimia.
+  @Test def testDiaAidinkieliSuomi(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val vastaavuus = DIAVastaavuustodistuksenTiedot(BigDecimal("8.5"), DIALaajuus(BigDecimal(4), Koodi("4", "opintojenlaajuusyksikko", Some(1))))
+    val aidinkieli = diaOppiaine("AI", Some(BigDecimal(4)),
+      kirjallinenKoe = Some(diaKoesuoritus("9")),
+      suullinenKoe = Some(diaKoesuoritus("8")),
+      vastaavuustodistuksenTiedot = Some(vastaavuus),
+      kieli = Some(diaAidinkieliKoodi("FI")))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), Seq(aidinkieli)))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("4"), avaimet.get("DIA_AIDINKIELI_LAAJUUS_SUOMI"))
+    Assertions.assertEquals(Some("9"), avaimet.get("DIA_AIDINKIELI_KIRJALLINEN_SUOMI"))
+    Assertions.assertEquals(Some("8"), avaimet.get("DIA_AIDINKIELI_SUULLINEN_SUOMI"))
+    Assertions.assertEquals(Some("8.5"), avaimet.get("DIA_VASTAAVUUS_SUOMI"))
+    // Geneerisiä DIA_AI_* -avaimia ei tuoteta äidinkielelle.
+    Assertions.assertEquals(None, avaimet.get("DIA_AI_LAAJUUS"))
+    Assertions.assertEquals(None, avaimet.get("DIA_AI_KIRJALLINEN"))
+    Assertions.assertEquals(None, avaimet.get("DIA_AI_VASTAAVUUS"))
+  }
+
+  @Test def testDiaAidinkieliSaksa(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val vastaavuus = DIAVastaavuustodistuksenTiedot(BigDecimal("7.0"), DIALaajuus(BigDecimal(4), Koodi("4", "opintojenlaajuusyksikko", Some(1))))
+    val aidinkieli = diaOppiaine("AI", Some(BigDecimal(10)),
+      kirjallinenKoe = Some(diaKoesuoritus("5")),
+      suullinenKoe = Some(diaKoesuoritus("6")),
+      vastaavuustodistuksenTiedot = Some(vastaavuus),
+      kieli = Some(diaAidinkieliKoodi("DE")))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), Seq(aidinkieli)))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("10"), avaimet.get("DIA_AIDINKIELI_LAAJUUS_SAKSA"))
+    Assertions.assertEquals(Some("5"), avaimet.get("DIA_AIDINKIELI_KIRJALLINEN_SAKSA"))
+    Assertions.assertEquals(Some("6"), avaimet.get("DIA_AIDINKIELI_SUULLINEN_SAKSA"))
+    Assertions.assertEquals(Some("7.0"), avaimet.get("DIA_VASTAAVUUS_SAKSA"))
+    Assertions.assertEquals(None, avaimet.get("DIA_AI_LAAJUUS"))
+  }
+
+  // Ydintapaus: äidinkieli sekä suomeksi että saksaksi (molemmat koodi "AI") -> ei avainten törmäystä.
+  @Test def testDiaAidinkieliSuomiJaSaksa(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val suomi = diaOppiaine("AI", Some(BigDecimal(4)),
+      kirjallinenKoe = Some(diaKoesuoritus("9")),
+      kieli = Some(diaAidinkieliKoodi("FI")))
+    val saksa = diaOppiaine("AI", Some(BigDecimal(10)),
+      kirjallinenKoe = Some(diaKoesuoritus("5")),
+      kieli = Some(diaAidinkieliKoodi("DE")))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), Seq(suomi, saksa)))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("4"), avaimet.get("DIA_AIDINKIELI_LAAJUUS_SUOMI"))
+    Assertions.assertEquals(Some("9"), avaimet.get("DIA_AIDINKIELI_KIRJALLINEN_SUOMI"))
+    Assertions.assertEquals(Some("10"), avaimet.get("DIA_AIDINKIELI_LAAJUUS_SAKSA"))
+    Assertions.assertEquals(Some("5"), avaimet.get("DIA_AIDINKIELI_KIRJALLINEN_SAKSA"))
+    Assertions.assertEquals(None, avaimet.get("DIA_AI_LAAJUUS"))
+  }
+
+  // Tuntematon kieli (esim. S2) tai puuttuva kieli -> äidinkielelle ei tuoteta avaimia.
+  @Test def testDiaAidinkieliTuntematonKieliEiTuotaAvaimia(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val s2 = diaOppiaine("AI", Some(BigDecimal(4)),
+      kirjallinenKoe = Some(diaKoesuoritus("9")),
+      kieli = Some(diaAidinkieliKoodi("S2")))
+    val ilmanKielta = diaOppiaine("AI", Some(BigDecimal(5)),
+      kirjallinenKoe = Some(diaKoesuoritus("7")),
+      kieli = None)
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), Seq(s2, ilmanKielta)))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertTrue(avaimet.keys.forall(avain => !avain.startsWith("DIA_AIDINKIELI") && !avain.startsWith("DIA_VASTAAVUUS") && avain != "DIA_AI_LAAJUUS"),
+      s"Tuntemattomalle äidinkielelle ei pitäisi tuottaa avaimia, saatiin: ${avaimet.keys.filter(_.startsWith("DIA_"))}")
   }
 
   @Test def testDiaUseampiValmisTutkintoHeittaaPoikkeuksen(): Unit = {
