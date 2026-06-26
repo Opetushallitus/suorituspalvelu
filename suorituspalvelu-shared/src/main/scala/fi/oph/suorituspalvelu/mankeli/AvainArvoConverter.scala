@@ -129,7 +129,6 @@ object AvainArvoConstants {
   // äidinkielen avaimet erotellaan kielen mukaan (SUOMI/SAKSA).
   final val diaAidinkieliKoodiArvo = "AI"
   final val diaAidinkieliAvainPrefix = "DIA_AIDINKIELI"   // DIA_AIDINKIELI_<POSTFIX>_<KIELI>
-  // Vastaavuustodistus poikkeaa määrittelyn mukaan muista: ei AIDINKIELI-osaa -> DIA_VASTAAVUUS_<KIELI>.
   val diaAidinkieliKieliToSuffix: Map[String, String] = Map(
     "FI" -> "SUOMI",
     "DE" -> "SAKSA"
@@ -809,12 +808,7 @@ object AvainArvoConverter {
     if (oppiaine.koodi.arvo == AvainArvoConstants.diaAidinkieliKoodiArvo)
       oppiaine.kieli.map(_.arvo)
         .flatMap(AvainArvoConstants.diaAidinkieliKieliToSuffix.get)
-        .map { suffix =>
-          val base =
-            if (postfix == AvainArvoConstants.diaOppiaineVastaavuusPostfix) "DIA" + postfix
-            else AvainArvoConstants.diaAidinkieliAvainPrefix + postfix
-          base + "_" + suffix
-        }
+        .map(suffix => AvainArvoConstants.diaAidinkieliAvainPrefix + postfix + "_" + suffix)
     else
       Some(AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + postfix)
 

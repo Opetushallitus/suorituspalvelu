@@ -1014,7 +1014,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("4"), avaimet.get("DIA_AIDINKIELI_LAAJUUS_SUOMI"))
     Assertions.assertEquals(Some("9"), avaimet.get("DIA_AIDINKIELI_KIRJALLINEN_SUOMI"))
     Assertions.assertEquals(Some("8"), avaimet.get("DIA_AIDINKIELI_SUULLINEN_SUOMI"))
-    Assertions.assertEquals(Some("8.5"), avaimet.get("DIA_VASTAAVUUS_SUOMI"))
+    Assertions.assertEquals(Some("8.5"), avaimet.get("DIA_AIDINKIELI_VASTAAVUUS_SUOMI"))
     // Geneerisiä DIA_AI_* -avaimia ei tuoteta äidinkielelle.
     Assertions.assertEquals(None, avaimet.get("DIA_AI_LAAJUUS"))
     Assertions.assertEquals(None, avaimet.get("DIA_AI_KIRJALLINEN"))
@@ -1037,7 +1037,7 @@ class AvainArvoConverterTest {
     Assertions.assertEquals(Some("10"), avaimet.get("DIA_AIDINKIELI_LAAJUUS_SAKSA"))
     Assertions.assertEquals(Some("5"), avaimet.get("DIA_AIDINKIELI_KIRJALLINEN_SAKSA"))
     Assertions.assertEquals(Some("6"), avaimet.get("DIA_AIDINKIELI_SUULLINEN_SAKSA"))
-    Assertions.assertEquals(Some("7.0"), avaimet.get("DIA_VASTAAVUUS_SAKSA"))
+    Assertions.assertEquals(Some("7.0"), avaimet.get("DIA_AIDINKIELI_VASTAAVUUS_SAKSA"))
     Assertions.assertEquals(None, avaimet.get("DIA_AI_LAAJUUS"))
   }
 
