@@ -11,6 +11,7 @@ import fi.oph.suorituspalvelu.integration.client.{HakemuspalveluClientImpl, Retr
 import fi.oph.suorituspalvelu.integration.virta.VirtaClient
 import fi.oph.suorituspalvelu.jobs.{SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
+import fi.oph.suorituspalvelu.util.{LogMetricsOperation, logOperation}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.context.annotation.{Bean, Configuration}
@@ -168,6 +169,7 @@ class VirtaService(scheduler: SupaScheduler, database: JdbcBackend.JdbcDatabaseD
     LOG.info(s"Ajastetaan Virta-ajo (virta-refresh-aktiiviset) cronilla $cron koska integrations.virta.cron-job-enabled on $cronJobEnabled")
     scheduler.scheduleJob("virta-refresh-aktiiviset", (ctx, data) => {
       refreshVirtaForAktiivisetHautJob(ctx, data)
+      LOG.logOperation(LogMetricsOperation.VIRTAREFRESHAKTIIVISET)
       null
     }, cron)
   } else {
