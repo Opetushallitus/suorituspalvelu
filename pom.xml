@@ -22,7 +22,7 @@
         <revision>0.1.0-SNAPSHOT</revision>
         <encoding>UTF-8</encoding>
         <scala.version>3.3.3</scala.version>
-        <jackson.version>2.18.1</jackson.version>
+        <jackson-bom.version>2.21.4</jackson-bom.version>
         <java.cas.version>1.2.4-SNAPSHOT</java.cas.version>
         <maven.compiler.release>21</maven.compiler.release>
         <tomcat.version>10.1.55</tomcat.version>
