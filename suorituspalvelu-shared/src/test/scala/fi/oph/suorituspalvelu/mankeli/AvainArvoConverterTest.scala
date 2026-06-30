@@ -1080,6 +1080,57 @@ class AvainArvoConverterTest {
       s"Tuntemattomalle äidinkielelle ei pitäisi tuottaa avaimia, saatiin: ${avaimet.keys.filter(_.startsWith("DIA_"))}")
   }
 
+  // Kielioppiaineet (koodi yksittäinen iso kirjain + numerot, esim. A1, B2) saavat _KIELI-infixin:
+  // DIA_<KOODI>_KIELI_<POSTFIX>.
+  @Test def testDiaKieliOppiaineLaajuusSaaKieliInfixin(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(
+      diaOppiaine("A1", Some(BigDecimal(4))),
+      diaOppiaine("B2", Some(BigDecimal("3.5")))
+    )
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("4"), avaimet.get("DIA_A1_KIELI_LAAJUUS"))
+    Assertions.assertEquals(Some("3.5"), avaimet.get("DIA_B2_KIELI_LAAJUUS"))
+    // Ilman infixiä olevaa avainta ei tuoteta kielioppiaineelle.
+    Assertions.assertEquals(None, avaimet.get("DIA_A1_LAAJUUS"))
+  }
+
+  // Yksittäinen iso kirjain ilman numeroa (esim. A, B) tulkitaan myös kieleksi.
+  @Test def testDiaKieliOppiaineYksittainenKirjain(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val vastaavuus = DIAVastaavuustodistuksenTiedot(BigDecimal("8.5"), DIALaajuus(BigDecimal(4), Koodi("4", "opintojenlaajuusyksikko", Some(1))))
+    val oppiaineet = Seq(diaOppiaine("A", None,
+      kirjallinenKoe = Some(diaKoesuoritus("9")),
+      suullinenKoe = Some(diaKoesuoritus("8")),
+      vastaavuustodistuksenTiedot = Some(vastaavuus)))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("9"), avaimet.get("DIA_A_KIELI_KIRJALLINEN"))
+    Assertions.assertEquals(Some("8"), avaimet.get("DIA_A_KIELI_SUULLINEN"))
+    Assertions.assertEquals(Some("8.5"), avaimet.get("DIA_A_KIELI_VASTAAVUUS"))
+    Assertions.assertEquals(None, avaimet.get("DIA_A_KIRJALLINEN"))
+  }
+
+  // Monikirjaiminen koodi (esim. BI) ei ole kieli, joten _KIELI-infixiä ei lisätä.
+  @Test def testDiaEiKieliOppiaineEiSaaKieliInfixia(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(diaOppiaine("BI", Some(BigDecimal(4))))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("4"), avaimet.get("DIA_BI_LAAJUUS"))
+    Assertions.assertEquals(None, avaimet.get("DIA_BI_KIELI_LAAJUUS"))
+  }
+
   @Test def testDiaUseampiValmisTutkintoHeittaaPoikkeuksen(): Unit = {
     val personOid = "1.2.246.562.98.69863082363"
     val leikkuriPaiva = LocalDate.parse("2023-05-15")
