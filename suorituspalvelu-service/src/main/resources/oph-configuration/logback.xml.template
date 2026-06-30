@@ -22,12 +22,14 @@
                 <message/>
                 <mdc/>
                 <rootStackTraceElement/>
-                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                    <maxDepthPerThrowable>-1</maxDepthPerThrowable>
-                    <maxLength>-1</maxLength>
-                    <shortenedClassNameLength>-1</shortenedClassNameLength>
-                    <omitCommonFrames>false</omitCommonFrames>
-                </throwableConverter>
+                <stackTrace>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>-1</maxDepthPerThrowable>
+                        <maxLength>-1</maxLength>
+                        <shortenedClassNameLength>-1</shortenedClassNameLength>
+                        <omitCommonFrames>false</omitCommonFrames>
+                    </throwableConverter>
+                </stackTrace>
               </providers>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
