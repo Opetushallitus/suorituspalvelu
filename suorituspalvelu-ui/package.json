@@ -31,9 +31,9 @@
     "@mui/material": "^7.3.6",
     "@mui/system": "^7.3.6",
     "@opetushallitus/oph-design-system": "^1.1.0",
-    "@react-router/dev": "^7.10.1",
-    "@react-router/node": "^7.10.1",
-    "@react-router/serve": "^7.10.1",
+    "@react-router/dev": "^7.12.0",
+    "@react-router/node": "^7.12.0",
+    "@react-router/serve": "^7.12.0",
     "@tanstack/react-query": "^5.90.12",
     "@tolgee/format-icu": "^6.2.7",
     "@tolgee/react": "^6.2.7",
@@ -43,7 +43,7 @@
     "react-datepicker": "^8.10.0",
     "react-dom": "^19.2.1",
     "react-error-boundary": "^6.0.0",
-    "react-router": "^7.10.1",
+    "react-router": "^7.12.0",
     "remeda": "^2.32.0"
   },
   "devDependencies": {
@@ -76,9 +76,22 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1",
-    "vite": "^7.2.6",
+    "vite": "^7.3.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.15"
   },
-  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a",
+  "pnpm": {
+    "overrides": {
+      "lodash": "^4.18.0",
+      "next": "^15.5.18",
+      "path-to-regexp@<0.1.13": ">=0.1.13",
+      "path-to-regexp@>=8 <8.4.0": ">=8.4.0",
+      "picomatch@<4.0.4": ">=4.0.4",
+      "postcss": "^8.5.10",
+      "qs@<6.14.1": ">=6.14.1",
+      "rollup@<4.59.0": ">=4.59.0",
+      "yaml@<2.8.3": ">=2.8.3"
+    }
+  }
 }
