@@ -847,6 +847,44 @@ class AvainArvoConverterTest {
       s"Tuntemattomalle äidinkielelle ei pitäisi tuottaa avaimia, saatiin: ${avaimet.keys.filter(_.startsWith("DIA_"))}")
   }
 
+  // Kielikoodi "A" muunnetaan avaimissa muotoon "AKIELI": DIA_AKIELI_<POSTFIX>.
+  @Test def testDiaKieliKoodiAMuunnetaanAKieli(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val vastaavuus = DIAVastaavuustodistuksenTiedot(BigDecimal("8.5"), DIALaajuus(BigDecimal(4), Koodi("4", "opintojenlaajuusyksikko", Some(1))))
+    val oppiaineet = Seq(diaOppiaine("A", Some(BigDecimal(4)),
+      kirjallinenKoe = Some(diaKoesuoritus("9")),
+      suullinenKoe = Some(diaKoesuoritus("8")),
+      vastaavuustodistuksenTiedot = Some(vastaavuus)))
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("4"), avaimet.get("DIA_AKIELI_LAAJUUS"))
+    Assertions.assertEquals(Some("9"), avaimet.get("DIA_AKIELI_KIRJALLINEN"))
+    Assertions.assertEquals(Some("8"), avaimet.get("DIA_AKIELI_SUULLINEN"))
+    Assertions.assertEquals(Some("8.5"), avaimet.get("DIA_AKIELI_VASTAAVUUS"))
+    // Muuntamatonta DIA_A_* -avainta ei tuoteta.
+    Assertions.assertEquals(None, avaimet.get("DIA_A_LAAJUUS"))
+  }
+
+  // Muita koodeja (esim. A1, B) ei muunneta; avain pysyy muodossa DIA_<KOODI>_<POSTFIX>.
+  @Test def testDiaMuuKoodiEiMuunneta(): Unit = {
+    val personOid = "1.2.246.562.98.69863082363"
+    val leikkuriPaiva = LocalDate.parse("2023-05-15")
+    val oppiaineet = Seq(
+      diaOppiaine("A1", Some(BigDecimal(4))),
+      diaOppiaine("B", Some(BigDecimal("3.5")))
+    )
+    val oikeudet = Seq(diaOpiskeluoikeus(SuoritusTila.VALMIS, Some(LocalDate.parse("2023-04-03")), oppiaineet))
+
+    val converterResult = AvainArvoConverter.convertOpiskeluoikeudet(personOid, None, oikeudet, Seq.empty, leikkuriPaiva, DEFAULT_KOUTA_HAKU, None, Map.empty)
+    val avaimet = converterResult.getAvainArvoMap()
+    Assertions.assertEquals(Some("4"), avaimet.get("DIA_A1_LAAJUUS"))
+    Assertions.assertEquals(Some("3.5"), avaimet.get("DIA_B_LAAJUUS"))
+    Assertions.assertEquals(None, avaimet.get("DIA_A1KIELI_LAAJUUS"))
+  }
+
   @Test def testDiaUseampiValmisTutkintoHeittaaPoikkeuksen(): Unit = {
     val personOid = "1.2.246.562.98.69863082363"
     val leikkuriPaiva = LocalDate.parse("2023-05-15")

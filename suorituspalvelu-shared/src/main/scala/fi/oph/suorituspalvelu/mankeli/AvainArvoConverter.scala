@@ -111,6 +111,10 @@ object AvainArvoConstants {
   final val diaOppiaineSuullinenPostfix = "_SUULLINEN"
   final val diaOppiaineVastaavuusPostfix = "_VASTAAVUUS"
 
+  //DIA-oppiaineen kielikoodi "A" muunnetaan avaimissa muotoon "AKIELI" (esim. DIA_AKIELI_LAAJUUS).
+  // Muut oppiainekoodit käytetään avaimissa sellaisenaan.
+  val diaOppiaineKoodiAvainMuunnos: Map[String, String] = Map("A" -> "AKIELI")
+
   //Äidinkieli (koodi "AI") voi DIA-tutkinnossa olla sekä suomeksi että saksaksi, jolloin molemmat ovat erillisiä
   // oppiaineita samalla koodilla. Geneerinen DIA_<KOODI>_<POSTFIX> -avain olisi tällöin moniselitteinen, joten
   // äidinkielen avaimet erotellaan kielen mukaan (SUOMI/SAKSA).
@@ -714,14 +718,18 @@ object AvainArvoConverter {
   }
 
   // Geneerinen avain muille DIA-oppiaineille; äidinkielelle (koodi "AI") kielikohtainen avain (SUOMI/SAKSA).
+  // Kielikoodi "A" muunnetaan avaimissa muotoon "AKIELI" (DIA_AKIELI_<POSTFIX>), muut koodit sellaisenaan.
   // Palauttaa None, jos äidinkielen kieltä ei tunneta (esim. S2 tai puuttuva), jolloin avainta ei tuoteta.
   def diaOppiaineAvain(oppiaine: business.DIAOppiaine, postfix: String): Option[String] =
     if (oppiaine.koodi.arvo == AvainArvoConstants.diaAidinkieliKoodiArvo)
       oppiaine.kieli.map(_.arvo)
         .flatMap(AvainArvoConstants.diaAidinkieliKieliToSuffix.get)
         .map(suffix => AvainArvoConstants.diaAidinkieliAvainPrefix + postfix + "_" + suffix)
-    else
-      Some(AvainArvoConstants.diaOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + postfix)
+    else {
+      val koodi = oppiaine.koodi.arvo.toUpperCase
+      val avainKoodi = AvainArvoConstants.diaOppiaineKoodiAvainMuunnos.getOrElse(koodi, koodi)
+      Some(AvainArvoConstants.diaOppiainePrefix + avainKoodi + postfix)
+    }
 
   def convertDiaArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
     val diaTutkinnot: Seq[DIATutkinto] = opiskeluoikeudet
