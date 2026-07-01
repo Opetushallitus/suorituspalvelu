@@ -2,9 +2,11 @@ package fi.oph.suorituspalvelu.integration.client
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.asynchttpclient.{Dsl, RequestBuilder}
+import org.asynchttpclient.Dsl.asyncHttpClient
+import org.asynchttpclient.{DefaultAsyncHttpClientConfig, Dsl, RequestBuilder}
 import org.slf4j.LoggerFactory
 
+import java.time.Duration
 import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,7 +33,7 @@ class VanhaTarjontaClient(environmentBaseUrl: String) {
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   mapper.registerModule(DefaultScalaModule)
 
-  val asyncHttpClient = Dsl.asyncHttpClient()
+  val client = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).setHttp2Enabled(false).build)
 
   def haeHakukohde(hakukohdeOid: String): Future[VanhaTarjontaHakukohde] =
     fetch(environmentBaseUrl + s"/tarjonta-service/rest/v1/hakukohde/$hakukohdeOid")
@@ -48,7 +50,7 @@ class VanhaTarjontaClient(environmentBaseUrl: String) {
       .setUrl(url)
       .build()
     try {
-      asScala(asyncHttpClient.executeRequest(req).toCompletableFuture).map {
+      asScala(client.executeRequest(req).toCompletableFuture).map {
         case r if r.getStatusCode == 200 =>
           r.getResponseBody()
         case r =>
