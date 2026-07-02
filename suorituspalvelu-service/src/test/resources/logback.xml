@@ -21,15 +21,13 @@
                 <mdc/>
                 <arguments/>
                 <message/>
-                <stackTrace>
+                <provider class="fi.oph.suorituspalvelu.util.StackTraceArrayJsonProvider">
                     <fieldName>stack_trace</fieldName>
-                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                        <maxDepthPerThrowable>-1</maxDepthPerThrowable>
-                        <maxLength>-1</maxLength>
-                        <shortenedClassNameLength>-1</shortenedClassNameLength>
-                        <omitCommonFrames>false</omitCommonFrames>
-                    </throwableConverter>
-                </stackTrace>
+                    <maxDepthPerThrowable>-1</maxDepthPerThrowable>
+                    <maxLength>-1</maxLength>
+                    <shortenedClassNameLength>-1</shortenedClassNameLength>
+                    <omitCommonFrames>false</omitCommonFrames>
+                </provider>
             </providers>
         </encoder>
     </appender>

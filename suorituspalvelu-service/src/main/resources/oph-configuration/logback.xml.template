@@ -22,14 +22,13 @@
                 <message/>
                 <mdc/>
                 <rootStackTraceElement/>
-                <stackTrace>
-                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                        <maxDepthPerThrowable>-1</maxDepthPerThrowable>
-                        <maxLength>-1</maxLength>
-                        <shortenedClassNameLength>-1</shortenedClassNameLength>
-                        <omitCommonFrames>false</omitCommonFrames>
-                    </throwableConverter>
-                </stackTrace>
+                <provider class="fi.oph.suorituspalvelu.util.StackTraceArrayJsonProvider">
+                    <fieldName>stack_trace</fieldName>
+                    <maxDepthPerThrowable>-1</maxDepthPerThrowable>
+                    <maxLength>-1</maxLength>
+                    <shortenedClassNameLength>-1</shortenedClassNameLength>
+                    <omitCommonFrames>false</omitCommonFrames>
+                </provider>
               </providers>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
