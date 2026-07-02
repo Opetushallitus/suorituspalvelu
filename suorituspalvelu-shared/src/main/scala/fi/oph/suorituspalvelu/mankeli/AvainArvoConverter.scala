@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoConverterUtil, AvainArvoDTO}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
@@ -47,6 +47,8 @@ object AvainArvoConstants {
     yoSuoritusvuosiKey -> "Ylioppilastutkinnon suoritusvuosi",
     yoSuorituslukukausiKey -> "Ylioppilastutkinnon suorituslukukausi",
     ammSuoritettuKey -> "Ammatillinen tutkinto suoritettu",
+    ebSuoritettuKey -> "EB-tutkinto suoritettu",
+    ebSuoritusvuosiKey -> "EB-tutkinnon suoritusvuosi",
     ammSuoritusvuosiKey -> "Ammatillisen tutkinnon suoritusvuosi",
     ammSuorituslukukausiKey -> "Ammatillisen tutkinnon suorituslukukausi",
     ammTutkintoKieliKey -> "Ammatillisen tutkinnon suorituskieli",
@@ -101,6 +103,17 @@ object AvainArvoConstants {
   final val lukioSuoritettuKey = "LK_TILA"
   final val yoSuoritettuKey = "YO_TILA"
   final val ammSuoritettuKey = "AM_TILA"
+  final val ebSuoritettuKey = "EB_TILA"
+  final val ebSuoritusvuosiKey = "EB_SUORITUSVUOSI"
+  final val ebOppiainePrefix = "EB_"
+  final val ebOppiaineLaajuusPostfix = "_LAAJUUS"
+  final val ebOppiaineWrittenPostfix = "_WRITTEN"
+  final val ebOppiaineOralPostfix = "_ORAL"
+  final val ebOppiaineFinalPostfix = "_FINAL"
+  final val ebOppiaineKieliPostfix = "_KIELI"
+  final val ebWrittenKomponenttiKoodi = "Written" // koodisto ebtutkinnonoppiaineenkomponentti
+  final val ebOralKomponenttiKoodi = "Oral" // koodisto ebtutkinnonoppiaineenkomponentti
+  final val ebFinalKomponenttiKoodi = "Final" // koodisto ebtutkinnonoppiaineenkomponentti
 
   final val peruskouluSuoritusvuosiKey = "PK_SUORITUSVUOSI"
   final val ammSuoritusvuosiKey = "AM_SUORITUSVUOSI"
@@ -383,6 +396,7 @@ object AvainArvoConverter {
     val peruskouluArvot = convertPeruskouluArvot(personOid, vahvistettuViimeistaan, hakemus, opiskeluoikeudet, ehdotOverrideAktiivinen)
     val ammatillisetArvot = convertAmmatillisetArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
+    val ebArvot = convertEbArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku, toisenAsteenPk)
 
@@ -390,6 +404,7 @@ object AvainArvoConverter {
       peruskouluArvot
         ++ ammatillisetArvot
         ++ yoArvot
+        ++ ebArvot
         ++ lukioArvot
         ++ lisapistekoulutusArvot
         ++ toisenAsteenPk.toSet
@@ -690,6 +705,80 @@ object AvainArvoConverter {
     LOG.info(s"Yo-arvot käsitelty henkilölle $personOid. ${kaikkiArvot}")
     kaikkiArvot
 
+  }
+
+  def convertEbArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
+    val ebTutkinnot: Seq[EBTutkinto] = opiskeluoikeudet
+      .collect { case o: GeneerinenOpiskeluoikeus => o }
+      .flatMap(_.suoritukset)
+      .collect { case eb: EBTutkinto => eb }
+
+    // Päättely tehdään valmiilta (VALMIS-tilainen ja leikkuripäivään mennessä vahvistettu) EB-tutkinnolta. Tämän lisäksi
+    // henkilöllä voi (ainakin teoriassa) olla esim. keskeytynyt tutkinto ilman että se on virhe, mutta valmiita sallitaan
+    // korkeintaan yksi.
+    val valmiitEbTutkinnot = ebTutkinnot.filter(eb =>
+      eb.supaTila == SuoritusTila.VALMIS &&
+        eb.vahvistusPaivamaara.exists(v => !v.isAfter(vahvistettuViimeistaan)))
+
+    if (valmiitEbTutkinnot.size > 1)
+      throw new RuntimeException(s"Oppijalla $personOid on ${valmiitEbTutkinnot.size} valmista EB-tutkintoa, odotettiin korkeintaan yhtä.")
+
+    val valmisEbTutkinto = valmiitEbTutkinnot.headOption
+
+    val ebSelite = valmisEbTutkinto match {
+      case Some(eb) => s"Löytyi valmis EB-tutkinto, jonka vahvistuspäivä ${eb.vahvistusPaivamaara.map(_.toString).getOrElse("ei tiedossa")}."
+      case None if ebTutkinnot.nonEmpty =>
+        s"Löytyi ${ebTutkinnot.size} EB-tutkinto(a), mutta yksikään ei ollut valmis ja vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä."
+      case None => "EB-tutkintoa ei löytynyt."
+    }
+
+    val suoritusvuosiArvo = valmisEbTutkinto.flatMap(_.vahvistusPaivamaara).map(vp =>
+      AvainArvoContainer(AvainArvoConstants.ebSuoritusvuosiKey, vp.getYear.toString, Seq(s"EB-tutkinnon vahvistuspäivä: $vp.")))
+
+    val laajuusArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.laajuus.map(l =>
+        AvainArvoContainer(
+          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineLaajuusPostfix,
+          l.arvo.toString,
+          Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} laajuus.")))).toSet
+
+    val writtenArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.osasuoritukset
+        .find(_.koodi.arvo == AvainArvoConstants.ebWrittenKomponenttiKoodi)
+        .map(written =>
+          AvainArvoContainer(
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineWrittenPostfix,
+            written.arvosana.arvosana.arvo,
+            Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} kirjallisen kokeen arvosana.")))).toSet
+
+    val oralArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.osasuoritukset
+        .find(_.koodi.arvo == AvainArvoConstants.ebOralKomponenttiKoodi)
+        .map(oral =>
+          AvainArvoContainer(
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineOralPostfix,
+            oral.arvosana.arvosana.arvo,
+            Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suullisen kokeen arvosana.")))).toSet
+
+    val finalArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.osasuoritukset
+        .find(_.koodi.arvo == AvainArvoConstants.ebFinalKomponenttiKoodi)
+        .map(finalKomponentti =>
+          AvainArvoContainer(
+            AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineFinalPostfix,
+            finalKomponentti.arvosana.arvosana.arvo,
+            Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} lopullinen arvosana.")))).toSet
+
+    val kieliArvot = valmisEbTutkinto.toSeq.flatMap(_.osasuoritukset).flatMap(oppiaine =>
+      oppiaine.suorituskieli.map(kieli =>
+        AvainArvoContainer(
+          AvainArvoConstants.ebOppiainePrefix + oppiaine.koodi.arvo.toUpperCase + AvainArvoConstants.ebOppiaineKieliPostfix,
+          kieli.arvo.toLowerCase,
+          Seq(s"EB-oppiaineen ${oppiaine.koodi.arvo} suorituskieli.")))).toSet
+
+    val arvot = Set(AvainArvoContainer(AvainArvoConstants.ebSuoritettuKey, valmisEbTutkinto.nonEmpty.toString, Seq(ebSelite))) ++ suoritusvuosiArvo ++ laajuusArvot ++ writtenArvot ++ oralArvot ++ finalArvot ++ kieliArvot
+    LOG.info(s"EB-arvot käsitelty henkilölle $personOid. $arvot")
+    arvot
   }
 
   //TODO lukiosuorituksia ei ole vielä parseroitu eikä niitä saada Koskesta massaluovutusrajapinnan kautta. Tämä päättely ei siis vielä toimi.
