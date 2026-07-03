@@ -1,12 +1,12 @@
 services:
   pgdatabase:
-    image: postgres:17.7
+    image: ${POSTGRES_IMAGE}
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: suorituspalvelu
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
   backend:
     build:
       context: .
@@ -22,9 +22,9 @@ services:
       MAVEN_CONFIG: /home/appuser/.m2
       # Ei käynnistetä tietokantaa automaattisesti backendin kanssa DevApp:ssa
       NO_DB: true
-      SPRING_DATASOURCE_USERNAME: app
-      SPRING_DATASOURCE_PASSWORD: app
-      SPRING_DATASOURCE_URL: jdbc:postgresql://pgdatabase:5432/suorituspalvelu
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pgdatabase:5432/${POSTGRES_DB}?options=-c%20transaction_timeout=30000
       MAVEN_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     ports:
       - "8443:8443"
