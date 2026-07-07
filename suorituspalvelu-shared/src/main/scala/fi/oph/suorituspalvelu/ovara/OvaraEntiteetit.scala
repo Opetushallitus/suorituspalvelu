@@ -95,6 +95,7 @@ case class OvaraLahtokoulu(
 case class OvaraKKOpiskeluoikeus(
   entiteetinTyyppi: String = "KKOpiskeluoikeus",
   metadata: OvaraVersioMetadata,
+  nimi: Option[OvaraKielistetty],
   tunniste: UUID,
   virtaTunniste: String,
   tyyppiKoodi: String,
@@ -106,7 +107,10 @@ case class OvaraKKOpiskeluoikeus(
   myontaja: String,
   isTutkintoonJohtava: Boolean,
   kieli: Option[String],
-  suoritukset: Seq[OvaraKKSuoritus]
+  suoritukset: Seq[OvaraKKSuoritus],
+  rahoitusLahde: Option[String],
+  luokittelu: Option[String],
+  liittyvaOpiskeluoikeusAvain: Option[String]
 )
 
 case class OvaraKKSynteettinenOpiskeluoikeus(

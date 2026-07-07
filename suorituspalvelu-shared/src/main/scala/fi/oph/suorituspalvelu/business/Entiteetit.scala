@@ -508,6 +508,7 @@ sealed trait KKOpiskeluoikeusBase(synteettinen: Boolean) extends Opiskeluoikeus,
 case class KKOpiskeluoikeus(
   tunniste: UUID,
   virtaTunniste: String,
+  nimi: Option[Kielistetty],
   // Opiskeluoikeuden tyyppi, koodiarvo, viitaa koodistoon "virtaopiskeluoikeudentyyppi"
   tyyppiKoodi: String,
   // Opiskeluoikeuten liityvä koulutus. Koodiarvo, viittaa koodistoon "koulutus"
@@ -520,7 +521,10 @@ case class KKOpiskeluoikeus(
   isTutkintoonJohtava: Boolean,
   kieli: Option[String],
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-  suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus]
+  suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus],
+  rahoitusLahde: Option[String],
+  luokittelu: Option[String],
+  liittyvaOpiskeluoikeusAvain: Option[String]
 ) extends KKOpiskeluoikeusBase(synteettinen = false)
 
 case class KKSynteettinenOpiskeluoikeus(
