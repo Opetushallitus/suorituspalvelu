@@ -249,7 +249,7 @@ class EntityToOvaraConverterTest {
     val ebOs = EBOppiaineenOsasuoritus(kielistetty("ebOs"), koodi("FIN"), EBArvosana(koodi("8"), hyvaksytty = true), Some(LAAJUUS))
     val ebOa = EBOppiaine(UUID.randomUUID(), kielistetty("ebOa"), koodi("eboa"), Some(EBLaajuus(BigDecimal(5), koodi("op"))), Some(koodi("EN")), Seq(ebOs))
     val eb = EBTutkinto(UUID.randomUUID(), kielistetty("eb"), koodi("e"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS, Some(LocalDate.of(2022, 8, 1)), Some(LocalDate.of(2024, 6, 1)), Seq(ebOa))
-    val ibOa = IBOppiaineSuoritus(UUID.randomUUID(), kielistetty("ibOa"), koodi("iboa"), Some(IBOppiaineRyhma(kielistetty("ryhma"), koodi("r1"))), Some(IBArvosana(koodi("6"), hyvaksytty = true)), Some(IBLaajuus(BigDecimal(150), koodi("h"))), Some(koodi("EN")))
+    val ibOa = IBOppiaineSuoritus(UUID.randomUUID(), kielistetty("ibOa"), koodi("iboa"), Some(IBOppiaineRyhma(kielistetty("ryhma"), koodi("r1"))), Some(IBArvosana(koodi("6"), hyvaksytty = true)), Some(IBLaajuus(BigDecimal(150), koodi("h"))), Some(koodi("EN")), Some(koodi("EN")), Some(koodi("HL")))
     val ib = IBTutkinto(UUID.randomUUID(), kielistetty("ib"), koodi("i"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS, Some(LocalDate.of(2022, 8, 1)), Some(LocalDate.of(2024, 6, 1)), Some(koodi("EN")), Seq(ibOa))
     val tuva = Tuva(UUID.randomUUID(), kielistetty("tuva"), koodi("tk"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS, LocalDate.of(2023, 8, 1), Some(LocalDate.of(2024, 6, 1)), 2024, Some(LAAJUUS), List(LAHTOKOULU))
     val vst = VapaaSivistystyo(UUID.randomUUID(), kielistetty("vst"), koodi("vk"), OPPILAITOS, koodi("kt"), SuoritusTila.VALMIS, LocalDate.of(2023, 8, 1), Some(LocalDate.of(2024, 6, 1)), 2024, Some(LAAJUUS), koodi("FI"), List(LAHTOKOULU))
