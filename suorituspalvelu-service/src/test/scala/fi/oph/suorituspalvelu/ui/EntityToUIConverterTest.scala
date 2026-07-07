@@ -1310,8 +1310,10 @@ class EntityToUIConverterTest {
             KoodiMetadata("FI", "suomi"),
             KoodiMetadata("SV", "finska"),
             KoodiMetadata("EN", "Finnish"),
-          )))
+          ), "kielivalikoima_FI"))
         else Map.empty
+
+      override def haeAlakoodit(koodiUri: String): List[client.Koodi] = List.empty
     }
 
     val result = EntityToUIConverter.getOppijanTiedot(
