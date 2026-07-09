@@ -33,7 +33,7 @@ class VanhaTarjontaClient(environmentBaseUrl: String) {
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   mapper.registerModule(DefaultScalaModule)
 
-  val client = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).setHttp2Enabled(false).build)
+  val client = asyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRedirects(5).setConnectTimeout(Duration.ofMillis(10 * 1000)).build)
 
   def haeHakukohde(hakukohdeOid: String): Future[VanhaTarjontaHakukohde] =
     fetch(environmentBaseUrl + s"/tarjonta-service/rest/v1/hakukohde/$hakukohdeOid")
