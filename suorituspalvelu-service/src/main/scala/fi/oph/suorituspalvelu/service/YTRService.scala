@@ -8,6 +8,7 @@ import fi.oph.suorituspalvelu.integration.client.HakemuspalveluClientImpl
 import fi.oph.suorituspalvelu.integration.ytr.{YtrDataForHenkilo, YtrFetchMode, YtrIntegration, YtrPollFailed}
 import fi.oph.suorituspalvelu.jobs.{DUMMY_JOB_CTX, SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
+import fi.oph.suorituspalvelu.util.{LogMetricsOperation, logOperation}
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -110,6 +111,7 @@ class YTRService(scheduler: SupaScheduler, hakemuspalveluClient: HakemuspalveluC
     LOG.info(s"Ajastetaan YTR-ajo (ytr-refresh-aktiiviset) cronilla $cron koska integrations.ytr.cron-job-enabled on $cronJobEnabled")
     scheduler.scheduleJob("ytr-refresh-aktiiviset", (ctx, data) => {
       refreshYTRForAktiivisetHautJob(ctx, data)
+      LOG.logOperation(LogMetricsOperation.YTRREFRESHAKTIIVISET)
       null
     }, cron)
   } else {
