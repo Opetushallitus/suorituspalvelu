@@ -31,14 +31,27 @@ object YosPredicate {
   private val YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT = Seq("1", "2", "3", "4")
 
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
-    hakutoive match {
-      case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET) =>
-        kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
-      case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET) =>
-        kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
-      case _ =>
-        false
+    if (!onkoYosVoimassa(hakutoive.haunAlkamisaika, hakutoive.koulutuksenAlkamisvuosi)) {
+      false
+    } else {
+      hakutoive match {
+        case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET, _, _) =>
+          kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
+        case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET, _, _) =>
+          kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
+        case _ =>
+          false
+      }
     }
+  }
+
+  private val YOS_HAKUAIKA_ALKAEN = "2026-08-01T00:00:00"
+  private val YOS_KOULUTUKSEN_ALKAMISVUOSI_ALKAEN = "2027"
+
+  private def onkoYosVoimassa(haunAlkamisaika: Option[String], koulutuksenAlkamisvuosi: Option[String]): Boolean = {
+    val yosVoimassaHakuajanPerusteella = haunAlkamisaika.exists(_ >= YOS_HAKUAIKA_ALKAEN)
+    val yosVoimassaKoulutuksenAlkamisajanPerusteella = koulutuksenAlkamisvuosi.exists(_ >= YOS_KOULUTUKSEN_ALKAMISVUOSI_ALKAEN)
+    yosVoimassaHakuajanPerusteella && yosVoimassaKoulutuksenAlkamisajanPerusteella
   }
 
   def kuuluukoOpiskeluoikeusYosinPiiriin(oikeus: KKOpiskeluoikeus): Boolean = {
