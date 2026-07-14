@@ -66,8 +66,15 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
             Left(new RuntimeException(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid"))
           } else {
             val yosHakutoive = muodostaYosHakutoive(h, hk)
+            LOGGER.info(
+              s"""Tarkistetaan kuuluuko hakutoive ${hakukohdeOid} haussa ${hakuOid} YOSin piiriin.
+                 |Hakutoiveen arvot ovat:
+                 | korkeakoulutus: ${yosHakutoive.korkeakoulutus}, tutkintoonJohtava: ${yosHakutoive.tutkintoonJohtava},
+                 | jatkoTutkinto: ${yosHakutoive.jatkoTutkinto}, kaksoisTutkinto: ${yosHakutoive.kaksoisTutkinto},
+                 | organisaatioJaVanhemmat: ${yosHakutoive.organisaatioJaVanhemmat.mkString(", ")}, koulutusAste: ${yosHakutoive.koulutusAste},
+                 | haunAlkamisaika: ${yosHakutoive.haunAlkamisaika.map(_.toString).orNull}, koulutuksenAlkamisvuosi: ${yosHakutoive.koulutuksenAlkamisvuosi.orNull}""".stripMargin)
             val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
-            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
+            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin: $yosHakutoive")
             Right(YosHakuToiveYossinPiirissa(yosHakutoive, kuuluukoYOSsinPiiriin))
           }
       }
