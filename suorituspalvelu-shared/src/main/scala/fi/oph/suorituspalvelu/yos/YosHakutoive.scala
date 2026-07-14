@@ -1,5 +1,7 @@
 package fi.oph.suorituspalvelu.yos
 
+import java.time.LocalDateTime
+
 case class YosHakutoive(
   korkeakoulutus: Boolean,
   tutkintoonJohtava: Boolean,
@@ -7,6 +9,6 @@ case class YosHakutoive(
   kaksoisTutkinto: Boolean,
   organisaatioJaVanhemmat: List[String],
   koulutusAste: YosKoulutusAsteLuokka,
-  haunAlkamisaika: Option[String],
+  haunAlkamisaika: Option[LocalDateTime],
   koulutuksenAlkamisvuosi: Option[String],
 )

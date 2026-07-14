@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 import java.lang
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 case class YosHakuToiveYossinPiirissa(hakutoive: YosHakutoive, kuuluukoYosPiiriin: Boolean)
 
@@ -139,7 +141,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     val organisaatioJaVanhemmat = List(hakutoive.tarjoaja) ++ organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(hakutoive.tarjoaja)
     val koulutusAste = getKoulutusAsteHakutoiveelle(hakutoive)
 
-    val haunAlkamisaika = haku.hakuajat.map(_.alkaa).minOption
+    val haunAlkamisaika = haku.hakuajat.map(h => LocalDateTime.parse(h.alkaa, DateTimeFormatter.ISO_LOCAL_DATE_TIME)).minOption
     val koulutuksenAlkamisvuosi = hakutoive.paateltyAlkamiskausi.map(_.vuosi)
 
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto,

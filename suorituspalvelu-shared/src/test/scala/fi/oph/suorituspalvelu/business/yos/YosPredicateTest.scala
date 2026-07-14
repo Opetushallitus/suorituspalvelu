@@ -6,12 +6,14 @@ import org.junit.jupiter.api.Assertions.{assertFalse, assertTrue}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.{Test, TestInstance}
 
+import java.time.LocalDateTime
+
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
 class YosPredicateTest {
 
   // arvot, joilla YOS on voimassa sekä hakuajan että koulutuksen alkamisvuoden perusteella
-  private val VOIMASSA_HAUN_ALKAMISAIKA = Some("2026-08-01T00:00:00")
+  private val VOIMASSA_HAUN_ALKAMISAIKA = Some(LocalDateTime.parse("2026-08-01T00:00:00"))
   private val VOIMASSA_KOULUTUKSEN_ALKAMISVUOSI = Some("2027")
 
   @Test
@@ -50,7 +52,7 @@ class YosPredicateTest {
 
   @Test
   def hakutoiveEiKuuluYosinPiiriinKunHaunAlkamisaikaOnEnnenLeikkuripaivaa(): Unit = {
-    assertFalse(YosPredicate.kuuluukoHakutoiveYosinPiiriin(YosHakutoive(true, true, false, false, List("123.23.123"), ALEMMAT_ASTEET, Some("2026-07-31T23:59:59"), VOIMASSA_KOULUTUKSEN_ALKAMISVUOSI)))
+    assertFalse(YosPredicate.kuuluukoHakutoiveYosinPiiriin(YosHakutoive(true, true, false, false, List("123.23.123"), ALEMMAT_ASTEET, Some(LocalDateTime.parse("2026-07-31T23:59:59")), VOIMASSA_KOULUTUKSEN_ALKAMISVUOSI)))
   }
 
   @Test
@@ -60,7 +62,7 @@ class YosPredicateTest {
 
   @Test
   def hakutoiveKuuluuYosinPiiriinKunHaunAlkamisaikaOnTasmalleenLeikkurihetkella(): Unit = {
-    assertTrue(YosPredicate.kuuluukoHakutoiveYosinPiiriin(YosHakutoive(true, true, false, false, List("123.23.123"), ALEMMAT_ASTEET, Some("2026-08-01T00:00:00"), VOIMASSA_KOULUTUKSEN_ALKAMISVUOSI)))
+    assertTrue(YosPredicate.kuuluukoHakutoiveYosinPiiriin(YosHakutoive(true, true, false, false, List("123.23.123"), ALEMMAT_ASTEET, Some(LocalDateTime.parse("2026-08-01T00:00:00")), VOIMASSA_KOULUTUKSEN_ALKAMISVUOSI)))
   }
 
   @Test
