@@ -455,11 +455,11 @@ export interface IOppijanTiedotSuccessResponse {
   opiskeluoikeudet: IOpiskeluoikeusUI[];
   kkTutkinnot: IKKSuoritusUI[];
   yoTutkinnot: IYOTutkinto[];
-  lukionOppimaara?: ILukionOppimaaraUI;
+  lukionOppimaarat: ILukionOppimaaraUI[];
   lukionOppiaineenOppimaarat: ILukionOppiaineenOppimaara[];
-  diaTutkinto?: IDIATutkintoUI;
-  ebTutkinto?: IEBTutkintoUI;
-  ibTutkinto?: IIBTutkintoUI;
+  diaTutkinnot: IDIATutkintoUI[];
+  ebTutkinnot: IEBTutkintoUI[];
+  ibTutkinnot: IIBTutkintoUI[];
   ammatillisetPerusTutkinnot: IAmmatillinentutkinto[];
   osittaisetAmmatillisetTutkinnot: IOsittainenAmmatillinenTutkintoUI[];
   ammattitutkinnot: IAmmattitutkinto[];

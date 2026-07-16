@@ -257,44 +257,46 @@
       ]
     }
   ],
-  "lukionOppimaara": {
-    "tunniste": "c7d64425-0028-457f-8707-c2708a85c018",
-    "nimi": {
-      "fi": "Lukion oppimäärä",
-      "sv": "Lukion oppimäärä sv",
-      "en": "Lukion oppimäärä en"
-    },
-    "oppilaitos": {
+  "lukionOppimaarat": [
+    {
+      "tunniste": "c7d64425-0028-457f-8707-c2708a85c018",
       "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
+        "fi": "Lukion oppimäärä",
+        "sv": "Lukion oppimäärä sv",
+        "en": "Lukion oppimäärä en"
       },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI",
-    "oppiaineet": [
-      {
-        "tunniste": "776bb322-8a34-4c0b-9bc9-f7507dbd493b",
+      "oppilaitos": {
         "nimi": {
-          "fi": "Äidinkieli ja kirjallisuus",
-          "sv": "Äidinkieli ja kirjallisuus sv",
-          "en": "Äidinkieli ja kirjallisuus en"
-        }
+          "fi": "Ylioppilastutkintolautakunta",
+          "sv": "Ylioppilastutkintolautakunta sv",
+          "en": "Ylioppilastutkintolautakunta en"
+        },
+        "oid": "1.2.3.4"
       },
-      {
-        "tunniste": "3d28c866-e1f7-4dd5-941f-ead5dcfe440a",
-        "nimi": {
-          "fi": "Uskonto/Elämänkatsomustieto",
-          "sv": "Uskonto/Elämänkatsomustieto sv",
-          "en": "Uskonto/Elämänkatsomustieto en"
+      "tila": "VALMIS",
+      "aloituspaiva": "2023-12-31",
+      "valmistumispaiva": "2024-12-31",
+      "suorituskieli": "FI",
+      "oppiaineet": [
+        {
+          "tunniste": "776bb322-8a34-4c0b-9bc9-f7507dbd493b",
+          "nimi": {
+            "fi": "Äidinkieli ja kirjallisuus",
+            "sv": "Äidinkieli ja kirjallisuus sv",
+            "en": "Äidinkieli ja kirjallisuus en"
+          }
+        },
+        {
+          "tunniste": "3d28c866-e1f7-4dd5-941f-ead5dcfe440a",
+          "nimi": {
+            "fi": "Uskonto/Elämänkatsomustieto",
+            "sv": "Uskonto/Elämänkatsomustieto sv",
+            "en": "Uskonto/Elämänkatsomustieto en"
+          }
         }
-      }
-    ]
-  },
+      ]
+    }
+  ],
   "lukionOppiaineenOppimaarat": [
     {
       "tunniste": "ff63ee2b-2e5e-43e3-a688-1c96445e7d55",
@@ -335,305 +337,311 @@
       ]
     }
   ],
-  "diaTutkinto": {
-    "tunniste": "2c95a4d9-b1e8-4e45-b042-2a9de6393b6b",
-    "nimi": {
-      "fi": "Deutsche Internationale Abitur; Reifeprüfung",
-      "sv": "Deutsche Internationale Abitur; Reifeprüfung",
-      "en": "Deutsche Internationale Abitur; Reifeprüfung"
-    },
-    "oppilaitos": {
+  "diaTutkinnot": [
+    {
+      "tunniste": "2c95a4d9-b1e8-4e45-b042-2a9de6393b6b",
       "nimi": {
-        "fi": "Helsingin Saksalainen koulu",
-        "sv": "Helsingin Saksalainen koulu",
-        "en": "Helsingin Saksalainen koulu"
+        "fi": "Deutsche Internationale Abitur; Reifeprüfung",
+        "sv": "Deutsche Internationale Abitur; Reifeprüfung",
+        "en": "Deutsche Internationale Abitur; Reifeprüfung"
       },
-      "oid": "1.2.246.562.10.45093614456"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2012-09-01",
-    "valmistumispaiva": "2016-06-04",
-    "suorituskieli": {
-      "fi": "englanti",
-      "sv": "engelska",
-      "en": "English"
-    },
-    "kieletKirjallisuusTaide": [
-      {
-        "tunniste": "91a81c6c-1f3d-4887-9e76-9aafdb02e114",
+      "oppilaitos": {
         "nimi": {
-          "fi": "Äidinkieli",
-          "sv": "Modersmål",
-          "en": "Mother tongue"
+          "fi": "Helsingin Saksalainen koulu",
+          "sv": "Helsingin Saksalainen koulu",
+          "en": "Helsingin Saksalainen koulu"
         },
-        "laajuus": 10.0,
-        "kirjallinen": "5",
-        "suullinen": "6",
-        "vastaavuustodistus": 4.0
-      }
-    ],
-    "matematiikkaLuonnontieteet": [
-      {
-        "tunniste": "21a81c6c-2f3d-4187-9a76-9aafdbs2e112",
-        "nimi": {
-          "fi": "Matematiikka",
-          "sv": "Matematik",
-          "en": "Mathematics"
-        },
-        "laajuus": 8.0,
-        "kirjallinen": "3",
-        "suullinen": "4",
-        "vastaavuustodistus": 6.0
-      }
-    ],
-    "yhteiskuntatieteet": [
-      {
-        "tunniste": "31a81c5c-2f3b-4187-9a75-2aafabs2e113",
-        "nimi": {
-          "fi": "Historia",
-          "sv": "Historia",
-          "en": "History"
-        },
-        "laajuus": 6.0,
-        "kirjallinen": "6",
-        "suullinen": "5",
-        "vastaavuustodistus": 4.0
-      }
-    ]
-  },
-  "ebTutkinto": {
-    "tunniste": "4fa258ba-77f3-4007-a334-7546dd3e36d2",
-    "nimi": {
-      "fi": "EB-tutkinto",
-      "sv": "EB-tutkinto sv",
-      "en": "EB-tutkinto en"
-    },
-    "oppilaitos": {
-      "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
+        "oid": "1.2.246.562.10.45093614456"
       },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "oppiaineet": [
-      {
-        "tunniste": "6c039282-c1b3-4917-9965-b4dd75819b02",
-        "nimi": {
-          "fi": "Mathematics fi",
-          "sv": "Mathematics sv",
-          "en": "Mathematics"
-        },
-        "suorituskieli": {
-          "fi": "englanti",
-          "sv": "engelska",
-          "en": "English"
-        },
-        "laajuus": 4,
-        "written": {
-          "tunniste": "23cd85dd-bc50-40a6-9474-c6993c735960",
-          "arvosana": 8.67
-        },
-        "oral": null,
-        "final": {
-          "tunniste": "333e42b1-5111-45cf-b448-752139c00bd8",
-          "arvosana": 8.67
-        }
+      "tila": "VALMIS",
+      "aloituspaiva": "2012-09-01",
+      "valmistumispaiva": "2016-06-04",
+      "suorituskieli": {
+        "fi": "englanti",
+        "sv": "engelska",
+        "en": "English"
       },
-      {
-        "tunniste": "2798d2d7-1403-46b4-b621-a0fe28ab8fe7",
-        "nimi": {
-          "fi": "First language, ranska fi",
-          "sv": "First language, ranska sv",
-          "en": "First language, ranska en"
-        },
-        "suorituskieli": {
-          "fi": "englanti",
-          "sv": "engelska",
-          "en": "English"
-        },
-        "laajuus": 3,
-        "written": {
-          "tunniste": "2dbe94fa-325e-49c8-bdf5-d1969380f2b9",
-          "arvosana": 8.67
-        },
-        "oral": {
-          "tunniste": "1125f15e-4d40-4bbc-a76d-41e5abc99dc6",
-          "arvosana": 8.67
-        },
-        "final": {
-          "tunniste": "b378edbe-0aed-4fc1-9736-1b127d4d8c71",
-          "arvosana": 8.67
-        }
-      },
-      {
-        "tunniste": "daf61eb9-9bdf-4547-8fa6-3901a266253f",
-        "nimi": {
-          "fi": "Second language, saksa fi",
-          "sv": "Second language, saksa sv",
-          "en": "Second language, saksa en"
-        },
-        "suorituskieli": {
-          "fi": "englanti",
-          "sv": "engelska",
-          "en": "English"
-        },
-        "laajuus": 3,
-        "written": {
-          "tunniste": "1b4a57a7-5176-4d17-894d-5e4ce388ae2a",
-          "arvosana": 8.67
-        },
-        "oral": {
-          "tunniste": "2bce88d1-ae7b-431b-9db3-731b7cfe58bd",
-          "arvosana": 8.67
-        },
-        "final": {
-          "tunniste": "e1804a58-901f-4ed7-bac3-85bc91a5d7ae",
-          "arvosana": 8.67
-        }
-      }
-    ]
-  },
-  "ibTutkinto": {
-    "tunniste": "ee06998d-229d-48ed-9d0a-56be2d954354",
-    "nimi": {
-      "fi": "IB-tutkinto",
-      "sv": "IB-tutkinto sv",
-      "en": "IB-tutkinto en"
-    },
-    "oppilaitos": {
-      "nimi": {
-        "fi": "Ylioppilastutkintolautakunta",
-        "sv": "Ylioppilastutkintolautakunta sv",
-        "en": "Ylioppilastutkintolautakunta en"
-      },
-      "oid": "1.2.3.4"
-    },
-    "tila": "VALMIS",
-    "aloituspaiva": "2023-12-31",
-    "valmistumispaiva": "2024-12-31",
-    "suorituskieli": "FI",
-    "oppiaineet": [
-      {
-        "tunniste": "94c51966-c627-4157-bc04-b2d85a122353",
-        "nimi": {
-          "fi": "Studies in language and literature fi",
-          "sv": "Studies in language and literature sv",
-          "en": "Studies in language and literature en"
-        },
-        "suoritukset": [
-          {
-            "tunniste": "8a128afb-595f-4951-9495-b2da66fd554f",
-            "nimi": {
-              "fi": "Language A: literature, suomi fi",
-              "sv": "Language A: literature, suomi sv",
-              "en": "Language A: literature, suomi en"
-            },
-            "laajuus": 9,
-            "predictedGrade": 7
+      "kieletKirjallisuusTaide": [
+        {
+          "tunniste": "91a81c6c-1f3d-4887-9e76-9aafdb02e114",
+          "nimi": {
+            "fi": "Äidinkieli",
+            "sv": "Modersmål",
+            "en": "Mother tongue"
           },
-          {
-            "tunniste": "d875fd30-361d-4525-9f43-2b91f4dc51ba",
-            "nimi": {
-              "fi": "Language A: language and literature, englanti fi",
-              "sv": "Language A: language and literature, englanti sv",
-              "en": "Language A: language and literature, englanti en"
-            },
-            "laajuus": 6,
-            "predictedGrade": 7
-          }
-        ]
-      },
-      {
-        "tunniste": "e3b780f6-dae4-4789-998e-ae0e124fb184",
-        "nimi": {
-          "fi": "Individuals and societies fi",
-          "sv": "Individuals and societies sv",
-          "en": "Individuals and societies en"
-        },
-        "suoritukset": [
-          {
-            "tunniste": "08b8b6a8-8695-4b1e-9c44-20522b12a3a4",
-            "nimi": {
-              "fi": "History fi",
-              "sv": "History sv",
-              "en": "History en"
-            },
-            "laajuus": 3,
-            "predictedGrade": 7
+          "laajuus": 10.0,
+          "kirjallinen": "5",
+          "suullinen": "6",
+          "vastaavuustodistus": 4.0
+        }
+      ],
+      "matematiikkaLuonnontieteet": [
+        {
+          "tunniste": "21a81c6c-2f3d-4187-9a76-9aafdbs2e112",
+          "nimi": {
+            "fi": "Matematiikka",
+            "sv": "Matematik",
+            "en": "Mathematics"
           },
-          {
-            "tunniste": "0966ec26-47b1-4186-ac17-d1ff99d09b6c",
-            "nimi": {
-              "fi": "Psychology fi",
-              "sv": "Psychology sv",
-              "en": "Psychology en"
-            },
-            "laajuus": 3,
-            "predictedGrade": 7
-          }
-        ]
+          "laajuus": 8.0,
+          "kirjallinen": "3",
+          "suullinen": "4",
+          "vastaavuustodistus": 6.0
+        }
+      ],
+      "yhteiskuntatieteet": [
+        {
+          "tunniste": "31a81c5c-2f3b-4187-9a75-2aafabs2e113",
+          "nimi": {
+            "fi": "Historia",
+            "sv": "Historia",
+            "en": "History"
+          },
+          "laajuus": 6.0,
+          "kirjallinen": "6",
+          "suullinen": "5",
+          "vastaavuustodistus": 4.0
+        }
+      ]
+    }
+  ],
+  "ebTutkinnot": [
+    {
+      "tunniste": "4fa258ba-77f3-4007-a334-7546dd3e36d2",
+      "nimi": {
+        "fi": "EB-tutkinto",
+        "sv": "EB-tutkinto sv",
+        "en": "EB-tutkinto en"
       },
-      {
-        "tunniste": "03737a4d-aa3e-4f27-b451-8dd32043b5f4",
+      "oppilaitos": {
         "nimi": {
-          "fi": "Experimental sciences fi",
-          "sv": "Experimental sciences sv",
-          "en": "Experimental sciences en"
+          "fi": "Ylioppilastutkintolautakunta",
+          "sv": "Ylioppilastutkintolautakunta sv",
+          "en": "Ylioppilastutkintolautakunta en"
         },
-        "suoritukset": [
-          {
-            "tunniste": "ee10c7b4-0748-489f-80f7-a30bd4fc1446",
-            "nimi": {
-              "fi": "Biology fi",
-              "sv": "Biology sv",
-              "en": "Biology en"
-            },
-            "laajuus": 3,
-            "predictedGrade": 7
-          }
-        ]
+        "oid": "1.2.3.4"
       },
-      {
-        "tunniste": "38c1929e-1b53-4806-b756-a7cb2b79413c",
+      "tila": "VALMIS",
+      "aloituspaiva": "2023-12-31",
+      "valmistumispaiva": "2024-12-31",
+      "oppiaineet": [
+        {
+          "tunniste": "6c039282-c1b3-4917-9965-b4dd75819b02",
+          "nimi": {
+            "fi": "Mathematics fi",
+            "sv": "Mathematics sv",
+            "en": "Mathematics"
+          },
+          "suorituskieli": {
+            "fi": "englanti",
+            "sv": "engelska",
+            "en": "English"
+          },
+          "laajuus": 4,
+          "written": {
+            "tunniste": "23cd85dd-bc50-40a6-9474-c6993c735960",
+            "arvosana": 8.67
+          },
+          "oral": null,
+          "final": {
+            "tunniste": "333e42b1-5111-45cf-b448-752139c00bd8",
+            "arvosana": 8.67
+          }
+        },
+        {
+          "tunniste": "2798d2d7-1403-46b4-b621-a0fe28ab8fe7",
+          "nimi": {
+            "fi": "First language, ranska fi",
+            "sv": "First language, ranska sv",
+            "en": "First language, ranska en"
+          },
+          "suorituskieli": {
+            "fi": "englanti",
+            "sv": "engelska",
+            "en": "English"
+          },
+          "laajuus": 3,
+          "written": {
+            "tunniste": "2dbe94fa-325e-49c8-bdf5-d1969380f2b9",
+            "arvosana": 8.67
+          },
+          "oral": {
+            "tunniste": "1125f15e-4d40-4bbc-a76d-41e5abc99dc6",
+            "arvosana": 8.67
+          },
+          "final": {
+            "tunniste": "b378edbe-0aed-4fc1-9736-1b127d4d8c71",
+            "arvosana": 8.67
+          }
+        },
+        {
+          "tunniste": "daf61eb9-9bdf-4547-8fa6-3901a266253f",
+          "nimi": {
+            "fi": "Second language, saksa fi",
+            "sv": "Second language, saksa sv",
+            "en": "Second language, saksa en"
+          },
+          "suorituskieli": {
+            "fi": "englanti",
+            "sv": "engelska",
+            "en": "English"
+          },
+          "laajuus": 3,
+          "written": {
+            "tunniste": "1b4a57a7-5176-4d17-894d-5e4ce388ae2a",
+            "arvosana": 8.67
+          },
+          "oral": {
+            "tunniste": "2bce88d1-ae7b-431b-9db3-731b7cfe58bd",
+            "arvosana": 8.67
+          },
+          "final": {
+            "tunniste": "e1804a58-901f-4ed7-bac3-85bc91a5d7ae",
+            "arvosana": 8.67
+          }
+        }
+      ]
+    }
+  ],
+  "ibTutkinnot": [
+    {
+      "tunniste": "ee06998d-229d-48ed-9d0a-56be2d954354",
+      "nimi": {
+        "fi": "IB-tutkinto",
+        "sv": "IB-tutkinto sv",
+        "en": "IB-tutkinto en"
+      },
+      "oppilaitos": {
         "nimi": {
-          "fi": "Mathematics fi",
-          "sv": "Mathematics sv",
-          "en": "Mathematics en"
+          "fi": "Ylioppilastutkintolautakunta",
+          "sv": "Ylioppilastutkintolautakunta sv",
+          "en": "Ylioppilastutkintolautakunta en"
         },
-        "suoritukset": [
-          {
-            "tunniste": "2a9403f0-5919-40a2-8884-3527839ec056",
-            "nimi": {
-              "fi": "Mathematical studies fi",
-              "sv": "Mathematical studies sv",
-              "en": "Mathematical studies en"
-            },
-            "laajuus": 3,
-            "predictedGrade": 7
-          }
-        ]
+        "oid": "1.2.3.4"
       },
-      {
-        "tunniste": "f2d8b0e1-2b9a-4c1d-9d2e-7c4a6e1b1234",
-        "suoritukset": [
-          {
-            "tunniste": "c1a2b3c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6",
-            "nimi": {
-              "fi": "Theory of knowledge fi",
-              "sv": "Theory of knowledge sv",
-              "en": "Theory of knowledge en"
+      "tila": "VALMIS",
+      "aloituspaiva": "2023-12-31",
+      "valmistumispaiva": "2024-12-31",
+      "suorituskieli": "FI",
+      "oppiaineet": [
+        {
+          "tunniste": "94c51966-c627-4157-bc04-b2d85a122353",
+          "nimi": {
+            "fi": "Studies in language and literature fi",
+            "sv": "Studies in language and literature sv",
+            "en": "Studies in language and literature en"
+          },
+          "suoritukset": [
+            {
+              "tunniste": "8a128afb-595f-4951-9495-b2da66fd554f",
+              "nimi": {
+                "fi": "Language A: literature, suomi fi",
+                "sv": "Language A: literature, suomi sv",
+                "en": "Language A: literature, suomi en"
+              },
+              "laajuus": 9,
+              "predictedGrade": 7
             },
-            "laajuus": 3,
-            "predictedGrade": 7
-          }
-        ]
-      }
-    ]
-  },
+            {
+              "tunniste": "d875fd30-361d-4525-9f43-2b91f4dc51ba",
+              "nimi": {
+                "fi": "Language A: language and literature, englanti fi",
+                "sv": "Language A: language and literature, englanti sv",
+                "en": "Language A: language and literature, englanti en"
+              },
+              "laajuus": 6,
+              "predictedGrade": 7
+            }
+          ]
+        },
+        {
+          "tunniste": "e3b780f6-dae4-4789-998e-ae0e124fb184",
+          "nimi": {
+            "fi": "Individuals and societies fi",
+            "sv": "Individuals and societies sv",
+            "en": "Individuals and societies en"
+          },
+          "suoritukset": [
+            {
+              "tunniste": "08b8b6a8-8695-4b1e-9c44-20522b12a3a4",
+              "nimi": {
+                "fi": "History fi",
+                "sv": "History sv",
+                "en": "History en"
+              },
+              "laajuus": 3,
+              "predictedGrade": 7
+            },
+            {
+              "tunniste": "0966ec26-47b1-4186-ac17-d1ff99d09b6c",
+              "nimi": {
+                "fi": "Psychology fi",
+                "sv": "Psychology sv",
+                "en": "Psychology en"
+              },
+              "laajuus": 3,
+              "predictedGrade": 7
+            }
+          ]
+        },
+        {
+          "tunniste": "03737a4d-aa3e-4f27-b451-8dd32043b5f4",
+          "nimi": {
+            "fi": "Experimental sciences fi",
+            "sv": "Experimental sciences sv",
+            "en": "Experimental sciences en"
+          },
+          "suoritukset": [
+            {
+              "tunniste": "ee10c7b4-0748-489f-80f7-a30bd4fc1446",
+              "nimi": {
+                "fi": "Biology fi",
+                "sv": "Biology sv",
+                "en": "Biology en"
+              },
+              "laajuus": 3,
+              "predictedGrade": 7
+            }
+          ]
+        },
+        {
+          "tunniste": "38c1929e-1b53-4806-b756-a7cb2b79413c",
+          "nimi": {
+            "fi": "Mathematics fi",
+            "sv": "Mathematics sv",
+            "en": "Mathematics en"
+          },
+          "suoritukset": [
+            {
+              "tunniste": "2a9403f0-5919-40a2-8884-3527839ec056",
+              "nimi": {
+                "fi": "Mathematical studies fi",
+                "sv": "Mathematical studies sv",
+                "en": "Mathematical studies en"
+              },
+              "laajuus": 3,
+              "predictedGrade": 7
+            }
+          ]
+        },
+        {
+          "tunniste": "f2d8b0e1-2b9a-4c1d-9d2e-7c4a6e1b1234",
+          "suoritukset": [
+            {
+              "tunniste": "c1a2b3c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6",
+              "nimi": {
+                "fi": "Theory of knowledge fi",
+                "sv": "Theory of knowledge sv",
+                "en": "Theory of knowledge en"
+              },
+              "laajuus": 3,
+              "predictedGrade": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "ammatillisetPerusTutkinnot": [
     {
       "tunniste": "30cbef16-19d1-49ea-b52c-a7063998f640",

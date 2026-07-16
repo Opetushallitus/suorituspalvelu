@@ -82,7 +82,7 @@ export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
       ...s,
       koulutustyyppi: 'lukio',
     }));
-    addSortedSuoritukset(oppijanTiedot.lukionOppimaara, (s) => ({
+    addSortedSuoritukset(oppijanTiedot.lukionOppimaarat, (s) => ({
       ...s,
       koulutustyyppi: 'lukio',
     }));
@@ -90,15 +90,15 @@ export function useSuorituksetFlattened(oppijanTiedot: OppijanTiedot) {
       ...s,
       koulutustyyppi: 'lukio',
     }));
-    addSortedSuoritukset(oppijanTiedot.diaTutkinto, (s) => ({
+    addSortedSuoritukset(oppijanTiedot.diaTutkinnot, (s) => ({
       ...s,
       koulutustyyppi: 'dia',
     }));
-    addSortedSuoritukset(oppijanTiedot.ebTutkinto, (s) => ({
+    addSortedSuoritukset(oppijanTiedot.ebTutkinnot, (s) => ({
       ...s,
       koulutustyyppi: 'eb',
     }));
-    addSortedSuoritukset(oppijanTiedot.ibTutkinto, (s) => ({
+    addSortedSuoritukset(oppijanTiedot.ibTutkinnot, (s) => ({
       ...s,
       koulutustyyppi: 'ib',
     }));

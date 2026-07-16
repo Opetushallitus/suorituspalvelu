@@ -7,12 +7,8 @@ import java.util.Optional
 
 trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val optionalYoTutkintoTSType: TSType[Optional[YOTutkinto]] = TSType.sameAs[Optional[YOTutkinto], Option[YOTutkinto]]
-  implicit val optionalLukionOppimaara: TSType[Optional[LukionOppimaaraUI]] = TSType.sameAs[Optional[LukionOppimaaraUI], Option[LukionOppimaaraUI]]
-  implicit val optionalDIATutkinto: TSType[Optional[DIATutkintoUI]] = TSType.sameAs[Optional[DIATutkintoUI], Option[DIATutkintoUI]]
   implicit val optionalEBSuoritus: TSType[Optional[EBOppiaineOsasuoritusUI]] = TSType.sameAs[Optional[EBOppiaineOsasuoritusUI], Option[EBOppiaineOsasuoritusUI]]
-  implicit val optionalEBTutkinto: TSType[Optional[EBTutkintoUI]] = TSType.sameAs[Optional[EBTutkintoUI], Option[EBTutkintoUI]]
   implicit val optionalIBOppiaineNimi: TSType[Optional[IBOppiaineNimi]] = TSType.sameAs[Optional[IBOppiaineNimi], Option[IBOppiaineNimi]]
-  implicit val optionalIBTutkinto: TSType[Optional[IBTutkintoUI]] = TSType.sameAs[Optional[IBTutkintoUI], Option[IBTutkintoUI]]
   implicit val optionalSuoritusTapa: TSType[Optional[SuoritusTapaUI]] = TSType.sameAs[Optional[SuoritusTapaUI], Option[SuoritusTapaUI]]
   implicit val optionalAmmatillisenTutkinnonOsaArvosana: TSType[Optional[AmmatillisenTutkinnonOsaArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaArvosana], Option[AmmatillisenTutkinnonOsaArvosana]]
   implicit val optionalAmmatillisenTutkinnonOsaAlueArvosana: TSType[Optional[AmmatillisenTutkinnonOsaAlueArvosana]] = TSType.sameAs[Optional[AmmatillisenTutkinnonOsaAlueArvosana], Option[AmmatillisenTutkinnonOsaAlueArvosana]]
@@ -25,6 +21,10 @@ trait SuorituksetTsImplicits extends SharedTsImplicits {
   implicit val perusopetuksenOppiaineenOppimaaraTSType: TSType[PerusopetuksenOppiaineenOppimaaratUI] = TSType.fromCaseClass
   implicit val perusopetuksenOppimaaraTSType: TSType[PerusopetuksenOppimaaraUI] = TSType.fromCaseClass
   implicit val lukionOppiaineenOppimaaraTSType: TSType[LukionOppiaineenOppimaara] = TSType.fromCaseClass
+  implicit val lukionOppimaaraTSType: TSType[LukionOppimaaraUI] = TSType.fromCaseClass
+  implicit val diaTutkintoTSType: TSType[DIATutkintoUI] = TSType.fromCaseClass
+  implicit val ebTutkintoTSType: TSType[EBTutkintoUI] = TSType.fromCaseClass
+  implicit val ibTutkintoTSType: TSType[IBTutkintoUI] = TSType.fromCaseClass
   implicit val optionalTuvaLaajuus: TSType[Optional[TuvaLaajuus]] = TSType.sameAs[Optional[TuvaLaajuus], Option[TuvaLaajuus]]
   implicit val optionalVSTLaajuus: TSType[Optional[VapaaSivistystyoLaajuus]] = TSType.sameAs[Optional[VapaaSivistystyoLaajuus], Option[VapaaSivistystyoLaajuus]]
   implicit val tuvaTSType: TSType[TuvaUI] = TSType.fromCaseClass

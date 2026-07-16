@@ -373,7 +373,7 @@ object EntityToUIConverter {
         )
       }).toList
 
-  def getLukionOppimaara(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[LukionOppimaaraUI] =
+  def getLukionOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppimaaraUI] =
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
@@ -401,13 +401,13 @@ object EntityToUIConverter {
           valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
           suorituskieli = lukionOppimaara.suoritusKieli.map(_.arvo).getOrElse("")
         )
-      ).headOption
+      ).toList
 
   def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] = {
     List.empty[LukionOppiaineenOppimaara]
   }
 
-  def getDiaTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[DIATutkintoUI] = {
+  def getDiaTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[DIATutkintoUI] = {
     def toDiaOppiaineUI(oppiaine: DIAOppiaine) = {
       DIAOppiaineUI(
         tunniste = oppiaine.tunniste,
@@ -423,14 +423,14 @@ object EntityToUIConverter {
       )
     }
 
-    val dia: Option[DIATutkinto] =
+    val diat: List[DIATutkinto] =
       opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
-        .flatMap(_.suoritukset).collectFirst { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }
+        .flatMap(_.suoritukset).collect { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }.toList
 
     val DIA_KIELETKIRJALLISUUSTAIDE_KOODIARVO = "1"
     val DIA_MATEMATIIKKALUONNONTIETEET_KOODIARVO = "2"
     val DIA_YHTEISKUNTATIETEET_KOODIARVO = "3"
-    dia.map(diaTutkinto =>
+    diat.map(diaTutkinto =>
       val kieletKirjallisuusTaide: List[DIAOppiaineUI] =
         diaTutkinto.osasuoritukset.filter((o: DIAOppiaine) => o.osaAlue.map(_.arvo).exists(_.equals(DIA_KIELETKIRJALLISUUSTAIDE_KOODIARVO)))
           .map(toDiaOppiaineUI).toList
@@ -468,7 +468,7 @@ object EntityToUIConverter {
 
   }
 
-  def getEBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[EBTutkintoUI] = {
+  def getEBTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[EBTutkintoUI] = {
     opiskeluoikeudet
       .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
       .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
@@ -516,11 +516,11 @@ object EntityToUIConverter {
           valmistumispaiva = ebTutkinto.vahvistusPaivamaara.toJava,
           oppiaineet = oppiaineet.toList.asJava
         )
-      ).headOption
+      ).toList
   }
 
 
-  def getIBTutkinto(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): Option[IBTutkintoUI] =
+  def getIBTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[IBTutkintoUI] =
     opiskeluoikeudet
       .collect{ case oo: GeneerinenOpiskeluoikeus => oo }
       .flatMap(o => o.suoritukset)
@@ -570,7 +570,7 @@ object EntityToUIConverter {
               )
             }.asJava
         )
-      }).headOption
+      }).toList
 
   private def getAmmatillinenArvosanaNimi[N <: NimiLike](
     koodi: Option[Koodi],
@@ -1081,11 +1081,11 @@ object EntityToUIConverter {
         opiskeluoikeudet =                          getOpiskeluoikeudet(opiskeluoikeudet, organisaatioProvider, koodistoProvider).asJava,
         kkTutkinnot =                               getKKTutkinnot(opiskeluoikeudet, organisaatioProvider, koodistoProvider).asJava,
         yoTutkinnot =                               getYOTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
-        lukionOppimaara =                           getLukionOppimaara(opiskeluoikeudet).toJava,
+        lukionOppimaarat =                          getLukionOppimaarat(opiskeluoikeudet).asJava,
         lukionOppiaineenOppimaarat =                getLukionOppiaineenOppimaarat(opiskeluoikeudet).asJava,
-        diaTutkinto =                               getDiaTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
-        ebTutkinto =                                getEBTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
-        ibTutkinto =                                getIBTutkinto(opiskeluoikeudet, koodistoProvider).toJava,
+        diaTutkinnot =                              getDiaTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
+        ebTutkinnot =                               getEBTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
+        ibTutkinnot =                               getIBTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
         ammatillisetPerusTutkinnot =                getAmmatillisetPerusTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
         osittaisetAmmatillisetTutkinnot =           getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet, koodistoProvider).asJava,
         ammattitutkinnot =                          getAmmattitutkinnot(opiskeluoikeudet).asJava,
