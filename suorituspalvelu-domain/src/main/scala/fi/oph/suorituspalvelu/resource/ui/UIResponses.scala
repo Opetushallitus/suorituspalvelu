@@ -205,6 +205,8 @@ case class OpiskeluoikeusUI(
   @BeanProperty tunniste: UUID,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty nimi: OpiskeluoikeusNimiUI,
+  @(Schema @field)(requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty virtaNimi: Optional[KKOpiskeluoikeusNimiUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppilaitos: KKOppilaitosUI,
   @(Schema @field)(example = "2020-01-01", requiredMode = RequiredMode.REQUIRED)
@@ -245,6 +247,15 @@ case class KKOpintojaksoUI(
   @BeanProperty arvosana: Optional[String],
   @(Schema @field)(example = "3")
   @BeanProperty opintojaksot: java.util.List[KKOpintojaksoUI]
+)
+
+case class KKOpiskeluoikeusNimiUI(
+  @(Schema @field)(example = "Kasvatustieteen maisteri (opiskeluoikeus)", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty fi: Optional[String],
+  @(Schema @field)(example = "Kasvatustieteen maisteri (opiskeluoikeus) sv", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty sv: Optional[String],
+  @(Schema @field)(example = "Kasvatustieteen maisteri (opiskeluoikeus) en", requiredMode = RequiredMode.NOT_REQUIRED)
+  @BeanProperty en: Optional[String]
 )
 
 case class KKSuoritusNimiUI(

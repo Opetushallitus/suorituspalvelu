@@ -60,16 +60,16 @@ test.describe('Suoritustiedot', () => {
 
     const opiskeluoikeusPapers = page.getByTestId('opiskeluoikeus-paper');
 
-    await expect(opiskeluoikeusPapers).toHaveCount(1);
-    const opiskeluoikeusPaper = opiskeluoikeusPapers.first();
+    await expect(opiskeluoikeusPapers).toHaveCount(2);
 
+    const firstPaper = opiskeluoikeusPapers.first();
     await expect(
-      opiskeluoikeusPaper.getByRole('heading', {
+      firstPaper.getByRole('heading', {
         name: 'Kasvatust. maist., kasvatustiede',
       }),
     ).toBeVisible();
 
-    await expectLabeledValues(opiskeluoikeusPaper, [
+    await expectLabeledValues(firstPaper, [
       {
         label: 'Oppilaitos',
         value: 'Tampereen yliopisto',
@@ -85,6 +85,40 @@ test.describe('Suoritustiedot', () => {
       {
         label: 'Tutkintotaso',
         value: 'Ylempi korkeakoulututkinto',
+      },
+      {
+        label: 'VIRTA-nimi',
+        value: 'Kasvatustieteen maisteri',
+      },
+    ]);
+
+    const secondPaper = opiskeluoikeusPapers.nth(1);
+    await expect(
+      secondPaper.getByRole('heading', {
+        name: 'Tradenomi, liiketalous',
+      }),
+    ).toBeVisible();
+
+    await expectLabeledValues(secondPaper, [
+      {
+        label: 'Oppilaitos',
+        value: 'Lapin ammattikorkeakoulu',
+      },
+      {
+        label: 'Voimassaolo',
+        value: `1.8.1995 ${NDASH} 1.6.1999Päättynyt(päättynyt)`,
+      },
+      {
+        label: 'Sektori',
+        value: 'AMK',
+      },
+      {
+        label: 'Tutkintotaso',
+        value: 'Alempi korkeakoulututkinto',
+      },
+      {
+        label: 'VIRTA-nimi',
+        value: '-',
       },
     ]);
   });
