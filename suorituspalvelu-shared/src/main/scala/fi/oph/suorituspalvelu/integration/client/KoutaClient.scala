@@ -7,33 +7,39 @@ import fi.vm.sade.javautils.nio.cas.CasClient
 import org.asynchttpclient.RequestBuilder
 import org.slf4j.LoggerFactory
 
-import java.time.{LocalDateTime, ZoneId}
-import java.time.format.DateTimeFormatter
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.jdk.javaapi.FutureConverters.asScala
-import scala.concurrent.ExecutionContext.Implicits.global
 
 //aikaleimat muodossa "2022-02-22T08:00:00"
 case class KoutaHakuaika(alkaa: String, paattyy: Option[String])
 
-case class KoutaHakukohde(oid: String,
-                          tarjoaja: String,
-                          nimi: Map[String, String],
-                          voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean],
-                          johtaaTutkintoon: Option[Boolean],
-                          hakuOid: String,
-                          koulutusasteKoodiUrit: List[String] = List.empty
-                         )
+case class PaateltyAlkamiskausi(
+  kausiUri: String,
+  vuosi: String
+)
 
-case class KoutaHaku(oid: String,
-                     tila: String,
-                     nimi: Map[String, String],
-                     hakutapaKoodiUri: String,
-                     kohdejoukkoKoodiUri: Option[String],
-                     hakuajat: List[KoutaHakuaika],
-                     kohdejoukonTarkenneKoodiUri: Option[String],
-                     hakuvuosi: Option[Int]) {
+case class KoutaHakukohde(
+  oid: String,
+  tarjoaja: String,
+  nimi: Map[String, String],
+  voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita: Option[Boolean],
+  johtaaTutkintoon: Option[Boolean],
+  hakuOid: String,
+  koulutusasteKoodiUrit: List[String] = List.empty,
+  paateltyAlkamiskausi: Option[PaateltyAlkamiskausi]
+)
 
+case class KoutaHaku(
+  oid: String,
+  tila: String,
+  nimi: Map[String, String],
+  hakutapaKoodiUri: String,
+  kohdejoukkoKoodiUri: Option[String],
+  hakuajat: List[KoutaHakuaika],
+  kohdejoukonTarkenneKoodiUri: Option[String],
+  hakuvuosi: Option[Int]
+) {
   val toisenAsteenUrit = Set(
     "haunkohdejoukko_11",
     "haunkohdejoukko_20",
@@ -45,7 +51,7 @@ case class KoutaHaku(oid: String,
 
   val toisenAsteenYhteishakuUri = "haunkohdejoukko_11"
   val korkeakouluHaunKohdeJoukkoUri = "haunkohdejoukko_12"
-  
+
   val erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_010"
   val jatkotutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_3"
 
@@ -58,17 +64,17 @@ case class KoutaHaku(oid: String,
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(toisenAsteenYhteishakuUri)
   }
-  
+
   def isKorkeakouluHaku: Boolean = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(korkeakouluHaunKohdeJoukkoUri)
   }
-  
+
   def isErasmusMundusTaiKaksoistutkinto: Boolean = {
     val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri)
   }
-  
+
   def isJatkotutkinto: Boolean = {
     val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(jatkotutkintoKohdejoukonTarkenneUri)
@@ -85,9 +91,11 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
 
   def fetchHakukohde(hakukohdeOid: String): Future[KoutaHakukohde] = {
     val url = environmentBaseUrl + "/kouta-internal/hakukohde/" + hakukohdeOid
-    val hakukohdeTulosF: Future[Option[KoutaHakukohde]] = doGet(url).map(resultOpt => resultOpt.map(result => {
-      mapper.readValue(result, classOf[KoutaHakukohde])
-    }))
+    val hakukohdeTulosF: Future[Option[KoutaHakukohde]] = doGet(url).map(resultOpt =>
+      resultOpt.map(result => {
+        mapper.readValue(result, classOf[KoutaHakukohde])
+      })
+    )
     hakukohdeTulosF.map(_.getOrElse(throw new RuntimeException(s"Hakukohdetta $hakukohdeOid ei löytynyt!")))
   }
 
@@ -112,7 +120,6 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
     hakuTulos.map(ht => ht.map(h => h.oid -> h).toMap)
   }
 
-
   private def doGet(url: String): Future[Option[String]] = {
 
     LOG.debug(s"haetaan, $url")
@@ -127,7 +134,8 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
         case r if r.getStatusCode == 404 =>
           None
         case r =>
-          val errorStr = s"Haku Ohjausparametreista epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
+          val errorStr =
+            s"Haku Ohjausparametreista epäonnistui: ${r.getStatusCode} ${r.getStatusText} ${r.getResponseBody()}"
           LOG.error(
             errorStr
           )
@@ -136,7 +144,8 @@ class KoutaClient(casClient: CasClient, environmentBaseUrl: String) {
     } catch {
       case e: Throwable =>
         LOG.error(
-          s"Haku Ohjausparametreista epäonnistui", e
+          s"Haku Ohjausparametreista epäonnistui",
+          e
         )
         Future.failed(e)
     }

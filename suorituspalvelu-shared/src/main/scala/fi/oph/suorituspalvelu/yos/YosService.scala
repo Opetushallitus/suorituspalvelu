@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 import java.lang
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 case class YosHakuToiveYossinPiirissa(hakutoive: YosHakutoive, kuuluukoYosPiiriin: Boolean)
 
@@ -63,9 +65,16 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
             LOGGER.error(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid")
             Left(new RuntimeException(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid"))
           } else {
-            val yosHakutoive = muodostaYosHakutoive(h, hakutoive)
+            val yosHakutoive = muodostaYosHakutoive(h, hk)
+            LOGGER.info(
+              s"""Tarkistetaan kuuluuko hakutoive ${hakukohdeOid} haussa ${hakuOid} YOSin piiriin.
+                 |Hakutoiveen arvot ovat:
+                 | korkeakoulutus: ${yosHakutoive.korkeakoulutus}, tutkintoonJohtava: ${yosHakutoive.tutkintoonJohtava},
+                 | jatkoTutkinto: ${yosHakutoive.jatkoTutkinto}, kaksoisTutkinto: ${yosHakutoive.kaksoisTutkinto},
+                 | organisaatioJaVanhemmat: ${yosHakutoive.organisaatioJaVanhemmat.mkString(", ")}, koulutusAste: ${yosHakutoive.koulutusAste},
+                 | haunAlkamisaika: ${yosHakutoive.haunAlkamisaika.map(_.toString).orNull}, koulutuksenAlkamisvuosi: ${yosHakutoive.koulutuksenAlkamisvuosi.orNull}""".stripMargin)
             val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
-            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin")
+            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin: $yosHakutoive")
             Right(YosHakuToiveYossinPiirissa(yosHakutoive, kuuluukoYOSsinPiiriin))
           }
       }
@@ -138,10 +147,14 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
     val organisaatioJaVanhemmat = List(hakutoive.tarjoaja) ++ organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(hakutoive.tarjoaja)
     val koulutusAste = getKoulutusAsteHakutoiveelle(hakutoive)
+
+    val haunAlkamisaika = haku.hakuajat.map(h => LocalDateTime.parse(h.alkaa, DateTimeFormatter.ISO_LOCAL_DATE_TIME)).minOption
+    val koulutuksenAlkamisvuosi = hakutoive.paateltyAlkamiskausi.map(_.vuosi)
+
     YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto,
-      haku.isErasmusMundusTaiKaksoistutkinto, organisaatioJaVanhemmat, koulutusAste)
+      haku.isErasmusMundusTaiKaksoistutkinto, organisaatioJaVanhemmat, koulutusAste, haunAlkamisaika, koulutuksenAlkamisvuosi)
   }
-  
+
   private def getKoulutusAsteHakutoiveelle(hakutoive: KoutaHakukohde): YosKoulutusAsteLuokka = {
     val koodit = hakutoive.koulutusasteKoodiUrit.map(_.split("_").last)
     val containsAlempi: Boolean = koodit.exists(k => KOULUTUSASTE_ALEMMAT.contains(k))

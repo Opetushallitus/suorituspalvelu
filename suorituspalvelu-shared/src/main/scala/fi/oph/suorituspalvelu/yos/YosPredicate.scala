@@ -1,7 +1,11 @@
 package fi.oph.suorituspalvelu.yos
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Opiskeluoikeus}
-import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET, YLEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA}
+import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
+
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 object YosPredicate {
 
@@ -31,14 +35,29 @@ object YosPredicate {
   private val YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT = Seq("1", "2", "3", "4")
 
   def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
-    hakutoive match {
-      case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET) =>
-        kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
-      case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET) =>
-        kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
-      case _ =>
-        false
+    if (!onkoYosVoimassa(hakutoive.haunAlkamisaika, hakutoive.koulutuksenAlkamisvuosi)) {
+      false
+    } else {
+      hakutoive match {
+        case YosHakutoive(true, true, false, false, _, ALEMMAT_ASTEET, _, _) =>
+          kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
+        case YosHakutoive(true, true, false, false, _, YLEMMAT_JA_ALEMMAT_ASTEET, _, _) =>
+          kuuluukoOrganisaatioYosinPiiriin(hakutoive.organisaatioJaVanhemmat)
+        case _ =>
+          false
+      }
     }
+  }
+
+  private val helsinkiZone = ZoneId.of("Europe/Helsinki")
+  private val YOS_HAKUAIKA_ALKU_RAJA = LocalDateTime.parse("2026-08-01T00:00:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME).atZone(helsinkiZone)
+  private val YOS_KOULUTUKSEN_ALKAMISVUOSI_ALKU_RAJA = "2027"
+
+  private def onkoYosVoimassa(haunAlkamisaika: Option[LocalDateTime], koulutuksenAlkamisvuosi: Option[String]): Boolean = {
+    val yosVoimassaHakuajanPerusteella = haunAlkamisaika.map(_.atZone(helsinkiZone))
+      .exists(!_.isBefore(YOS_HAKUAIKA_ALKU_RAJA))
+    val yosVoimassaKoulutuksenAlkamisajanPerusteella = koulutuksenAlkamisvuosi.exists(_ >= YOS_KOULUTUKSEN_ALKAMISVUOSI_ALKU_RAJA)
+    yosVoimassaHakuajanPerusteella && yosVoimassaKoulutuksenAlkamisajanPerusteella
   }
 
   def kuuluukoOpiskeluoikeusYosinPiiriin(oikeus: KKOpiskeluoikeus): Boolean = {
