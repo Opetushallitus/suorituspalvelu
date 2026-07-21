@@ -2234,8 +2234,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
 
     val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[OppijanTiedotSuccessResponse])
 
-    Assertions.assertNotNull(response.ebTutkinto)
-    val ebTutkintoResponse = response.ebTutkinto.get()
+    Assertions.assertEquals(1, response.ebTutkinnot.size())
+    val ebTutkintoResponse = response.ebTutkinnot.get(0)
 
     Assertions.assertEquals("Eurooppalainen ylioppilastutkinto (EB)", ebTutkintoResponse.nimi.fi.get())
     Assertions.assertEquals(oppilaitosOid, ebTutkintoResponse.oppilaitos.oid)

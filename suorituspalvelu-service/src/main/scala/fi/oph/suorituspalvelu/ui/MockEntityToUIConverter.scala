@@ -167,8 +167,8 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getLukionOppimaara(): Option[LukionOppimaaraUI] =
-    Some(LukionOppimaaraUI(
+  def getLukionOppimaarat(): List[LukionOppimaaraUI] =
+    List(LukionOppimaaraUI(
       tunniste = UUID.randomUUID(),
       nimi = LukionOppimaaraNimi(
         fi = Optional.of("Lukion oppimäärä"),
@@ -229,11 +229,11 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getDiaTutkinto(): Option[DIATutkintoUI] =
-    None
+  def getDiaTutkinnot(): List[DIATutkintoUI] =
+    List.empty
 
-  def getEBTutkinto(): Option[EBTutkintoUI] =
-    Some(EBTutkintoUI(
+  def getEBTutkinnot(): List[EBTutkintoUI] =
+    List(EBTutkintoUI(
       tunniste = UUID.randomUUID(),
       nimi = EBTutkintoNimi(
         fi = Optional.of("EB-tutkinto"),
@@ -318,7 +318,7 @@ object MockEntityToUIConverter {
       )
     ))
 
-  def getIBTutkinto(): Option[IBTutkintoUI] = None
+  def getIBTutkinnot(): List[IBTutkintoUI] = List.empty
 
   def getAmmatillisetPerusTutkinnot(): List[Ammatillinentutkinto] =
     List(
@@ -1031,11 +1031,11 @@ object MockEntityToUIConverter {
       opiskeluoikeudet = getOpiskeluoikeudet().asJava,
       kkTutkinnot = getKKTutkinnot().asJava,
       yoTutkinnot = getYOTutkinto().asJava,
-      lukionOppimaara = getLukionOppimaara().toJava,
+      lukionOppimaarat = getLukionOppimaarat().asJava,
       lukionOppiaineenOppimaarat = getLukionOppiaineenOppimaarat().asJava,
-      diaTutkinto = getDiaTutkinto().toJava,
-      ebTutkinto = getEBTutkinto().toJava,
-      ibTutkinto = getIBTutkinto().toJava,
+      diaTutkinnot = getDiaTutkinnot().asJava,
+      ebTutkinnot = getEBTutkinnot().asJava,
+      ibTutkinnot = getIBTutkinnot().asJava,
       ammatillisetPerusTutkinnot = getAmmatillisetPerusTutkinnot().asJava,
       osittaisetAmmatillisetTutkinnot = List.empty[OsittainenAmmatillinenTutkintoUI].asJava,
       ammattitutkinnot = getAmmattitutkinnot().asJava,

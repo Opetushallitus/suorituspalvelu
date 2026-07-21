@@ -1124,7 +1124,7 @@ class EntityToUIConverterTest {
       koulusivistyskieli = Set(Koodi("FI", "kieli", Some(1)))
     )
 
-    Assertions.assertEquals(Optional.of(LukionOppimaaraUI(
+    Assertions.assertEquals(java.util.List.of(LukionOppimaaraUI(
       tunniste = lukionOppimaara.tunniste,
       nimi = LukionOppimaaraNimi(
         fi = Optional.of("Lukion oppimäärä"),
@@ -1143,7 +1143,7 @@ class EntityToUIConverterTest {
       aloituspaiva = lukionOppimaara.aloitusPaivamaara.toJava,
       valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
       suorituskieli = "FI"
-    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("lukiokoulutus", "opiskeluoikeudentyyppi", None), "", Set(lukionOppimaara), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).lukionOppimaara)
+    )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("lukiokoulutus", "opiskeluoikeudentyyppi", None), "", Set(lukionOppimaara), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).lukionOppimaarat)
   }
 
   @Test def testConvertIBTutkinto(): Unit = {
@@ -1197,10 +1197,10 @@ class EntityToUIConverterTest {
       None, None, None, "1.2.3", "2.3.4", None,
       Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ibtutkinto", "opiskeluoikeudentyyppi", None), "", Set(ibTutkinto), None, List.empty)),
       DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
-    ).ibTutkinto
+    ).ibTutkinnot
 
-    Assertions.assertTrue(result.isPresent)
-    val ui = result.get()
+    Assertions.assertFalse(result.isEmpty)
+    val ui = result.get(0)
 
     Assertions.assertEquals(tunniste, ui.tunniste)
     Assertions.assertEquals(IBTutkintoNimi(
@@ -1320,10 +1320,10 @@ class EntityToUIConverterTest {
       None, None, None, "1.2.3", "2.3.4", None,
       Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ibtutkinto", "opiskeluoikeudentyyppi", None), "", Set(ibTutkinto), None, List.empty)),
       DUMMY_ORGANISAATIOPROVIDER, koodistoProvider
-    ).ibTutkinto
+    ).ibTutkinnot
 
-    Assertions.assertTrue(result.isPresent)
-    val suoritukset = result.get().oppiaineet.asScala.flatMap(_.suoritukset.asScala)
+    Assertions.assertFalse(result.isEmpty)
+    val suoritukset = result.get(0).oppiaineet.asScala.flatMap(_.suoritukset.asScala)
 
     // Kun oppiaineella on sekä taso että kieli, taso (koodiarvo) ja kielen nimi liitetään oppiaineen nimeen tässä järjestyksessä (vrt. perusopetuksen oppimäärä).
     val suoritusFi = suoritukset.find(_.tunniste == oppiaineTunnisteFi).get
@@ -1523,10 +1523,10 @@ class EntityToUIConverterTest {
       None, None, None, "1.2.3", "2.3.4", None,
       Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("ibtutkinto", "opiskeluoikeudentyyppi", None), "", Set(ibTutkinto), None, List.empty)),
       DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER
-    ).ibTutkinto
+    ).ibTutkinnot
 
-    Assertions.assertTrue(result.isPresent)
-    val ui = result.get()
+    Assertions.assertFalse(result.isEmpty)
+    val ui = result.get(0)
 
     Assertions.assertEquals(2, ui.oppiaineet.size())
 
