@@ -2,14 +2,14 @@ package fi.oph.suorituspalvelu
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHakukohde, Ohjausparametrit, RetryConfig}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, HakemuspalveluClientImpl, Hakutoive, KoutaHakukohde, Ohjausparametrit, PaateltyAlkamiskausi, RetryConfig}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.resource.ApiConstants
 import fi.oph.suorituspalvelu.resource.api.{HakemustenHarkinnanvaraisuudetPayload, HarkinnanvaraisuusFailureResponse, ValintaApiHakemuksenHarkinnanvaraisuus}
 import fi.oph.suorituspalvelu.security.{AuditOperation, SecurityConstants}
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 import org.mockito.Mockito
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.junit.jupiter.api.{Assertions, Test}
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.context.support.WithAnonymousUser
@@ -36,6 +36,11 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
 
   @MockitoBean
   val tarjontaIntegration: TarjontaIntegration = null
+
+  val defaultPaateltyAlkamiskausi = Some(PaateltyAlkamiskausi(
+    "kausi_k",
+    "2027"
+  ))
 
   /*
    * Integraatiotestit harkinnanvaraisuuden haulle
@@ -105,6 +110,7 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
     val hakukohdeOid1 = "1.2.246.562.20.00000000000000000001"
     val hakukohdeOid2 = "1.2.246.562.20.00000000000000000002"
 
+
     val testHakemus = AtaruValintalaskentaHakemus(
       hakemusOid = hakemusOid,
       personOid = personOid,
@@ -147,7 +153,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true),
       johtaaTutkintoon = Some(true),
-      hakuOid = "1.2.4"
+      hakuOid = "1.2.4",
+      paateltyAlkamiskausi = defaultPaateltyAlkamiskausi
     )
     val hakukohde2 = KoutaHakukohde(
       oid = hakukohdeOid2,
@@ -155,7 +162,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true),
       johtaaTutkintoon = Some(true),
-      hakuOid = "1.2.4"
+      hakuOid = "1.2.4",
+      paateltyAlkamiskausi = defaultPaateltyAlkamiskausi
     )
 
     val ohjausparametrit = Ohjausparametrit(
@@ -342,7 +350,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true),
       johtaaTutkintoon = Some(true),
-      hakuOid = "1.2.4"
+      hakuOid = "1.2.4",
+      paateltyAlkamiskausi = defaultPaateltyAlkamiskausi
     )
 
     val ohjausparametrit = Ohjausparametrit(
@@ -452,9 +461,9 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       korkeakoulututkintoVuosi = None
     )
 
-    val hakukohde1 = KoutaHakukohde(oid = hakukohdeOid1, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
-    val hakukohde2 = KoutaHakukohde(oid = hakukohdeOid2, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
-    val hakukohde3 = KoutaHakukohde(oid = hakukohdeOid3, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4")
+    val hakukohde1 = KoutaHakukohde(oid = hakukohdeOid1, tarjoaja = "1.2.3", nimi = Map.empty, voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(true), johtaaTutkintoon = Some(true), hakuOid = "1.2.4", paateltyAlkamiskausi = defaultPaateltyAlkamiskausi)
+    val hakukohde2 = hakukohde1.copy(oid = hakukohdeOid2)
+    val hakukohde3 = hakukohde1.copy(oid = hakukohdeOid3)
 
     val ohjausparametrit = Ohjausparametrit(
       suoritustenVahvistuspaiva = Some(DateParam(1765290747152L)),
@@ -546,7 +555,8 @@ class HarkinnanvaraisuusResourceIntegraatioTest extends BaseIntegraatioTesti {
       nimi = Map.empty,
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(false),  // Ei harkinnanvarainen hakukohde
       johtaaTutkintoon = Some(true),
-      hakuOid = "1.2.4"
+      hakuOid = "1.2.4",
+      paateltyAlkamiskausi = defaultPaateltyAlkamiskausi
     )
 
     val ohjausparametrit = Ohjausparametrit(

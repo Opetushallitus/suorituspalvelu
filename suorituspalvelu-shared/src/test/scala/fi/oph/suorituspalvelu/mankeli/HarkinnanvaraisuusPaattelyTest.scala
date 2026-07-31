@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEN
 import fi.oph.suorituspalvelu.business.{Koodi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, Hakutoive, KoutaHakukohde, Ohjausparametrit}
+import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, DateParam, Hakutoive, KoutaHakukohde, Ohjausparametrit, PaateltyAlkamiskausi}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy, HarkinnanvaraisuusPaattely}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
@@ -664,6 +664,10 @@ class HarkinnanvaraisuusPaattelyTest {
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = Some(harkinnanvaraisetSallittu),
       johtaaTutkintoon = Some(true),
       hakuOid = "1.2.4",
+      paateltyAlkamiskausi = Some(PaateltyAlkamiskausi(
+        "kausi_k",
+        vuosi = "2025",
+      ))
     )
   }
 }

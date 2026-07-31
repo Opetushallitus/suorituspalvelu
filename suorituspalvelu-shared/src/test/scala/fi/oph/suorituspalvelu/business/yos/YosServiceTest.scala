@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.business.yos
 import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.{PAATTYNYT, VOIMASSA}
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Lahdejarjestelma, VersioEntiteetti}
 import fi.oph.suorituspalvelu.integration.TarjontaIntegration
-import fi.oph.suorituspalvelu.integration.client.{Koodi, KoodiMetadata, Koodisto, KoutaHaku, KoutaHakukohde, Organisaatio, OrganisaatioNimi}
+import fi.oph.suorituspalvelu.integration.client.{Koodi, KoodiMetadata, Koodisto, KoutaHaku, KoutaHakuaika, KoutaHakukohde, Organisaatio, OrganisaatioNimi, PaateltyAlkamiskausi}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.yos.{YosConstants, YosHakutoive, YosService}
@@ -37,15 +37,30 @@ class YosServiceTest {
 
   private val ORGANISAATIO_OID = "1.2.246.562.10.2014040310315946122056"
 
-  private val HAKU_JOKA_KUULUU_YOS_PIIRIIN = KoutaHaku(HAKU_OID, "julkaistu",
-    Map.empty, "", Some("haunkohdejoukko_12"), List.empty, None, Some(2026))
+  private val HAKU_JOKA_KUULUU_YOS_PIIRIIN = KoutaHaku(
+    HAKU_OID,
+    "julkaistu",
+    Map.empty,
+    "",
+    Some("haunkohdejoukko_12"),
+    List(KoutaHakuaika("2026-08-01T08:00:00", Some("2026-08-30T15:00:00"))),
+    None,
+    Some(2026))
 
   private val HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN = KoutaHakukohde(
-    HAKUKOHDE_OID, ORGANISAATIO_OID, Map.empty, None, Some(true), HAKU_OID, List("kansallinenkoulutusluokitus2016koulutusastetaso2_72")
+    HAKUKOHDE_OID,
+    ORGANISAATIO_OID,
+    Map.empty,
+    None,
+    Some(true),
+    HAKU_OID,
+    List("kansallinenkoulutusluokitus2016koulutusastetaso2_72"),
+    Some(PaateltyAlkamiskausi("kausi_k", "2027"))
   )
 
   private val YOS_HAKUTOIVE = YosHakutoive(korkeakoulutus = true, tutkintoonJohtava = true, jatkoTutkinto = false,
-    kaksoisTutkinto = false, organisaatioJaVanhemmat = List(ORGANISAATIO_OID), koulutusAste = YLEMMAT_JA_ALEMMAT_ASTEET)
+    kaksoisTutkinto = false, organisaatioJaVanhemmat = List(ORGANISAATIO_OID), koulutusAste = YLEMMAT_JA_ALEMMAT_ASTEET,
+    haunAlkamisaika = None, koulutuksenAlkamisvuosi = None)
 
   private val VIRTA_VERSIO = VersioEntiteetti(
     lahdeJarjestelma = Lahdejarjestelma.VIRTA,
@@ -56,8 +71,8 @@ class YosServiceTest {
     lahdeTunniste = "lahdeTunniste",
     lahdeVersio = Some(1),
     parserVersio = Some(1),
-    luontiHetki = Some(Instant.now), 
-    paivitysHetki = None, 
+    luontiHetki = Some(Instant.now),
+    paivitysHetki = None,
     parserointiHetki = Some(Instant.now)
   )
 
@@ -123,6 +138,64 @@ class YosServiceTest {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(hakuOid = "1.2.3.4"))
     assertTrue(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).isLeft)
+  }
+
+  // Yksityiskohtainen leikkuripäivä/-vuosirajojen testaus tehdään YosPredicateTest:ssä. Tässä varmistetaan
+  // vain että YosService kytkee KoutaHaku/KoutaHakukohde-tiedot oikein YosHakutoiveelle, ja että YOS ei
+  // ole voimassa -tilanne ei palauta virhettä vaan hakutoiveen jolla kuuluukoYosPiiriin == false.
+  @Test
+  def eiVirhettaVaikkaYosEiOleVoimassaHaunHakuajanPerusteella(): Unit = {
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN
+      .copy(hakuajat = List(KoutaHakuaika("2026-07-31T23:59:59", Some("2026-08-30T15:00:00"))))))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    val tulos = service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID)
+    assertTrue(tulos.isRight)
+    assertFalse(tulos.map(_.kuuluukoYosPiiriin).getOrElse(true))
+  }
+
+  @Test
+  def haunAlkamisaikanaKaytetaanAikaisintaHakuaikaa(): Unit = {
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN
+      .copy(hakuajat = List(
+        KoutaHakuaika("2026-08-01T00:00:00", None),
+        KoutaHakuaika("2026-07-01T00:00:00", None)))))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    // aikaisin hakuajoista (2026-07-01) alittaa leikkurin, vaikka toinen hakuajoista täyttäisikin sen
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(_.kuuluukoYosPiiriin).getOrElse(true))
+  }
+
+  @Test
+  def eiVirhettaVaikkaYosEiOleVoimassaHakuaikojenPuuttuessa(): Unit = {
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(hakuajat = List.empty)))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    val tulos = service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID)
+    assertTrue(tulos.isRight)
+    assertFalse(tulos.map(_.kuuluukoYosPiiriin).getOrElse(true))
+  }
+
+  @Test
+  def eiVirhettaVaikkaYosEiOleVoimassaHakukohteenAlkamisvuodenPerusteella(): Unit = {
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN
+      .copy(paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2026"))))
+    val tulos = service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID)
+    assertTrue(tulos.isRight)
+    assertFalse(tulos.map(_.kuuluukoYosPiiriin).getOrElse(true))
+  }
+
+  @Test
+  def eiVirhettaVaikkaHakukohteellaEiOlePaateltyaAlkamiskautta(): Unit = {
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN
+      .copy(paateltyAlkamiskausi = None))
+    val tulos = service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID)
+    assertTrue(tulos.isRight)
+    assertFalse(tulos.map(_.kuuluukoYosPiiriin).getOrElse(true))
   }
 
   @Test

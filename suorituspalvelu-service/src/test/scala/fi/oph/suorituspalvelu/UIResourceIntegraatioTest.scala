@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AvainArvoYliajo, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, HarkinnanvaraisuusYliajo, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila}
-import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OpintopolkuVastaanotto, Organisaatio, OrganisaatioNimi, RetryConfig, VTSClient, VanhaTarjontaHaku, VanhaTarjontaHakukohde, Vastaanotot}
+import fi.oph.suorituspalvelu.integration.client.{AtaruPermissionRequest, AtaruPermissionResponse, DateParam, HakemuspalveluClientImpl, KoutaHaku, KoutaHakukohde, Ohjausparametrit, OpintopolkuVastaanotto, Organisaatio, OrganisaatioNimi, PaateltyAlkamiskausi, RetryConfig, VTSClient, VanhaTarjontaHaku, VanhaTarjontaHakukohde, Vastaanotot}
 import fi.oph.suorituspalvelu.integration.{HakukohderyhmaIntegration, OnrHenkiloPerustiedot, OnrIntegration, OnrMasterHenkilo, PersonOidsWithAliases, TarjontaIntegration}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
@@ -16,7 +16,7 @@ import fi.oph.suorituspalvelu.service.UIService
 import fi.oph.suorituspalvelu.util.{HakuProvider, HakukohdeProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.validation.UIValidator
 import org.junit.jupiter.api.*
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -1255,7 +1255,8 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
       nimi = Map("fi" -> "Testihakukohde"),
       voikoHakukohteessaOllaHarkinnanvaraisestiHakeneita = None,
       johtaaTutkintoon = Some(true),
-      hakuOid = "1.2.4"
+      hakuOid = "1.2.4",
+      paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2027"))
     )
     Mockito.when(hakuProvider.haeHaku(hakuOid)).thenReturn(Some(koutaHaku))
     Mockito.when(hakukohdeProvider.haeHakukohde(hakukohdeOid)).thenReturn(Some(koutaHakukohde))
