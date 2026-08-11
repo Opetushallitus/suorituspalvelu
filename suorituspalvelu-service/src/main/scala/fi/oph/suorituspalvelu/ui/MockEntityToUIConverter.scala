@@ -22,6 +22,11 @@ object MockEntityToUIConverter {
           sv = Optional.of("Kasvatust. maist., kasvatustiede sv"),
           en = Optional.of("Kasvatust. maist., kasvatustiede en")
         ),
+        virtaNimi = Optional.of(KKOpiskeluoikeusNimiUI(
+          fi = Optional.of("Kasvatustieteen maisteri"),
+          sv = Optional.empty,
+          en = Optional.empty
+        )),
         oppilaitos = KKOppilaitosUI(
           nimi = KKOppilaitosNimiUI(
             fi = Optional.of("Tampereen yliopisto"),

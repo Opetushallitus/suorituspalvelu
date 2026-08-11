@@ -886,11 +886,16 @@ class EntityToUIConverterTest {
 
     Assertions.assertEquals(java.util.List.of(fi.oph.suorituspalvelu.resource.ui.OpiskeluoikeusUI(
       virtaOpiskeluoikeus.tunniste,
-      OpiskeluoikeusNimiUI(
+      nimi = OpiskeluoikeusNimiUI(
         Optional.of(KOULUTUKSEN_NIMI_FI),
         Optional.empty(),
         Optional.of(KOULUTUKSEN_NIMI_EN)
       ),
+      virtaNimi = Optional.of(KKOpiskeluoikeusNimiUI(
+        Optional.of("Sosekoulutus"),
+        Optional.empty(),
+        Optional.empty()
+      )),
       KKOppilaitosUI(
         KKOppilaitosNimiUI(
           Optional.of(ORGANISAATION_NIMI_FI),

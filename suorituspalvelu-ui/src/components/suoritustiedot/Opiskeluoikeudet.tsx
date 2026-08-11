@@ -126,6 +126,12 @@ export const Opiskeluoikeudet = ({
                     value={<VoimassaoloIndicator opiskeluoikeus={oo} />}
                   />
                 </Stack>
+                <LabeledInfoItem
+                  label={t('oppija.virta-nimi')}
+                  value={
+                    oo.virtaNimi ? translateKielistetty(oo.virtaNimi) : '-'
+                  }
+                />
               </Stack>
             </PaperWithTopColor>
           );

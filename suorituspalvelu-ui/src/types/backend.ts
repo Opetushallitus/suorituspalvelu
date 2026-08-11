@@ -402,6 +402,7 @@ export interface IOpiskeluoikeusNimiUI {
 export interface IOpiskeluoikeusUI {
   tunniste: string;
   nimi: IOpiskeluoikeusNimiUI;
+  virtaNimi?: IKKSuoritusNimiUI;
   oppilaitos: IKKOppilaitosUI;
   voimassaolonAlku: string;
   voimassaolonLoppu: string;
