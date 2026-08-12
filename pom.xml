@@ -124,7 +124,7 @@
             <dependency>
                 <groupId>fi.vm.sade</groupId>
                 <artifactId>auditlogger</artifactId>
-                <version>9.2.5-SNAPSHOT</version>
+                <version>9.2.7-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.google.code.gson</groupId>
