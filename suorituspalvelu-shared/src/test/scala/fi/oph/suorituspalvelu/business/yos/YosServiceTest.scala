@@ -29,7 +29,7 @@ class YosServiceTest {
 
   private val koodistoMock: KoodistoProvider = Mockito.mock(classOf[KoodistoProvider])
 
-  private val service = YosService(tarjontaMock, oikeusMock, organisaatioMock, koodistoMock)
+  private val service = YosService(tarjontaMock, oikeusMock, organisaatioMock, koodistoMock, true)
 
   private val HAKIJA_OID = "1.2.246.562.24.71794920276"
   private val HAKU_OID = "1.2.246.562.29.00000000000000074021"

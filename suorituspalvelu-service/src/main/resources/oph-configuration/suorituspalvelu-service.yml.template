@@ -79,4 +79,4 @@ ovara:
   opiskeluoikeus-batch-size: {{suorituspalvelu_ovara_opiskeluoikeus_batch_size | default('500')}}
 
 yos:
-  voimassaoloCheckDisabled: {{suorituspalvelu_yos_voimassaolo_check_disabled | default('false')}}
+  voimassaoloCheckEnabled: {{suorituspalvelu_yos_voimassaolo_check_enabled | default('true')}}
