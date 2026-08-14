@@ -259,6 +259,13 @@ object VirtaToSuoritusConverter {
               remainingSuoritusRoots.partition(sisaltyyOpiskeluoikeuteen(_, oo, suorituksetByAvain))
             val jakso = latestJakso(oo)
 
+            var liittyvaOpiskeluOikeus = oo.Liittyvyys.map(l => l.liittyvaOpiskeluoikeusAvain)
+            if (liittyvaOpiskeluOikeus.isEmpty) {
+              liittyvaOpiskeluOikeus = virtaOpiskeluoikeudet
+                .find(vo => vo.Liittyvyys.exists(l => l.liittyvaOpiskeluoikeusAvain.equals(oo.avain)))
+                .map(_.avain)
+            }
+
             val kkOpiskeluoikeus = KKOpiskeluoikeus(
               tunniste = UUID.randomUUID(),
               virtaTunniste = oo.avain,
@@ -280,7 +287,7 @@ object VirtaToSuoritusConverter {
               kieli = jakso.flatMap(_.Koulutuskieli),
               suoritukset =
                 fixSuoritusRoots(toSuoritukset(Some(oo), opiskeluoikeudenSuoritukset, suorituksetByAvain), oo).toSet,
-              liittyvaOpiskeluoikeusAvain = oo.Liittyvyys.map(l => l.liittyvaOpiskeluoikeusAvain)
+              liittyvaOpiskeluoikeusAvain = liittyvaOpiskeluOikeus
             )
             (muutSuoritukset, kkOpiskeluoikeus :: kkOpiskeluoikeudet)
         }

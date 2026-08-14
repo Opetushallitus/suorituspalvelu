@@ -31,8 +31,6 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
-  private val LINK_UNDEFIDED = "LINK_UNDEFINED"
-
   def haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid: String, hakuOid: String, hakukohdeOid: String): Either[YosErrorResponse, Set[YosPaatettavaOpiskeluOikeus]] = {
     LOGGER.info(s"Tarkistetaan kuuluuko vastaanotettava opiskelupaikka YOS piiriin. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
     kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid, hakukohdeOid).fold(
@@ -130,9 +128,8 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   private def tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoive: YosHakutoive, oikeudet: Set[KKOpiskeluoikeus], oikeus: KKOpiskeluoikeus) = {
     var oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
     //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään sitä
-    if (oikeudenAste.equals(YLEMMAT_ASTEET)) {
-      oikeudenAste = oikeudet.find(o => o.virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.getOrElse(LINK_UNDEFIDED)
-          || o.liittyvaOpiskeluoikeusAvain.getOrElse(LINK_UNDEFIDED) == oikeus.virtaTunniste)
+    if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
+      oikeudenAste = oikeudet.find(o => o.virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get)
         .map(getKoulutusAsteOpiskeluOikeudelle)
         .filter(o => o.equals(ALEMMAT_ASTEET)).getOrElse(oikeudenAste)
       if (oikeudenAste.equals(ALEMMAT_ASTEET)) {

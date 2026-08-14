@@ -80,4 +80,9 @@ class YosPredicateTest {
     assertTrue(YosPredicate.kuuluukoHakutoiveYosinPiiriin(YosHakutoive(true, true, false, false, List("123.23.123"), ALEMMAT_ASTEET, VOIMASSA_HAUN_ALKAMISAIKA, Some("2027"))))
   }
 
+  @Test
+  def hakutoiveKuuluuYosinPiiriinKunHaunAlkamisaikaOnEnnenLeikkuripaivaaMuttaVoimassaoloTarkistustaEiTehda(): Unit = {
+    assertTrue(YosPredicate.kuuluukoHakutoiveYosinPiiriin(YosHakutoive(true, true, false, false, List("123.23.123"), ALEMMAT_ASTEET, Some(LocalDateTime.parse("2026-07-31T23:59:59")), VOIMASSA_KOULUTUKSEN_ALKAMISVUOSI), false))
+  }
+
 }
