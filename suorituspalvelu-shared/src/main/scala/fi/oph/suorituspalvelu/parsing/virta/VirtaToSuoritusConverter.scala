@@ -322,55 +322,66 @@ object VirtaToSuoritusConverter {
     suoritus: VirtaOpintosuoritus,
     suorituksetByAvain: Map[String, VirtaOpintosuoritus],
     // jos ei opiskeluoikeutta, kyseessä suoritus ilman opiskeluoikeutta eli on luotu synteettinen opiskeluoikeus
-    opiskeluoikeus: Option[VirtaOpiskeluoikeus]
+    opiskeluoikeus: Option[VirtaOpiskeluoikeus],
+    prosessoidutSuoritusAvaimet: List[String] = List.empty
   ): Option[Suoritus] = {
     suoritus.Laji match
       case VIRTA_TUTKINTO_LAJI => Some(KKTutkinto(
-          tunniste = UUID.randomUUID(),
-          nimi = virtaNimiToKielistetty(suoritus.Nimi),
-          supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS),
-          komoTunniste = suoritus.koulutusmoduulitunniste,
-          opintoPisteet = suoritus.Laajuus.Opintopiste,
-          aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
-          suoritusPvm = Some(suoritus.SuoritusPvm),
-          myontaja = suoritus.Myontaja,
-          kieli = suoritus.Kieli,
-          koulutusKoodi = suoritus.Koulutuskoodi,
-          opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
-          suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
-            suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(suoritus =>
-              toSuoritus(suoritus, suorituksetByAvain, opiskeluoikeus)
-            )
-          }),
-          avain = Some(suoritus.avain)
-        ))
+        tunniste = UUID.randomUUID(),
+        nimi = virtaNimiToKielistetty(suoritus.Nimi),
+        supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS),
+        komoTunniste = suoritus.koulutusmoduulitunniste,
+        opintoPisteet = suoritus.Laajuus.Opintopiste,
+        aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
+        suoritusPvm = Some(suoritus.SuoritusPvm),
+        myontaja = suoritus.Myontaja,
+        kieli = suoritus.Kieli,
+        koulutusKoodi = suoritus.Koulutuskoodi,
+        opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
+        suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
+          suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(suoritus => {
+            if (prosessoidutSuoritusAvaimet.contains(suoritus.avain)) {
+              LOG.warn(s"Suoritus ${suoritus.avain} on jo sisällytetty prosessoituihin suorituksiin!")
+              None
+            } else {
+              toSuoritus(suoritus, suorituksetByAvain, opiskeluoikeus, prosessoidutSuoritusAvaimet :+ sis.sisaltyvaOpintosuoritusAvain)
+            }
+          })
+        }),
+        avain = Some(suoritus.avain)
+      ))
       case VIRTA_OPINTOSUORITUS_LAJI => Some(KKOpintosuoritus(
-          tunniste = UUID.randomUUID(),
-          nimi = virtaNimiToKielistetty(suoritus.Nimi),
-          supaTila = SuoritusTila.VALMIS,
-          komoTunniste = suoritus.koulutusmoduulitunniste,
-          opintoPisteet = suoritus.Laajuus.Opintopiste,
-          opintoviikot = None,
-          suoritusPvm = Some(suoritus.SuoritusPvm),
-          hyvaksilukuPvm = suoritus.HyvaksilukuPvm,
-          myontaja = suoritus.Myontaja,
-          jarjestavaRooli = suoritus.Organisaatio.map(_.Rooli),
-          jarjestavaKoodi = suoritus.Organisaatio.map(_.Koodi),
-          jarjestavaOsuus = suoritus.Organisaatio.flatMap(_.Osuus),
-          arvosana = suoritus.Arvosana.map(_.arvosana),
-          arvosanaAsteikko = suoritus.Arvosana.flatMap(_.asteikko),
-          kieli = suoritus.Kieli,
-          koulutusala = suoritus.Koulutusala.map(_.Koodi.koodi),
-          koulutusalaKoodisto = suoritus.Koulutusala.map(_.Koodi.versio),
-          opinnaytetyo = suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
-          opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
-          suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
-            suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(suoritus =>
-              toSuoritus(suoritus, suorituksetByAvain, opiskeluoikeus)
-            )
-          }),
-          avain = suoritus.avain
-        ))
+        tunniste = UUID.randomUUID(),
+        nimi = virtaNimiToKielistetty(suoritus.Nimi),
+        supaTila = SuoritusTila.VALMIS,
+        komoTunniste = suoritus.koulutusmoduulitunniste,
+        opintoPisteet = suoritus.Laajuus.Opintopiste,
+        opintoviikot = None,
+        suoritusPvm = Some(suoritus.SuoritusPvm),
+        hyvaksilukuPvm = suoritus.HyvaksilukuPvm,
+        myontaja = suoritus.Myontaja,
+        jarjestavaRooli = suoritus.Organisaatio.map(_.Rooli),
+        jarjestavaKoodi = suoritus.Organisaatio.map(_.Koodi),
+        jarjestavaOsuus = suoritus.Organisaatio.flatMap(_.Osuus),
+        arvosana = suoritus.Arvosana.map(_.arvosana),
+        arvosanaAsteikko = suoritus.Arvosana.flatMap(_.asteikko),
+        kieli = suoritus.Kieli,
+        koulutusala = suoritus.Koulutusala.map(_.Koodi.koodi),
+        koulutusalaKoodisto = suoritus.Koulutusala.map(_.Koodi.versio),
+        opinnaytetyo = suoritus.Opinnaytetyo.exists(o => "1".equals(o)),
+        opiskeluoikeusAvain = suoritus.opiskeluoikeusAvain,
+        suoritukset = suoritus.Sisaltyvyys.flatMap(sis => {
+          suorituksetByAvain.get(sis.sisaltyvaOpintosuoritusAvain).flatMap(suoritus => {
+            if (prosessoidutSuoritusAvaimet.contains(suoritus.avain)) {
+              LOG.warn(s"Suoritus ${suoritus.avain} on jo sisällytetty prosessoituihin suorituksiin!")
+              None
+            } else {
+              toSuoritus(suoritus, suorituksetByAvain, opiskeluoikeus, prosessoidutSuoritusAvaimet :+ sis.sisaltyvaOpintosuoritusAvain)
+            }
+          })
+        }),
+        avain = suoritus.avain
+      ))
       case default => None
   }
 
@@ -382,7 +393,10 @@ object VirtaToSuoritusConverter {
   ): Seq[Suoritus] =
     try
       allowMissingFields.set(allowMissingFieldsForTests)
-      opintosuoritukset.flatMap(suoritus => toSuoritus(suoritus, allSuorituksetByAvain, opiskeluoikeus))
+      opintosuoritukset.flatMap(suoritus => {
+        LOG.info(s"Parsitaan suoritusta henkilölle ${suoritus.opiskelijaAvain}")
+        toSuoritus(suoritus, allSuorituksetByAvain, opiskeluoikeus)
+      })
     finally
       allowMissingFields.set(false)
 }
