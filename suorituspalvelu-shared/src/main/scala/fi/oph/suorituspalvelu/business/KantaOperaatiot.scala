@@ -366,7 +366,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
             )::text AS versio
             FROM versiot
-            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
+            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), 180.seconds)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int): Unit = {
