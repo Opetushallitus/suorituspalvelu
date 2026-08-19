@@ -351,9 +351,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               FROM versiot
               WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
 
-  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] =
-    Await.result(db.run(
-        sql"""SELECT jsonb_build_object('tunniste', tunniste,
+  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] = {
+    val operation = sql"""SELECT jsonb_build_object('tunniste', tunniste,
               'henkiloOid', henkilo_oid,
               'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
@@ -366,8 +365,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
             )::text AS versio
             FROM versiot
-            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
+            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]
+    Await.result(db.run(operation.withStatementParameters(statementInit = st => st.setQueryTimeout(180.seconds.toSeconds.toInt))), 180.seconds)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
+  }
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int): Unit = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl)")
