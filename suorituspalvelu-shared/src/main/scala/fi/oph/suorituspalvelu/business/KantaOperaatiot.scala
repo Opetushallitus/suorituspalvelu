@@ -81,6 +81,8 @@ object KantaOperaatiot {
 class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   final val DB_TIMEOUT = 30.seconds
+  // eräajot (esim. uudelleenparserointi) käsittelevät koko taulun laajuisia joukkoja, joten niille on oma pidempi timeout
+  final val ERAAJO_DB_TIMEOUT = 5.minutes
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiot])
 
   def getUUID(): UUID =
@@ -351,7 +353,21 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               FROM versiot
               WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
 
-  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] =
+  def haeVersioidenMaara(lahdeJarjestelma: Lahdejarjestelma): Int =
+    Await.result(db.run(
+      sql"""SELECT count(*)
+            FROM versiot
+            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[Int]), ERAAJO_DB_TIMEOUT).head
+
+  /**
+   * Hakee lähdejärjestelmän versioita erissä tunnisteen mukaisessa järjestyksessä. Koko joukkoa ei voi hakea kerralla
+   * koska isoilla lähdejärjestelmillä (esim. VIRTA) kysely ei mahdu timeoutin sisään eikä tulos järkevästi muistiin.
+   *
+   * @param jalkeen tunniste jonka jälkeisiä versioita haetaan (edellisen erän viimeinen versio), None ensimmäisellä erällä
+   * @param maara   erän maksimikoko
+   */
+  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma, jalkeen: Option[UUID], maara: Int): Seq[VersioEntiteetti] =
+    val jalkeenTunniste = jalkeen.map(_.toString).orNull
     Await.result(db.run(
         sql"""SELECT jsonb_build_object('tunniste', tunniste,
               'henkiloOid', henkilo_oid,
@@ -366,7 +382,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
             )::text AS versio
             FROM versiot
-            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), 180.seconds)
+            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}
+              AND (${jalkeenTunniste}::uuid IS NULL OR tunniste>${jalkeenTunniste}::uuid)
+            ORDER BY tunniste
+            LIMIT ${maara}""".as[String]), ERAAJO_DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int): Unit = {

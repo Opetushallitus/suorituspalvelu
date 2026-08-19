@@ -3,7 +3,7 @@ package fi.oph.suorituspalvelu.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Opiskeluoikeus, ParserVersions, Lahdejarjestelma, VersioEntiteetti}
-import fi.oph.suorituspalvelu.jobs.SupaScheduler
+import fi.oph.suorituspalvelu.jobs.{SupaJobContext, SupaScheduler}
 import fi.oph.suorituspalvelu.parsing.koski.{KoskiParser, KoskiToSuoritusConverter, KoskiUtil}
 import fi.oph.suorituspalvelu.parsing.virkailija.VirkailijaToSuoritusConverter
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
@@ -26,96 +26,84 @@ class ReparseService(scheduler: SupaScheduler, kantaOperaatiot: KantaOperaatiot,
   val LOG = LoggerFactory.getLogger(classOf[ReparseService])
 
   final val PROGRESS_UPDATE_INTERVAL = 100
+  final val VERSIO_ERAKOKO = 500
   final val TIMEOUT = 30.seconds
 
   private val HENKILO_TIMEOUT = 5.minutes
-  
-  private val reparseKoskiJob = scheduler.registerJob("reparse-koski-data", (ctx, dryRun) => {
-    LOG.info(s"Uudelleenparseroidaan KOSKI-data, job id: ${ctx.getJobId}")
-    val versiot = kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI)
-    versiot.zipWithIndex.foreach((versio, idx) => {
+
+  /**
+   * Käy läpi lähdejärjestelmän versiot ja parseroi ne uudelleen. Versiot haetaan erissä, koska isoilla
+   * lähdejärjestelmillä (esim. VIRTA) koko joukon hakeminen yhdellä kyselyllä ei mahdu kannan timeoutin sisään.
+   *
+   * @param parseroi versiosta opiskeluoikeudet muodostava funktio
+   */
+  private def reparseVersiot(ctx: SupaJobContext, lahdejarjestelma: Lahdejarjestelma, parserVersio: Int, dryRun: String)(parseroi: VersioEntiteetti => Set[Opiskeluoikeus]): Unit = {
+    val versioidenMaara = kantaOperaatiot.haeVersioidenMaara(lahdejarjestelma)
+    LOG.info(s"Uudelleenparseroidaan ${lahdejarjestelma.nimi}-data ($versioidenMaara versiota), job id: ${ctx.getJobId}")
+    var kasitelty = 0
+    var era = kantaOperaatiot.haeVersiot(lahdejarjestelma, None, VERSIO_ERAKOKO)
+    while(era.nonEmpty) {
+      era.foreach(versio => {
         try
-          if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val data = kantaOperaatiot.haeJsonData(versio)
-          val parsed = data.map(d => KoskiParser.parseKoskiData(d))
-          val converted = KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
-          if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.KOSKI)
+          val converted = parseroi(versio)
+          if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), parserVersio)
         catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} KOSKI-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} ${lahdejarjestelma.nimi}-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
+        kasitelty = kasitelty + 1
+        if(kasitelty % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(kasitelty.toDouble/Math.max(versioidenMaara, kasitelty).toDouble)
       })
-    LOG.info(s"KOSKI-datan uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
+      // jos erä jäi vajaaksi ei versioita ole enää jäljellä
+      era = if(era.size < VERSIO_ERAKOKO) Seq.empty else kantaOperaatiot.haeVersiot(lahdejarjestelma, Some(era.last.tunniste), VERSIO_ERAKOKO)
+    }
+    LOG.info(s"${lahdejarjestelma.nimi}-datan uudelleenparserointi valmis, käsiteltiin $kasitelty versiota, job id: ${ctx.getJobId}")
+  }
+
+  private val reparseKoskiJob = scheduler.registerJob("reparse-koski-data", (ctx, dryRun) => {
+    reparseVersiot(ctx, Lahdejarjestelma.KOSKI, ParserVersions.KOSKI, dryRun)(versio => {
+      val data = kantaOperaatiot.haeJsonData(versio)
+      val parsed = data.map(d => KoskiParser.parseKoskiData(d))
+      KoskiToSuoritusConverter.parseOpiskeluoikeudet(parsed, koodistoProvider).toSet
+    })
   }, Seq.empty)
 
   def reparseKoski(dryRun: Boolean): UUID = reparseKoskiJob.run(dryRun.toString)
 
   private val reparseVirtaJob = scheduler.registerJob("reparse-virta-data", (ctx, dryRun) => {
-    LOG.info(s"Uudelleenparseroidaan VIRTA-data, job id: ${ctx.getJobId}")
-    val versiot = kantaOperaatiot.haeVersiot(Lahdejarjestelma.VIRTA)
-    versiot.zipWithIndex.foreach((versio, idx) => {
-        try
-          if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val data = kantaOperaatiot.haeXmlData(versio)
-          val virtaOpiskelijat = data.flatMap(VirtaParser.parseVirtaOpiskelijat)
-          val converted: Set[Opiskeluoikeus] = VirtaToSuoritusConverter.toOpiskeluoikeudet(virtaOpiskelijat).toSet
-          if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.VIRTA)
-        catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} VIRTA-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
-      })
-    LOG.info(s"VIRTA-datan uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
+    reparseVersiot(ctx, Lahdejarjestelma.VIRTA, ParserVersions.VIRTA, dryRun)(versio => {
+      val data = kantaOperaatiot.haeXmlData(versio)
+      val virtaOpiskelijat = data.flatMap(VirtaParser.parseVirtaOpiskelijat)
+      VirtaToSuoritusConverter.toOpiskeluoikeudet(virtaOpiskelijat).toSet
+    })
   }, Seq.empty)
 
   def reparseVirta(dryRun: Boolean): UUID = reparseVirtaJob.run(dryRun.toString)
 
   private val reparseYTRJob = scheduler.registerJob("reparse-ytr-data", (ctx, dryRun) => {
-    LOG.info(s"Uudelleenparseroidaan YTR-data, job id: ${ctx.getJobId}")
-    val versiot = kantaOperaatiot.haeVersiot(Lahdejarjestelma.YTR)
-    versiot.zipWithIndex.foreach((versio, idx) => {
-        try
-          if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val data = kantaOperaatiot.haeJsonData(versio)
-          val parsed = data.map(d => YtrParser.parseYtrData(d))
-          val converted: Set[Opiskeluoikeus] = parsed.map(s => YtrToSuoritusConverter.toSuoritus(s)).toSet
-          if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.YTR)
-        catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} YTR-version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
-      })
-    LOG.info(s"YTR-datan uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
+    reparseVersiot(ctx, Lahdejarjestelma.YTR, ParserVersions.YTR, dryRun)(versio => {
+      val data = kantaOperaatiot.haeJsonData(versio)
+      val parsed = data.map(d => YtrParser.parseYtrData(d))
+      parsed.map(s => YtrToSuoritusConverter.toSuoritus(s)).toSet
+    })
   }, Seq.empty)
 
   def reparseYTR(dryRun: Boolean): UUID = reparseYTRJob.run(dryRun.toString)
 
   private val reparsePerusopetuksenOppimaaratJob = scheduler.registerJob("reparse-perusopetus-data", (ctx, dryRun) => {
-    LOG.info(s"Uudelleenparseroidaan syötetyt perusopetuksen oppimäärät, job id: ${ctx.getJobId}")
-    val versiot = kantaOperaatiot.haeVersiot(Lahdejarjestelma.SYOTETTY_PERUSOPETUS)
-    versiot.zipWithIndex.foreach((versio, idx) => {
-        try
-          if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val data = kantaOperaatiot.haeJsonData(versio)
-          val parsed = data.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppimaaranSuoritus]))
-          val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
-          if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.SYOTETTY_PERUSOPETUS)
-        catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} käsin syötetyn version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
-      })
-    LOG.info(s"Syotettyjen perusopetuksen oppimäärien uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
+    reparseVersiot(ctx, Lahdejarjestelma.SYOTETTY_PERUSOPETUS, ParserVersions.SYOTETTY_PERUSOPETUS, dryRun)(versio => {
+      val data = kantaOperaatiot.haeJsonData(versio)
+      val parsed = data.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppimaaranSuoritus]))
+      parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
+    })
   }, Seq.empty)
 
   def reparsePerusopetuksenOppimaarat(dryRun: Boolean): UUID = reparsePerusopetuksenOppimaaratJob.run(dryRun.toString)
 
   private val reparsePerusopetuksenOppiaineenOppimaaratJob = scheduler.registerJob("reparse-perusopetus-oppiaineet-data", (ctx, dryRun) => {
-    LOG.info(s"Uudelleenparseroidaan syötetyt perusopetuksen oppimäärän oppiaineet, job id: ${ctx.getJobId}")
-    val versiot = kantaOperaatiot.haeVersiot(Lahdejarjestelma.SYOTETYT_OPPIAINEET)
-    versiot.zipWithIndex.foreach((versio, idx) => {
-        try
-          if(idx % PROGRESS_UPDATE_INTERVAL == 0) ctx.updateProgress(idx.toDouble/versiot.size.toDouble)
-          val data = kantaOperaatiot.haeJsonData(versio)
-          val parsed = data.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer]))
-          val converted: Set[Opiskeluoikeus] = parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
-          if(!dryRun.toBoolean) kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, converted, KoskiUtil.getLahtokouluMetadata(converted), ParserVersions.SYOTETYT_OPPIAINEET)
-        catch
-          case e: Exception => LOG.error(s"Virhe henkilön ${versio.henkiloOid} käsin syötetyn version ${versio.tunniste.toString} uudelleenparseroinnissa, job-id: ${ctx.getJobId}", e)
-      })
-    LOG.info(s"Syotettyjen perusopetuksen oppiaineen oppimäärien uudelleenparserpointi valmis, job id: ${ctx.getJobId}")
+    reparseVersiot(ctx, Lahdejarjestelma.SYOTETYT_OPPIAINEET, ParserVersions.SYOTETYT_OPPIAINEET, dryRun)(versio => {
+      val data = kantaOperaatiot.haeJsonData(versio)
+      val parsed = data.map(d => objectMapper.readValue(d, classOf[SyotettyPerusopetuksenOppiaineenOppimaarienSuoritusContainer]))
+      parsed.map(p => VirkailijaToSuoritusConverter.toPerusopetuksenOppiaineenOppimaara(versio.tunniste, p, koodistoProvider, organisaatioProvider)).toSet
+    })
   }, Seq.empty)
 
   def reparsePerusopetuksenOppiaineenOppimaarat(dryRun: Boolean): UUID = reparsePerusopetuksenOppiaineenOppimaaratJob.run(dryRun.toString)

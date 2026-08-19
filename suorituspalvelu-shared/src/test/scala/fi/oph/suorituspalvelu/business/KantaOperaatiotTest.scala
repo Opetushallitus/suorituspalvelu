@@ -370,7 +370,16 @@ class KantaOperaatiotTest {
     val koskiVersio2 = this.kantaOperaatiot.tallennaJarjestelmaVersio("2.3.4", Lahdejarjestelma.KOSKI, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "2.3.4", Some(1)).get
     val ytrVersio = this.kantaOperaatiot.tallennaJarjestelmaVersio("1.2.3", Lahdejarjestelma.YTR, Seq("{\"attr\": \"value1\"}"), Seq.empty, Instant.now(), "YTR", None).get
 
-    Assertions.assertEquals(Set(koskiVersio1, koskiVersio2), this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI).toSet)
+    Assertions.assertEquals(Set(koskiVersio1, koskiVersio2), this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI, None, 100).toSet)
+    Assertions.assertEquals(2, this.kantaOperaatiot.haeVersioidenMaara(Lahdejarjestelma.KOSKI))
+
+    // versiot haetaan erissä tunnisteen mukaisessa järjestyksessä (kannan uuid-järjestys vastaa merkkijonojärjestystä,
+    // ei Javan UUID.compareTo:ta joka vertailee etumerkillisenä)
+    val jarjestyksessa = Seq(koskiVersio1, koskiVersio2).sortBy(_.tunniste.toString)
+    val ensimmainenEra = this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI, None, 1)
+    Assertions.assertEquals(Seq(jarjestyksessa.head), ensimmainenEra)
+    Assertions.assertEquals(Seq(jarjestyksessa.last), this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI, Some(ensimmainenEra.last.tunniste), 1))
+    Assertions.assertEquals(Seq.empty, this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI, Some(jarjestyksessa.last.tunniste), 1))
 
   @Test def testParserVersioRoundtrip(): Unit =
     val HENKILONUMERO = "1.2.246.562.24.99977766655"
@@ -402,7 +411,7 @@ class KantaOperaatiotTest {
     Assertions.assertFalse(haettuVersioJalkeen.parserointiHetki.get.isAfter(entiteettienTallennuksenJalkeen.plusSeconds(1)), "parserointiHetki ei saa olla tallennuksen jälkeen")
 
     // tarkistetaan myös haeVersiot-metodin kautta
-    val haetutVersiot = this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI).filter(_.henkiloOid == HENKILONUMERO)
+    val haetutVersiot = this.kantaOperaatiot.haeVersiot(Lahdejarjestelma.KOSKI, None, 100).filter(_.henkiloOid == HENKILONUMERO)
     Assertions.assertEquals(1, haetutVersiot.size)
     Assertions.assertEquals(Some(PARSER_VERSIO), haetutVersiot.head.parserVersio)
 
