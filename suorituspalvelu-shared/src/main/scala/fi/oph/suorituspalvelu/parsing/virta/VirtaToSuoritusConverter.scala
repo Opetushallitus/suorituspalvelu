@@ -56,6 +56,7 @@ object VirtaToSuoritusConverter {
       case "4" => SuoritusTila.KESKEYTYNYT // passivoitu
       case "5" => SuoritusTila.KESKEYTYNYT // luopunut
       case "6" => SuoritusTila.KESKEYTYNYT // päättynyt
+      case "7" => SuoritusTila.KESKEYTYNYT // päättynyt YOS
 
   // Muuntaa Virta-tilan suorituspalvelun opiskeluoikeuden tilaksi
   def convertVirtaOpiskeluoikeusTila(koodiArvo: String): KKOpiskeluoikeusTila =
@@ -66,6 +67,7 @@ object VirtaToSuoritusConverter {
       case "4" => KKOpiskeluoikeusTila.PAATTYNYT // passivoitu
       case "5" => KKOpiskeluoikeusTila.PAATTYNYT // luopunut
       case "6" => KKOpiskeluoikeusTila.PAATTYNYT // päättynyt
+      case "7" => KKOpiskeluoikeusTila.PAATTYNYT // päättynyt YOS
 
   private def isPaattynytOpiskeluoikeus(opiskeluoikeus: VirtaOpiskeluoikeus) = {
     convertVirtaOpiskeluoikeusTila(latestTila(opiskeluoikeus).Koodi) == KKOpiskeluoikeusTila.PAATTYNYT
