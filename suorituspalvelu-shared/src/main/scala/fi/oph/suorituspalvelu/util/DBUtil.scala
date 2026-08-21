@@ -6,9 +6,12 @@ import scala.concurrent.Await
 import slick.jdbc.PostgresProfile.api.*
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, DurationInt}
 
 object DBUtil {
+
+  private final val TIMEOUT_FOR_INFINITE: Duration = 300.seconds
+
   extension (database: JdbcDatabaseDef) {
     def runBlocking[R](operations: DBIO[R], timeout: Duration): R = {
       if (timeout.isFinite) {
@@ -21,7 +24,7 @@ object DBUtil {
       } else {
         Await.result(
           database.run(operations),
-          timeout
+          TIMEOUT_FOR_INFINITE
         )
       }
     }

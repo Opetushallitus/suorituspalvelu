@@ -396,7 +396,7 @@ object VirtaToSuoritusConverter {
     try
       allowMissingFields.set(allowMissingFieldsForTests)
       opintosuoritukset.flatMap(suoritus => {
-        LOG.info(s"Parsitaan suoritusta henkilölle ${suoritus.opiskelijaAvain}")
+        LOG.debug(s"Parsitaan suoritusta henkilölle ${suoritus.opiskelijaAvain}")
         toSuoritus(suoritus, allSuorituksetByAvain, opiskeluoikeus)
       })
     finally
