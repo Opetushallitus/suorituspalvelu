@@ -13,7 +13,7 @@ import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT, LAAKETIETEEN_LISENSIAATIT_KOULUTUSKOODIT, YOS_KOULUTUSASTE_KOODISTO}
 import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Service
 
 import java.lang
@@ -26,7 +26,8 @@ case class YosHakuToiveYossinPiirissa(hakutoive: YosHakutoive, kuuluukoYosPiirii
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              opiskeluOikeusService: OpiskeluoikeusParsingService,
                              organisaatioProvider: OrganisaatioProvider,
-                             koodistoProvider: KoodistoProvider) {
+                             koodistoProvider: KoodistoProvider,
+                             @Value("${yos.voimassaoloCheckEnabled}") voimassaoloCheckEnabled: Boolean) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
@@ -73,7 +74,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                  | jatkoTutkinto: ${yosHakutoive.jatkoTutkinto}, kaksoisTutkinto: ${yosHakutoive.kaksoisTutkinto},
                  | organisaatioJaVanhemmat: ${yosHakutoive.organisaatioJaVanhemmat.mkString(", ")}, koulutusAste: ${yosHakutoive.koulutusAste},
                  | haunAlkamisaika: ${yosHakutoive.haunAlkamisaika.map(_.toString).orNull}, koulutuksenAlkamisvuosi: ${yosHakutoive.koulutuksenAlkamisvuosi.orNull}""".stripMargin)
-            val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive)
+            val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive, voimassaoloCheckEnabled)
             LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin: $yosHakutoive")
             Right(YosHakuToiveYossinPiirissa(yosHakutoive, kuuluukoYOSsinPiiriin))
           }

@@ -34,8 +34,8 @@ object YosPredicate {
    */
   private val YOS_PIIRIIN_KUULUVAT_VIRTA_OPISKELUOIKEUS_TYYPIT = Seq("1", "2", "3", "4")
 
-  def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive): Boolean = {
-    if (!onkoYosVoimassa(hakutoive.haunAlkamisaika, hakutoive.koulutuksenAlkamisvuosi)) {
+  def kuuluukoHakutoiveYosinPiiriin(hakutoive: YosHakutoive, tarkistaVoimassaOlo: Boolean = true): Boolean = {
+    if (tarkistaVoimassaOlo && !onkoYosVoimassa(hakutoive.haunAlkamisaika, hakutoive.koulutuksenAlkamisvuosi)) {
       false
     } else {
       hakutoive match {

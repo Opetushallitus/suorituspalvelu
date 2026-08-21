@@ -11,15 +11,15 @@ import slick.jdbc.PostgresProfile.api.*
 import com.github.tminglei.slickpg.utils.PlainSQLUtils.mkArraySetParameter
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Await
-import scala.concurrent.duration.{FiniteDuration, Duration, DurationInt}
-
+import scala.concurrent.duration.{Duration, DurationInt}
 import org.slf4j.LoggerFactory
+import fi.oph.suorituspalvelu.util.DBUtil.runBlocking
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
+import slick.jdbc.JdbcBackend.JdbcDatabaseDef
 
 implicit val setStringArray: SetParameter[Seq[String]] = mkArraySetParameter[String]("varchar")
 
@@ -78,7 +78,7 @@ object KantaOperaatiot {
     YOTUTKINTO, PERUSOPETUKSEN_OPISKELUOIKEUS, AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS
 }
 
-class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
+class KantaOperaatiot(db: JdbcDatabaseDef) {
 
   final val DB_TIMEOUT = 30.seconds
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiot])
@@ -317,10 +317,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           }
       }
     )
-    Await.result(db.run(upsertAction.transactionally), Duration.Inf)
+    db.runBlocking(upsertAction.transactionally, Duration.Inf)
 
   def haeHenkilonVersiot(henkiloOid: String): Vector[VersioEntiteetti] = {
-    Await.result(db.run(
+    db.runBlocking(
         sql"""
         SELECT jsonb_build_object(
           'tunniste', versiot.tunniste,
@@ -335,25 +335,24 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           'paivitysHetki', to_json(versiot.paivityshetki::timestamptz)#>>'{}',
           'parserointiHetki', to_json(versiot.parserointihetki::timestamptz)#>>'{}'
         )::text AS versio
-        FROM versiot where henkilo_oid = $henkiloOid""".as[String]), DB_TIMEOUT)
+        FROM versiot where henkilo_oid = $henkiloOid""".as[String], DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
   }
 
   def haeJsonData(versio: VersioEntiteetti): Seq[String] =
-    Await.result(db.run(
+    db.runBlocking(
       sql"""SELECT data_json::text[]
             FROM versiot
-            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
+            WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]], DB_TIMEOUT).head
 
   def haeXmlData(versio: VersioEntiteetti): Seq[String] =
-    Await.result(db.run(
+    db.runBlocking(
       sql"""SELECT data_xml::text[]
               FROM versiot
-              WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]]), DB_TIMEOUT).head
+              WHERE tunniste=${versio.tunniste.toString}::UUID""".as[Seq[String]], DB_TIMEOUT).head
 
-  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] =
-    Await.result(db.run(
-        sql"""SELECT jsonb_build_object('tunniste', tunniste,
+  def haeVersiot(lahdeJarjestelma: Lahdejarjestelma): Seq[VersioEntiteetti] = {
+    val operation = sql"""SELECT jsonb_build_object('tunniste', tunniste,
               'henkiloOid', henkilo_oid,
               'alku',to_json(lower(voimassaolo)::timestamptz)#>>'{}',
               'loppu', CASE WHEN upper(voimassaolo)='infinity'::timestamptz THEN null ELSE to_json(upper(voimassaolo)::timestamptz)#>>'{}' END,
@@ -366,8 +365,10 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
             )::text AS versio
             FROM versiot
-            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]), DB_TIMEOUT)
+            WHERE lahdejarjestelma=${lahdeJarjestelma.nimi}""".as[String]
+    db.runBlocking(operation, 180.seconds)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti]))
+  }
 
   def tallennaVersioonLiittyvatEntiteetit(versio: VersioEntiteetti, opiskeluoikeudet: Set[Opiskeluoikeus], lahtokoulut: Seq[Lahtokoulu], parserVersio: Int): Unit = {
     LOG.info(s"Tallennetaan versioon $versio liittyvät opiskeluoikeudet (${opiskeluoikeudet.size} kpl)")
@@ -402,11 +403,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               """))
       }
     })
-    Await.result(db.run(updateLahtokoulutAction.transactionally), Duration.Inf)
+    db.runBlocking(updateLahtokoulutAction.transactionally, Duration.Inf)
   }
 
   private def haeSuorituksetInternal(versioTunnisteetQuery: slick.jdbc.SQLActionBuilder): Seq[(VersioEntiteetti, String)] = {
-    Await.result(db.run(
+    db.runBlocking(
         (sql"""
           WITH w_versiotunnisteet(tunniste) AS ("""
           concat
@@ -429,7 +430,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )::text AS versio,
             COALESCE(opiskeluoikeudet, '{"opiskeluoikeudet":[]}'::jsonb) AS opiskeluoikeudet
           FROM w_versiotunnisteet JOIN versiot ON w_versiotunnisteet.tunniste=versiot.tunniste;
-        """).as[(String, String)]), DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) =>
+        """).as[(String, String)], DB_TIMEOUT).map((versioJson, opiskeluoikeusContainer) =>
         (MAPPER.readValue(versioJson, classOf[VersioEntiteetti]), opiskeluoikeusContainer)
       )
   }
@@ -453,11 +454,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
 
   def lisaaKoskiSkip(henkiloOid: String, opiskeluoikeusOid: String, selite: String) = {
     val upsertAction = sqlu"""INSERT INTO koski_opiskeluoikeus_skip (henkilo_oid, opiskeluoikeus_oid, selite, aikaleima) VALUES (${henkiloOid}, ${opiskeluoikeusOid}, ${selite}, now()) ON CONFLICT (henkilo_oid, opiskeluoikeus_oid) DO NOTHING"""
-    Await.result(db.run(upsertAction.transactionally), DB_TIMEOUT)
+    db.runBlocking(upsertAction.transactionally, DB_TIMEOUT)
   }
 
   def haeVersio(tunniste: UUID): Option[VersioEntiteetti] =
-    Await.result(db.run(
+    db.runBlocking(
         sql"""SELECT jsonb_build_object(
                 'tunniste', tunniste,
                 'henkiloOid', henkilo_oid,
@@ -472,7 +473,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                 'parserointiHetki', to_json(parserointihetki::timestamptz)#>>'{}'
               )::text AS versio
               FROM versiot
-              WHERE tunniste=${tunniste.toString}::UUID""".as[String]), DB_TIMEOUT)
+              WHERE tunniste=${tunniste.toString}::UUID""".as[String], DB_TIMEOUT)
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
   private def haeLahtokoulunOppilaatStatement(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Option[Int], luokka: Option[String], kesken: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): slick.jdbc.SQLActionBuilder = {
@@ -539,7 +540,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     lahtokouluTyypit: Set[LahtokouluTyyppi]
   ): Set[(String, Option[String])] = {
     val s = haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, valmistumisVuosi, luokka, kesken, arvosanaPuuttuu, Some(lahtokouluTyypit))
-    Await.result(db.run(s.as[(String, Option[String])]), DB_TIMEOUT).toSet
+    db.runBlocking(s.as[(String, Option[String])], DB_TIMEOUT).toSet
   }
 
   /**
@@ -549,7 +550,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val s = sql"""SELECT DISTINCT UNNEST(vuodet)::text FROM (""".concat(
       haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, None, None, false, false, lahtokouluTyypit)).concat(
       sql""") AS vuodet_data""")
-    Await.result(db.run(s.as[String]), DB_TIMEOUT).toSet
+    db.runBlocking(s.as[String], DB_TIMEOUT).toSet
 
   /**
    * Palauttaa luokat joille löytyy henkilöitä jotka lähettävien katselijalla on oikeus nähdä tarkastusnäkymässä, ks. haeLahtokoulunOppilaat.
@@ -558,11 +559,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val s = sql"""SELECT DISTINCT luokka FROM (""".concat(
       haeLahtokoulunOppilaatStatement(paivamaara, oppilaitosOid, Some(valmistumisVuosi), None, false, false, lahtokouluTyypit)).concat(
       sql""") AS luokat""")
-    Await.result(db.run(s.as[String]), DB_TIMEOUT).toSet
+    db.runBlocking(s.as[String], DB_TIMEOUT).toSet
   }
 
   def haeLahtokoulut(henkiloOidit: Set[String]): Set[Lahtokoulu] =
-    Await.result(db.run(
+    db.runBlocking(
         (sql"""
           SELECT
             jsonb_build_object(
@@ -577,30 +578,30 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             )::text AS data
           FROM lahtokoulut
           WHERE henkilo_oid=ANY(${henkiloOidit.toSeq})
-        """).as[String]), DB_TIMEOUT)
+        """).as[String], DB_TIMEOUT)
       .map(data => MAPPER.readValue(data, classOf[Lahtokoulu])).toSet
 
   def haePKOppilaitokset(lahtokouluTyypit: Set[LahtokouluTyyppi]): Set[String] =
-    Await.result(db.run(
+    db.runBlocking(
       sql"""
           SELECT DISTINCT oppilaitos_oid
           FROM lahtokoulut
           WHERE suoritustyyppi = ANY(ARRAY[#${lahtokouluTyypit.map(p => s"'$p'").mkString(",")}]::varchar[])
-        """.as[String]), DB_TIMEOUT).toSet
+        """.as[String], DB_TIMEOUT).toSet
 
   def haeHenkilotJaLuokat(oppilaitosOid: String, valmistumisVuosi: Int, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): Set[(String, String)] =
     val s = sql"""SELECT DISTINCT henkilo_oid, luokka FROM (""".concat(
       haeLahtokoulunOppilaatStatement(None, oppilaitosOid, Some(valmistumisVuosi), None, false, false, lahtokouluTyypit)).concat(
       sql""") AS henkilotjaluokat""")
-    Await.result(db.run(s.as[(String, String)]), DB_TIMEOUT).toSet
+    db.runBlocking(s.as[(String, String)], DB_TIMEOUT).toSet
 
   def paataVersionVoimassaolo(tunniste: UUID): Boolean =
     LOG.info(s"päätetään version $tunniste voimassaolo")
     val voimassaolo = sqlu"""UPDATE versiot SET voimassaolo=tstzrange(lower(voimassaolo), now()) WHERE tunniste=${tunniste.toString}::uuid AND upper(voimassaolo)='infinity'::timestamptz"""
-    Await.result(db.run(voimassaolo), DB_TIMEOUT)>0
+    db.runBlocking(voimassaolo, DB_TIMEOUT)>0
 
   def haeHenkilonYliajot(henkiloOid: String, hakuOid: String): Seq[AvainArvoYliajo] = {
-    Await.result(db.run(
+    db.runBlocking(
       sql"""
         SELECT
           avain,
@@ -619,7 +620,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           case (avain, arvo, henkiloOid, hakuOid, virkailijaOid, selite) =>
             AvainArvoYliajo(avain, Option.apply(arvo), henkiloOid, hakuOid, virkailijaOid, selite)
         })
-    ), DB_TIMEOUT)
+    , DB_TIMEOUT)
   }
 
   def tallennaYliajot(yliajot: Seq[AvainArvoYliajo], tallennusHetki: Instant = Instant.now): Unit = {
@@ -664,9 +665,9 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     )
 
     // Suoritetaan operaatiot samassa transaktiossa
-    Await.result(db.run(
+    db.runBlocking(
       DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
-    ), Duration.Inf)
+    , Duration.Inf)
   }
 
   // Lisätään yliajo jolla ei arvoa
@@ -675,7 +676,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   }
 
   def haeYliajoMuutokset(henkiloOid: String, hakuOid: String, avain: String): Seq[AvainArvoYliajoMuutos] = {
-    Await.result(db.run(
+    db.runBlocking(
       sql"""
         SELECT
           arvo,
@@ -691,7 +692,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
           case (arvo, luotu, virkailijaOid, selite) =>
             AvainArvoYliajoMuutos(Option.apply(arvo), Instant.parse(luotu), virkailijaOid, selite)
         })
-    ), DB_TIMEOUT)
+    , DB_TIMEOUT)
       .reverse
   }
 
@@ -705,7 +706,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             FROM cas_client_session
             WHERE mapped_ticket_id = $mappingId
           """.as[String]
-    Await.result(db.run(action), DB_TIMEOUT).find(v => true)
+    db.runBlocking(action, DB_TIMEOUT).find(v => true)
 
   /**
    * Poistaa CAS-sessiomappauksen sessio id:n perusteella
@@ -717,7 +718,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             FROM cas_client_session
             WHERE session_id = $sessionId
           """
-    Await.result(db.run(action), DB_TIMEOUT)
+    db.runBlocking(action, DB_TIMEOUT)
 
   /**
    * Lisää kantaan mappauksen palvelun sessiosta CAS-sessioon
@@ -726,7 +727,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val insertAction =
       sqlu"""INSERT INTO cas_client_session (mapped_ticket_id, session_id) VALUES ($mappingId, $sessionId)
              ON CONFLICT (mapped_ticket_id) DO NOTHING"""
-    Await.result(db.run(insertAction), DB_TIMEOUT)
+    db.runBlocking(insertAction, DB_TIMEOUT)
   }
 
   /**
@@ -736,14 +737,14 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     val insertAction =
       sqlu"""INSERT INTO task_status (task_instance, task_name, progress, lastupdated) VALUES (${id.toString}, $name, $progress, ${udpated.toString}::timestamptz)
              ON CONFLICT (task_instance) DO UPDATE SET progress=$progress, lastupdated=now()"""
-    Await.result(db.run(insertAction), DB_TIMEOUT)
+    db.runBlocking(insertAction, DB_TIMEOUT)
   }
 
   /**
    * Hakee viimeisimpien jobien tiedot
    */
   def getLastJobStatuses(name: Option[String], tunniste: Option[UUID], limit: Int): List[Job] = {
-    Await.result(db.run(
+    db.runBlocking(
       sql"""SELECT task_instance, task_name, progress, to_json(lastupdated)#>>'{}'
             FROM task_status
             WHERE (${tunniste.isEmpty} OR task_instance=${tunniste.map(_.toString).getOrElse("NULL")})
@@ -753,12 +754,11 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         .map(rows => rows.map {
           case (tunniste, nimi, progress, lastUpdated) =>
             Job(UUID.fromString(tunniste), nimi, progress, Instant.parse(lastUpdated))
-        })
-    ), DB_TIMEOUT).toList
+        }), DB_TIMEOUT).toList
   }
 
   def haeHakemuksenHarkinnanvaraisuusYliajot(hakemusOid: String): Seq[HarkinnanvaraisuusYliajo] = {
-    Await.result(db.run(
+    db.runBlocking(
       sql"""
         SELECT
           virkailija_oid,
@@ -781,8 +781,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
               virkailijaOid = virkailijaOid,
               selite = selite
             )
-        })
-    ), DB_TIMEOUT)
+        }), DB_TIMEOUT)
   }
 
   def tallennaHarkinnanvaraisuusYliajot(yliajot: Seq[HarkinnanvaraisuusYliajo], tallennusHetki: Instant = Instant.now): Unit = {
@@ -822,13 +821,12 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       }
     )
 
-    Await.result(db.run(
-      DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally
-    ), Duration.Inf)
+    db.runBlocking(
+      DBIO.seq(updateOldVersionsAction, insertNewVersionsAction).transactionally, Duration.Inf)
   }
 
   private def haeSiirtotiedostoOperaatio(id: Int): SiirtotiedostoOperaatio = {
-    val rows = Await.result(db.run(
+    val rows = db.runBlocking(
       sql"""
         SELECT json_build_object(
           'id',          id,
@@ -844,8 +842,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
         )::text
         FROM siirtotiedostot
         WHERE id = $id
-      """.as[String]
-    ), DB_TIMEOUT)
+      """.as[String], DB_TIMEOUT)
     MAPPER.readValue(rows.head, classOf[SiirtotiedostoOperaatio])
   }
 
@@ -853,20 +850,19 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
   //1. Samana päivänä ei ole vielä muodostettu päivittäisiä niin että koko suoritus on päättynyt onnistuneesti
   //2. Päivittäisten muodostusta ei ole aloitettu viimeisen 3 tunnin aikana
   def onkoKaynnissaOlevaOperaatio(): Boolean = {
-    val result = Await.result(db.run(
+    val result = db.runBlocking(
       sql"""
         SELECT EXISTS(
           SELECT 1 FROM siirtotiedostot
           WHERE run_start >= now() - interval '3 hours'
             AND run_end IS NULL
         )
-      """.as[Boolean]
-    ), DB_TIMEOUT)
+      """.as[Boolean], DB_TIMEOUT)
     result.head
   }
 
   def aloitaSiirtotiedostoOperaatio(uuid: String): SiirtotiedostoOperaatio = {
-    val idResult = Await.result(db.run(
+    val idResult = db.runBlocking(
       sql"""
         INSERT INTO siirtotiedostot(id, uuid, window_start, window_end, run_start, paivittaiset)
         SELECT nextval('siirtotiedosto_id_seq'),
@@ -877,8 +873,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
                (not exists(select 1 from siirtotiedostot where run_start >= now()::date and success and paivittaiset)
                 and not exists(select 1 from siirtotiedostot where run_start >= now() - interval '6 hours' and paivittaiset and run_end is null))
         RETURNING id
-      """.as[Int]
-    ), DB_TIMEOUT)
+      """.as[Int], DB_TIMEOUT)
     haeSiirtotiedostoOperaatio(idResult.head)
   }
 
@@ -889,7 +884,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
     entityTotals: Map[String, Int]
   ): Unit = {
     val infoJson = MAPPER.writeValueAsString(Map("entityTotals" -> entityTotals))
-    Await.result(db.run(
+    db.runBlocking(
       sqlu"""
         UPDATE siirtotiedostot
         SET run_end       = now(),
@@ -897,8 +892,7 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
             error_message = ${errorMessage.orNull},
             info          = $infoJson::jsonb
         WHERE id = $id
-      """
-    ), DB_TIMEOUT)
+      """, DB_TIMEOUT)
   }
 
   def haeMuuttuneetHenkiloOidit(
@@ -916,9 +910,8 @@ class KantaOperaatiot(db: JdbcBackend.JdbcDatabaseDef) {
       case Some(oid) => baseQuery.concat(sql" AND henkilo_oid > $oid")
       case None      => baseQuery
     }
-    Await.result(db.run(
-      withKeyset.concat(sql" GROUP BY henkilo_oid ORDER BY henkilo_oid ASC LIMIT $pageSize").as[(String, Instant)]
-    ), DB_TIMEOUT)
+    db.runBlocking(
+      withKeyset.concat(sql" GROUP BY henkilo_oid ORDER BY henkilo_oid ASC LIMIT $pageSize").as[(String, Instant)], DB_TIMEOUT)
   }
 
   def poistaHarkinnanvaraisuusYliajo(
