@@ -129,14 +129,30 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
 
   private def tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoive: YosHakutoive, oikeudet: Set[KKOpiskeluoikeus], oikeus: KKOpiskeluoikeus) = {
     var oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
-    //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään sitä
+    //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään linkitetyn alemman astetta jos alemman tila ei ole valmistunut
     if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
-      oikeudenAste = oikeudet.find(o => o.virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get)
-        .filter(o => !o.virtaTila.arvo.equals(VIRTATILA_VALMISTUNUT))
-        .map(getKoulutusAsteOpiskeluOikeudelle)
-        .filter(o => o.equals(ALEMMAT_ASTEET)).getOrElse(oikeudenAste)
-      if (oikeudenAste.equals(ALEMMAT_ASTEET)) {
-        LOGGER.info(s"Opiskeluoikeudelle ${oikeus.virtaTunniste} löytyi linkki alemmalle asteelle. Käytetään alempaa astetta koulutusasteen YOS-vertailussa")
+      val liittyvaOikeus = oikeudet.find(
+        _.virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get
+      )
+      if (liittyvaOikeus.isDefined) {
+        val liittyvanOikeudenAste =
+          getKoulutusAsteOpiskeluOikeudelle(liittyvaOikeus.get)
+
+        if (liittyvanOikeudenAste.equals(ALEMMAT_ASTEET)) {
+          if (liittyvaOikeus.get.virtaTila.arvo.equals(VIRTATILA_VALMISTUNUT)) {
+            LOGGER.info(
+              s"Opiskeluoikeuteen ${oikeus.virtaTunniste} liittyvän alemman asteen " +
+                s"opiskeluoikeuden ${liittyvaOikeus.get.virtaTunniste} tila on valmistunut. " +
+                "Alempaa astetta ei käytetä koulutusasteen YOS-vertailussa."
+            )
+          } else {
+            oikeudenAste = ALEMMAT_ASTEET
+            LOGGER.info(
+              s"Opiskeluoikeudelle ${oikeus.virtaTunniste} löytyi linkki alemmalle asteelle. " +
+                "Käytetään alempaa astetta koulutusasteen YOS-vertailussa."
+            )
+          }
+        }
       }
     }
     val kuuluu = YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoive.koulutusAste, oikeudenAste)
