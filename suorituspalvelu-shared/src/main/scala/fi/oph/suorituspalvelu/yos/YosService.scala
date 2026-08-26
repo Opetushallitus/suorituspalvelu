@@ -31,6 +31,8 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
+  val VIRTATILA_VALMISTUNUT = "3"
+
   def haeHakijanPaatettavatOpiskeluOikeudet(hakijaOid: String, hakuOid: String, hakukohdeOid: String): Either[YosErrorResponse, Set[YosPaatettavaOpiskeluOikeus]] = {
     LOGGER.info(s"Tarkistetaan kuuluuko vastaanotettava opiskelupaikka YOS piiriin. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
     kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid, hakukohdeOid).fold(
@@ -130,7 +132,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään sitä
     if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
       oikeudenAste = oikeudet.find(o => o.virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get)
-        .filter(o => !o.virtaTila.arvo.equals("3")) // valmistunut
+        .filter(o => !o.virtaTila.arvo.equals(VIRTATILA_VALMISTUNUT))
         .map(getKoulutusAsteOpiskeluOikeudelle)
         .filter(o => o.equals(ALEMMAT_ASTEET)).getOrElse(oikeudenAste)
       if (oikeudenAste.equals(ALEMMAT_ASTEET)) {
