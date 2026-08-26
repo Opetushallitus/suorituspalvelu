@@ -130,6 +130,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään sitä
     if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
       oikeudenAste = oikeudet.find(o => o.virtaTunniste == oikeus.liittyvaOpiskeluoikeusAvain.get)
+        .filter(o => !o.virtaTila.arvo.equals("3")) // valmistunut
         .map(getKoulutusAsteOpiskeluOikeudelle)
         .filter(o => o.equals(ALEMMAT_ASTEET)).getOrElse(oikeudenAste)
       if (oikeudenAste.equals(ALEMMAT_ASTEET)) {
