@@ -486,6 +486,37 @@ class YosServiceTest {
   }
 
   @Test
+  def eiPalautaHakijanPaatettavaaAlempaaLinkitettyaOpiskeluoikeuttaJosLinkitettyOnTilassaValmistunut(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(
+      HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_62")))
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any(), any())).thenReturn(ORGANISAATIO)
+    val alempiPaattynytOpiskeluOikeus = KKOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      virtaTunniste = "virtatunniste-2",
+      nimi = None,
+      tyyppiKoodi = "",
+      koulutusKoodi = Some("koulutus_12"),
+      alkuPvm = LocalDate.now(),
+      loppuPvm = LocalDate.now(),
+      virtaTila = fi.oph.suorituspalvelu.business.Koodi(arvo = "3", koodisto = "virtakoodisto", versio = Some(1)),
+      supaTila = PAATTYNYT,
+      myontaja = "",
+      isTutkintoonJohtava = true,
+      kieli = Some("fi"),
+      suoritukset = Set.empty,
+      rahoitusLahde = None,
+      luokittelu = None,
+      liittyvaOpiskeluoikeusAvain = Some("virtatunniste"))
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(liittyvaOpiskeluoikeusAvain = Some("virtatunniste-2")), alempiPaattynytOpiskeluOikeus)
+    ))
+    val oikeudet = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).getOrElse(Set.empty)
+    assertEquals(0, oikeudet.size)
+  }
+
+  @Test
   def palauttaHakijanPaatettavanOpiskeluOikeudenJonkaKoulutusAsteOnYlempiKuinHakutoiveenMuttaSeOnLaaketieteenLisensiaatti(): Unit = {
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
     Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(
