@@ -163,9 +163,12 @@ object UIValidator {
         case default => Set(VALIDATION_TILA_EI_VALIDI)
   }
 
-  def validateValmistumisPaiva(valmistumisPaiva: Option[String]): Set[String] = {
+  def validateValmistumisPaiva(valmistumisPaiva: Option[String], pakollinen: Boolean): Set[String] = {
     if (valmistumisPaiva.isEmpty || valmistumisPaiva.get.isEmpty)
-      Set(VALIDATION_VALMISTUMISPAIVA_TYHJA)
+      if (pakollinen)
+        Set(VALIDATION_VALMISTUMISPAIVA_TYHJA)
+      else
+        Set.empty
     else
       try
         LocalDate.parse(valmistumisPaiva.get)
@@ -207,7 +210,9 @@ object UIValidator {
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
       validateLuokka(suoritus.luokka.toScala, true),
       validateTila(suoritus.tila.toScala, true),
-      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala),
+      // valmistumispäivä on pakollinen vain valmiille suoritukselle. Kesken oleva suoritus (esim. kotiopetusoppilas)
+      // voidaan syöttää ilman valmistumispäivää, jolloin sitä ei virheellisesti päätellä valmiiksi leikkuripäivän perusteella.
+      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala, suoritus.tila.toScala.contains(SuoritusTilaUI.VALMIS.toString)),
       validatePerusopetuksenOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
       validatePerusopetuksenOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),
       validatePerusopetuksenOppimaaranOppiaineet(suoritus.oppiaineet.toScala.map(oat => oat.asScala.toList))
@@ -283,7 +288,8 @@ object UIValidator {
     Set(
       validateOppijanumero(suoritus.oppijaOid.toScala, true),
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
-      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala),
+      // oppiaineen oppimäärän suorituksena syötetään vain valmistuneita suorituksia, joten valmistumispäivä on pakollinen
+      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala, true),
       validatePerusopetuksenOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
       validatePerusopetuksenOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),
       suoritus.oppiaineet.asScala.flatMap(o => validatePerusopetuksenOppimaaranOppiaine(Some(o), koodistoProvider))

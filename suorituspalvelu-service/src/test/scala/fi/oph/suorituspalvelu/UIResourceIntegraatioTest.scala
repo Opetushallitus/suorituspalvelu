@@ -1487,6 +1487,32 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     val suoritukset = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten.toSet
     Assertions.assertEquals(1, suoritukset.size)
 
+  @WithMockUser(value = "kayttaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
+  @Test def testTallennaKeskenPerusopetuksenOppimaaranSuoritusIlmanValmistumispaivaa(): Unit =
+    val oppijaNumero = "1.2.246.562.24.21250967219"
+    val organisaatio = Organisaatio(UIService.EXAMPLE_OPPILAITOS_OID, OrganisaatioNimi("org nimi", "org namn", "org name"), None, Seq.empty, Seq.empty)
+
+    Mockito.when(onrIntegration.henkiloExists(eqTo(oppijaNumero))(any[RetryConfig]())).thenReturn(Future.successful(true))
+    Mockito.when(organisaatioProvider.haeOrganisaationTiedot(UIService.EXAMPLE_OPPILAITOS_OID)).thenReturn(Some(organisaatio))
+
+    // kesken oleva suoritus voidaan tallentaa ilman valmistumispäivää
+    val suoritusPayload = objectMapper.writeValueAsString(getSyotettyPerusopetuksenOppimaaranSuoritus()
+      .copy(oppijaOid = Optional.of(oppijaNumero), tila = Optional.of("KESKEN"), valmistumispaiva = Optional.empty()))
+    mvc.perform(MockMvcRequestBuilders
+        .post(ApiConstants.UI_TALLENNA_SUORITUS_PERUSOPETUS_PATH, "")
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .content(suoritusPayload))
+      .andExpect(status().isOk)
+
+    val oppimaarat = opiskeluoikeusParsingService.haeSuoritukset(oppijaNumero).values.flatten
+      .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
+      .flatMap(_.suoritukset)
+      .collect { case po: PerusopetuksenOppimaara => po }
+    Assertions.assertEquals(1, oppimaarat.size)
+    Assertions.assertEquals(SuoritusTila.KESKEN, oppimaarat.head.supaTila)
+    // ilman valmistumispäivää suoritukselle ei tallennu vahvistuspäivämäärää, joten sitä ei päätellä valmiiksi
+    Assertions.assertEquals(None, oppimaarat.head.vahvistusPaivamaara)
+
   /*
    * Integraatiotestit perusopetuksen oppimäärän suorituksen tallennukselle
    */

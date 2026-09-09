@@ -167,7 +167,14 @@ class UIValidatorTest {
   @Test def testValidateValmistumispaivaRequiredMissing(): Unit = {
     Assertions.assertEquals(
       Set(UIValidator.VALIDATION_VALMISTUMISPAIVA_TYHJA),
-      UIValidator.validateValmistumisPaiva(None)
+      UIValidator.validateValmistumisPaiva(None, true)
+    )
+  }
+
+  @Test def testValidateValmistumispaivaOptionalMissing(): Unit = {
+    Assertions.assertEquals(
+      Set.empty,
+      UIValidator.validateValmistumisPaiva(None, false)
     )
   }
 
@@ -175,14 +182,14 @@ class UIValidatorTest {
     val valmistumispaiva = "tämä ei ole validi valmistumispaiva"
     Assertions.assertEquals(
       Set(UIValidator.VALIDATION_VALMISTUMISPAIVA_EI_VALIDI),
-      UIValidator.validateValmistumisPaiva(Some(valmistumispaiva))
+      UIValidator.validateValmistumisPaiva(Some(valmistumispaiva), false)
     )
   }
 
   @Test def testValidateValmistumispaivaValid(): Unit = {
     Assertions.assertEquals(
       Set.empty,
-      UIValidator.validateValmistumisPaiva(Some(ApiConstants.ESIMERKKI_VALMISTUMISPAIVA))
+      UIValidator.validateValmistumisPaiva(Some(ApiConstants.ESIMERKKI_VALMISTUMISPAIVA), true)
     )
   }
 

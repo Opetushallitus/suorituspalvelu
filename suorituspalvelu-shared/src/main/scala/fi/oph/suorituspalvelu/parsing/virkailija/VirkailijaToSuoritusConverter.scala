@@ -82,7 +82,8 @@ object VirkailijaToSuoritusConverter {
       ),
       None,
       VALMIS,
-      List(OpiskeluoikeusJakso(suoritus.valmistumispaiva.toScala.map(p => LocalDate.parse(p)).getOrElse(dummy()), VALMIS))
+      // valmistumispäivä voi puuttua kesken olevalta suoritukselta, jolloin ei muodosteta opiskeluoikeusjaksoa
+      vahvistusPaivamaara.map(p => OpiskeluoikeusJakso(p, VALMIS)).toList
     )
   }
 

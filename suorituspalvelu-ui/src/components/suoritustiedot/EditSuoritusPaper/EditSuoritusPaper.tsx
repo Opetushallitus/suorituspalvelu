@@ -166,6 +166,8 @@ const EditSuoritusContent = ({
         />
         <DatePicker
           label={t('muokkaus.suoritus.valmistumispaiva')}
+          // valmistumispäivä on pakollinen vain valmiille suoritukselle
+          required={suoritus?.tila === 'VALMIS'}
           value={suoritus?.valmistumispaiva}
           onChange={(date) => {
             onSuoritusChange({ valmistumispaiva: date ?? undefined });
