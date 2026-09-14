@@ -1380,7 +1380,7 @@ class UIResourceIntegraatioTest extends BaseIntegraatioTesti {
     SyotettyPerusopetuksenOppimaaranSuoritus(
       Optional.of("1.2.246.562.24.21250967214"),
       Optional.of(UIService.EXAMPLE_OPPILAITOS_OID),
-      Optional.of("KESKEN"),
+      Optional.of("VALMIS"),
       Optional.of(LocalDate.now().toString),
       Optional.of("9A"),
       Optional.of("FI"),

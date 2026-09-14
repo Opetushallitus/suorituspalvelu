@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.validation
 
 import fi.oph.suorituspalvelu.integration.client.{Koodi, Koodisto}
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.resource.ui.SyotettyPerusopetuksenOppiaine
+import fi.oph.suorituspalvelu.resource.ui.{SuoritusTilaUI, SyotettyPerusopetuksenOppiaine, SyotettyPerusopetuksenOppimaaranSuoritus}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
 import org.junit.jupiter.api.*
 
@@ -191,6 +191,58 @@ class UIValidatorTest {
       Set.empty,
       UIValidator.validateValmistumisPaiva(Some(ApiConstants.ESIMERKKI_VALMISTUMISPAIVA), true)
     )
+  }
+
+  // valmistumispäivän pakollisuus suhteessa suorituksen tilaan (validatePerusopetuksenOppimaaranYleisetKentat)
+  private def buildOppimaaranSuoritus(tila: Optional[String], valmistumispaiva: Optional[String]): SyotettyPerusopetuksenOppimaaranSuoritus =
+    SyotettyPerusopetuksenOppimaaranSuoritus(
+      Optional.of(ApiConstants.ESIMERKKI_OPPIJANUMERO),
+      Optional.of(ApiConstants.ESIMERKKI_OPPILAITOS_OID),
+      tila,
+      valmistumispaiva,
+      Optional.of(ApiConstants.ESIMERKKI_LUOKKA),
+      Optional.of(ApiConstants.ESIMERKKI_SUORITUSKIELI),
+      Optional.of(6),
+      Optional.of(java.util.List.of(SyotettyPerusopetuksenOppiaine(
+        Optional.of("MA"),
+        Optional.empty(),
+        Optional.of(8),
+        Optional.of(false)
+      )))
+    )
+
+  @Test def testValidateYleisetKentatValmisVaatiiPaivan(): Unit = {
+    val virheet = UIValidator.validatePerusopetuksenOppimaaranYleisetKentat(
+      buildOppimaaranSuoritus(Optional.of(SuoritusTilaUI.VALMIS.toString), Optional.empty()),
+      DUMMY_KOODISTOPROVIDER
+    )
+    Assertions.assertTrue(virheet.contains(UIValidator.VALIDATION_VALMISTUMISPAIVA_TYHJA))
+  }
+
+  @Test def testValidateYleisetKentatKeskenEiVaadiPaivaa(): Unit = {
+    val virheet = UIValidator.validatePerusopetuksenOppimaaranYleisetKentat(
+      buildOppimaaranSuoritus(Optional.of(SuoritusTilaUI.KESKEN.toString), Optional.empty()),
+      DUMMY_KOODISTOPROVIDER
+    )
+    Assertions.assertFalse(virheet.contains(UIValidator.VALIDATION_VALMISTUMISPAIVA_TYHJA))
+  }
+
+  @Test def testValidateYleisetKentatKeskeytynytVaatiiPaivan(): Unit = {
+    val virheet = UIValidator.validatePerusopetuksenOppimaaranYleisetKentat(
+      buildOppimaaranSuoritus(Optional.of(SuoritusTilaUI.KESKEYTYNYT.toString), Optional.empty()),
+      DUMMY_KOODISTOPROVIDER
+    )
+    Assertions.assertTrue(virheet.contains(UIValidator.VALIDATION_VALMISTUMISPAIVA_TYHJA))
+  }
+
+  @Test def testValidateYleisetKentatTuntematonTilaVaatiiPaivan(): Unit = {
+    // puuttuva/virheellinen tila ei saa piilottaa valmistumispäivän puuttumista tila-virheen taakse
+    val virheet = UIValidator.validatePerusopetuksenOppimaaranYleisetKentat(
+      buildOppimaaranSuoritus(Optional.empty(), Optional.empty()),
+      DUMMY_KOODISTOPROVIDER
+    )
+    Assertions.assertTrue(virheet.contains(UIValidator.VALIDATION_TILA_TYHJA))
+    Assertions.assertTrue(virheet.contains(UIValidator.VALIDATION_VALMISTUMISPAIVA_TYHJA))
   }
 
   // suorituskieli

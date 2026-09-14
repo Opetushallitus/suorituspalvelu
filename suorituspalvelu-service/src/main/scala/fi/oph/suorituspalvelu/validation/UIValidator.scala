@@ -210,9 +210,10 @@ object UIValidator {
       validateOppilaitosOid(suoritus.oppilaitosOid.toScala, true),
       validateLuokka(suoritus.luokka.toScala, true),
       validateTila(suoritus.tila.toScala, true),
-      // valmistumispäivä on pakollinen vain valmiille suoritukselle. Kesken oleva suoritus (esim. kotiopetusoppilas)
-      // voidaan syöttää ilman valmistumispäivää, jolloin sitä ei virheellisesti päätellä valmiiksi leikkuripäivän perusteella.
-      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala, suoritus.tila.toScala.contains(SuoritusTilaUI.VALMIS.toString)),
+      // valmistumispäivä on pakollinen kaikille muille paitsi kesken oleville suorituksille (esim. kotiopetusoppilas),
+      // jotka voidaan syöttää ilman valmistumispäivää, jolloin niitä ei virheellisesti päätellä valmiiksi leikkuripäivän
+      // perusteella. Tuntematon/puuttuva tila käsitellään pakollisena, jotta virhe ei jää piiloon tila-virheen taakse.
+      validateValmistumisPaiva(suoritus.valmistumispaiva.toScala, !suoritus.tila.toScala.contains(SuoritusTilaUI.KESKEN.toString)),
       validatePerusopetuksenOppimaaranSuorituskieli(suoritus.suorituskieli.toScala),
       validatePerusopetuksenOppimaaranYksilollistaminen(suoritus.yksilollistetty.toScala),
       validatePerusopetuksenOppimaaranOppiaineet(suoritus.oppiaineet.toScala.map(oat => oat.asScala.toList))

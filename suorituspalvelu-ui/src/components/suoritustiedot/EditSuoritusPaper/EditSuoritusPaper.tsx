@@ -124,6 +124,11 @@ const EditSuoritusContent = ({
 
   const labelId = useId();
 
+  // oppiaineen oppimäärän suorituksena syötetään vain valmistuneita suorituksia, joten tila-valintaa ei näytetä
+  // ja valmistumispäivä on aina pakollinen (ks. UIValidator.validatePerusopetuksenOppiaineenOppimaarat)
+  const isOppiaineenOppimaara =
+    suoritus?.tyyppi === 'perusopetuksenoppiaineenoppimaara';
+
   return (
     <Stack role="region" sx={{ gap: 1 }} aria-labelledby={labelId}>
       <Typography variant="h5" id={labelId}>
@@ -154,20 +159,22 @@ const EditSuoritusContent = ({
           }}
           oppilaitoksetOptions={suoritusOppilaitosOptions}
         />
-        <OphSelectFormField
-          label={t('muokkaus.suoritus.tila')}
-          options={tilaOptions}
-          required={true}
-          sx={{ flex: 1 }}
-          value={suoritus?.tila ?? ''}
-          onChange={(event) => {
-            onSuoritusChange({ tila: event.target.value });
-          }}
-        />
+        {!isOppiaineenOppimaara && (
+          <OphSelectFormField
+            label={t('muokkaus.suoritus.tila')}
+            options={tilaOptions}
+            required={true}
+            sx={{ flex: 1 }}
+            value={suoritus?.tila ?? ''}
+            onChange={(event) => {
+              onSuoritusChange({ tila: event.target.value });
+            }}
+          />
+        )}
         <DatePicker
           label={t('muokkaus.suoritus.valmistumispaiva')}
-          // valmistumispäivä on pakollinen vain valmiille suoritukselle
-          required={suoritus?.tila === 'VALMIS'}
+          // valmistumispäivä on pakollinen valmiille suoritukselle ja aina oppiaineen oppimäärälle
+          required={isOppiaineenOppimaara || suoritus?.tila === 'VALMIS'}
           value={suoritus?.valmistumispaiva}
           onChange={(date) => {
             onSuoritusChange({ valmistumispaiva: date ?? undefined });
