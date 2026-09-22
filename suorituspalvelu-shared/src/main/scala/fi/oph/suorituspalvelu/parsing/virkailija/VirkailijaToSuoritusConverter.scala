@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virkailija
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{AIKUISTEN_PERUSOPETUS, VUOSILUOKKA_9}
-import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
+import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.business.{Koodi, Lahtokoulu, OpiskeluoikeusJakso, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, SuoritusTila, PerusopetuksenYksilollistaminen}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiToSuoritusConverter.allowMissingFields
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiOpiskeluoikeusJakso}
@@ -24,6 +24,14 @@ object VirkailijaToSuoritusConverter {
     else
       throw new RuntimeException("Dummies not allowed")
 
+  // vastaava koskiopiskeluoikeudentila-koodi kullekin SUPA-tilalle, ks. KoskiToSuoritusConverter.convertKoskiTila
+  def toKoskiTila(supaTila: SuoritusTila): Koodi =
+    val koodiArvo = supaTila match
+      case VALMIS      => "valmistunut"
+      case KESKEN      => "lasna"
+      case KESKEYTYNYT => "eronnut"
+    Koodi(koodiArvo, "koskiopiskeluoikeudentila", Some(1))
+
   def toOppiaineenNimi(koodiArvo: String, koodistoProvider: KoodistoProvider): Kielistetty = {
     def getNimi(kieli: String, koodistoProvider: KoodistoProvider): Option[String] =
       koodistoProvider.haeKoodisto("koskioppiaineetyleissivistava")
@@ -34,9 +42,11 @@ object VirkailijaToSuoritusConverter {
   }
 
   def toPerusopetuksenOppimaara(versioTunniste: UUID, suoritus: SyotettyPerusopetuksenOppimaaranSuoritus, koodistoProvider: KoodistoProvider, organisaatioProvider: OrganisaatioProvider): PerusopetuksenOpiskeluoikeus = {
-    val vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp))
     val luokka = suoritus.luokka.toScala
     val supaTila = SuoritusTila.valueOf(suoritus.tila.get)
+    // vahvistuspäivä johdetaan tilasta, ei pelkästä syötetystä päivämäärästä, jotta esim. kesken oleva suoritus ei
+    // päättele itseään valmiiksi vaikka päivämäärä olisikin (virheellisesti) syötetty
+    val vahvistusPaivamaara = if (supaTila == VALMIS) suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)) else None
     val aineet = suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSeq.map(oppiaine => PerusopetuksenOppiaine(
       UUID.randomUUID(),
       toOppiaineenNimi(oppiaine.koodi.get, koodistoProvider),
@@ -66,13 +76,13 @@ object VirkailijaToSuoritusConverter {
               suoritus.oppilaitosOid.get)
           ).get,
           luokka = luokka,
-          koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), // syötetään vain valmistuneita suorituksia
+          koskiTila = toKoskiTila(supaTila),
           supaTila = supaTila,
           suoritusKieli = Koodi(suoritus.suorituskieli.get, "kieli", Some(1)),
           koulusivistyskieli = Set(Koodi(suoritus.suorituskieli.get, "kieli", Some(1))),
           yksilollistaminen = suoritus.yksilollistetty.toScala.map(intValue => PerusopetuksenYksilollistaminen.fromIntValue(intValue)),
           aloitusPaivamaara = None,
-          vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
+          vahvistusPaivamaara = vahvistusPaivamaara,
           aineet = aineet,
           lahtokoulut = List(Lahtokoulu(LocalDate.now, vahvistusPaivamaara, suoritus.oppilaitosOid.get, Some(LocalDate.now.getYear), luokka.get, supaTila, None, VUOSILUOKKA_9)),
           syotetty = true,
@@ -81,8 +91,9 @@ object VirkailijaToSuoritusConverter {
         )
       ),
       None,
-      VALMIS,
-      List(OpiskeluoikeusJakso(suoritus.valmistumispaiva.toScala.map(p => LocalDate.parse(p)).getOrElse(dummy()), VALMIS))
+      supaTila,
+      // valmistumispäivä voi puuttua kesken olevalta suoritukselta, jolloin ei muodosteta opiskeluoikeusjaksoa
+      vahvistusPaivamaara.map(p => OpiskeluoikeusJakso(p, supaTila)).toList
     )
   }
 

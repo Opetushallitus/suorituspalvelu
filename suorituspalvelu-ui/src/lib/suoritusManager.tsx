@@ -278,9 +278,18 @@ const useSuoritusManagerState = () => {
         }
       },
       onSuoritusChange: (updatedFields: Partial<SuoritusFields>) => {
-        setSuoritusState((prev) =>
-          prev ? { ...prev, ...updatedFields } : prev,
-        );
+        setSuoritusState((prev) => {
+          if (!prev) {
+            return prev;
+          }
+          const updated = { ...prev, ...updatedFields };
+          // valmistumispäivä on merkityksellinen vain valmiille suoritukselle, joten tyhjennetään se kun
+          // tila vaihdetaan pois valmiista, ettei vanha päivämäärä jää seuraamaan esim. kesken-tilaan
+          if (updatedFields.tila && updatedFields.tila !== 'VALMIS') {
+            updated.valmistumispaiva = undefined;
+          }
+          return updated;
+        });
         setIsDirty(true);
       },
       onOppiaineChange: (changedOppiaine: PerusopetusOppiaineFields) => {

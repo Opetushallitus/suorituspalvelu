@@ -102,6 +102,75 @@ class VirkailijaToSuoritusConverterTest {
 
     Assertions.assertEquals(expected, converted)
 
+  @Test def testConvertKeskenPerusopetuksenOppimaaraIlmanValmistumispaivaa(): Unit =
+    val versioTunniste = UUID.randomUUID()
+
+    val suoritus = SyotettyPerusopetuksenOppimaaranSuoritus(
+      Optional.of("1.2.246.562.24.21250967214"),
+      Optional.of(ApiConstants.ESIMERKKI_OPPILAITOS_OID),
+      Optional.of(SuoritusTila.KESKEN.toString),
+      Optional.empty(),
+      Optional.of("9A"),
+      Optional.of("FI"),
+      Optional.of(1),
+      Optional.of(List(SyotettyPerusopetuksenOppiaine(
+        Optional.of("MA"),
+        Optional.empty(),
+        Optional.of(9),
+        Optional.of(false)
+      )).asJava))
+
+    val organisaatio = Organisaatio(
+      ApiConstants.ESIMERKKI_OPPILAITOS_OID,
+      OrganisaatioNimi("Oppilaitos", "Oppilaitos", "Oppilaitos"),
+      None,
+      Seq.empty,
+      Seq.empty
+    )
+    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, DUMMY_KOODISTOPROVIDER, () => Map(organisaatio.oid -> organisaatio))
+    val oppimaara = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara]
+
+    // ilman valmistumispäivää ei muodosteta opiskeluoikeusjaksoa eikä vahvistuspäivämäärää, jotta suoritusta ei päätellä valmiiksi
+    Assertions.assertEquals(List.empty, converted.jaksot)
+    Assertions.assertEquals(None, oppimaara.vahvistusPaivamaara)
+    Assertions.assertEquals(SuoritusTila.KESKEN, oppimaara.supaTila)
+
+  @Test def testConvertKeskenPerusopetuksenOppimaaraPaivamaarastaHuolimatta(): Unit =
+    val versioTunniste = UUID.randomUUID()
+
+    // päivämäärä on (virheellisesti) annettu vaikka tila on KESKEN, jotta varmistetaan ettei suoritusta silti
+    // päätellä valmiiksi
+    val suoritus = SyotettyPerusopetuksenOppimaaranSuoritus(
+      Optional.of("1.2.246.562.24.21250967214"),
+      Optional.of(ApiConstants.ESIMERKKI_OPPILAITOS_OID),
+      Optional.of(SuoritusTila.KESKEN.toString),
+      Optional.of(LocalDate.now().toString),
+      Optional.of("9A"),
+      Optional.of("FI"),
+      Optional.of(1),
+      Optional.of(List(SyotettyPerusopetuksenOppiaine(
+        Optional.of("MA"),
+        Optional.empty(),
+        Optional.of(9),
+        Optional.of(false)
+      )).asJava))
+
+    val organisaatio = Organisaatio(
+      ApiConstants.ESIMERKKI_OPPILAITOS_OID,
+      OrganisaatioNimi("Oppilaitos", "Oppilaitos", "Oppilaitos"),
+      None,
+      Seq.empty,
+      Seq.empty
+    )
+    val converted = VirkailijaToSuoritusConverter.toPerusopetuksenOppimaara(versioTunniste, suoritus, DUMMY_KOODISTOPROVIDER, () => Map(organisaatio.oid -> organisaatio))
+    val oppimaara = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara]
+
+    Assertions.assertEquals(List.empty, converted.jaksot)
+    Assertions.assertEquals(None, oppimaara.vahvistusPaivamaara)
+    Assertions.assertEquals(None, oppimaara.lahtokoulut.head.suorituksenLoppu)
+    Assertions.assertEquals(SuoritusTila.KESKEN, converted.tila)
+    Assertions.assertEquals(Koodi("lasna", "koskiopiskeluoikeudentila", Some(1)), oppimaara.koskiTila)
+
   @Test def testConvertPerusopetuksenOppiaineenOppimaara(): Unit = {
     val versioTunniste = UUID.randomUUID()
 
