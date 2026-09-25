@@ -255,6 +255,17 @@ class YosServiceTest {
   }
 
   @Test
+  def hakemusmaksullinenKaksoistutkintoEiKuuluYosPiiriin(): Unit = {
+    // hakemusmaksulliset kv-kaksoistutkinto-ohjelmat eivät kuulu yhden opiskeluoikeuden säännön piiriin
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
+      Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN.copy(kohdejoukonTarkenneKoodiUri = Some("haunkohdejoukontarkenne_11"))))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    assertFalse(service.kuuluukoVastaanotettavaHakutoiveYossinpiiriin(HAKU_OID, HAKUKOHDE_OID).map(t => t.kuuluukoYosPiiriin)
+      .getOrElse(true))
+  }
+
+  @Test
   def jatkotutkintoEiKuuluYosPiiriin(): Unit = {
     Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(ORGANISAATIO_OID)).thenReturn(List.empty)
     Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(
