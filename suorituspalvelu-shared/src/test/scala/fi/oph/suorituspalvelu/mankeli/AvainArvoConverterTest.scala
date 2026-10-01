@@ -829,6 +829,7 @@ class AvainArvoConverterTest {
     laajuus: Option[BigDecimal],
     kirjallinenKoe: Option[DIAOppiaineenKoesuoritus] = None,
     suullinenKoe: Option[DIAOppiaineenKoesuoritus] = None,
+    naytto: Option[DIAOppiaineenKoesuoritus] = None,
     vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot] = None,
     kieli: Option[Koodi] = None): DIAOppiaine =
     DIAOppiaine(
@@ -840,7 +841,8 @@ class AvainArvoConverterTest {
       kieli = kieli,
       vastaavuustodistuksenTiedot = vastaavuustodistuksenTiedot,
       kirjallinenKoe = kirjallinenKoe,
-      suullinenKoe = suullinenKoe
+      suullinenKoe = suullinenKoe,
+      naytto = naytto
     )
 
   private def diaAidinkieliKoodi(kieliArvo: String): Koodi = Koodi(kieliArvo, "oppiainediaaidinkieli", Some(1))
