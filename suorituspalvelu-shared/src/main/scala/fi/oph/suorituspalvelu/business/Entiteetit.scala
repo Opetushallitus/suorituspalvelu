@@ -137,7 +137,8 @@ case class DIAOppiaine(
   kieli: Option[Koodi],
   vastaavuustodistuksenTiedot: Option[DIAVastaavuustodistuksenTiedot],
   kirjallinenKoe: Option[DIAOppiaineenKoesuoritus],
-  suullinenKoe: Option[DIAOppiaineenKoesuoritus]
+  suullinenKoe: Option[DIAOppiaineenKoesuoritus],
+  naytto: Option[DIAOppiaineenKoesuoritus]
 )
 
 case class DIATutkinto(
