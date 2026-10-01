@@ -1116,6 +1116,109 @@
                     ]
                   }
                 ]
+              },
+              {
+                "tyyppi": {
+                  "koodiarvo": "diaoppiaine",
+                  "nimi": {
+                    "fi": "DIA-oppiaine",
+                    "sv": "Läroämne i DIA",
+                    "en": "DIA subject"
+                  },
+                  "koodistoUri": "suorituksentyyppi",
+                  "koodistoVersio": 1
+                },
+                "koulutusmoduuli": {
+                  "tunniste": {
+                    "koodiarvo": "BI",
+                    "nimi": {
+                      "fi": "Biologia",
+                      "sv": "Biologi",
+                      "en": "Biology"
+                    },
+                    "koodistoUri": "oppiaineetdia",
+                    "koodistoVersio": 1
+                  },
+                  "laajuus": {
+                    "arvo": 8.0,
+                    "yksikkö": {
+                      "koodiarvo": "3",
+                      "nimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "lyhytNimi": {
+                        "fi": "vuosiviikkotuntia",
+                        "sv": "årsveckotimmar",
+                        "en": "weekly lessons per year"
+                      },
+                      "koodistoUri": "opintojenlaajuusyksikko",
+                      "koodistoVersio": 1
+                    }
+                  },
+                  "osaAlue": {
+                    "koodiarvo": "2",
+                    "nimi": {
+                      "fi": "Matematiikka ja luonnontieteet",
+                      "sv": "Matematik och naturvetenskap",
+                      "en": "Mathematics and science"
+                    },
+                    "lyhytNimi": {
+                      "fi": "Matematiikka ja luonnontieteet"
+                    },
+                    "koodistoUri": "diaosaalue",
+                    "koodistoVersio": 1
+                  },
+                  "pakollinen": true
+                },
+                "osasuoritukset": [
+                  {
+                    "tyyppi": {
+                      "koodiarvo": "diaoppiaineentutkintovaiheenosasuorituksensuoritus",
+                      "nimi": {
+                        "fi": "DIA-oppiaineen tutkintovaiheen lukukauden suoritus",
+                        "sv": "Termin i examensstudier i DIA-läroämne",
+                        "en": "DIA subject  qualification phase term"
+                      },
+                      "koodistoUri": "suorituksentyyppi",
+                      "koodistoVersio": 1
+                    },
+                    "koulutusmoduuli": {
+                      "tunniste": {
+                        "koodiarvo": "nayttotutkinto",
+                        "nimi": {
+                          "fi": "Näyttötutkinto",
+                          "sv": "Näyttötutkinto",
+                          "en": "Näyttötutkinto"
+                        },
+                        "lyhytNimi": {
+                          "fi": "Näyttö"
+                        },
+                        "koodistoUri": "diapaattokoe",
+                        "koodistoVersio": 1
+                      }
+                    },
+                    "arviointi": [
+                      {
+                        "arvosana": {
+                          "koodiarvo": "4",
+                          "nimi": {
+                            "fi": "4"
+                          },
+                          "lyhytNimi": {
+                            "fi": "4"
+                          },
+                          "koodistoUri": "arviointiasteikkodiatutkinto",
+                          "koodistoVersio": 1
+                        },
+                        "päivä": "2016-06-04",
+                        "lasketaanKokonaispistemäärään": true,
+                        "hyväksytty": true
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           }

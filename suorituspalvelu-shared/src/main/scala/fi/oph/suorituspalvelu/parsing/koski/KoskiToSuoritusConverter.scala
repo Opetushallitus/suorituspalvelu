@@ -787,7 +787,7 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      suoritus.osasuoritukset.map(oss => oss.map(o => toDiaOppiaine(o))).getOrElse(Seq.empty).filter(o => o.kirjallinenKoe.isDefined || o.suullinenKoe.isDefined || o.vastaavuustodistuksenTiedot.isDefined),
+      suoritus.osasuoritukset.map(oss => oss.map(o => toDiaOppiaine(o))).getOrElse(Seq.empty).filter(o => o.kirjallinenKoe.isDefined || o.suullinenKoe.isDefined || o.naytto.isDefined || o.vastaavuustodistuksenTiedot.isDefined),
     )
   }
 
