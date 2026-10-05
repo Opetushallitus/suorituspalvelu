@@ -754,6 +754,7 @@ object KoskiToSuoritusConverter {
 
     val kirjallinen = osaSuoritus.osasuoritukset.getOrElse(Seq.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "kirjallinenkoe"))
     val suullinen = osaSuoritus.osasuoritukset.getOrElse(Seq.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "suullinenkoe"))
+    val naytto = osaSuoritus.osasuoritukset.getOrElse(Seq.empty).find(o => o.koulutusmoduuli.flatMap(_.tunniste).exists(t => t.koodiarvo == "nayttotutkinto"))
     DIAOppiaine(
       tunniste = UUID.randomUUID(),
       nimi = osaSuoritus.koulutusmoduuli.flatMap(k => k.tunniste.map(t => t.nimi)).getOrElse(dummy()),
@@ -763,7 +764,8 @@ object KoskiToSuoritusConverter {
       osaAlue = osaSuoritus.koulutusmoduuli.flatMap(_.osaAlue).map(o => asKoodiObject(o)),
       vastaavuustodistuksenTiedot = vastaavuustodistuksenTiedot,
       kirjallinenKoe = kirjallinen.map(toDIAOppiaineenKoeSuoritus),
-      suullinenKoe = suullinen.map(toDIAOppiaineenKoeSuoritus)
+      suullinenKoe = suullinen.map(toDIAOppiaineenKoeSuoritus),
+      naytto = naytto.map(toDIAOppiaineenKoeSuoritus)
     )
   }
 
@@ -785,7 +787,7 @@ object KoskiToSuoritusConverter {
       parseTila(opiskeluoikeus, Some(suoritus)).map(tila => convertKoskiTila(tila.koodiarvo)).getOrElse(dummy()),
       parseAloitus(opiskeluoikeus),
       suoritus.vahvistus.map(v => LocalDate.parse(v.`päivä`)),
-      suoritus.osasuoritukset.map(oss => oss.map(o => toDiaOppiaine(o))).getOrElse(Seq.empty).filter(o => o.kirjallinenKoe.isDefined || o.suullinenKoe.isDefined || o.vastaavuustodistuksenTiedot.isDefined),
+      suoritus.osasuoritukset.map(oss => oss.map(o => toDiaOppiaine(o))).getOrElse(Seq.empty).filter(o => o.kirjallinenKoe.isDefined || o.suullinenKoe.isDefined || o.naytto.isDefined || o.vastaavuustodistuksenTiedot.isDefined),
     )
   }
 

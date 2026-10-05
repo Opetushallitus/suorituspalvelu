@@ -243,6 +243,7 @@ class EntityToOvaraConverterTest {
     val diaOa = DIAOppiaine(UUID.randomUUID(), kielistetty("diaOa"), koodi("doa"), Some(DIALaajuus(BigDecimal(5), koodi("op"))), Some(koodi("kkt-1")), Some(koodi("FI")),
       Some(DIAVastaavuustodistuksenTiedot(BigDecimal(4.5), DIALaajuus(BigDecimal(150), koodi("op")))),
       Some(DIAOppiaineenKoesuoritus(kielistetty("kirj"), koodi("KIRJ"), DIAArvosana(koodi("4"), hyvaksytty = true), Some(DIALaajuus(BigDecimal(5), koodi("op"))))),
+      None,
       None
     )
     val dia = DIATutkinto(UUID.randomUUID(), kielistetty("dia"), koodi("d"), OPPILAITOS, koodi("FI"), koodi("kt"), SuoritusTila.VALMIS, Some(LocalDate.of(2022, 8, 1)), Some(LocalDate.of(2024, 6, 1)), Seq(diaOa))

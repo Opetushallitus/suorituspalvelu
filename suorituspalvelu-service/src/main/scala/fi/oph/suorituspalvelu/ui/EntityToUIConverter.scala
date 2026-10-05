@@ -418,7 +418,7 @@ object EntityToUIConverter {
         ),
         laajuus = oppiaine.laajuus.map(_.arvo).toJava,
         kirjallinen = oppiaine.kirjallinenKoe.map(_.arvosana.arvosana.arvo).toJava,
-        suullinen = oppiaine.suullinenKoe.map(_.arvosana.arvosana.arvo).toJava,
+        suullinen = oppiaine.suullinenKoe.map(_.arvosana.arvosana.arvo).orElse(oppiaine.naytto.map(_.arvosana.arvosana.arvo)).toJava,
         vastaavuustodistus = oppiaine.vastaavuustodistuksenTiedot.map(_.keskiarvo).toJava
       )
     }
