@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.KKConstants.VirtaOpiskeluoikeusTyyppi
+import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
 import fi.oph.suorituspalvelu.business.{
   KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus,
   KKSynteettinenSuoritus, KKTutkinto, Suoritus, SuoritusTila
@@ -328,14 +329,17 @@ object VirtaToSuoritusConverter {
     prosessoidutSuoritusAvaimet: List[String] = List.empty
   ): Option[Suoritus] = {
     suoritus.Laji match
-      case VIRTA_TUTKINTO_LAJI => Some(KKTutkinto(
+      case VIRTA_TUTKINTO_LAJI =>
+        val supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS)
+        Some(KKTutkinto(
         tunniste = UUID.randomUUID(),
         nimi = virtaNimiToKielistetty(suoritus.Nimi),
-        supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS),
+        supaTila = supaTila,
         komoTunniste = suoritus.koulutusmoduulitunniste,
         opintoPisteet = suoritus.Laajuus.Opintopiste,
         aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
         suoritusPvm = Some(suoritus.SuoritusPvm),
+        keskeytysPvm = if (supaTila == KESKEYTYNYT) opiskeluoikeus.map(_.LoppuPvm) else None,
         myontaja = suoritus.Myontaja,
         kieli = suoritus.Kieli,
         koulutusKoodi = suoritus.Koulutuskoodi,

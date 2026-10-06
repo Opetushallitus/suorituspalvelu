@@ -106,6 +106,7 @@ case class EBTutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   osasuoritukset: Seq[EBOppiaine]
 ) extends Suoritus, Tyypitetty
 
@@ -151,6 +152,7 @@ case class DIATutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   osasuoritukset: Seq[DIAOppiaine]
 ) extends Suoritus, Tyypitetty
 
@@ -184,6 +186,7 @@ case class IBTutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suorituskieli: Option[Koodi],
   osasuoritukset: Seq[IBOppiaineSuoritus]
 ) extends Suoritus, Tyypitetty
@@ -199,6 +202,7 @@ case class ErikoisAmmattiTutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suoritusKieli: Koodi
 ) extends Suoritus, Tyypitetty
 
@@ -211,6 +215,7 @@ case class AmmattiTutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suoritustapa: Koodi,
   suoritusKieli: Koodi
 ) extends Suoritus, Tyypitetty
@@ -224,6 +229,7 @@ case class AmmatillinenPerustutkinto(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   keskiarvo: Option[BigDecimal],
   suoritustapa: Koodi,
   suoritusKieli: Koodi,
@@ -239,6 +245,7 @@ case class AmmatillinenTutkintoOsittainen(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   korotettuKeskiarvo: Option[BigDecimal],
   korotettuOpiskeluoikeusOid: Option[String],
   suoritustapa: Koodi,
@@ -288,6 +295,7 @@ case class Telma(
   supaTila: SuoritusTila,
   aloitusPaivamaara: LocalDate,
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suoritusVuosi: Int,
   suoritusKieli: Koodi,
   hyvaksyttyLaajuus: Option[Laajuus],
@@ -303,6 +311,7 @@ case class Tuva(
   supaTila: SuoritusTila,
   aloitusPaivamaara: LocalDate,
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suoritusVuosi: Int,
   hyvaksyttyLaajuus: Option[Laajuus],
   lahtokoulut: List[Lahtokoulu]
@@ -318,6 +327,7 @@ case class VapaaSivistystyo(
   supaTila: SuoritusTila,
   aloitusPaivamaara: LocalDate,
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suoritusVuosi: Int,
   hyvaksyttyLaajuus: Option[Laajuus],
   suoritusKieli: Koodi,
@@ -334,6 +344,7 @@ case class PerusopetuksenOppimaaranOppiaineidenSuoritus(
   suoritusKieli: Koodi,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   aineet: Set[PerusopetuksenOppiaine],
   syotetty: Boolean // Käsin tallennetulle tiedolle true, muutoin false.
 ) extends Suoritus, Tyypitetty
@@ -407,6 +418,7 @@ case class PerusopetuksenOppimaara(
   yksilollistaminen: Option[PerusopetuksenYksilollistaminen],
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   aineet: Seq[PerusopetuksenOppiaine],
   lahtokoulut: List[Lahtokoulu],
   syotetty: Boolean, // Käsin tallennetulle tiedolle true, muutoin false.
@@ -426,6 +438,7 @@ case class LukionOppimaara(
   supaTila: SuoritusTila,
   aloitusPaivamaara: Option[LocalDate],
   vahvistusPaivamaara: Option[LocalDate],
+  keskeytysPaivamaara: Option[LocalDate],
   suoritusKieli: Option[Koodi],
   koulusivistyskieli: Set[Koodi]
 ) extends Suoritus, Tyypitetty
@@ -560,6 +573,7 @@ case class KKTutkinto(
   opintoPisteet: BigDecimal,
   aloitusPvm: Option[LocalDate],
   suoritusPvm: Option[LocalDate],
+  keskeytysPvm: Option[LocalDate],
   myontaja: String,
   kieli: Option[String],
   koulutusKoodi: Option[String],

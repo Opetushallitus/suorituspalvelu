@@ -1,11 +1,10 @@
 package fi.oph.suorituspalvelu.ui
 
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkintoOsittainen, DIAOppiaine, DIATutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenTutkintoOsittainen, DIAOppiaine, DIATutkinto, EBOppiaine, EBTutkinto, GeneerinenOpiskeluoikeus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.business.KKConstants.{Oppilaitostyyppi, VirtaOpiskeluoikeusTyyppi}
 import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, OpintopolkuVastaanotto, VanhaTarjontaHaku, VanhaTarjontaHakukohde, VanhaVastaanotto}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.resource.ui.*
-import fi.oph.suorituspalvelu.resource.ui.SuoritusTapaUI.NAYTTO
 import fi.oph.suorituspalvelu.service.UIService.{EXAMPLE_OPPIJA_OID, KOODISTO_OPPIAINE_AIDINKIELI_JA_KIRJALLISUUS, KOODISTO_POHJAKOULUTUS, KOODISTO_SUORITUSKIELET}
 import fi.oph.suorituspalvelu.util.KoodistoConstants.{KOULUTUS_KOODISTO, VIRTA_OPISKELUOIKEUDEN_TYYPPI_KOODISTO, VIRTA_OO_TILA_KOODISTO}
 import fi.oph.suorituspalvelu.service.{UIService, ValintaData}
@@ -129,8 +128,7 @@ object EntityToUIConverter {
 
   def getOpiskeluoikeudet(opiskeluoikeudet: Set[Opiskeluoikeus], organisaatioProvider: OrganisaatioProvider, koodistoProvider: KoodistoProvider): List[OpiskeluoikeusUI] =
     opiskeluoikeudet
-      .collect{ case oo: KKOpiskeluoikeus if oo.isTutkintoonJohtava => oo }
-      .map(o => OpiskeluoikeusUI(
+      .collect { case o: KKOpiskeluoikeus if o.isTutkintoonJohtava => OpiskeluoikeusUI(
         tunniste = o.tunniste,
         nimi = getKoodiNimi[OpiskeluoikeusNimiUI](o.koulutusKoodi, KOULUTUS_KOODISTO, koodistoProvider)
           .orElse(
@@ -146,7 +144,7 @@ object EntityToUIConverter {
         )),
         tutkintotaso = getTutkintotaso(o),
         sektori = getSektori(o.myontaja, organisaatioProvider)
-      )).toList
+      )}.toList
 
   private def createVirtaOpintojaksoHierarkia(
     virtaSuoritukset: Seq[Suoritus],
@@ -221,6 +219,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.VALMIS,
           aloituspaiva = suoritus.aloitusPvm.toJava,
           valmistumispaiva = suoritus.suoritusPvm.toJava,
+          keskeytyspaiva = suoritus.keskeytysPvm.toJava,
           suorituskieli = getSuorituskieliFromKoodi(suoritus.kieli, koodistoProvider),
           opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
           isTutkintoonJohtava = true,
@@ -238,6 +237,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.VALMIS,
           aloituspaiva = Optional.empty(),
           valmistumispaiva = Optional.empty(),
+          keskeytyspaiva = Optional.empty(),
           suorituskieli = getSuorituskieliFromKoodi(suoritus.kieli, koodistoProvider),
           opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
           isTutkintoonJohtava = false,
@@ -256,6 +256,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.VALMIS,
           aloituspaiva = Optional.empty,
           valmistumispaiva = Optional.empty,
+          keskeytyspaiva = Optional.empty,
           suorituskieli = Optional.empty,
           opintojaksot = createVirtaOpintojaksoHierarkia(suoritukset),
           isTutkintoonJohtava = false,
@@ -279,6 +280,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(tutkinto.supaTila.toString),
         aloituspaiva = tutkinto.aloitusPvm.toJava,
         valmistumispaiva = tutkinto.suoritusPvm.toJava,
+        keskeytyspaiva = tutkinto.keskeytysPvm.toJava,
         opintojaksot = createVirtaOpintojaksoHierarkia(tutkinto.suoritukset.toSeq),
         suorituskieli = getSuorituskieliFromKoodi(tutkinto.kieli, koodistoProvider),
         isTutkintoonJohtava = oo.isTutkintoonJohtava,
@@ -294,6 +296,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
+        keskeytyspaiva = Optional.empty(),
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
         suorituskieli = getSuorituskieliFromKoodi(suoritus.kieli, koodistoProvider),
         isTutkintoonJohtava = oo.isTutkintoonJohtava,
@@ -309,6 +312,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
+        keskeytyspaiva = Optional.empty(),
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
         suorituskieli = getSuorituskieliFromKoodi(oo.kieli, koodistoProvider),
         isTutkintoonJohtava = oo.isTutkintoonJohtava,
@@ -334,11 +338,9 @@ object EntityToUIConverter {
 
   def getYOTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[YOTutkinto] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[YOOpiskeluoikeus])
-      .map(o => o.asInstanceOf[YOOpiskeluoikeus])
-      .flatMap(o => o.yoTutkinto.map(t => Seq(t)).getOrElse(Seq.empty))
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.YOTutkinto])
-      .map(t => {
+      .collect { case o: YOOpiskeluoikeus => o.yoTutkinto }
+      .flatten
+      .collect { case t: fi.oph.suorituspalvelu.business.YOTutkinto =>
         YOTutkinto(
           tunniste = t.tunniste,
           nimi = YOTutkintoNimi(
@@ -371,16 +373,13 @@ object EntityToUIConverter {
             tutkintokerta = a.tutkintoKerta
           )).toList.asJava
         )
-      }).toList
+      }.toList
 
   def getLukionOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppimaaraUI] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[LukionOppimaara])
-      .map(s => s.asInstanceOf[LukionOppimaara])
-      .map(lukionOppimaara =>
+      .collect { case o: GeneerinenOpiskeluoikeus => o.suoritukset }
+      .flatten
+      .collect { case lukionOppimaara: LukionOppimaara =>
         LukionOppimaaraUI(
           tunniste = lukionOppimaara.tunniste,
           nimi = LukionOppimaaraNimi(
@@ -399,9 +398,10 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(lukionOppimaara.supaTila.toString),
           aloituspaiva = lukionOppimaara.aloitusPaivamaara.toJava,
           valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = lukionOppimaara.keskeytysPaivamaara.toJava,
           suorituskieli = lukionOppimaara.suoritusKieli.map(_.arvo).getOrElse("")
         )
-      ).toList
+      }.toList
 
   def getLukionOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[LukionOppiaineenOppimaara] = {
     List.empty[LukionOppiaineenOppimaara]
@@ -424,8 +424,11 @@ object EntityToUIConverter {
     }
 
     val diat: List[DIATutkinto] =
-      opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
-        .flatMap(_.suoritukset).collect { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }.toList
+      opiskeluoikeudet
+        .collect { case o: GeneerinenOpiskeluoikeus => o.suoritukset }
+        .flatten
+        .collect { case s: fi.oph.suorituspalvelu.business.DIATutkinto => s }
+        .toList
 
     val DIA_KIELETKIRJALLISUUSTAIDE_KOODIARVO = "1"
     val DIA_MATEMATIIKKALUONNONTIETEET_KOODIARVO = "2"
@@ -460,6 +463,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(diaTutkinto.supaTila.toString),
         aloituspaiva = diaTutkinto.aloitusPaivamaara.toJava,
         valmistumispaiva = diaTutkinto.vahvistusPaivamaara.toJava,
+        keskeytyspaiva = diaTutkinto.keskeytysPaivamaara.toJava,
         suorituskieli = getSuorituskieliFromKoodi(Some(diaTutkinto.suorituskieli.arvo), koodistoProvider),
         kieletKirjallisuusTaide = kieletKirjallisuusTaide.asJava,
         matematiikkaLuonnontieteet = matematiikkaLuonnontieteet.asJava,
@@ -470,12 +474,9 @@ object EntityToUIConverter {
 
   def getEBTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[EBTutkintoUI] = {
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.EBTutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.EBTutkinto])
-      .map((ebTutkinto: EBTutkinto) =>
+      .collect { case o : GeneerinenOpiskeluoikeus => o.suoritukset }
+      .flatten
+      .collect { case ebTutkinto: EBTutkinto =>
         val oppiaineet = ebTutkinto.osasuoritukset.map((o: EBOppiaine) => {
           EBOppiaineUI(
             tunniste = o.tunniste,
@@ -491,7 +492,7 @@ object EntityToUIConverter {
             oral = o.osasuoritukset.find(os => os.koodi.arvo.equals("Oral"))
               .map(osw => EBOppiaineOsasuoritusUI(osw.koodi.arvo, BigDecimal.apply(osw.arvosana.arvosana.arvo))).toJava,
             `final` = o.osasuoritukset.find(os => os.koodi.arvo.equals("Final"))
-            .map(osw => EBOppiaineOsasuoritusUI(osw.koodi.arvo, BigDecimal.apply(osw.arvosana.arvosana.arvo))).toJava
+              .map(osw => EBOppiaineOsasuoritusUI(osw.koodi.arvo, BigDecimal.apply(osw.arvosana.arvosana.arvo))).toJava
 
           )
         })
@@ -514,18 +515,18 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(ebTutkinto.supaTila.toString),
           aloituspaiva = ebTutkinto.aloitusPaivamaara.toJava,
           valmistumispaiva = ebTutkinto.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = ebTutkinto.keskeytysPaivamaara.toJava,
           oppiaineet = oppiaineet.toList.asJava
         )
-      ).toList
+      }.toList
   }
 
 
   def getIBTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[IBTutkintoUI] =
     opiskeluoikeudet
-      .collect{ case oo: GeneerinenOpiskeluoikeus => oo }
-      .flatMap(o => o.suoritukset)
-      .collect{ case s: IBTutkinto => s }
-      .map((ibTutkinto: IBTutkinto) => {
+      .collect { case oo: GeneerinenOpiskeluoikeus => oo.suoritukset }
+      .flatten
+      .collect { case ibTutkinto: IBTutkinto =>
         val oppiaineetByRyhma = ibTutkinto.osasuoritukset.filter(_.predictedArvosana.nonEmpty).groupBy(_.ryhma)
         IBTutkintoUI(
           tunniste = ibTutkinto.tunniste,
@@ -546,6 +547,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(ibTutkinto.supaTila.toString),
           aloituspaiva = ibTutkinto.aloitusPaivamaara.toJava,
           valmistumispaiva = ibTutkinto.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = ibTutkinto.keskeytysPaivamaara.toJava,
           suorituskieli = ibTutkinto.suorituskieli.flatMap(k => getKoodiNimi[SuorituskieliUI](Some(k.arvo), k.koodisto, koodistoProvider).toScala).toJava,
           oppiaineet = oppiaineetByRyhma.toList
             .sortBy { case (ryhmaOpt, _) => ryhmaOpt.isEmpty }
@@ -570,7 +572,7 @@ object EntityToUIConverter {
               )
             }.asJava
         )
-      }).toList
+      }.toList
 
   private def getAmmatillinenArvosanaNimi[N <: NimiLike](
     koodi: Option[Koodi],
@@ -588,12 +590,9 @@ object EntityToUIConverter {
 
   def getAmmatillisetPerusTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[Ammatillinentutkinto] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto])
-      .map(t => {
+      .collect { case o: AmmatillinenOpiskeluoikeus => o.suoritukset }
+      .flatten
+      .collect { case t: fi.oph.suorituspalvelu.business.AmmatillinenPerustutkinto =>
         Ammatillinentutkinto(
           t.tunniste,
           nimi = AmmatillinentutkintoNimi(
@@ -612,6 +611,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = t.keskeytysPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
           painotettuKeskiarvo = t.keskiarvo.toJava,
           ytot = t.osat
@@ -662,15 +662,13 @@ object EntityToUIConverter {
             )).toList.asJava,
           suoritustapa = Optional.of(SuoritusTapaUI.valueOf(t.suoritustapa.arvo.toUpperCase)),
         )
-      }).toList
+      }.toList
 
   def getOsittaisetAmmatillisetTutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[OsittainenAmmatillinenTutkintoUI] =
     opiskeluoikeudet
-      .collect{case o: AmmatillinenOpiskeluoikeus => o }
-      .flatMap(o => o.suoritukset)
-      .collect{ case s: AmmatillinenTutkintoOsittainen => s }
-      .filter(t => t.korotettuOpiskeluoikeusOid.isDefined)
-      .map(t => {
+      .collect { case o: AmmatillinenOpiskeluoikeus => o.suoritukset }
+      .flatten
+      .collect { case t: AmmatillinenTutkintoOsittainen if t.korotettuOpiskeluoikeusOid.isDefined =>
         OsittainenAmmatillinenTutkintoUI(
           t.tunniste,
           nimi = AmmatillinentutkintoNimi(
@@ -689,6 +687,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = t.keskeytysPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
           korotettuPainotettuKeskiarvo = t.korotettuKeskiarvo.toJava,
           ytot = t.osat
@@ -745,16 +744,13 @@ object EntityToUIConverter {
             )).toList.asJava,
           suoritustapa = Optional.empty()
         )
-      }).toList
+      }.toList
 
   def getAmmattitutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Ammattitutkinto] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.AmmattiTutkinto])
-      .map(t => {
+      .collect { case o: AmmatillinenOpiskeluoikeus => o.suoritukset }
+      .flatten
+      .collect { case t: fi.oph.suorituspalvelu.business.AmmattiTutkinto =>
         Ammattitutkinto(
           t.tunniste,
           nimi = AmmattitutkintoNimi(
@@ -773,18 +769,16 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = t.keskeytysPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo
         )
-      }).toList
+      }.toList
 
   def getErikoisAmmattitutkinnot(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Erikoisammattitutkinto] =
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto])
-      .map(t => {
+      .collect { case o: AmmatillinenOpiskeluoikeus => o.suoritukset }
+      .flatten
+      .collect { case t: fi.oph.suorituspalvelu.business.ErikoisAmmattiTutkinto =>
         Erikoisammattitutkinto(
           t.tunniste,
           nimi = ErikoisammattitutkintoNimi(
@@ -803,18 +797,16 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
           aloituspaiva = t.aloitusPaivamaara.toJava,
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = t.keskeytysPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )
-      }).toList
+      }.toList
 
   def getTelmat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[Telma] = {
     opiskeluoikeudet
-      .filter(o => o.isInstanceOf[AmmatillinenOpiskeluoikeus])
-      .map(o => o.asInstanceOf[AmmatillinenOpiskeluoikeus])
-      .flatMap(o => o.suoritukset)
-      .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.Telma])
-      .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.Telma])
-      .map(t => {
+      .collect { case o: AmmatillinenOpiskeluoikeus => o.suoritukset}
+      .flatten
+      .collect { case t: fi.oph.suorituspalvelu.business.Telma =>
         Telma(
           t.tunniste,
           nimi = TelmaNimi(
@@ -833,17 +825,17 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
           aloituspaiva = Optional.of(t.aloitusPaivamaara),
           valmistumispaiva = t.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = t.keskeytysPaivamaara.toJava,
           suorituskieli = t.suoritusKieli.arvo,
         )
-      }).toList
+      }.toList
     }
 
     def getTuvat(opiskeluoikeudet: Set[Opiskeluoikeus]): List[TuvaUI] =
       opiskeluoikeudet
-        .collect { case o: GeneerinenOpiskeluoikeus => o}
-        .flatMap(o => o.suoritukset)
-        .collect { case s: fi.oph.suorituspalvelu.business.Tuva => s }
-        .map(t => {
+        .collect { case o: GeneerinenOpiskeluoikeus => o.suoritukset}
+        .flatten
+        .collect { case t: fi.oph.suorituspalvelu.business.Tuva =>
           TuvaUI(
             t.tunniste,
             nimi = TuvaNimi(
@@ -862,22 +854,20 @@ object EntityToUIConverter {
             tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
             aloituspaiva = Optional.of(t.aloitusPaivamaara),
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
+            keskeytyspaiva = t.keskeytysPaivamaara.toJava,
             laajuus = t.hyvaksyttyLaajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
               l.lyhytNimi.get.fi.toJava,
               l.lyhytNimi.get.sv.toJava,
               l.lyhytNimi.get.en.toJava
             ))).toJava,
           )
-        }).toList
+        }.toList
 
     def getVapaaSivistystyoKoulutukset(opiskeluoikeudet: Set[Opiskeluoikeus]): List[VapaaSivistystyoKoulutus] =
       opiskeluoikeudet
-        .filter(o => o.isInstanceOf[GeneerinenOpiskeluoikeus])
-        .map(o => o.asInstanceOf[GeneerinenOpiskeluoikeus])
-        .flatMap(o => o.suoritukset)
-        .filter(s => s.isInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
-        .map(s => s.asInstanceOf[fi.oph.suorituspalvelu.business.VapaaSivistystyo])
-        .map(t => {
+        .collect { case o: GeneerinenOpiskeluoikeus => o.suoritukset }
+        .flatten
+        .collect { case t: VapaaSivistystyo =>
           VapaaSivistystyoKoulutus(
             t.tunniste,
             nimi = VapaaSivistystyoKoulutusNimi(
@@ -896,6 +886,7 @@ object EntityToUIConverter {
             tila = SuoritusTilaUI.valueOf(t.supaTila.toString),
             aloituspaiva = Optional.of(t.aloitusPaivamaara),
             valmistumispaiva = t.vahvistusPaivamaara.toJava,
+            keskeytyspaiva = t.keskeytysPaivamaara.toJava,
             laajuus = t.hyvaksyttyLaajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
               l.lyhytNimi.get.fi.toJava,
               l.lyhytNimi.get.sv.toJava,
@@ -903,14 +894,13 @@ object EntityToUIConverter {
             ))).toJava,
             suorituskieli = t.suoritusKieli.arvo
           )
-        }).toList
+        }.toList
 
   def getPerusopetuksenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[PerusopetuksenOppimaaraUI] =
     opiskeluoikeudet
-      .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
-      .flatMap(_.suoritukset)
-      .collect { case s: PerusopetuksenOppimaara => s }
-       .map(om => {
+      .collect { case oo: PerusopetuksenOpiskeluoikeus => oo.suoritukset }
+      .flatten
+      .collect { case om: PerusopetuksenOppimaara =>
         PerusopetuksenOppimaaraUI(
           versioTunniste = om.versioTunniste.toJava,
           tunniste = om.tunniste,
@@ -930,6 +920,7 @@ object EntityToUIConverter {
           tila = SuoritusTilaUI.valueOf(om.supaTila.toString),
           aloituspaiva = om.aloitusPaivamaara.toJava,
           valmistumispaiva = om.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = om.keskeytysPaivamaara.toJava,
           suorituskieli = om.suoritusKieli.arvo,
           luokka = om.luokka.toJava,
           yksilollistaminen = om.yksilollistaminen.map((y: PerusopetuksenYksilollistaminen) => Yksilollistaminen(
@@ -966,17 +957,16 @@ object EntityToUIConverter {
           }.asJava,
           syotetty = om.syotetty
         )
-      }).toList
+      }.toList
 
   def getPerusopetuksenOppimaarat78Luokkalaiset(opiskeluoikeudet: Set[Opiskeluoikeus]): Option[PerusopetuksenOppimaara78Luokkalaiset] =
     None
 
   def getPerusopetuksenOppiaineenOppimaarat(opiskeluoikeudet: Set[Opiskeluoikeus], koodistoProvider: KoodistoProvider): List[PerusopetuksenOppiaineenOppimaaratUI] = {
     opiskeluoikeudet
-      .collect { case oo: PerusopetuksenOpiskeluoikeus => oo }
-      .flatMap(_.suoritukset)
-      .collect { case s: PerusopetuksenOppimaaranOppiaineidenSuoritus => s }
-      .map(oppiaineidenSuoritus => {
+      .collect { case oo: PerusopetuksenOpiskeluoikeus => oo.suoritukset }
+      .flatten
+      .collect { case oppiaineidenSuoritus: PerusopetuksenOppimaaranOppiaineidenSuoritus =>
         val oppiaineet: Set[PerusopetuksenOppiaineUI] =
           oppiaineidenSuoritus.aineet.map(oppiaine => {
             def getLisatieto(asiointiKieli: String): Option[String] =
@@ -1012,13 +1002,14 @@ object EntityToUIConverter {
             en = Optional.of("Basic education subject syllabus")
           ),
           tila = SuoritusTilaUI.valueOf(oppiaineidenSuoritus.supaTila.toString),
-          aloituspaiva = java.util.Optional.ofNullable(oppiaineidenSuoritus.aloitusPaivamaara.orNull),
-          valmistumispaiva = java.util.Optional.ofNullable(oppiaineidenSuoritus.vahvistusPaivamaara.orNull),
+          aloituspaiva = oppiaineidenSuoritus.aloitusPaivamaara.toJava,
+          valmistumispaiva = oppiaineidenSuoritus.vahvistusPaivamaara.toJava,
+          keskeytyspaiva = oppiaineidenSuoritus.keskeytysPaivamaara.toJava,
           suorituskieli = oppiaineidenSuoritus.suoritusKieli.arvo,
           oppiaineet = filterAndSortOppiaineet(oppiaineet).asJava,
           syotetty = oppiaineidenSuoritus.syotetty
         )
-      }).toList
+      }.toList
   }
 
   def getVastaanotot(vastaanotot: Seq[OpintopolkuVastaanotto], hakuProvider: HakuProvider, hakukohdeProvider: HakukohdeProvider, organisaatioProvider: OrganisaatioProvider): Seq[VastaanottoUI] =

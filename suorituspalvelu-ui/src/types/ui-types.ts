@@ -49,6 +49,7 @@ export type SuorituksenPerustiedot = {
   tila: SuorituksenTila;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
 };
 
 export type Kielistetty = {

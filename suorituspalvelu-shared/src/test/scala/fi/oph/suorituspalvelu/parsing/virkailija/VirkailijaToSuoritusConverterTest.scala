@@ -79,6 +79,7 @@ class VirkailijaToSuoritusConverterTest {
           Some(EI_YKSILOLLISTETTY),
           None,
           suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
+          keskeytysPaivamaara = None,
           suoritus.oppiaineet.toScala.map(oppiaineet => oppiaineet.asScala.toSeq.map(oppiaine => PerusopetuksenOppiaine(
             converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaara].aineet.head.tunniste,
             Kielistetty(Some("matematiikka"), None, None),
@@ -222,6 +223,7 @@ class VirkailijaToSuoritusConverterTest {
           suoritusKieli = Koodi(suoritus.suorituskieli.get(), "kieli", None),
           aloitusPaivamaara = None,
           vahvistusPaivamaara = suoritus.valmistumispaiva.toScala.map(vp => LocalDate.parse(vp)),
+          keskeytysPaivamaara = None,
           aineet = converted.suoritukset.head.asInstanceOf[PerusopetuksenOppimaaranOppiaineidenSuoritus].aineet,
           syotetty = true
         )

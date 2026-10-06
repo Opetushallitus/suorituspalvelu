@@ -68,6 +68,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
       None,
       None,
       if (vuosi.isDefined) Some(LocalDate.parse(s"${vuosi.get}-08-18")) else None,
+      keskeytysPaivamaara = None,
       Seq.empty,
       lahtokoulut,
       false,

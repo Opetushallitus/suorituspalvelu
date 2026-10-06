@@ -211,7 +211,10 @@ class KoskiParsingTest {
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
-        |              "alku": "2022-06-06"
+        |              "alku": "2022-06-06",
+        |              "tila": {
+        |                "koodiarvo": "lasna"
+        |              }
         |            }
         |          ]
         |        },
@@ -447,7 +450,10 @@ class KoskiParsingTest {
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
-        |              "alku": "2022-06-06"
+        |              "alku": "2022-06-06",
+        |              "tila": {
+        |                "koodiarvo": "lasna"
+        |              }
         |            }
         |          ]
         |        },
@@ -516,7 +522,10 @@ class KoskiParsingTest {
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
-        |              "alku": "2022-06-06"
+        |              "alku": "2022-06-06",
+        |              "tila": {
+        |                "koodiarvo": "paattynyt"
+        |              }
         |            }
         |          ]
         |        },
@@ -562,6 +571,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Oppilaitos(Kielistetty(Some("HAUS kehittämiskeskus Oy"), None, None), "1.2.246.562.10.54019331674"), tutkinto.oppilaitos)
     Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2023-03-15")), tutkinto.vahvistusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2022-06-06")), tutkinto.keskeytysPaivamaara)
     Assertions.assertEquals(Koodi("FI", "kieli", Some(1)), tutkinto.suoritusKieli)
 
   @Test def testAmmatillisenTutkinnonOsittaisenKentat(): Unit =
@@ -587,7 +597,10 @@ class KoskiParsingTest {
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
-        |              "alku": "2022-06-06"
+        |              "alku": "2022-06-06",
+        |              "tila": {
+        |                "koodiarvo": "lasna"
+        |              }
         |            }
         |          ]
         |        },
@@ -2216,7 +2229,10 @@ class KoskiParsingTest {
         |        "tila": {
         |          "opiskeluoikeusjaksot": [
         |            {
-        |              "alku": "2022-05-01"
+        |              "alku": "2022-05-01",
+        |              "tila": {
+        |                "koodiarvo": "lasna"
+        |              }
         |            }
         |          ]
         |        },
