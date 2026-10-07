@@ -409,7 +409,7 @@ class OvaraServiceTest {
     val record = captor.getValue.head
     // Sisäkkäinen rakenne säilyy ennallaan
     Assertions.assertEquals(1, record.kkOpiskeluoikeudet.head.suoritukset.size)
-    val rivit = record.litistetytKKSuoritukset
+    val rivit = record.kkSuorituksetFlat
     Assertions.assertEquals(Seq(tutkinto.tunniste, opintojakso.tunniste), rivit.map(_.tunniste))
     Assertions.assertEquals(Seq(None, Some(tutkinto.tunniste)), rivit.map(_.parentTunniste))
     Assertions.assertEquals(Seq(Seq(opintojakso.tunniste), Seq.empty), rivit.map(_.lapsiTunnisteet))

@@ -215,23 +215,12 @@ object EntityToOvaraConverter {
         suoritukset = oo.suoritukset.flatMap(convertKKSuoritus).toSeq
       )}
 
-  private def kkSuorituksenTunniste(s: OvaraKKSuoritus): UUID = s match {
-    case t: OvaraKKTutkinto => t.tunniste
-    case o: OvaraKKOpintosuoritus => o.tunniste
-    case s: OvaraKKSynteettinenSuoritus => s.tunniste
-  }
-
-  private def kkSuorituksenLapset(s: OvaraKKSuoritus): Seq[OvaraKKSuoritus] = s match {
-    case t: OvaraKKTutkinto => t.suoritukset
-    case o: OvaraKKOpintosuoritus => o.suoritukset
-    case s: OvaraKKSynteettinenSuoritus => s.suoritukset
-  }
-
   // Opiskeluoikeustason tiedot, jotka kopioidaan jokaiselle opiskeluoikeuden litistetylle suoritukselle
   private case class KKOoKonteksti(
     metadata: OvaraVersioMetadata,
     tunniste: UUID,
     tyyppi: String,
+    virtaTunniste: Option[String],
     virtaTila: Option[OvaraKoodi],
     alkuPvm: Option[LocalDate],
     loppuPvm: Option[LocalDate],
@@ -240,8 +229,8 @@ object EntityToOvaraConverter {
 
   // polku = suorituksen kaikkien parentien tunnisteet juuresta alkaen, tyhjä juuritason suoritukselle
   private def litistaKKSuoritus(suoritus: OvaraKKSuoritus, oo: KKOoKonteksti, polku: Seq[UUID]): Seq[OvaraLitistettyKKSuoritus] = {
-    val tunniste = kkSuorituksenTunniste(suoritus)
-    val lapset = kkSuorituksenLapset(suoritus)
+    val tunniste = suoritus.tunniste
+    val lapset = suoritus.suoritukset
 
     def rivi(entiteetinTyyppi: String, nimi: Option[OvaraKielistetty], supaTila: OvaraSuoritusTila, komoTunniste: String,
              myontaja: String, suoritusPvm: Option[LocalDate], opiskeluoikeusAvain: Option[String]) =
@@ -251,8 +240,9 @@ object EntityToOvaraConverter {
         tunniste = tunniste,
         opiskeluoikeusTunniste = oo.tunniste,
         opiskeluoikeusTyyppi = oo.tyyppi,
+        opiskeluoikeusVirtaTunniste = oo.virtaTunniste,
         parentTunniste = polku.lastOption,
-        lapsiTunnisteet = lapset.map(kkSuorituksenTunniste),
+        lapsiTunnisteet = lapset.map(_.tunniste),
         juuriSuoritusPolku = polku,
         opiskeluoikeusVirtaTila = oo.virtaTila,
         opiskeluoikeusAlkuPvm = oo.alkuPvm,
@@ -304,10 +294,10 @@ object EntityToOvaraConverter {
   def litistaKKSuoritukset(kkOpiskeluoikeudet: Seq[OvaraKKOpiskeluoikeus],
                            kkSynteettisetOpiskeluoikeudet: Seq[OvaraKKSynteettinenOpiskeluoikeus]): Seq[OvaraLitistettyKKSuoritus] = {
     val kontekstitJaSuoritukset =
-      kkOpiskeluoikeudet.map(oo => (KKOoKonteksti(oo.metadata, oo.tunniste, oo.entiteetinTyyppi, Some(oo.virtaTila),
-        Some(oo.alkuPvm), Some(oo.loppuPvm), oo.kieli), oo.suoritukset)) ++
+      kkOpiskeluoikeudet.map(oo => (KKOoKonteksti(oo.metadata, oo.tunniste, oo.entiteetinTyyppi, Option(oo.virtaTunniste),
+        Option(oo.virtaTila), Option(oo.alkuPvm), Option(oo.loppuPvm), oo.kieli), oo.suoritukset)) ++
       kkSynteettisetOpiskeluoikeudet.map(oo => (KKOoKonteksti(oo.metadata, oo.tunniste, oo.entiteetinTyyppi, None,
-        None, None, None), oo.suoritukset))
+        None, None, None, None), oo.suoritukset))
     kontekstitJaSuoritukset.flatMap { case (konteksti, suoritukset) =>
       suoritukset.flatMap(s => litistaKKSuoritus(s, konteksti, Seq.empty))
     }

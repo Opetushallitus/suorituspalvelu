@@ -5,11 +5,7 @@ import fi.oph.suorituspalvelu.parsing.koski.{
   Kielistetty, KoskiErityisenTuenPaatos, KoskiKotiopetusjakso, KoskiKoodi,
   KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila
 }
-import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
-import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import fi.oph.suorituspalvelu.ovara.OvaraLitistysTestUtil.tarkistaLitistyksenInvariantit
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 
@@ -249,6 +245,7 @@ class EntityToOvaraConverterTest {
     Assertions.assertEquals(Seq(Seq.empty, Seq(tutkinto.tunniste), Seq(tutkinto.tunniste, lapsi1.tunniste), Seq(tutkinto.tunniste)), rivit.map(_.juuriSuoritusPolku))
     Assertions.assertTrue(rivit.forall(_.opiskeluoikeusTunniste == kk.tunniste))
     Assertions.assertTrue(rivit.forall(_.opiskeluoikeusTyyppi == "KKOpiskeluoikeus"))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusVirtaTunniste.contains("vt")))
     Assertions.assertTrue(rivit.forall(_.opiskeluoikeusVirtaTila.contains(OvaraKoodi("v", "ks", Some(1)))))
     Assertions.assertTrue(rivit.forall(_.opiskeluoikeusAlkuPvm.contains(LocalDate.of(2020, 9, 1))))
     Assertions.assertTrue(rivit.forall(_.opiskeluoikeusLoppuPvm.contains(LocalDate.of(2024, 6, 1))))
@@ -311,6 +308,7 @@ class EntityToOvaraConverterTest {
     Assertions.assertEquals(Seq.empty, r.juuriSuoritusPolku)
     Assertions.assertEquals(Seq.empty, r.lapsiTunnisteet)
     Assertions.assertEquals(None, r.opiskeluoikeusVirtaTila)
+    Assertions.assertEquals(None, r.opiskeluoikeusVirtaTunniste)
     Assertions.assertEquals(None, r.opiskeluoikeusAlkuPvm)
     Assertions.assertEquals(None, r.opiskeluoikeusLoppuPvm)
     Assertions.assertEquals(None, r.opiskeluoikeusKieli)
@@ -383,151 +381,18 @@ class EntityToOvaraConverterTest {
     Assertions.assertEquals(Seq(bLapsi1.tunniste, bLapsi2.tunniste), b.filter(_.juuriSuoritusPolku == Seq(bSynt.tunniste)).map(_.tunniste))
   }
 
-  @Test def testLitistaKKSuorituksetVirtaDatastaSamaSuoritusKahdenParentinAlla(): Unit = {
-    // Sama opintosuoritus (op400) sisältyy kahden eri opiskeluoikeuden tutkintoon, ks. VirtaParsingTest.testSameSuoritusUnderTwoDifferentTutkinto
-    val opiskeluoikeudet = VirtaToSuoritusConverter.toOpiskeluoikeudet(VirtaParser.parseVirtaOpiskelijat(
-      """
-        |<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-        |  <SOAP-ENV:Body>
-        |    <virtaluku:OpiskelijanKaikkiTiedotResponse xmlns:virtaluku="http://tietovaranto.csc.fi/luku">
-        |      <virta:Virta xmlns:virta="urn:mace:funet.fi:virta/2015/09/01">
-        |        <virta:Opiskelija avain="C15">
-        |          <virta:Opiskeluoikeudet>
-        |            <virta:Opiskeluoikeus opiskelijaAvain="C15" avain="xxx008">
-        |              <virta:AlkuPvm>2020-08-01</virta:AlkuPvm>
-        |              <virta:LoppuPvm>2023-06-30</virta:LoppuPvm>
-        |              <virta:Tila>
-        |                <virta:AlkuPvm>2020-08-01</virta:AlkuPvm>
-        |                <virta:Koodi>1</virta:Koodi>
-        |              </virta:Tila>
-        |              <virta:Tila>
-        |                <virta:AlkuPvm>2023-06-30</virta:AlkuPvm>
-        |                <virta:Koodi>3</virta:Koodi>
-        |              </virta:Tila>
-        |              <virta:Tyyppi>1</virta:Tyyppi>
-        |              <virta:Myontaja>10089</virta:Myontaja>
-        |              <virta:Jakso>
-        |                <virta:Koulutuskoodi>751101</virta:Koulutuskoodi>
-        |                <virta:AlkuPvm>2020-08-01</virta:AlkuPvm>
-        |              </virta:Jakso>
-        |            </virta:Opiskeluoikeus>
-        |            <virta:Opiskeluoikeus opiskelijaAvain="C15" avain="xxx009">
-        |              <virta:AlkuPvm>2021-01-01</virta:AlkuPvm>
-        |              <virta:LoppuPvm>2022-12-31</virta:LoppuPvm>
-        |              <virta:Tila>
-        |                <virta:AlkuPvm>2021-01-01</virta:AlkuPvm>
-        |                <virta:Koodi>1</virta:Koodi>
-        |              </virta:Tila>
-        |              <virta:Tila>
-        |                <virta:AlkuPvm>2022-12-31</virta:AlkuPvm>
-        |                <virta:Koodi>4</virta:Koodi>
-        |              </virta:Tila>
-        |              <virta:Tyyppi>1</virta:Tyyppi>
-        |              <virta:Myontaja>10089</virta:Myontaja>
-        |              <virta:Jakso>
-        |                <virta:Koulutuskoodi>751101</virta:Koulutuskoodi>
-        |                <virta:AlkuPvm>2021-01-01</virta:AlkuPvm>
-        |                <virta:Nimi kieli="fi">Kasvatustiede</virta:Nimi>
-        |              </virta:Jakso>
-        |            </virta:Opiskeluoikeus>
-        |          </virta:Opiskeluoikeudet>
-        |          <virta:Opintosuoritukset>
-        |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx008" opiskelijaAvain="C15" koulutusmoduulitunniste="KAND2023" avain="tutkinto001">
-        |              <virta:SuoritusPvm>2023-06-30</virta:SuoritusPvm>
-        |              <virta:Laajuus>
-        |                <virta:Opintopiste>180.0</virta:Opintopiste>
-        |              </virta:Laajuus>
-        |              <virta:Arvosana>
-        |                <virta:Viisiportainen>3</virta:Viisiportainen>
-        |              </virta:Arvosana>
-        |              <virta:Myontaja>10089</virta:Myontaja>
-        |              <virta:Laji>1</virta:Laji>
-        |              <virta:Nimi kieli="fi">Kasvatustieteiden kandidaatti</virta:Nimi>
-        |              <virta:Kieli>fi</virta:Kieli>
-        |              <virta:Koulutuskoodi>751101</virta:Koulutuskoodi>
-        |              <virta:Sisaltyvyys sisaltyvaOpintosuoritusAvain="op400">
-        |                <virta:Opintopiste>10.0</virta:Opintopiste>
-        |              </virta:Sisaltyvyys>
-        |            </virta:Opintosuoritus>
-        |            <virta:Opintosuoritus opiskeluoikeusAvain="xxx009" opiskelijaAvain="C15" koulutusmoduulitunniste="AVOIN2022" avain="avoin001">
-        |              <virta:SuoritusPvm>2022-05-30</virta:SuoritusPvm>
-        |              <virta:Laajuus>
-        |                <virta:Opintopiste>20.0</virta:Opintopiste>
-        |              </virta:Laajuus>
-        |              <virta:Arvosana>
-        |                <virta:Hyvaksytty>HYV</virta:Hyvaksytty>
-        |              </virta:Arvosana>
-        |              <virta:Myontaja>10088</virta:Myontaja>
-        |              <virta:Laji>1</virta:Laji>
-        |              <virta:Nimi kieli="fi">Kasvatustieteen opinnot</virta:Nimi>
-        |              <virta:Kieli>fi</virta:Kieli>
-        |              <virta:Sisaltyvyys sisaltyvaOpintosuoritusAvain="op400">
-        |                <virta:Opintopiste>10.0</virta:Opintopiste>
-        |              </virta:Sisaltyvyys>
-        |            </virta:Opintosuoritus>
-        |            <virta:Opintosuoritus opiskelijaAvain="C15" koulutusmoduulitunniste="PSY101" avain="op400">
-        |              <virta:SuoritusPvm>2021-05-31</virta:SuoritusPvm>
-        |              <virta:Laajuus>
-        |                <virta:Opintopiste>10.0</virta:Opintopiste>
-        |              </virta:Laajuus>
-        |              <virta:Arvosana>
-        |                <virta:Viisiportainen>4</virta:Viisiportainen>
-        |              </virta:Arvosana>
-        |              <virta:Myontaja>10089</virta:Myontaja>
-        |              <virta:Laji>2</virta:Laji>
-        |              <virta:Nimi kieli="fi">Psykologian perusteet</virta:Nimi>
-        |              <virta:Kieli>fi</virta:Kieli>
-        |              <virta:Koulutusala>
-        |                <virta:Koodi versio="ohjausala">1</virta:Koodi>
-        |              </virta:Koulutusala>
-        |              <virta:Opinnaytetyo>0</virta:Opinnaytetyo>
-        |            </virta:Opintosuoritus>
-        |          </virta:Opintosuoritukset>
-        |        </virta:Opiskelija>
-        |      </virta:Virta>
-        |    </virtaluku:OpiskelijanKaikkiTiedotResponse>
-        |  </SOAP-ENV:Body>
-        |</SOAP-ENV:Envelope>""".stripMargin
-    ))
-    val ooJaMeta = opiskeluoikeudet.map(oo => (META, oo))
-
-    val rivit = EntityToOvaraConverter.litistaKKSuoritukset(
-      EntityToOvaraConverter.getKKOpiskeluoikeudet(ooJaMeta),
-      EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(ooJaMeta))
-    tarkistaLitistyksenInvariantit(rivit)
-
-    // Kaksi tutkintoa ja sama opintosuoritus kummankin alla omana rivinään omalla tunnisteellaan
-    Assertions.assertEquals(4, rivit.size)
-    val psy = rivit.filter(_.avain.contains("op400"))
-    Assertions.assertEquals(2, psy.size)
-    Assertions.assertEquals(2, psy.map(_.tunniste).distinct.size)
-    Assertions.assertEquals(2, psy.map(_.opiskeluoikeusTunniste).distinct.size)
-    Assertions.assertTrue(psy.forall(r => r.juuriSuoritusPolku.size == 1 && r.komoTunniste == "PSY101" && r.arvosana.contains("4")))
-    val tutkintojenTunnisteet = rivit.filter(_.juuriSuoritusPolku.isEmpty).map(_.tunniste).toSet
-    Assertions.assertEquals(tutkintojenTunnisteet, psy.flatMap(_.parentTunniste).toSet)
-
-    // Lähdejärjestelmän tila tulee opiskeluoikeudelta (viimeisin tila)
-    Assertions.assertEquals(Set("3", "4"), rivit.flatMap(_.opiskeluoikeusVirtaTila).map(_.arvo).toSet)
-  }
-
   @Test def testLitistettyKKSuoritusSerialisoituuJsoniksi(): Unit = {
-    // Sama ObjectMapper-konfiguraatio kuin SiirtotiedostoClientissa
-    val mapper = new ObjectMapper()
-      .registerModule(new JavaTimeModule())
-      .registerModule(new Jdk8Module())
-      .registerModule(DefaultScalaModule)
-      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-
     val lapsi = KKOpintosuoritus(UUID.fromString("00000000-0000-0000-0000-000000000102"), Some(kielistetty("l")), SuoritusTila.VALMIS, "komo-l", BigDecimal(5), None, Some(LocalDate.of(2023, 6, 1)), None, "myo", None, None, None, Some("4"), Some("4-1"), Some("fi"), None, None, opinnaytetyo = false, None, Seq.empty, "avain-l")
     val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000101"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(180), None, None, "myo", None, None, None, Seq(lapsi), None)
     val kk = KKOpiskeluoikeus(UUID.fromString("00000000-0000-0000-0000-000000000100"), "vt", None, "1", None, LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, None, Set(tutkinto), None, None, None)
     val kkOo = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk)))
     val rivit = EntityToOvaraConverter.litistaKKSuoritukset(kkOo, Seq.empty)
     val record = OvaraVersioJaOpiskeluoikeudet("1.2.246.562.24.1", OvaraHenkiloMetadata(Instant.parse("2024-03-01T00:00:00Z")),
-      kkOo, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, litistetytKKSuoritukset = rivit)
+      kkOo, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, kkSuorituksetFlat = rivit)
 
-    val json = mapper.readTree(mapper.writeValueAsString(record))
-    val litistetyt = json.get("litistetytKKSuoritukset")
+    // Siirtotiedosto on JSON-taulukko henkilöiden recordeja
+    val json = OvaraLitistysTestUtil.siirtotiedostonJson(Seq(record)).get(0)
+    val litistetyt = json.get("kkSuorituksetFlat")
     Assertions.assertTrue(litistetyt.isArray)
     Assertions.assertEquals(2, litistetyt.size)
 
@@ -555,27 +420,6 @@ class EntityToOvaraConverterTest {
     Assertions.assertEquals("l_fi", l.get("nimi").get("fi").asText)
     Assertions.assertEquals("KOSKI", l.get("metadata").get("lahdejarjestelma").asText)
     Assertions.assertEquals("2024-01-01T00:00:00Z", l.get("metadata").get("luontiHetki").asText)
-  }
-
-  // Rakenteelliset invariantit, joiden pitää päteä mille tahansa litistetylle suorituspuulle
-  private def tarkistaLitistyksenInvariantit(rivit: Seq[OvaraLitistettyKKSuoritus]): Unit = {
-    Assertions.assertEquals(rivit.size, rivit.map(_.tunniste).distinct.size, "tunnisteet eivät ole uniikkeja")
-    val tunnisteella = rivit.map(r => r.tunniste -> r).toMap
-    val indeksi = rivit.map(_.tunniste).zipWithIndex.toMap
-    rivit.foreach { r =>
-      Assertions.assertEquals(r.juuriSuoritusPolku.lastOption, r.parentTunniste, s"${r.tunniste}: polun viimeinen ei ole parent")
-      r.parentTunniste.foreach { p =>
-        val parent = tunnisteella.getOrElse(p, Assertions.fail(s"${r.tunniste}: parentia $p ei löydy"))
-        Assertions.assertTrue(parent.lapsiTunnisteet.contains(r.tunniste), s"${r.tunniste}: parent ei listaa lasta")
-        Assertions.assertEquals(parent.juuriSuoritusPolku :+ p, r.juuriSuoritusPolku, s"${r.tunniste}: polku ei jatka parentin polkua")
-        Assertions.assertEquals(parent.opiskeluoikeusTunniste, r.opiskeluoikeusTunniste, s"${r.tunniste}: eri opiskeluoikeus kuin parentilla")
-        Assertions.assertTrue(indeksi(p) < indeksi(r.tunniste), s"${r.tunniste}: parent ei ole ennen lasta")
-      }
-      r.lapsiTunnisteet.foreach { l =>
-        val lapsi = tunnisteella.getOrElse(l, Assertions.fail(s"${r.tunniste}: lasta $l ei löydy"))
-        Assertions.assertEquals(Some(r.tunniste), lapsi.parentTunniste, s"$l: lapsi ei viittaa parentiin")
-      }
-    }
   }
 
   @Test def testGetYOOpiskeluoikeudet(): Unit = {
