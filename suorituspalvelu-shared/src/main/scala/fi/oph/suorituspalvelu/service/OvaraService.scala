@@ -8,7 +8,7 @@ import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.stereotype.Component
-import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraHenkiloMetadata, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
+import fi.oph.suorituspalvelu.ovara.{EntityToOvaraConverter, OvaraHenkiloMetadata, OvaraKKOpiskeluoikeus, OvaraVersioJaOpiskeluoikeudet, OvaraVersioMetadata}
 import fi.oph.suorituspalvelu.business.Opiskeluoikeus
 
 import java.time.{Instant, LocalDate}
@@ -309,7 +309,7 @@ class OvaraService(
           val kaikkiVersiotJaOO = opiskeluoikeusParsingService.haeSuorituksetAjanhetkella(henkiloOid, windowEnd, useKoskiSkipTable = false)
           val kaikkiOoJaMetadata: Seq[(OvaraVersioMetadata, Opiskeluoikeus)] =
             kaikkiVersiotJaOO.toSeq.flatMap { case (versio, oos) => oos.toSeq.map(oo => (toMeta(versio), oo)) }
-          val kkOo        = EntityToOvaraConverter.getKKOpiskeluoikeudet(kaikkiOoJaMetadata)
+          val kkOo: Seq[OvaraKKOpiskeluoikeus] = EntityToOvaraConverter.getKKOpiskeluoikeudet(kaikkiOoJaMetadata)
           val kkSyntOo    = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(kaikkiOoJaMetadata)
           val yoOo        = EntityToOvaraConverter.getYOOpiskeluoikeudet(kaikkiOoJaMetadata)
           val genOo       = EntityToOvaraConverter.getGeneerisetOpiskeluoikeudet(kaikkiOoJaMetadata)
@@ -319,7 +319,9 @@ class OvaraService(
           if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty) {
             val henkiloMetadata = OvaraHenkiloMetadata(viimeisinParserointiMuutos)
             val lahtokoulut = EntityToOvaraConverter.getLahtokoulut(kaikkiOoJaMetadata.map(_._2).toSet)
-            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo, lahtokoulut))
+            val litistetytKKSuoritukset = EntityToOvaraConverter.litistaKKSuoritukset(kkOo, kkSyntOo)
+            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo, lahtokoulut,
+              litistetytKKSuoritukset = litistetytKKSuoritukset))
           }
           else None
         }
