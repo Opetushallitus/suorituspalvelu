@@ -5,6 +5,7 @@ import fi.oph.suorituspalvelu.parsing.koski.{
   Kielistetty, KoskiErityisenTuenPaatos, KoskiKotiopetusjakso, KoskiKoodi,
   KoskiLisatiedot, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila
 }
+import fi.oph.suorituspalvelu.ovara.OvaraLitistysTestUtil.tarkistaLitistyksenInvariantit
 import org.junit.jupiter.api.{Assertions, Test, TestInstance}
 import org.junit.jupiter.api.TestInstance.Lifecycle
 
@@ -222,6 +223,203 @@ class EntityToOvaraConverterTest {
     Assertions.assertTrue(out.containsKKTutkinto)
     Assertions.assertEquals(1, out.suoritukset.size)
     Assertions.assertEquals(OvaraSuoritusTila.VALMIS, out.suoritukset.head.asInstanceOf[OvaraKKSynteettinenSuoritus].supaTila)
+  }
+
+  // ---- KK-suoritusten litistys ----
+
+  @Test def testLitistaKKSuorituksetSailyttaaHierarkian(): Unit = {
+    val lapsenlapsi = KKOpintosuoritus(UUID.randomUUID(), Some(kielistetty("ll")), SuoritusTila.VALMIS, "komo-ll", BigDecimal(2), None, Some(LocalDate.of(2023, 5, 1)), None, "myo", None, None, None, Some("5"), Some("5-1"), Some("fi"), None, None, opinnaytetyo = false, Some("a-1"), Seq.empty, "avain-ll")
+    val lapsi1 = KKOpintosuoritus(UUID.randomUUID(), Some(kielistetty("l1")), SuoritusTila.VALMIS, "komo-l1", BigDecimal(5), Some(BigDecimal(3)), Some(LocalDate.of(2023, 6, 1)), Some(LocalDate.of(2023, 7, 1)), "myo", Some("vastuu"), Some("jk"), Some(BigDecimal(1)), Some("4"), Some("4-1"), Some("fi"), Some(1), Some("ka"), opinnaytetyo = true, Some("a-1"), Seq(lapsenlapsi), "avain-l1")
+    val lapsi2 = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-l2", BigDecimal(3), None, None, None, "myo", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-l2")
+    val tutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo-t", BigDecimal(180), Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("fi"), Some("613101"), Some("a-1"), Seq(lapsi1, lapsi2), Some("avain-t"))
+    val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", Some("613101"), LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, Some("fi"), Set(tutkinto), None, None, None)
+
+    val rivit = EntityToOvaraConverter.litistaKKSuoritukset(EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk))), Seq.empty)
+    tarkistaLitistyksenInvariantit(rivit)
+
+    // Esijärjestys: parent ennen lapsiaan
+    Assertions.assertEquals(Seq(tutkinto.tunniste, lapsi1.tunniste, lapsenlapsi.tunniste, lapsi2.tunniste), rivit.map(_.tunniste))
+    Assertions.assertEquals(Seq(None, Some(tutkinto.tunniste), Some(lapsi1.tunniste), Some(tutkinto.tunniste)), rivit.map(_.parentTunniste))
+    Assertions.assertEquals(Seq(Seq(lapsi1.tunniste, lapsi2.tunniste), Seq(lapsenlapsi.tunniste), Seq.empty, Seq.empty), rivit.map(_.lapsiTunnisteet))
+    // Polku sisältää kaikki parentit juuritason suorituksesta alkaen
+    Assertions.assertEquals(Seq(Seq.empty, Seq(tutkinto.tunniste), Seq(tutkinto.tunniste, lapsi1.tunniste), Seq(tutkinto.tunniste)), rivit.map(_.juuriSuoritusPolku))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusTunniste == kk.tunniste))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusTyyppi == "KKOpiskeluoikeus"))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusVirtaTunniste.contains("vt")))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusVirtaTila.contains(OvaraKoodi("v", "ks", Some(1)))))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusAlkuPvm.contains(LocalDate.of(2020, 9, 1))))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusLoppuPvm.contains(LocalDate.of(2024, 6, 1))))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusKieli.contains("fi")))
+    Assertions.assertTrue(rivit.forall(_.metadata == META))
+    Assertions.assertEquals(Seq("KKTutkinto", "KKOpintosuoritus", "KKOpintosuoritus", "KKOpintosuoritus"), rivit.map(_.entiteetinTyyppi))
+
+    val t = rivit.head
+    Assertions.assertEquals(Some(OvaraKielistetty(Some("t_fi"), Some("t_sv"), Some("t_en"))), t.nimi)
+    Assertions.assertEquals(OvaraSuoritusTila.VALMIS, t.supaTila)
+    Assertions.assertEquals("komo-t", t.komoTunniste)
+    Assertions.assertEquals("myo", t.myontaja)
+    Assertions.assertEquals(Some(LocalDate.of(2024, 6, 1)), t.suoritusPvm)
+    Assertions.assertEquals(Some("a-1"), t.opiskeluoikeusAvain)
+    Assertions.assertEquals(Some("fi"), t.kieli)
+    Assertions.assertEquals(Some(BigDecimal(180)), t.opintoPisteet)
+    Assertions.assertEquals(Some(LocalDate.of(2020, 9, 1)), t.aloitusPvm)
+    Assertions.assertEquals(Some("613101"), t.koulutusKoodi)
+    Assertions.assertEquals(Some("avain-t"), t.avain)
+    Assertions.assertEquals(None, t.arvosana)
+    Assertions.assertEquals(None, t.opinnaytetyo)
+
+    val o = rivit(1)
+    Assertions.assertEquals("komo-l1", o.komoTunniste)
+    Assertions.assertEquals(Some(OvaraKielistetty(Some("l1_fi"), Some("l1_sv"), Some("l1_en"))), o.nimi)
+    Assertions.assertEquals(OvaraSuoritusTila.VALMIS, o.supaTila)
+    Assertions.assertEquals("myo", o.myontaja)
+    Assertions.assertEquals(Some(LocalDate.of(2023, 6, 1)), o.suoritusPvm)
+    Assertions.assertEquals(Some("a-1"), o.opiskeluoikeusAvain)
+    Assertions.assertEquals(Some("fi"), o.kieli)
+    Assertions.assertEquals(None, o.koulutusKoodi)
+    Assertions.assertEquals(Some(BigDecimal(5)), o.opintoPisteet)
+    Assertions.assertEquals(Some(BigDecimal(3)), o.opintoviikot)
+    Assertions.assertEquals(Some(LocalDate.of(2023, 7, 1)), o.hyvaksilukuPvm)
+    Assertions.assertEquals(Some("vastuu"), o.jarjestavaRooli)
+    Assertions.assertEquals(Some("jk"), o.jarjestavaKoodi)
+    Assertions.assertEquals(Some(BigDecimal(1)), o.jarjestavaOsuus)
+    Assertions.assertEquals(Some("4"), o.arvosana)
+    Assertions.assertEquals(Some("4-1"), o.arvosanaAsteikko)
+    Assertions.assertEquals(Some(1), o.koulutusala)
+    Assertions.assertEquals(Some("ka"), o.koulutusalaKoodisto)
+    Assertions.assertEquals(Some(true), o.opinnaytetyo)
+    Assertions.assertEquals(Some("avain-l1"), o.avain)
+    Assertions.assertEquals(None, o.aloitusPvm)
+  }
+
+  @Test def testLitistaKKSuorituksetSynteettinenOpiskeluoikeus(): Unit = {
+    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.KESKEN, "komo-s", Some(LocalDate.of(2023, 9, 1)), None, "myo", Some("613101"), Some("a-1"), Seq.empty)
+    val kk = KKSynteettinenOpiskeluoikeus(UUID.randomUUID(), "myo", containsKKTutkinto = false, Set(synt))
+
+    val rivit = EntityToOvaraConverter.litistaKKSuoritukset(Seq.empty, EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(Seq((META, kk))))
+    tarkistaLitistyksenInvariantit(rivit)
+
+    Assertions.assertEquals(1, rivit.size)
+    val r = rivit.head
+    Assertions.assertEquals("KKSynteettinenSuoritus", r.entiteetinTyyppi)
+    Assertions.assertEquals("KKSynteettinenOpiskeluoikeus", r.opiskeluoikeusTyyppi)
+    Assertions.assertEquals(kk.tunniste, r.opiskeluoikeusTunniste)
+    Assertions.assertEquals(None, r.parentTunniste)
+    Assertions.assertEquals(Seq.empty, r.juuriSuoritusPolku)
+    Assertions.assertEquals(Seq.empty, r.lapsiTunnisteet)
+    Assertions.assertEquals(None, r.opiskeluoikeusVirtaTila)
+    Assertions.assertEquals(None, r.opiskeluoikeusVirtaTunniste)
+    Assertions.assertEquals(None, r.opiskeluoikeusAlkuPvm)
+    Assertions.assertEquals(None, r.opiskeluoikeusLoppuPvm)
+    Assertions.assertEquals(None, r.opiskeluoikeusKieli)
+    Assertions.assertEquals(OvaraSuoritusTila.KESKEN, r.supaTila)
+    Assertions.assertEquals(Some(LocalDate.of(2023, 9, 1)), r.aloitusPvm)
+    Assertions.assertEquals(Some("613101"), r.koulutusKoodi)
+    Assertions.assertEquals(Some("a-1"), r.opiskeluoikeusAvain)
+    Assertions.assertEquals(None, r.opintoPisteet)
+    Assertions.assertEquals(None, r.avain)
+  }
+
+  @Test def testLitistaKKSuorituksetTyhja(): Unit = {
+    Assertions.assertEquals(Seq.empty, EntityToOvaraConverter.litistaKKSuoritukset(Seq.empty, Seq.empty))
+  }
+
+  @Test def testLitistaKKSuorituksetUseitaOpiskeluoikeuksiaJaJuuria(): Unit = {
+    val META2 = META.copy(lahdejarjestelma = "VIRTA", lahdeTunniste = "lt2")
+
+    // Opiskeluoikeus A: kaksi juuritason suoritusta, joista toisella lapsi
+    val aLapsi = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-al", BigDecimal(5), None, None, None, "myo-a", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-al")
+    val aTutkinto = KKTutkinto(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-at", BigDecimal(180), None, None, "myo-a", None, None, None, Seq(aLapsi), None)
+    val aOpintojakso = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-ao", BigDecimal(3), None, None, None, "myo-a", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-ao")
+    val ooA = KKOpiskeluoikeus(UUID.randomUUID(), "vt-a", None, "1", None, LocalDate.of(2018, 1, 1), LocalDate.of(2021, 1, 1), koodi("3"), KKOpiskeluoikeusTila.PAATTYNYT, "myo-a", true, Some("sv"), Set(aTutkinto, aOpintojakso), None, None, None)
+
+    // Opiskeluoikeus B: synteettinen (keskeneräinen tutkinto) suoritus lapsineen normaalin opiskeluoikeuden alla
+    val bLapsi1 = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-b1", BigDecimal(5), None, None, None, "myo-b", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-b1")
+    val bLapsi2 = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-b2", BigDecimal(5), None, None, None, "myo-b", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-b2")
+    val bSynt = KKSynteettinenSuoritus(UUID.randomUUID(), None, SuoritusTila.KESKEN, "komo-bs", Some(LocalDate.of(2022, 8, 1)), None, "myo-b", Some("751101"), Some("vt-b"), Seq(bLapsi1, bLapsi2))
+    val ooB = KKOpiskeluoikeus(UUID.randomUUID(), "vt-b", None, "1", None, LocalDate.of(2022, 8, 1), LocalDate.of(2026, 7, 31), koodi("1"), KKOpiskeluoikeusTila.VOIMASSA, "myo-b", true, Some("fi"), Set(bSynt), None, None, None)
+
+    // Synteettinen opiskeluoikeus C
+    val cSynt = KKSynteettinenSuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-cs", None, None, "myo-c", None, None, Seq.empty)
+    val ooC = KKSynteettinenOpiskeluoikeus(UUID.randomUUID(), "myo-c", containsKKTutkinto = false, Set(cSynt))
+
+    val rivit = EntityToOvaraConverter.litistaKKSuoritukset(
+      EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, ooA), (META2, ooB))),
+      EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(Seq((META2, ooC))))
+    tarkistaLitistyksenInvariantit(rivit)
+
+    // Kaikki suoritukset mukana, jokainen oikean opiskeluoikeuden alla
+    val odotetut = Map(
+      ooA.tunniste -> Set(aTutkinto.tunniste, aLapsi.tunniste, aOpintojakso.tunniste),
+      ooB.tunniste -> Set(bSynt.tunniste, bLapsi1.tunniste, bLapsi2.tunniste),
+      ooC.tunniste -> Set(cSynt.tunniste)
+    )
+    Assertions.assertEquals(odotetut, rivit.groupBy(_.opiskeluoikeusTunniste).view.mapValues(_.map(_.tunniste).toSet).toMap)
+
+    // Opiskeluoikeuksien järjestys säilyy: ensin KK-opiskeluoikeudet annetussa järjestyksessä, sitten synteettiset
+    Assertions.assertEquals(Seq(ooA.tunniste, ooB.tunniste, ooC.tunniste), rivit.map(_.opiskeluoikeusTunniste).distinct)
+
+    // Opiskeluoikeustason tiedot eivät vuoda opiskeluoikeudelta toiselle
+    val a = rivit.filter(_.opiskeluoikeusTunniste == ooA.tunniste)
+    Assertions.assertTrue(a.forall(r => r.metadata == META && r.opiskeluoikeusVirtaTila.contains(OvaraKoodi("3", "ks", Some(1)))
+      && r.opiskeluoikeusAlkuPvm.contains(LocalDate.of(2018, 1, 1)) && r.opiskeluoikeusKieli.contains("sv")))
+    val b = rivit.filter(_.opiskeluoikeusTunniste == ooB.tunniste)
+    Assertions.assertTrue(b.forall(r => r.metadata == META2 && r.opiskeluoikeusVirtaTila.contains(OvaraKoodi("1", "ks", Some(1)))
+      && r.opiskeluoikeusLoppuPvm.contains(LocalDate.of(2026, 7, 31)) && r.opiskeluoikeusKieli.contains("fi")))
+    val c = rivit.filter(_.opiskeluoikeusTunniste == ooC.tunniste)
+    Assertions.assertTrue(c.forall(r => r.metadata == META2 && r.opiskeluoikeusTyyppi == "KKSynteettinenOpiskeluoikeus" && r.opiskeluoikeusVirtaTila.isEmpty))
+
+    // Opiskeluoikeuden A kaksi juurta
+    Assertions.assertEquals(Set(aTutkinto.tunniste, aOpintojakso.tunniste), a.filter(_.juuriSuoritusPolku.isEmpty).map(_.tunniste).toSet)
+    Assertions.assertEquals(Seq(aTutkinto.tunniste), a.find(_.tunniste == aLapsi.tunniste).get.juuriSuoritusPolku)
+
+    // Synteettinen suoritus lapsineen normaalin opiskeluoikeuden alla
+    val bJuuri = b.find(_.tunniste == bSynt.tunniste).get
+    Assertions.assertEquals("KKSynteettinenSuoritus", bJuuri.entiteetinTyyppi)
+    Assertions.assertEquals("KKOpiskeluoikeus", bJuuri.opiskeluoikeusTyyppi)
+    Assertions.assertEquals(Seq(bLapsi1.tunniste, bLapsi2.tunniste), bJuuri.lapsiTunnisteet)
+    Assertions.assertEquals(Seq(bLapsi1.tunniste, bLapsi2.tunniste), b.filter(_.juuriSuoritusPolku == Seq(bSynt.tunniste)).map(_.tunniste))
+  }
+
+  @Test def testLitistettyKKSuoritusSerialisoituuJsoniksi(): Unit = {
+    val lapsi = KKOpintosuoritus(UUID.fromString("00000000-0000-0000-0000-000000000102"), Some(kielistetty("l")), SuoritusTila.VALMIS, "komo-l", BigDecimal(5), None, Some(LocalDate.of(2023, 6, 1)), None, "myo", None, None, None, Some("4"), Some("4-1"), Some("fi"), None, None, opinnaytetyo = false, None, Seq.empty, "avain-l")
+    val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000101"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(180), None, None, "myo", None, None, None, Seq(lapsi), None)
+    val kk = KKOpiskeluoikeus(UUID.fromString("00000000-0000-0000-0000-000000000100"), "vt", None, "1", None, LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, None, Set(tutkinto), None, None, None)
+    val kkOo = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk)))
+    val rivit = EntityToOvaraConverter.litistaKKSuoritukset(kkOo, Seq.empty)
+    val record = OvaraVersioJaOpiskeluoikeudet("1.2.246.562.24.1", OvaraHenkiloMetadata(Instant.parse("2024-03-01T00:00:00Z")),
+      kkOo, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, kkSuorituksetFlat = rivit)
+
+    // Siirtotiedosto on JSON-taulukko henkilöiden recordeja
+    val json = OvaraLitistysTestUtil.siirtotiedostonJson(Seq(record)).get(0)
+    val litistetyt = json.get("kkSuorituksetFlat")
+    Assertions.assertTrue(litistetyt.isArray)
+    Assertions.assertEquals(2, litistetyt.size)
+
+    val juuri = litistetyt.get(0)
+    Assertions.assertEquals("KKTutkinto", juuri.get("entiteetinTyyppi").asText)
+    Assertions.assertTrue(juuri.get("parentTunniste").isNull)
+    Assertions.assertTrue(juuri.get("juuriSuoritusPolku").isArray)
+    Assertions.assertEquals(0, juuri.get("juuriSuoritusPolku").size)
+    Assertions.assertEquals("00000000-0000-0000-0000-000000000102", juuri.get("lapsiTunnisteet").get(0).asText)
+
+    val l = litistetyt.get(1)
+    Assertions.assertEquals("00000000-0000-0000-0000-000000000102", l.get("tunniste").asText)
+    Assertions.assertEquals("00000000-0000-0000-0000-000000000100", l.get("opiskeluoikeusTunniste").asText)
+    Assertions.assertEquals("KKOpiskeluoikeus", l.get("opiskeluoikeusTyyppi").asText)
+    Assertions.assertEquals("00000000-0000-0000-0000-000000000101", l.get("parentTunniste").asText)
+    Assertions.assertEquals("00000000-0000-0000-0000-000000000101", l.get("juuriSuoritusPolku").get(0).asText)
+    Assertions.assertEquals("v", l.get("opiskeluoikeusVirtaTila").get("arvo").asText)
+    Assertions.assertEquals("2020-09-01", l.get("opiskeluoikeusAlkuPvm").asText)
+    Assertions.assertTrue(l.get("opiskeluoikeusKieli").isNull)
+    Assertions.assertEquals("2023-06-01", l.get("suoritusPvm").asText)
+    Assertions.assertEquals(5, l.get("opintoPisteet").asInt)
+    Assertions.assertEquals("4", l.get("arvosana").asText)
+    Assertions.assertFalse(l.get("opinnaytetyo").asBoolean)
+    Assertions.assertTrue(l.get("aloitusPvm").isNull)
+    Assertions.assertEquals("l_fi", l.get("nimi").get("fi").asText)
+    Assertions.assertEquals("KOSKI", l.get("metadata").get("lahdejarjestelma").asText)
+    Assertions.assertEquals("2024-01-01T00:00:00Z", l.get("metadata").get("luontiHetki").asText)
   }
 
   @Test def testGetYOOpiskeluoikeudet(): Unit = {

@@ -1,11 +1,11 @@
 package fi.oph.suorituspalvelu.service
 
-import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, KKOpiskeluoikeusTila, KantaOperaatiot, Koodi, Lahdejarjestelma, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, VersioEntiteetti}
+import fi.oph.suorituspalvelu.business.{KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, KantaOperaatiot, Koodi, Lahdejarjestelma, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, SuoritusTila, VersioEntiteetti}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.integration.client.{AtaruHakemuksenHenkilotiedot, AtaruValintalaskentaHakemus, HakemuspalveluClient, Hakutoive, KoutaHaku, KoutaHakuaika, RetryConfig, SiirtotiedostoClient}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, ConvertedAtaruHakemus, EnsikertalaisuusConstants, EnsikertalaisuusTulos, HakemuksenHarkinnanvaraisuus, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy, MenettamisenPeruste}
-import fi.oph.suorituspalvelu.ovara.{OvaraLahtokoulu, OvaraLahtokouluTyyppi, OvaraPerusopetuksenOppimaara, OvaraSuoritusTila, OvaraVersioJaOpiskeluoikeudet}
+import fi.oph.suorituspalvelu.ovara.{OvaraKoodi, OvaraLahtokoulu, OvaraLahtokouluTyyppi, OvaraPerusopetuksenOppimaara, OvaraSuoritusTila, OvaraVersioJaOpiskeluoikeudet}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import org.junit.jupiter.api.{Assertions, Test}
@@ -384,6 +384,39 @@ class OvaraServiceTest {
     val records = captor.getValue
     Assertions.assertEquals(1, records.size)
     Assertions.assertEquals(aikaikkunaanOsuvaHetki, records.head.metadata.viimeisinMuutos)
+  }
+
+  @Test def testKKSuorituksetLitistetaanHenkiloTasolle(): Unit = {
+    val (service, mockKantaOperaatiot, mockParsingService, mockSiirtotiedostoClient) = buildServiceForOpiskeluoikeudet()
+
+    val opintojakso = KKOpintosuoritus(UUID.fromString("00000000-0000-0000-0000-000000000041"), None, SuoritusTila.VALMIS, "komo-o", BigDecimal(5), None, None, None,
+      "1.2.246.562.10.00000000001", None, None, None, Some("5"), None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-o")
+    val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000040"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(360), None, None,
+      "1.2.246.562.10.00000000001", None, None, None, Seq(opintojakso), Some("avain-t"))
+    val oo = BASE_KK_OPISKELUOIKEUS.copy(suoritukset = Set(tutkinto))
+
+    Mockito.when(mockKantaOperaatiot.haeMuuttuneetHenkiloOidit(any(), any(), any(), any()))
+      .thenReturn(Seq((HENKILO_OID, WINDOW_HETKI)))
+      .thenReturn(Seq.empty)
+    Mockito.when(mockParsingService.haeSuorituksetAjanhetkella(any(), any(), anyBoolean()))
+      .thenReturn(Map(BASE_VERSIO -> Set[Opiskeluoikeus](oo)))
+
+    service.muodostaOpiskeluoikeusSiirtotiedostot(opiskeluoikeusParams)
+
+    val captor = ArgumentCaptor.forClass(classOf[Seq[_]]).asInstanceOf[ArgumentCaptor[Seq[OvaraVersioJaOpiskeluoikeudet]]]
+    Mockito.verify(mockSiirtotiedostoClient).tallennaSiirtotiedosto(any(), captor.capture(), any(), any(), any())
+
+    val record = captor.getValue.head
+    // Sisäkkäinen rakenne säilyy ennallaan
+    Assertions.assertEquals(1, record.kkOpiskeluoikeudet.head.suoritukset.size)
+    val rivit = record.kkSuorituksetFlat
+    Assertions.assertEquals(Seq(tutkinto.tunniste, opintojakso.tunniste), rivit.map(_.tunniste))
+    Assertions.assertEquals(Seq(None, Some(tutkinto.tunniste)), rivit.map(_.parentTunniste))
+    Assertions.assertEquals(Seq(Seq(opintojakso.tunniste), Seq.empty), rivit.map(_.lapsiTunnisteet))
+    Assertions.assertEquals(Seq(Seq.empty, Seq(tutkinto.tunniste)), rivit.map(_.juuriSuoritusPolku))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusVirtaTila.contains(OvaraKoodi("1", "virtaopiskeluoikeudentila", None))))
+    Assertions.assertTrue(rivit.forall(_.opiskeluoikeusTunniste == BASE_KK_OPISKELUOIKEUS.tunniste))
+    Assertions.assertTrue(rivit.forall(_.metadata.lahdeTunniste == BASE_VERSIO.lahdeTunniste))
   }
 
   @Test def testHenkiloTasonLahtokoulutKerattyOpiskeluoikeuksista(): Unit = {
