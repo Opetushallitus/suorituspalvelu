@@ -122,7 +122,10 @@ case class OvaraKKSynteettinenOpiskeluoikeus(
   suoritukset: Seq[OvaraKKSuoritus]
 )
 
-sealed trait OvaraKKSuoritus
+sealed trait OvaraKKSuoritus {
+  def tunniste: UUID
+  def suoritukset: Seq[OvaraKKSuoritus]
+}
 
 case class OvaraKKTutkinto(
   entiteetinTyyppi: String = "KKTutkinto",
@@ -192,6 +195,7 @@ case class OvaraLitistettyKKSuoritus(
   tunniste: UUID,
   opiskeluoikeusTunniste: UUID,
   opiskeluoikeusTyyppi: String,
+  opiskeluoikeusVirtaTunniste: Option[String], // Virran opiskeluoikeusavain, säilyy uudelleenparseroinnissa. None synteettisille opiskeluoikeuksille
   parentTunniste: Option[UUID], // None = suoritus on suoraan opiskeluoikeuden alla
   lapsiTunnisteet: Seq[UUID],
   juuriSuoritusPolku: Seq[UUID], // Kaikkien parentien tunnisteet järjestyksessä juuritason suorituksesta alkaen, tyhjä jos rivi on itse juuri
@@ -660,5 +664,5 @@ case class OvaraVersioJaOpiskeluoikeudet(
   perusopetuksenOpiskeluoikeudet: Seq[OvaraPerusopetuksenOpiskeluoikeus],
   poistetutOpiskeluoikeudet: Seq[OvaraPoistettuOpiskeluoikeus],
   lahtokoulut: Seq[OvaraLahtokoulu] = Seq.empty,
-  litistetytKKSuoritukset: Seq[OvaraLitistettyKKSuoritus] = Seq.empty
+  kkSuorituksetFlat: Seq[OvaraLitistettyKKSuoritus] = Seq.empty
 )
