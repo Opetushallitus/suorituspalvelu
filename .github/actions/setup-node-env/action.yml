@@ -8,7 +8,7 @@ runs:
   using: 'composite'
   steps:
     - name: Install Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
       with:
         node-version-file: '.nvmrc'
     - name: Enable corepack
@@ -20,7 +20,7 @@ runs:
         PNPM_VERSION=$(node -e "const pm = require('./${{ inputs.project_path }}/package.json').packageManager; console.log(pm.split('+')[0])")
         corepack prepare $PNPM_VERSION --activate
     - name: Configure pnpm dependencies cache
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
       with:
         cache: 'pnpm'
         cache-dependency-path: ${{ inputs.project_path }}/pnpm-lock.yaml
