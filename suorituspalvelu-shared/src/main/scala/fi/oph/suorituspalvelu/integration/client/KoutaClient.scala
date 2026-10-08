@@ -53,6 +53,7 @@ case class KoutaHaku(
   val korkeakouluHaunKohdeJoukkoUri = "haunkohdejoukko_12"
 
   val erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_010"
+  val hakemusmaksullinenKaksoistutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_11"
   val jatkotutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_3"
 
   def isToisenAsteenHaku(): Boolean = {
@@ -72,7 +73,8 @@ case class KoutaHaku(
 
   def isErasmusMundusTaiKaksoistutkinto: Boolean = {
     val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
-    kohdejoukkoPrefix.equals(erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri)
+    kohdejoukkoPrefix.equals(erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri) ||
+      kohdejoukkoPrefix.equals(hakemusmaksullinenKaksoistutkintoKohdejoukonTarkenneUri)
   }
 
   def isJatkotutkinto: Boolean = {
