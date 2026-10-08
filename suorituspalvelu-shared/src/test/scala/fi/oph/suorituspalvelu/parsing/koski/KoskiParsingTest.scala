@@ -3766,6 +3766,18 @@ class KoskiParsingTest {
     Assertions.assertEquals("6", suullinenKoe.arvosana.arvosana.arvo)
     Assertions.assertEquals(true, suullinenKoe.arvosana.hyvaksytty)
 
+    //Näyttötutkinto pitäisi löytyä biologialle, eikä muilla oppiaineilla ole näyttöä
+    val biologia = tutkinto.osasuoritukset.filter(_.koodi.arvo == "BI").head
+    Assertions.assertTrue(biologia.naytto.isDefined)
+    val naytto = biologia.naytto.get
+    Assertions.assertEquals(Koodi("nayttotutkinto", "diapaattokoe", Some(1)), naytto.koodi)
+    Assertions.assertEquals("4", naytto.arvosana.arvosana.arvo)
+    Assertions.assertEquals(true, naytto.arvosana.hyvaksytty)
+    Assertions.assertTrue(biologia.kirjallinenKoe.isEmpty)
+    Assertions.assertTrue(biologia.suullinenKoe.isEmpty)
+    Assertions.assertTrue(aidinkieli.naytto.isEmpty)
+    Assertions.assertTrue(matematiikka.naytto.isEmpty)
+
     //Mukana olevaa A-kieli ei pidä löytyä osasuorituksista, koska sillä ei ole kirjallista koetta, suullista koetta tai vastaavuustodistuksen tietoja.
     val aKieli = tutkinto.osasuoritukset.filter(_.koodi.arvo == "A")
     Assertions.assertTrue(aKieli.isEmpty, "A-kieli should not be present")

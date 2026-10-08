@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{DIAArvosana, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -1340,6 +1340,63 @@ class EntityToUIConverterTest {
       sv = Optional.of("Matematik: lång kurs"),
       en = Optional.of("Mathematics")
     ), suoritusIlman.nimi)
+  }
+
+  private def diaKoe(koodiarvo: String, arvosana: String): DIAOppiaineenKoesuoritus =
+    DIAOppiaineenKoesuoritus(
+      nimi = Kielistetty(Some(koodiarvo), None, None),
+      koodi = Koodi(koodiarvo, "diapaattokoe", Some(1)),
+      arvosana = DIAArvosana(Koodi(arvosana, "arviointiasteikkodiatutkinto", Some(1)), true),
+      laajuus = None
+    )
+
+  private def diaOppiaine(koodi: String, suullinen: Option[String], naytto: Option[String]): DIAOppiaine =
+    DIAOppiaine(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some(koodi), None, None),
+      koodi = Koodi(koodi, "oppiaineetdia", Some(1)),
+      laajuus = None,
+      osaAlue = Some(Koodi("2", "diaosaalue", Some(1))),
+      kieli = None,
+      vastaavuustodistuksenTiedot = None,
+      kirjallinenKoe = None,
+      suullinenKoe = suullinen.map(diaKoe("suullinenkoe", _)),
+      naytto = naytto.map(diaKoe("nayttotutkinto", _))
+    )
+
+  @Test def testDiaNayttoNaytetaanSuullisenaArvosanana(): Unit = {
+    val tutkinto = DIATutkinto(
+      tunniste = UUID.randomUUID(),
+      nimi = Kielistetty(Some("DIA"), None, None),
+      koodi = Koodi("301103", "koulutus", Some(12)),
+      oppilaitos = Oppilaitos(Kielistetty(Some("Koulu"), None, None), "1.2.3"),
+      suorituskieli = Koodi("FI", "kieli", Some(1)),
+      koskiTila = Koodi("valmistunut", "koskiopiskeluoikeudentila", None),
+      supaTila = VALMIS,
+      aloitusPaivamaara = Some(LocalDate.parse("2012-09-01")),
+      vahvistusPaivamaara = Some(LocalDate.parse("2016-06-04")),
+      osasuoritukset = Seq(
+        diaOppiaine("NAYTTO", suullinen = None, naytto = Some("4")),
+        diaOppiaine("MOLEMMAT", suullinen = Some("6"), naytto = Some("4")),
+        diaOppiaine("EI_MITAAN", suullinen = None, naytto = None)
+      )
+    )
+
+    val result = EntityToUIConverter.getDiaTutkinnot(
+      Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("diatutkinto", "opiskeluoikeudentyyppi", None), "", Set(tutkinto), None, List.empty)),
+      buildDummyKoodistoProvider()
+    )
+
+    Assertions.assertEquals(1, result.size)
+    val oppiaineet = result.head.matematiikkaLuonnontieteet.asScala
+    def suullinen(koodi: String) = oppiaineet.find(_.nimi.fi == Optional.of(koodi)).get.suullinen
+
+    // Pelkkä näyttö näytetään suullisen kokeen sarakkeessa
+    Assertions.assertEquals(Optional.of("4"), suullinen("NAYTTO"))
+    // Suullinen koe ohittaa näytön, kun molemmat ovat olemassa
+    Assertions.assertEquals(Optional.of("6"), suullinen("MOLEMMAT"))
+    // Ilman kumpaakaan arvosanaa ei näytetä mitään
+    Assertions.assertEquals(Optional.empty(), suullinen("EI_MITAAN"))
   }
 
   private def oppiaineenOppimaaraOpiskeluoikeus(aineet: Set[PerusopetuksenOppiaine]): PerusopetuksenOpiskeluoikeus =
