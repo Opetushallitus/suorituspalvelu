@@ -195,7 +195,7 @@ class EntityToOvaraConverterTest {
   @Test def testGetKKOpiskeluoikeudetKonvertoiKaikkiSuoritusvariantit(): Unit = {
     val tutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo", BigDecimal(180), Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), None, "myo", Some("fi"), Some("613101"), Some("a-1"), Seq.empty, Some("avain-t"))
     val opinto = KKOpintosuoritus(UUID.randomUUID(), Some(kielistetty("o")), SuoritusTila.VALMIS, "komo", BigDecimal(5), Some(BigDecimal(3)), Some(LocalDate.of(2023, 5, 1)), Some(LocalDate.of(2023, 6, 1)), "myo", Some("vastuu"), Some("jk"), Some(BigDecimal(1)), Some("4"), Some("4-1"), Some("fi"), Some(1), Some("ka"), opinnaytetyo = false, Some("a-1"), Seq.empty, "avain-o")
-    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.KESKEN, "komo", Some(LocalDate.of(2023, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("613101"), Some("a-1"), Seq.empty)
+    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.KESKEN, "komo", Some(LocalDate.of(2023, 9, 1)), Some(LocalDate.of(2024, 6, 1)), None, "myo", Some("613101"), Some("a-1"), Seq.empty)
     val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", Some("613101"), LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, Some("fi"), Set(tutkinto, opinto, synt), None, None, None)
 
     val out = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk))).head
@@ -216,7 +216,7 @@ class EntityToOvaraConverterTest {
   }
 
   @Test def testGetKKSynteettisetOpiskeluoikeudet(): Unit = {
-    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.VALMIS, "komo", None, None, "myo", None, None, Seq.empty)
+    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.VALMIS, "komo", None, None, None, "myo", None, None, Seq.empty)
     val kk = KKSynteettinenOpiskeluoikeus(UUID.randomUUID(), "myo-1", containsKKTutkinto = true, Set(synt))
     val out = EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(Seq((META, kk))).head
     Assertions.assertEquals("myo-1", out.myontaja)

@@ -134,6 +134,7 @@ object VirtaToSuoritusConverter {
       komoTunniste = koulutusKoodi.getOrElse(""),
       aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
       suoritusPvm = None,
+      keskeytysPvm = None,
       myontaja = opiskeluoikeus.Myontaja,
       koulutusKoodi = koulutusKoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
@@ -157,14 +158,16 @@ object VirtaToSuoritusConverter {
     val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(
       Ordering[LocalDate].reverse
     ).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
+    val supaTila = getSuoritustilaFromOpiskeluoikeus(opiskeluoikeus)
 
     KKSynteettinenSuoritus(
       tunniste = UUID.randomUUID(),
       nimi = virtaNimiToKielistetty(jaksonNimi),
-      supaTila = getSuoritustilaFromOpiskeluoikeus(opiskeluoikeus),
+      supaTila = supaTila,
       komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
       aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
       suoritusPvm = if (tila.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT) Some(tila.AlkuPvm) else None,
+      keskeytysPvm = if (supaTila == SuoritusTila.KESKEYTYNYT) Some(tila.AlkuPvm) else None,
       myontaja = opiskeluoikeus.Myontaja,
       koulutusKoodi = viimeisinTutkintoKoulutuskoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
@@ -339,7 +342,7 @@ object VirtaToSuoritusConverter {
         opintoPisteet = suoritus.Laajuus.Opintopiste,
         aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
         suoritusPvm = Some(suoritus.SuoritusPvm),
-        keskeytysPvm = if (supaTila == KESKEYTYNYT) opiskeluoikeus.map(_.LoppuPvm) else None,
+        keskeytysPvm = if (supaTila == SuoritusTila.KESKEYTYNYT) opiskeluoikeus.map(_.AlkuPvm) else None,
         myontaja = suoritus.Myontaja,
         kieli = suoritus.Kieli,
         koulutusKoodi = suoritus.Koulutuskoodi,

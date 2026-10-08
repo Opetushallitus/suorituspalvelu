@@ -312,7 +312,7 @@ object EntityToUIConverter {
         tila = SuoritusTilaUI.valueOf(suoritus.supaTila.toString),
         aloituspaiva = Optional.of(oo.alkuPvm),
         valmistumispaiva = suoritus.suoritusPvm.toJava,
-        keskeytyspaiva = Optional.empty(),
+        keskeytyspaiva = suoritus.keskeytysPvm.toJava,
         opintojaksot = createVirtaOpintojaksoHierarkia(suoritus.suoritukset.toSeq),
         suorituskieli = getSuorituskieliFromKoodi(oo.kieli, koodistoProvider),
         isTutkintoonJohtava = oo.isTutkintoonJohtava,

@@ -558,6 +558,7 @@ case class KKSynteettinenSuoritus(
   komoTunniste: String,
   aloitusPvm: Option[LocalDate],
   suoritusPvm: Option[LocalDate],
+  keskeytysPvm: Option[LocalDate],
   myontaja: String,
   koulutusKoodi: Option[String],
   opiskeluoikeusAvain: Option[String],
