@@ -18,6 +18,7 @@ export interface IAmmatillinentutkinto {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   painotettuKeskiarvo?: number;
   ytot: IYTO[];
@@ -78,6 +79,7 @@ export interface IAmmattitutkinto {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
 }
 
@@ -137,6 +139,7 @@ export interface IDIATutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli?: ISuorituskieliUI;
   kieletKirjallisuusTaide: IDIAOppiaineUI[];
   matematiikkaLuonnontieteet: IDIAOppiaineUI[];
@@ -177,6 +180,7 @@ export interface IEBTutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   oppiaineet: IEBOppiaineUI[];
 }
 
@@ -187,6 +191,7 @@ export interface IErikoisammattitutkinto {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
 }
 
@@ -255,6 +260,7 @@ export interface IIBTutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli?: ISuorituskieliUI;
   oppiaineet: IIBOppiaineUI[];
 }
@@ -298,6 +304,7 @@ export interface IKKSuoritusUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli?: ISuorituskieliUI;
   opintojaksot: IKKOpintojaksoUI[];
   isTutkintoonJohtava: boolean;
@@ -334,6 +341,7 @@ export interface ILukionOppiaineenOppimaara {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   oppiaineet: ILukionOppiaine[];
 }
@@ -357,6 +365,7 @@ export interface ILukionOppimaaraUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
 }
 
@@ -517,6 +526,7 @@ export interface IOsittainenAmmatillinenTutkintoUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   korotettuPainotettuKeskiarvo?: number;
   ytot: IYTO[];
@@ -564,6 +574,7 @@ export interface IPerusopetuksenOppiaineenOppimaaratUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   oppiaineet: IPerusopetuksenOppiaineUI[];
   syotetty: boolean;
@@ -576,6 +587,7 @@ export interface IPerusopetuksenOppimaara78Luokkalaiset {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   koulusivistyskieli: string;
   luokka: string;
@@ -602,6 +614,7 @@ export interface IPerusopetuksenOppimaaraUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   luokka?: string;
   yksilollistaminen?: IYksilollistaminen;
@@ -709,6 +722,7 @@ export interface ITelma {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
 }
 
@@ -742,6 +756,7 @@ export interface ITuvaUI {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   laajuus?: ITuvaLaajuus;
 }
 
@@ -757,6 +772,7 @@ export interface IVapaaSivistystyoKoulutus {
   tila: SuoritusTilaUI;
   aloituspaiva?: string;
   valmistumispaiva?: string;
+  keskeytyspaiva?: string;
   suorituskieli: string;
   laajuus?: IVapaaSivistystyoLaajuus;
 }

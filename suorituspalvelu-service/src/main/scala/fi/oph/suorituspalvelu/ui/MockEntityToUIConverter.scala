@@ -67,6 +67,7 @@ object MockEntityToUIConverter {
       tila = KESKEN,
       aloituspaiva = Optional.of(LocalDate.parse("2025-12-11")),
       valmistumispaiva = Optional.empty(),
+      keskeytyspaiva = Optional.empty(),
       opintojaksot = java.util.List.of(),
       suorituskieli = Optional.of(SuorituskieliUI(
         fi = Optional.of("suomi"),
@@ -186,6 +187,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "FI"
     ))
 
@@ -208,6 +210,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(
         LukionOppiaine(
@@ -251,6 +254,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+      keskeytyspaiva = Optional.empty(),
       oppiaineet = java.util.List.of(
         EBOppiaineUI(
           UUID.randomUUID(),
@@ -340,6 +344,7 @@ object MockEntityToUIConverter {
         tila = VALMIS,
         aloituspaiva = Optional.of(LocalDate.parse("2024-12-31")),
         valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+        keskeytyspaiva = Optional.empty(),
         suorituskieli = "suomi",
         painotettuKeskiarvo = Optional.of(4.34),
         ytot = java.util.List.of(
@@ -496,6 +501,7 @@ object MockEntityToUIConverter {
         tila = VALMIS,
         aloituspaiva = Optional.of(LocalDate.parse("2024-12-31")),
         valmistumispaiva = Optional.of(LocalDate.parse("2024-12-31")),
+        keskeytyspaiva = Optional.empty(),
         suorituskieli = "suomi",
         painotettuKeskiarvo = Optional.of(4.34),
         ytot = java.util.List.of(),
@@ -523,6 +529,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2017-06-01")),
       valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi"
     ))
 
@@ -545,6 +552,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2017-06-01")),
       valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi"
     ))
 
@@ -567,6 +575,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2017-06-01")),
       valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi"
     ))
 
@@ -589,6 +598,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2017-06-01")),
+      keskeytyspaiva = Optional.empty(),
       laajuus = Optional.of(TuvaLaajuus(38, TuvaLaajuusYksikko(Optional.of("vk"), Optional.empty(), Optional.empty())))
     ))
 
@@ -611,6 +621,7 @@ object MockEntityToUIConverter {
       tila = KESKEYTYNYT,
       aloituspaiva = Optional.of(LocalDate.parse("2023-12-31")),
       valmistumispaiva = Optional.empty(),
+      keskeytyspaiva = Optional.of(LocalDate.parse("2024-10-23")),
       suorituskieli = "suomi",
       laajuus = Optional.of(VapaaSivistystyoLaajuus(
         38,
@@ -638,6 +649,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi",
       luokka = Optional.of("9A"),
       yksilollistaminen = Optional.of(Yksilollistaminen(
@@ -804,6 +816,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi",
       koulusivistyskieli = "suomi",
       luokka = "9A",
@@ -830,6 +843,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(
         PerusopetuksenOppiaineUI(
@@ -881,6 +895,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(PerusopetuksenOppiaineUI(
         tunniste = UUID.randomUUID(),
@@ -916,6 +931,7 @@ object MockEntityToUIConverter {
       tila = VALMIS,
       aloituspaiva = Optional.of(LocalDate.parse("2015-12-31")),
       valmistumispaiva = Optional.of(LocalDate.parse("2016-06-01")),
+      keskeytyspaiva = Optional.empty(),
       suorituskieli = "suomi",
       oppiaineet = java.util.List.of(
         PerusopetuksenOppiaineUI(

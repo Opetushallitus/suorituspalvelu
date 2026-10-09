@@ -413,6 +413,7 @@ class OvaraServiceTest {
       yksilollistaminen = None,
       aloitusPaivamaara = Some(LocalDate.of(2023, 8, 1)),
       vahvistusPaivamaara = None,
+      keskeytysPaivamaara = None,
       aineet = Seq.empty,
       lahtokoulut = List(lahtokoulu),
       syotetty = false,

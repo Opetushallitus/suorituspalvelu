@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.ui
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.{TELMA, TUVA, VAPAA_SIVISTYSTYO}
 import fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS
-import fi.oph.suorituspalvelu.business.{DIAArvosana, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
+import fi.oph.suorituspalvelu.business.{DIAArvosana, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmatillisenTutkinnonOsa, AmmatillisenTutkinnonOsaAlue, AmmattiTutkinto, Arvosana, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, IBArvosana, IBLaajuus, IBOppiaineRyhma, IBOppiaineSuoritus, IBTutkinto, KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusTila, KKTutkinto, Koe, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus, YOTutkinto}
 import fi.oph.suorituspalvelu.integration.client
 import fi.oph.suorituspalvelu.integration.client.{KoodiMetadata, Koodisto, Organisaatio, OrganisaatioNimi}
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
@@ -74,6 +74,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       Some(3.4),
       Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1)),
@@ -128,6 +129,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.keskeytysPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
       tutkinto.keskiarvo.toJava,
       tutkinto.osat
@@ -193,6 +195,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       None,
       Koodi("naytto", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1)),
@@ -229,6 +232,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.keskeytysPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
       Optional.empty(),
       java.util.List.of(),
@@ -272,6 +276,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       Some(3.4),
       Koodi("ops", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1)),
@@ -315,6 +320,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.keskeytysPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
       tutkinto.keskiarvo.toJava,
       java.util.List.of(),
@@ -358,6 +364,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       Koodi("FI", "kieli", Some(1))
     )
@@ -380,6 +387,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.keskeytysPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo,
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).ammattitutkinnot)
   }
@@ -396,6 +404,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       Some(LocalDate.parse("2020-01-01")),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       Koodi("FI", "kieli", Some(1))
     )
 
@@ -417,6 +426,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       tutkinto.aloitusPaivamaara.toJava,
       tutkinto.vahvistusPaivamaara.toJava,
+      tutkinto.keskeytysPaivamaara.toJava,
       tutkinto.suoritusKieli.arvo
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(tutkinto), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).erikoisammattitutkinnot)
   }
@@ -433,6 +443,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       2020,
       Koodi("FI", "kieli", Some(1)),
       Some(Laajuus(18, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
@@ -457,6 +468,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       Optional.of(telma.aloitusPaivamaara),
       telma.vahvistusPaivamaara.toJava,
+      telma.keskeytysPaivamaara.toJava,
       telma.suoritusKieli.arvo
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(AmmatillinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Oppilaitos(Kielistetty(None, None, None), ""), Set(telma), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).telmat)
   }
@@ -473,6 +485,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("vk"), None, None)))),
       List(Lahtokoulu(LocalDate.parse("2020-01-01"), Some(LocalDate.parse("2020-01-01")), "1.2.246.562.10.11168857016", Some(2020), TUVA.defaultLuokka.get, VALMIS, None, TUVA))
@@ -496,6 +509,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       Optional.of(tuva.aloitusPaivamaara),
       tuva.vahvistusPaivamaara.toJava,
+      tuva.keskeytysPaivamaara.toJava,
       tuva.hyvaksyttyLaajuus.map(l => TuvaLaajuus(l.arvo, TuvaLaajuusYksikko(
         l.lyhytNimi.get.fi.toJava,
         l.lyhytNimi.get.sv.toJava,
@@ -516,6 +530,7 @@ class EntityToUIConverterTest {
       fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       LocalDate.parse("2020-01-01"),
       Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       2020,
       Some(Laajuus(11, Koodi("8", "opintojenlaajuusyksikko", Some(1)), None, Some(Kielistetty(Some("op"), None, None)))),
       Koodi("FI", "kieli", Some(1)),
@@ -540,6 +555,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.VALMIS,
       Optional.of(vst.aloitusPaivamaara),
       vst.vahvistusPaivamaara.toJava,
+      vst.keskeytysPaivamaara.toJava,
       vst.suoritusKieli.arvo,
       vst.hyvaksyttyLaajuus.map(l => VapaaSivistystyoLaajuus(l.arvo, VapaaSivistystyoLaajuusYksikko(
         l.lyhytNimi.get.fi.toJava,
@@ -565,6 +581,7 @@ class EntityToUIConverterTest {
       yksilollistaminen = Some(PerusopetuksenYksilollistaminen.EI_YKSILOLLISTETTY),
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       aineet = Seq(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
@@ -649,6 +666,7 @@ class EntityToUIConverterTest {
       tila = SuoritusTilaUI.valueOf(oppimaara.supaTila.toString),
       aloituspaiva = oppimaara.aloitusPaivamaara.toJava,
       valmistumispaiva = oppimaara.vahvistusPaivamaara.toJava,
+      keskeytyspaiva = oppimaara.keskeytysPaivamaara.toJava,
       suorituskieli = oppimaara.suoritusKieli.arvo,
       luokka = oppimaara.luokka.toJava,
       yksilollistaminen = Optional.of(Yksilollistaminen(
@@ -702,6 +720,7 @@ class EntityToUIConverterTest {
       yksilollistaminen = None,
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = None,
+      keskeytysPaivamaara = None,
       aineet = Seq(
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
@@ -745,6 +764,7 @@ class EntityToUIConverterTest {
       yksilollistaminen = None,
       aloitusPaivamaara = Some(LocalDate.parse("2020-01-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2020-01-01")),
+      keskeytysPaivamaara = None,
       aineet = aineet.map { case (koodi, arvosana) =>
         PerusopetuksenOppiaine(
           tunniste = UUID.randomUUID(),
@@ -814,7 +834,7 @@ class EntityToUIConverterTest {
 
   @Test def testPerusopetuksenOppimaaraTaysinValmisEiPaikkarivejä(): Unit = {
     // Kaikki yhteiset + KT annettuna => ei lisätä yhtään paikkariviä.
-    val kaikki = (KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9") :+ ("KT" -> "9"))
+    val kaikki = KAIKKI_YHTEISET_PAITSI_AI_A1.map(_ -> "9") :+ ("KT" -> "9")
     val oppimaara = valmisOppimaaraWithAineet(kaikki)
     val oppiaineet = oppiaineetFromConverter(oppimaara).asScala.toList
     Assertions.assertTrue(oppiaineet.forall(_.arvosana.isPresent), "Täysin valmiilla oppimäärällä jokaisella rivillä pitää olla arvosana")
@@ -980,6 +1000,7 @@ class EntityToUIConverterTest {
       opintoPisteet = 30.5,
       aloitusPvm = Some(LocalDate.parse("2020-01-01")),
       suoritusPvm = Some(LocalDate.parse("2021-01-01")),
+      keskeytysPvm = None,
       myontaja = "10108",
       kieli = Some("fi"),
       koulutusKoodi = Some("671103"),
@@ -1031,6 +1052,7 @@ class EntityToUIConverterTest {
       SuoritusTilaUI.KESKEN,
       virtaTutkinto.aloitusPvm.toJava,
       virtaTutkinto.suoritusPvm.toJava,
+      virtaTutkinto.keskeytysPvm.toJava,
       Optional.empty,
       java.util.List.of(
         KKOpintojaksoUI(
@@ -1120,6 +1142,7 @@ class EntityToUIConverterTest {
       supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       aloitusPaivamaara = Some(LocalDate.parse("2021-08-15")),
       vahvistusPaivamaara = Some(LocalDate.parse("2024-06-01")),
+      keskeytysPaivamaara = None,
       suoritusKieli = Some(Koodi("FI", "kieli", Some(1))),
       koulusivistyskieli = Set(Koodi("FI", "kieli", Some(1)))
     )
@@ -1142,6 +1165,7 @@ class EntityToUIConverterTest {
       tila = SuoritusTilaUI.VALMIS,
       aloituspaiva = lukionOppimaara.aloitusPaivamaara.toJava,
       valmistumispaiva = lukionOppimaara.vahvistusPaivamaara.toJava,
+      keskeytyspaiva = lukionOppimaara.keskeytysPaivamaara.toJava,
       suorituskieli = "FI"
     )), EntityToUIConverter.getOppijanTiedot(None, None, None, "1.2.3", "2.3.4", None, Set(GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("lukiokoulutus", "opiskeluoikeudentyyppi", None), "", Set(lukionOppimaara), None, List.empty)), DUMMY_ORGANISAATIOPROVIDER, DUMMY_KOODISTOPROVIDER).lukionOppimaarat)
   }
@@ -1160,6 +1184,7 @@ class EntityToUIConverterTest {
       supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
       vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
+      keskeytysPaivamaara = None,
       suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
       osasuoritukset = Seq(
         IBOppiaineSuoritus(
@@ -1270,6 +1295,7 @@ class EntityToUIConverterTest {
       supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
       vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
+      keskeytysPaivamaara = None,
       suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
       osasuoritukset = Seq(
         IBOppiaineSuoritus(
@@ -1375,6 +1401,7 @@ class EntityToUIConverterTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.parse("2012-09-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2016-06-04")),
+      keskeytysPaivamaara = None,
       osasuoritukset = Seq(
         diaOppiaine("NAYTTO", suullinen = None, naytto = Some("4")),
         diaOppiaine("MOLEMMAT", suullinen = Some("6"), naytto = Some("4")),
@@ -1413,6 +1440,7 @@ class EntityToUIConverterTest {
         suoritusKieli = Koodi("FI", "kieli", Some(1)),
         aloitusPaivamaara = Some(LocalDate.parse("2015-01-01")),
         vahvistusPaivamaara = Some(LocalDate.parse("2016-06-01")),
+        keskeytysPaivamaara = None,
         aineet = aineet,
         syotetty = false
       )),
@@ -1546,6 +1574,7 @@ class EntityToUIConverterTest {
       supaTila = fi.oph.suorituspalvelu.business.SuoritusTila.VALMIS,
       aloitusPaivamaara = Some(LocalDate.parse("2021-08-18")),
       vahvistusPaivamaara = Some(LocalDate.parse("2024-05-31")),
+      keskeytysPaivamaara = None,
       suorituskieli = Some(Koodi("EN", "kieli", Some(1))),
       osasuoritukset = Seq(
         IBOppiaineSuoritus(
