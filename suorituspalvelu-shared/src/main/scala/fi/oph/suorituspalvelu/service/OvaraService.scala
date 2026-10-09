@@ -319,7 +319,9 @@ class OvaraService(
           if (kkOo.nonEmpty || kkSyntOo.nonEmpty || yoOo.nonEmpty || genOo.nonEmpty || ammatOo.nonEmpty || pkOo.nonEmpty || poistettuOo.nonEmpty) {
             val henkiloMetadata = OvaraHenkiloMetadata(viimeisinParserointiMuutos)
             val lahtokoulut = EntityToOvaraConverter.getLahtokoulut(kaikkiOoJaMetadata.map(_._2).toSet)
-            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo, lahtokoulut))
+            val litistetytKKSuoritukset = EntityToOvaraConverter.litistaKKSuoritukset(kkOo, kkSyntOo)
+            Some(OvaraVersioJaOpiskeluoikeudet(henkiloOid, henkiloMetadata, kkOo, kkSyntOo, yoOo, genOo, ammatOo, pkOo, poistettuOo, lahtokoulut,
+              kkSuorituksetFlat = litistetytKKSuoritukset))
           }
           else None
         }
