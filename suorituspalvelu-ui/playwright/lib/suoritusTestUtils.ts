@@ -467,7 +467,7 @@ export const VAPAA_SIVISTYSTYO_KESKEN_SUORITUS: SuoritusSpec = {
 
 export const VAPAA_SIVISTYSTYO_SUORITUS: SuoritusSpec = {
   perustiedot: {
-    title: `Vapaan sivistystyön koulutus (31.12.2023 ${NDASH} )`,
+    title: `Vapaan sivistystyön koulutus (31.12.2023 ${NDASH} 12.10.2024)`,
     oppilaitos: 'Hämeen ammatti-instituutti, Lepaa',
     tila: 'Suoritus keskeytynyt',
     valmistumispaiva: '-',

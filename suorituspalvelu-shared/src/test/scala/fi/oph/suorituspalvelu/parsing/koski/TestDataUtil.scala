@@ -26,7 +26,7 @@ object TestDataUtil {
                                   suoritustapa: Koodi = getTestKoodi(),
                                   suoritusKieli: Koodi = getTestKoodi(),
                                   osat: Seq[AmmatillisenTutkinnonOsa] = Seq.empty): AmmatillinenPerustutkinto =
-    AmmatillinenPerustutkinto(UUID.randomUUID(), nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, KoskiToSuoritusConverter.convertKoskiTila(tila.arvo), aloitusPaivamaara, vahvistusPaivamaara, keskiarvo, suoritustapa, suoritusKieli, osat)
+    AmmatillinenPerustutkinto(UUID.randomUUID(), nimi, koodi, Oppilaitos(Kielistetty(Some(""), Some(""), Some("")), ""), tila, KoskiToSuoritusConverter.convertKoskiTila(tila.arvo), aloitusPaivamaara, vahvistusPaivamaara, None, keskiarvo, suoritustapa, suoritusKieli, osat)
 
   def mkKoodi(koodiarvo: String, koodistoUri: String = "koodisto"): KoskiKoodi =
     KoskiKoodi(koodiarvo, koodistoUri, None, Kielistetty(None, None, None), None)
@@ -91,6 +91,7 @@ object TestDataUtil {
       supaTila,
       aloitusPaivamaara,
       vahvistusPaivamaara,
+      keskeytysPaivamaara = None,
       suoritusVuosi,
       laajuusArvo.map(arvo => Laajuus(arvo, Koodi("4", "opintojenlaajusyksikkö", Some(1)), None, None)),
       List(Lahtokoulu(aloitusPaivamaara, vahvistusPaivamaara, oppilaitos.oid, Some(suoritusVuosi), "tuva", supaTila, None, LahtokouluTyyppi.TUVA))
@@ -113,6 +114,7 @@ object TestDataUtil {
       supaTila,
       aloitusPaivamaara,
       vahvistusPaivamaara,
+      keskeytysPaivamaara = None,
       suoritusVuosi,
       suoritusKieli,
       laajuusArvo.map(arvo => Laajuus(arvo, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
@@ -136,6 +138,7 @@ object TestDataUtil {
       supaTila,
       aloitusPaivamaara,
       vahvistusPaivamaara,
+      keskeytysPaivamaara = None,
       suoritusVuosi,
       laajuusArvo.map(arvo => Laajuus(arvo, Koodi("6", "opintojenlaajusyksikkö", Some(1)), None, None)),
       suoritusKieli,

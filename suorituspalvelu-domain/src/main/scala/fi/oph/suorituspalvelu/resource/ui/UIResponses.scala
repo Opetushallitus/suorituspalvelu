@@ -280,6 +280,8 @@ case class KKSuoritusUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(example = "")
@@ -394,6 +396,8 @@ case class LukionOppimaaraUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "FI", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String
 )
@@ -420,6 +424,8 @@ case class LukionOppiaineenOppimaara(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -448,6 +454,8 @@ case class DIATutkintoUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -546,6 +554,8 @@ case class EBTutkintoUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty oppiaineet: java.util.List[EBOppiaineUI]
 )
@@ -606,6 +616,8 @@ case class IBTutkintoUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: Optional[SuorituskieliUI],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -781,6 +793,8 @@ case class Ammatillinentutkinto(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(example = "4.34", requiredMode = RequiredMode.REQUIRED)
@@ -820,6 +834,8 @@ case class Ammattitutkinto(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2017-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2017-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String
 )
@@ -855,6 +871,8 @@ case class Erikoisammattitutkinto(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2017-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2017-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String
 )
@@ -890,6 +908,8 @@ case class Telma(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2017-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2017-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String
 )
@@ -907,6 +927,8 @@ case class OsittainenAmmatillinenTutkintoUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(example = "2.20")
@@ -960,6 +982,8 @@ case class TuvaUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2016-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
   @BeanProperty laajuus: Optional[TuvaLaajuus]
   // TODO: jos halutaan näyttää suorituskieli niin tarvitaan tieto Kosken massaluovutusrajapinnasta
@@ -1019,6 +1043,8 @@ case class VapaaSivistystyoKoulutus(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2024-12-31")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2024-12-31")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -1120,6 +1146,8 @@ case class PerusopetuksenOppimaaraUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2016-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(example = "9A", requiredMode = RequiredMode.REQUIRED)
@@ -1160,6 +1188,8 @@ case class AikuistenPerusopetuksenOppimaara(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2016-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)
@@ -1188,6 +1218,8 @@ case class PerusopetuksenOppimaara78Luokkalaiset(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2016-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
@@ -1227,6 +1259,8 @@ case class PerusopetuksenOppiaineenOppimaaratUI(
   @BeanProperty aloituspaiva: Optional[LocalDate],
   @(Schema @field)(example = "2016-06-01")
   @BeanProperty valmistumispaiva: Optional[LocalDate],
+  @(Schema @field)(example = "2016-06-01")
+  @BeanProperty keskeytyspaiva: Optional[LocalDate],
   @(Schema @field)(example = "suomi", requiredMode = RequiredMode.REQUIRED)
   @BeanProperty suorituskieli: String,
   @(Schema @field)(requiredMode = RequiredMode.REQUIRED)

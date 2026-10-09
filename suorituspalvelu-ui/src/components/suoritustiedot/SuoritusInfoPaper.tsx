@@ -6,10 +6,14 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { formatFinnishDate, NDASH } from '@/lib/common';
 
 const Vuodet = ({ suoritus }: { suoritus: SuorituksenPerustiedot }) => {
+  const paattymisPaiva =
+    suoritus.tila == 'KESKEYTYNYT'
+      ? suoritus.keskeytyspaiva
+      : suoritus.valmistumispaiva;
   return (
     <OphTypography variant="body1" component="span">
-      {suoritus.aloituspaiva || suoritus.valmistumispaiva
-        ? `(${formatFinnishDate(suoritus.aloituspaiva)} ${NDASH} ${formatFinnishDate(suoritus.valmistumispaiva)})`
+      {suoritus.aloituspaiva || paattymisPaiva
+        ? `(${formatFinnishDate(suoritus.aloituspaiva)} ${NDASH} ${formatFinnishDate(paattymisPaiva)})`
         : ''}
     </OphTypography>
   );
