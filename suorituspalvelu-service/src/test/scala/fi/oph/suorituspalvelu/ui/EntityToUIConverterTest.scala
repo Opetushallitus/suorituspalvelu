@@ -1401,6 +1401,7 @@ class EntityToUIConverterTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.parse("2012-09-01")),
       vahvistusPaivamaara = Some(LocalDate.parse("2016-06-04")),
+      keskeytysPaivamaara = None,
       osasuoritukset = Seq(
         diaOppiaine("NAYTTO", suullinen = None, naytto = Some("4")),
         diaOppiaine("MOLEMMAT", suullinen = Some("6"), naytto = Some("4")),
