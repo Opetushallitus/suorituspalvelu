@@ -919,14 +919,14 @@ export interface IYliajonMuutosUI {
   selite: string;
 }
 
-export type KKSektoriUI = 'AMK' | 'YO';
+export type KKSektoriUI = ("AMK" | "YO");
 
-export type KKTutkintotasoUI = 'ALEMPI' | 'YLEMPI' | 'TOHTORI';
+export type KKTutkintotasoUI = ("ALEMPI" | "YLEMPI" | "TOHTORI");
 
-export type KorotusUI = 'KOROTETTU' | 'KOROTUKSENYRITYS';
+export type KorotusUI = ("KOROTETTU" | "KOROTUKSENYRITYS");
 
-export type OpiskeluoikeusTilaUI = 'VOIMASSA' | 'PAATTYNYT';
+export type OpiskeluoikeusTilaUI = ("VOIMASSA" | "PAATTYNYT");
 
-export type SuoritusTilaUI = 'VALMIS' | 'KESKEN' | 'KESKEYTYNYT';
+export type SuoritusTilaUI = ("VALMIS" | "KESKEN" | "KESKEYTYNYT");
 
-export type SuoritustapaUI = 'OPS' | 'REFORMI' | 'NAYTTO';
+export type SuoritustapaUI = ("OPS" | "REFORMI" | "NAYTTO");
