@@ -13,21 +13,18 @@ import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.yos.YosConstants.{KOULUTUSASTE_ALEMMAT, KOULUTUSASTE_YLEMMAT, LAAKETIETEEN_LISENSIAATIT_KOULUTUSKOODIT, YOS_KOULUTUSASTE_KOODISTO}
 import fi.oph.suorituspalvelu.yos.YosKoulutusAsteLuokka.{ALEMMAT_ASTEET, EI_YOS_KOULUTUSASTETTA, YLEMMAT_ASTEET, YLEMMAT_JA_ALEMMAT_ASTEET}
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.{Autowired, Value}
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 import java.lang
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-case class YosHakuToiveYossinPiirissa(hakutoive: YosHakutoive, kuuluukoYosPiiriin: Boolean)
+case class HakuToiveenKoulutusAsteJaYosTieto(koulutusAste: YosKoulutusAsteLuokka, kuuluukoYosPiiriin: Boolean)
 
 @Service
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              opiskeluOikeusService: OpiskeluoikeusParsingService,
                              organisaatioProvider: OrganisaatioProvider,
-                             koodistoProvider: KoodistoProvider,
-                             @Value("${yos.voimassaoloCheckEnabled}") voimassaoloCheckEnabled: Boolean) {
+                             koodistoProvider: KoodistoProvider) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
 
@@ -38,10 +35,10 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid, hakukohdeOid).fold(
       e => Left(YosErrorResponse(VIRHE_HAKUTOIVEEN_PAATTELYSSA, e.getMessage)),
       r => Right(r)
-    ).flatMap(toiveJaPiiri => {
-      if (toiveJaPiiri.kuuluukoYosPiiriin) {
+    ).flatMap(hakutoiveenAsteJaYosStatus => {
+      if (hakutoiveenAsteJaYosStatus.kuuluukoYosPiiriin) {
         LOGGER.info(s"Vastaanotettava opiskelupaikka kuului YOS piiriin. Haetaan päätettävät opiskeluoikeudet. Parametrit = (hakija: $hakijaOid, haku: $hakuOid, hakukohde: $hakukohdeOid)")
-        hakijanPaatettavatOpiskeluOikeudet(hakijaOid, toiveJaPiiri.hakutoive).fold(
+        hakijanPaatettavatOpiskeluOikeudet(hakijaOid, hakutoiveenAsteJaYosStatus.koulutusAste).fold(
           e => Left(YosErrorResponse(VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, e.getMessage)),
           r => Right(r))
       } else {
@@ -51,7 +48,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     })
   }
 
-  def kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid: String, hakukohdeOid: String): Either[Throwable, YosHakuToiveYossinPiirissa] = {
+  def kuuluukoVastaanotettavaHakutoiveYossinpiiriin(hakuOid: String, hakukohdeOid: String): Either[Throwable, HakuToiveenKoulutusAsteJaYosTieto] = {
     LOGGER.info(s"Tehdään päättely kuuluuko hakutoive $hakukohdeOid haussa $hakuOid YOS piiriin")
     try {
       val haku: Option[KoutaHaku] = tarjontaIntegration.getHaku(hakuOid)
@@ -63,22 +60,17 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
         case (Some(_), null) =>
           LOGGER.error(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid")
           Left(new RuntimeException(s"Hakukohdetta ei löydy oidilla: $hakukohdeOid"))
-        case (Some(h), hk) =>
+        case (Some(_), hk) =>
           if (!hakuOid.equals(hk.hakuOid)) {
             LOGGER.error(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid")
             Left(new RuntimeException(s"Hakukohde $hakukohdeOid ei kuulu annettuun hakuun $hakuOid"))
           } else {
-            val yosHakutoive = muodostaYosHakutoive(h, hk)
-            LOGGER.info(
-              s"""Tarkistetaan kuuluuko hakutoive ${hakukohdeOid} haussa ${hakuOid} YOSin piiriin.
-                 |Hakutoiveen arvot ovat:
-                 | korkeakoulutus: ${yosHakutoive.korkeakoulutus}, tutkintoonJohtava: ${yosHakutoive.tutkintoonJohtava},
-                 | jatkoTutkinto: ${yosHakutoive.jatkoTutkinto}, kaksoisTutkinto: ${yosHakutoive.kaksoisTutkinto},
-                 | organisaatioJaVanhemmat: ${yosHakutoive.organisaatioJaVanhemmat.mkString(", ")}, koulutusAste: ${yosHakutoive.koulutusAste},
-                 | haunAlkamisaika: ${yosHakutoive.haunAlkamisaika.map(_.toString).orNull}, koulutuksenAlkamisvuosi: ${yosHakutoive.koulutuksenAlkamisvuosi.orNull}""".stripMargin)
-            val kuuluukoYOSsinPiiriin = YosPredicate.kuuluukoHakutoiveYosinPiiriin(yosHakutoive, voimassaoloCheckEnabled)
-            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin: $yosHakutoive")
-            Right(YosHakuToiveYossinPiirissa(yosHakutoive, kuuluukoYOSsinPiiriin))
+            // YOS-piiriin kuuluminen päätellään kouta-backendissä. Jos tietoa ei ole, tulkitaan että hakutoive ei kuulu YOS piiriin.
+            val kuuluukoYOSsinPiiriin = hk.kuuluuYosinPiiriin.getOrElse(false)
+            val koulutusAste = getKoulutusAsteHakutoiveelle(hk)
+            LOGGER.info(s"Hakutoive $hakukohdeOid haussa $hakuOid ${if (kuuluukoYOSsinPiiriin) "kuuluu" else "ei kuulu"} YOS piiriin " +
+              s"(kouta: ${hk.kuuluuYosinPiiriin.map(_.toString).getOrElse("ei tietoa")}), koulutusaste: $koulutusAste")
+            Right(HakuToiveenKoulutusAsteJaYosTieto(koulutusAste, kuuluukoYOSsinPiiriin))
           }
       }
     } catch {
@@ -88,7 +80,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
       }
   }
 
-  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoive: YosHakutoive): Either[Throwable, Set[YosPaatettavaOpiskeluOikeus]] = {
+  def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoiveenKoulutusAste: YosKoulutusAsteLuokka): Either[Throwable, Set[YosPaatettavaOpiskeluOikeus]] = {
     try {
       LOGGER.info(s"Haetaan hakijan $oppilasNro päätettävät opiskeluoikeudet")
       val oikeudet: Set[KKOpiskeluoikeus] = opiskeluOikeusService.haeSuoritukset(oppilasNro)
@@ -116,7 +108,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
           val parentOrganisaatiot = organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(oikeus.myontaja)
           YosPredicate.kuuluukoOrganisaatioYosinPiiriin(parentOrganisaatiot, Some(oikeus.myontaja))
         })
-        .filter(oikeus => tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoive, oikeudet, oikeus))
+        .filter(oikeus => tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoiveenKoulutusAste, oikeudet, oikeus))
         .map(muodostaYosPaatettavaOpiskeluOikeus)
       LOGGER.info(s"Oikeuksista löytyi ${paatettavatOikeudet.size} kappaletta päätettävää oikeutta hakijalle $oppilasNro")
       Right(paatettavatOikeudet)
@@ -127,7 +119,7 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
     }
   }
 
-  private def tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoive: YosHakutoive, oikeudet: Set[KKOpiskeluoikeus], oikeus: KKOpiskeluoikeus) = {
+  private def tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoiveenKoulutusAste: YosKoulutusAsteLuokka, oikeudet: Set[KKOpiskeluoikeus], oikeus: KKOpiskeluoikeus) = {
     var oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
     //tarkistetaan onko ylemmällä asteella linkki alemmalle asteelle ja käytetään linkitetyn alemman astetta jos alemman tila ei ole valmistunut
     if (oikeudenAste.equals(YLEMMAT_ASTEET) && oikeus.liittyvaOpiskeluoikeusAvain.isDefined) {
@@ -155,24 +147,13 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
         }
       }
     }
-    val kuuluu = YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoive.koulutusAste, oikeudenAste)
+    val kuuluu = YosPredicate.kuuluukoOpiskeluOikeusYosinPiiriinKoulutusAsteenMukaan(hakutoiveenKoulutusAste, oikeudenAste)
     if (kuuluu) {
-      LOGGER.info(s"Opiskeluoikeus ${oikeus.virtaTunniste} kuuluu päätettäviin koulutusasteen $oikeudenAste mukaan. Hakutoiveen koulutusaste oli ${hakutoive.koulutusAste}")
+      LOGGER.info(s"Opiskeluoikeus ${oikeus.virtaTunniste} kuuluu päätettäviin koulutusasteen $oikeudenAste mukaan. Hakutoiveen koulutusaste oli $hakutoiveenKoulutusAste")
     } else {
-      LOGGER.info(s"Opiskeluoikeus ${oikeus.virtaTunniste} ei kuulu päätettäviin koulutusasteen $oikeudenAste mukaan. Hakutoiveen koulutusaste oli ${hakutoive.koulutusAste}")
+      LOGGER.info(s"Opiskeluoikeus ${oikeus.virtaTunniste} ei kuulu päätettäviin koulutusasteen $oikeudenAste mukaan. Hakutoiveen koulutusaste oli $hakutoiveenKoulutusAste")
     }
     kuuluu
-  }
-
-  private def muodostaYosHakutoive(haku: KoutaHaku, hakutoive: KoutaHakukohde): YosHakutoive = {
-    val organisaatioJaVanhemmat = List(hakutoive.tarjoaja) ++ organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(hakutoive.tarjoaja)
-    val koulutusAste = getKoulutusAsteHakutoiveelle(hakutoive)
-
-    val haunAlkamisaika = haku.hakuajat.map(h => LocalDateTime.parse(h.alkaa, DateTimeFormatter.ISO_LOCAL_DATE_TIME)).minOption
-    val koulutuksenAlkamisvuosi = hakutoive.paateltyAlkamiskausi.map(_.vuosi)
-
-    YosHakutoive(haku.isKorkeakouluHaku, hakutoive.johtaaTutkintoon.getOrElse(false), haku.isJatkotutkinto,
-      haku.isErasmusMundusTaiKaksoistutkinto, organisaatioJaVanhemmat, koulutusAste, haunAlkamisaika, koulutuksenAlkamisvuosi)
   }
 
   private def getKoulutusAsteHakutoiveelle(hakutoive: KoutaHakukohde): YosKoulutusAsteLuokka = {

@@ -71,7 +71,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
         johtaaTutkintoon = Some(true),
         hakuOid = HAKU_OID,
         koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_72"),
-        paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2027"))
+        paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2027")),
+        kuuluuYosinPiiriin = Some(true)
       ))
     Mockito.when(organisaatioProvider.haeOrganisaationTiedot(ORGANISAATIO_TUNNISTE)).thenReturn(None)
   }
@@ -151,27 +152,12 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
   }
 
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testReturnsEmptyListWhenYosEiOleVoimassaHakuajanPerusteella(): Unit = {
+  @Test def testReturnsEmptyListWhenHakukohdeEiKuuluYosPiiriin(): Unit = {
+    insertOpiskeluOikeus()
     Mockito.when(organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
-    Mockito.when(tarjontaIntegration.getHaku(HAKU_OID)).thenReturn(Some(
-      KoutaHaku(
-        oid = HAKU_OID,
-        tila = "JULKAISTU",
-        nimi = Map.empty,
-        hakutapaKoodiUri = "???",
-        kohdejoukkoKoodiUri = Some("haunkohdejoukko_12"),
-        hakuajat = List(KoutaHakuaika("2026-07-01T00:00:00", None)),
-        kohdejoukonTarkenneKoodiUri = None,
-        hakuvuosi = Some(2026))))
-    val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
-      .andExpect(status().isOk).andReturn()
-    val response = objectMapper.readValue(result.getResponse.getContentAsString(Charset.forName("UTF-8")), classOf[YosSuccessResponse])
-    Assertions.assertTrue(response.paatettavatOpiskeluOikeudet.isEmpty)
-  }
-
-  @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testReturnsEmptyListWhenYosEiOleVoimassaAlkamisvuodenPerusteella(): Unit = {
-    Mockito.when(organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
+    Mockito.when(koodistoProvider.haeKoodisto("koulutus")).thenReturn(Map("koulutus_1" ->
+      fi.oph.suorituspalvelu.integration.client.Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")), koodiUri = "koulutus_1")))
+    Mockito.when(koodistoProvider.haeAlakoodit("koulutus_1")).thenReturn(List(fi.oph.suorituspalvelu.integration.client.Koodi("72", Koodisto("kansallinenkoulutusluokitus2016koulutusastetaso2"), List.empty, "kansallinenkoulutusluokitus2016koulutusastetaso2_72")))
     Mockito.when(tarjontaIntegration.getHakukohde(HAKUKOHDE_OID)).thenReturn(
       KoutaHakukohde(
         oid = HAKUKOHDE_OID,
@@ -181,7 +167,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
         johtaaTutkintoon = Some(true),
         hakuOid = HAKU_OID,
         koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_72"),
-        paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2026"))
+        paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2026")),
+        kuuluuYosinPiiriin = Some(false)
       ))
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().isOk).andReturn()
@@ -190,8 +177,12 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
   }
 
   @WithMockUser(value = "Ruhtinas Nukettaja", authorities = Array(SecurityConstants.SECURITY_ROOLI_REKISTERINPITAJA_FULL))
-  @Test def testReturnsEmptyListWhenHakukohteellaEiOlePaateltyaAlkamiskautta(): Unit = {
+  @Test def testReturnsEmptyListWhenKuuluuYosinPiiriinTietoPuuttuu(): Unit = {
+    insertOpiskeluOikeus()
     Mockito.when(organisaatioProvider.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
+    Mockito.when(koodistoProvider.haeKoodisto("koulutus")).thenReturn(Map("koulutus_1" ->
+      fi.oph.suorituspalvelu.integration.client.Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")), koodiUri = "koulutus_1")))
+    Mockito.when(koodistoProvider.haeAlakoodit("koulutus_1")).thenReturn(List(fi.oph.suorituspalvelu.integration.client.Koodi("72", Koodisto("kansallinenkoulutusluokitus2016koulutusastetaso2"), List.empty, "kansallinenkoulutusluokitus2016koulutusastetaso2_72")))
     Mockito.when(tarjontaIntegration.getHakukohde(HAKUKOHDE_OID)).thenReturn(
       KoutaHakukohde(
         oid = HAKUKOHDE_OID,
@@ -201,7 +192,8 @@ class YosResourceIntegrationTest extends BaseIntegraatioTesti {
         johtaaTutkintoon = Some(true),
         hakuOid = HAKU_OID,
         koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_72"),
-        paateltyAlkamiskausi = None
+        paateltyAlkamiskausi = Some(PaateltyAlkamiskausi("kausi_k", "2027")),
+        kuuluuYosinPiiriin = None
       ))
     val result = mvc.perform(jsonGet(s"${ApiConstants.YOS_PATH}/hakija/$HAKIJA_OID/haku/$HAKU_OID/hakukohde/$HAKUKOHDE_OID/opiskeluoikeudet"))
       .andExpect(status().isOk).andReturn()
