@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.koski
 
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
-import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
+import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, KESKEYTYNYT, VALMIS}
 import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, GeneerinenOpiskeluoikeus, KantaOperaatiot, Lahtokoulu, LahtokouluTyyppi, Opiskeluoikeus, OpiskeluoikeusJakso, PerusopetuksenOpiskeluoikeus, PerusopetuksenYksilollistaminen, PoistettuOpiskeluoikeus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiArviointi, KoskiErityisenTuenPaatos, KoskiKoodi, KoskiKotiopetusjakso, KoskiKoulutusModuuli, KoskiLaajuus, KoskiLisatiedot, KoskiOpiskeluoikeus, KoskiOpiskeluoikeusJakso, KoskiOpiskeluoikeusTila, KoskiOpiskeluoikeusTyyppi, KoskiOppilaitos, KoskiOsaSuoritus, KoskiParser, KoskiSuoritus, KoskiSuoritusTyyppi, KoskiToSuoritusConverter, KoskiVahvistus}
@@ -245,7 +245,10 @@ class KoskiToSuoritusConverterTest {
       None,
       None
     )
-    Assertions.assertEquals(Some(LocalDate.parse("2024-06-15")), KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusEronnut))
+    Assertions.assertEquals(Some(LocalDate.parse("2024-06-15")), KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusEronnut, KESKEYTYNYT))
+
+    // Jos supaTila ei ole KESKEYTYNYT, palauttaa None
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusEronnut, KESKEN))
 
     // Ei keskeytynyt palauttaa None
     val opiskeluoikeusValmis = KoskiOpiskeluoikeus(
@@ -265,7 +268,7 @@ class KoskiToSuoritusConverterTest {
       None,
       None
     )
-    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusValmis))
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusValmis, KESKEYTYNYT))
 
     // Jos ei tilaa palautuu None
     val opiskeluoikeusNoTila = KoskiOpiskeluoikeus(
@@ -277,7 +280,7 @@ class KoskiToSuoritusConverterTest {
       None,
       None
     )
-    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusNoTila))
+    Assertions.assertEquals(None, KoskiToSuoritusConverter.parseKeskeytyminen(opiskeluoikeusNoTila, KESKEYTYNYT))
   }
 
   @Test def testIsMitatoity(): Unit = {

@@ -1,6 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.KKConstants.VirtaOpiskeluoikeusTyyppi
+import fi.oph.suorituspalvelu.business.SuoritusTila.KESKEYTYNYT
 import fi.oph.suorituspalvelu.business.{
   KKOpintosuoritus, KKOpiskeluoikeus, KKOpiskeluoikeusBase, KKOpiskeluoikeusTila, KKSynteettinenOpiskeluoikeus,
   KKSynteettinenSuoritus, KKTutkinto, Suoritus, SuoritusTila
@@ -133,6 +134,7 @@ object VirtaToSuoritusConverter {
       komoTunniste = koulutusKoodi.getOrElse(""),
       aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
       suoritusPvm = None,
+      keskeytysPvm = None,
       myontaja = opiskeluoikeus.Myontaja,
       koulutusKoodi = koulutusKoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
@@ -156,14 +158,16 @@ object VirtaToSuoritusConverter {
     val jaksonNimi = opiskeluoikeus.Jakso.sortBy(_.AlkuPvm)(
       Ordering[LocalDate].reverse
     ).find(_.Nimi.nonEmpty).map(_.Nimi).getOrElse(Seq.empty)
+    val supaTila = getSuoritustilaFromOpiskeluoikeus(opiskeluoikeus)
 
     KKSynteettinenSuoritus(
       tunniste = UUID.randomUUID(),
       nimi = virtaNimiToKielistetty(jaksonNimi),
-      supaTila = getSuoritustilaFromOpiskeluoikeus(opiskeluoikeus),
+      supaTila = supaTila,
       komoTunniste = opiskeluoikeus.koulutusmoduulitunniste,
       aloitusPvm = Some(opiskeluoikeus.AlkuPvm),
       suoritusPvm = if (tila.Koodi == OPISKELUOIKEUS_TILA_VALMISTUNUT) Some(tila.AlkuPvm) else None,
+      keskeytysPvm = if (supaTila == SuoritusTila.KESKEYTYNYT) Some(tila.AlkuPvm) else None,
       myontaja = opiskeluoikeus.Myontaja,
       koulutusKoodi = viimeisinTutkintoKoulutuskoodi,
       opiskeluoikeusAvain = Some(opiskeluoikeus.avain),
@@ -328,14 +332,17 @@ object VirtaToSuoritusConverter {
     prosessoidutSuoritusAvaimet: List[String] = List.empty
   ): Option[Suoritus] = {
     suoritus.Laji match
-      case VIRTA_TUTKINTO_LAJI => Some(KKTutkinto(
+      case VIRTA_TUTKINTO_LAJI =>
+        val supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS)
+        Some(KKTutkinto(
         tunniste = UUID.randomUUID(),
         nimi = virtaNimiToKielistetty(suoritus.Nimi),
-        supaTila = opiskeluoikeus.map(getSuoritustilaFromOpiskeluoikeus).getOrElse(SuoritusTila.VALMIS),
+        supaTila = supaTila,
         komoTunniste = suoritus.koulutusmoduulitunniste,
         opintoPisteet = suoritus.Laajuus.Opintopiste,
         aloitusPvm = opiskeluoikeus.map(_.AlkuPvm),
         suoritusPvm = Some(suoritus.SuoritusPvm),
+        keskeytysPvm = if (supaTila == SuoritusTila.KESKEYTYNYT) opiskeluoikeus.map(_.AlkuPvm) else None,
         myontaja = suoritus.Myontaja,
         kieli = suoritus.Kieli,
         koulutusKoodi = suoritus.Koulutuskoodi,

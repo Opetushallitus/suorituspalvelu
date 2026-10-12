@@ -1081,6 +1081,7 @@
       "tila": "KESKEYTYNYT",
       "aloituspaiva": "2023-12-31",
       "valmistumispaiva": null,
+      "keskeytyspaiva": "2024-10-12",
       "suorituskieli": "FI",
       "laajuus": {
         "arvo": 38,

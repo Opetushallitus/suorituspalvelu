@@ -71,6 +71,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(60)),
+      keskeytysPaivamaara = None,
       osasuoritukset = createEBOppiaineet()
     )
 
@@ -102,6 +103,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = KESKEN,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei valmistumispäivää
+      keskeytysPaivamaara = None,
       osasuoritukset = createEBOppiaineet()
     )
 
@@ -133,6 +135,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS, // VALMIS-tila mutta ei vahvistuspäivämäärää
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei vahvistuspäivämäärää
+      keskeytysPaivamaara = None,
       osasuoritukset = createEBOppiaineet()
     )
 
@@ -164,6 +167,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(1)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(15)),
+      keskeytysPaivamaara = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None)
     )
@@ -195,6 +199,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(1)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(10)),
+      keskeytysPaivamaara = None,
       suoritusKieli = Koodi("FI", "kieli", None)
     )
 
@@ -225,6 +230,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = KESKEN,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None,
+      keskeytysPaivamaara = None,
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
@@ -258,6 +264,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(30)),
+      keskeytysPaivamaara = None,
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
@@ -304,6 +311,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(30)),
+      keskeytysPaivamaara = None,
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
@@ -350,6 +358,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = KESKEYTYNYT,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None,
+      keskeytysPaivamaara = None,
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
@@ -396,6 +405,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = KESKEN,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(1)),
       vahvistusPaivamaara = None,
+      keskeytysPaivamaara = None,
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
@@ -451,6 +461,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS, // VALMIS-tila mutta ei vahvistuspäivämäärää
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei vahvistuspäivämäärää
+      keskeytysPaivamaara = None,
       keskiarvo = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None),
@@ -485,6 +496,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(45)),
+      keskeytysPaivamaara = None,
       osasuoritukset = Seq.empty
     )
 
@@ -517,6 +529,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = KESKEN,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei valmistumispäivää
+      keskeytysPaivamaara = None,
       osasuoritukset = Seq.empty
     )
 
@@ -549,6 +562,7 @@ class AutomaattinenHakukelpoisuusTest {
       supaTila = VALMIS, // VALMIS-tila mutta ei vahvistuspäivämäärää
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = None, // Ei vahvistuspäivämäärää
+      keskeytysPaivamaara = None,
       osasuoritukset = Seq.empty
     )
 

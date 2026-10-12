@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.parsing.virta
 
 import fi.oph.suorituspalvelu.business.{
-  KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi
+  KKOpintosuoritus, KKOpiskeluoikeus, KKSynteettinenOpiskeluoikeus, KKSynteettinenSuoritus, KKTutkinto, Koodi, SuoritusTila
 }
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.{VirtaParser, VirtaToSuoritusConverter}
@@ -780,8 +780,10 @@ class VirtaParsingTest {
 
     Assertions.assertEquals(None, synteettinen.koulutusKoodi) // Opiskeluoikeus ei tutkintoon johtava
     Assertions.assertEquals(Some(Kielistetty(Some("Kasvatustiede"), None, None)), synteettinen.nimi)
+    Assertions.assertEquals(SuoritusTila.KESKEYTYNYT, synteettinen.supaTila)
     Assertions.assertEquals(Some(LocalDate.parse("2018-08-01")), synteettinen.aloitusPvm)
     Assertions.assertEquals(None, synteettinen.suoritusPvm)
+    Assertions.assertEquals(Some(LocalDate.parse("2021-12-31")), synteettinen.keskeytysPvm)
     Assertions.assertEquals("10089", synteettinen.myontaja)
     Assertions.assertEquals(Some("xxx006"), synteettinen.opiskeluoikeusAvain)
 

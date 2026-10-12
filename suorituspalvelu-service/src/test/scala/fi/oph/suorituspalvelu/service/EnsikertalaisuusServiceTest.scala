@@ -71,6 +71,7 @@ class EnsikertalaisuusServiceTest extends BaseIntegraatioTesti {
       opintoPisteet = BigDecimal(180),
       aloitusPvm = Some(LocalDate.of(2020, 9, 1)),
       suoritusPvm = suoritusPvm,
+      keskeytysPvm = None,
       myontaja = "1.2.246.562.10.00000000001",
       kieli = Some("fi"),
       koulutusKoodi = Some("000000"),

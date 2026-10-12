@@ -601,6 +601,7 @@ class HarkinnanvaraisuusPaattelyTest {
       None,
       vahvistusPaivamaara.map(_.minusDays(365)),
       vahvistusPaivamaara,
+      keskeytysPaivamaara = None,
       Seq(matematiikka, aidinkieli),
       List.empty,
       false,
@@ -640,8 +641,9 @@ class HarkinnanvaraisuusPaattelyTest {
       Koodi("arvo", "koodisto", Some(1)),
       SuoritusTila.VALMIS,
       Koodi("arvo", "koodisto", Some(1)),
-      Some(vahvistusPaivamaara),
-      Some(LocalDate.now().minusDays(30)),
+      aloitusPaivamaara = Some(vahvistusPaivamaara),
+      vahvistusPaivamaara = Some(LocalDate.now().minusDays(30)),
+      keskeytysPaivamaara = None,
       Set(aine),
       false
     )

@@ -114,6 +114,7 @@ class AutomaattinenHakukelpoisuusResourceIntegraatioTest extends BaseIntegraatio
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(2)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(60)),
+      keskeytysPaivamaara = None,
       osasuoritukset = Seq.empty
     )
 
@@ -149,6 +150,7 @@ class AutomaattinenHakukelpoisuusResourceIntegraatioTest extends BaseIntegraatio
       supaTila = VALMIS,
       aloitusPaivamaara = Some(LocalDate.now().minusYears(1)),
       vahvistusPaivamaara = Some(LocalDate.now().minusDays(15)),
+      keskeytysPaivamaara = None,
       suoritustapa = Koodi("reformi", "ammatillisentutkinnonsuoritustapa", None),
       suoritusKieli = Koodi("FI", "kieli", None)
     )
