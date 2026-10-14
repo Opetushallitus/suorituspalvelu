@@ -27,7 +27,8 @@ case class KoutaHakukohde(
   johtaaTutkintoon: Option[Boolean],
   hakuOid: String,
   koulutusasteKoodiUrit: List[String] = List.empty,
-  paateltyAlkamiskausi: Option[PaateltyAlkamiskausi]
+  paateltyAlkamiskausi: Option[PaateltyAlkamiskausi],
+  kuuluuYosinPiiriin: Option[Boolean] = None
 )
 
 case class KoutaHaku(
@@ -52,9 +53,6 @@ case class KoutaHaku(
   val toisenAsteenYhteishakuUri = "haunkohdejoukko_11"
   val korkeakouluHaunKohdeJoukkoUri = "haunkohdejoukko_12"
 
-  val erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_010"
-  val jatkotutkintoKohdejoukonTarkenneUri = "haunkohdejoukontarkenne_3"
-
   def isToisenAsteenHaku(): Boolean = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     toisenAsteenUrit.contains(kohdejoukkoPrefix)
@@ -68,16 +66,6 @@ case class KoutaHaku(
   def isKorkeakouluHaku: Boolean = {
     val kohdejoukkoPrefix = kohdejoukkoKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
     kohdejoukkoPrefix.equals(korkeakouluHaunKohdeJoukkoUri)
-  }
-
-  def isErasmusMundusTaiKaksoistutkinto: Boolean = {
-    val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
-    kohdejoukkoPrefix.equals(erasmusMundusTaiKaksoisTutkintoKohdejoukonTarkenneUri)
-  }
-
-  def isJatkotutkinto: Boolean = {
-    val kohdejoukkoPrefix = kohdejoukonTarkenneKoodiUri.flatMap(_.split("#").headOption).getOrElse("")
-    kohdejoukkoPrefix.equals(jatkotutkintoKohdejoukonTarkenneUri)
   }
 }
 
