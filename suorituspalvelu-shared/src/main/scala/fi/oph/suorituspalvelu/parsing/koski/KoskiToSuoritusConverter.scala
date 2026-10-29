@@ -970,6 +970,7 @@ object KoskiToSuoritusConverter {
   val SUORITYSTYYPPI_DIA                                        = "diatutkintovaihe"
   val SUORITUSTYYPPI_IB                                         = "ibtutkinto"
   val SUORITYSTYYPPI_LUKIONOPPIMAARA                            = "lukionoppimaara"
+  val SUORITYSTYYPPI_LUKIONAINEOPINNOT                          = "lukionaineopinnot"
 
   def toSuoritukset(opiskeluoikeudet: Seq[KoskiOpiskeluoikeus], koodistoProvider: KoodistoProvider, allowMissingFieldsForTests: Boolean = false): Set[fi.oph.suorituspalvelu.business.Suoritus] = {
     try
@@ -994,6 +995,9 @@ object KoskiToSuoritusConverter {
             case SUORITYSTYYPPI_DIA                               => Some(toDiaTutkinto(opiskeluoikeus, suoritus))
             case SUORITUSTYYPPI_IB                                => Some(toIbTutkinto(opiskeluoikeus, suoritus))
             case SUORITYSTYYPPI_LUKIONOPPIMAARA                   => Some(toLukionOppimaara(opiskeluoikeus, suoritus))
+            // koko lukion oppimäärä suoritettu oppiaineiden oppimäärinä, merkkinä tästä opiskeluoikeuden tila valmistunut
+            case SUORITYSTYYPPI_LUKIONAINEOPINNOT
+              if parseTila(opiskeluoikeus, None).exists(_.koodiarvo == "valmistunut") => Some(toLukionOppimaara(opiskeluoikeus, suoritus))
             case default => None)).toSet
     finally
       allowMissingFields.set(false)
