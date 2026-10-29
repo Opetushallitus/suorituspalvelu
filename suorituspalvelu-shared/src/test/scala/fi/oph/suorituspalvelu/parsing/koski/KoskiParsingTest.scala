@@ -3760,7 +3760,7 @@ class KoskiParsingTest {
     Assertions.assertEquals(Koodi("valmistunut", "koskiopiskeluoikeudentila", Some(1)), lukionOppimaara.koskiTila)
     Assertions.assertEquals(SuoritusTila.VALMIS, lukionOppimaara.supaTila)
     Assertions.assertEquals(Some(LocalDate.parse("2023-08-01")), lukionOppimaara.aloitusPaivamaara)
-    Assertions.assertEquals(None, lukionOppimaara.vahvistusPaivamaara)
+    Assertions.assertEquals(Some(LocalDate.parse("2025-06-01")), lukionOppimaara.vahvistusPaivamaara)
 
   @Test def testKeskeneraisetLukionAineopinnotEivatOleLukionOppimaara(): Unit =
     val suoritus = getFirstSuoritusFromJson(
