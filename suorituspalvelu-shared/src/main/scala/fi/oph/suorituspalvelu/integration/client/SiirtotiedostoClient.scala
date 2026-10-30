@@ -12,18 +12,23 @@ import scala.collection.Seq
 
 case class SiirtotiedostoClientConfig(region: String, bucket: String, roleArn: String)
 
+object SiirtotiedostoClient {
+  private val mapper = new ObjectMapper()
+    .registerModule(new JavaTimeModule())
+    .registerModule(new Jdk8Module())
+    .registerModule(DefaultScalaModule)
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+
+  // Siirtotiedoston sisällön JSON-muoto
+  def serialisoi[T](content: Seq[T]): String = mapper.writeValueAsString(content)
+}
+
 class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
   private val LOG = LoggerFactory.getLogger(classOf[SiirtotiedostoClient])
 
   lazy val siirtotiedostoPalvelu =
     new SiirtotiedostoPalvelu(config.region, config.bucket, config.roleArn)
   val saveRetryCount = 2
-
-  private val mapper = new ObjectMapper()
-    .registerModule(new JavaTimeModule())
-    .registerModule(new Jdk8Module())
-    .registerModule(DefaultScalaModule)
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
   def tallennaSiirtotiedosto[T](
     contentType: String,
@@ -34,7 +39,7 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
   ): Unit = {
     try {
       if (content.nonEmpty) {
-        val output = mapper.writeValueAsString(Seq(content.head))
+        val output = SiirtotiedostoClient.serialisoi(Seq(content.head))
         LOG.info(s"($executionId) Tallennetaan $contentType siirtotiedosto $fileNumber. Ensimmäinen entiteetti: $output")
         siirtotiedostoPalvelu
           .saveSiirtotiedosto(
@@ -43,7 +48,7 @@ class SiirtotiedostoClient(config: SiirtotiedostoClientConfig) {
             additionalInfo.getOrElse(""),
             executionId,
             fileNumber,
-            new ByteArrayInputStream(mapper.writeValueAsString(content).getBytes()),
+            new ByteArrayInputStream(SiirtotiedostoClient.serialisoi(content).getBytes()),
             saveRetryCount
           ).key
       } else {
