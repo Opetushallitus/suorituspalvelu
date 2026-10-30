@@ -232,7 +232,7 @@ class EntityToOvaraConverterTest {
     val lapsenlapsi = KKOpintosuoritus(UUID.randomUUID(), Some(kielistetty("ll")), SuoritusTila.VALMIS, "komo-ll", BigDecimal(2), None, Some(LocalDate.of(2023, 5, 1)), None, "myo", None, None, None, Some("5"), Some("5-1"), Some("fi"), None, None, opinnaytetyo = false, Some("a-1"), Seq.empty, "avain-ll")
     val lapsi1 = KKOpintosuoritus(UUID.randomUUID(), Some(kielistetty("l1")), SuoritusTila.VALMIS, "komo-l1", BigDecimal(5), Some(BigDecimal(3)), Some(LocalDate.of(2023, 6, 1)), Some(LocalDate.of(2023, 7, 1)), "myo", Some("vastuu"), Some("jk"), Some(BigDecimal(1)), Some("4"), Some("4-1"), Some("fi"), Some(1), Some("ka"), opinnaytetyo = true, Some("a-1"), Seq(lapsenlapsi), "avain-l1")
     val lapsi2 = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-l2", BigDecimal(3), None, None, None, "myo", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-l2")
-    val tutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo-t", BigDecimal(180), Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), "myo", Some("fi"), Some("613101"), Some("a-1"), Seq(lapsi1, lapsi2), Some("avain-t"))
+    val tutkinto = KKTutkinto(UUID.randomUUID(), Some(kielistetty("t")), SuoritusTila.VALMIS, "komo-t", BigDecimal(180), Some(LocalDate.of(2020, 9, 1)), Some(LocalDate.of(2024, 6, 1)), None, "myo", Some("fi"), Some("613101"), Some("a-1"), Seq(lapsi1, lapsi2), Some("avain-t"))
     val kk = KKOpiskeluoikeus(UUID.randomUUID(), "vt", None, "1", Some("613101"), LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, Some("fi"), Set(tutkinto), None, None, None)
 
     val rivit = EntityToOvaraConverter.litistaKKSuoritukset(EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk))), Seq.empty)
@@ -294,7 +294,7 @@ class EntityToOvaraConverterTest {
   }
 
   @Test def testLitistaKKSuorituksetSynteettinenOpiskeluoikeus(): Unit = {
-    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.KESKEN, "komo-s", Some(LocalDate.of(2023, 9, 1)), None, "myo", Some("613101"), Some("a-1"), Seq.empty)
+    val synt = KKSynteettinenSuoritus(UUID.randomUUID(), Some(kielistetty("s")), SuoritusTila.KESKEN, "komo-s", Some(LocalDate.of(2023, 9, 1)), None, None, "myo", Some("613101"), Some("a-1"), Seq.empty)
     val kk = KKSynteettinenOpiskeluoikeus(UUID.randomUUID(), "myo", containsKKTutkinto = false, Set(synt))
 
     val rivit = EntityToOvaraConverter.litistaKKSuoritukset(Seq.empty, EntityToOvaraConverter.getKKSynteettisetOpiskeluoikeudet(Seq((META, kk))))
@@ -330,18 +330,18 @@ class EntityToOvaraConverterTest {
 
     // Opiskeluoikeus A: kaksi juuritason suoritusta, joista toisella lapsi
     val aLapsi = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-al", BigDecimal(5), None, None, None, "myo-a", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-al")
-    val aTutkinto = KKTutkinto(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-at", BigDecimal(180), None, None, "myo-a", None, None, None, Seq(aLapsi), None)
+    val aTutkinto = KKTutkinto(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-at", BigDecimal(180), None, None, None, "myo-a", None, None, None, Seq(aLapsi), None)
     val aOpintojakso = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-ao", BigDecimal(3), None, None, None, "myo-a", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-ao")
     val ooA = KKOpiskeluoikeus(UUID.randomUUID(), "vt-a", None, "1", None, LocalDate.of(2018, 1, 1), LocalDate.of(2021, 1, 1), koodi("3"), KKOpiskeluoikeusTila.PAATTYNYT, "myo-a", true, Some("sv"), Set(aTutkinto, aOpintojakso), None, None, None)
 
     // Opiskeluoikeus B: synteettinen (keskeneräinen tutkinto) suoritus lapsineen normaalin opiskeluoikeuden alla
     val bLapsi1 = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-b1", BigDecimal(5), None, None, None, "myo-b", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-b1")
     val bLapsi2 = KKOpintosuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-b2", BigDecimal(5), None, None, None, "myo-b", None, None, None, None, None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-b2")
-    val bSynt = KKSynteettinenSuoritus(UUID.randomUUID(), None, SuoritusTila.KESKEN, "komo-bs", Some(LocalDate.of(2022, 8, 1)), None, "myo-b", Some("751101"), Some("vt-b"), Seq(bLapsi1, bLapsi2))
+    val bSynt = KKSynteettinenSuoritus(UUID.randomUUID(), None, SuoritusTila.KESKEN, "komo-bs", Some(LocalDate.of(2022, 8, 1)), None, None, "myo-b", Some("751101"), Some("vt-b"), Seq(bLapsi1, bLapsi2))
     val ooB = KKOpiskeluoikeus(UUID.randomUUID(), "vt-b", None, "1", None, LocalDate.of(2022, 8, 1), LocalDate.of(2026, 7, 31), koodi("1"), KKOpiskeluoikeusTila.VOIMASSA, "myo-b", true, Some("fi"), Set(bSynt), None, None, None)
 
     // Synteettinen opiskeluoikeus C
-    val cSynt = KKSynteettinenSuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-cs", None, None, "myo-c", None, None, Seq.empty)
+    val cSynt = KKSynteettinenSuoritus(UUID.randomUUID(), None, SuoritusTila.VALMIS, "komo-cs", None, None, None, "myo-c", None, None, Seq.empty)
     val ooC = KKSynteettinenOpiskeluoikeus(UUID.randomUUID(), "myo-c", containsKKTutkinto = false, Set(cSynt))
 
     val rivit = EntityToOvaraConverter.litistaKKSuoritukset(
@@ -384,7 +384,7 @@ class EntityToOvaraConverterTest {
 
   @Test def testLitistettyKKSuoritusSerialisoituuJsoniksi(): Unit = {
     val lapsi = KKOpintosuoritus(UUID.fromString("00000000-0000-0000-0000-000000000102"), Some(kielistetty("l")), SuoritusTila.VALMIS, "komo-l", BigDecimal(5), None, Some(LocalDate.of(2023, 6, 1)), None, "myo", None, None, None, Some("4"), Some("4-1"), Some("fi"), None, None, opinnaytetyo = false, None, Seq.empty, "avain-l")
-    val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000101"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(180), None, None, "myo", None, None, None, Seq(lapsi), None)
+    val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000101"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(180), None, None, None, "myo", None, None, None, Seq(lapsi), None)
     val kk = KKOpiskeluoikeus(UUID.fromString("00000000-0000-0000-0000-000000000100"), "vt", None, "1", None, LocalDate.of(2020, 9, 1), LocalDate.of(2024, 6, 1), koodi("v"), KKOpiskeluoikeusTila.PAATTYNYT, "myo", true, None, Set(tutkinto), None, None, None)
     val kkOo = EntityToOvaraConverter.getKKOpiskeluoikeudet(Seq((META, kk)))
     val rivit = EntityToOvaraConverter.litistaKKSuoritukset(kkOo, Seq.empty)

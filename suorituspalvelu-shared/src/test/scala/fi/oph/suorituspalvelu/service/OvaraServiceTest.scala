@@ -391,7 +391,7 @@ class OvaraServiceTest {
 
     val opintojakso = KKOpintosuoritus(UUID.fromString("00000000-0000-0000-0000-000000000041"), None, SuoritusTila.VALMIS, "komo-o", BigDecimal(5), None, None, None,
       "1.2.246.562.10.00000000001", None, None, None, Some("5"), None, None, None, None, opinnaytetyo = false, None, Seq.empty, "avain-o")
-    val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000040"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(360), None, None,
+    val tutkinto = KKTutkinto(UUID.fromString("00000000-0000-0000-0000-000000000040"), None, SuoritusTila.VALMIS, "komo-t", BigDecimal(360), None, None, None,
       "1.2.246.562.10.00000000001", None, None, None, Seq(opintojakso), Some("avain-t"))
     val oo = BASE_KK_OPISKELUOIKEUS.copy(suoritukset = Set(tutkinto))
 
