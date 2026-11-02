@@ -3741,6 +3741,7 @@ class KoskiParsingTest {
         |            }
         |          ]
         |        },
+        |        "oppimääräSuoritettu": true,
         |        "suoritukset": [
         |          {
         |            "tyyppi": {
@@ -3761,6 +3762,68 @@ class KoskiParsingTest {
     Assertions.assertEquals(SuoritusTila.VALMIS, lukionOppimaara.supaTila)
     Assertions.assertEquals(Some(LocalDate.parse("2023-08-01")), lukionOppimaara.aloitusPaivamaara)
     Assertions.assertEquals(Some(LocalDate.parse("2025-06-01")), lukionOppimaara.vahvistusPaivamaara)
+
+  @Test def testValmistuneetLukionAineopinnotIlmanOppimaaraSuoritettuaEivatOleLukionOppimaara(): Unit =
+    val suoritus = getFirstSuoritusFromJson(
+      """
+        |[
+        |  {
+        |    "oppijaOid": "1.2.246.562.24.24698338212",
+        |    "opiskeluoikeudet": [
+        |      {
+        |        "oppijaOid": "1.2.246.562.24.24698338212",
+        |        "versionumero": 3,
+        |        "aikaleima": "2025-06-02T10:00:00.000000",
+        |        "oid": "1.2.246.562.15.00000000001",
+        |        "tyyppi": {
+        |          "koodiarvo": "lukiokoulutus",
+        |          "koodistoUri": "opiskeluoikeudentyyppi",
+        |          "koodistoVersio": 1
+        |        },
+        |        "oppilaitos": {
+        |          "oid": "1.2.246.562.10.57118763579",
+        |          "nimi": {
+        |            "fi": "Testilän aikuislukio",
+        |            "sv": "Testilä vuxengymnasium",
+        |            "en": "Testilä adult upper secondary school"
+        |          }
+        |        },
+        |        "tila": {
+        |          "opiskeluoikeusjaksot": [
+        |            {
+        |              "alku": "2023-08-01",
+        |              "tila": {
+        |                "koodiarvo": "lasna",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            },
+        |            {
+        |              "alku": "2025-06-01",
+        |              "tila": {
+        |                "koodiarvo": "valmistunut",
+        |                "koodistoUri": "koskiopiskeluoikeudentila",
+        |                "koodistoVersio": 1
+        |              }
+        |            }
+        |          ]
+        |        },
+        |        "suoritukset": [
+        |          {
+        |            "tyyppi": {
+        |              "koodiarvo": "lukionaineopinnot",
+        |              "koodistoUri": "suorituksentyyppi",
+        |              "koodistoVersio": 1
+        |            }
+        |          }
+        |        ]
+        |      }
+        |    ]
+        |  }
+        |]
+        |""".stripMargin)
+
+    Assertions.assertEquals(None, suoritus)
 
   @Test def testKeskeneraisetLukionAineopinnotEivatOleLukionOppimaara(): Unit =
     val suoritus = getFirstSuoritusFromJson(
