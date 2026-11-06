@@ -121,7 +121,8 @@ case class KoskiOpiskeluoikeus(oid: String,
                                tila: Option[KoskiOpiskeluoikeusTila],
                                suoritukset: Option[Seq[KoskiSuoritus]],
                                lisätiedot: Option[KoskiLisatiedot],
-                               poistettu: Option[Boolean]) {
+                               poistettu: Option[Boolean],
+                               oppimääräSuoritettu: Option[Boolean] = None) {
   def isPerusopetus: Boolean = tyyppi.exists(t => t.koodiarvo == "perusopetus" || t.koodiarvo == "aikuistenperusopetus")
   def isAmmatillinen: Boolean = tyyppi.exists(_.koodiarvo == "ammatillinenkoulutus")
 }
