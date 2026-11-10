@@ -20,5 +20,7 @@ class JacksonConfig extends WebMvcConfigurer {
         mapper.registerModule(new Jdk8Module())
         mapper.registerModule(DefaultScalaModule)
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        // tyhjät vastausluokat (esim. TallennaYliajotOppijalleSuccessResponse()) serialisoidaan muotoon {}
+        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         builder.withJsonConverter(MappingJackson2HttpMessageConverter(mapper))
 }
