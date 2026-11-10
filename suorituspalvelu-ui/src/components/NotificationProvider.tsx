@@ -56,7 +56,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   );
 
   const handleClose = useCallback(
-    (_event?: React.SyntheticEvent | Event, reason?: string) => {
+    (_event?: React.SyntheticEvent | Event | null, reason?: string) => {
       if (reason === 'clickaway') {
         return;
       }

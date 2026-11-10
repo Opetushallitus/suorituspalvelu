@@ -15,7 +15,7 @@ const ErrorComponent = ({
 }) => {
   const { t } = useTranslate();
   return (
-    <Stack spacing={1} sx={{ margin: 2 }} alignItems="flex-start">
+    <Stack spacing={1} sx={{ margin: 2, alignItems: 'flex-start' }}>
       {title && (
         <OphTypography variant="h1" component="div">
           {title}

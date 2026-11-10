@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Tooltip } from '@mui/material';
 
-import { InfoOutline } from '@mui/icons-material';
+import { InfoOutlined } from '@mui/icons-material';
 import { ophColors } from '@opetushallitus/oph-design-system';
 import { styled } from '@/lib/theme';
 
@@ -53,7 +53,7 @@ export const TooltipIcon = ({ children, icon, ariaLabel }: Props) => {
           tabIndex={0}
           style={{ display: 'inline-flex', alignItems: 'center' }}
         >
-          {icon ?? <InfoOutline />}
+          {icon ?? <InfoOutlined />}
         </span>
       </Tooltip>
     </Root>

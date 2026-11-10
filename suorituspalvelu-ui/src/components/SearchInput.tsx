@@ -46,7 +46,6 @@ export const SearchInput = ({
   useEffect(() => {
     // Sync external value changes only when not debouncing
     if (value !== localValue && !timeoutRef.current) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setLocalValue(value);
     }
   }, [value, localValue]);
