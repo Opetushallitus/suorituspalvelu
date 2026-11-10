@@ -441,6 +441,12 @@ test.describe('Suorituksen muokkaus', () => {
         })),
     };
 
+    // Odotetaan, että beforeEachin navigointi (ja uudelleenohjaus) on valmis ennen reloadia,
+    // muuten Firefox keskeyttää reloadin (NS_BINDING_ABORTED)
+    await expect(
+      page.getByRole('heading', { name: 'Suoritukset' }),
+    ).toBeVisible();
+
     await page.route('**/ui/tiedot', async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
