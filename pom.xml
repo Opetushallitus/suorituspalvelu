@@ -22,6 +22,7 @@
         <revision>0.1.0-SNAPSHOT</revision>
         <encoding>UTF-8</encoding>
         <scala.version>3.3.9</scala.version>
+        <bouncycastle.version>1.86</bouncycastle.version>
         <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
@@ -77,6 +78,22 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-cas</artifactId>
                 <version>${spring-security.version}</version>
+            </dependency>
+            <!-- cas-client-core tuo haavoittuvan Bouncy Castlen (CVE-2026-8763, CVE-2026-13506), nostetaan versiota -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
