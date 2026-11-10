@@ -67,7 +67,7 @@
             <dependency>
                 <groupId>opiskelijavalinnat-utils</groupId>
                 <artifactId>java-cas</artifactId>
-                <version>1.2.4-SNAPSHOT</version>
+                <version>2.3.1-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
