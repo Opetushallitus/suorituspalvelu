@@ -122,7 +122,10 @@ case class OvaraKKSynteettinenOpiskeluoikeus(
   suoritukset: Seq[OvaraKKSuoritus]
 )
 
-sealed trait OvaraKKSuoritus
+sealed trait OvaraKKSuoritus {
+  def tunniste: UUID
+  def suoritukset: Seq[OvaraKKSuoritus]
+}
 
 case class OvaraKKTutkinto(
   entiteetinTyyppi: String = "KKTutkinto",
@@ -179,6 +182,49 @@ case class OvaraKKSynteettinenSuoritus(
   opiskeluoikeusAvain: Option[String],
   suoritukset: Seq[OvaraKKSuoritus]
 ) extends OvaraKKSuoritus
+
+// Litistetty esitys KK-suorituspuusta: yksi entiteetti per suoritus, hierarkia säilyy parent- ja lapsitunnisteiden kautta.
+// Tunnisteet ovat yhtenäisiä saman siirtotiedoston sisällä, mutta voivat vaihtua uudelleenparseroinnissa.
+// Sama Virta-suoritus voi esiintyä usean parentin alla eri tunnisteilla.
+// Ovaran gen-tauluihin: mahdollisesti tyhjä juuriSuoritusPolku -> gen_suoritus, muuten gen_suoritus_osasuoritus.
+// Ei ole mahdotonta, että myös johonkin syvyyteen asti ainakin jonkin tyyppisiä suorituksia halutaan poimia gen_suoritus-tauluun.
+// Tämä kannattaa tutkia Ovaran päässä kun data on saatu sinne.
+case class OvaraLitistettyKKSuoritus(
+  entiteetinTyyppi: String,
+  metadata: OvaraVersioMetadata,
+  tunniste: UUID,
+  opiskeluoikeusTunniste: UUID,
+  opiskeluoikeusTyyppi: String,
+  opiskeluoikeusVirtaTunniste: Option[String], // Virran opiskeluoikeusavain, säilyy uudelleenparseroinnissa. None synteettisille opiskeluoikeuksille
+  parentTunniste: Option[UUID], // None = suoritus on suoraan opiskeluoikeuden alla
+  lapsiTunnisteet: Seq[UUID],
+  juuriSuoritusPolku: Seq[UUID], // Kaikkien parentien tunnisteet järjestyksessä juuritason suorituksesta alkaen, tyhjä jos rivi on itse juuri
+  opiskeluoikeusVirtaTila: Option[OvaraKoodi], // Opiskeluoikeustason tiedot, None synteettisille opiskeluoikeuksille
+  opiskeluoikeusAlkuPvm: Option[LocalDate],
+  opiskeluoikeusLoppuPvm: Option[LocalDate],
+  opiskeluoikeusKieli: Option[String],
+  nimi: Option[OvaraKielistetty],
+  supaTila: OvaraSuoritusTila,
+  komoTunniste: String,
+  myontaja: String,
+  suoritusPvm: Option[LocalDate],
+  opiskeluoikeusAvain: Option[String], // Tyyppikohtaiset kentät, None jos suoritustyypillä ei ole kenttää
+  aloitusPvm: Option[LocalDate] = None,
+  opintoPisteet: Option[BigDecimal] = None,
+  opintoviikot: Option[BigDecimal] = None,
+  hyvaksilukuPvm: Option[LocalDate] = None,
+  kieli: Option[String] = None,
+  koulutusKoodi: Option[String] = None,
+  jarjestavaRooli: Option[String] = None,
+  jarjestavaKoodi: Option[String] = None,
+  jarjestavaOsuus: Option[BigDecimal] = None,
+  arvosana: Option[String] = None,
+  arvosanaAsteikko: Option[String] = None,
+  koulutusala: Option[Int] = None,
+  koulutusalaKoodisto: Option[String] = None,
+  opinnaytetyo: Option[Boolean] = None,
+  avain: Option[String] = None
+)
 
 // ---- YO ----
 
@@ -617,5 +663,6 @@ case class OvaraVersioJaOpiskeluoikeudet(
   ammatillisetOpiskeluoikeudet: Seq[OvaraAmmatillinenOpiskeluoikeus],
   perusopetuksenOpiskeluoikeudet: Seq[OvaraPerusopetuksenOpiskeluoikeus],
   poistetutOpiskeluoikeudet: Seq[OvaraPoistettuOpiskeluoikeus],
-  lahtokoulut: Seq[OvaraLahtokoulu] = Seq.empty
+  lahtokoulut: Seq[OvaraLahtokoulu] = Seq.empty,
+  kkSuorituksetFlat: Seq[OvaraLitistettyKKSuoritus] = Seq.empty
 )
