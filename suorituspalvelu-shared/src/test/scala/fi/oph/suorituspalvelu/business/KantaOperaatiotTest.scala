@@ -728,7 +728,7 @@ class KantaOperaatiotTest {
 
 
     Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
 
 
@@ -1620,7 +1620,7 @@ class KantaOperaatiotTest {
       )
     ), ParserVersions.KOSKI)
 
-    // Kesken, alkaa tänä vuonna, arvioitu valmistuminen ensi vuonna -> palautetaan tämä ja seuraava vuosi
+    // Kesken, alkaa tänä vuonna, arvioitu valmistuminen ensi vuonna -> palautetaan vain seuraava vuosi
     this.kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio6.get, Set.empty, Seq(
       lahtokouluBase.copy(
         suorituksenAlku = NOW,
@@ -1641,7 +1641,10 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     val luokat = this.kantaOperaatiot.haeLuokat(Some(NOW), oppilaitosOid, NOW.getYear, Some(Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set("9D", "9E", "9F"), luokat)
+    Assertions.assertEquals(Set("9D", "9F"), luokat)
+
+    val ensiVuodenLuokat = this.kantaOperaatiot.haeLuokat(Some(NOW), oppilaitosOid, NOW.getYear + 1, Some(Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set("9E"), ensiVuodenLuokat)
   }
 
   @Test def testHaeVuodetEiPalautaEriOppilaitosta(): Unit = {
@@ -1720,9 +1723,9 @@ class KantaOperaatiotTest {
       Lahtokoulu(NOW, None, oppilaitosOid, Some(NOW.getYear + 1), "9A", SuoritusTila.KESKEN, None, LahtokouluTyyppi.VUOSILUOKKA_9)
     ), ParserVersions.KOSKI)
 
-    // Kesken, alkaa tänä vuonna, arvioitu valmistuminen ensi vuonna -> pitäisi palautua tämä ja seuraava vuosi
+    // Kesken, alkaa tänä vuonna, arvioitu valmistuminen ensi vuonna -> palauttaa vain seuraava vuosi
     val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set(NOW.getYear.toString, (NOW.getYear + 1).toString), vuodet)
+    Assertions.assertEquals(Set((NOW.getYear + 1).toString), vuodet)
   }
 
   @Test def testHaeVuodetKeskenValmistuminenMyohassa(): Unit = {

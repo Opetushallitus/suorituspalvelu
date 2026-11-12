@@ -49,3 +49,9 @@ cdk.out
 
 ### local Spring Boot config file ###
 /suorituspalvelu-service/src/test/resources/application-dev.yml
+
+# CA certificate
+*.pem
+
+.metals/
+.bloop/
