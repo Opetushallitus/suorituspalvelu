@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { test } from './lib/fixtures';
 import OPPIJAN_TIEDOT from './fixtures/oppijanTiedot.json' with { type: 'json' };
 
@@ -13,37 +13,44 @@ import {
 
 const OPPIJANUMERO = OPPIJAN_TIEDOT.oppijaNumero;
 
+const avaaOppijanSivu = async (
+  page: Page,
+  oppijanTiedot: typeof OPPIJAN_TIEDOT = OPPIJAN_TIEDOT,
+) => {
+  await page.clock.setFixedTime(new Date('2025-01-01T12:00:00Z'));
+
+  await page.route('**/ui/tiedot', async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        json: oppijanTiedot,
+      });
+    }
+  });
+
+  await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
+    await route.fulfill({
+      json: SUORITUS_OPPILAITOKSET,
+    });
+  });
+
+  await page.route(`**/ui/tallennasuoritusvaihtoehdot`, async (route) => {
+    await route.fulfill({
+      json: SUORITUSVAIHTOEHDOT,
+    });
+  });
+
+  await page.route(`**/ui/tallennasuoritusoppilaitokset`, async (route) => {
+    await route.fulfill({
+      json: SUORITUS_OPPILAITOKSET,
+    });
+  });
+
+  await page.goto(`/suorituspalvelu/henkilo/${OPPIJANUMERO}`);
+};
+
 test.describe('Suorituksen muokkaus', () => {
   test.beforeEach(async ({ page }) => {
-    await page.clock.setFixedTime(new Date('2025-01-01T12:00:00Z'));
-
-    await page.route('**/ui/tiedot', async (route) => {
-      if (route.request().method() === 'POST') {
-        await route.fulfill({
-          json: OPPIJAN_TIEDOT,
-        });
-      }
-    });
-
-    await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
-      await route.fulfill({
-        json: SUORITUS_OPPILAITOKSET,
-      });
-    });
-
-    await page.route(`**/ui/tallennasuoritusvaihtoehdot`, async (route) => {
-      await route.fulfill({
-        json: SUORITUSVAIHTOEHDOT,
-      });
-    });
-
-    await page.route(`**/ui/tallennasuoritusoppilaitokset`, async (route) => {
-      await route.fulfill({
-        json: SUORITUS_OPPILAITOKSET,
-      });
-    });
-
-    await page.goto(`/suorituspalvelu/henkilo/${OPPIJANUMERO}`);
+    await avaaOppijanSivu(page);
   });
 
   test('lomake näyttää kaikki kentät oikeilla arvoilla', async ({ page }) => {
@@ -429,33 +436,59 @@ test.describe('Suorituksen muokkaus', () => {
     await expect(editSuoritusForm).toBeVisible();
   });
 
-  test('vain klikatun perusopetus-suorituksen paperi siirtyy muokkaustilaan', async ({
+  test('poistaminen lähettää poistopyynnön ja päivittää näkymän', async ({
     page,
   }) => {
-    const tiedotKaksiPerusopetusta = {
+    const PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE =
+      '10b37fec-ce8d-49c8-858d-6d0d2786fb40';
+
+    await page.route(
+      `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+        });
+      },
+    );
+
+    const deleteButton = page.getByRole('button', {
+      name: 'Poista suoritus',
+    });
+    await deleteButton.click();
+
+    const confirmationModal = page.getByRole('dialog', {
+      name: 'Haluatko varmasti poistaa suorituksen?',
+    });
+    await expect(confirmationModal).toBeVisible();
+
+    await Promise.all([
+      page.waitForRequest(
+        `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
+      ), // poisto
+      page.waitForRequest(
+        (request) =>
+          request.url().includes('/ui/tiedot') && request.method() === 'POST',
+      ), // tietojen uudelleenlataus
+      confirmationModal.getByRole('button', { name: 'Kyllä' }).click(),
+    ]);
+  });
+});
+
+test.describe('Suorituksen muokkaus, kun oppijalla on useita muokattavia suorituksia', () => {
+  test.beforeEach(async ({ page }) => {
+    await avaaOppijanSivu(page, {
       ...OPPIJAN_TIEDOT,
       perusopetuksenOppiaineenOppimaarat:
         OPPIJAN_TIEDOT.perusopetuksenOppiaineenOppimaarat.map((s) => ({
           ...s,
           syotetty: true,
         })),
-    };
-
-    // Odotetaan, että beforeEachin navigointi (ja uudelleenohjaus) on valmis ennen reloadia,
-    // muuten Firefox keskeyttää reloadin (NS_BINDING_ABORTED)
-    await expect(
-      page.getByRole('heading', { name: 'Suoritukset' }),
-    ).toBeVisible();
-
-    await page.route('**/ui/tiedot', async (route) => {
-      if (route.request().method() === 'POST') {
-        await route.fulfill({
-          json: tiedotKaksiPerusopetusta,
-        });
-      }
     });
-    await page.reload();
+  });
 
+  test('vain klikatun perusopetus-suorituksen paperi siirtyy muokkaustilaan', async ({
+    page,
+  }) => {
     await expect(
       page.getByRole('heading', { name: 'Suoritukset' }),
     ).toBeVisible();
@@ -502,42 +535,5 @@ test.describe('Suorituksen muokkaus', () => {
         name: 'Muokkaa suoritusta',
       }),
     ).toBeVisible();
-  });
-
-  test('poistaminen lähettää poistopyynnön ja päivittää näkymän', async ({
-    page,
-  }) => {
-    const PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE =
-      '10b37fec-ce8d-49c8-858d-6d0d2786fb40';
-
-    await page.route(
-      `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
-      async (route) => {
-        await route.fulfill({
-          status: 200,
-        });
-      },
-    );
-
-    const deleteButton = page.getByRole('button', {
-      name: 'Poista suoritus',
-    });
-    await deleteButton.click();
-
-    const confirmationModal = page.getByRole('dialog', {
-      name: 'Haluatko varmasti poistaa suorituksen?',
-    });
-    await expect(confirmationModal).toBeVisible();
-
-    await Promise.all([
-      page.waitForRequest(
-        `**/ui/versiot/${PERUSOPETUKSEN_OPPIMAARA_VERSIOTUNNISTE}`,
-      ), // poisto
-      page.waitForRequest(
-        (request) =>
-          request.url().includes('/ui/tiedot') && request.method() === 'POST',
-      ), // tietojen uudelleenlataus
-      confirmationModal.getByRole('button', { name: 'Kyllä' }).click(),
-    ]);
   });
 });
