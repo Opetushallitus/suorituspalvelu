@@ -10,7 +10,13 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   queryOptionsGetOppija,
   queryOptionsGetValintadata,
@@ -116,6 +122,15 @@ const createEditableSuoritusFields = ({
   };
 };
 
+const scrollToElement = (element: HTMLElement) => {
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)',
+  ).matches;
+  element.scrollIntoView({
+    behavior: prefersReducedMotion ? 'auto' : 'smooth',
+  });
+};
+
 const useSuoritusManagerState = () => {
   const { t } = useTranslations();
 
@@ -181,15 +196,21 @@ const useSuoritusManagerState = () => {
     setIsDirty(false);
   });
 
-  const suoritusPaperRef = useRef<HTMLDivElement | null>(null);
+  const suoritusPaperElementRef = useRef<HTMLDivElement | null>(null);
+
+  // Callback-ref vierittää lomakkeen näkyviin heti, kun se liitetään DOMiin (eli kun muokkaus/lisäys aloitetaan)
+  const suoritusPaperRef = useCallback((element: HTMLDivElement | null) => {
+    suoritusPaperElementRef.current = element;
+    if (element) {
+      scrollToElement(element);
+    }
+  }, []);
 
   return useMemo(() => {
     const scrollToSuoritusPaper = () => {
-      setTimeout(() => {
-        suoritusPaperRef.current?.scrollIntoView({
-          behavior: 'smooth',
-        });
-      }, 20);
+      if (suoritusPaperElementRef.current) {
+        scrollToElement(suoritusPaperElementRef.current);
+      }
     };
 
     const initializeSuoritusEditState = (
@@ -205,7 +226,6 @@ const useSuoritusManagerState = () => {
         );
       }
       setIsDirty(false);
-      scrollToSuoritusPaper();
     };
 
     return {
@@ -337,6 +357,7 @@ const useSuoritusManagerState = () => {
     showConfirmation,
     mutationOperation,
     oppijaOid,
+    suoritusPaperRef,
   ]);
 };
 

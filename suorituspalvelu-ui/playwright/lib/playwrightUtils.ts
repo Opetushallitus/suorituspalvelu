@@ -83,32 +83,6 @@ export const expectList = async (list: Locator, items: Array<string>) => {
   }
 };
 
-// Lomakkeen avaaminen vierittää sivun pehmeästi lomakkeen kohdalle (ks. suoritusManager). Odotetaan, että
-// vieritys on päättynyt, jotta klikkaukset eivät osu ohi elementin liikkuessa.
-const waitForScrollToSettle = async (locator: Locator) => {
-  await locator.evaluate(
-    (el) =>
-      new Promise<void>((resolve) => {
-        // Vieritys alkaa viiveellä, joten odotetaan vähintään hetki ja sen jälkeen, että sijainti
-        // pysyy samana useamman ruudunpäivityksen ajan
-        const start = performance.now();
-        let previousTop = el.getBoundingClientRect().top;
-        let stableFrames = 0;
-        const check = () => {
-          const top = el.getBoundingClientRect().top;
-          stableFrames = top === previousTop ? stableFrames + 1 : 0;
-          previousTop = top;
-          if (stableFrames >= 10 && performance.now() - start > 100) {
-            resolve();
-          } else {
-            requestAnimationFrame(check);
-          }
-        };
-        requestAnimationFrame(check);
-      }),
-  );
-};
-
 export const startEditSuoritus = async (page: Page) => {
   await expect(
     page.getByRole('heading', { name: 'Suoritukset' }),
@@ -121,7 +95,6 @@ export const startEditSuoritus = async (page: Page) => {
 
   const region = page.getByRole('region', { name: 'Muokkaa suoritusta' });
   await expect(region).toBeVisible();
-  await waitForScrollToSettle(region);
   return region;
 };
 
@@ -143,7 +116,6 @@ export const startAddSuoritus = async (page: Page) => {
   await expect(
     lisaaSuoritusForm.getByRole('heading', { name: 'Lisää suoritus' }),
   ).toBeVisible();
-  await waitForScrollToSettle(lisaaSuoritusForm);
 
   return lisaaSuoritusForm;
 };
