@@ -52,3 +52,6 @@ cdk.out
 
 # CA certificate
 *.pem
+
+.metals/
+.bloop/
