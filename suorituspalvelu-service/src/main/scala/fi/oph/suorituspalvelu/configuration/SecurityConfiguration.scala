@@ -1,7 +1,7 @@
 package fi.oph.suorituspalvelu.configuration
 
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.security.JdbcSessionMappingStorage
+import fi.oph.suorituspalvelu.security.{JdbcSessionMappingStorage, OpintopolkuCasAuthenticationFilter}
 import fi.vm.sade.javautils.kayttooikeusclient.OphUserDetailsServiceImpl
 import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
 import jakarta.servlet.{FilterChain, ServletRequest, ServletResponse}
@@ -122,8 +122,7 @@ class SecurityConfiguration {
   //
   @Bean
   def casAuthenticationFilter(authenticationManager: AuthenticationManager, serviceProperties: ServiceProperties): CasAuthenticationFilter =
-    val casAuthenticationFilter = new CasAuthenticationFilter()
-    casAuthenticationFilter.setServiceProperties(serviceProperties)
+    val casAuthenticationFilter = new OpintopolkuCasAuthenticationFilter(serviceProperties)
     casAuthenticationFilter.setAuthenticationManager(authenticationManager)
     casAuthenticationFilter.setFilterProcessesUrl(ApiConstants.CAS_TICKET_VALIDATION_PATH)
     casAuthenticationFilter
