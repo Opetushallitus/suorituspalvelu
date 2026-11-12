@@ -1,14 +1,15 @@
 import { reactRouter } from '@react-router/dev/vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vite';
-import { vitePluginOptimizeNamedImports } from './vitePluginOptimizeNamedImports';
+import { vitePluginOptimizeNamedImports } from './vitePluginOptimizeNamedImports.ts';
 
 export default defineConfig({
   plugins: [
     reactRouter(),
-    tsConfigPaths(),
     vitePluginOptimizeNamedImports(['@mui/icons-material']),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   optimizeDeps: {
     entries: ['@tolgee/format-icu'],
   },

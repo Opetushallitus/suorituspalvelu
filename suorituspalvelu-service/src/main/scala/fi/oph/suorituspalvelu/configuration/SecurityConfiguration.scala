@@ -1,8 +1,7 @@
 package fi.oph.suorituspalvelu.configuration
 
 import fi.oph.suorituspalvelu.resource.ApiConstants
-import fi.oph.suorituspalvelu.security.JdbcSessionMappingStorage
-import fi.vm.sade.java_utils.security.OpintopolkuCasAuthenticationFilter
+import fi.oph.suorituspalvelu.security.{JdbcSessionMappingStorage, OpintopolkuCasAuthenticationFilter}
 import fi.vm.sade.javautils.kayttooikeusclient.OphUserDetailsServiceImpl
 import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
 import jakarta.servlet.{FilterChain, ServletRequest, ServletResponse}

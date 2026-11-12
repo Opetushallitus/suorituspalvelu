@@ -9,7 +9,7 @@ import org.mockito.Mockito.*
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.MockitoAnnotations
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.`override`.mockito.MockitoBean
 
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -21,7 +21,7 @@ class OnrIntegrationTest {
   private var onrIntegration: OnrIntegrationImpl = _
   implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 2, retryDelayMillis = 10)
 
-  @MockBean
+  @MockitoBean
   private var mockOnrClient: OnrClientImpl = _
 
   @Autowired

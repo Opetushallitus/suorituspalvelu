@@ -23,6 +23,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
     timezoneId: 'Europe/Helsinki',
+    /* Sovellus vierittää ilman animaatiota, kun käyttäjä suosii vähennettyä liikettä */
+    reducedMotion: 'reduce',
   },
 
   /* Configure projects for major browsers */

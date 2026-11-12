@@ -190,7 +190,7 @@ export const saveSuoritus = async (
     );
   });
 
-  let url: string | null = null;
+  let url: string;
   if (suoritusFields.tyyppi === 'perusopetuksenoppimaara') {
     url = config.routes.suorituspalvelu.perusopetuksenOppimaaratUrl;
     postData.oppiaineet = oppiaineet;

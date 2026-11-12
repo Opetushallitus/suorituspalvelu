@@ -72,7 +72,7 @@ export const YliajoMutationStatusIndicator = ({
   }
 
   const handleSuccessToastClose = (
-    _event?: React.SyntheticEvent | Event,
+    _event?: React.SyntheticEvent | Event | null,
     reason?: SnackbarCloseReason,
   ) => {
     if (reason === 'clickaway') {

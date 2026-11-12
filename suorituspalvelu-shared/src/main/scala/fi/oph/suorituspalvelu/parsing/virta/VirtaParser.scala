@@ -15,7 +15,7 @@ case class Header()
 
 case class VirtaTila(AlkuPvm: LocalDate, LoppuPvm: LocalDate, Koodi: String)
 
-@JsonDeserialize(classOf[KoulutusalaDeserializer])
+@JsonDeserialize(`using` = classOf[KoulutusalaDeserializer])
 case class VirtaOpiskeluoikeusKoulutusala(versio: String, koodi: Int)
 
 case class VirtaLaajuus(Opintopiste: BigDecimal)
@@ -75,15 +75,15 @@ case class VirtaOrganisaatio(Rooli: String, Koodi: String, Osuus: Option[BigDeci
 
 case class VirtaMuuAsteikkoArvosana(avain: String, Koodi: String, Nimi: String)
 
-@JsonDeserialize(classOf[ArvosanaDeserializer])
+@JsonDeserialize(`using` = classOf[ArvosanaDeserializer])
 case class VirtaArvosana(arvosana: String, asteikko: Option[String])
 
-@JsonDeserialize(classOf[KoodiDeserializer])
+@JsonDeserialize(`using` = classOf[KoodiDeserializer])
 case class VirtaKoodi(versio: String, koodi: Int)
 
 case class VirtaSuoritusKoulutusala(Koodi: VirtaKoodi)
 
-@JsonDeserialize(classOf[NimiDeserializer])
+@JsonDeserialize(`using` = classOf[NimiDeserializer])
 case class VirtaNimi(kieli: Option[String], nimi: Option[String])
 
 case class VirtaSuoritusviite(sisaltyvaOpintosuoritusAvain: String)

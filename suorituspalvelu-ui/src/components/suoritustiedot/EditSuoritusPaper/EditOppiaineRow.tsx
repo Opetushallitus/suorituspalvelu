@@ -1,7 +1,7 @@
 import { useTranslations } from '@/hooks/useTranslations';
 import { styled } from '@/lib/theme';
 import type { PerusopetusOppiaineFields, SelectOption } from '@/types/ui-types';
-import { Add, DeleteOutline } from '@mui/icons-material';
+import { Add, DeleteOutlined } from '@mui/icons-material';
 import { Stack, TableCell, TableRow } from '@mui/material';
 import { OphButton, OphSelect } from '@opetushallitus/oph-design-system';
 
@@ -88,7 +88,7 @@ export const EditOppiaineRow = ({
                   flexGrow: 0,
                   visibility: index === 0 ? 'hidden' : 'visible',
                 }}
-                startIcon={<DeleteOutline />}
+                startIcon={<DeleteOutlined />}
                 onClick={() => {
                   onChange({
                     ...value,

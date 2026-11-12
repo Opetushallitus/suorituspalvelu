@@ -2,7 +2,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
+        <version>4.1.2</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -21,10 +21,8 @@
     <properties>
         <revision>0.1.0-SNAPSHOT</revision>
         <encoding>UTF-8</encoding>
-        <scala.version>3.3.3</scala.version>
-        <spring.boot.version>3.3.5</spring.boot.version>
-        <jackson.version>2.18.1</jackson.version>
-        <java.cas.version>1.2.4-SNAPSHOT</java.cas.version>
+        <scala.version>3.3.9</scala.version>
+        <bouncycastle.version>1.86</bouncycastle.version>
         <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
@@ -33,12 +31,12 @@
             <dependency>
                 <groupId>com.github.kagkarlsson</groupId>
                 <artifactId>db-scheduler</artifactId>
-                <version>16.0.0</version>
+                <version>17.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang.modules</groupId>
                 <artifactId>scala-xml_3</artifactId>
-                <version>2.3.0</version>
+                <version>2.5.0</version>
             </dependency>
             <dependency>
                 <groupId>fi.oph.suorituspalvelu</groupId>
@@ -58,12 +56,7 @@
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>2.3.0</version>
-            </dependency>
-            <dependency>
-                <groupId>fi.vm.sade.java-utils</groupId>
-                <artifactId>opintopolku-cas-servlet-filter</artifactId>
-                <version>1.0.3-SNAPSHOT</version>
+                <version>3.2.0</version>
             </dependency>
             <dependency>
                 <groupId>fi.vm.sade.java-utils</groupId>
@@ -73,7 +66,7 @@
             <dependency>
                 <groupId>opiskelijavalinnat-utils</groupId>
                 <artifactId>java-cas</artifactId>
-                <version>1.2.4-SNAPSHOT</version>
+                <version>2.3.1-OY-5942-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -84,27 +77,43 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-cas</artifactId>
-                <version>6.5.6</version>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <!-- cas-client-core tuo haavoittuvan Bouncy Castlen (CVE-2026-8763, CVE-2026-13506), nostetaan versiota -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.7.8</version>
+                <version>42.7.14</version>
             </dependency>
             <dependency>
                 <groupId>software.amazon.jdbc</groupId>
                 <artifactId>aws-advanced-jdbc-wrapper</artifactId>
-                <version>4.4.0</version>
+                <version>4.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-database-postgresql</artifactId>
-                <version>11.13.0</version>
+                <version>${flyway.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.slick</groupId>
                 <artifactId>slick_3</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.1</version>
             </dependency>
             <dependency>
                 <groupId>com.github.tminglei</groupId>
@@ -119,7 +128,7 @@
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
-                <version>2.13.2</version>
+                <version>2.15.0</version>
             </dependency>
             <dependency>
                 <groupId>fi.vm.sade</groupId>
@@ -150,7 +159,7 @@
             <dependency>
                 <groupId>ch.qos.logback.access</groupId>
                 <artifactId>logback-access-tomcat</artifactId>
-                <version>2.0.6</version>
+                <version>2.0.15</version>
             </dependency>
             <dependency>
                 <groupId>net.logstash.logback</groupId>
@@ -160,7 +169,7 @@
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-servlet-api</artifactId>
-                <version>10.1.48</version>
+                <version>${tomcat.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.scalatsi</groupId>
@@ -170,24 +179,24 @@
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>3.2.2</version>
+                <version>3.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
-                <version>3.0.3</version>
+                <version>3.0.14</version>
             </dependency>
             <!-- Lisätty enforcer-pluginin takia -->
             <dependency>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
-                <version>2.43.0</version>
+                <version>2.52.0</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
                 <type>pom</type>
-                <version>2.0.3</version>
+                <version>2.0.5</version>
                 <scope>import</scope>
             </dependency>
             <dependency>
@@ -203,14 +212,8 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.20.0</version>
+                <version>5.24.0</version>
                 <scope>test</scope>
-            </dependency>
-            <!-- lisätty versioristiriidan ratkaisemiseksi java-http:jar:1.0.2-SNAPSHOT ja opintopolku-cas-servlet-filter:jar:1.0.3-SNAPSHOT välillä -->
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>1.3.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -225,7 +228,6 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.10.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -244,7 +246,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>4.8.1</version>
+                <version>4.10.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -256,7 +258,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.16.0</version>
                 <configuration>
                     <release>21</release>
                     <source>21</source>
@@ -275,19 +277,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.6.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.3</version>
+                <version>3.2.0</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.7.0</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>
