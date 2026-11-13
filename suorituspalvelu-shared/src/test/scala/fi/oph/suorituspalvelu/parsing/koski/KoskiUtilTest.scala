@@ -223,17 +223,47 @@ class KoskiUtilTest {
 
   private val KAIKKI_YHTEISET = List("AI", "A1", "B1", "MA", "BI", "GE", "FY", "KE", "HI", "YH", "LI", "TE", "MU", "KU", "KS", "KO")
 
-  private def aineet(koodit: String*): Seq[PerusopetuksenOppiaine] =
-    koodit.map(k => PerusopetuksenOppiaine(
+  private def aine(koodi: String, kieli: Option[String] = None): PerusopetuksenOppiaine =
+    PerusopetuksenOppiaine(
       UUID.randomUUID(),
       Kielistetty(None, None, None),
-      Koodi(k, "koskioppiaineetyleissivistava", Some(1)),
+      Koodi(koodi, "koskioppiaineetyleissivistava", Some(1)),
       Koodi("9", "arviointiasteikkoyleissivistava", Some(1)),
-      None,
+      kieli.map(k => Koodi(k, "kielivalikoima", Some(1))),
       pakollinen = true,
       yksilollistetty = None,
       rajattu = None
-    )).toSeq
+    )
+
+  private def aineet(koodit: String*): Seq[PerusopetuksenOppiaine] =
+    koodit.map(aine(_)).toSeq
+
+  @Test def testVaaditutYhteisetAineetTyhjaAineistoPalauttaaKaikkiYhteiset(): Unit =
+    Assertions.assertEquals(KAIKKI_YHTEISET, KoskiUtil.vaaditutYhteisetAineet(Seq.empty))
+
+  @Test def testVaaditutYhteisetAineetKotimainenA1TaiA2PoistaaB1n(): Unit =
+    val ilmanB1 = KAIKKI_YHTEISET.filterNot(_ == "B1")
+
+    Assertions.assertEquals(ilmanB1, KoskiUtil.vaaditutYhteisetAineet(Seq(
+      aine("A1", Some("FI")),
+      aine("A2", Some("EN"))
+    )))
+    Assertions.assertEquals(ilmanB1, KoskiUtil.vaaditutYhteisetAineet(Seq(
+      aine("A1", Some("EN")),
+      aine("A2", Some("SV"))
+    )))
+
+  @Test def testVaaditutYhteisetAineetB1SailyyJosKieliehtoEiTayty(): Unit =
+    Assertions.assertEquals(KAIKKI_YHTEISET, KoskiUtil.vaaditutYhteisetAineet(Seq(
+      aine("A1", Some("EN")),
+      aine("A2", Some("FR"))
+    )))
+    Assertions.assertEquals(KAIKKI_YHTEISET, KoskiUtil.vaaditutYhteisetAineet(Seq(
+      aine("A1", Some("FI"))
+    )))
+    Assertions.assertEquals(KAIKKI_YHTEISET, KoskiUtil.vaaditutYhteisetAineet(Seq(
+      aine("A2", Some("SV"))
+    )))
 
   @Test def testYhteisenAineenArvosanaPuuttuuKaikkiAineetJaET(): Unit =
     Assertions.assertFalse(KoskiUtil.yhteisenAineenArvosanaPuuttuu(aineet(KAIKKI_YHTEISET :+ "ET" *)))

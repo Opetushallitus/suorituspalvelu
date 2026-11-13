@@ -42,8 +42,24 @@ object KoskiUtil {
   // Muista kuin katsomuaineista pitää olla kaikki, ja katsomusaineista jompi kumpi. Tässä ei voi käyttää oppiaineen
   // pakollisuusvipua, koska tarkoitus on tunnistaa tilanne jossa arvosana (ja sitä kautta koko aine) puuttuu
   def yhteisenAineenArvosanaPuuttuu(aineet: Seq[PerusopetuksenOppiaine]): Boolean =
-    !YHTEISET_AINEET.forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
+    !vaaditutYhteisetAineet(aineet).forall(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine)) ||
       !KATSOMUSAINEET.exists(yhteinenAine => aineet.exists(oppimaaranAine => oppimaaranAine.koodi.arvo == yhteinenAine))
+
+  def vaaditutYhteisetAineet(aineet: Seq[PerusopetuksenOppiaine]): List[String] =
+    case class KieliTilanne(onA1: Boolean = false, onA2: Boolean = false, onKotimainenA1TaiA2: Boolean = false)
+
+    val tilanne = aineet.foldLeft(KieliTilanne()) { (tila, aine) =>
+      val onKotimainen = aine.kieli.exists(kieli => kieli.arvo == "FI" || kieli.arvo == "SV")
+      aine.koodi.arvo match
+        case "A1" => tila.copy(onA1 = true, onKotimainenA1TaiA2 = tila.onKotimainenA1TaiA2 || onKotimainen)
+        case "A2" => tila.copy(onA2 = true, onKotimainenA1TaiA2 = tila.onKotimainenA1TaiA2 || onKotimainen)
+        case _ => tila
+    }
+
+    if (tilanne.onA1 && tilanne.onA2 && tilanne.onKotimainenA1TaiA2)
+      YHTEISET_AINEET.filterNot(_ == "B1")
+    else
+      YHTEISET_AINEET
 
   def includePerusopetuksenOppiaine(osaSuoritus: KoskiOsaSuoritus, pakollistenKoodit: Set[String], koodistoProvider: KoodistoProvider): Boolean = {
     val oppiaineKoodi = osaSuoritus.koulutusmoduuli.get.tunniste.get.koodiarvo
