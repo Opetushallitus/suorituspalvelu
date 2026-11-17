@@ -25,7 +25,10 @@ export const SuspenseBoundary = ({
         error instanceof SessionExpiredError ? (
           <SessionExpired />
         ) : (
-          <ErrorFallback error={error} reset={resetErrorBoundary} />
+          <ErrorFallback
+            error={error instanceof Error ? error : new Error(String(error))}
+            reset={resetErrorBoundary}
+          />
         )
       }
       onReset={onResetErrorBoundary}

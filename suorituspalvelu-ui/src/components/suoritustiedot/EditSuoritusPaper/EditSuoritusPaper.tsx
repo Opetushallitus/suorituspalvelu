@@ -25,7 +25,6 @@ import { DatePicker } from '@/components/DatePicker';
 import { useApiQuery } from '@/lib/http-client';
 import { EditArvosanatTable } from './EditArvosanatTable';
 import { type SuoritusEditMode } from '@/lib/suoritusManager';
-import { omit } from 'remeda';
 import { useNotifications } from '@/components/NotificationProvider';
 import { FullSpinner } from '@/components/FullSpinner';
 
@@ -58,13 +57,13 @@ const OppilaitosField = ({
             onChange={(_, newValue) => {
               onChange(newValue?.value ?? '');
             }}
-            renderInput={({ InputProps, ...params }) => {
+            renderInput={({ slotProps, ...params }) => {
               return (
                 <OphInput
-                  {...omit(params, ['InputLabelProps'])}
-                  {...InputProps}
+                  {...params}
+                  {...slotProps.input}
                   inputProps={{
-                    ...params.inputProps,
+                    ...slotProps.htmlInput,
                     'aria-labelledby': labelId,
                   }}
                 />

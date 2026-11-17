@@ -8,7 +8,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import type { AvainArvo } from '@/types/ui-types';
 import { OphModal } from '@/components/OphModal';
 import { useCallback } from 'react';
-import { DeleteOutline } from '@mui/icons-material';
+import { DeleteOutlined } from '@mui/icons-material';
 import { useYliajoManager } from '@/lib/yliajoManager';
 
 export const YliajoEditModal = ({
@@ -50,7 +50,7 @@ export const YliajoEditModal = ({
               originalAvainArvo?.metadata.yliajo?.arvo != null && (
                 <OphButton
                   variant="outlined"
-                  startIcon={<DeleteOutline />}
+                  startIcon={<DeleteOutlined />}
                   onClick={() => deleteYliajo(yliajo.avain)}
                 >
                   {t('opiskelijavalinnan-tiedot.poista-yliajo')}

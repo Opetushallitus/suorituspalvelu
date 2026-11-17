@@ -28,7 +28,7 @@ export default defineConfig(
       reactHooks.configs.flat.recommended,
     ],
     rules: {
-      'react-hooks/set-state-in-effect': 'off', // Handled by @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      'react-hooks/set-state-in-effect': 'off', // Handled by @eslint-react/set-state-in-effect
     },
   },
   {
