@@ -2,8 +2,8 @@ package fi.oph.suorituspalvelu.business.yos
 
 import fi.oph.suorituspalvelu.business.KKOpiskeluoikeusTila.{PAATTYNYT, VOIMASSA}
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Lahdejarjestelma, VersioEntiteetti}
-import fi.oph.suorituspalvelu.integration.TarjontaIntegration
-import fi.oph.suorituspalvelu.integration.client.{Koodi, KoodiMetadata, Koodisto, KoutaHaku, KoutaHakuaika, KoutaHakukohde, Organisaatio, OrganisaatioNimi, PaateltyAlkamiskausi}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.client.{Koodi, KoodiMetadata, Koodisto, KoutaHaku, KoutaHakuaika, KoutaHakukohde, Organisaatio, OrganisaatioNimi, PaateltyAlkamiskausi, RetryConfig}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.util.{KoodistoProvider, OrganisaatioProvider}
 import fi.oph.suorituspalvelu.yos.{YosConstants, YosService}
@@ -18,6 +18,7 @@ import org.mockito.ArgumentMatchers.any
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
+import scala.concurrent.Future
 
 @Test
 @TestInstance(Lifecycle.PER_CLASS)
@@ -29,9 +30,12 @@ class YosServiceTest {
 
   private val koodistoMock: KoodistoProvider = Mockito.mock(classOf[KoodistoProvider])
 
-  private val service = YosService(tarjontaMock, oikeusMock, organisaatioMock, koodistoMock)
+  private val onrMock: OnrIntegration = Mockito.mock(classOf[OnrIntegration])
+
+  private val service = YosService(tarjontaMock, oikeusMock, organisaatioMock, koodistoMock, onrMock)
 
   private val HAKIJA_OID = "1.2.246.562.24.71794920276"
+  private val ALIAS_OID = "1.2.246.562.24.10000000002"
   private val HAKU_OID = "1.2.246.562.29.00000000000000074021"
   private val HAKUKOHDE_OID = "1.2.246.562.20.00000000000000078520"
 
@@ -102,12 +106,20 @@ class YosServiceTest {
     liittyvaOpiskeluoikeusAvain = None
   )
 
+  private def aliasVersio(alku: Instant) = VIRTA_VERSIO.copy(tunniste = UUID.randomUUID(), henkiloOid = ALIAS_OID, alku = alku)
+
+  private def mockaaHakijanOidit(oidit: String*): Unit =
+    Mockito.when(onrMock.getAliasesForPersonOids(any[Set[String]]())(any[RetryConfig]()))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(HAKIJA_OID -> oidit.toSet))))
+
   @BeforeEach
   def init(): Unit = {
     Mockito.reset(oikeusMock)
     Mockito.reset(organisaatioMock)
     Mockito.reset(tarjontaMock)
     Mockito.reset(koodistoMock)
+    Mockito.reset(onrMock)
+    mockaaHakijanOidit(HAKIJA_OID)
     Mockito.when(koodistoMock.haeKoodisto("koulutus")).thenReturn(Map(
       "koulutus_1" -> Koodi(koodiArvo = "1", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Agrologi")), koodiUri = "koulutus_1"),
       "koulutus_12" -> Koodi(koodiArvo = "12", koodisto = Koodisto("koulutus"), metadata = List(KoodiMetadata(kieli = "fi", nimi = "Perushoitaja")), koodiUri = "koulutus_12"),
@@ -447,6 +459,109 @@ class YosServiceTest {
     Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenThrow(RuntimeException("FAIL"))
     val virhe = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).left
     assertEquals(VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, virhe.get.virhe)
+  }
+
+  @Test
+  def palauttaaAliakselleTallennetunPaatettavanOpiskeluOikeuden(): Unit = {
+    mockaaHakijanOidit(HAKIJA_OID, ALIAS_OID)
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(OPPILAITOS_NUMERO)).thenReturn(List.empty)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map.empty)
+    Mockito.when(oikeusMock.haeSuoritukset(ALIAS_OID)).thenReturn(Map(
+      aliasVersio(Instant.now) -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
+    ))
+    val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, YLEMMAT_JA_ALEMMAT_ASTEET).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    assertEquals("Sosionomikoulutus", oikeudet.head.virtaNimi.get.fi.get)
+  }
+
+  @Test
+  def palauttaaUseammalleOidilleTallennetunOpiskeluOikeudenKerranUusimmanVersionTiedoilla(): Unit = {
+    mockaaHakijanOidit(HAKIJA_OID, ALIAS_OID)
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(OPPILAITOS_NUMERO)).thenReturn(List.empty)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
+    ))
+    Mockito.when(oikeusMock.haeSuoritukset(ALIAS_OID)).thenReturn(Map(
+      aliasVersio(VIRTA_VERSIO.alku.minusSeconds(60)) -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(
+        tunniste = UUID.randomUUID(),
+        nimi = Some(Kielistetty(fi = Some("Vanha nimi"), sv = None, en = None))))
+    ))
+    val oikeudet = service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, YLEMMAT_JA_ALEMMAT_ASTEET).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    assertEquals("Sosionomikoulutus", oikeudet.head.virtaNimi.get.fi.get)
+  }
+
+  @Test
+  def kayttaaUusimmanVersionTilaaKunSamaOpiskeluOikeusLoytyyUseammalleOidille(): Unit = {
+    mockaaHakijanOidit(HAKIJA_OID, ALIAS_OID)
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(OPPILAITOS_NUMERO)).thenReturn(List.empty)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(OPPILAITOS_NUMERO)).thenReturn(ORGANISAATIO)
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS)
+    ))
+    Mockito.when(oikeusMock.haeSuoritukset(ALIAS_OID)).thenReturn(Map(
+      aliasVersio(VIRTA_VERSIO.alku.plusSeconds(60)) -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(
+        tunniste = UUID.randomUUID(),
+        virtaTila = fi.oph.suorituspalvelu.business.Koodi("3", "virtatila", Some(1))))
+    ))
+    assertTrue(service.hakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, YLEMMAT_JA_ALEMMAT_ASTEET).getOrElse(Set(null)).isEmpty)
+  }
+
+  @Test
+  def kayttaaAliakselleTallennettuaLinkitettyaAlempaaOpiskeluOikeutta(): Unit = {
+    mockaaHakijanOidit(HAKIJA_OID, ALIAS_OID)
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(
+      HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(koulutusasteKoodiUrit = List("kansallinenkoulutusluokitus2016koulutusastetaso2_62")))
+    Mockito.when(organisaatioMock.haeKaikkiOrganisaationParenttienOidit(any())).thenReturn(List.empty)
+    Mockito.when(organisaatioMock.haeOrganisaationTiedot(any(), any())).thenReturn(ORGANISAATIO)
+    val alempiPaattynytOpiskeluOikeus = KKOpiskeluoikeus(
+      tunniste = UUID.randomUUID(),
+      virtaTunniste = "virtatunniste-2",
+      nimi = None,
+      tyyppiKoodi = "",
+      koulutusKoodi = Some("koulutus_12"),
+      alkuPvm = LocalDate.now(),
+      loppuPvm = LocalDate.now(),
+      virtaTila = fi.oph.suorituspalvelu.business.Koodi(arvo = "5", koodisto = "virtakoodisto", versio = Some(1)),
+      supaTila = PAATTYNYT,
+      myontaja = "",
+      isTutkintoonJohtava = true,
+      kieli = Some("fi"),
+      suoritukset = Set.empty,
+      rahoitusLahde = None,
+      luokittelu = None,
+      liittyvaOpiskeluoikeusAvain = Some("virtatunniste"))
+    Mockito.when(oikeusMock.haeSuoritukset(HAKIJA_OID)).thenReturn(Map(
+      VIRTA_VERSIO -> Set(YOS_PIIRIIN_KUULUVA_OPISKELUOIKEUS.copy(liittyvaOpiskeluoikeusAvain = Some("virtatunniste-2")))
+    ))
+    Mockito.when(oikeusMock.haeSuoritukset(ALIAS_OID)).thenReturn(Map(
+      aliasVersio(Instant.now) -> Set(alempiPaattynytOpiskeluOikeus)
+    ))
+    val oikeudet = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).getOrElse(Set.empty)
+    assertEquals(1, oikeudet.size)
+    assertEquals("Sosionomikoulutus", oikeudet.head.virtaNimi.get.fi.get)
+  }
+
+  @Test
+  def palauttaaVirheenJosAliastenHakuEpaonnistuu(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN)
+    Mockito.when(onrMock.getAliasesForPersonOids(any[Set[String]]())(any[RetryConfig]()))
+      .thenReturn(Future.failed(RuntimeException("ONR")))
+    val virhe = service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID).left
+    assertEquals(VIRHE_PAATETTAVIEN_OPISKELUOIKEUKSIEN_HAUSSA, virhe.get.virhe)
+    Mockito.verifyNoInteractions(oikeusMock)
+  }
+
+  @Test
+  def eiHaeAliaksiaJosHakutoiveEiKuuluYosPiiriin(): Unit = {
+    Mockito.when(tarjontaMock.getHaku(HAKU_OID)).thenReturn(Some(HAKU_JOKA_KUULUU_YOS_PIIRIIN))
+    Mockito.when(tarjontaMock.getHakukohde(HAKUKOHDE_OID)).thenReturn(HAKUTOIVE_JOKA_KUULUU_YOS_PIIRIIN.copy(kuuluuYosinPiiriin = Some(false)))
+    assertEquals(Right(Set.empty), service.haeHakijanPaatettavatOpiskeluOikeudet(HAKIJA_OID, HAKU_OID, HAKUKOHDE_OID))
+    Mockito.verifyNoInteractions(onrMock)
   }
 
 }
