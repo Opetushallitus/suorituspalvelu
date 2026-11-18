@@ -3,18 +3,19 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.{Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
-import org.junit.jupiter.api.{Assertions, Test}
+import org.junit.jupiter.api.{Assertions, BeforeEach, Test}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
+import org.springframework.test.util.ReflectionTestUtils
 
-import java.time.{Instant, LocalDate}
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 import java.util.UUID
 import scala.concurrent.Future
 
@@ -39,9 +40,20 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
 
   val OPPILAITOS_OID = "1.2.246.562.10.52320123199"
 
-  val TAMA_VUOSI: Int = LocalDate.now().getYear
-  val VIIMEVUOSI: Int = LocalDate.now().getYear - 1
-  val TOISSAVUOSI: Int = LocalDate.now().getYear - 2
+  private val TEST_DATE = LocalDate.of(2026, 3, 1)
+
+  val TAMA_VUOSI: Int = TEST_DATE.getYear
+  val VIIMEVUOSI: Int = TAMA_VUOSI - 1
+  val TOISSAVUOSI: Int = TAMA_VUOSI - 2
+
+  private def asetaPaiva(paiva: LocalDate): Unit = {
+    val zone = ZoneId.of("Europe/Helsinki")
+    val clock = Clock.fixed(paiva.atStartOfDay(zone).toInstant, zone)
+    ReflectionTestUtils.setField(lahtokoulutService, "kantaOperaatiot", KantaOperaatiot(database, clock))
+  }
+
+  @BeforeEach def asetaKevatlukukausi(): Unit =
+    asetaPaiva(TEST_DATE)
 
   private def getLahtokoulut(oppilaitosOid: String, aloitusVuosi: Int, tila: SuoritusTila): List[Lahtokoulu] =
     List(Lahtokoulu(
@@ -130,6 +142,26 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
       Set((OPPIJANUMERO_YSI_KESKEN, "9A"), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, "9A")),
       lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI)
     )
+
+  @Test def testHaeOhjattavatJaLuokatSyksylla(): Unit = {
+    lisaaSuoritukset()
+    asetaPaiva(LocalDate.of(TAMA_VUOSI, 9, 1))
+
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))(any[RetryConfig]()))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))))
+    Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_KESKEN)))(any[RetryConfig]()))
+      .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_KESKEN -> Set(OPPIJANUMERO_YSI_KESKEN)))))
+
+    // Valmis ysi säilyy valmistumisvuodellaan, keskeneräinen siirtyy seuraavalle vuodelle.
+    Assertions.assertEquals(
+      Set((OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, "9A")),
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI)
+    )
+    Assertions.assertEquals(
+      Set((OPPIJANUMERO_YSI_KESKEN, "9A")),
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI + 1)
+    )
+  }
 
   @Test def testHaeOhjattavatJaLuokatViimevuosi(): Unit =
     lisaaSuoritukset()
