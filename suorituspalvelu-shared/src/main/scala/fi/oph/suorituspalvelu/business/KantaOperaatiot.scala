@@ -15,7 +15,7 @@ import scala.concurrent.duration.{Duration, DurationInt}
 import org.slf4j.LoggerFactory
 import fi.oph.suorituspalvelu.util.DBUtil.runBlocking
 
-import java.time.{Instant, LocalDate}
+import java.time.{Clock, Instant, LocalDate}
 import java.util.UUID
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import fi.oph.suorituspalvelu.mankeli.HarkinnanvaraisuudenSyy
@@ -78,7 +78,7 @@ object KantaOperaatiot {
     YOTUTKINTO, PERUSOPETUKSEN_OPISKELUOIKEUS, AMMATILLINEN_OPISKELUOIKEUS, GENEERINEN_OPISKELUOIKEUS
 }
 
-class KantaOperaatiot(db: JdbcDatabaseDef) {
+class KantaOperaatiot(db: JdbcDatabaseDef, clock: Clock = Clock.systemDefaultZone()) {
 
   final val DB_TIMEOUT = 30.seconds
   val LOG = LoggerFactory.getLogger(classOf[KantaOperaatiot])
@@ -477,6 +477,11 @@ class KantaOperaatiot(db: JdbcDatabaseDef) {
       .map(json => MAPPER.readValue(json, classOf[VersioEntiteetti])).headOption
 
   private def haeLahtokoulunOppilaatStatement(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Option[Int], luokka: Option[String], kesken: Boolean, arvosanaPuuttuu: Boolean, lahtokouluTyypit: Option[Set[LahtokouluTyyppi]]): slick.jdbc.SQLActionBuilder = {
+    val today = LocalDate.now(clock)
+    val arvioituValmistumisvuosi =
+      if (today.getMonthValue >= 8) today.getYear + 1
+      else today.getYear
+
     sql"""
         WITH
         -- Generoidaan lista ohjausvastuista joilla oikea näkyvyys, ts. päättymispäivää seuraavan vuoden tammikuun loppuun
@@ -484,12 +489,20 @@ class KantaOperaatiot(db: JdbcDatabaseDef) {
           SELECT
             henkilo_oid,
             CASE
-              WHEN tila=${SuoritusTila.KESKEN.toString} AND suorituksen_loppu IS NULL
-                THEN ARRAY(
-                  SELECT generate_series(
-                    extract(year from suorituksen_alku)::int + 1,
-                    greatest(extract(year from suorituksen_alku)::int + 1, ${LocalDate.now.getYear})
-                  ))
+              WHEN tila=${SuoritusTila.KESKEN.toString}
+                AND suorituksen_loppu IS NULL
+                AND suoritustyyppi=${LahtokouluTyyppi.VUOSILUOKKA_9.toString}
+              THEN ARRAY[$arvioituValmistumisvuosi]
+
+              WHEN tila=${SuoritusTila.KESKEN.toString}
+                AND suorituksen_loppu IS NULL
+              THEN ARRAY(
+                SELECT generate_series(
+                  least(extract(year from suorituksen_alku)::int + 1, ${today.getYear}),
+                  greatest(extract(year from suorituksen_alku)::int + 1, ${today.getYear})
+                )
+              )
+
               ELSE ARRAY[valmistumisvuosi]
             END as vuodet,
             luokka,
