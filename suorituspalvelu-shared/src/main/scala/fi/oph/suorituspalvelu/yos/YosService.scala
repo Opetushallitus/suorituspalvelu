@@ -1,8 +1,8 @@
 package fi.oph.suorituspalvelu.yos
 
 import fi.oph.suorituspalvelu.business.{KKOpiskeluoikeus, Lahdejarjestelma, Opiskeluoikeus}
-import fi.oph.suorituspalvelu.integration.TarjontaIntegration
-import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde}
+import fi.oph.suorituspalvelu.integration.{OnrIntegration, TarjontaIntegration}
+import fi.oph.suorituspalvelu.integration.client.{KoutaHaku, KoutaHakukohde, RetryConfig}
 import fi.oph.suorituspalvelu.parsing.OpiskeluoikeusParsingService
 import fi.oph.suorituspalvelu.parsing.koski.Kielistetty
 import fi.oph.suorituspalvelu.parsing.virta.VirtaOpiskeluoikeus
@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 import java.lang
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 
 case class HakuToiveenKoulutusAsteJaYosTieto(koulutusAste: YosKoulutusAsteLuokka, kuuluukoYosPiiriin: Boolean)
 
@@ -24,9 +26,14 @@ case class HakuToiveenKoulutusAsteJaYosTieto(koulutusAste: YosKoulutusAsteLuokka
 class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
                              opiskeluOikeusService: OpiskeluoikeusParsingService,
                              organisaatioProvider: OrganisaatioProvider,
-                             koodistoProvider: KoodistoProvider) {
+                             koodistoProvider: KoodistoProvider,
+                             onrIntegration: OnrIntegration) {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[YosService])
+
+  // Kutsujat odottavat vastausta noin minuutin, joten ONR-haun on valmistuttava selvästi sitä nopeammin
+  private val ONR_TIMEOUT = 30.seconds
+  implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 1, retryDelayMillis = 1000, requestTimeoutMillis = 10000)
 
   val VIRTATILA_VALMISTUNUT = "3"
 
@@ -83,12 +90,9 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
   def hakijanPaatettavatOpiskeluOikeudet(oppilasNro: String, hakutoiveenKoulutusAste: YosKoulutusAsteLuokka): Either[Throwable, Set[YosPaatettavaOpiskeluOikeus]] = {
     try {
       LOGGER.info(s"Haetaan hakijan $oppilasNro päätettävät opiskeluoikeudet")
-      val oikeudet: Set[KKOpiskeluoikeus] = opiskeluOikeusService.haeSuoritukset(oppilasNro)
-        .filter((versio, _) => versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA)
-        .values.flatten
-        .filter(oikeus => oikeus.isInstanceOf[KKOpiskeluoikeus])
-        .map(oikeus => oikeus.asInstanceOf[KKOpiskeluoikeus])
-        .toSet
+      val oidit = haeHenkilonKaikkiOidit(oppilasNro)
+      LOGGER.info(s"Haetaan hakijan $oppilasNro opiskeluoikeudet oideille ${oidit.mkString(", ")}")
+      val oikeudet: Set[KKOpiskeluoikeus] = haeVirtaOpiskeluoikeudet(oidit)
       LOGGER.info(s"Löytyi ${oikeudet.size} käsiteltävää korkeakouluoikeutta hakijalle $oppilasNro, suodatetaan niistä YOS piiriin kuuluvat")
       val paatettavatOikeudet = oikeudet.filter(oikeus => {
           LOGGER.info(s"""Tarkistetaan kuuluuko opiskeluoikeus ${oikeus.virtaTunniste} yosin piiriin.
@@ -118,6 +122,23 @@ class YosService @Autowired (tarjontaIntegration: TarjontaIntegration,
         Left(new RuntimeException(s"Virhe hakiessa päätettäviä opiskeluoikeuksia hakijalle $oppilasNro", e))
     }
   }
+
+  // Master-oid ja kaikki siihen linkitetyt oidit, mukaan lukien kysytty oid
+  private def haeHenkilonKaikkiOidit(henkiloOid: String): Set[String] =
+    Set(henkiloOid) ++ Await.result(onrIntegration.getAliasesForPersonOids(Set(henkiloOid)), ONR_TIMEOUT).allOids
+
+  // Sama VIRTA-opiskeluoikeus voi olla tallennettuna useammalle oidille omina versioinaan, joten
+  // opiskeluoikeudet yhdistetään myöntäjän ja avaimen perusteella ja käytetään uusimman version tietoja
+  private def haeVirtaOpiskeluoikeudet(oidit: Set[String]): Set[KKOpiskeluoikeus] =
+    oidit.toSeq
+      .flatMap(oid => opiskeluOikeusService.haeSuoritukset(oid)
+        .filter((versio, _) => versio.lahdeJarjestelma == Lahdejarjestelma.VIRTA)
+        .toSeq)
+      .flatMap((versio, oikeudet) => oikeudet.collect { case oikeus: KKOpiskeluoikeus => (versio, oikeus) })
+      .groupBy((_, oikeus) => VirtaOpiskeluoikeus.getVirtaOpiskeluoikeusId(oikeus.myontaja, oikeus.virtaTunniste))
+      .values
+      .map(_.maxBy((versio, _) => versio.alku)._2)
+      .toSet
 
   private def tarkistaOpiskeluoikeudenKoulutusAsteenKuuluvuus(hakutoiveenKoulutusAste: YosKoulutusAsteLuokka, oikeudet: Set[KKOpiskeluoikeus], oikeus: KKOpiskeluoikeus) = {
     var oikeudenAste = getKoulutusAsteOpiskeluOikeudelle(oikeus)
