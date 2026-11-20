@@ -140,8 +140,8 @@ export const queryOptionsGetOppilaitosVuosiOptions = ({
     queryFn: () => getOppilaitosVuodet({ oppilaitosOid }),
     enabled: Boolean(oppilaitosOid),
     select: (data) => {
-      const vuodet = data ?? [];
-      vuodet.push(getCurrentYear());
+      // Kuluva kalenterivuosi säilyy valittavana myös syksyllä, vaikka keskeneräiset ysit valmistuvat ensi vuonna.
+      const vuodet = [...(data ?? []), getCurrentYear()];
       vuodet.sort((a, b) => b.localeCompare(a));
       return unique(vuodet).map((vuosi) => ({
         label: vuosi,
