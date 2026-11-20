@@ -3,19 +3,18 @@ package fi.oph.suorituspalvelu.service
 import fi.oph.suorituspalvelu.BaseIntegraatioTesti
 import fi.oph.suorituspalvelu.business.LahtokouluTyyppi.VUOSILUOKKA_9
 import fi.oph.suorituspalvelu.business.SuoritusTila.{KESKEN, VALMIS}
-import fi.oph.suorituspalvelu.business.{KantaOperaatiot, Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus, SuoritusTila}
+import fi.oph.suorituspalvelu.business.{Koodi, Lahdejarjestelma, Lahtokoulu, Opiskeluoikeus, ParserVersions, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppimaara, Suoritus, SuoritusTila}
 import fi.oph.suorituspalvelu.integration.{OnrIntegration, PersonOidsWithAliases}
 import fi.oph.suorituspalvelu.integration.client.*
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiUtil}
 import fi.oph.suorituspalvelu.util.OrganisaatioProvider
-import org.junit.jupiter.api.{Assertions, BeforeEach, Test}
+import org.junit.jupiter.api.{Assertions, Test}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.`override`.mockito.MockitoBean
-import org.springframework.test.util.ReflectionTestUtils
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.concurrent.Future
 
@@ -45,15 +44,6 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
   val TAMA_VUOSI: Int = TEST_DATE.getYear
   val VIIMEVUOSI: Int = TAMA_VUOSI - 1
   val TOISSAVUOSI: Int = TAMA_VUOSI - 2
-
-  private def asetaPaiva(paiva: LocalDate): Unit = {
-    val zone = ZoneId.of("Europe/Helsinki")
-    val clock = Clock.fixed(paiva.atStartOfDay(zone).toInstant, zone)
-    ReflectionTestUtils.setField(lahtokoulutService, "kantaOperaatiot", KantaOperaatiot(database, clock))
-  }
-
-  @BeforeEach def asetaKevatlukukausi(): Unit =
-    asetaPaiva(TEST_DATE)
 
   private def getLahtokoulut(oppilaitosOid: String, aloitusVuosi: Int, tila: SuoritusTila): List[Lahtokoulu] =
     List(Lahtokoulu(
@@ -140,12 +130,12 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_KESKEN, "9A"), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI, TEST_DATE)
     )
 
   @Test def testHaeOhjattavatJaLuokatSyksylla(): Unit = {
     lisaaSuoritukset()
-    asetaPaiva(LocalDate.of(TAMA_VUOSI, 9, 1))
+    val syksy = LocalDate.of(TAMA_VUOSI, 9, 1)
 
     Mockito.when(onrIntegration.getAliasesForPersonOids(eqTo(Set(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))(any[RetryConfig]()))
       .thenReturn(Future.successful(PersonOidsWithAliases(Map(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI -> Set(OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI)))))
@@ -155,11 +145,11 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // Valmis ysi säilyy valmistumisvuodellaan, keskeneräinen siirtyy seuraavalle vuodelle.
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI, syksy)
     )
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_KESKEN, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI + 1)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI + 1, syksy)
     )
   }
 
@@ -172,7 +162,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // palautuu vain oppijat joilla valmis suoritus haetulta vuodelta
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI, TEST_DATE)
     )
 
   @Test def testHaeOhjattavatJaLuokatToissavuosi(): Unit =
@@ -180,7 +170,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // ei palaudu mitään koska toissavuonna valmistuneita ei ole
     Assertions.assertEquals(
       Set.empty,
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TOISSAVUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TOISSAVUOSI, TEST_DATE)
     )
 
   @Test def testHaeOhjattavatJaLuokatTamaVuosiLuokka(): Unit =
@@ -192,7 +182,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // palautuu oppijat joilla keskeneräinen tai valmis suoritus tältä vuodelta ja luokka täsmää
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_KESKEN, "9A"), (OPPIJANUMERO_YSI_VALMIS_TAMA_VUOSI, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TAMA_VUOSI, TEST_DATE)
     )
 
   @Test def testHaeOhjattavatJaLuokatViimevuosiLuokka(): Unit =
@@ -204,7 +194,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // palautuu oppijat joilla valmis suoritus haetulta vuodelta ja luokka täsmää
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI, TEST_DATE)
     )
 
   @Test def testHaeOhjattavatJaLuokatAlias(): Unit =
@@ -216,7 +206,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // palautuu oppijat joilla valmis suoritus haetulta vuodelta ja luokka täsmää
     Assertions.assertEquals(
       Set((OPPIJANUMERO_YSI_VALMIS_VIIMEVUOSI, "9A"), (OPPIJANUMERO_ALIAS, "9A")),
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, VIIMEVUOSI, TEST_DATE)
     )
 
   @Test def testHaeOhjattavatJaLuokatToissavuosiLuokka(): Unit =
@@ -224,7 +214,7 @@ class LahtokoulutServiceTest extends BaseIntegraatioTesti {
     // ei palaudu mitään koska toissavuonna valmistuneita ei ole
     Assertions.assertEquals(
       Set.empty,
-      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TOISSAVUOSI)
+      lahtokoulutService.haeOhjattavatJaLuokat(OPPILAITOS_OID, TOISSAVUOSI, TEST_DATE)
     )
 
 }

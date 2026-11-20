@@ -12,7 +12,7 @@ import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import slick.jdbc.PostgresProfile.api.*
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Instant, LocalDate}
 import scala.concurrent.duration.DurationInt
 import java.util.concurrent.Executors
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -32,11 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger
 class KantaOperaatiotTest {
 
   private val NOW = LocalDate.parse("2025-03-01")
-
-  private def kantaPaivana(paiva: LocalDate): KantaOperaatiot = {
-    val zone = ZoneId.of("Europe/Helsinki")
-    KantaOperaatiot(database, Clock.fixed(paiva.atStartOfDay(zone).toInstant, zone))
-  }
 
   val DATABASE_NAME = DevDbConfig.databaseName
   val CONNECTION_POOL_SIZE = 20
@@ -75,7 +70,7 @@ class KantaOperaatiotTest {
   @BeforeAll def setup(): Unit =
     postgres.start()
     database = Database.forDataSource(getHikariDatasource(), None)
-    kantaOperaatiot = kantaPaivana(NOW)
+    kantaOperaatiot = KantaOperaatiot(database)
     opiskeluoikeusParsingService = OpiskeluoikeusParsingService(kantaOperaatiot, null, null, null)
 
   @AfterAll def teardown(): Unit =
@@ -688,7 +683,7 @@ class KantaOperaatiotTest {
     ), 1);
 
     // henkilö näkyy koska suoritus kesken
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.now), oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, true, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
   @Test def testHaeOhjattavatOppijatKeskenValmistuuTanaVuonna(): Unit =
     val henkiloNumero = "1.2.246.562.24.99988877766"
@@ -701,11 +696,11 @@ class KantaOperaatiotTest {
     ), 1);
 
     // henkilö näkyy koska suoritus kesken
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW.plusYears(2)), oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, true, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
     // Henkilön arvioitu valmistuminen on tänä vuonna, joten ei näytetä haettaessa viime tai ensi vuoden valmistumisvuosilla
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
 
 
   @Test def testHaeOhjattavatOppijatKeskenValmistuminenMyohassa(): Unit =
@@ -719,9 +714,9 @@ class KantaOperaatiotTest {
     ), 1);
 
 
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
 
   @Test def testHaeOhjattavatOppijatKeskenAloittanutKevatlukukaudella(): Unit =
     val henkiloNumero = "1.2.246.562.24.99988877766"
@@ -734,9 +729,9 @@ class KantaOperaatiotTest {
     ), 1);
 
 
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi - 1), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, oppilaitosOid, Some(valmistumisVuosi + 1), None, false, false, Set(VUOSILUOKKA_9)))
 
 
   @Test def testKeskeneraisenYsinValmistumisvuosiSeuraaLukuvuotta(): Unit = {
@@ -754,11 +749,11 @@ class KantaOperaatiotTest {
       "2027-08-01" -> 2028,
       "2027-09-01" -> 2028
     ).foreach { case (paiva, valmistumisvuosi) =>
-      val kanta = kantaPaivana(LocalDate.parse(paiva))
-      Assertions.assertEquals(Set(valmistumisvuosi.toString), kanta.haeVuodet(None, oppilaitosOid, Some(Set(VUOSILUOKKA_9))), paiva)
+      val nykyhetki = LocalDate.parse(paiva)
+      Assertions.assertEquals(Set(valmistumisvuosi.toString), kantaOperaatiot.haeVuodet(nykyhetki, false, oppilaitosOid, Some(Set(VUOSILUOKKA_9))), paiva)
       (2026 to 2029).foreach { vuosi =>
-        val oppijat = kanta.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(vuosi), None, false, false, Set(VUOSILUOKKA_9))
-        val luokat = kanta.haeLuokat(None, oppilaitosOid, vuosi, Some(Set(VUOSILUOKKA_9)))
+        val oppijat = kantaOperaatiot.haeLahtokoulunOppilaat(nykyhetki, false, oppilaitosOid, Some(vuosi), None, false, false, Set(VUOSILUOKKA_9))
+        val luokat = kantaOperaatiot.haeLuokat(nykyhetki, false, oppilaitosOid, vuosi, Some(Set(VUOSILUOKKA_9)))
         if (vuosi == valmistumisvuosi) {
           Assertions.assertEquals(Set((henkiloOid, Some("9A"))), oppijat, s"$paiva / $vuosi")
           Assertions.assertEquals(Set("9A"), luokat, s"$paiva / $vuosi")
@@ -784,9 +779,9 @@ class KantaOperaatiotTest {
       "2027-03-01" -> Set("2027"),
       "2028-09-01" -> Set("2027", "2028")
     ).foreach { case (paiva, vuodet) =>
-      val kanta = kantaPaivana(LocalDate.parse(paiva))
+      val nykyhetki = LocalDate.parse(paiva)
       tyypit.foreach { tyyppi =>
-        Assertions.assertEquals(vuodet, kanta.haeVuodet(None, oppilaitosOid, Some(Set(tyyppi))), s"$paiva / $tyyppi")
+        Assertions.assertEquals(vuodet, kantaOperaatiot.haeVuodet(nykyhetki, false, oppilaitosOid, Some(Set(tyyppi))), s"$paiva / $tyyppi")
       }
     }
   }
@@ -798,10 +793,35 @@ class KantaOperaatiotTest {
     kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set.empty, Seq(
       Lahtokoulu(LocalDate.parse("2026-08-18"), Some(LocalDate.parse("2027-05-31")), oppilaitosOid, Some(2027), "9A", VALMIS, None, VUOSILUOKKA_9)
     ), ParserVersions.KOSKI)
-    val kanta = kantaPaivana(LocalDate.parse("2027-09-01"))
-    Assertions.assertEquals(Set("2027"), kanta.haeVuodet(None, oppilaitosOid, Some(Set(VUOSILUOKKA_9))))
-    Assertions.assertEquals(Set((henkiloOid, Some("9A"))), kanta.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(2027), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertTrue(kanta.haeLahtokoulunOppilaat(None, oppilaitosOid, Some(2028), None, false, false, Set(VUOSILUOKKA_9)).isEmpty)
+    val nykyhetki = LocalDate.parse("2027-09-01")
+    Assertions.assertEquals(Set("2027"), kantaOperaatiot.haeVuodet(nykyhetki, false, oppilaitosOid, Some(Set(VUOSILUOKKA_9))))
+    Assertions.assertEquals(Set((henkiloOid, Some("9A"))), kantaOperaatiot.haeLahtokoulunOppilaat(nykyhetki, false, oppilaitosOid, Some(2027), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertTrue(kantaOperaatiot.haeLahtokoulunOppilaat(nykyhetki, false, oppilaitosOid, Some(2028), None, false, false, Set(VUOSILUOKKA_9)).isEmpty)
+  }
+
+  @Test def testOhjattavuusrajausOnValinnainenJaKayttaaTarkastelupaivaa(): Unit = {
+    val henkiloOid = "1.2.246.562.24.99988877766"
+    val oppilaitosOid = "1.2.246.562.10.95136889433"
+    val versio = kantaOperaatiot.tallennaJarjestelmaVersio(henkiloOid, Lahdejarjestelma.KOSKI, Seq.empty, Seq.empty, Instant.now(), "1.2.3", Some(1)).get
+    kantaOperaatiot.tallennaVersioonLiittyvatEntiteetit(versio, Set.empty, Seq(
+      Lahtokoulu(LocalDate.parse("2025-08-18"), Some(LocalDate.parse("2026-05-31")), oppilaitosOid, Some(2026), "9A", VALMIS, None, VUOSILUOKKA_9),
+      Lahtokoulu(LocalDate.parse("2026-08-18"), None, oppilaitosOid, Some(2027), "9B", KESKEN, None, VUOSILUOKKA_9)
+    ), ParserVersions.KOSKI)
+
+    Seq(
+      ("2027-01-31", true, true),
+      ("2027-02-01", true, false),
+      ("2027-02-01", false, true)
+    ).foreach { case (paiva, rajaaOhjattavuudenMukaan, valmisNakyy) =>
+      val nykyhetki = LocalDate.parse(paiva)
+      val vuodet = if (valmisNakyy) Set("2026", "2027") else Set("2027")
+      val luokat = if (valmisNakyy) Set("9A") else Set.empty[String]
+      val oppijat = if (valmisNakyy) Set((henkiloOid, Some("9A"))) else Set.empty[(String, Option[String])]
+      Assertions.assertEquals(vuodet, kantaOperaatiot.haeVuodet(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid, Some(Set(VUOSILUOKKA_9))))
+      Assertions.assertEquals(luokat, kantaOperaatiot.haeLuokat(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid, 2026, Some(Set(VUOSILUOKKA_9))))
+      Assertions.assertEquals(oppijat, kantaOperaatiot.haeLahtokoulunOppilaat(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid, Some(2026), None, false, false, Set(VUOSILUOKKA_9)))
+      Assertions.assertEquals(luokat.map(luokka => (henkiloOid, luokka)), kantaOperaatiot.haeHenkilotJaLuokat(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid, 2026, Some(Set(VUOSILUOKKA_9))))
+    }
   }
 
   @Test def testHaeOhjattavatOppijatOppilaitosSiirto(): Unit =
@@ -819,9 +839,9 @@ class KantaOperaatiotTest {
     ), 1)
 
     // henkilö näkyy joulukuussa edelleen molempien koulujen oppilaslistalla koska opolla oikeus tarkastaa tilanne seuraavan tammikuun loppuun
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2024-12-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(LocalDate.parse("2024-12-01"), true, vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
     // ja luonnollisesti näkyy myös uuden koulun listalla
-    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2024-12-01")), uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(LocalDate.parse("2024-12-01"), true, uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
   @Test def testHaeOhjattavatOppijatSeuraavaHelmikuu(): Unit =
     val henkiloNumero = "1.2.246.562.24.99988877766"
@@ -838,9 +858,9 @@ class KantaOperaatiotTest {
     ), 1)
 
     // helmikuussa henkilö ei enää näy vanhan koulun listalla
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2025-02-01")), vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(LocalDate.parse("2025-02-01"), true, vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
     // mutta uudella listalla näkyy
-    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(LocalDate.parse("2025-02-01")), uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(LocalDate.parse("2025-02-01"), true, uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
   @Test def testHaeOhjattavatOppijatEiPvmRajausta(): Unit =
     val henkiloNumero = "1.2.246.562.24.99988877766"
@@ -857,8 +877,8 @@ class KantaOperaatiotTest {
     ), 1)
 
     // henkilö näkyy molemmilla listoilla koska ei tarkastella tiettyä ajanhetkeä, ja henkilö on ollut kummankin koulun tietyn valmistumisvuoden oppilas
-    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
-    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(None, uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, vanhaOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set((henkiloNumero, Some("9B"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, false, uusiOppilaitosOid, Some(valmistumisVuosi), None, false, false, Set(VUOSILUOKKA_9)))
 
   @Test def testKeskenVipuPalauttaaVainYseja(): Unit = {
     val henkiloNumero1 = "1.2.246.562.24.99988877766"
@@ -878,7 +898,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Vipu päällä: vain ysi-kesken palautetaan
-    Assertions.assertEquals(Set((henkiloNumero1, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, true, false, Set(VUOSILUOKKA_9, TUVA)))
+    Assertions.assertEquals(Set((henkiloNumero1, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, true, oppilaitosOid, Some(valmistumisVuosi), None, true, false, Set(VUOSILUOKKA_9, TUVA)))
   }
 
   @Test def testKeskenVipuEiPalautaValmiitaYseja(): Unit = {
@@ -893,7 +913,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Vipu päällä: valmista ysiä ei palauteta
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, true, false, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, true, oppilaitosOid, Some(valmistumisVuosi), None, true, false, Set(VUOSILUOKKA_9)))
   }
 
   @Test def testArvosanaPuuttuuVipuPalauttaaVainValmiitaYseja(): Unit = {
@@ -920,7 +940,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Vipu päällä: vain valmis ysi jolta arvosana puuttuu palautetaan
-    Assertions.assertEquals(Set((henkiloNumero1, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, false, true, Set(VUOSILUOKKA_9, TUVA)))
+    Assertions.assertEquals(Set((henkiloNumero1, Some("9A"))), this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, true, oppilaitosOid, Some(valmistumisVuosi), None, false, true, Set(VUOSILUOKKA_9, TUVA)))
   }
 
   @Test def testArvosanaPuuttuuVipuEiPalautaKunArvosanaEiPuutu(): Unit = {
@@ -935,7 +955,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Vipu päällä: arvosana ei puutu, joten ei palauteta
-    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(Some(NOW), oppilaitosOid, Some(valmistumisVuosi), None, false, true, Set(VUOSILUOKKA_9)))
+    Assertions.assertEquals(Set.empty, this.kantaOperaatiot.haeLahtokoulunOppilaat(NOW, true, oppilaitosOid, Some(valmistumisVuosi), None, false, true, Set(VUOSILUOKKA_9)))
   }
 
   @Test def haeLahtokoulutRoundTrip(): Unit = {
@@ -1710,10 +1730,10 @@ class KantaOperaatiotTest {
       )
     ), ParserVersions.KOSKI)
 
-    val luokat = this.kantaOperaatiot.haeLuokat(Some(NOW), oppilaitosOid, NOW.getYear, Some(Set(VUOSILUOKKA_9)))
+    val luokat = this.kantaOperaatiot.haeLuokat(NOW, true, oppilaitosOid, NOW.getYear, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set("9D", "9E", "9F"), luokat)
 
-    val ensiVuodenLuokat = this.kantaOperaatiot.haeLuokat(Some(NOW), oppilaitosOid, NOW.getYear + 1, Some(Set(VUOSILUOKKA_9)))
+    val ensiVuodenLuokat = this.kantaOperaatiot.haeLuokat(NOW, true, oppilaitosOid, NOW.getYear + 1, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set.empty, ensiVuodenLuokat)
   }
 
@@ -1728,7 +1748,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Haetaan vuodet halutulta oppilaitokselta - ei pitäisi löytyä mitään
-    val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
+    val vuodet = this.kantaOperaatiot.haeVuodet(NOW, true, oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set.empty, vuodet)
   }
 
@@ -1752,7 +1772,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Näkyvyys loppunut (valmistumisen jälkeen vain seuraavan vuoden tammikuun loppuun), ei pitäisi palautua
-    val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
+    val vuodet = this.kantaOperaatiot.haeVuodet(NOW, true, oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set.empty, vuodet)
   }
 
@@ -1766,7 +1786,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Haetaan vain vuosiluokka 9, ei pitäisi löytyä vuosiluokka 8
-    val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
+    val vuodet = this.kantaOperaatiot.haeVuodet(NOW, true, oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set.empty, vuodet)
   }
 
@@ -1780,7 +1800,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Kesken-tilainen, arvioitu valmistuminen tänä vuonna -> pitäisi palautua tämä vuosi
-    val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
+    val vuodet = this.kantaOperaatiot.haeVuodet(NOW, true, oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set(NOW.getYear.toString), vuodet)
   }
 
@@ -1794,7 +1814,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Keväällä aloittanut keskeneräinen ysi -> palautetaan kuluva vuosi
-    val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
+    val vuodet = this.kantaOperaatiot.haeVuodet(NOW, true, oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set(NOW.getYear.toString), vuodet)
   }
 
@@ -1808,7 +1828,7 @@ class KantaOperaatiotTest {
     ), ParserVersions.KOSKI)
 
     // Myöhässä oleva keskeneräinen ysi -> palautetaan vain kuluva valmistumisvuosi
-    val vuodet = this.kantaOperaatiot.haeVuodet(Some(NOW), oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
+    val vuodet = this.kantaOperaatiot.haeVuodet(NOW, true, oppilaitosOid, Some(Set(VUOSILUOKKA_9)))
     Assertions.assertEquals(Set(NOW.getYear.toString), vuodet)
   }
 

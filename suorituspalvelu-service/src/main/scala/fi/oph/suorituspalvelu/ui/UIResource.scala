@@ -207,8 +207,9 @@ class UIResource {
             AuditLog.log(user, Map(UI_LUOKAT_OPPILAITOS_PARAM_NAME -> oppilaitosOid.get), AuditOperation.HaeVuodetUI, None)
 
             // rekisterinpitäjille ei rajoiteta ohjausvelvollisuuden keston perusteella, muille rajoitetaan
-            val paivamaara = if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
-            val vuodet = uiService.haeVuodet(paivamaara, oppilaitosOid.get)
+            val nykyhetki = LocalDate.now()
+            val rajaaOhjattavuudenMukaan = !securityOperaatiot.onRekisterinpitaja()
+            val vuodet = uiService.haeVuodet(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid.get)
             Right(ResponseEntity.status(HttpStatus.OK).body(VuodetSuccessResponse(vuodet.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[VuodetResponse]])
@@ -264,8 +265,9 @@ class UIResource {
             ), AuditOperation.HaeLuokatUI, None)
 
             // rekisterinpitäjille ei rajoiteta ohjausvelvollisuuden keston perusteella, muille rajoitetaan
-            val paivamaara = if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now)
-            val luokat = uiService.haeLuokat(paivamaara, oppilaitosOid.get, vuosi.get.toInt)
+            val nykyhetki = LocalDate.now()
+            val rajaaOhjattavuudenMukaan = !securityOperaatiot.onRekisterinpitaja()
+            val luokat = uiService.haeLuokat(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid.get, vuosi.get.toInt)
             Right(ResponseEntity.status(HttpStatus.OK).body(LuokatSuccessResponse(luokat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[LuokatResponse]])
@@ -331,7 +333,7 @@ class UIResource {
               UI_OPPILAITOS_HAKU_VUOSI_PARAM_NAME -> vuosi.orElse(null),
               UI_OPPILAITOS_HAKU_LUOKKA_PARAM_NAME -> luokka.orElse(null),
             ), AuditOperation.HaeOppilaitoksenOppijatUI, None)
-            val oppijat = uiService.haeOhjattavat(if (securityOperaatiot.onRekisterinpitaja()) None else Some(LocalDate.now), oppilaitos.get, vuosi.get.toInt, luokka.toScala, kesken, yhteistenArvosanaPuuttuu)
+            val oppijat = uiService.haeOhjattavat(LocalDate.now(), !securityOperaatiot.onRekisterinpitaja(), oppilaitos.get, vuosi.get.toInt, luokka.toScala, kesken, yhteistenArvosanaPuuttuu)
             Right(ResponseEntity.status(HttpStatus.OK).body(OppijanHakuSuccessResponse(oppijat.toList.asJava)))
           )
           .fold(e => e, r => r).asInstanceOf[ResponseEntity[OppijanHakuResponse]])

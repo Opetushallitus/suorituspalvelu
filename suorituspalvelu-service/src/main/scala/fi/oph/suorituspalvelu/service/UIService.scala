@@ -185,17 +185,17 @@ class UIService {
         organisaatio.oid))
   }
 
-  def haeVuodet(paivamaara: Option[LocalDate], oppilaitosOid: String): Set[String] = {
+  def haeVuodet(nykyhetki: LocalDate, rajaaOhjattavuudenMukaan: Boolean, oppilaitosOid: String): Set[String] = {
     // haetaan kaikkien suoritustyyppien paitsi 7. ja 8. vuosiluokkien perusteella koska niitä ei haluta näyttää kälissä
-    kantaOperaatiot.haeVuodet(paivamaara, oppilaitosOid, Some(SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT))
+    kantaOperaatiot.haeVuodet(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid, Some(SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT))
   }
 
-  def haeLuokat(paivamaara: Option[LocalDate], oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
-    kantaOperaatiot.haeLuokat(paivamaara, oppilaitosOid, valmistumisVuosi, Some(SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT))
+  def haeLuokat(nykyhetki: LocalDate, rajaaOhjattavuudenMukaan: Boolean, oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
+    kantaOperaatiot.haeLuokat(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitosOid, valmistumisVuosi, Some(SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT))
   }
 
-  def haeOhjattavat(ajanhetki: Option[LocalDate], oppilaitos: String, valmistumisVuosi: Int, luokka: Option[String], kesken: Boolean, yhteistenArvosanaPuuttuu: Boolean): Seq[Oppija] = {
-    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(ajanhetki, oppilaitos, Some(valmistumisVuosi), luokka, kesken, yhteistenArvosanaPuuttuu, SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT)
+  def haeOhjattavat(nykyhetki: LocalDate, rajaaOhjattavuudenMukaan: Boolean, oppilaitos: String, valmistumisVuosi: Int, luokka: Option[String], kesken: Boolean, yhteistenArvosanaPuuttuu: Boolean): Seq[Oppija] = {
+    val oppijaLuokat = kantaOperaatiot.haeLahtokoulunOppilaat(nykyhetki, rajaaOhjattavuudenMukaan, oppilaitos, Some(valmistumisVuosi), luokka, kesken, yhteistenArvosanaPuuttuu, SUPAN_KAYTTOLIITTYMASSA_NAYTETTAVAT)
     val oppijaOids = oppijaLuokat.map(_._1)
     val luokatMap = oppijaLuokat.toMap
 
