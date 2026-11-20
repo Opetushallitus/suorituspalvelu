@@ -697,7 +697,7 @@ test.describe('Opiskelijavalinnan tiedot', () => {
 
     await expect(
       lukio_suoritettu.getByRole('tooltip', {
-        name: 'Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta',
+        name: 'Löytyi lukion oppimäärä, joka on vahvistettu leikkuripäivään 2055-01-01 mennessä. Vahvistuspäivä: 2016-06-03',
       }),
     ).toBeVisible();
   });

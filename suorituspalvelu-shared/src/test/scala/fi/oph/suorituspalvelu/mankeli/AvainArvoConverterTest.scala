@@ -6,7 +6,7 @@ import fi.oph.suorituspalvelu.business.testsupport.TestUtil.buildDummyKoodistoPr
 import fi.oph.suorituspalvelu.integration.KoskiIntegration
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, Hakutoive, Koodisto, KoutaHaku}
 import fi.oph.suorituspalvelu.util.KoodistoProvider
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, DIAArvosana, DIALaajuus, DIAOppiaine, DIAOppiaineenKoesuoritus, DIATutkinto, DIAVastaavuustodistuksenTiedot, EBArvosana, EBLaajuus, EBOppiaine, EBOppiaineenOsasuoritus, EBTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Lahtokoulu, LukionOppimaara, Opiskeluoikeus, Oppilaitos, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, SuoritusTila, Telma, TestDataUtil, Tuva, VapaaSivistystyo}
 import fi.oph.suorituspalvelu.mankeli.{AvainArvoConstants, AvainArvoContainer, AvainArvoConverter, HakemuksenHarkinnanvaraisuus, HakemusConverter, HakutoiveenHarkinnanvaraisuus, HarkinnanvaraisuudenSyy}
 import fi.oph.suorituspalvelu.parsing.koski.{Kielistetty, KoskiLisatiedot, KoskiParser, KoskiToSuoritusConverter}
 import fi.oph.suorituspalvelu.parsing.ytr.{YtrParser, YtrToSuoritusConverter}
@@ -101,6 +101,37 @@ class AvainArvoConverterTest {
   private def convertArvot(opiskeluoikeudet: Seq[Opiskeluoikeus]): Map[String, String] =
     AvainArvoConverter.convertOpiskeluoikeudet("1.2.3", Some(BASE_HAKEMUS),
       opiskeluoikeudet, Seq.empty, LocalDate.now(), DEFAULT_KOUTA_HAKU, None, Map.empty).getAvainArvoMap()
+
+  private def lukionOppimaara(tila: SuoritusTila, vahvistusPaivamaara: Option[LocalDate]): LukionOppimaara =
+    LukionOppimaara(UUID.randomUUID(), Oppilaitos(Kielistetty(None, None, None), "1.2.3"),
+      Koodi("valmis", "koskiopiskeluoikeudentila", None), tila, None, vahvistusPaivamaara,
+      None, None, Set.empty)
+
+  private def lukionOpiskeluoikeus(suoritukset: Set[fi.oph.suorituspalvelu.business.Suoritus]): GeneerinenOpiskeluoikeus =
+    GeneerinenOpiskeluoikeus(UUID.randomUUID(), "1.2.3", Koodi("lukio", "opiskeluoikeudentyyppi", None),
+      "1.2.3", suoritukset, None, List.empty)
+
+  @Test def testConvertLukioArvot(): Unit = {
+    val leikkuripaiva = LocalDate.parse("2026-11-19")
+    val avain = AvainArvoConstants.lukioSuoritettuKey
+
+    def tulos(opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] =
+      AvainArvoConverter.convertLukioArvot("1.2.3", opiskeluoikeudet, leikkuripaiva)
+
+    val ajoissa = lukionOppimaara(SuoritusTila.VALMIS, Some(leikkuripaiva))
+    Assertions.assertEquals("true", tulos(Seq(lukionOpiskeluoikeus(Set(ajoissa)))).find(_.avain == avain).get.arvo)
+
+    val leikkurinJalkeen = lukionOppimaara(SuoritusTila.VALMIS, Some(leikkuripaiva.plusDays(1)))
+    Assertions.assertEquals("false", tulos(Seq(lukionOpiskeluoikeus(Set(leikkurinJalkeen)))).find(_.avain == avain).get.arvo)
+
+    val eiValmis = lukionOppimaara(SuoritusTila.KESKEN, Some(leikkuripaiva.minusDays(1)))
+    Assertions.assertEquals("false", tulos(Seq(lukionOpiskeluoikeus(Set(eiValmis)))).find(_.avain == avain).get.arvo)
+
+    val eiVahvistuspaivaa = lukionOppimaara(SuoritusTila.VALMIS, None)
+    Assertions.assertEquals("false", tulos(Seq(lukionOpiskeluoikeus(Set(eiVahvistuspaivaa)))).find(_.avain == avain).get.arvo)
+    Assertions.assertEquals("false", tulos(Seq.empty).find(_.avain == avain).get.arvo)
+    Assertions.assertEquals("false", tulos(Seq(fi.oph.suorituspalvelu.business.YOOpiskeluoikeus(UUID.randomUUID(), None))).find(_.avain == avain).get.arvo)
+  }
 
   // Rakentaa hakemuksen annetuista avain-arvoista lisäten automaattisesti pohjakoulutus_vuosi=2016,
   // jotta hakemukselta tulevat arvosanat huomioidaan. Palauttaa kaikki päätellyt avain-arvot selitteineen.
