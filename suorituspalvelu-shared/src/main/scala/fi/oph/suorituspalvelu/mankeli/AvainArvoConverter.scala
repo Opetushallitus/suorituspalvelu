@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.mankeli
 
 import fi.oph.suorituspalvelu.business
 import fi.oph.suorituspalvelu.business.PerusopetuksenYksilollistaminen.toIntValue
-import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, DIATutkinto, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
+import fi.oph.suorituspalvelu.business.{AmmatillinenOpiskeluoikeus, AmmatillinenPerustutkinto, AmmattiTutkinto, DIATutkinto, EBTutkinto, ErikoisAmmattiTutkinto, GeneerinenOpiskeluoikeus, Koodi, Laajuus, LukionOppimaara, Opiskeluoikeus, PerusopetuksenOpiskeluoikeus, PerusopetuksenOppiaine, PerusopetuksenOppimaara, PerusopetuksenOppimaaranOppiaineidenSuoritus, PerusopetuksenYksilollistaminen, Suoritus, SuoritusTila, Telma, Tuva, VapaaSivistystyo, YOOpiskeluoikeus}
 import fi.oph.suorituspalvelu.integration.client.{AtaruValintalaskentaHakemus, KoutaHaku, Ohjausparametrit}
 import fi.oph.suorituspalvelu.mankeli.ataru.{AtaruArvosanaParser, AvainArvoConverterUtil, AvainArvoDTO}
 import fi.oph.suorituspalvelu.parsing.koski.KoskiUtil
@@ -421,7 +421,7 @@ object AvainArvoConverter {
     val yoArvot = convertYoArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val ebArvot = convertEbArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val diaArvot = convertDiaArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
-    val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan) //TODO, lukiosuoritukset pitää vielä parseroida
+    val lukioArvot = convertLukioArvot(personOid, opiskeluoikeudet, vahvistettuViimeistaan)
     val lisapistekoulutusArvot = convertLisapistekoulutukset(personOid, opiskeluoikeudet, haku, toisenAsteenPk)
 
     val paatellytArvot: Set[AvainArvoContainer] =
@@ -894,13 +894,46 @@ object AvainArvoConverter {
     arvot
   }
 
-  //TODO lukiosuorituksia ei ole vielä parseroitu eikä niitä saada Koskesta massaluovutusrajapinnan kautta. Tämä päättely ei siis vielä toimi.
   def convertLukioArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
-    //val lukioOpiskeluoikeudet = opiskeluoikeudet.collect { case o: GeneerinenOpiskeluoikeus => o }
-    val hasLukioSuoritus = false
-    val lukioSelite = s"Lukiosuorituksia ei vielä saada Koskesta massaluovutusrajapinnan kautta."
+    val lukioOpiskeluoikeudet = opiskeluoikeudet
+      .collect { case o: GeneerinenOpiskeluoikeus => o }
+      .flatMap(_.suoritukset)
+      .collect { case s: LukionOppimaara => s }
+      .toSeq
 
-    val arvot = Set(AvainArvoContainer(AvainArvoConstants.lukioSuoritettuKey, hasLukioSuoritus.toString, Seq(lukioSelite)))
+    val ajoissaVahvistettu = lukioOpiskeluoikeudet.find(s =>
+      s.supaTila == SuoritusTila.VALMIS &&
+        s.vahvistusPaivamaara.exists(vp => !vp.isAfter(vahvistettuViimeistaan))
+    )
+
+    val lukioSelite = ajoissaVahvistettu match {
+      case Some(suoritus) =>
+        s"Löytyi lukion oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. " +
+          s"Vahvistuspäivä: ${suoritus.vahvistusPaivamaara.get}."
+      case None if lukioOpiskeluoikeudet.nonEmpty =>
+        val vahvistuspaivat = lukioOpiskeluoikeudet
+          .flatMap(_.vahvistusPaivamaara)
+          .map(_.toString)
+          .distinct
+          .mkString(", ")
+
+        val vahvistuspaivaTeksti =
+          if (vahvistuspaivat.nonEmpty) s" Vahvistuspäivä: $vahvistuspaivat."
+          else " Vahvistuspäivä: -."
+
+        s"Löytyi lukion oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä." +
+          vahvistuspaivaTeksti
+      case None =>
+        "Lukion oppimäärää ei löytynyt."
+    }
+
+    val arvot = Set(
+      AvainArvoContainer(
+        AvainArvoConstants.lukioSuoritettuKey,
+        ajoissaVahvistettu.isDefined.toString,
+        Seq(lukioSelite)
+      )
+    )
 
     LOG.info(s"Lukioarvot käsitelty henkilölle $personOid. $arvot")
     arvot
