@@ -115,22 +115,27 @@ class AvainArvoConverterTest {
     val leikkuripaiva = LocalDate.parse("2026-11-19")
     val avain = AvainArvoConstants.lukioSuoritettuKey
 
-    def tulos(opiskeluoikeudet: Seq[Opiskeluoikeus]): Set[AvainArvoContainer] =
-      AvainArvoConverter.convertLukioArvot("1.2.3", opiskeluoikeudet, leikkuripaiva)
+    def tulos(opiskeluoikeudet: Seq[Opiskeluoikeus]): AvainArvoContainer =
+      AvainArvoConverter.convertLukioArvot("1.2.3", opiskeluoikeudet, leikkuripaiva).find(_.avain == avain).get
 
     val ajoissa = lukionOppimaara(SuoritusTila.VALMIS, Some(leikkuripaiva))
-    Assertions.assertEquals("true", tulos(Seq(lukionOpiskeluoikeus(Set(ajoissa)))).find(_.avain == avain).get.arvo)
+    Assertions.assertEquals(AvainArvoContainer(avain, "true", Seq("Löytyi lukion oppimäärä, joka on vahvistettu leikkuripäivään 2026-11-19 mennessä. Vahvistuspäivä: 2026-11-19.")), tulos(Seq(lukionOpiskeluoikeus(Set(ajoissa)))))
 
     val leikkurinJalkeen = lukionOppimaara(SuoritusTila.VALMIS, Some(leikkuripaiva.plusDays(1)))
-    Assertions.assertEquals("false", tulos(Seq(lukionOpiskeluoikeus(Set(leikkurinJalkeen)))).find(_.avain == avain).get.arvo)
+    Assertions.assertEquals(AvainArvoContainer(avain, "false", Seq("Löytyi lukion oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään 2026-11-19 mennessä. Vahvistuspäivä: 2026-11-20.")), tulos(Seq(lukionOpiskeluoikeus(Set(leikkurinJalkeen)))))
 
-    val eiValmis = lukionOppimaara(SuoritusTila.KESKEN, Some(leikkuripaiva.minusDays(1)))
-    Assertions.assertEquals("false", tulos(Seq(lukionOpiskeluoikeus(Set(eiValmis)))).find(_.avain == avain).get.arvo)
+    val eiValmis = lukionOppimaara(SuoritusTila.KESKEN, None)
+    Assertions.assertEquals(AvainArvoContainer(avain, "false", Seq("Lukion oppimäärän suoritus on kesken.")), tulos(Seq(lukionOpiskeluoikeus(Set(eiValmis)))))
+
+    val valmisJaKeskenerainen = Seq(lukionOpiskeluoikeus(Set(eiValmis)), lukionOpiskeluoikeus(Set(ajoissa)))
+    Assertions.assertEquals(AvainArvoContainer(avain, "true", Seq("Löytyi lukion oppimäärä, joka on vahvistettu leikkuripäivään 2026-11-19 mennessä. Vahvistuspäivä: 2026-11-19.")), tulos(valmisJaKeskenerainen))
 
     val eiVahvistuspaivaa = lukionOppimaara(SuoritusTila.VALMIS, None)
-    Assertions.assertEquals("false", tulos(Seq(lukionOpiskeluoikeus(Set(eiVahvistuspaivaa)))).find(_.avain == avain).get.arvo)
-    Assertions.assertEquals("false", tulos(Seq.empty).find(_.avain == avain).get.arvo)
-    Assertions.assertEquals("false", tulos(Seq(fi.oph.suorituspalvelu.business.YOOpiskeluoikeus(UUID.randomUUID(), None))).find(_.avain == avain).get.arvo)
+    Assertions.assertEquals(AvainArvoContainer(avain, "false", Seq("Löytyi lukion oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään 2026-11-19 mennessä. Vahvistuspäivä: -.")), tulos(Seq(lukionOpiskeluoikeus(Set(eiVahvistuspaivaa)))))
+
+    val eiOppimaaraa = AvainArvoContainer(avain, "false", Seq("Lukion oppimäärää ei löytynyt."))
+    Assertions.assertEquals(eiOppimaaraa, tulos(Seq.empty))
+    Assertions.assertEquals(eiOppimaaraa, tulos(Seq(fi.oph.suorituspalvelu.business.YOOpiskeluoikeus(UUID.randomUUID(), None))))
   }
 
   // Rakentaa hakemuksen annetuista avain-arvoista lisäten automaattisesti pohjakoulutus_vuosi=2016,

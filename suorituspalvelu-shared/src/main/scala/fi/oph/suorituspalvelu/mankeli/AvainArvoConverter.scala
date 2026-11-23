@@ -895,23 +895,23 @@ object AvainArvoConverter {
   }
 
   def convertLukioArvot(personOid: String, opiskeluoikeudet: Seq[Opiskeluoikeus], vahvistettuViimeistaan: LocalDate): Set[AvainArvoContainer] = {
-    val lukioOpiskeluoikeudet = opiskeluoikeudet
+    val lukioSuoritukset = opiskeluoikeudet
       .collect { case o: GeneerinenOpiskeluoikeus => o }
       .flatMap(_.suoritukset)
       .collect { case s: LukionOppimaara => s }
       .toSeq
 
-    val ajoissaVahvistettu = lukioOpiskeluoikeudet.find(s =>
-      s.supaTila == SuoritusTila.VALMIS &&
-        s.vahvistusPaivamaara.exists(vp => !vp.isAfter(vahvistettuViimeistaan))
+    val valmiitLukioSuoritukset = lukioSuoritukset.filter(_.supaTila == SuoritusTila.VALMIS)
+    val ajoissaVahvistettu = valmiitLukioSuoritukset.find(s =>
+      s.vahvistusPaivamaara.exists(vp => !vp.isAfter(vahvistettuViimeistaan))
     )
 
     val lukioSelite = ajoissaVahvistettu match {
       case Some(suoritus) =>
         s"Löytyi lukion oppimäärä, joka on vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä. " +
           s"Vahvistuspäivä: ${suoritus.vahvistusPaivamaara.get}."
-      case None if lukioOpiskeluoikeudet.nonEmpty =>
-        val vahvistuspaivat = lukioOpiskeluoikeudet
+      case None if valmiitLukioSuoritukset.nonEmpty =>
+        val vahvistuspaivat = valmiitLukioSuoritukset
           .flatMap(_.vahvistusPaivamaara)
           .map(_.toString)
           .distinct
@@ -923,6 +923,8 @@ object AvainArvoConverter {
 
         s"Löytyi lukion oppimäärä, mutta sitä ei ole vahvistettu leikkuripäivään $vahvistettuViimeistaan mennessä." +
           vahvistuspaivaTeksti
+      case None if lukioSuoritukset.exists(_.supaTila == SuoritusTila.KESKEN) =>
+        "Lukion oppimäärän suoritus on kesken."
       case None =>
         "Lukion oppimäärää ei löytynyt."
     }
