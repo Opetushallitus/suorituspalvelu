@@ -101,7 +101,7 @@ export const Opiskeluoikeudet = ({
                 >
                   {translateKielistetty(oo.nimi)}
                 </OphTypography>
-                <Stack direction="row" gap={1}>
+                <Stack direction="row" sx={{ gap: 1 }}>
                   <OppilaitosInfoItem
                     oppilaitos={oo.oppilaitos}
                     sx={{ flex: '1 1 300px' }}
