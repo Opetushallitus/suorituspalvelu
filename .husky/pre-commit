@@ -1,1 +1,1 @@
-cd suorituspalvelu-ui && npx lint-staged
+cd suorituspalvelu-ui && pnpm exec lint-staged

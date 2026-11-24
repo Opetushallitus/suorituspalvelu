@@ -753,6 +753,25 @@ interface CalendarInputProps {
   onClick?: () => void;
 }
 
+const CalendarInput = (
+  props: CalendarInputProps & {
+    ref?: React.RefObject<HTMLInputElement | null>;
+  },
+) => {
+  const { t } = useTranslations();
+  return (
+    <OphInput
+      placeholder={t('datepicker.placeholder')}
+      {...props}
+      endAdornment={
+        <InputAdornment position="end">
+          <CalendarTodayOutlined style={{ color: ophColors.blue2 }} />
+        </InputAdornment>
+      }
+    />
+  );
+};
+
 export type DatePickerProps = {
   value?: Date | null;
   onChange?: (value: Date | null) => void;
@@ -768,23 +787,7 @@ export const DatePicker = ({
 }: DatePickerProps) => {
   const { t, getLanguage } = useTranslations();
 
-  const refCustomInput = useRef<HTMLInputElement>(null);
-
-  const CustomInput = function renderCalendarInput({
-    ...props
-  }: CalendarInputProps & { ref?: React.RefObject<HTMLInputElement | null> }) {
-    return (
-      <OphInput
-        placeholder={t('datepicker.placeholder')}
-        {...props}
-        endAdornment={
-          <InputAdornment position="end">
-            <CalendarTodayOutlined style={{ color: ophColors.blue2 }} />
-          </InputAdornment>
-        }
-      />
-    );
-  };
+  const customInputRef = useRef<HTMLInputElement>(null);
 
   const language = getLanguage();
 
@@ -798,7 +801,7 @@ export const DatePicker = ({
             ariaLabelledBy={labelId}
             selected={value}
             onChange={onChange}
-            customInput={<CustomInput ref={refCustomInput} />}
+            customInput={<CalendarInput ref={customInputRef} />}
             calendarClassName={CALENDAR_CLASSNAME}
             dateFormat="dd.MM.yyyy"
             strictParsing={true}

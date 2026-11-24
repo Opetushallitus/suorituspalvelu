@@ -7,17 +7,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.{CommandLineRunner, SpringApplication}
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.security.servlet.{SecurityAutoConfiguration, SecurityFilterAutoConfiguration}
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
+import org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration
 import org.springframework.context.annotation.{ComponentScan, Import}
 import org.springframework.stereotype.Component
 
 // Scan only packages that OvaraApp needs. Explicit package list avoids web-only
 // configuration classes (Tomcat, WebMvcConfigurer, etc.) in the service module.
 @SpringBootApplication(exclude = Array(
-  classOf[SecurityAutoConfiguration],
-  classOf[SecurityFilterAutoConfiguration],
   classOf[WebMvcAutoConfiguration],
   classOf[ErrorMvcAutoConfiguration]
 ))

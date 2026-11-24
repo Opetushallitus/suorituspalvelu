@@ -2,7 +2,7 @@ package fi.oph.suorituspalvelu.configuration
 
 import ch.qos.logback.access.tomcat.LogbackValve
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.{Bean, Configuration, Profile}
 
