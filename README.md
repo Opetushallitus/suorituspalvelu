@@ -5,7 +5,7 @@ tarjoilee edelleen muille järjestelmille (Hakemuspalvelu, Valintalaskenta).
 
 ### Arkkitehtuuri
 
-Komponenttikuvaus on osoitteessa: https://wiki.eduuni.fi/spaces/KEIJO/pages/574036482/SUPA+Komponenttimalli
+Komponenttikuvaus on osoitteessa: <https://wiki.eduuni.fi/spaces/KEIJO/pages/574036482/SUPA+Komponenttimalli>
 
 ### Lokaali ympäristö
 
@@ -13,7 +13,7 @@ Lokaalin ympäristön käyttöönotto
 
 1. Käynnistä lokaali sovellus ajamalla luokka fi.oph.suorituspalvelu.DevApp. Käynnistyksen
    yhteydessä käynnistetään myös postgres-kanta
-2. Mene osoitteeseen: https://localhost:8443/suorituspalvelu/swagger (uudelleenohjaa kirjautumiseen hahtuvan cas:iin), kaikkia kutsuja
+2. Mene osoitteeseen: <https://localhost:8443/suorituspalvelu/swagger> (uudelleenohjaa kirjautumiseen hahtuvan cas:iin), kaikkia kutsuja
    pitäisi pystyä kokeilemaan esimerkkiparametreilla
 3. Järjestelmän tilaa voi seurata kannasta (salasana on "app"): psql -U app --host localhost --port 55432 -d suorituspalvelu
 
@@ -35,6 +35,8 @@ Jos haluat muuttaa PostgreSQL:n lokaaleja asetuksia, päivitä arvot [`.env`](./
 
 Koko sovelluksen ajaminen yhdessä on toteutettu docker composella.
 
+Backendin Docker-imagen rakentaminen vaatii BuildKitin, koska `Dockerfile.backend` käyttää build-aikaista `RUN --mount` -liitosta valinnaisen CA-varmenteen lukemiseen. Vaatimus koskee myös rakentamista ilman omaa CA-varmennetta.
+
 Docker-compose.sh on kääreskripti, joka mahdollistaa `docker compose`-komennon ajamisen samalla UID:GID-yhdistelmällä kuin host-käyttäjällä, jotta konttien luomien tiedostojen oikeudet ovat vastaavat kuin host-koneella. Voit antaa skriptille samoja komentoriviparametreja kuin `docker compose`-komennolle.
 
 Maven-riippuvuuksia ei asenneta automaattisesti uudelleen joka kerta sovelluksen käynnistyksen yhteydessä, joten asenna Maven-riippuvuudet ensimmäisellä kerralla ja kun riippuvuudet ovat muuttuneet:
@@ -54,6 +56,18 @@ Komento käynnistää backendin, käyttöliittymän, postgreSQL-tietokannan ja n
 Huom: PostgreSQL-kontin image sekä tietokannan tunnukset luetaan lisäksi projektin juuren [`.env`](./.env)-tiedostosta. `docker-compose.yml` käyttää sitä PostgreSQL-palvelun käynnistämiseen, kun taas `.env.docker` ja `.env.docker.local` sisältävät muun sovelluksen ympäristömuuttujia.
 
 Sovelluksen käyttöliittymä löytyy käynnistyksen jälkeen osoitteesta http:/localhost/suorituspalvelu.
+
+##### Yrityksen CA-varmenne Docker-ajossa
+
+Jos yrityksen verkko tai HTTPS-välityspalvelin käyttää omaa CA-varmennetta (esim. Zscaler), backendin CAS-kirjautuminen voi epäonnistua virheeseen `SSLHandshakeException: PKIX path building failed`. Tallenna tällöin yrityksen CA-varmenne PEM-muodossa projektin juureen nimellä `ca.pem`.
+
+`Dockerfile.backend` tuo varmenteen backend-imagen Javan luotettujen varmenteiden säilöön vain, jos `ca.pem` löytyy. Ilman tiedostoa tuonti ohitetaan. Rakenna image uudelleen varmenteen lisäämisen, vaihtamisen tai poistamisen jälkeen:
+
+```sh
+./docker-compose.sh up --build
+```
+
+Tämä asetus koskee Dockerissa ajettavan backendin lähteviä HTTPS-yhteyksiä. Selaimen varoitus osoitteen `https://localhost:8443` kehitysvarmenteesta on erillinen asia: varoituksen ohittaminen selaimessa ei lisää CAS-palvelimen varmenteen luottamusta backendin Javassa.
 
 ### Käyttöliittymäkehitys
 

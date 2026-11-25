@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Await
+import java.time.LocalDate
 
 @Component
 class LahtokoulutService {
@@ -25,12 +26,12 @@ class LahtokoulutService {
 
   implicit val onrRetryConfig: RetryConfig = RetryConfig(retries = 1)
 
-  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int): Set[String] = {
-    kantaOperaatiot.haeLuokat(None, oppilaitosOid, valmistumisVuosi, None)
+  def haeLuokat(oppilaitosOid: String, valmistumisVuosi: Int, nykyhetki: LocalDate = LocalDate.now()): Set[String] = {
+    kantaOperaatiot.haeLuokat(nykyhetki, false, oppilaitosOid, valmistumisVuosi, None)
   }
 
-  def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int): Set[(String, String)] = {
-    val henkilotJaLuokat = kantaOperaatiot.haeHenkilotJaLuokat(oppilaitosOid, vuosi, None)
+  def haeOhjattavatJaLuokat(oppilaitosOid: String, vuosi: Int, nykyhetki: LocalDate = LocalDate.now()): Set[(String, String)] = {
+    val henkilotJaLuokat = kantaOperaatiot.haeHenkilotJaLuokat(nykyhetki, false, oppilaitosOid, vuosi, None)
     if(henkilotJaLuokat.isEmpty)
       Set.empty
     else

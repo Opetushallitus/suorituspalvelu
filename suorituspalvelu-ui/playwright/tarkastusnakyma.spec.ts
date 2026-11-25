@@ -105,6 +105,27 @@ test.describe('Tarkastusnäkymä', () => {
     });
   });
 
+  for (const paiva of ['2026-03-01', '2026-09-01']) {
+    test(`kuluva vuosi on oletus, kun tarkastelupäivä on ${paiva}`, async ({
+      page,
+    }) => {
+      await page.clock.setFixedTime(new Date(`${paiva}T12:00:00Z`));
+      await page.route('**/ui/rajain/vuodet/**', async (route) => {
+        await route.fulfill({ json: { vuodet: ['2027'] } });
+      });
+      await page.goto(`tarkastus?oppilaitos=${OPPILAITOS_OID}`);
+
+      await expect(page).toHaveURL(
+        (url) => url.searchParams.get('vuosi') === '2026',
+      );
+      await expect(getVuosiSelect(page)).toHaveText('2026');
+      await getVuosiSelect(page).click();
+      await expect(
+        page.getByRole('option', { name: '2027', exact: true }),
+      ).toBeVisible();
+    });
+  }
+
   test('valitsee automaattisesti ainoan oppilaitoksen', async ({ page }) => {
     await page.route(`**/ui/rajain/oppilaitokset`, async (route) => {
       await route.fulfill({

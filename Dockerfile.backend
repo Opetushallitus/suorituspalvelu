@@ -1,5 +1,16 @@
+# syntax=docker/dockerfile:1
 FROM amazoncorretto:21-alpine-jdk
 RUN apk add --no-cache maven
+
+# Trust the custom CA only when it exists in the repository root.
+RUN --mount=type=bind,source=.,target=/build-context \
+    if [ -f /build-context/ca.pem ]; then \
+        keytool -importcert -noprompt -trustcacerts \
+            -alias company-ca \
+            -file /build-context/ca.pem \
+            -cacerts -storepass changeit; \
+    fi
+
 EXPOSE 8443
 WORKDIR /app/suorituspalvelu-service
 CMD ["mvn", "exec:java", "-Dexec.mainClass=fi.oph.suorituspalvelu.DevApp", "-Dexec.classpathScope=test", "-Dmaven.test.skip=true", "-am"]
